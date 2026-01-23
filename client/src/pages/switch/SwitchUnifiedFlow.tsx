@@ -18,7 +18,8 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney }: SwitchUni
     currentCostPerProvider: 200,
     utilization: 45,
     timeSavedPerEncounter: 2,
-    wrvuLift: 2, // Start at 2% lift
+    wrvuLift: 2,
+    satisfaction: 65, // NEW: Start at 65%
   });
 
   const goNext = () => {

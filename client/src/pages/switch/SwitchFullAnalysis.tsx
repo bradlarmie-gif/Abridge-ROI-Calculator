@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign } from "lucide-react";
+import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
@@ -44,7 +44,6 @@ export default function SwitchFullAnalysis({
     return points;
   }, [calculations]);
 
-  const utilizationGapEncounters = calculations.encounterGap;
   const encountersAtBenchmark = Math.round((inputs.annualEncounters || 150000) * (ABRIDGE_BENCHMARKS.utilization / 100));
 
   return (
@@ -73,7 +72,7 @@ export default function SwitchFullAnalysis({
             Your Gap Analysis
           </h1>
           <p className="text-[#6B7280]">
-            {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · Using {solutionLabel}
+            {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · {solutionLabel}
           </p>
         </div>
 
@@ -84,14 +83,14 @@ export default function SwitchFullAnalysis({
             <div className="text-xs text-[#6B7280] mt-1">unrealized value</div>
           </div>
 
-          <div className="bg-[#EA2C00] rounded-xl p-6 text-center text-white" data-testid="card-capture-rate">
-            <div className="text-xs font-semibold text-white/80 mb-2">CAPTURE RATE</div>
-            <div className="text-3xl font-bold">{calculations.combinedCapture}%</div>
+          <div className="bg-[#EA2C00] rounded-xl p-6 text-center text-white" data-testid="card-realization-score">
+            <div className="text-xs font-semibold text-white/80 mb-2">REALIZATION SCORE</div>
+            <div className="text-3xl font-bold">{calculations.realizationScore}%</div>
             <div className="text-xs text-white/80 mt-1">of potential</div>
             <div className="w-full h-2 bg-white/30 rounded-full mt-3">
               <div 
                 className="h-full bg-white rounded-full transition-all"
-                style={{ width: `${calculations.combinedCapture}%` }}
+                style={{ width: `${calculations.realizationScore}%` }}
               />
             </div>
           </div>
@@ -106,7 +105,7 @@ export default function SwitchFullAnalysis({
         <section className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
           <h2 className="text-xl font-bold text-[#111827] mb-2">The Cost of the Gap Over Time</h2>
           <p className="text-[#6B7280] mb-6">
-            Cumulative value if you stay at current performance vs. close the gap
+            Cumulative value if you stay at current performance vs. reach Abridge benchmarks
           </p>
 
           <div className="h-80 mb-6">
@@ -137,7 +136,7 @@ export default function SwitchFullAnalysis({
                   stroke="#10B981" 
                   strokeWidth={3}
                   dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
-                  name="Close the gap"
+                  name="Reach Abridge benchmarks"
                 />
                 <Line 
                   type="monotone" 
@@ -186,7 +185,7 @@ export default function SwitchFullAnalysis({
                     className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
                     style={{ 
                       left: `${(inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`,
-                      width: `${100 - (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100}%`
+                      width: `${Math.max(0, 100 - (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100)}%`
                     }}
                   >
                     <span className="text-xs font-semibold text-slate-600">Gap</span>
@@ -197,7 +196,7 @@ export default function SwitchFullAnalysis({
                 </div>
                 
                 <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                  {inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = +{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp = +{utilizationGapEncounters.toLocaleString()} encounters × ${VALUE_ASSUMPTIONS.encounterValue}/enc
+                  {inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}% = +{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp = +{calculations.encounterGap.toLocaleString()} enc × ${VALUE_ASSUMPTIONS.encounterValue}/enc
                 </div>
               </div>
             )}
@@ -225,7 +224,7 @@ export default function SwitchFullAnalysis({
                     className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
                     style={{ 
                       left: `${(inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`,
-                      width: `${100 - (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100}%`
+                      width: `${Math.max(0, 100 - (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100)}%`
                     }}
                   >
                     <span className="text-xs font-semibold text-slate-600">Gap</span>
@@ -246,7 +245,7 @@ export default function SwitchFullAnalysis({
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <DollarSign className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-[#111827]">Revenue Capture Gap</span>
+                    <span className="font-semibold text-[#111827]">Quality Gap</span>
                   </div>
                   <span className="text-xl font-bold text-[#111827]">
                     {formatCurrency(calculations.wrvuGapValue)}
@@ -264,7 +263,7 @@ export default function SwitchFullAnalysis({
                     className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
                     style={{ 
                       left: `${(inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`,
-                      width: `${100 - (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100}%`
+                      width: `${Math.max(0, 100 - (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100)}%`
                     }}
                   >
                     <span className="text-xs font-semibold text-slate-600">Gap</span>
@@ -275,7 +274,7 @@ export default function SwitchFullAnalysis({
                 </div>
                 
                 <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded">
-                  +{inputs.wrvuLift}% → +{ABRIDGE_BENCHMARKS.wrvuLift}% = {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc
+                  +{inputs.wrvuLift}% → +{ABRIDGE_BENCHMARKS.wrvuLift}% = +{(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%
                 </div>
               </div>
             )}
@@ -288,22 +287,23 @@ export default function SwitchFullAnalysis({
           </h3>
           
           <p className="text-slate-300 mb-4">
-            Ambient AI value is <strong className="text-white">multiplicative</strong>. 
-            Small differences in each dimension compound:
+            Ambient AI value is <strong className="text-white">multiplicative</strong>. Small differences compound:
           </p>
           
-          <div className="bg-slate-700/50 rounded-lg p-4 mb-4 text-center font-mono">
-            Utilization × Efficiency × Revenue = Total Value
+          <div className="bg-slate-700/50 rounded-lg p-4 mb-4 text-center font-mono text-sm">
+            Utilization × Efficiency × Quality × Satisfaction = Total Value
           </div>
           
-          <div className="flex items-center justify-center gap-3 text-lg mb-4">
-            <span className="font-bold">{calculations.utilizationCapture}%</span>
+          <div className="flex items-center justify-center gap-2 text-lg flex-wrap">
+            <span className="font-bold">{calculations.utilizationScore}%</span>
             <span className="text-slate-400">×</span>
-            <span className="font-bold">{calculations.efficiencyCapture}%</span>
+            <span className="font-bold">{calculations.efficiencyScore}%</span>
             <span className="text-slate-400">×</span>
-            <span className="font-bold">{calculations.wrvuCapture}%</span>
+            <span className="font-bold">{calculations.qualityScore}%</span>
+            <span className="text-slate-400">×</span>
+            <span className="font-bold">{calculations.satisfactionScore}%</span>
             <span className="text-slate-400">=</span>
-            <span className="font-bold text-[#EA2C00]">{calculations.combinedCapture}% captured</span>
+            <span className="font-bold text-[#EA2C00]">{calculations.realizationScore}% realized</span>
           </div>
         </section>
 
@@ -361,35 +361,33 @@ export default function SwitchFullAnalysis({
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">wRVU lift benchmark: +{ABRIDGE_BENCHMARKS.wrvuLift}%</strong> — Abridge average revenue lift</span>
+              <span><strong className="text-[#111827]">Quality benchmark: +{ABRIDGE_BENCHMARKS.wrvuLift}% wRVU lift</strong> — Abridge average revenue improvement</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">Utilization gap</strong> valued at ${VALUE_ASSUMPTIONS.encounterValue}/encounter</span>
+              <span><strong className="text-[#111827]">Satisfaction benchmark: {ABRIDGE_BENCHMARKS.satisfaction}%</strong> — Abridge average provider recommendation rate</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">Efficiency gap</strong> valued at ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}% conversion (conservative)</span>
+              <span>Utilization gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.encounterValue}/encounter</strong></span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-slate-400">•</span>
-              <span><strong className="text-[#111827]">wRVU gap</strong> valued at ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution</span>
+              <span>Efficiency gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.timeConversionRate * 100}%</strong> conversion (conservative)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-slate-400">•</span>
+              <span>Quality gap valued at <strong className="text-[#111827]">${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</strong> attribution</span>
             </li>
           </ul>
 
           <p className="mt-4 text-xs text-slate-500 italic">
-            Conservative estimates. Actual value may vary based on specialty mix and payer contracts.
+            Conservative estimates based on aggregate data from 200+ health system partners.
           </p>
         </section>
 
         <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-8">
-          <h3 className="text-xl font-bold text-[#111827] mb-6 text-center">Ready to close the gap?</h3>
-
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button className="bg-[#EA2C00] hover:bg-[#d12700] text-white h-12 px-6" data-testid="button-schedule-demo">
-              <Calendar className="w-4 h-4 mr-2" />
-              Schedule a Demo
-            </Button>
             <Button variant="outline" className="h-12 px-6" data-testid="button-export-pdf">
               <Download className="w-4 h-4 mr-2" />
               Export as PDF

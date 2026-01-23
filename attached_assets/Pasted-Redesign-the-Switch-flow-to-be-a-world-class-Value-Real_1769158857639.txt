@@ -1,0 +1,697 @@
+Redesign the Switch flow to be a world-class "Value Realization Assessment" that combines gap analysis with the positioning of Abridge as a guide to help organizations realize more value. This isn't just a feature comparison — it's a diagnostic that shows where they are and what's possible.
+
+## THE FRAME
+
+"Every organization using ambient AI is somewhere on the value realization spectrum. Most are capturing 30-50% of potential. Top performers capture 80%+. Where do you stand, and what would it take to reach your potential?"
+
+## THE FOUR DIMENSIONS
+
+1. **Utilization** (Adoption)
+   - Question: "What % of encounters are documented with your solution?"
+   - Abridge benchmark: 75%
+   - Typical competitor range: 30-50%
+   - Gap = wasted investment
+
+2. **Efficiency** (Time Saved)
+   - Question: "How much time does your solution save per encounter?"
+   - Abridge benchmark: 4 min (range: 3-5 min)
+   - Typical competitor range: 1-2 min
+   - Gap = unreturned time
+
+3. **Quality** (Revenue Capture)
+   - Question: "What wRVU lift are you seeing?"
+   - Abridge benchmark: +5% (range: 3-7%)
+   - Typical competitor: minimal lift
+   - Gap = unrealized revenue
+
+4. **Satisfaction** (Sustainability)
+   - Question: "Would your providers recommend this solution?"
+   - Abridge benchmark: 85%+ would recommend
+   - Low satisfaction = future utilization drop
+   - Gap = adoption risk
+
+## PAGE 1: VALUE REALIZATION ASSESSMENT
+
+### Header
+```jsx
+<div className="assessment-header">
+  <h1>Value Realization Assessment</h1>
+  <p className="subtitle">
+    See where you stand on the ambient AI value spectrum — 
+    and what reaching your potential could mean.
+  </p>
+</div>
+Section 1: Your Situation
+Clean, minimal inputs. Same style as the rest of the app.
+jsxCopy<div className="section your-situation">
+  <h2>Your Current Situation</h2>
+  
+  <div className="situation-grid">
+    {/* Solution Type */}
+    <div className="input-card solution-type">
+      <label>What solution are you using today?</label>
+      <div className="solution-options">
+        <button className={solution === 'ambient' ? 'selected' : ''}>
+          <span className="icon">🎙️</span>
+          <div className="option-text">
+            <span className="option-title">Ambient AI</span>
+            <span className="option-sub">DAX, Ambience, Suki, etc.</span>
+          </div>
+        </button>
+        <button className={solution === 'scribes' ? 'selected' : ''}>
+          <span className="icon">👤</span>
+          <div className="option-text">
+            <span className="option-title">Human Scribes</span>
+            <span className="option-sub">In-person or virtual</span>
+          </div>
+        </button>
+      </div>
+    </div>
+    
+    {/* Scale - Two inputs side by side */}
+    <div className="input-card scale">
+      <div className="input-row">
+        <div className="input-group">
+          <label>Providers using this solution</label>
+          <input type="number" value={providers} onChange={...} placeholder="75" />
+          <span className="unit">providers</span>
+        </div>
+        <div className="input-group">
+          <label>Annual encounters</label>
+          <input type="number" value={encounters} onChange={...} placeholder="150000" />
+          <span className="unit">encounters/year</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+Section 2: Your Results Across Four Dimensions
+Use a 2×2 grid layout for the four dimensions. Each card is compact but informative.
+jsxCopy<div className="section your-results">
+  <h2>Your Results</h2>
+  <p className="section-subtitle">How do your metrics compare to Abridge benchmarks?</p>
+  
+  <div className="results-grid">
+    {/* Utilization */}
+    <div className="dimension-card">
+      <div className="dimension-header">
+        <span className="dimension-icon">📊</span>
+        <div>
+          <h3>Utilization</h3>
+          <p>% of encounters documented</p>
+        </div>
+      </div>
+      
+      <div className="dimension-gauge">
+        <div className="gauge-bar">
+          <div className="gauge-fill you" style={{width: `${(utilization/90)*100}%`}}>
+            <span className="gauge-label">{utilization}%</span>
+          </div>
+          <div className="gauge-benchmark" style={{left: `${(75/90)*100}%`}}>
+            <span className="benchmark-line" />
+            <span className="benchmark-label">75%</span>
+          </div>
+        </div>
+        <input 
+          type="range" 
+          min="10" 
+          max="90" 
+          value={utilization} 
+          onChange={(e) => setUtilization(Number(e.target.value))}
+        />
+      </div>
+      
+      <div className="dimension-insight">
+        <span className="insight-percent">{Math.round((utilization/75)*100)}%</span>
+        <span className="insight-label">of Abridge benchmark</span>
+      </div>
+    </div>
+    
+    {/* Efficiency */}
+    <div className="dimension-card">
+      <div className="dimension-header">
+        <span className="dimension-icon">⏱️</span>
+        <div>
+          <h3>Efficiency</h3>
+          <p>Time saved per encounter</p>
+        </div>
+      </div>
+      
+      <div className="dimension-gauge">
+        <div className="gauge-bar">
+          <div className="gauge-fill you" style={{width: `${(timeSaved/5)*100}%`}}>
+            <span className="gauge-label">{timeSaved} min</span>
+          </div>
+          <div className="gauge-benchmark" style={{left: `${(4/5)*100}%`}}>
+            <span className="benchmark-line" />
+            <span className="benchmark-label">4 min</span>
+          </div>
+        </div>
+        <input 
+          type="range" 
+          min="0" 
+          max="5" 
+          step="0.5"
+          value={timeSaved} 
+          onChange={(e) => setTimeSaved(Number(e.target.value))}
+        />
+      </div>
+      
+      <div className="dimension-insight">
+        <span className="insight-percent">{Math.round((timeSaved/4)*100)}%</span>
+        <span className="insight-label">of Abridge benchmark</span>
+      </div>
+    </div>
+    
+    {/* Quality (wRVU) */}
+    <div className="dimension-card">
+      <div className="dimension-header">
+        <span className="dimension-icon">💰</span>
+        <div>
+          <h3>Quality</h3>
+          <p>wRVU lift from documentation</p>
+        </div>
+      </div>
+      
+      <div className="dimension-gauge">
+        <div className="gauge-bar">
+          <div className="gauge-fill you" style={{width: `${(wrvuLift/8)*100}%`}}>
+            <span className="gauge-label">+{wrvuLift}%</span>
+          </div>
+          <div className="gauge-benchmark" style={{left: `${(5/8)*100}%`}}>
+            <span className="benchmark-line" />
+            <span className="benchmark-label">+5%</span>
+          </div>
+        </div>
+        <input 
+          type="range" 
+          min="0" 
+          max="8" 
+          step="0.5"
+          value={wrvuLift} 
+          onChange={(e) => setWrvuLift(Number(e.target.value))}
+        />
+      </div>
+      
+      <div className="dimension-insight">
+        <span className="insight-percent">{Math.round((wrvuLift/5)*100)}%</span>
+        <span className="insight-label">of Abridge benchmark</span>
+      </div>
+    </div>
+    
+    {/* Satisfaction */}
+    <div className="dimension-card">
+      <div className="dimension-header">
+        <span className="dimension-icon">😊</span>
+        <div>
+          <h3>Satisfaction</h3>
+          <p>Would providers recommend?</p>
+        </div>
+      </div>
+      
+      <div className="dimension-gauge">
+        <div className="gauge-bar">
+          <div className="gauge-fill you" style={{width: `${satisfaction}%`}}>
+            <span className="gauge-label">{satisfaction}%</span>
+          </div>
+          <div className="gauge-benchmark" style={{left: '85%'}}>
+            <span className="benchmark-line" />
+            <span className="benchmark-label">85%</span>
+          </div>
+        </div>
+        <input 
+          type="range" 
+          min="20" 
+          max="100" 
+          value={satisfaction} 
+          onChange={(e) => setSatisfaction(Number(e.target.value))}
+        />
+      </div>
+      
+      <div className="dimension-insight">
+        <span className="insight-percent">{Math.round((satisfaction/85)*100)}%</span>
+        <span className="insight-label">of Abridge benchmark</span>
+      </div>
+    </div>
+  </div>
+</div>
+Section 3: Your Value Realization Score
+This is the key insight — combining all four dimensions into a single score.
+jsxCopy<div className="section realization-score">
+  <div className="score-card">
+    <div className="score-header">
+      <h3>Your Value Realization Score</h3>
+      <p>How much of ambient AI's potential value are you capturing?</p>
+    </div>
+    
+    <div className="score-display">
+      <div className="score-circle">
+        <svg viewBox="0 0 100 100">
+          {/* Background circle */}
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#E5E7EB" strokeWidth="8" />
+          {/* Progress circle */}
+          <circle 
+            cx="50" cy="50" r="45" 
+            fill="none" 
+            stroke="#10B981" 
+            strokeWidth="8"
+            strokeDasharray={`${realizationScore * 2.83} 283`}
+            strokeLinecap="round"
+            transform="rotate(-90 50 50)"
+          />
+        </svg>
+        <div className="score-value">
+          <span className="score-number">{realizationScore}%</span>
+          <span className="score-label">realized</span>
+        </div>
+      </div>
+      
+      <div className="score-breakdown">
+        <div className="breakdown-item">
+          <span className="breakdown-label">Utilization</span>
+          <span className="breakdown-value">{utilizationScore}%</span>
+        </div>
+        <span className="breakdown-operator">×</span>
+        <div className="breakdown-item">
+          <span className="breakdown-label">Efficiency</span>
+          <span className="breakdown-value">{efficiencyScore}%</span>
+        </div>
+        <span className="breakdown-operator">×</span>
+        <div className="breakdown-item">
+          <span className="breakdown-label">Quality</span>
+          <span className="breakdown-value">{qualityScore}%</span>
+        </div>
+        <span className="breakdown-operator">×</span>
+        <div className="breakdown-item">
+          <span className="breakdown-label">Satisfaction</span>
+          <span className="breakdown-value">{satisfactionScore}%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="score-context">
+      <div className="context-spectrum">
+        <div className="spectrum-bar">
+          <div className="spectrum-zone low" style={{width: '30%'}}>
+            <span>Under 30%</span>
+            <span>Early stage</span>
+          </div>
+          <div className="spectrum-zone mid" style={{width: '30%'}}>
+            <span>30-60%</span>
+            <span>Developing</span>
+          </div>
+          <div className="spectrum-zone good" style={{width: '25%'}}>
+            <span>60-85%</span>
+            <span>Optimized</span>
+          </div>
+          <div className="spectrum-zone great" style={{width: '15%'}}>
+            <span>85%+</span>
+            <span>Transformed</span>
+          </div>
+          <div className="spectrum-marker" style={{left: `${realizationScore}%`}} />
+        </div>
+      </div>
+      
+      <p className="context-text">
+        At {realizationScore}% realization, you're in the <strong>{maturityLevel}</strong> stage.
+        {realizationScore < 60 && " Most organizations plateau here without focused optimization."}
+        {realizationScore >= 60 && realizationScore < 85 && " You're above average but there's significant room to grow."}
+        {realizationScore >= 85 && " You're among top performers in ambient AI value realization."}
+      </p>
+    </div>
+  </div>
+</div>
+Section 4: The Gap in Dollars
+Show the financial impact, updating live.
+jsxCopy<div className="section annual-gap">
+  <div className="gap-card">
+    <div className="gap-header">
+      <h3>Your Annual Gap</h3>
+      <span className="live-badge">
+        <span className="pulse" />
+        Live
+      </span>
+    </div>
+    
+    <div className="gap-value">
+      <span className="gap-amount">${annualGap.toLocaleString()}</span>
+      <span className="gap-period">/year in unrealized value</span>
+    </div>
+    
+    <div className="gap-breakdown">
+      <div className="gap-item">
+        <span className="gap-icon">📊</span>
+        <span className="gap-name">Utilization gap</span>
+        <span className="gap-detail">+{utilizationGapEncounters.toLocaleString()} encounters</span>
+        <span className="gap-value">${utilizationGapValue.toLocaleString()}</span>
+      </div>
+      <div className="gap-item">
+        <span className="gap-icon">⏱️</span>
+        <span className="gap-name">Efficiency gap</span>
+        <span className="gap-detail">+{efficiencyGapHours.toLocaleString()} hours</span>
+        <span className="gap-value">${efficiencyGapValue.toLocaleString()}</span>
+      </div>
+      <div className="gap-item">
+        <span className="gap-icon">💰</span>
+        <span className="gap-name">Quality gap</span>
+        <span className="gap-detail">+{wrvuGapPercent}% wRVU</span>
+        <span className="gap-value">${wrvuGapValue.toLocaleString()}</span>
+      </div>
+    </div>
+    
+    <button className="cta-button" onClick={goToAnalysis}>
+      See full analysis →
+    </button>
+  </div>
+</div>
+
+PAGE 2: FULL ANALYSIS
+Header
+jsxCopy<div className="analysis-header">
+  <button className="back-link" onClick={goBack}>← Back to assessment</button>
+  <h1>Your Gap Analysis</h1>
+  <p className="header-context">
+    {providers} providers · {encounters.toLocaleString()} encounters · {solutionLabel}
+  </p>
+</div>
+Section 1: Headline Cards
+Three cards showing the key numbers.
+jsxCopy<div className="headline-cards">
+  <div className="headline-card">
+    <span className="card-label">ANNUAL GAP</span>
+    <span className="card-value">${annualGap.toLocaleString()}</span>
+    <span className="card-sublabel">unrealized value</span>
+  </div>
+  
+  <div className="headline-card highlighted">
+    <span className="card-label">REALIZATION SCORE</span>
+    <span className="card-value">{realizationScore}%</span>
+    <span className="card-sublabel">of potential</span>
+    <div className="mini-progress">
+      <div className="progress-fill" style={{width: `${realizationScore}%`}} />
+    </div>
+  </div>
+  
+  <div className="headline-card">
+    <span className="card-label">3-YEAR GAP</span>
+    <span className="card-value">${threeYearGap.toLocaleString()}</span>
+    <span className="card-sublabel">cumulative</span>
+  </div>
+</div>
+Section 2: The Graph (Keep this — it's great)
+jsxCopy<div className="section cost-over-time">
+  <h2>The Cost of the Gap Over Time</h2>
+  <p className="section-subtitle">
+    Cumulative value if you stay at current performance vs. reach Abridge benchmarks
+  </p>
+  
+  <div className="graph-container">
+    {/* The existing graph — green line for "close the gap", gray dashed for "stay current" */}
+    <GapComparisonGraph data={graphData} />
+  </div>
+  
+  <div className="graph-summary">
+    <span className="summary-icon">↕</span>
+    <span className="summary-value">${threeYearGap.toLocaleString()}</span>
+    <span className="summary-label">3-year gap</span>
+  </div>
+</div>
+Section 3: How the Gap Breaks Down
+Show each dimension with the visual bar and math.
+jsxCopy<div className="section gap-breakdown">
+  <h2>How the Gap Breaks Down</h2>
+  
+  <div className="breakdown-cards">
+    {/* Utilization */}
+    <div className="breakdown-card">
+      <div className="breakdown-header">
+        <div className="breakdown-title">
+          <span className="breakdown-icon">📊</span>
+          <span>Utilization Gap</span>
+        </div>
+        <span className="breakdown-value">${utilizationGapValue.toLocaleString()}</span>
+      </div>
+      <div className="breakdown-bar">
+        <div className="bar-fill you" style={{width: `${(utilization/75)*100}%`}}>
+          You: {utilization}%
+        </div>
+        <div className="bar-gap">Gap</div>
+        <div className="bar-benchmark">Abridge: 75%</div>
+      </div>
+      <div className="breakdown-math">
+        {utilization}% → 75% = +{75-utilization}pp = +{utilizationGapEncounters.toLocaleString()} enc × $4/enc
+      </div>
+    </div>
+    
+    {/* Efficiency */}
+    <div className="breakdown-card">
+      <div className="breakdown-header">
+        <div className="breakdown-title">
+          <span className="breakdown-icon">⏱️</span>
+          <span>Efficiency Gap</span>
+        </div>
+        <span className="breakdown-value">${efficiencyGapValue.toLocaleString()}</span>
+      </div>
+      <div className="breakdown-bar">
+        <div className="bar-fill you" style={{width: `${(timeSaved/4)*100}%`}}>
+          You: {timeSaved} min
+        </div>
+        <div className="bar-gap">Gap</div>
+        <div className="bar-benchmark">Abridge: 4 min</div>
+      </div>
+      <div className="breakdown-math">
+        {timeSaved} min → 4 min = +{4-timeSaved} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × $150/hr × 20%
+      </div>
+    </div>
+    
+    {/* Quality */}
+    <div className="breakdown-card">
+      <div className="breakdown-header">
+        <div className="breakdown-title">
+          <span className="breakdown-icon">💰</span>
+          <span>Quality Gap</span>
+        </div>
+        <span className="breakdown-value">${wrvuGapValue.toLocaleString()}</span>
+      </div>
+      <div className="breakdown-bar">
+        <div className="bar-fill you" style={{width: `${(wrvuLift/5)*100}%`}}>
+          You: +{wrvuLift}%
+        </div>
+        <div className="bar-gap">Gap</div>
+        <div className="bar-benchmark">Abridge: +5%</div>
+      </div>
+      <div className="breakdown-math">
+        +{wrvuLift}% → +5% = +{5-wrvuLift}% gap × $33/wRVU × {encountersAtBenchmark.toLocaleString()} enc × 50%
+      </div>
+    </div>
+  </div>
+</div>
+Section 4: Why This Matters (The Multiplier)
+Keep this short and mathematical.
+jsxCopy<div className="section multiplier">
+  <div className="multiplier-card">
+    <h3>💡 Why Small Gaps Compound</h3>
+    <p>Ambient AI value is <strong>multiplicative</strong>. Small differences compound:</p>
+    
+    <div className="multiplier-equation">
+      <code>Utilization × Efficiency × Quality × Satisfaction = Total Value</code>
+    </div>
+    
+    <div className="your-equation">
+      <span>{utilizationScore}%</span>
+      <span>×</span>
+      <span>{efficiencyScore}%</span>
+      <span>×</span>
+      <span>{qualityScore}%</span>
+      <span>×</span>
+      <span>{satisfactionScore}%</span>
+      <span>=</span>
+      <span className="result">{realizationScore}% realized</span>
+    </div>
+  </div>
+</div>
+Section 5: The Cost of Waiting
+jsxCopy<div className="section cost-waiting">
+  <h2>The Cost of Waiting</h2>
+  
+  <div className="waiting-cards">
+    <div className="waiting-card recommended">
+      <span className="card-badge">RECOMMENDED</span>
+      <span className="card-title">Close the gap now</span>
+      <span className="card-value">${threeYearGap.toLocaleString()}</span>
+      <span className="card-sublabel">3-year value captured</span>
+    </div>
+    
+    <div className="waiting-card">
+      <span className="card-title">Wait 6 months</span>
+      <span className="card-value">${wait6Value.toLocaleString()}</span>
+      <span className="card-sublabel">3-year value</span>
+      <span className="card-loss">Lost: ${wait6Loss.toLocaleString()}</span>
+    </div>
+    
+    <div className="waiting-card">
+      <span className="card-title">Wait 12 months</span>
+      <span className="card-value">${wait12Value.toLocaleString()}</span>
+      <span className="card-sublabel">3-year value</span>
+      <span className="card-loss">Lost: ${wait12Loss.toLocaleString()}</span>
+    </div>
+  </div>
+  
+  <div className="monthly-callout">
+    <span className="callout-icon">⏰</span>
+    <span>Every month at current state = <strong>${monthlyGap.toLocaleString()}</strong> in unrealized value</span>
+  </div>
+</div>
+Section 6: Methodology
+jsxCopy<div className="section methodology">
+  <h3>📊 Methodology</h3>
+  <ul>
+    <li><strong>Utilization benchmark: 75%</strong> — Abridge average across deployments</li>
+    <li><strong>Efficiency benchmark: 4 min/encounter</strong> — Abridge average time saved</li>
+    <li><strong>Quality benchmark: +5% wRVU lift</strong> — Abridge average revenue improvement</li>
+    <li><strong>Satisfaction benchmark: 85%</strong> — Abridge average provider recommendation rate</li>
+    <li>Utilization gap valued at <strong>$4/encounter</strong></li>
+    <li>Efficiency gap valued at <strong>$150/hr × 20%</strong> conversion (conservative)</li>
+    <li>Quality gap valued at <strong>$33/wRVU × 50%</strong> attribution</li>
+  </ul>
+  <p className="methodology-note">
+    Conservative estimates based on aggregate data from 200+ health system partners.
+  </p>
+</div>
+Section 7: Actions
+jsxCopy<div className="section actions">
+  <div className="action-buttons">
+    <button className="action-btn primary">
+      <span className="icon">📄</span>
+      Export as PDF
+    </button>
+    <button className="action-btn secondary">
+      <span className="icon">📧</span>
+      Share with Team
+    </button>
+  </div>
+</div>
+
+CALCULATIONS
+javascriptCopyconst BENCHMARKS = {
+  utilization: 75,
+  efficiency: 4,
+  wrvuLift: 5,
+  satisfaction: 85,
+};
+
+function calculateRealizationScore(utilization, timeSaved, wrvuLift, satisfaction) {
+  const utilizationScore = Math.min(100, Math.round((utilization / BENCHMARKS.utilization) * 100));
+  const efficiencyScore = Math.min(100, Math.round((timeSaved / BENCHMARKS.efficiency) * 100));
+  const qualityScore = Math.min(100, Math.round((wrvuLift / BENCHMARKS.wrvuLift) * 100));
+  const satisfactionScore = Math.min(100, Math.round((satisfaction / BENCHMARKS.satisfaction) * 100));
+  
+  // Multiplicative
+  const realizationScore = Math.round(
+    (utilizationScore / 100) * 
+    (efficiencyScore / 100) * 
+    (qualityScore / 100) * 
+    (satisfactionScore / 100) * 100
+  );
+  
+  // Maturity level
+  let maturityLevel;
+  if (realizationScore < 30) maturityLevel = 'Early Stage';
+  else if (realizationScore < 60) maturityLevel = 'Developing';
+  else if (realizationScore < 85) maturityLevel = 'Optimized';
+  else maturityLevel = 'Transformed';
+  
+  return {
+    utilizationScore,
+    efficiencyScore,
+    qualityScore,
+    satisfactionScore,
+    realizationScore,
+    maturityLevel,
+  };
+}
+
+function calculateGaps(providers, encounters, utilization, timeSaved, wrvuLift) {
+  // Utilization gap
+  const utilizationGapPP = Math.max(0, BENCHMARKS.utilization - utilization);
+  const utilizationGapEncounters = Math.round(encounters * (utilizationGapPP / 100));
+  const utilizationGapValue = utilizationGapEncounters * 4;
+  
+  // Efficiency gap
+  const efficiencyGapMin = Math.max(0, BENCHMARKS.efficiency - timeSaved);
+  const encountersAtBenchmark = encounters * (BENCHMARKS.utilization / 100);
+  const efficiencyGapHours = Math.round((encountersAtBenchmark * efficiencyGapMin) / 60);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * 150 * 0.20);
+  
+  // Quality gap
+  const wrvuGapPercent = Math.max(0, BENCHMARKS.wrvuLift - wrvuLift);
+  const avgWRVU = 1.5;
+  const wrvuGapPerEnc = avgWRVU * (wrvuGapPercent / 100);
+  const wrvuGapValue = Math.round(wrvuGapPerEnc * encountersAtBenchmark * 33 * 0.5);
+  
+  // Totals
+  const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
+  const monthlyGap = Math.round(annualGap / 12);
+  const threeYearGap = Math.round(annualGap * 2.75);
+  
+  return {
+    utilizationGapEncounters,
+    utilizationGapValue,
+    efficiencyGapMin,
+    efficiencyGapHours,
+    efficiencyGapValue,
+    wrvuGapPercent,
+    wrvuGapValue,
+    annualGap,
+    monthlyGap,
+    threeYearGap,
+    encountersAtBenchmark,
+  };
+}
+
+STYLING
+Use the existing app colors and styles:
+
+Abridge coral (#E85A4F) for benchmarks and CTAs
+Green (#10B981) for positive states and the "close the gap" line
+Gray (#6B7280, #9CA3AF) for "you" markers and neutral elements
+Dark section (#1E293B) for the multiplier card
+White cards with subtle shadows
+Same typography and spacing as the rest of the app
+
+The realization score circle should use:
+
+Green (#10B981) for the progress arc
+Light gray (#E5E7EB) for the background arc
+
+The maturity spectrum should use:
+
+Red tint for "Early Stage" (under 30%)
+Yellow tint for "Developing" (30-60%)
+Light green for "Optimized" (60-85%)
+Dark green for "Transformed" (85%+)
+
+
+KEY UX PRINCIPLES
+
+2×2 grid for dimensions — Clean, scannable, professional
+Realization Score as the hero — Single number that tells the story
+Maturity spectrum — Positions them on a journey, not just a gap
+Live updating — Changes as they move sliders
+Graph is the emotional punch — Shows the cost over time visually
+Conservative math — Under-promise, show methodology
+No salesy language — Neutral, consultant-like tone
+Clear visual hierarchy — They should be able to skim and get the story
+
+Copy
+---
+
+This prompt gives you:
+1. ✅ All four dimensions (Utilization, Efficiency, Quality, Satisfaction)
+2. ✅ The Value Realization Score (combines all four)
+3. ✅ The Maturity Spectrum (Early → Developing → Optimized → Transformed)
+4. ✅ Clean 2×2 grid layout for dimensions
+5. ✅ The graph you love
+6. ✅ Transparent math
+7. ✅ Colors matching the rest of the app
+8. ✅ No salesy language

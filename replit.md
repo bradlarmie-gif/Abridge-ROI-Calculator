@@ -21,24 +21,25 @@ The application guides users through multi-step processes:
     4. Value Drivers (ModelBuilder.tsx) - ROI driver cards with Live Model sidebar
     5. Investment (InvestmentPage.tsx) - pricing configuration
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
--   **Switch Path (Unified)**: A 2-page "You vs. Your Potential" displacement calculator for prospects switching from other ambient AI solutions or scribes:
-    1. **Assessment Page** (SwitchAssessment.tsx) - Data collection with live visualization:
+-   **Switch Path (Value Realization Assessment)**: A 2-page diagnostic for prospects switching from other ambient AI solutions or scribes:
+    1. **Assessment Page** (SwitchAssessment.tsx) - Four-dimensional value assessment:
        - Solution type selector (Ambient AI, Scribes)
        - Provider count and annual encounters inputs
-       - Three gauges with Abridge benchmarks: Utilization (75%), Efficiency (4 min), Revenue/wRVU (+5%)
-       - "Why Small Gaps Compound" section: utilization × efficiency × revenue = combined capture %
-       - Live-updating "Your Annual Gap" card with three gap components
+       - 2x2 grid of dimension cards with sliders: Utilization (75%), Efficiency (4 min), Quality/wRVU (+5%), Satisfaction (85%)
+       - Circular gauge showing Value Realization Score (multiplicative of all four dimensions)
+       - Maturity spectrum bar (Early Stage < 30%, Developing 30-60%, Optimized 60-85%, Transformed 85%+)
+       - Live-updating "Your Annual Gap" card with gap components
     2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
-       - 3 headline cards (Annual Gap, Capture Rate %, 3-Year Gap)
+       - 3 headline cards (Annual Gap, Realization Score %, 3-Year Gap)
        - "Cost of Gap Over Time" line chart (current vs Abridge trajectory)
-       - "How the Gap Breaks Down" with 3 visual bar charts (utilization/efficiency/wRVU)
-       - "Why Small Gaps Compound" short multiplier explanation
+       - "How the Gap Breaks Down" with visual bar charts and transparent math
+       - "Why Small Gaps Compound" with four-term formula: Utilization × Efficiency × Quality × Satisfaction
        - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
-       - "Methodology" with Abridge benchmarks
-       - CTAs: Schedule Demo, Export PDF, Share with Team
-    - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, wRVU lift +5%
+       - "Methodology" with all four Abridge benchmarks
+       - CTAs: Export PDF, Share with Team
+    - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, Quality +5% wRVU, Satisfaction 85%
     - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency), $33/wRVU × 50% attribution
-    - **Calculation Engine**: switchGapCalculator.ts with three-dimensional gap breakdown and 3-year projections
+    - **Calculation Engine**: switchGapCalculator.ts with four-dimensional realization score and maturity levels
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers with tiered ROI calculations:
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection
