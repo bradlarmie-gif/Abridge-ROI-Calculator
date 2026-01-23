@@ -1,0 +1,336 @@
+Redesign the Ambient AI Value Realization Assessment PDF as a 3-page educational report. The goal is to help someone UNDERSTAND what value realization means, WHERE they stand, and WHY it matters — not just show them numbers.
+
+## THE PHILOSOPHY
+
+**Current (Informative):** "Here are your numbers"
+**New (Educational):** "Here's how to think about your numbers"
+
+The reader should finish this report feeling:
+1. "I understand what value realization means"
+2. "I see where I stand and why it matters"
+3. "I understand exactly how each gap was calculated"
+4. "I can defend these numbers to my CFO"
+
+## PAGE 1: THE STORY
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ABRIDGE                                    Value Realization Assessment   │
+│                                             January 23, 2025               │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  UNDERSTANDING VALUE REALIZATION                                   │   │
+│  │                                                                     │   │
+│  │  Ambient AI creates value through four dimensions: how many        │   │
+│  │  encounters use it (utilization), how much time it saves           │   │
+│  │  (efficiency), how it improves documentation quality (wRVU lift),  │   │
+│  │  and whether providers will keep using it (satisfaction).          │   │
+│  │                                                                     │   │
+│  │  Most organizations capture only 30-60% of the potential value.    │   │
+│  │  The gap isn't because ambient AI doesn't work — it's because      │   │
+│  │  value realization requires optimization across all four           │   │
+│  │  dimensions. Small gaps in each area compound into significant     │   │
+│  │  unrealized value.                                                 │   │
+│  │                                                                     │   │
+│  │  This assessment measures where you stand on the value             │   │
+│  │  realization spectrum and quantifies what closing the gap          │   │
+│  │  could mean for your organization.                                 │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  YOUR RESULTS AT A GLANCE                                                  │
+│                                                                             │
+│  ┌────────────────┬────────────────┬────────────────┬────────────────┐     │
+│  │    $264K       │      57%       │    $791K       │   Developing   │     │
+│  │   Annual Gap   │    Realized    │  3-Year Gap    │     Stage      │     │
+│  │                │                │                │                │     │
+│  │  Value that    │  Of potential  │  Cumulative    │  Where you     │     │
+│  │  exists but    │  value being   │  gap over      │  are on the    │     │
+│  │  isn't being   │  captured      │  three years   │  maturity      │     │
+│  │  captured      │  today         │                │  spectrum      │     │
+│  └────────────────┴────────────────┴────────────────┴────────────────┘     │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  THE VALUE REALIZATION SPECTRUM                                            │
+│                                                                             │
+│  Organizations move through four stages as they optimize ambient AI:       │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  EARLY STAGE    DEVELOPING       OPTIMIZED       TRANSFORMED       │   │
+│  │   Under 40%      40-60%           60-80%           80%+            │   │
+│  │                                                                     │   │
+│  │  ░░░░░░░░░░░░░░░█████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │   │
+│  │                       ↑                                            │   │
+│  │                   YOU: 57%                                         │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  At 57% realization, you're in the "Developing" stage. This is where      │
+│  most organizations plateau without focused optimization. The gap          │
+│  between where you are and where you could be represents $264K            │
+│  annually in unrealized value.                                            │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  WHAT THIS ASSESSMENT COVERS                                               │
+│                                                                             │
+│  Page 2: Your performance across the four value dimensions and how        │
+│          the gap compounds over time                                       │
+│                                                                             │
+│  Page 3: Detailed breakdown of each gap with transparent math and         │
+│          methodology you can verify                                        │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  Generated by Abridge ROI Calculator                              Page 1/3 │
+└─────────────────────────────────────────────────────────────────────────────┘
+Copy
+## PAGE 2: THE EVIDENCE
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ABRIDGE                                    Value Realization Assessment   │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  YOUR PERFORMANCE ACROSS FOUR DIMENSIONS                                   │
+│                                                                             │
+│  Value realization depends on performance in four areas. Here's where      │
+│  you stand compared to Abridge benchmarks:                                 │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │  UTILIZATION                                          60% of       │   │
+│  │  What % of encounters use ambient documentation?       benchmark   │   │
+│  │                                                                     │   │
+│  │  You: 45%              ████████████░░░░░░░░         Benchmark: 75% │   │
+│  │                                                                     │   │
+│  │  Why it matters: Low utilization means many encounters don't       │   │
+│  │  benefit from ambient AI at all — wasted potential.                │   │
+│  │                                                                     │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                     │   │
+│  │  EFFICIENCY                                           50% of       │   │
+│  │  How much time is saved per encounter?                 benchmark   │   │
+│  │                                                                     │   │
+│  │  You: 2 min            ██████░░░░░░░░░░░░░░         Benchmark: 4min│   │
+│  │                                                                     │   │
+│  │  Why it matters: Less time saved per encounter means less value    │   │
+│  │  returned to providers — documentation burden persists.            │   │
+│  │                                                                     │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                     │   │
+│  │  QUALITY (wRVU)                                       40% of       │   │
+│  │  What improvement in documentation/coding accuracy?    benchmark   │   │
+│  │                                                                     │   │
+│  │  You: +2%              █████░░░░░░░░░░░░░░░░        Benchmark: +5% │   │
+│  │                                                                     │   │
+│  │  Why it matters: Better documentation → better coding → better     │   │
+│  │  reimbursement. This is often the largest dollar opportunity.      │   │
+│  │                                                                     │   │
+│  ├─────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                     │   │
+│  │  SATISFACTION                                         76% of       │   │
+│  │  Would providers recommend this solution?              benchmark   │   │
+│  │                                                                     │   │
+│  │  You: 65%              █████████████░░░░░░░         Benchmark: 85% │   │
+│  │                                                                     │   │
+│  │  Why it matters: Low satisfaction predicts declining utilization   │   │
+│  │  over time. Happy providers use it more → more value captured.     │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  Your average score: (60% + 50% + 40% + 76%) ÷ 4 = 57%                    │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  WHY GAPS COMPOUND                                                         │
+│                                                                             │
+│  The four dimensions don't add — they multiply. A 60% score in one        │
+│  dimension limits the value you can capture from improvements in          │
+│  others. This is why small gaps across multiple dimensions create         │
+│  large overall gaps.                                                       │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  THE COST OF THE GAP OVER TIME                                             │
+│                                                                             │
+│  If the gap persists, unrealized value accumulates:                        │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                                                                     │   │
+│  │   $800K ─┤                                              ● $791K    │   │
+│  │          │                                         ╱               │   │
+│  │   $600K ─┤                                    ╱                    │   │
+│  │          │                               ╱                         │   │
+│  │   $400K ─┤                          ● $527K                        │   │
+│  │          │                     ╱                                   │   │
+│  │   $200K ─┤                ● $264K                                  │   │
+│  │          │           ╱                                             │   │
+│  │      $0 ─┼───●──────┼───────────┼───────────┼───────────┼          │   │
+│  │          Today    Year 1     Year 2      Year 3                    │   │
+│  │                                                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Every month at current performance = $22K in unrealized value     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  Generated by Abridge ROI Calculator                              Page 2/3 │
+└─────────────────────────────────────────────────────────────────────────────┘
+Copy
+## PAGE 3: THE DETAILS
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ABRIDGE                                    Value Realization Assessment   │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  HOW EACH GAP IS CALCULATED                                                │
+│                                                                             │
+│  Every number in this assessment can be traced back to your inputs and     │
+│  transparent assumptions. Here's the math:                                 │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  UTILIZATION GAP                                           $68K    │   │
+│  │  ─────────────────────────────────────────────────────────────────  │   │
+│  │                                                                     │   │
+│  │  Your utilization: 45%          Benchmark: 75%          Gap: 30pp  │   │
+│  │                                                                     │   │
+│  │  Step 1: Encounters at your utilization                            │   │
+│  │          150,000 × 45% = 67,500 encounters documented              │   │
+│  │                                                                     │   │
+│  │  Step 2: Encounters at benchmark                                   │   │
+│  │          150,000 × 75% = 112,500 encounters documented             │   │
+│  │                                                                     │   │
+│  │  Step 3: Gap in encounters                                         │   │
+│  │          112,500 - 67,500 = 45,000 encounters not documented       │   │
+│  │                                                                     │   │
+│  │  Step 4: Time value of gap (at benchmark efficiency)               │   │
+│  │          45,000 enc × 4 min = 180,000 min = 3,000 hours           │   │
+│  │                                                                     │   │
+│  │  Step 5: Dollar value (conservative conversion)                    │   │
+│  │          3,000 hrs × $150/hr × 15% conversion = $67,500           │   │
+│  │                                                                     │   │
+│  │  Note: 15% conversion assumes only 15% of saved time converts      │   │
+│  │  to measurable value. This is deliberately conservative.           │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  EFFICIENCY GAP                                           $113K    │   │
+│  │  ─────────────────────────────────────────────────────────────────  │   │
+│  │                                                                     │   │
+│  │  Your efficiency: 2 min         Benchmark: 4 min        Gap: 2 min │   │
+│  │                                                                     │   │
+│  │  Step 1: Hours at benchmark utilization with your efficiency       │   │
+│  │          112,500 enc × 2 min = 3,750 hours saved                   │   │
+│  │                                                                     │   │
+│  │  Step 2: Hours at benchmark utilization with benchmark efficiency  │   │
+│  │          112,500 enc × 4 min = 7,500 hours saved                   │   │
+│  │                                                                     │   │
+│  │  Step 3: Gap in hours                                              │   │
+│  │          7,500 - 3,750 = 3,750 additional hours possible           │   │
+│  │                                                                     │   │
+│  │  Step 4: Dollar value (conservative conversion)                    │   │
+│  │          3,750 hrs × $150/hr × 20% conversion = $112,500          │   │
+│  │                                                                     │   │
+│  │  Note: 20% conversion is used here as efficiency gains are         │   │
+│  │  more directly convertible than utilization gains.                 │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  QUALITY GAP (wRVU)                                        $84K    │   │
+│  │  ─────────────────────────────────────────────────────────────────  │   │
+│  │                                                                     │   │
+│  │  Your wRVU lift: +2%            Benchmark: +5%          Gap: 3%    │   │
+│  │                                                                     │   │
+│  │  Step 1: Additional wRVU potential                                 │   │
+│  │          112,500 enc × 1.5 avg wRVU × 3% = 5,063 additional wRVU   │   │
+│  │                                                                     │   │
+│  │  Step 2: Dollar value (conservative attribution)                   │   │
+│  │          5,063 wRVU × $33/wRVU × 50% attribution = $83,500        │   │
+│  │                                                                     │   │
+│  │  Note: 50% attribution assumes only half of wRVU improvement is    │   │
+│  │  directly attributable to ambient AI. Other factors matter too.    │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  TOTAL ANNUAL GAP                                         $264K    │   │
+│  │  Utilization ($68K) + Efficiency ($113K) + Quality ($84K)          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  KEY TAKEAWAYS                                                             │
+│  ─────────────                                                             │
+│  • You're capturing 57% of ambient AI's potential value                   │
+│  • The largest opportunity is in Quality (40% of benchmark)               │
+│  • Closing the gap could recover $264K annually / $791K over 3 years     │
+│  • All calculations use conservative assumptions — actual value may       │
+│    be higher                                                               │
+│                                                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│                                                                             │
+│  METHODOLOGY & ASSUMPTIONS                                                 │
+│                                                                             │
+│  YOUR INPUTS                              ABRIDGE BENCHMARKS               │
+│  ─────────────                            ──────────────────               │
+│  • 75 providers                           • 75% utilization               │
+│  • 150,000 annual encounters              • 4 min saved per encounter     │
+│  • Current solution: Ambient AI           • +5% wRVU lift                 │
+│  • 45% utilization                        • 85% satisfaction              │
+│  • 2 min time savings                                                      │
+│  • +2% wRVU lift                          VALUATION ASSUMPTIONS           │
+│  • 65% satisfaction                       ─────────────────────           │
+│                                           • Provider time: $150/hr        │
+│                                           • Utilization conversion: 15%   │
+│                                           • Efficiency conversion: 20%    │
+│                                           • wRVU: $33 (Medicare CF)       │
+│                                           • wRVU attribution: 50%         │
+│                                                                             │
+│  Benchmarks based on aggregate data from 200+ health system partners.     │
+│  Individual results vary based on specialty mix and operational factors.  │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  Generated by Abridge ROI Calculator                              Page 3/3 │
+└─────────────────────────────────────────────────────────────────────────────┘
+Copy
+## IMPLEMENTATION NOTES
+
+### Page 1 should feel like an introduction
+- Explain WHAT value realization is (educational)
+- Show WHERE they stand on the spectrum
+- Set up WHAT they'll learn in the next pages
+
+### Page 2 should feel like evidence
+- Four dimensions with "why it matters" for each
+- The graph showing compounding cost
+- The monthly cost callout for urgency
+
+### Page 3 should feel like proof
+- Every calculation step-by-step
+- Notes explaining why assumptions are conservative
+- Full methodology someone can verify
+
+### Key differences from current version:
+1. **"Understanding Value Realization" intro** — Sets the frame before showing numbers
+2. **"Why it matters" for each dimension** — Not just numbers, but meaning
+3. **Step-by-step math** — Numbered steps, not bullet points
+4. **Conservative notes** — Explain why each assumption is conservative
+5. **Visual spectrum** — Shows where they are vs the stages
+6. **Table of contents** — "What this assessment covers" on page 1
+
+### Typography hierarchy:
+- Page titles: 18pt bold
+- Section titles: 11pt bold, uppercase
+- Body text: 9pt regular
+- Math/numbers: 9pt, monospace where appropriate
+- Notes/captions: 8pt, gray
+
+### Colors:
+- Coral (#E85A4F) for Abridge brand, accents, the "you" position
+- Green (#059669) for positive values/totals
+- Gray scale for hierarchy (#111827, #374151, #6B7280, #9CA3AF)
+- Light backgrounds (#F9FAFB) for cards
