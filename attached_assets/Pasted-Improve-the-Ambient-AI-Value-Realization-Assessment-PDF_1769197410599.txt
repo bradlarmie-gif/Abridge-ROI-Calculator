@@ -1,0 +1,250 @@
+Improve the Ambient AI Value Realization Assessment PDF with these specific changes:
+
+## ISSUE 1: Fix Empty Pages
+
+Page 2 and Page 4 are nearly empty — just footers. This is a pagination issue. Content is being pushed to new pages incorrectly.
+
+Fix by:
+- Ensuring "THE VALUE REALIZATION SPECTRUM" stays on Page 1 with the content above it
+- Ensuring the graph and "Every month..." callout stay together on the same page
+- Target: 4 full pages, not 6 pages with 2 empty ones
+
+## ISSUE 2: Fix the Graph
+
+The graph on Page 3 looks broken — the line isn't rendering correctly and "Today" marker is off.
+
+Replace with a cleaner table-based visualization if the SVG graph is problematic:
+
+```jsx
+<View style={styles.timelineSection}>
+  <Text style={styles.sectionTitle}>THE COST OF THE GAP OVER TIME</Text>
+  <Text style={styles.sectionSubtitle}>If the gap persists, unrealized value accumulates:</Text>
+  
+  <View style={styles.timelineRow}>
+    <View style={styles.timelineBox}>
+      <Text style={styles.timelineLabel}>TODAY</Text>
+      <Text style={styles.timelineValue}>$0</Text>
+      <Text style={styles.timelineSubtext}>Starting point</Text>
+    </View>
+    <View style={styles.timelineArrow}>→</View>
+    <View style={styles.timelineBox}>
+      <Text style={styles.timelineLabel}>YEAR 1</Text>
+      <Text style={styles.timelineValue}>{formatCurrency(annualGap)}</Text>
+    </View>
+    <View style={styles.timelineArrow}>→</View>
+    <View style={styles.timelineBox}>
+      <Text style={styles.timelineLabel}>YEAR 2</Text>
+      <Text style={styles.timelineValue}>{formatCurrency(annualGap * 2)}</Text>
+    </View>
+    <View style={styles.timelineArrow}>→</View>
+    <View style={styles.timelineBoxHighlight}>
+      <Text style={styles.timelineLabel}>YEAR 3</Text>
+      <Text style={styles.timelineValueLarge}>{formatCurrency(threeYearGap)}</Text>
+      <Text style={styles.timelineSubtext}>Cumulative</Text>
+    </View>
+  </View>
+  
+  <View style={styles.monthlyCallout}>
+    <Text style={styles.monthlyText}>
+      Every month at current performance = {formatCurrency(monthlyGap)} in unrealized value
+    </Text>
+  </View>
+</View>
+ISSUE 3: Expand the Four Dimensions Section
+The current "YOUR PERFORMANCE ACROSS FOUR DIMENSIONS" section is too sparse. Each dimension needs:
+
+A clear definition (what is this dimension?)
+Why it matters (in plain language)
+What drives it (what affects this dimension?)
+Their specific situation (personalized insight)
+
+Replace the current dimension cards with expanded educational cards:
+jsxCopy<View style={styles.dimensionCard}>
+  <View style={styles.dimensionHeader}>
+    <Text style={styles.dimensionName}>UTILIZATION</Text>
+    <Text style={styles.dimensionScore}>{utilizationScore}% of benchmark</Text>
+  </View>
+  
+  <Text style={styles.dimensionDefinition}>
+    What it measures: The percentage of patient encounters where ambient AI is actually used to generate documentation.
+  </Text>
+  
+  <View style={styles.dimensionMetrics}>
+    <Text style={styles.dimensionYou}>You: {utilization}%</Text>
+    <Text style={styles.dimensionBenchmark}>Benchmark: 75%</Text>
+  </View>
+  
+  {/* Progress bar */}
+  <View style={styles.dimensionBar}>
+    <View style={[styles.dimensionBarFill, { width: `${utilizationScore}%` }]} />
+  </View>
+  
+  <View style={styles.dimensionEducation}>
+    <Text style={styles.dimensionWhyMatters}>
+      <Text style={styles.bold}>Why it matters: </Text>
+      Every encounter not using ambient AI is an encounter where providers still carry the full documentation burden. Low utilization means you're paying for a solution that isn't being used consistently.
+    </Text>
+    
+    <Text style={styles.dimensionWhatDrives}>
+      <Text style={styles.bold}>What drives it: </Text>
+      Workflow integration, provider habits, technical friction (login issues, connectivity), specialty fit, and whether using the tool feels natural in the clinical environment.
+    </Text>
+    
+    {utilizationScore < 70 && (
+      <Text style={styles.dimensionInsight}>
+        <Text style={styles.bold}>Your situation: </Text>
+        At {utilizationScore}% of benchmark, there's significant room to increase adoption. Common causes include inconsistent habits, workflow friction, or providers who tried it early and didn't return.
+      </Text>
+    )}
+  </View>
+</View>
+Full content for each dimension:
+UTILIZATION
+
+Definition: "The percentage of patient encounters where ambient AI is actually used to generate documentation."
+Why it matters: "Every encounter not using ambient AI is an encounter where providers still carry the full documentation burden. Low utilization means you're paying for a solution that isn't being used consistently."
+What drives it: "Workflow integration, provider habits, technical friction (login issues, connectivity), specialty fit, and whether using the tool feels natural in the clinical environment."
+Insight (<70%): "At X% of benchmark, there's significant room to increase adoption. Common causes include inconsistent habits, workflow friction, or providers who tried it early and didn't return."
+
+EFFICIENCY
+
+Definition: "The average time saved per encounter when ambient AI is used — typically measured as reduction in documentation time."
+Why it matters: "This is the core promise of ambient AI: giving time back to providers. Less time saved per encounter means the documentation burden persists, even when the tool is being used."
+What drives it: "Note quality out of the box, how much providers edit generated notes, specialty-specific templates, EHR integration smoothness, and whether the AI captures the encounter accurately the first time."
+Insight (<60%): "At X% of benchmark, providers may be spending significant time editing notes after generation. This often indicates template issues, trust issues with the AI output, or workflow problems."
+
+QUALITY (wRVU LIFT)
+
+Definition: "The improvement in documentation completeness and coding accuracy, measured through wRVU capture — a proxy for whether documentation supports appropriate reimbursement."
+Why it matters: "Better documentation leads to better coding, which leads to better reimbursement. This is often the largest dollar opportunity in ambient AI — small improvements in coding accuracy compound across thousands of encounters."
+What drives it: "How completely the AI captures clinical details, whether it prompts for missing elements, coder feedback loops, and whether documentation supports the complexity of care actually delivered."
+Insight (<50%): "At X% of benchmark, documentation quality improvement is lagging. This could be the largest dollar opportunity — review whether notes are capturing clinical complexity that supports accurate coding."
+
+SATISFACTION
+
+Definition: "Provider satisfaction with the ambient AI solution — typically measured through surveys asking whether they would recommend it to colleagues."
+Why it matters: "Satisfaction is a leading indicator. Dissatisfied providers use solutions less over time, creating a downward spiral. Happy providers become champions who drive adoption among peers."
+What drives it: "Accuracy of generated notes, time actually saved, reliability, ease of use, and whether it makes their day genuinely better vs. adding another thing to manage."
+Insight (<75%): "At X% of benchmark, satisfaction is a concern. Understanding WHY providers are dissatisfied is critical — is it accuracy? Reliability? Workflow friction? Low satisfaction often predicts declining utilization."
+
+STYLING FOR EXPANDED DIMENSIONS
+javascriptCopydimensionCard: {
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  borderRadius: 6,
+  padding: 14,
+  marginBottom: 12,
+},
+dimensionHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 8,
+},
+dimensionName: {
+  fontSize: 11,
+  fontWeight: 'bold',
+  color: '#111827',
+},
+dimensionScore: {
+  fontSize: 11,
+  fontWeight: 'bold',
+  color: '#E85A4F',
+},
+dimensionDefinition: {
+  fontSize: 9,
+  color: '#6B7280',
+  fontStyle: 'italic',
+  marginBottom: 10,
+  lineHeight: 1.4,
+},
+dimensionMetrics: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginBottom: 6,
+},
+dimensionYou: {
+  fontSize: 9,
+  color: '#111827',
+  fontWeight: 'bold',
+},
+dimensionBenchmark: {
+  fontSize: 9,
+  color: '#6B7280',
+},
+dimensionBar: {
+  height: 8,
+  backgroundColor: '#E5E7EB',
+  borderRadius: 4,
+  marginBottom: 10,
+},
+dimensionBarFill: {
+  height: 8,
+  backgroundColor: '#E85A4F',
+  borderRadius: 4,
+},
+dimensionEducation: {
+  backgroundColor: '#F9FAFB',
+  padding: 10,
+  borderRadius: 4,
+},
+dimensionWhyMatters: {
+  fontSize: 8,
+  color: '#374151',
+  lineHeight: 1.5,
+  marginBottom: 6,
+},
+dimensionWhatDrives: {
+  fontSize: 8,
+  color: '#374151',
+  lineHeight: 1.5,
+  marginBottom: 6,
+},
+dimensionInsight: {
+  fontSize: 8,
+  color: '#991B1B',
+  lineHeight: 1.5,
+  backgroundColor: '#FEF2F2',
+  padding: 6,
+  borderRadius: 4,
+  marginTop: 4,
+},
+bold: {
+  fontWeight: 'bold',
+},
+PAGE STRUCTURE TARGET
+Page 1:
+
+Header
+Understanding Value Realization
+Your Results at a Glance
+Our Findings (stage-specific)
+Value Realization Spectrum
+
+Page 2:
+
+Your Performance Across Four Dimensions (all 4 expanded cards)
+Why Gaps Compound
+The Cost of the Gap Over Time (fixed timeline)
+Monthly callout
+
+Page 3:
+
+How Each Gap is Calculated (all 3 gaps with math)
+Total Annual Gap
+Key Takeaways
+
+Page 4:
+
+Methodology & Assumptions (expanded)
+
+4 pages total, all filled with meaningful content. No empty pages.
+SUMMARY
+
+Fix pagination to eliminate empty pages
+Replace broken graph with clean timeline boxes
+Expand each dimension card with definition, why it matters, what drives it, and personalized insight
+Keep the "Our Findings" section as-is (it's working well)
+Ensure 4 dense, educational pages
+
