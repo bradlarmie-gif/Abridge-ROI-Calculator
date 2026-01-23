@@ -1,0 +1,657 @@
+Build a premium PDF export for the Scribe Program Analysis. The design should feel like McKinsey meets Stripe meets Apple — data-rich, clean typography, confident, with minimal but purposeful white space.
+
+## TECHNICAL APPROACH
+
+Use a library that can generate styled PDFs. Options:
+1. **react-pdf** (@react-pdf/renderer) — Best for complex layouts
+2. **html2canvas + jsPDF** — Simpler, captures the page as-is
+3. **Custom print stylesheet** — Uses browser print, style with @media print
+
+I recommend **@react-pdf/renderer** for maximum control over the design.
+
+Install if needed:
+```bash
+npm install @react-pdf/renderer
+PDF DOCUMENT STRUCTURE
+Create a new file: ScribePDFExport.jsx
+jsxCopyimport React from 'react';
+import { 
+  Document, 
+  Page, 
+  Text, 
+  View, 
+  StyleSheet,
+  Font,
+  Image,
+  pdf
+} from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
+
+// Register fonts (use Inter for consistency with app)
+Font.register({
+  family: 'Inter',
+  fonts: [
+    { src: '/fonts/Inter-Regular.woff', fontWeight: 400 },
+    { src: '/fonts/Inter-Medium.woff', fontWeight: 500 },
+    { src: '/fonts/Inter-SemiBold.woff', fontWeight: 600 },
+    { src: '/fonts/Inter-Bold.woff', fontWeight: 700 },
+  ]
+});
+
+// Color palette
+const colors = {
+  black: '#111827',
+  darkGray: '#374151',
+  mediumGray: '#6B7280',
+  lightGray: '#9CA3AF',
+  borderGray: '#E5E7EB',
+  backgroundGray: '#F9FAFB',
+  coral: '#E85A4F',
+  coralLight: '#FEF2F2',
+  green: '#10B981',
+  greenLight: '#ECFDF5',
+  yellow: '#F59E0B',
+  yellowLight: '#FEF3C7',
+};
+
+// Styles
+const styles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontFamily: 'Inter',
+    fontSize: 10,
+    color: colors.black,
+    backgroundColor: '#FFFFFF',
+  },
+  
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  logo: {
+    width: 80,
+    height: 24,
+  },
+  headerRight: {
+    textAlign: 'right',
+  },
+  headerTitle: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: colors.black,
+  },
+  headerDate: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  
+  // Section
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: colors.black,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  
+  // Metric cards row
+  metricsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  metricCard: {
+    flex: 1,
+    backgroundColor: colors.backgroundGray,
+    padding: 16,
+    borderRadius: 6,
+  },
+  metricCardHighlight: {
+    flex: 1,
+    backgroundColor: colors.coralLight,
+    padding: 16,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  metricValue: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: colors.black,
+  },
+  metricLabel: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  metricSublabel: {
+    fontSize: 8,
+    color: colors.lightGray,
+    marginTop: 2,
+  },
+  
+  // Insight box
+  insightBox: {
+    backgroundColor: colors.backgroundGray,
+    padding: 16,
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.coral,
+  },
+  insightTitle: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: colors.mediumGray,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  insightText: {
+    fontSize: 11,
+    color: colors.black,
+    lineHeight: 1.5,
+  },
+  insightHighlight: {
+    fontWeight: 600,
+  },
+  
+  // Coverage bar
+  coverageBar: {
+    flexDirection: 'row',
+    height: 32,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  coverageSegmentCovered: {
+    backgroundColor: colors.coral,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  coverageSegmentGap: {
+    backgroundColor: colors.yellowLight,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    flex: 1,
+  },
+  coverageSegmentText: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: '#FFFFFF',
+  },
+  coverageSegmentTextDark: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: colors.yellow,
+  },
+  
+  // Stats row
+  statsRow: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  stat: {
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: colors.black,
+  },
+  statValueAlert: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: colors.coral,
+  },
+  statLabel: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  
+  // Comparison table
+  comparisonTable: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  comparisonColumn: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 6,
+  },
+  comparisonColumnHighlight: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: colors.yellowLight,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  comparisonHeader: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: colors.mediumGray,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  comparisonTitle: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: colors.black,
+    marginBottom: 12,
+  },
+  comparisonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  comparisonLabel: {
+    fontSize: 9,
+    color: colors.mediumGray,
+  },
+  comparisonValue: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: colors.black,
+  },
+  comparisonTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    marginTop: 8,
+    borderTopWidth: 2,
+    borderTopColor: colors.black,
+  },
+  comparisonTotalLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: colors.black,
+  },
+  comparisonTotalValue: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: colors.black,
+  },
+  comparisonIncrease: {
+    fontSize: 9,
+    color: colors.coral,
+    marginTop: 4,
+    fontWeight: 600,
+  },
+  
+  // Burden cards
+  burdenRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  burdenCard: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  burdenValue: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: colors.black,
+    marginBottom: 4,
+  },
+  burdenLabel: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    textAlign: 'center',
+  },
+  burdenMath: {
+    fontSize: 7,
+    color: colors.lightGray,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  
+  // Footer
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 40,
+    right: 40,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+    paddingTop: 12,
+  },
+  footerText: {
+    fontSize: 8,
+    color: colors.lightGray,
+  },
+  
+  // Methodology
+  methodology: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 6,
+  },
+  methodologyTitle: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: colors.mediumGray,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  methodologyColumns: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  methodologyColumn: {
+    flex: 1,
+  },
+  methodologySubtitle: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: colors.black,
+    marginBottom: 4,
+  },
+  methodologyItem: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginBottom: 2,
+  },
+});
+
+// PDF Document Component
+const ScribePDFDocument = ({ data }) => {
+  const {
+    scribeCount,
+    scribeSalary,
+    scribeHoursPerWeek,
+    scribeCostPerHour,
+    providersWithScribes,
+    totalProviders,
+    encounters,
+    totalScribeCost,
+    coveragePercent,
+    unsupportedProviders,
+    costPerCoveredProvider,
+    scribesNeededForFull,
+    fullScribeCost,
+    additionalCostToScale,
+    scribeRatio,
+    documentationHours,
+    pajamaTimeHours,
+    hoursPerUnsupportedProvider,
+    encountersPerProvider,
+  } = data;
+  
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const formatCurrency = (num) => {
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+    return `$${num.toLocaleString()}`;
+  };
+  
+  const formatNumber = (num) => num.toLocaleString();
+  
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={{ fontSize: 18, fontWeight: 700, color: colors.coral }}>
+            ABRIDGE
+          </Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.headerTitle}>Scribe Program Analysis</Text>
+            <Text style={styles.headerDate}>{today}</Text>
+          </View>
+        </View>
+        
+        {/* Section 1: Executive Summary */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Your Scribe Program at a Glance</Text>
+          
+          <View style={styles.metricsRow}>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>{formatCurrency(totalScribeCost)}</Text>
+              <Text style={styles.metricLabel}>Annual Investment</Text>
+              <Text style={styles.metricSublabel}>{scribeCount} scribes</Text>
+            </View>
+            <View style={styles.metricCardHighlight}>
+              <Text style={styles.metricValue}>{coveragePercent}%</Text>
+              <Text style={styles.metricLabel}>Coverage</Text>
+              <Text style={styles.metricSublabel}>{providersWithScribes} of {totalProviders} providers</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>{formatCurrency(costPerCoveredProvider)}</Text>
+              <Text style={styles.metricLabel}>Cost Per Provider</Text>
+              <Text style={styles.metricSublabel}>annual</Text>
+            </View>
+          </View>
+          
+          <View style={styles.insightBox}>
+            <Text style={styles.insightTitle}>The Insight</Text>
+            <Text style={styles.insightText}>
+              Your scribe program covers {coveragePercent}% of providers at {formatCurrency(costPerCoveredProvider)} each. 
+              To reach 100% coverage would require an additional {formatCurrency(additionalCostToScale)} annually — 
+              a {Math.round(fullScribeCost / totalScribeCost)}x increase in investment.
+            </Text>
+          </View>
+        </View>
+        
+        {/* Section 2: Coverage Gap */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>The Coverage Gap</Text>
+          
+          <View style={styles.coverageBar}>
+            <View style={[styles.coverageSegmentCovered, { width: `${coveragePercent}%` }]}>
+              <Text style={styles.coverageSegmentText}>{providersWithScribes}</Text>
+            </View>
+            <View style={styles.coverageSegmentGap}>
+              <Text style={styles.coverageSegmentTextDark}>{unsupportedProviders} without support</Text>
+            </View>
+          </View>
+          
+          <View style={styles.statsRow}>
+            <View style={styles.stat}>
+              <Text style={styles.statValue}>{coveragePercent}%</Text>
+              <Text style={styles.statLabel}>have scribe support</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statValueAlert}>{100 - coveragePercent}%</Text>
+              <Text style={styles.statLabel}>documenting alone</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* Section 3: Scaling Economics */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>What Full Coverage Would Cost</Text>
+          
+          <View style={styles.comparisonTable}>
+            <View style={styles.comparisonColumn}>
+              <Text style={styles.comparisonHeader}>Current State</Text>
+              <Text style={styles.comparisonTitle}>Your Scribe Program</Text>
+              
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Scribes</Text>
+                <Text style={styles.comparisonValue}>{scribeCount}</Text>
+              </View>
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Providers covered</Text>
+                <Text style={styles.comparisonValue}>{providersWithScribes}</Text>
+              </View>
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Coverage</Text>
+                <Text style={styles.comparisonValue}>{coveragePercent}%</Text>
+              </View>
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Scribe:Provider ratio</Text>
+                <Text style={styles.comparisonValue}>1:{scribeRatio}</Text>
+              </View>
+              
+              <View style={styles.comparisonTotal}>
+                <Text style={styles.comparisonTotalLabel}>Annual cost</Text>
+                <Text style={styles.comparisonTotalValue}>{formatCurrency(totalScribeCost)}</Text>
+              </View>
+            </View>
+            
+            <View style={styles.comparisonColumnHighlight}>
+              <Text style={styles.comparisonHeader}>Full Coverage</Text>
+              <Text style={styles.comparisonTitle}>If Everyone Had a Scribe</Text>
+              
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Scribes needed</Text>
+                <Text style={styles.comparisonValue}>{scribesNeededForFull}</Text>
+              </View>
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Providers covered</Text>
+                <Text style={styles.comparisonValue}>{totalProviders}</Text>
+              </View>
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Coverage</Text>
+                <Text style={styles.comparisonValue}>100%</Text>
+              </View>
+              <View style={styles.comparisonRow}>
+                <Text style={styles.comparisonLabel}>Scribe:Provider ratio</Text>
+                <Text style={styles.comparisonValue}>1:{scribeRatio}</Text>
+              </View>
+              
+              <View style={styles.comparisonTotal}>
+                <Text style={styles.comparisonTotalLabel}>Annual cost</Text>
+                <Text style={styles.comparisonTotalValue}>{formatCurrency(fullScribeCost)}</Text>
+              </View>
+              <Text style={styles.comparisonIncrease}>+{formatCurrency(additionalCostToScale)} to scale</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* Section 4: Burden */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>The Burden on Unsupported Providers</Text>
+          <Text style={{ fontSize: 9, color: colors.mediumGray, marginBottom: 12 }}>
+            Your {unsupportedProviders} providers without scribe support are handling documentation alone
+          </Text>
+          
+          <View style={styles.burdenRow}>
+            <View style={styles.burdenCard}>
+              <Text style={styles.burdenValue}>{formatNumber(documentationHours)}</Text>
+              <Text style={styles.burdenLabel}>hours/year on documentation</Text>
+              <Text style={styles.burdenMath}>
+                {unsupportedProviders} × {formatNumber(encountersPerProvider)} enc × 12 min ÷ 60
+              </Text>
+            </View>
+            <View style={styles.burdenCard}>
+              <Text style={styles.burdenValue}>{formatNumber(pajamaTimeHours)}</Text>
+              <Text style={styles.burdenLabel}>hours/year after clinic</Text>
+              <Text style={styles.burdenMath}>~40% occurs outside clinic hours</Text>
+            </View>
+            <View style={styles.burdenCard}>
+              <Text style={styles.burdenValue}>{formatNumber(hoursPerUnsupportedProvider)}</Text>
+              <Text style={styles.burdenLabel}>hours/year per provider</Text>
+              <Text style={styles.burdenMath}>Average documentation burden</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* Methodology */}
+        <View style={styles.methodology}>
+          <Text style={styles.methodologyTitle}>Methodology & Assumptions</Text>
+          <View style={styles.methodologyColumns}>
+            <View style={styles.methodologyColumn}>
+              <Text style={styles.methodologySubtitle}>From Your Inputs</Text>
+              <Text style={styles.methodologyItem}>• Scribe count: {scribeCount}</Text>
+              <Text style={styles.methodologyItem}>• Cost: ${scribeCostPerHour}/hr × {scribeHoursPerWeek} hrs/week</Text>
+              <Text style={styles.methodologyItem}>• Providers with scribes: {providersWithScribes}</Text>
+              <Text style={styles.methodologyItem}>• Total providers: {totalProviders}</Text>
+              <Text style={styles.methodologyItem}>• Annual encounters: {formatNumber(encounters)}</Text>
+            </View>
+            <View style={styles.methodologyColumn}>
+              <Text style={styles.methodologySubtitle}>Industry Assumptions</Text>
+              <Text style={styles.methodologyItem}>• Documentation time without scribe: 12 min/encounter</Text>
+              <Text style={styles.methodologyItem}>• After-hours documentation: ~40% of total</Text>
+              <Text style={styles.methodologyItem}>• Working weeks per year: 50</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
+          <Text style={styles.footerText}>Page 1 of 1</Text>
+        </View>
+        
+      </Page>
+    </Document>
+  );
+};
+
+// Export function
+export const generateScribePDF = async (data) => {
+  const blob = await pdf(<ScribePDFDocument data={data} />).toBlob();
+  saveAs(blob, `scribe-program-analysis-${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+export default ScribePDFDocument;
+Wire Up the Export Button
+In your Scribe Analysis page, update the export button:
+jsxCopyimport { generateScribePDF } from './ScribePDFExport';
+
+// In your component
+const handleExport = async () => {
+  const exportData = {
+    scribeCount,
+    scribeSalary,
+    scribeHoursPerWeek,
+    scribeCostPerHour,
+    providersWithScribes,
+    totalProviders,
+    encounters,
+    totalScribeCost,
+    coveragePercent,
+    unsupportedProviders,
+    costPerCoveredProvider,
+    scribesNeededForFull,
+    fullScribeCost,
+    additionalCostToScale: fullScribeCost - totalScribeCost,
+    scribeRatio,
+    documentationHours,
+    pajamaTimeHours,
+    hoursPerUnsupportedProvider: Math.round(documentationHours / unsupportedProviders),
+    encountersPerProvider: Math.round(encounters / totalProviders),
+  };
+  
+  await generateScribePDF(exportData);
+};
+
+// Button
+<button onClick={handleExport} className="export-btn">
+  <span className="icon">📄</span>
+  Export as PDF
+</button>
+Install Dependencies
+bashCopynpm install @react-pdf/renderer file-saver
