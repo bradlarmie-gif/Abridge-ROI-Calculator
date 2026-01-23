@@ -23,9 +23,7 @@ export function PrivacyNotice({ compact = false, className = '' }: PrivacyNotice
         </div>
         <div>
           <p className="text-sm text-[#374151]">
-            <strong className="text-[#111827]">Your privacy matters.</strong> All calculations happen in your browser. 
-            We don't store or transmit your data. Information is automatically cleared 
-            after 30 minutes of inactivity or when you close this tab.
+            <strong className="text-[#111827]">Your privacy matters.</strong> Information is cleared when you close this tab.
           </p>
         </div>
       </div>
