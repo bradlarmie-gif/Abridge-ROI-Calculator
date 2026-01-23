@@ -373,15 +373,21 @@ export default function ScribeFullAnalysis({
                   stroke="#6B7280"
                   strokeWidth={2}
                   strokeDasharray="6 4"
-                  dot={false}
-                />
-                <ReferenceDot
-                  x={calculations.coveragePercent}
-                  y={calculations.totalScribeCost}
-                  r={8}
-                  fill="#EA2C00"
-                  stroke="#fff"
-                  strokeWidth={2}
+                  dot={(props: { cx: number; cy: number; payload: { currentPosition?: boolean } }) => {
+                    if (props.payload.currentPosition) {
+                      return (
+                        <circle
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={8}
+                          fill="#EA2C00"
+                          stroke="#fff"
+                          strokeWidth={2}
+                        />
+                      );
+                    }
+                    return <circle r={0} />;
+                  }}
                 />
               </LineChart>
             </ResponsiveContainer>

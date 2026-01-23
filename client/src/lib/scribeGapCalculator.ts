@@ -106,24 +106,27 @@ export function formatCurrency(value: number): string {
 }
 
 export function getScalingDataPoints(inputs: ScribeInputs, calculations: ScribeCalculations) {
-  const points = [];
+  const points: { coverage: number; scribeCost: number; currentPosition?: boolean }[] = [];
   const costPerScribe = inputs.scribeCostPerHour * inputs.scribeHoursPerWeek * SCRIBE_ASSUMPTIONS.weeksPerYear;
+  const currentCoverage = calculations.coveragePercent;
   
-  for (let coverage = 0; coverage <= 100; coverage += 10) {
+  // Generate points at 0, 10, 20, ..., 100% plus the current position
+  const coveragePoints = new Set([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
+  if (currentCoverage > 0 && currentCoverage < 100) {
+    coveragePoints.add(currentCoverage);
+  }
+  
+  const sortedCoverages = Array.from(coveragePoints).sort((a, b) => a - b);
+  
+  for (const coverage of sortedCoverages) {
     const providersAtCoverage = Math.round(inputs.totalProviders * (coverage / 100));
     const scribesNeeded = Math.ceil(providersAtCoverage / calculations.scribeRatio);
     const scribeCostAtCoverage = scribesNeeded * costPerScribe;
     
-    // Ambient AI curve shape (NO actual dollar values — just relative shape)
-    // Uses square root curve to show diminishing per-unit cost with economies of scale
-    const scaleFactor = 0.4; // Ambient AI ends up at ~40% of scribe cost at full coverage
-    const curveShape = Math.sqrt(coverage / 100);
-    const ambientAICost = curveShape * calculations.fullScribeCost * scaleFactor;
-    
     points.push({
       coverage,
       scribeCost: scribeCostAtCoverage,
-      ambientAICost: coverage === 0 ? 0 : ambientAICost,
+      currentPosition: coverage === currentCoverage,
     });
   }
   
