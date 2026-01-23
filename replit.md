@@ -21,25 +21,42 @@ The application guides users through multi-step processes:
     4. Value Drivers (ModelBuilder.tsx) - ROI driver cards with Live Model sidebar
     5. Investment (InvestmentPage.tsx) - pricing configuration
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
--   **Switch Path (Value Realization Assessment)**: A 2-page diagnostic for prospects switching from other ambient AI solutions or scribes:
-    1. **Assessment Page** (SwitchAssessment.tsx) - Four-dimensional value assessment:
-       - Solution type selector (Ambient AI, Scribes)
-       - Provider count and annual encounters inputs
-       - 2x2 grid of dimension cards with sliders: Utilization (75%), Efficiency (4 min), Quality/wRVU (+5%), Satisfaction (85%)
-       - Circular gauge showing Value Realization Score (multiplicative of all four dimensions)
-       - Maturity spectrum bar (Early Stage < 30%, Developing 30-60%, Optimized 60-85%, Transformed 85%+)
-       - Live-updating "Your Annual Gap" card with gap components
-    2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
-       - 3 headline cards (Annual Gap, Realization Score %, 3-Year Gap)
-       - "Cost of Gap Over Time" line chart (current vs Abridge trajectory)
-       - "How the Gap Breaks Down" with visual bar charts and transparent math
-       - "Why Small Gaps Compound" with four-term formula: Utilization × Efficiency × Quality × Satisfaction
-       - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
-       - "Methodology" with all four Abridge benchmarks
-       - CTAs: Export PDF, Share with Team
-    - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, Quality +5% wRVU, Satisfaction 85%
-    - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency), $33/wRVU × 50% attribution
-    - **Calculation Engine**: switchGapCalculator.ts with four-dimensional realization score and maturity levels
+-   **Switch Path (Value Realization Assessment)**: A 2-page diagnostic with two separate flows based on solution type:
+    - **Ambient AI Path** (for prospects using other ambient AI solutions):
+      1. **Assessment Page** (SwitchAssessment.tsx) - Four-dimensional value assessment:
+         - Solution type selector (Ambient AI, Human Scribes)
+         - Provider count and annual encounters inputs
+         - 2x2 grid of dimension cards with sliders + editable number inputs: Utilization (75%), Efficiency (4 min), Quality/wRVU (+5%), Satisfaction (85%)
+         - Value Realization Score using weighted average (Utilization 30%, Efficiency 30%, Quality 25%, Satisfaction 15%)
+         - Maturity spectrum bar (Early Stage <40%, Developing 40-60%, Optimized 60-80%, Transformed 80%+)
+         - Live-updating "Your Annual Gap" card with gap components
+      2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
+         - 3 headline cards (Annual Gap, Realization Score %, 3-Year Gap)
+         - "Cost of Gap Over Time" line chart (current vs Abridge trajectory)
+         - "How the Gap Breaks Down" with expandable step-by-step calculation details for each dimension
+         - "How Your Score is Calculated" with weighted formula breakdown
+         - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
+         - "Methodology" with all four Abridge benchmarks
+         - CTAs: Export PDF, Share with Team
+      - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, Quality +5% wRVU, Satisfaction 85%
+      - **Value Assumptions**: $4/encounter (utilization), $150/hr × 20% conversion (efficiency), $33/wRVU × 50% attribution
+      - **Calculation Engine**: switchGapCalculator.ts with weighted realization score
+    - **Human Scribes Path** (for prospects using human scribes):
+      1. **Assessment Page** (ScribeAssessment.tsx) - Scribe program cost/coverage analysis:
+         - Scribe program inputs: scribe count, cost per hour, hours per week
+         - Provider coverage inputs: providers with scribes, total providers, annual encounters
+         - "Your Coverage Gap" visualization bar showing supported vs unsupported providers
+         - "The Scaling Problem" with 3 comparison cards (Current, Full Scribes, Abridge)
+         - "Cost of Unsupported Providers" with documentation time, pajama time, opportunity cost
+      2. **Full Analysis Page** (ScribeFullAnalysis.tsx):
+         - 3 headline cards (Current Coverage %, Coverage Gap count, Cost to Scale)
+         - "The Scaling Comparison" line chart showing Scribes vs Abridge cost curves
+         - "Why Ambient AI Scales Differently" comparison table
+         - "The Hybrid Opportunity" section for keeping scribes + adding Abridge
+         - "Your Path Forward" with value metrics and savings
+         - CTAs: Export PDF, Share with Team
+      - **Key Frame**: "Scribes don't scale" - focusing on coverage gaps and cost comparison
+      - **Calculation Engine**: scribeGapCalculator.ts with coverage and scaling math
 -   **Expand Path**: A 5-step performance analysis flow for current Abridge customers with tiered ROI calculations:
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection
