@@ -3,9 +3,7 @@ import ExpandSettingSelection from "./ExpandSettingSelection";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
 import ExpandDataEntry from "./ExpandDataEntry";
 import ExpandValueConfiguration from "./ExpandValueConfiguration";
-import ExpandPerformanceDashboard from "./ExpandPerformanceDashboard";
-import ExpandROIStory from "./ExpandROIStory";
-import ExpandJourneyExpansion from "./ExpandJourneyExpansion";
+import ExpandResults from "./ExpandResults";
 import { type ValueConfigData, EXPAND_ROI_DEFAULTS } from "@/lib/expandRoiCalculator";
 
 // ============================================================================
@@ -113,7 +111,12 @@ export interface ExpandFlowProps {
 }
 
 // ============================================================================
-// EXPAND FLOW MAIN COMPONENT (7 Steps)
+// EXPAND FLOW MAIN COMPONENT (5 Steps)
+// 1. Setting Selection
+// 2. Deployment Setup  
+// 3. Data Entry
+// 4. Value Configuration
+// 5. Your Results (consolidated)
 // ============================================================================
 
 export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlowProps = {}) {
@@ -177,7 +180,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
   });
 
   const goNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 7));
+    setCurrentStep((prev) => Math.min(prev + 1, 5));
     window.scrollTo(0, 0);
   };
   const goBack = () => {
@@ -239,35 +242,11 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
         );
       case 5:
         return (
-          <ExpandPerformanceDashboard
+          <ExpandResults
             deploymentData={deploymentData}
             selectedMetrics={selectedMetrics}
             metricsData={metricsData}
             timelineData={timelineData}
-            valueConfig={valueConfig}
-            onNext={goNext}
-            onBack={goBack}
-            onBackToJourney={goBackToJourney}
-          />
-        );
-      case 6:
-        return (
-          <ExpandROIStory
-            deploymentData={deploymentData}
-            metricsData={metricsData}
-            selectedMetrics={selectedMetrics}
-            valueConfig={valueConfig}
-            onNext={goNext}
-            onBack={goBack}
-            onBackToJourney={goBackToJourney}
-          />
-        );
-      case 7:
-        return (
-          <ExpandJourneyExpansion
-            deploymentData={deploymentData}
-            metricsData={metricsData}
-            selectedMetrics={selectedMetrics}
             valueConfig={valueConfig}
             onBack={goBack}
             onBackToJourney={goBackToJourney}

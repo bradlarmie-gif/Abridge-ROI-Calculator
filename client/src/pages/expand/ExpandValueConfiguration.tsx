@@ -92,7 +92,7 @@ export default function ExpandValueConfiguration({
       <GlobalHeader 
         pageName="Value Configuration" 
         currentStep={4} 
-        totalSteps={7} 
+        totalSteps={5} 
         onLogoClick={onBackToJourney} 
       />
       
