@@ -1,0 +1,663 @@
+STEP 1: Your Current Situation
+──────────────────────────────
+- What solution are you using? (Ambient AI / Scribes)
+- How many providers?
+- How many encounters?
+
+STEP 2: Your Current Results
+──────────────────────────────
+- What's your utilization?
+- What time savings are you seeing?
+- (Optional) wRVU data?
+- (Optional) Satisfaction data?
+
+STEP 3: The Gap Analysis
+──────────────────────────────
+- Your metrics vs. Abridge benchmarks
+- Tiered gap breakdown (Quantifiable / Probable / Qualitative)
+- The multiplicative effect explanation
+
+STEP 4: The Cost of the Gap
+──────────────────────────────
+- Annual unrealized value
+- 3-year cumulative gap
+- "Cost of waiting" urgency (but not pushy)
+
+STEP 5: What Switching Looks Like
+──────────────────────────────
+- Implementation timeline (honest about ramp)
+- When you'd break even
+- Conservative vs. expected scenarios
+
+Replit Prompt: Redesign the Switch Flow
+CopyRedesign the Switch flow to be a world-class displacement tool that's conservative, transparent, and irresistibly logical. The goal is that a prospect using a competitor looks at this and thinks "Everything they're saying makes sense. I should explore this."
+
+## CORE PRINCIPLES
+
+1. **Never attack the competitor** — Frame as "you vs. your potential" not "them vs. us"
+2. **Conservative by default** — Under-promise, let reality over-deliver
+3. **Transparent math** — Show every calculation, cite every benchmark
+4. **Tiered confidence** — Separate "we know this" from "we estimate this"
+5. **Respectful of their choice** — They made a reasonable decision, we're just showing what's possible
+6. **Urgency without pressure** — Show cost of waiting, don't manipulate
+
+## FLOW STRUCTURE
+
+### Page 1: Your Current Setup
+
+Title: "Let's understand your current situation"
+Subtitle: "We'll show you how your results compare to what's possible with ambient AI"
+
+```jsx
+<div className="setup-page">
+  {/* Solution Type */}
+  <div className="section">
+    <h3>What are you using today?</h3>
+    <div className="solution-options">
+      <button className={solution === 'ambient' ? 'selected' : ''}>
+        <span className="icon">🎙️</span>
+        <span className="title">Ambient AI</span>
+        <span className="description">DAX, Ambience, Suki, or similar</span>
+      </button>
+      <button className={solution === 'scribes' ? 'selected' : ''}>
+        <span className="icon">👤</span>
+        <span className="title">Human Scribes</span>
+        <span className="description">In-person or virtual scribes</span>
+      </button>
+    </div>
+  </div>
+  
+  {/* Scale */}
+  <div className="section">
+    <h3>Your deployment scale</h3>
+    <div className="input-row">
+      <div className="input-group">
+        <label>Providers using this solution</label>
+        <input type="number" value={providers} onChange={...} placeholder="75" />
+      </div>
+      <div className="input-group">
+        <label>Annual encounters for these providers</label>
+        <input type="number" value={encounters} onChange={...} placeholder="150000" />
+        <span className="hint">~2,000/provider is typical for primary care</span>
+      </div>
+    </div>
+  </div>
+  
+  {/* Investment (Important for ROI calc) */}
+  <div className="section">
+    <h3>Your current investment</h3>
+    <div className="input-group">
+      <label>What do you pay per provider per month?</label>
+      <input type="number" value={currentCost} onChange={...} placeholder="200" />
+      <span className="hint">Or your best estimate if bundled</span>
+    </div>
+  </div>
+</div>
+Page 2: Your Current Results
+Title: "How is your current solution performing?"
+Subtitle: "Enter what you're seeing — we'll compare to Abridge benchmarks"
+jsxCopy<div className="results-page">
+  {/* Metric Selection */}
+  <div className="metric-selection">
+    <p>Select the metrics you can provide (more = better analysis)</p>
+    
+    <div className="metric-options">
+      <label className="metric-option required">
+        <input type="checkbox" checked disabled />
+        <span className="badge">Required</span>
+        <span>Utilization</span>
+      </label>
+      <label className="metric-option required">
+        <input type="checkbox" checked disabled />
+        <span className="badge">Required</span>
+        <span>Time Savings</span>
+      </label>
+      <label className="metric-option optional">
+        <input type="checkbox" checked={hasWRVU} onChange={...} />
+        <span className="badge optional">Optional</span>
+        <span>wRVU / Revenue</span>
+      </label>
+      <label className="metric-option optional">
+        <input type="checkbox" checked={hasSatisfaction} onChange={...} />
+        <span className="badge optional">Optional</span>
+        <span>Satisfaction</span>
+      </label>
+    </div>
+  </div>
+  
+  {/* Utilization Input */}
+  <div className="metric-card">
+    <div className="metric-header">
+      <span className="icon">📊</span>
+      <div>
+        <h4>Utilization</h4>
+        <p>What % of encounters are documented with your current solution?</p>
+      </div>
+    </div>
+    
+    <div className="metric-input">
+      <div className="slider-display">
+        <span className="value-large">{utilization}%</span>
+      </div>
+      <input 
+        type="range" 
+        min="10" 
+        max="90" 
+        value={utilization} 
+        onChange={...} 
+      />
+      <div className="slider-labels">
+        <span>10%</span>
+        <span>90%</span>
+      </div>
+    </div>
+    
+    <div className="benchmark-comparison">
+      <div className="benchmark-bar">
+        <div className="your-position" style={{left: `${utilization}%`}}>
+          <span className="marker you" />
+          <span className="label">You: {utilization}%</span>
+        </div>
+        <div className="abridge-position" style={{left: '65%'}}>
+          <span className="marker abridge" />
+          <span className="label">Abridge avg: 65%</span>
+        </div>
+      </div>
+      <div className="gap-indicator">
+        {utilization < 65 ? (
+          <span className="gap negative">Gap: {65 - utilization}pp below Abridge average</span>
+        ) : (
+          <span className="gap positive">You're at or above Abridge average</span>
+        )}
+      </div>
+    </div>
+  </div>
+  
+  {/* Time Savings Input */}
+  <div className="metric-card">
+    <div className="metric-header">
+      <span className="icon">⏱️</span>
+      <div>
+        <h4>Time Savings</h4>
+        <p>How much time does your solution save per encounter?</p>
+      </div>
+    </div>
+    
+    <div className="metric-input">
+      <div className="slider-display">
+        <span className="value-large">{timeSaved} min</span>
+      </div>
+      <input 
+        type="range" 
+        min="0" 
+        max="6" 
+        step="0.5"
+        value={timeSaved} 
+        onChange={...} 
+      />
+      <div className="slider-labels">
+        <span>0 min</span>
+        <span>6 min</span>
+      </div>
+    </div>
+    
+    <div className="benchmark-comparison">
+      <div className="benchmark-bar">
+        <div className="your-position" style={{left: `${(timeSaved/6)*100}%`}}>
+          <span className="marker you" />
+          <span className="label">You: {timeSaved} min</span>
+        </div>
+        <div className="abridge-range" style={{left: '50%', width: '33%'}}>
+          <span className="range-bar" />
+          <span className="label">Abridge: 3-5 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {/* Optional: wRVU */}
+  {hasWRVU && (
+    <div className="metric-card">
+      <div className="metric-header">
+        <span className="icon">💰</span>
+        <div>
+          <h4>wRVU Capture</h4>
+          <p>Have you seen any change in wRVU per encounter?</p>
+        </div>
+      </div>
+      
+      <div className="wrvu-input">
+        <div className="input-row">
+          <div className="input-group">
+            <label>Before your current solution</label>
+            <input type="number" step="0.01" value={wrvuBefore} onChange={...} />
+            <span className="unit">wRVU/enc</span>
+          </div>
+          <span className="arrow">→</span>
+          <div className="input-group">
+            <label>Current</label>
+            <input type="number" step="0.01" value={wrvuAfter} onChange={...} />
+            <span className="unit">wRVU/enc</span>
+          </div>
+          <div className="change-display">
+            <span className={wrvuChange >= 0 ? 'positive' : 'negative'}>
+              {wrvuChange >= 0 ? '+' : ''}{wrvuChange.toFixed(2)} ({wrvuChangePercent}%)
+            </span>
+          </div>
+        </div>
+        
+        <div className="benchmark-note">
+          <span className="icon">📊</span>
+          <span>Abridge customers typically see 3-7% wRVU lift</span>
+        </div>
+      </div>
+    </div>
+  )}
+  
+  {/* Live Gap Preview */}
+  <div className="gap-preview">
+    <h4>THE GAP (Live Preview)</h4>
+    <div className="preview-comparison">
+      <div className="preview-column you">
+        <span className="column-label">YOU</span>
+        <div className="preview-stat">
+          <span className="stat-value">{yourEncountersDocumented.toLocaleString()}</span>
+          <span className="stat-label">encounters documented</span>
+        </div>
+        <div className="preview-stat">
+          <span className="stat-value">{yourHoursReturned.toLocaleString()}</span>
+          <span className="stat-label">hours returned</span>
+        </div>
+      </div>
+      
+      <div className="preview-gap">
+        <div className="gap-arrow">
+          <span className="gap-value">+{encounterGap.toLocaleString()}</span>
+          <span className="arrow">→</span>
+        </div>
+        <div className="gap-arrow">
+          <span className="gap-value">+{hoursGap.toLocaleString()}</span>
+          <span className="arrow">→</span>
+        </div>
+      </div>
+      
+      <div className="preview-column abridge">
+        <span className="column-label">
+          <span className="abridge-badge">A</span> ABRIDGE
+        </span>
+        <div className="preview-stat">
+          <span className="stat-value">{abridgeEncountersDocumented.toLocaleString()}</span>
+          <span className="stat-label">encounters documented</span>
+        </div>
+        <div className="preview-stat">
+          <span className="stat-value">{abridgeHoursReturned.toLocaleString()}</span>
+          <span className="stat-label">hours returned</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="preview-basis">
+      Based on {providers} providers at ~{encountersPerProvider.toLocaleString()} encounters/provider/year
+    </div>
+  </div>
+</div>
+Page 3: Your Gap Analysis (Single Comprehensive Results Page)
+Title: "Your Gap Analysis"
+Subtitle: "The difference between where you are and what's possible"
+jsxCopy<div className="gap-analysis-page">
+  {/* Headline Cards */}
+  <div className="headline-cards">
+    <div className="headline-card">
+      <span className="label">ANNUAL GAP</span>
+      <span className="value">{formatCurrency(annualGap)}</span>
+      <span className="sublabel">unrealized value</span>
+    </div>
+    <div className="headline-card highlighted">
+      <span className="label">YOUR CAPTURE RATE</span>
+      <span className="value">{captureRate}%</span>
+      <span className="sublabel">of potential</span>
+    </div>
+    <div className="headline-card">
+      <span className="label">3-YEAR GAP</span>
+      <span className="value">{formatCurrency(threeYearGap)}</span>
+      <span className="sublabel">cumulative</span>
+    </div>
+  </div>
+  
+  {/* The Comparison Graph */}
+  <div className="comparison-graph-section">
+    <h3>The Cost of Staying Put</h3>
+    <p>Cumulative value over 3 years: your current trajectory vs. switching to Abridge</p>
+    
+    <div className="graph-container">
+      {/* Two-line graph:
+          - Gray dashed line: "Stay with current" (their current value trajectory)
+          - Green solid line: "Switch to Abridge" (Abridge value trajectory)
+          - Shaded area between = the gap
+          - X-axis: Today, 3mo, 6mo, Year 1, Year 2, Year 3
+          - Y-axis: Cumulative value
+      */}
+      <ComparisonGraph 
+        currentTrajectory={currentTrajectoryData}
+        abridgeTrajectory={abridgeTrajectoryData}
+      />
+    </div>
+    
+    <div className="graph-callout">
+      <span className="gap-icon">↕</span>
+      <span className="gap-value">{formatCurrency(threeYearGap)}</span>
+      <span className="gap-label">3-year gap</span>
+    </div>
+  </div>
+  
+  {/* Gap Breakdown - Tiered */}
+  <div className="gap-breakdown">
+    <h3>THE GAPS WE IDENTIFIED</h3>
+    
+    {/* Tier 1: Quantifiable */}
+    <div className="tier tier-1">
+      <div className="tier-header">
+        <span className="tier-label">TIER 1: QUANTIFIABLE GAPS</span>
+        <span className="tier-total">{formatCurrency(tier1Total)}</span>
+      </div>
+      
+      <div className="gap-item">
+        <div className="gap-visual">
+          <div className="gap-bar-container">
+            <div className="gap-bar you" style={{width: `${(utilization/65)*100}%`}} />
+            <div className="gap-bar abridge" style={{width: '100%'}} />
+          </div>
+          <div className="gap-labels">
+            <span className="label you">You: {utilization}%</span>
+            <span className="label abridge">Abridge: 65%</span>
+          </div>
+        </div>
+        <div className="gap-detail">
+          <span className="gap-name">Utilization Gap</span>
+          <span className="gap-math">
+            {utilization}% → 65% = +{utilizationGapEncounters.toLocaleString()} encounters
+          </span>
+          <span className="gap-value">{formatCurrency(utilizationGapValue)}</span>
+        </div>
+      </div>
+      
+      <div className="gap-item">
+        <div className="gap-visual">
+          <div className="gap-bar-container">
+            <div className="gap-bar you" style={{width: `${(timeSaved/4)*100}%`}} />
+            <div className="gap-bar abridge" style={{width: '100%'}} />
+          </div>
+          <div className="gap-labels">
+            <span className="label you">You: {timeSaved} min</span>
+            <span className="label abridge">Abridge: 4 min avg</span>
+          </div>
+        </div>
+        <div className="gap-detail">
+          <span className="gap-name">Efficiency Gap</span>
+          <span className="gap-math">
+            {timeSaved} min → 4 min = +{efficiencyGapMinutes.toLocaleString()} min total
+            <br />
+            = {efficiencyGapHours.toLocaleString()} hours × $150/hr × 25%
+          </span>
+          <span className="gap-value">{formatCurrency(efficiencyGapValue)}</span>
+        </div>
+      </div>
+    </div>
+    
+    {/* Tier 2: Probable Gaps (if they didn't provide data) */}
+    {(!hasWRVU || !hasSatisfaction) && (
+      <div className="tier tier-2">
+        <div className="tier-header">
+          <span className="tier-label">TIER 2: PROBABLE GAPS</span>
+          <span className="tier-note">Not calculated — add data for estimate</span>
+        </div>
+        
+        {!hasWRVU && (
+          <div className="gap-item probable">
+            <span className="gap-name">💰 Revenue Capture Gap</span>
+            <span className="gap-description">
+              Abridge customers typically see 3-7% wRVU lift. 
+              You didn't provide wRVU data — this could be significant.
+            </span>
+            <button className="add-data-btn" onClick={() => setHasWRVU(true)}>
+              + Add your wRVU data
+            </button>
+          </div>
+        )}
+        
+        {!hasSatisfaction && (
+          <div className="gap-item probable">
+            <span className="gap-name">😊 Retention Gap</span>
+            <span className="gap-description">
+              Higher satisfaction = lower turnover. 
+              If your providers aren't happy with current solution, there's hidden cost.
+            </span>
+            <button className="add-data-btn" onClick={() => setHasSatisfaction(true)}>
+              + Add satisfaction data
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+  
+  {/* The Multiplicative Effect */}
+  <div className="multiplicative-section">
+    <h4>💡 UNDERSTANDING THE GAP</h4>
+    <p>
+      The gap represents unrealized value — not because your current solution is bad, 
+      but because ambient AI ROI is <strong>multiplicative</strong>:
+    </p>
+    
+    <div className="formula-box">
+      <code>Utilization × Efficiency × Quality = Total Value</code>
+      <span className="formula-note">Small gaps in each dimension compound into large gaps overall</span>
+    </div>
+    
+    <div className="capture-breakdown">
+      <div className="capture-item">
+        <span className="capture-label">Utilization</span>
+        <span className="capture-value">{utilizationCapture}% of potential</span>
+        <div className="capture-bar">
+          <div className="capture-fill" style={{width: `${utilizationCapture}%`}} />
+        </div>
+      </div>
+      <div className="capture-item">
+        <span className="capture-label">Efficiency</span>
+        <span className="capture-value">{efficiencyCapture}% of potential</span>
+        <div className="capture-bar">
+          <div className="capture-fill" style={{width: `${efficiencyCapture}%`}} />
+        </div>
+      </div>
+      <div className="capture-item combined">
+        <span className="capture-label">Combined</span>
+        <span className="capture-value">{combinedCapture}% of total potential</span>
+        <div className="capture-bar combined">
+          <div className="capture-fill" style={{width: `${combinedCapture}%`}} />
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {/* Cost of Waiting */}
+  <div className="cost-of-waiting">
+    <h4>THE COST OF WAITING</h4>
+    
+    <div className="waiting-scenarios">
+      <div className="scenario recommended">
+        <span className="scenario-label">SWITCH NOW</span>
+        <span className="scenario-value">{formatCurrency(switchNowValue)}</span>
+        <span className="scenario-sublabel">3-year value</span>
+      </div>
+      <div className="scenario">
+        <span className="scenario-label">WAIT 6 MONTHS</span>
+        <span className="scenario-value">{formatCurrency(wait6MonthsValue)}</span>
+        <span className="scenario-loss">Lost: {formatCurrency(switchNowValue - wait6MonthsValue)}</span>
+      </div>
+      <div className="scenario">
+        <span className="scenario-label">WAIT 12 MONTHS</span>
+        <span className="scenario-value">{formatCurrency(wait12MonthsValue)}</span>
+        <span className="scenario-loss">Lost: {formatCurrency(switchNowValue - wait12MonthsValue)}</span>
+      </div>
+    </div>
+    
+    <div className="monthly-cost-callout">
+      <span className="warning-icon">⚠️</span>
+      <span>Every month at current state = ~{formatCurrency(monthlyGap)} in unrealized value</span>
+    </div>
+  </div>
+  
+  {/* Switching Considerations */}
+  <div className="switching-section">
+    <h4>WHAT SWITCHING LOOKS LIKE</h4>
+    
+    <div className="switching-timeline">
+      <div className="timeline-item">
+        <span className="timeline-marker">1</span>
+        <div className="timeline-content">
+          <span className="timeline-title">Implementation</span>
+          <span className="timeline-detail">4-6 weeks typical</span>
+        </div>
+      </div>
+      <div className="timeline-item">
+        <span className="timeline-marker">2</span>
+        <div className="timeline-content">
+          <span className="timeline-title">Ramp Period</span>
+          <span className="timeline-detail">2-3 months to reach full utilization</span>
+        </div>
+      </div>
+      <div className="timeline-item">
+        <span className="timeline-marker">3</span>
+        <div className="timeline-content">
+          <span className="timeline-title">Full Value</span>
+          <span className="timeline-detail">Month 4+ at Abridge benchmarks</span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="breakeven-note">
+      💡 Based on this timeline, you'd typically see positive ROI vs. your current solution by <strong>month {breakevenMonth}</strong>.
+    </div>
+  </div>
+  
+  {/* Methodology */}
+  <div className="methodology-section">
+    <h4>📊 METHODOLOGY</h4>
+    <ul>
+      <li>Abridge benchmarks based on aggregate data from <strong>200+ health system partners</strong></li>
+      <li>Utilization gap valued at <strong>$4/encounter</strong> (time and documentation quality)</li>
+      <li>Time valued at <strong>$150/hr</strong> with <strong>25% conversion rate</strong> (conservative)</li>
+      <li>3-year projection includes <strong>3-month ramp period</strong> after switch</li>
+      <li>Does not include implementation costs (typically $0 with Abridge)</li>
+    </ul>
+  </div>
+  
+  {/* Actions */}
+  <div className="actions">
+    <button className="primary-btn">Export as PDF</button>
+    <button className="secondary-btn">Share with Team</button>
+    <button className="secondary-btn">Schedule a Demo</button>
+  </div>
+</div>
+CALCULATION LOGIC
+javascriptCopy// Gap calculations
+
+function calculateGap(inputs, abridgeBenchmarks) {
+  const { providers, encounters, utilization, timeSaved, wrvuBefore, wrvuAfter } = inputs;
+  const encountersPerProvider = encounters / providers;
+  
+  // Utilization Gap
+  const abridgeUtilization = abridgeBenchmarks.utilization; // 65%
+  const utilizationGapPercent = Math.max(0, abridgeUtilization - utilization);
+  const yourEncountersDocumented = encounters * (utilization / 100);
+  const abridgeEncountersDocumented = encounters * (abridgeUtilization / 100);
+  const utilizationGapEncounters = abridgeEncountersDocumented - yourEncountersDocumented;
+  const utilizationGapValue = utilizationGapEncounters * 4; // $4/encounter value
+  
+  // Efficiency Gap
+  const abridgeTimeSaved = abridgeBenchmarks.timeSavedAvg; // 4 min
+  const efficiencyGapMinutes = Math.max(0, abridgeTimeSaved - timeSaved);
+  const totalEfficiencyGapMinutes = abridgeEncountersDocumented * efficiencyGapMinutes;
+  const efficiencyGapHours = totalEfficiencyGapMinutes / 60;
+  const efficiencyGapValue = efficiencyGapHours * 150 * 0.25; // $150/hr × 25% conversion
+  
+  // wRVU Gap (if provided)
+  let wrvuGapValue = 0;
+  if (wrvuBefore && wrvuAfter) {
+    const theirLift = wrvuAfter - wrvuBefore;
+    const abridgeLiftMin = abridgeBenchmarks.wrvuLiftMin; // 3%
+    const theirLiftPercent = (theirLift / wrvuBefore) * 100;
+    if (theirLiftPercent < abridgeLiftMin) {
+      const gapPercent = abridgeLiftMin - theirLiftPercent;
+      const gapWRVU = wrvuBefore * (gapPercent / 100);
+      wrvuGapValue = gapWRVU * abridgeEncountersDocumented * 33 * 0.5;
+    }
+  }
+  
+  // Tier 1 Total
+  const tier1Total = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
+  
+  // Capture Rate
+  const utilizationCapture = (utilization / abridgeUtilization) * 100;
+  const efficiencyCapture = (timeSaved / abridgeTimeSaved) * 100;
+  const combinedCapture = (utilizationCapture / 100) * (efficiencyCapture / 100) * 100;
+  
+  // 3-Year Projection
+  const annualGap = tier1Total;
+  const year1Gap = annualGap * 0.75; // Ramp period
+  const year2Gap = annualGap;
+  const year3Gap = annualGap;
+  const threeYearGap = year1Gap + year2Gap + year3Gap;
+  
+  // Cost of Waiting
+  const monthlyGap = annualGap / 12;
+  const wait6MonthsLoss = monthlyGap * 6;
+  const wait12MonthsLoss = monthlyGap * 12;
+  
+  return {
+    utilizationGapEncounters,
+    utilizationGapValue,
+    efficiencyGapHours,
+    efficiencyGapValue,
+    wrvuGapValue,
+    tier1Total,
+    utilizationCapture: Math.round(utilizationCapture),
+    efficiencyCapture: Math.round(efficiencyCapture),
+    combinedCapture: Math.round(combinedCapture),
+    annualGap,
+    threeYearGap,
+    monthlyGap,
+    wait6MonthsLoss,
+    wait12MonthsLoss,
+  };
+}
+ABRIDGE BENCHMARKS
+javascriptCopyconst abridgeBenchmarks = {
+  utilization: 65,           // 65% average utilization
+  utilizationRange: [55, 75], // Range across customers
+  timeSavedAvg: 4,           // 4 minutes average
+  timeSavedRange: [3, 5],    // 3-5 minute range
+  wrvuLiftMin: 3,            // 3% minimum lift
+  wrvuLiftMax: 7,            // 7% maximum lift
+  satisfactionAvg: 85,       // 85% would recommend
+  source: "Aggregate data from 200+ health system partners",
+};
+STYLING NOTES
+
+Use the same card styles, colors, and typography as the Expand flow
+Coral (#E85A4F) for Abridge markers and highlights
+Gray for "You" markers
+Green gradient fill for the gap area in the comparison graph
+Conservative, professional tone throughout
+Generous whitespace
+Mobile responsive
+
+TONE GUIDELINES
+
+Never say "your solution is bad" — say "there's unrealized potential"
+Never say "switch to us" — say "here's what's possible"
+Always show the math
+Always cite the benchmark source
+Acknowledge that switching has costs (time, change management)
+Be honest about the ramp period — don't promise instant value
+
