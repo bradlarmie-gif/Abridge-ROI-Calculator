@@ -1,0 +1,753 @@
+Make the entire application fully responsive for mobile devices (iPhone, Android). Every page and component should work beautifully on screens as small as 320px wide.
+
+## GLOBAL RESPONSIVE SETUP
+
+### 1. Add viewport meta tag (if not already present)
+In index.html:
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+2. Global breakpoints
+Use these consistent breakpoints throughout the app:
+cssCopy/* Mobile first approach */
+/* Base styles = mobile (320px+) */
+
+/* Tablet */
+@media (min-width: 768px) { }
+
+/* Desktop */
+@media (min-width: 1024px) { }
+
+/* Large desktop */
+@media (min-width: 1280px) { }
+3. Add to global CSS
+cssCopy/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Better touch targets */
+button, a, input, select {
+  min-height: 44px; /* Apple's recommended touch target */
+}
+
+/* Responsive text */
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Container padding */
+.container, .page-content, .section {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 768px) {
+  .container, .page-content, .section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container, .page-content, .section {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+COMPONENT-SPECIFIC RESPONSIVE FIXES
+Navigation Header
+cssCopy.global-header {
+  padding: 12px 16px;
+}
+
+.global-header .logo img {
+  height: 28px;
+}
+
+@media (min-width: 768px) {
+  .global-header {
+    padding: 16px 24px;
+  }
+  
+  .global-header .logo img {
+    height: 32px;
+  }
+}
+
+/* Mobile nav breadcrumb - stack or hide */
+.nav-breadcrumb {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav-breadcrumb {
+    display: flex;
+  }
+}
+Page Headers
+cssCopy.page-header h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.page-header .subtitle {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .page-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .page-header .subtitle {
+    font-size: 1rem;
+  }
+}
+Card Grids (2x2 → 1 column on mobile)
+cssCopy.results-grid,
+.headline-cards,
+.comparison-cards,
+.waiting-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .headline-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .results-grid,
+  .headline-cards,
+  .comparison-cards {
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .comparison-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .waiting-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+Input Cards
+cssCopy.input-card {
+  padding: 16px;
+}
+
+.input-card label {
+  font-size: 0.875rem;
+}
+
+.input-card input {
+  font-size: 1rem;
+  padding: 12px;
+}
+
+@media (min-width: 768px) {
+  .input-card {
+    padding: 20px;
+  }
+  
+  .input-card input {
+    padding: 14px 16px;
+  }
+}
+
+/* Side-by-side inputs → stack on mobile */
+.input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .input-row {
+    flex-direction: row;
+    gap: 16px;
+  }
+  
+  .input-row > * {
+    flex: 1;
+  }
+}
+Solution Type Selector
+cssCopy.solution-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.solution-options button {
+  padding: 16px;
+  text-align: left;
+}
+
+@media (min-width: 640px) {
+  .solution-options {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .solution-options button {
+    flex: 1;
+  }
+}
+Dimension Cards (Value Assessment)
+cssCopy.dimension-card {
+  padding: 16px;
+}
+
+.dimension-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dimension-header h3 {
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .dimension-card {
+    padding: 20px;
+  }
+  
+  .dimension-header {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Slider touch-friendly */
+.dimension-card input[type="range"] {
+  height: 8px;
+  -webkit-appearance: none;
+}
+
+.dimension-card input[type="range"]::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  -webkit-appearance: none;
+  background: #E85A4F;
+  border-radius: 50%;
+  cursor: pointer;
+}
+Value Realization Score Circle
+cssCopy.score-circle {
+  width: 150px;
+  height: 150px;
+}
+
+.score-number {
+  font-size: 2rem;
+}
+
+@media (min-width: 768px) {
+  .score-circle {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .score-number {
+    font-size: 3rem;
+  }
+}
+
+/* Score breakdown - stack on mobile */
+.score-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.score-breakdown .breakdown-item {
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .score-breakdown {
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+  
+  .score-breakdown .breakdown-item {
+    font-size: 0.875rem;
+  }
+}
+Maturity Spectrum
+cssCopy.maturity-spectrum {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.spectrum-bar {
+  min-width: 300px;
+}
+
+.spectrum-zone span {
+  font-size: 0.625rem;
+}
+
+@media (min-width: 768px) {
+  .spectrum-zone span {
+    font-size: 0.75rem;
+  }
+}
+Gap Breakdown Cards
+cssCopy.breakdown-card {
+  padding: 16px;
+}
+
+.breakdown-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.breakdown-value {
+  font-size: 1.25rem;
+}
+
+.breakdown-math {
+  font-size: 0.75rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .breakdown-card {
+    padding: 20px;
+  }
+  
+  .breakdown-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .breakdown-value {
+    font-size: 1.5rem;
+  }
+  
+  .breakdown-math {
+    font-size: 0.8125rem;
+    white-space: normal;
+  }
+}
+Graphs/Charts
+cssCopy.graph-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.graph-container > div {
+  min-width: 500px; /* Ensure chart is readable */
+  height: 250px;
+}
+
+@media (min-width: 768px) {
+  .graph-container > div {
+    min-width: auto;
+    height: 350px;
+  }
+}
+
+/* Chart legend - stack on mobile */
+.graph-legend {
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .graph-legend {
+    flex-direction: row;
+    gap: 20px;
+    font-size: 0.8125rem;
+  }
+}
+Multiplier/Formula Section
+cssCopy.multiplier-card {
+  padding: 20px 16px;
+}
+
+.multiplier-equation {
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+
+.equation-term .term-value {
+  font-size: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .multiplier-card {
+    padding: 24px;
+  }
+  
+  .multiplier-equation {
+    flex-wrap: nowrap;
+    gap: 12px;
+    font-size: 1rem;
+  }
+  
+  .equation-term .term-value {
+    font-size: 1.5rem;
+  }
+}
+Cost of Waiting Cards
+cssCopy.waiting-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.waiting-card {
+  padding: 20px;
+}
+
+.waiting-card .card-value {
+  font-size: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .waiting-cards {
+    flex-direction: row;
+  }
+  
+  .waiting-card {
+    flex: 1;
+  }
+  
+  .waiting-card .card-value {
+    font-size: 2rem;
+  }
+}
+Comparison Tables
+cssCopy.comparison-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.comparison-table .table-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.comparison-table .row-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.comparison-table .row-value {
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 768px) {
+  .comparison-table .table-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+}
+Action Buttons
+cssCopy.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 0.9375rem;
+}
+
+@media (min-width: 640px) {
+  .action-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .action-btn {
+    width: auto;
+    min-width: 150px;
+  }
+}
+CTA Buttons (Primary)
+cssCopy.cta-button {
+  width: 100%;
+  padding: 16px 24px;
+  font-size: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cta-button {
+    width: auto;
+    min-width: 200px;
+  }
+}
+Expandable Calculation Details
+cssCopy.calc-detail {
+  padding: 12px;
+}
+
+.calc-step {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.step-number {
+  width: 20px;
+  height: 20px;
+  font-size: 0.625rem;
+}
+
+.step-math {
+  font-size: 0.75rem;
+  overflow-x: auto;
+}
+
+@media (min-width: 768px) {
+  .calc-detail {
+    padding: 16px;
+  }
+  
+  .calc-step {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .step-number {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+  
+  .step-math {
+    font-size: 0.875rem;
+  }
+}
+Methodology Section
+cssCopy.methodology-section {
+  padding: 16px;
+}
+
+.methodology-section ul {
+  padding-left: 20px;
+}
+
+.methodology-section li {
+  font-size: 0.8125rem;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .methodology-section {
+    padding: 20px;
+  }
+  
+  .methodology-section li {
+    font-size: 0.875rem;
+  }
+}
+Modal/Tooltip Adjustments
+cssCopy.tooltip-content {
+  max-width: calc(100vw - 32px);
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 768px) {
+  .tooltip-content {
+    max-width: 300px;
+    font-size: 0.875rem;
+  }
+}
+SPECIFIC PAGE FIXES
+Landing Page
+cssCopy.landing-hero h1 {
+  font-size: 2rem;
+}
+
+.pathway-cards {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .landing-hero h1 {
+    font-size: 3rem;
+  }
+  
+  .pathway-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+Explore Flow - Value Drivers Selection
+cssCopy.value-drivers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.value-driver-card {
+  padding: 16px;
+}
+
+@media (min-width: 768px) {
+  .value-driver-card {
+    padding: 20px;
+  }
+}
+Explore Flow - Results Page
+cssCopy.journey-header-cards {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .journey-header-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+Expand Flow - Data Entry Accordion
+cssCopy.metric-accordion-item {
+  padding: 16px;
+}
+
+.accordion-header {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-summary {
+  width: 100%;
+  margin-top: 4px;
+}
+
+@media (min-width: 768px) {
+  .metric-accordion-item {
+    padding: 20px;
+  }
+  
+  .accordion-header {
+    flex-wrap: nowrap;
+  }
+  
+  .metric-summary {
+    width: auto;
+    margin-top: 0;
+  }
+}
+Switch Flow - Coverage Bar
+cssCopy.coverage-visual {
+  padding: 16px;
+}
+
+.coverage-stats {
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .coverage-stats {
+    flex-direction: row;
+    gap: 24px;
+  }
+}
+UTILITY CLASSES
+Add these utility classes for quick responsive adjustments:
+cssCopy/* Hide on mobile */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block;
+  }
+}
+
+/* Hide on desktop */
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* Stack on mobile */
+.stack-mobile {
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .stack-mobile {
+    flex-direction: row;
+  }
+}
+
+/* Full width on mobile */
+.full-mobile {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .full-mobile {
+    width: auto;
+  }
+}
+
+/* Text alignment */
+.text-center-mobile {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .text-center-mobile {
+    text-align: left;
+  }
+}
+TESTING CHECKLIST
+After implementing, test on:
+
+iPhone SE (320px) - smallest common phone
+iPhone 14 (390px) - standard iPhone
+iPhone 14 Pro Max (430px) - large iPhone
+iPad (768px) - tablet
+Desktop (1024px+)
+
+Test these interactions:
+
+ All text is readable without zooming
+ All buttons/inputs are easily tappable (44px+ touch targets)
+ No horizontal scrolling on any page
+ Charts/graphs are scrollable or resized appropriately
+ Forms are easy to fill out
+ Modals/tooltips don't overflow screen
+ Navigation is accessible

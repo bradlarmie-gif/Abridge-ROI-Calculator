@@ -45,13 +45,15 @@ export function FormattedNumberInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Only allow digits (no decimals, no dashes, no other characters)
     const digitsOnly = input.replace(/[^\d]/g, '');
-    setDisplayValue(digitsOnly);
     
     let numValue = parseFormattedNumber(digitsOnly);
     if (min !== undefined && numValue < min) numValue = min;
     if (max !== undefined && numValue > max) numValue = max;
+    
+    // Format with commas while typing
+    const formatted = numValue > 0 ? numValue.toLocaleString('en-US') : '';
+    setDisplayValue(formatted);
     onChange(numValue);
   };
 
@@ -60,10 +62,10 @@ export function FormattedNumberInput({
     setDisplayValue(formatWithCommas(value));
   };
 
-  const handleFocus = () => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
-    const numValue = typeof value === 'number' ? value : parseFormattedNumber(String(value));
-    setDisplayValue(numValue > 0 ? String(numValue) : '');
+    // Select all text on focus for easy replacement
+    e.target.select();
   };
 
   return (
