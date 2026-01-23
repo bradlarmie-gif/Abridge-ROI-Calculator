@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 
 import { queryClient } from "./lib/queryClient";
+import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
+import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 
 import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
@@ -30,6 +32,7 @@ interface SelectionState {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("journey");
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const navigateTo = (view: AppView) => {
     setCurrentView(view);
@@ -45,6 +48,20 @@ export default function App() {
   const [baselineInfo, setBaselineInfo] = useState<BaselineInfo | null>(null);
   const [valueResults, setValueResults] = useState<ValueResults | null>(null);
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
+
+  const handleSessionClear = useCallback(() => {
+    setSelectionState({ selectedSettings: [], selectedLevers: [] });
+    setSeedInputs({});
+    setBaselineInfo(null);
+    setValueResults(null);
+    setModelResults(null);
+    setCurrentView("journey");
+    setSessionExpired(true);
+  }, []);
+
+  const handleDismissExpired = useCallback(() => {
+    setSessionExpired(false);
+  }, []);
 
   const handleSelectionComplete = (
     selectedSettings: CareSettingType[],
@@ -99,10 +116,12 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
+      <SessionSecurityProvider onSessionClear={handleSessionClear}>
+        <TooltipProvider>
+          <Toaster />
+          <SessionExpiredModal isOpen={sessionExpired} onClose={handleDismissExpired} />
 
-        {currentView === "journey" && (
+          {currentView === "journey" && (
           <JourneySelector
             onSelectExplore={() => navigateTo("explore")}
             onSelectExpand={() => navigateTo("expand")}
@@ -164,27 +183,28 @@ export default function App() {
           />
         )}
 
-        {currentView === "expand" && (
-          <ExpandFlow 
-            onBackToJourney={handleBackToJourney}
-            onGoToExplore={() => navigateTo("explore")}
-          />
-        )}
+          {currentView === "expand" && (
+            <ExpandFlow 
+              onBackToJourney={handleBackToJourney}
+              onGoToExplore={() => navigateTo("explore")}
+            />
+          )}
 
-        {currentView === "switch" && (
-          <SwitchFlow onBackToJourney={handleBackToJourney} />
-        )}
+          {currentView === "switch" && (
+            <SwitchFlow onBackToJourney={handleBackToJourney} />
+          )}
 
-        {currentView === "learn" && (
-          <LearnPath 
-            onBack={handleBackToJourney} 
-            onStartCalculator={(setting) => {
-              setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
-              navigateTo("explore");
-            }}
-          />
-        )}
-      </TooltipProvider>
+          {currentView === "learn" && (
+            <LearnPath 
+              onBack={handleBackToJourney} 
+              onStartCalculator={(setting) => {
+                setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
+                navigateTo("explore");
+              }}
+            />
+          )}
+        </TooltipProvider>
+      </SessionSecurityProvider>
     </QueryClientProvider>
   );
 }

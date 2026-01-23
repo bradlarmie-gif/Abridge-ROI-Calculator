@@ -1,6 +1,7 @@
 import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
+import { PrivacyNotice } from "@/components/PrivacyNotice";
 import abridgeABg from "@assets/abridge-a-bg_1769025961657.png";
 
 interface JourneySelectorProps {
@@ -110,7 +111,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           </div>
         </section>
 
-        <section className="max-w-5xl mx-auto mb-16">
+        <section className="max-w-5xl mx-auto mb-8">
           <div 
             onClick={onSelectLearn}
             className="flex items-center justify-center gap-3 py-4 px-6 bg-[#F9FAFB] rounded-xl cursor-pointer hover-elevate"
@@ -123,6 +124,10 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               <ChevronRight className="w-4 h-4" />
             </span>
           </div>
+        </section>
+
+        <section className="max-w-2xl mx-auto mb-12">
+          <PrivacyNotice />
         </section>
 
         <footer className="border-t border-[#F3F4F6] pt-8 text-center">
