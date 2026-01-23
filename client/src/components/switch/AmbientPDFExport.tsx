@@ -32,7 +32,7 @@ const colors = {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 36,
+    padding: 32,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: colors.black,
@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 10,
+    marginBottom: 8,
+    paddingBottom: 6,
     borderBottomWidth: 2,
     borderBottomColor: colors.coral,
   },
@@ -52,61 +52,54 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   headerTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
   },
   headerDate: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.mediumGray,
-    marginTop: 2,
-  },
-
-  pageTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
+    marginTop: 1,
   },
 
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 8,
-    marginTop: 12,
+    marginBottom: 6,
+    marginTop: 8,
   },
 
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
-    marginVertical: 10,
+    marginVertical: 6,
   },
 
   introBox: {
     backgroundColor: colors.backgroundGray,
-    padding: 14,
+    padding: 10,
     borderRadius: 4,
-    marginBottom: 12,
-  },
-  introTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
     marginBottom: 8,
   },
+  introTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 5,
+  },
   introText: {
-    fontSize: 9,
+    fontSize: 8,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 6,
+    lineHeight: 1.4,
+    marginBottom: 4,
   },
 
   metricsGrid: {
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   metricCard: {
     flex: 1,
@@ -114,55 +107,52 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
+    padding: 8,
+    marginRight: 6,
     alignItems: "center",
   },
   metricCardLast: {
     marginRight: 0,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricValueGreen: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.green,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricLabel: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.mediumGray,
     textAlign: "center",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricDescription: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.lightGray,
     textAlign: "center",
-    lineHeight: 1.3,
+    lineHeight: 1.2,
   },
 
-  spectrumContainer: {
-    marginBottom: 12,
-  },
   spectrumBox: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 12,
+    padding: 10,
   },
   spectrumLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   spectrumLabel: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
     textAlign: "center",
     width: "24%",
@@ -174,122 +164,103 @@ const styles = StyleSheet.create({
   spectrumRanges: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   spectrumRange: {
-    fontSize: 6,
+    fontSize: 5,
     color: colors.lightGray,
     textAlign: "center",
     width: "24%",
   },
   spectrumBarContainer: {
-    height: 20,
+    height: 16,
     position: "relative",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   spectrumExplanation: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.4,
-    marginTop: 8,
-  },
-
-  tocSection: {
-    marginTop: 12,
-  },
-  tocTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  tocItem: {
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
-    paddingLeft: 8,
+    lineHeight: 1.3,
+    marginTop: 6,
   },
 
   dimensionCard: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 6,
     overflow: "hidden",
   },
   dimensionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 8,
+    padding: 6,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
   dimensionName: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
   },
   dimensionScore: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.coral,
   },
   dimensionQuestion: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
-    padding: 8,
-    paddingTop: 4,
-    paddingBottom: 4,
+    padding: 6,
+    paddingTop: 3,
+    paddingBottom: 3,
     fontStyle: "italic",
   },
   dimensionContent: {
-    padding: 8,
+    padding: 6,
     paddingTop: 0,
   },
   dimensionValues: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   dimensionYou: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.black,
   },
   dimensionBenchmark: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.mediumGray,
   },
   dimensionBar: {
-    height: 8,
+    height: 6,
     backgroundColor: colors.borderGray,
-    borderRadius: 4,
-    marginBottom: 6,
+    borderRadius: 3,
+    marginBottom: 4,
   },
   dimensionBarFill: {
-    height: 8,
+    height: 6,
     backgroundColor: colors.coral,
-    borderRadius: 4,
+    borderRadius: 3,
   },
   dimensionWhy: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    lineHeight: 1.4,
+    lineHeight: 1.3,
     fontStyle: "italic",
   },
 
   scoreCalculation: {
     backgroundColor: colors.backgroundGray,
-    padding: 10,
+    padding: 6,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   scoreText: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
     textAlign: "center",
   },
@@ -300,40 +271,37 @@ const styles = StyleSheet.create({
 
   compoundBox: {
     backgroundColor: colors.coralLight,
-    padding: 10,
+    padding: 8,
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   compoundTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.coral,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   compoundText: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
 
-  graphContainer: {
-    marginBottom: 10,
-  },
   graphBox: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 12,
-    height: 90,
+    padding: 8,
+    height: 70,
     position: "relative",
   },
   graphLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 4,
+    marginTop: 3,
   },
   graphLabel: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
   },
 
@@ -341,12 +309,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.coralLight,
     borderWidth: 1,
     borderColor: colors.coral,
-    padding: 8,
+    padding: 6,
     borderRadius: 4,
-    marginTop: 8,
+    marginTop: 6,
   },
   monthlyText: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.coral,
     textAlign: "center",
     fontWeight: "bold",
@@ -356,7 +324,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 6,
     overflow: "hidden",
   },
   gapCardHeader: {
@@ -364,34 +332,29 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: colors.backgroundGray,
-    padding: 8,
+    padding: 6,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
   gapCardTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
   },
   gapCardValue: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.green,
-  },
-  gapCardDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-    marginHorizontal: 8,
   },
   gapCardValues: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 8,
-    paddingBottom: 6,
+    padding: 6,
+    paddingBottom: 4,
   },
   gapValueItem: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
   },
   gapValueBold: {
@@ -399,26 +362,26 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   gapCardSteps: {
-    padding: 8,
-    paddingTop: 6,
+    padding: 6,
+    paddingTop: 4,
     backgroundColor: colors.backgroundGray,
   },
   gapStep: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 2,
+    lineHeight: 1.3,
+    marginBottom: 1,
   },
   gapStepLabel: {
     fontWeight: "bold",
     color: colors.mediumGray,
   },
   gapNote: {
-    fontSize: 6,
+    fontSize: 5,
     color: colors.lightGray,
     fontStyle: "italic",
-    marginTop: 4,
-    lineHeight: 1.4,
+    marginTop: 2,
+    lineHeight: 1.3,
   },
 
   totalGapBox: {
@@ -426,8 +389,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.green,
     borderRadius: 4,
-    padding: 10,
-    marginBottom: 12,
+    padding: 8,
+    marginBottom: 8,
   },
   totalGapRow: {
     flexDirection: "row",
@@ -435,79 +398,79 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   totalGapLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
   },
   totalGapValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.green,
   },
   totalGapBreakdown: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    marginTop: 4,
+    marginTop: 3,
   },
 
   takeawaysBox: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   takeawaysTitle: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 5,
   },
   takeawayItem: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 3,
-    paddingLeft: 8,
+    lineHeight: 1.4,
+    marginBottom: 2,
+    paddingLeft: 6,
   },
 
   methodologySection: {
-    marginTop: 12,
-    paddingTop: 10,
+    marginTop: 6,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   methodologyTitle: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   methodologyGrid: {
     flexDirection: "row",
   },
   methodologyColumn: {
     flex: 1,
-    paddingRight: 10,
+    paddingRight: 8,
   },
   methodologyColumnTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   methodologyItem: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 2,
+    lineHeight: 1.3,
+    marginBottom: 1,
   },
   methodologyNote: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.lightGray,
-    lineHeight: 1.4,
-    marginTop: 8,
+    lineHeight: 1.3,
+    marginTop: 6,
     fontStyle: "italic",
   },
 
@@ -515,12 +478,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: "auto",
-    paddingTop: 8,
+    paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   footerText: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.lightGray,
   },
 });
@@ -539,54 +502,52 @@ const formatCurrency = (num: number): string => {
 const formatNumber = (num: number): string => num.toLocaleString();
 
 const SpectrumBar = ({ score }: { score: number }) => {
-  const barWidth = 460;
+  const barWidth = 480;
   const markerPosition = (score / 100) * barWidth;
   
   return (
-    <Svg width={barWidth} height={20}>
-      <Rect x={0} y={6} width={barWidth * 0.4} height={8} fill="#FEE2E2" rx={0} />
-      <Rect x={barWidth * 0.4} y={6} width={barWidth * 0.2} height={8} fill="#FEF3C7" rx={0} />
-      <Rect x={barWidth * 0.6} y={6} width={barWidth * 0.2} height={8} fill="#D1FAE5" rx={0} />
-      <Rect x={barWidth * 0.8} y={6} width={barWidth * 0.2} height={8} fill="#A7F3D0" rx={4} />
-      <Rect x={0} y={6} width={4} height={8} fill="#FEE2E2" rx={4} />
-      
-      <Rect x={markerPosition - 1} y={0} width={3} height={20} fill={colors.coral} rx={1} />
+    <Svg width={barWidth} height={16}>
+      <Rect x={0} y={4} width={barWidth * 0.4} height={8} fill="#FEE2E2" rx={0} />
+      <Rect x={barWidth * 0.4} y={4} width={barWidth * 0.2} height={8} fill="#FEF3C7" rx={0} />
+      <Rect x={barWidth * 0.6} y={4} width={barWidth * 0.2} height={8} fill="#D1FAE5" rx={0} />
+      <Rect x={barWidth * 0.8} y={4} width={barWidth * 0.2} height={8} fill="#A7F3D0" rx={4} />
+      <Rect x={0} y={4} width={4} height={8} fill="#FEE2E2" rx={4} />
+      <Rect x={markerPosition - 1} y={0} width={3} height={16} fill={colors.coral} rx={1} />
     </Svg>
   );
 };
 
 const CostGraph = ({ year1, year2, year3 }: { year1: number; year2: number; year3: number }) => {
   const maxValue = year3;
-  const graphWidth = 440;
-  const graphHeight = 65;
-  const padding = 25;
+  const graphWidth = 460;
+  const graphHeight = 50;
+  const padding = 20;
   
   const points = [
-    { x: padding, y: graphHeight - 5, value: 0, label: "Today" },
-    { x: padding + (graphWidth - padding * 2) * 0.33, y: graphHeight - (year1 / maxValue) * (graphHeight - 15), value: year1 },
-    { x: padding + (graphWidth - padding * 2) * 0.66, y: graphHeight - (year2 / maxValue) * (graphHeight - 15), value: year2 },
-    { x: graphWidth - padding, y: 12, value: year3 },
+    { x: padding, y: graphHeight - 4, value: 0 },
+    { x: padding + (graphWidth - padding * 2) * 0.33, y: graphHeight - (year1 / maxValue) * (graphHeight - 12), value: year1 },
+    { x: padding + (graphWidth - padding * 2) * 0.66, y: graphHeight - (year2 / maxValue) * (graphHeight - 12), value: year2 },
+    { x: graphWidth - padding, y: 10, value: year3 },
   ];
 
   return (
     <View style={styles.graphBox}>
       <Svg width={graphWidth} height={graphHeight}>
-        <Line x1={padding} y1={graphHeight - 5} x2={points[1].x} y2={points[1].y} stroke={colors.coral} strokeWidth={2} />
+        <Line x1={padding} y1={graphHeight - 4} x2={points[1].x} y2={points[1].y} stroke={colors.coral} strokeWidth={2} />
         <Line x1={points[1].x} y1={points[1].y} x2={points[2].x} y2={points[2].y} stroke={colors.coral} strokeWidth={2} />
         <Line x1={points[2].x} y1={points[2].y} x2={points[3].x} y2={points[3].y} stroke={colors.coral} strokeWidth={2} />
-        
         {points.map((point, i) => (
-          <Circle key={i} cx={point.x} cy={point.y} r={4} fill={colors.coral} />
+          <Circle key={i} cx={point.x} cy={point.y} r={3} fill={colors.coral} />
         ))}
       </Svg>
-      <View style={{ position: "absolute", top: 8, right: 30 }}>
-        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.coral }}>{formatCurrency(year3)}</Text>
+      <View style={{ position: "absolute", top: 6, right: 25 }}>
+        <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.coral }}>{formatCurrency(year3)}</Text>
       </View>
-      <View style={{ position: "absolute", top: 22, left: graphWidth * 0.28 }}>
-        <Text style={{ fontSize: 8, color: colors.darkGray }}>{formatCurrency(year1)}</Text>
+      <View style={{ position: "absolute", top: 18, left: graphWidth * 0.28 }}>
+        <Text style={{ fontSize: 7, color: colors.darkGray }}>{formatCurrency(year1)}</Text>
       </View>
-      <View style={{ position: "absolute", top: 16, left: graphWidth * 0.52 }}>
-        <Text style={{ fontSize: 8, color: colors.darkGray }}>{formatCurrency(year2)}</Text>
+      <View style={{ position: "absolute", top: 14, left: graphWidth * 0.52 }}>
+        <Text style={{ fontSize: 7, color: colors.darkGray }}>{formatCurrency(year2)}</Text>
       </View>
     </View>
   );
@@ -625,7 +586,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
       {/* PAGE 1: THE STORY */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 85, height: 17 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>Value Realization Assessment</Text>
             <Text style={styles.headerDate}>{today}</Text>
@@ -640,42 +601,42 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           <Text style={styles.introText}>
             Most organizations capture only 30-60% of the potential value. The gap isn't because ambient AI doesn't work — it's because value realization requires optimization across all four dimensions. Small gaps in each area compound into significant unrealized value.
           </Text>
-          <Text style={styles.introText}>
+          <Text style={[styles.introText, { marginBottom: 0 }]}>
             This assessment measures where you stand on the value realization spectrum and quantifies what closing the gap could mean for your organization.
           </Text>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.sectionTitle}>YOUR RESULTS AT A GLANCE</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 0 }]}>YOUR RESULTS AT A GLANCE</Text>
 
         <View style={styles.metricsGrid}>
           <View style={styles.metricCard}>
             <Text style={styles.metricValueGreen}>{formatCurrency(calculations.annualGap)}</Text>
             <Text style={styles.metricLabel}>Annual Gap</Text>
-            <Text style={styles.metricDescription}>Value that exists but isn't being captured</Text>
+            <Text style={styles.metricDescription}>Value not being captured</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricValue}>{calculations.realizationScore}%</Text>
             <Text style={styles.metricLabel}>Realized</Text>
-            <Text style={styles.metricDescription}>Of potential value being captured today</Text>
+            <Text style={styles.metricDescription}>Of potential value today</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricValue}>{formatCurrency(calculations.threeYearGap)}</Text>
             <Text style={styles.metricLabel}>3-Year Gap</Text>
-            <Text style={styles.metricDescription}>Cumulative gap over three years</Text>
+            <Text style={styles.metricDescription}>Cumulative over 3 years</Text>
           </View>
           <View style={[styles.metricCard, styles.metricCardLast]}>
             <Text style={styles.metricValue}>{calculations.maturityLevel}</Text>
             <Text style={styles.metricLabel}>Stage</Text>
-            <Text style={styles.metricDescription}>Where you are on the maturity spectrum</Text>
+            <Text style={styles.metricDescription}>On the maturity spectrum</Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.sectionTitle}>THE VALUE REALIZATION SPECTRUM</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
+        <Text style={[styles.sectionTitle, { marginTop: 0 }]}>THE VALUE REALIZATION SPECTRUM</Text>
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
           Organizations move through four stages as they optimize ambient AI:
         </Text>
 
@@ -695,23 +656,11 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           <View style={styles.spectrumBarContainer}>
             <SpectrumBar score={calculations.realizationScore} />
           </View>
-          <Text style={{ fontSize: 8, color: colors.coral, textAlign: "center", fontWeight: "bold", marginTop: 4 }}>
+          <Text style={{ fontSize: 8, color: colors.coral, textAlign: "center", fontWeight: "bold" }}>
             YOU: {calculations.realizationScore}%
           </Text>
           <Text style={styles.spectrumExplanation}>
             At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. This is where most organizations plateau without focused optimization. The gap between where you are and where you could be represents {formatCurrency(calculations.annualGap)} annually in unrealized value.
-          </Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.tocSection}>
-          <Text style={styles.tocTitle}>WHAT THIS ASSESSMENT COVERS</Text>
-          <Text style={styles.tocItem}>
-            <Text style={{ fontWeight: "bold" }}>Page 2:</Text> Your performance across the four value dimensions and how the gap compounds over time
-          </Text>
-          <Text style={styles.tocItem}>
-            <Text style={{ fontWeight: "bold" }}>Page 3:</Text> Detailed breakdown of each gap with transparent math and methodology you can verify
           </Text>
         </View>
 
@@ -724,14 +673,14 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
       {/* PAGE 2: THE EVIDENCE */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 85, height: 17 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>Value Realization Assessment</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
+        <Text style={[styles.sectionTitle, { marginTop: 0 }]}>YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
           Value realization depends on performance in four areas. Here's where you stand compared to Abridge benchmarks:
         </Text>
 
@@ -828,8 +777,8 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>THE COST OF THE GAP OVER TIME</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 8 }}>
+        <Text style={[styles.sectionTitle, { marginTop: 4 }]}>THE COST OF THE GAP OVER TIME</Text>
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 4 }}>
           If the gap persists, unrealized value accumulates:
         </Text>
 
@@ -861,14 +810,14 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
       {/* PAGE 3: THE DETAILS */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
+          <Image src={abridgeLogoPath} style={{ width: 85, height: 17 }} />
           <View style={styles.headerRight}>
             <Text style={styles.headerTitle}>Value Realization Assessment</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>HOW EACH GAP IS CALCULATED</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
+        <Text style={[styles.sectionTitle, { marginTop: 0 }]}>HOW EACH GAP IS CALCULATED</Text>
+        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 6 }}>
           Every number in this assessment can be traced back to your inputs and transparent assumptions. Here's the math:
         </Text>
 
@@ -883,18 +832,13 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <Text style={styles.gapValueItem}>Gap: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp</Text></Text>
           </View>
           <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Encounters at your utilization</Text>
-            <Text style={styles.gapStep}>        {formatNumber(inputs.annualEncounters || 150000)} × {inputs.utilization}% = {formatNumber(encountersAtCurrent)} encounters documented</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Encounters at benchmark</Text>
-            <Text style={styles.gapStep}>        {formatNumber(inputs.annualEncounters || 150000)} × {ABRIDGE_BENCHMARKS.utilization}% = {formatNumber(encountersAtBenchmark)} encounters documented</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Gap in encounters</Text>
-            <Text style={styles.gapStep}>        {formatNumber(encountersAtBenchmark)} - {formatNumber(encountersAtCurrent)} = {formatNumber(encounterGap)} encounters not documented</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Time value of gap (at benchmark efficiency)</Text>
-            <Text style={styles.gapStep}>        {formatNumber(encounterGap)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(utilizationHoursGap)} hours</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 5:</Text> Dollar value (conservative conversion)</Text>
-            <Text style={styles.gapStep}>        {formatNumber(utilizationHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% = {formatCurrency(calculations.utilizationGapValue)}</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Encounters at your util: {formatNumber(inputs.annualEncounters || 150000)} × {inputs.utilization}% = {formatNumber(encountersAtCurrent)} documented</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Encounters at benchmark: {formatNumber(inputs.annualEncounters || 150000)} × {ABRIDGE_BENCHMARKS.utilization}% = {formatNumber(encountersAtBenchmark)} documented</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Gap: {formatNumber(encountersAtBenchmark)} - {formatNumber(encountersAtCurrent)} = {formatNumber(encounterGap)} encounters not documented</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Time value: {formatNumber(encounterGap)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(utilizationHoursGap)} hours</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 5:</Text> Dollar value: {formatNumber(utilizationHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% = {formatCurrency(calculations.utilizationGapValue)}</Text>
             <Text style={styles.gapNote}>
-              Note: {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% conversion assumes only {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% of saved time converts to measurable value. This is deliberately conservative.
+              Note: {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% conversion is deliberately conservative — assumes only {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% of saved time converts to measurable value.
             </Text>
           </View>
         </View>
@@ -910,16 +854,12 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <Text style={styles.gapValueItem}>Gap: <Text style={styles.gapValueBold}>{efficiencyTimeDiff} min</Text></Text>
           </View>
           <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Hours at benchmark utilization with your efficiency</Text>
-            <Text style={styles.gapStep}>        {formatNumber(encountersAtBenchmark)} enc × {inputs.timeSavedPerEncounter} min = {formatNumber(Math.round((inputs.timeSavedPerEncounter / 60) * encountersAtBenchmark))} hours saved</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Hours at benchmark utilization with benchmark efficiency</Text>
-            <Text style={styles.gapStep}>        {formatNumber(encountersAtBenchmark)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(Math.round((ABRIDGE_BENCHMARKS.timeSavedAvg / 60) * encountersAtBenchmark))} hours saved</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Gap in hours</Text>
-            <Text style={styles.gapStep}>        {formatNumber(efficiencyHoursGap)} additional hours possible</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Dollar value (conservative conversion)</Text>
-            <Text style={styles.gapStep}>        {formatNumber(efficiencyHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% = {formatCurrency(calculations.efficiencyGapValue)}</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Hours with your efficiency: {formatNumber(encountersAtBenchmark)} enc × {inputs.timeSavedPerEncounter} min = {formatNumber(Math.round((inputs.timeSavedPerEncounter / 60) * encountersAtBenchmark))} hrs</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Hours at benchmark: {formatNumber(encountersAtBenchmark)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(Math.round((ABRIDGE_BENCHMARKS.timeSavedAvg / 60) * encountersAtBenchmark))} hrs</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Gap: {formatNumber(efficiencyHoursGap)} additional hours possible</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Dollar value: {formatNumber(efficiencyHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% = {formatCurrency(calculations.efficiencyGapValue)}</Text>
             <Text style={styles.gapNote}>
-              Note: {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% conversion is used here as efficiency gains are more directly convertible than utilization gains.
+              Note: {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% conversion used as efficiency gains are more directly convertible than utilization gains.
             </Text>
           </View>
         </View>
@@ -935,12 +875,10 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <Text style={styles.gapValueItem}>Gap: <Text style={styles.gapValueBold}>{wrvuGapPercent}%</Text></Text>
           </View>
           <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Additional wRVU potential</Text>
-            <Text style={styles.gapStep}>        {formatNumber(encountersAtBenchmark)} enc × 1.5 avg wRVU × {wrvuGapPercent}% = {formatNumber(additionalWrvu)} additional wRVU</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Dollar value (conservative attribution)</Text>
-            <Text style={styles.gapStep}>        {formatNumber(additionalWrvu)} wRVU × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = {formatCurrency(calculations.wrvuGapValue)}</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Additional wRVU potential: {formatNumber(encountersAtBenchmark)} enc × 1.5 avg wRVU × {wrvuGapPercent}% = {formatNumber(additionalWrvu)} wRVU</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Dollar value: {formatNumber(additionalWrvu)} wRVU × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = {formatCurrency(calculations.wrvuGapValue)}</Text>
             <Text style={styles.gapNote}>
-              Note: {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution assumes only half of wRVU improvement is directly attributable to ambient AI. Other factors matter too.
+              Note: {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution assumes only half of wRVU improvement is directly attributable to ambient AI.
             </Text>
           </View>
         </View>
@@ -968,26 +906,15 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           <View style={styles.methodologyGrid}>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Your Inputs</Text>
-              <Text style={styles.methodologyItem}>• {inputs.providers} providers</Text>
-              <Text style={styles.methodologyItem}>• {formatNumber(inputs.annualEncounters || 150000)} annual encounters</Text>
-              <Text style={styles.methodologyItem}>• Current solution: Ambient AI</Text>
-              <Text style={styles.methodologyItem}>• {inputs.utilization}% utilization</Text>
-              <Text style={styles.methodologyItem}>• {inputs.timeSavedPerEncounter} min time savings</Text>
-              <Text style={styles.methodologyItem}>• +{inputs.wrvuLift}% wRVU lift</Text>
-              <Text style={styles.methodologyItem}>• {inputs.satisfaction}% satisfaction</Text>
+              <Text style={styles.methodologyItem}>• {inputs.providers} providers, {formatNumber(inputs.annualEncounters || 150000)} annual encounters</Text>
+              <Text style={styles.methodologyItem}>• {inputs.utilization}% utilization, {inputs.timeSavedPerEncounter} min saved</Text>
+              <Text style={styles.methodologyItem}>• +{inputs.wrvuLift}% wRVU lift, {inputs.satisfaction}% satisfaction</Text>
             </View>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Abridge Benchmarks</Text>
-              <Text style={styles.methodologyItem}>• {ABRIDGE_BENCHMARKS.utilization}% utilization</Text>
-              <Text style={styles.methodologyItem}>• {ABRIDGE_BENCHMARKS.timeSavedAvg} min saved per encounter</Text>
-              <Text style={styles.methodologyItem}>• +{ABRIDGE_BENCHMARKS.wrvuLift}% wRVU lift</Text>
-              <Text style={styles.methodologyItem}>• {ABRIDGE_BENCHMARKS.satisfaction}% satisfaction</Text>
-              <Text style={[styles.methodologyColumnTitle, { marginTop: 8 }]}>Valuation Assumptions</Text>
-              <Text style={styles.methodologyItem}>• Provider time: ${VALUE_ASSUMPTIONS.hourlyRate}/hr</Text>
-              <Text style={styles.methodologyItem}>• Utilization conversion: {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}%</Text>
-              <Text style={styles.methodologyItem}>• Efficiency conversion: {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%</Text>
-              <Text style={styles.methodologyItem}>• wRVU: ${VALUE_ASSUMPTIONS.wrvuDollarValue} (Medicare CF)</Text>
-              <Text style={styles.methodologyItem}>• wRVU attribution: {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</Text>
+              <Text style={styles.methodologyItem}>• {ABRIDGE_BENCHMARKS.utilization}% util, {ABRIDGE_BENCHMARKS.timeSavedAvg} min saved, +{ABRIDGE_BENCHMARKS.wrvuLift}% wRVU, {ABRIDGE_BENCHMARKS.satisfaction}% sat</Text>
+              <Text style={[styles.methodologyColumnTitle, { marginTop: 4 }]}>Valuation</Text>
+              <Text style={styles.methodologyItem}>• ${VALUE_ASSUMPTIONS.hourlyRate}/hr, {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}-{VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% time conversion, ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU at {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</Text>
             </View>
           </View>
           <Text style={styles.methodologyNote}>
