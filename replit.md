@@ -23,14 +23,14 @@ The application guides users through multi-step processes:
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
 -   **Switch Path (Ambient AI)**: A streamlined 3-page flow (after Solution Selection) for prospects switching from other ambient AI solutions. Pages: Setup (provider range chips, utilization/efficiency sliders with Abridge benchmarks, live gap visualization showing YOU vs ABRIDGE) → Analysis (annual gap hero with monthly/daily breakdown, Value Breakdown tab with expandable driver cards, Over Time tab with 3-year chart and cost of waiting) → Conclusion (situation summary, context about benchmarks, 3-year value highlight, CTAs). Uses slider-based inputs with real-time gap calculations.
 -   **Switch Path (Human Scribes)**: A 5-step cost-focused flow for prospects switching from human scribes to Abridge. Pages: Setup (organization info, scribe coverage, hourly costs) → Coverage Reality (current vs full coverage visualization) → Hidden Costs (turnover/training, management overhead) → Full Picture (total investment summary with breakdown) → Comparison (3-year side-by-side scribes vs Abridge with savings). Uses editable inline inputs and real-time calculations with coral (#EA2C00) CTAs and emerald for positive savings values.
--   **Expand Path**: A 6-step performance analysis flow for current Abridge customers with Simple/Detailed data entry modes:
+-   **Expand Path**: A 6-step performance analysis flow for current Abridge customers with per-metric Quick vs Trend data entry:
     1. Setting Selection (ExpandSettingSelection.tsx)
-    2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, Simple/Detailed mode selector, metric selection
-    3. Data Entry (ExpandDataEntry.tsx) - Three-tier entry approach:
-       - Simple mode (default): 2 inputs per metric (e.g., average before/after for Level of Service, same-day % for Chart Closure)
-       - Optional detailed entry: Expandable sections with full distributions (5 levels for LOS, 4 time buckets for closure)
-       - Helper text with benchmark references (LOS: 0.2-0.5 level increase, Closure: 5-15pp improvement)
-    4. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey overview (Before Abridge → Today → Full Scale), journey graph with actual (solid) vs projected (dashed) lines, "You are here" marker, value breakdown cards
+    2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection with PRIMARY (wRVU Capture, Time in Notes, Chart Closure - pre-selected) vs SECONDARY (E&M Level, Work Outside Work, Satisfaction - optional) categories
+    3. Data Entry (ExpandDataEntry.tsx) - Per-metric entry mode selection:
+       - Quick mode (default): Simple before/after entry with calculated change, percentage lift, and benchmark comparison
+       - Trend mode: Paste area for monthly data + manual entry table (Baseline + Month 1-N) + mini trend chart with "You are here" marker
+       - Special handling: Level of Service uses average E&M level with optional distribution expansion; Chart Closure uses same-day % with optional bucket breakdown
+    4. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey overview (Before Abridge → Today → Full Scale), journey graph with actual (solid) vs projected (dashed) lines, "You are here" marker, value breakdown cards with sparkline trends
     5. ROI Story (ExpandROIStory.tsx)
     6. Journey Expansion (ExpandJourneyExpansion.tsx)
 -   **Care Setting Selection**: Users choose a healthcare environment.
