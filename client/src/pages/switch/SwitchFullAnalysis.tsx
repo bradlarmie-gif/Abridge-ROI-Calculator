@@ -3,6 +3,7 @@ import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Sm
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
+import { useToast } from "@/hooks/use-toast";
 import { 
   calculateSwitchGap, 
   formatCurrency, 
@@ -10,6 +11,7 @@ import {
   VALUE_ASSUMPTIONS,
   type SwitchInputs 
 } from "@/lib/switchGapCalculator";
+import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
 
 interface SwitchFullAnalysisProps {
   inputs: SwitchInputs;
@@ -32,6 +34,28 @@ export default function SwitchFullAnalysis({
   }, [inputs]);
 
   const solutionLabel = inputs.solution === "ambient-ai" ? "Ambient AI" : "Human Scribes";
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateAmbientPDF(inputs, calculations);
+      toast({
+        title: "PDF Generated",
+        description: "Your Value Realization Assessment has been downloaded.",
+      });
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const graphData = useMemo(() => {
     const points = [
@@ -305,9 +329,15 @@ export default function SwitchFullAnalysis({
 
         <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-4 md:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
-            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-export-pdf">
+            <Button 
+              variant="outline" 
+              className="h-11 md:h-12 px-4 md:px-6" 
+              data-testid="button-export-pdf"
+              onClick={handleExportPDF}
+              disabled={isExporting}
+            >
               <Download className="w-4 h-4 mr-2" />
-              Export as PDF
+              {isExporting ? "Generating..." : "Export as PDF"}
             </Button>
             <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
               <Share2 className="w-4 h-4 mr-2" />
