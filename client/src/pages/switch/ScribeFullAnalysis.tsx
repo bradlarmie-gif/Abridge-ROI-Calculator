@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { ArrowLeft, Download, Share2, Users, DollarSign, TrendingUp, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 import {
   type ScribeInputs,
   calculateScribeGap,
@@ -38,7 +38,7 @@ export default function ScribeFullAnalysis({
             data-testid="button-back"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
+            Back to inputs
           </Button>
         </div>
 
@@ -47,44 +47,275 @@ export default function ScribeFullAnalysis({
             Your Scribe Program Analysis
           </h1>
           <p className="text-xs md:text-sm text-[#6B7280]">
-            {inputs.scribeCount} scribes · {inputs.providersWithScribes} providers covered ·{" "}
-            {inputs.totalProviders} total providers
+            Understand your scribe program economics
           </p>
         </div>
 
+        {/* Section 1: Your Program at a Glance */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center">
             <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
-              Current Coverage
+              Your Investment
             </div>
-            <div className="text-2xl md:text-4xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
-            <div className="text-xs md:text-sm text-[#6B7280]">of providers have support</div>
+            <div className="text-2xl md:text-4xl font-bold text-[#111827]">
+              {formatCurrency(calculations.totalScribeCost)}
+            </div>
+            <div className="text-xs md:text-sm text-[#6B7280]">annual scribe program cost</div>
           </div>
 
-          <div className="bg-amber-50 rounded-xl border-2 border-amber-400 p-4 md:p-6 text-center">
-            <div className="text-[10px] md:text-xs font-medium text-amber-600 uppercase tracking-wide mb-1">
-              Coverage Gap
+          <div className="bg-slate-100 rounded-xl border-2 border-slate-400 p-4 md:p-6 text-center">
+            <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+              Your Coverage
             </div>
-            <div className="text-2xl md:text-4xl font-bold text-amber-700">{calculations.providersWithoutSupport}</div>
-            <div className="text-xs md:text-sm text-amber-600">providers without support</div>
+            <div className="text-2xl md:text-4xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
+            <div className="text-xs md:text-sm text-[#6B7280]">
+              {inputs.providersWithScribes} of {inputs.totalProviders} providers
+            </div>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center">
             <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
-              Cost to Scale
+              Cost Per Covered Provider
             </div>
             <div className="text-2xl md:text-4xl font-bold text-[#111827]">
-              {formatCurrency(calculations.costToScale)}
+              {formatCurrency(calculations.costPerProviderCovered)}
             </div>
-            <div className="text-xs md:text-sm text-[#6B7280]">to give everyone a scribe</div>
+            <div className="text-xs md:text-sm text-[#6B7280]">annual</div>
           </div>
         </section>
 
+        {/* Section 2: Your Coverage Gap */}
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Scaling Comparison</h2>
-          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">Cost vs. coverage: Scribes vs. Abridge</p>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">Your Coverage Gap</h2>
 
-          <div className="h-64 md:h-80 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="mb-6">
+            <div className="relative h-12 bg-slate-100 rounded-lg overflow-hidden">
+              <div
+                className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-3 transition-all"
+                style={{ width: `${Math.max(calculations.coveragePercent, 2)}%`, minWidth: calculations.coveragePercent > 0 ? '8px' : '0' }}
+              />
+              {calculations.coveragePercent >= 20 ? (
+                <span 
+                  className="absolute top-1/2 -translate-y-1/2 left-3 text-xs font-semibold text-white"
+                  style={{ maxWidth: `${calculations.coveragePercent - 5}%` }}
+                >
+                  {inputs.providersWithScribes} with scribes
+                </span>
+              ) : (
+                <span 
+                  className="absolute top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-600"
+                  style={{ left: `${Math.max(calculations.coveragePercent, 2) + 2}%` }}
+                >
+                  {inputs.providersWithScribes} with scribes
+                </span>
+              )}
+              <div
+                className="absolute top-0 h-full bg-amber-100 flex items-center justify-center transition-all"
+                style={{
+                  left: `${calculations.coveragePercent}%`,
+                  width: `${100 - calculations.coveragePercent}%`,
+                }}
+              >
+                {calculations.coveragePercent < 60 && (
+                  <span className="text-xs font-semibold text-amber-700">
+                    {calculations.providersWithoutSupport} without support
+                  </span>
+                )}
+              </div>
+              {calculations.coveragePercent >= 60 && (
+                <span 
+                  className="absolute top-1/2 -translate-y-1/2 right-3 text-xs font-semibold text-amber-700"
+                >
+                  {calculations.providersWithoutSupport} without support
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-slate-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
+              <div className="text-xs text-[#6B7280]">have scribe support</div>
+            </div>
+            <div className="bg-amber-50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-amber-700">
+                {100 - calculations.coveragePercent}%
+              </div>
+              <div className="text-xs text-amber-600">documenting alone</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: The Scaling Math */}
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">What Full Scribe Coverage Would Cost</h2>
+          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">
+            If you wanted to give every provider scribe support
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div className="bg-slate-50 rounded-xl p-5">
+              <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-3">
+                Current State
+              </div>
+
+              <div className="space-y-2 mb-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Scribes</span>
+                  <span className="font-medium text-[#111827]">{inputs.scribeCount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Providers covered</span>
+                  <span className="font-medium text-[#111827]">{inputs.providersWithScribes}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Coverage</span>
+                  <span className="font-medium text-[#111827]">{calculations.coveragePercent}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Scribe:Provider ratio</span>
+                  <span className="font-medium text-[#111827]">1:{calculations.scribeRatio}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-3">
+                <div className="flex justify-between items-end">
+                  <span className="text-xs text-[#6B7280]">Annual cost</span>
+                  <span className="text-xl font-bold text-[#111827]">{formatCurrency(calculations.totalScribeCost)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-100 rounded-xl p-5 relative">
+              <div className="absolute top-3 right-3">
+                <ArrowRight className="w-4 h-4 text-slate-400" />
+              </div>
+              <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-3">
+                Full Coverage
+              </div>
+
+              <div className="space-y-2 mb-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Scribes needed</span>
+                  <span className="font-medium text-[#111827]">{calculations.scribesNeededForFullCoverage}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Providers covered</span>
+                  <span className="font-medium text-[#111827]">{inputs.totalProviders}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Coverage</span>
+                  <span className="font-medium text-[#111827]">100%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Scribe:Provider ratio</span>
+                  <span className="font-medium text-[#111827]">1:{calculations.scribeRatio}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-3">
+                <div className="flex justify-between items-end">
+                  <span className="text-xs text-[#6B7280]">Annual cost</span>
+                  <span className="text-xl font-bold text-[#111827]">{formatCurrency(calculations.fullScribeCost)}</span>
+                </div>
+                <div className="text-xs text-amber-600 font-medium text-right mt-1">
+                  +{formatCurrency(calculations.costToScale)} to scale
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-[#111827] mb-3">The Math</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex flex-wrap justify-between gap-2">
+                <span className="text-[#6B7280]">Additional providers to cover:</span>
+                <span className="font-mono text-[#111827]">
+                  {inputs.totalProviders} - {inputs.providersWithScribes} = {calculations.providersWithoutSupport}
+                </span>
+              </div>
+              <div className="flex flex-wrap justify-between gap-2">
+                <span className="text-[#6B7280]">Additional scribes needed (at 1:{calculations.scribeRatio} ratio):</span>
+                <span className="font-mono text-[#111827]">
+                  {calculations.providersWithoutSupport} / {calculations.scribeRatio} = {calculations.additionalScribesNeeded}
+                </span>
+              </div>
+              <div className="flex flex-wrap justify-between gap-2">
+                <span className="text-[#6B7280]">Additional annual cost:</span>
+                <span className="font-mono text-[#111827]">
+                  {calculations.additionalScribesNeeded} x {formatCurrency(calculations.scribeSalaryAnnual)} = {formatCurrency(calculations.costToScale)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4: The Burden on Unsupported Providers */}
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Burden on Unsupported Providers</h2>
+          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">
+            Your {calculations.providersWithoutSupport} providers without scribe support are handling documentation alone
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4">
+            <div className="bg-slate-50 rounded-lg p-5 text-center">
+              <div className="flex justify-center mb-2">
+                <Timer className="w-6 h-6 text-slate-500" />
+              </div>
+              <div className="text-xl font-bold text-[#111827]">
+                {calculations.unsupportedDocTimeHours.toLocaleString()}
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">hours/year on documentation</div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                {calculations.providersWithoutSupport} providers x {calculations.encountersPerProvider.toLocaleString()} encounters x 12 min / 60
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-5 text-center">
+              <div className="flex justify-center mb-2">
+                <Moon className="w-6 h-6 text-slate-500" />
+              </div>
+              <div className="text-xl font-bold text-[#111827]">
+                {calculations.pajamaTimeHours.toLocaleString()}
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">hours/year after clinic hours</div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                ~40% of documentation time occurs outside clinic hours*
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-5 text-center">
+              <div className="flex justify-center mb-2">
+                <BarChart3 className="w-6 h-6 text-slate-500" />
+              </div>
+              <div className="text-xl font-bold text-[#111827]">
+                {calculations.docTimePerUnsupportedProvider}
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">hours/year per unsupported provider</div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                Average documentation burden per provider
+              </div>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-slate-400 italic">
+            * Based on industry research on physician documentation patterns
+          </div>
+        </section>
+
+        {/* Section 5: How Scribe Programs Scale */}
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">How Scribe Programs Scale</h2>
+
+          <div className="bg-slate-50 rounded-lg p-4 mb-6">
+            <p className="text-sm text-[#374151]">
+              Scribe programs scale <strong>linearly</strong> — to cover more providers, 
+              you need more scribes. Each additional provider requires a proportional 
+              investment in scribe resources.
+            </p>
+          </div>
+
+          <div className="h-64 md:h-80 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-6">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={scalingData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -102,10 +333,7 @@ export default function ScribeFullAnalysis({
                   width={80}
                 />
                 <Tooltip
-                  formatter={(value: number, name: string) => [
-                    formatCurrency(value),
-                    name === "scribeCost" ? "Scribes" : "Abridge",
-                  ]}
+                  formatter={(value: number) => [formatCurrency(value), "Scribe Cost"]}
                   labelFormatter={(v) => `${v}% coverage`}
                   contentStyle={{
                     backgroundColor: "#fff",
@@ -113,195 +341,82 @@ export default function ScribeFullAnalysis({
                     borderRadius: "8px",
                   }}
                 />
-                <Legend />
                 <Line
                   type="monotone"
                   dataKey="scribeCost"
-                  name="Scribes"
+                  name="Scribe Cost"
                   stroke="#6B7280"
                   strokeWidth={3}
                   dot={false}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="abridgeCost"
-                  name="Abridge"
-                  stroke="#10B981"
-                  strokeWidth={3}
-                  dot={false}
+                <ReferenceDot
+                  x={calculations.coveragePercent}
+                  y={calculations.totalScribeCost}
+                  r={8}
+                  fill="#EA2C00"
+                  stroke="#fff"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="mt-4 flex items-center justify-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-slate-500"></div>
-              <span className="text-[#6B7280]">
-                Your current position: {calculations.coveragePercent}% coverage
-              </span>
+          <div className="flex items-center justify-center gap-2 text-sm mb-6">
+            <div className="w-4 h-4 rounded-full bg-[#EA2C00]"></div>
+            <span className="text-[#6B7280]">
+              Your current position: {calculations.coveragePercent}% coverage
+            </span>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Info className="w-4 h-4 text-slate-500" />
+              <h4 className="text-sm font-semibold text-[#111827]">Factors That Affect Scribe Program Costs</h4>
             </div>
+            <ul className="text-sm text-[#6B7280] space-y-2">
+              <li><strong className="text-[#374151]">Scribe:Provider ratio</strong> — Ranges from 1:1 to 1:3 depending on specialty and volume</li>
+              <li><strong className="text-[#374151]">Scribe compensation</strong> — Varies by market, experience, and employment model</li>
+              <li><strong className="text-[#374151]">Turnover</strong> — Scribe turnover averages 30-50% annually, creating ongoing training costs</li>
+              <li><strong className="text-[#374151]">Coverage hours</strong> — Evening/weekend coverage requires additional scribes</li>
+            </ul>
           </div>
         </section>
 
+        {/* Section 6: Methodology */}
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">Why Ambient AI Scales Differently</h2>
-
-          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <table className="w-full text-xs md:text-sm min-w-[400px]">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-3 pr-4 text-[#6B7280] font-medium"></th>
-                  <th className="text-center py-3 px-4 text-[#6B7280] font-medium">Scribes</th>
-                  <th className="text-center py-3 px-4 text-emerald-600 font-medium">Abridge</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-slate-100">
-                  <td className="py-3 pr-4 font-medium text-[#111827]">Cost model</td>
-                  <td className="py-3 px-4 text-center text-[#6B7280]">Per-scribe (linear)</td>
-                  <td className="py-3 px-4 text-center text-emerald-600">Per-provider (flat)</td>
-                </tr>
-                <tr className="border-b border-slate-100">
-                  <td className="py-3 pr-4 font-medium text-[#111827]">Scaling</td>
-                  <td className="py-3 px-4 text-center text-[#6B7280]">Hire more people</td>
-                  <td className="py-3 px-4 text-center text-emerald-600">Turn on licenses</td>
-                </tr>
-                <tr className="border-b border-slate-100">
-                  <td className="py-3 pr-4 font-medium text-[#111827]">Availability</td>
-                  <td className="py-3 px-4 text-center text-[#6B7280]">Limited by staffing</td>
-                  <td className="py-3 px-4 text-center text-emerald-600">24/7, every visit</td>
-                </tr>
-                <tr className="border-b border-slate-100">
-                  <td className="py-3 pr-4 font-medium text-[#111827]">Consistency</td>
-                  <td className="py-3 px-4 text-center text-[#6B7280]">Varies by scribe</td>
-                  <td className="py-3 px-4 text-center text-emerald-600">AI-consistent quality</td>
-                </tr>
-                <tr className="border-b border-slate-100">
-                  <td className="py-3 pr-4 font-medium text-[#111827]">Training</td>
-                  <td className="py-3 px-4 text-center text-[#6B7280]">Ongoing investment</td>
-                  <td className="py-3 px-4 text-center text-emerald-600">Continuously learning</td>
-                </tr>
-                <tr>
-                  <td className="py-3 pr-4 font-medium text-[#111827]">Burnout risk</td>
-                  <td className="py-3 px-4 text-center text-[#6B7280]">High turnover</td>
-                  <td className="py-3 px-4 text-center text-emerald-600">No turnover</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-4 md:mb-6">The Hybrid Opportunity</h2>
-          <p className="text-xs md:text-sm text-[#6B7280] mb-4 md:mb-6">
-            You don't have to choose one or the other. Many organizations use Abridge to extend
-            their scribe coverage while keeping scribes for complex cases.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div className="bg-slate-50 rounded-lg p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-slate-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-[#111827]">Keep Scribes For</div>
-                  <div className="text-xs text-[#6B7280]">Complex, high-acuity cases</div>
-                </div>
-              </div>
-              <ul className="text-sm text-[#6B7280] space-y-2">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-slate-500" />
-                  Complex surgical cases
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-slate-500" />
-                  Multi-hour procedures
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-slate-500" />
-                  Provider preference
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-emerald-50 rounded-lg p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-[#111827]">Add Abridge For</div>
-                  <div className="text-xs text-emerald-600">Universal coverage at scale</div>
-                </div>
-              </div>
-              <ul className="text-sm text-emerald-700 space-y-2">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  All unsupported providers
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  Evening/weekend coverage
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  Backup for scribe absences
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 md:p-6 lg:p-8 text-white mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold mb-3 md:mb-4">Your Path Forward</h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
-            <div className="bg-white/10 rounded-lg p-3 md:p-4 text-center">
-              <div className="text-2xl md:text-3xl font-bold">{calculations.providersWithoutSupport}</div>
-              <div className="text-xs md:text-sm text-emerald-100">providers to enable</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-3 md:p-4 text-center">
-              <div className="text-2xl md:text-3xl font-bold">{formatCurrency(calculations.abridgeValueCreated)}</div>
-              <div className="text-xs md:text-sm text-emerald-100">potential annual value</div>
-            </div>
-            <div className="bg-white/10 rounded-lg p-3 md:p-4 text-center">
-              <div className="text-2xl md:text-3xl font-bold">{formatCurrency(calculations.savingsVsFullScribe)}</div>
-              <div className="text-xs md:text-sm text-emerald-100">savings vs. full scribes</div>
-            </div>
-          </div>
-
-          <p className="text-emerald-100 text-xs md:text-sm mb-4 md:mb-6">
-            By adding Abridge for your {calculations.providersWithoutSupport} unsupported providers,
-            you can achieve universal coverage at a fraction of the cost of scaling your scribe
-            program.
-          </p>
-        </section>
-
-        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-3 md:mb-4">Methodology</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-4">Methodology & Assumptions</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-slate-50 rounded-lg p-4">
-              <div className="font-medium text-[#111827] mb-1">Scribe Assumptions</div>
-              <ul className="text-[#6B7280] space-y-1">
-                <li>• {SCRIBE_ASSUMPTIONS.weeksPerYear} working weeks/year</li>
-                <li>• {SCRIBE_ASSUMPTIONS.scribeToProviderRatio}:1 scribe-to-provider ratio default</li>
-                <li>• {SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe} min/encounter without scribe</li>
+              <div className="font-medium text-[#111827] mb-2 text-sm">From Your Inputs</div>
+              <ul className="text-sm text-[#6B7280] space-y-1">
+                <li>Scribe count: {inputs.scribeCount}</li>
+                <li>Cost per scribe: ${inputs.scribeCostPerHour}/hour x {inputs.scribeHoursPerWeek} hrs/week = {formatCurrency(calculations.scribeSalaryAnnual)}/year</li>
+                <li>Providers with scribes: {inputs.providersWithScribes}</li>
+                <li>Total providers: {inputs.totalProviders}</li>
+                <li>Annual encounters: {inputs.annualEncounters.toLocaleString()}</li>
               </ul>
             </div>
+
             <div className="bg-slate-50 rounded-lg p-4">
-              <div className="font-medium text-[#111827] mb-1">Abridge Benchmarks</div>
-              <ul className="text-[#6B7280] space-y-1">
-                <li>• ${SCRIBE_ASSUMPTIONS.abridgeCostPerProvider.toLocaleString()}/provider/year</li>
-                <li>• {SCRIBE_ASSUMPTIONS.abridgeUtilization * 100}% typical utilization</li>
-                <li>• {SCRIBE_ASSUMPTIONS.abridgeTimeSavedPerEncounter} min saved per encounter</li>
+              <div className="font-medium text-[#111827] mb-2 text-sm">Calculated Values</div>
+              <ul className="text-sm text-[#6B7280] space-y-1">
+                <li>Scribe:Provider ratio: 1:{calculations.scribeRatio} (from your inputs)</li>
+                <li>Encounters per provider: {calculations.encountersPerProvider.toLocaleString()}/year</li>
+              </ul>
+              
+              <div className="font-medium text-[#111827] mb-2 mt-4 text-sm">Industry Assumptions</div>
+              <ul className="text-sm text-[#6B7280] space-y-1">
+                <li>Documentation time without scribe: {SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe} min/encounter</li>
+                <li>After-hours documentation: ~{SCRIBE_ASSUMPTIONS.pajamaTimePercent * 100}% of total</li>
+                <li>Working weeks per year: {SCRIBE_ASSUMPTIONS.weeksPerYear}</li>
               </ul>
             </div>
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-4 md:p-6 lg:p-8">
+        {/* Section 7: Export */}
+        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
             <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-export-pdf">
               <Download className="w-4 h-4 mr-2" />
