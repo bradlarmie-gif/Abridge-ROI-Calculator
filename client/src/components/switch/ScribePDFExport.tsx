@@ -428,6 +428,56 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 
+  findingsSection: {
+    backgroundColor: colors.backgroundGray,
+    padding: 14,
+    borderRadius: 4,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  findingsTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  findingsNarrative: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    marginBottom: 12,
+  },
+  findingsSubsection: {
+    marginBottom: 10,
+  },
+  findingsSubtitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  findingsText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+  findingsStrategic: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+    fontStyle: "italic",
+  },
+  findingsStrategicText: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    lineHeight: 1.5,
+    fontStyle: "italic",
+  },
+
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -454,6 +504,75 @@ const formatCurrency = (num: number): string => {
 };
 
 const formatNumber = (num: number): string => num.toLocaleString();
+
+interface ScribeFindings {
+  coverageNarrative: string;
+  burdenStatement: string;
+  scalingReality: string;
+  strategicQuestion: string;
+}
+
+const getScribeFindings = (data: {
+  coveragePercent: number;
+  unsupportedProviders: number;
+  totalProviders: number;
+  costToScale: number;
+  documentationHours: number;
+  hoursPerProvider: number;
+  scribeRatio: number;
+}): ScribeFindings => {
+  const { coveragePercent, unsupportedProviders, totalProviders, costToScale, documentationHours, hoursPerProvider, scribeRatio } = data;
+
+  let coverageNarrative = '';
+  let burdenStatement = '';
+  let scalingReality = '';
+  let strategicQuestion = '';
+
+  if (coveragePercent < 15) {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program supports a small fraction of your provider base. This creates a significant disparity: ${unsupportedProviders} providers handle documentation alone while a select few receive support. The question isn't whether your scribe program is valuable to those who have it — it's whether this partial coverage model is sustainable or equitable.`;
+    
+    burdenStatement = `Your unsupported providers collectively spend ${formatNumber(documentationHours)} hours annually on documentation — that's ${hoursPerProvider} hours per provider per year, or roughly ${Math.round(hoursPerProvider/50)} hours per week. Much of this occurs outside clinic hours, contributing to burnout and dissatisfaction.`;
+    
+    scalingReality = `To extend scribe coverage to all ${totalProviders} providers would require ${formatCurrency(costToScale)} in additional annual investment. At your current scribe-to-provider ratio of 1:${scribeRatio}, there's no way around this math — scribes scale linearly.`;
+    
+    strategicQuestion = `The strategic question: Is it better to provide excellent support to ${coveragePercent}% of providers, or find a model that can provide meaningful support to 100%?`;
+  } 
+  else if (coveragePercent < 30) {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program has grown beyond a pilot but still leaves the majority of providers unsupported. You've likely seen the value scribes provide — the question is how to extend that value without the linear cost scaling that comes with the scribe model.`;
+    
+    const fteEquivalents = Math.round(documentationHours / 2000);
+    burdenStatement = `The ${unsupportedProviders} providers without scribe support spend a combined ${formatNumber(documentationHours)} hours on documentation annually. That's ${fteEquivalents} FTE-equivalents of time that could be spent on patient care, research, or simply going home on time.`;
+    
+    scalingReality = `Scaling from ${coveragePercent}% to 100% coverage with scribes would cost ${formatCurrency(costToScale)} more per year. This is the fundamental challenge of the scribe model: the cost curve is a straight line with no efficiency gains at scale.`;
+    
+    strategicQuestion = `Many organizations at this stage face a choice: continue expanding scribes incrementally (expensive), hold at current coverage (creates inequity), or explore alternative models for the unsupported majority.`;
+  } 
+  else if (coveragePercent < 50) {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is substantial but still leaves ${unsupportedProviders} providers without support. You've invested significantly in documentation support — the question is whether doubling down on scribes or exploring complementary approaches makes more sense.`;
+    
+    burdenStatement = `Your unsupported providers still spend ${formatNumber(documentationHours)} hours annually on documentation. While this is fewer providers than organizations with lower coverage, the burden on each individual is the same: ${hoursPerProvider} hours per year of documentation work.`;
+    
+    scalingReality = `Completing the journey to 100% scribe coverage would require an additional ${formatCurrency(costToScale)} annually. At this investment level, the question of ROI becomes critical — are there more efficient ways to support the remaining ${100-coveragePercent}%?`;
+    
+    strategicQuestion = `Organizations with meaningful scribe coverage often find that a hybrid approach works best: scribes for high-complexity providers, alternative solutions for others. This maximizes value while controlling costs.`;
+  } 
+  else {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is among the more comprehensive we see. You've made a significant commitment to documentation support. The question at this stage is optimization and sustainability.`;
+    
+    burdenStatement = `The remaining ${unsupportedProviders} unsupported providers still spend ${formatNumber(documentationHours)} hours on documentation annually. Even at high coverage levels, there are gaps — and those gaps represent burden on specific providers.`;
+    
+    scalingReality = `Reaching 100% coverage would require an additional ${formatCurrency(costToScale)} annually. At your current coverage level, you may find that the remaining gaps are harder to fill — often they represent providers in settings or specialties where scribes are less practical.`;
+    
+    strategicQuestion = `For organizations with high scribe coverage, the strategic questions shift: How do you maintain quality and reduce turnover? How do you fill gaps where scribes don't fit? And how do you prepare for the evolution of documentation technology?`;
+  }
+
+  return {
+    coverageNarrative,
+    burdenStatement,
+    scalingReality,
+    strategicQuestion,
+  };
+};
 
 const CoverageBar = ({ coveragePercent }: { coveragePercent: number }) => {
   const barWidth = 460;
@@ -529,6 +648,16 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
 
   const encountersPerProvider = Math.round(inputs.annualEncounters / inputs.totalProviders);
   const docTimePerProviderHours = Math.round((encountersPerProvider * SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe) / 60);
+
+  const findings = getScribeFindings({
+    coveragePercent: calculations.coveragePercent,
+    unsupportedProviders: calculations.providersWithoutSupport,
+    totalProviders: inputs.totalProviders,
+    costToScale: calculations.costToScale,
+    documentationHours: calculations.unsupportedDocTimeHours,
+    hoursPerProvider: calculations.docTimePerUnsupportedProvider,
+    scribeRatio: calculations.scribeRatio,
+  });
 
   return (
     <Document>
@@ -606,6 +735,30 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
           <Text style={styles.spectrumExplanation}>
             At {calculations.coveragePercent}% coverage, {calculations.providersWithoutSupport} of your {inputs.totalProviders} providers have no documentation support. This raises a strategic question: is partial coverage sustainable, or does the gap create problems that offset the benefits?
           </Text>
+        </View>
+
+        <View style={styles.findingsSection}>
+          <Text style={styles.findingsTitle}>OUR FINDINGS</Text>
+          <Text style={styles.findingsNarrative}>
+            {findings.coverageNarrative}
+          </Text>
+          <View style={styles.findingsSubsection}>
+            <Text style={styles.findingsSubtitle}>The Documentation Burden</Text>
+            <Text style={styles.findingsText}>
+              {findings.burdenStatement}
+            </Text>
+          </View>
+          <View style={styles.findingsSubsection}>
+            <Text style={styles.findingsSubtitle}>The Scaling Reality</Text>
+            <Text style={styles.findingsText}>
+              {findings.scalingReality}
+            </Text>
+          </View>
+          <View style={styles.findingsStrategic}>
+            <Text style={styles.findingsStrategicText}>
+              {findings.strategicQuestion}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.footer}>

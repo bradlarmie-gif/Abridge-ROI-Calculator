@@ -493,6 +493,63 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 
+  findingsSection: {
+    backgroundColor: colors.backgroundGray,
+    padding: 14,
+    borderRadius: 4,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  findingsTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  findingsNarrative: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    marginBottom: 12,
+  },
+  findingsSubsection: {
+    marginBottom: 10,
+  },
+  findingsSubtitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  findingsText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+  dimensionInsights: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  insightItem: {
+    marginBottom: 6,
+  },
+  insightDimension: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  insightText: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    lineHeight: 1.4,
+    marginTop: 2,
+  },
+
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -519,6 +576,99 @@ const formatCurrency = (num: number): string => {
 };
 
 const formatNumber = (num: number): string => num.toLocaleString();
+
+interface DimensionInfo {
+  name: string;
+  score: number;
+}
+
+const getStageNarrative = (stage: string, score: number, gap: number): string => {
+  switch(stage) {
+    case 'Early Stage':
+      return `At ${score}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments, but it does mean significant value is being left on the table. The gap of ${formatCurrency(gap)} annually represents real dollars that could be recovered with focused optimization.`;
+    case 'Developing':
+      return `At ${score}% value realization, your organization has made progress but is at a critical juncture. This is where most organizations plateau without focused optimization. You've proven the solution works — the question now is whether you'll capture its full potential or settle for partial value.`;
+    case 'Optimized':
+      return `At ${score}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI, but there's still a gap of ${formatCurrency(gap)} annually that represents optimization opportunity.`;
+    case 'Transformed':
+      return `At ${score}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining gap of ${formatCurrency(gap)} represents marginal optimization opportunity.`;
+    default:
+      return `At ${score}% value realization, your organization has room to optimize ambient AI performance.`;
+  }
+};
+
+const getPrimaryRecommendation = (lowest: DimensionInfo, highest: DimensionInfo): string => {
+  return `Your data shows ${lowest.name} as your biggest gap (${lowest.score}% of benchmark), while ${highest.name} is your relative strength (${highest.score}%). This suggests targeted intervention on ${lowest.name} could yield disproportionate returns without disrupting what's already working.`;
+};
+
+const getRiskStatement = (stage: string, gap: number): string => {
+  switch(stage) {
+    case 'Early Stage':
+      return `The risk of staying at this stage: providers may lose confidence in the solution if they don't see consistent value, leading to declining utilization over time — a downward spiral that becomes harder to reverse.`;
+    case 'Developing':
+      return `Organizations that stay in the "Developing" stage often see erosion over time — small drops in utilization, creeping dissatisfaction, gradual return to old habits. The ${formatCurrency(gap)} annual gap compounds: every year at this level is another year of unrealized value.`;
+    case 'Optimized':
+      return `The risk at this stage is complacency. "Good enough" can become the enemy of excellent. Organizations that push from Optimized to Transformed often see the highest ROI on their optimization efforts because the foundation is already strong.`;
+    case 'Transformed':
+      return `Even top performers need to maintain vigilance. Technology evolves, staff turns over, workflows change. What got you to Transformed requires ongoing attention to stay there.`;
+    default:
+      return `Gaps compound over time. Each year at current performance means another ${formatCurrency(gap)} in unrealized value.`;
+  }
+};
+
+interface DimensionInsight {
+  dimension: string;
+  insight: string;
+}
+
+const getDimensionInsights = (scores: { utilization: number; efficiency: number; quality: number; satisfaction: number }): DimensionInsight[] => {
+  const insights: DimensionInsight[] = [];
+  
+  if (scores.utilization < 70) {
+    insights.push({
+      dimension: 'Utilization',
+      insight: `At ${scores.utilization}% of benchmark, many encounters aren't using ambient documentation at all. This is often a change management issue — providers may not have formed the habit, or friction in the workflow is preventing consistent adoption.`
+    });
+  }
+  
+  if (scores.efficiency < 60) {
+    insights.push({
+      dimension: 'Efficiency',
+      insight: `At ${scores.efficiency}% of benchmark, time savings per encounter is below expectations. This could indicate workflow issues, suboptimal configuration, or that providers are editing notes extensively after generation.`
+    });
+  }
+  
+  if (scores.quality < 50) {
+    insights.push({
+      dimension: 'Quality',
+      insight: `At ${scores.quality}% of benchmark, documentation quality improvement is lagging. This is often the largest dollar opportunity — better documentation drives better coding and reimbursement.`
+    });
+  }
+  
+  if (scores.satisfaction < 75) {
+    insights.push({
+      dimension: 'Satisfaction',
+      insight: `At ${scores.satisfaction}% of benchmark, provider satisfaction is a concern. Dissatisfied providers use solutions less over time. Understanding WHY satisfaction is low is critical before it affects utilization.`
+    });
+  }
+  
+  return insights;
+};
+
+const getDimensionRankings = (scores: { utilization: number; efficiency: number; quality: number; satisfaction: number }): { lowest: DimensionInfo; highest: DimensionInfo } => {
+  const dimensions: DimensionInfo[] = [
+    { name: 'Utilization', score: scores.utilization },
+    { name: 'Efficiency', score: scores.efficiency },
+    { name: 'Quality', score: scores.quality },
+    { name: 'Satisfaction', score: scores.satisfaction },
+  ];
+  
+  const sorted = [...dimensions].sort((a, b) => a.score - b.score);
+  return {
+    lowest: sorted[0],
+    highest: sorted[sorted.length - 1],
+  };
+};
 
 const SpectrumBar = ({ score }: { score: number }) => {
   const barWidth = 460;
@@ -602,6 +752,20 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
   const lowestDimension = gapDimensions.reduce((min, dim) => 
     dim.score < min.score ? dim : min, gapDimensions[0]);
 
+  const dimensionRankings = getDimensionRankings({
+    utilization: calculations.utilizationScore,
+    efficiency: calculations.efficiencyScore,
+    quality: calculations.qualityScore,
+    satisfaction: calculations.satisfactionScore,
+  });
+
+  const dimensionInsights = getDimensionInsights({
+    utilization: calculations.utilizationScore,
+    efficiency: calculations.efficiencyScore,
+    quality: calculations.qualityScore,
+    satisfaction: calculations.satisfactionScore,
+  });
+
   return (
     <Document>
       {/* PAGE 1: THE STORY */}
@@ -655,6 +819,36 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
         </View>
 
         <View style={styles.divider} />
+
+        <View style={styles.findingsSection}>
+          <Text style={styles.findingsTitle}>OUR FINDINGS</Text>
+          <Text style={styles.findingsNarrative}>
+            {getStageNarrative(calculations.maturityLevel, calculations.realizationScore, calculations.annualGap)}
+          </Text>
+          <View style={styles.findingsSubsection}>
+            <Text style={styles.findingsSubtitle}>Primary Opportunity</Text>
+            <Text style={styles.findingsText}>
+              {getPrimaryRecommendation(dimensionRankings.lowest, dimensionRankings.highest)}
+            </Text>
+          </View>
+          <View style={styles.findingsSubsection}>
+            <Text style={styles.findingsSubtitle}>What's at Stake</Text>
+            <Text style={styles.findingsText}>
+              {getRiskStatement(calculations.maturityLevel, calculations.annualGap)}
+            </Text>
+          </View>
+          {dimensionInsights.length > 0 && (
+            <View style={styles.dimensionInsights}>
+              <Text style={styles.findingsSubtitle}>Dimension-Specific Observations</Text>
+              {dimensionInsights.map((insight, i) => (
+                <View key={i} style={styles.insightItem}>
+                  <Text style={styles.insightDimension}>{insight.dimension}:</Text>
+                  <Text style={styles.insightText}>{insight.insight}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
 
         <Text style={styles.sectionTitle}>THE VALUE REALIZATION SPECTRUM</Text>
         <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>

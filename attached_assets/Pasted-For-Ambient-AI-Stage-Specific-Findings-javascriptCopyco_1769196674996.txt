@@ -1,0 +1,468 @@
+For Ambient AI: Stage-Specific Findings
+javascriptCopyconst getAmbientFindings = (data) => {
+  const {
+    realizationScore,
+    maturityStage,
+    utilizationScore,
+    efficiencyScore,
+    qualityScore,
+    satisfactionScore,
+    annualGap,
+    lowestDimension, // calculated: which dimension is weakest
+    highestDimension, // calculated: which is strongest
+  } = data;
+
+  // Determine the narrative based on stage
+  let stageNarrative = '';
+  let primaryRecommendation = '';
+  let riskStatement = '';
+
+  if (maturityStage === 'Early Stage') {
+    stageNarrative = `At ${realizationScore}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments, but it does mean significant value is being left on the table. The gap of ${formatCurrency(annualGap)} annually represents real dollars that could be recovered with focused optimization.`;
+    
+    primaryRecommendation = `Your most significant opportunity is in ${lowestDimension.name} (${lowestDimension.score}% of benchmark). Organizations at this stage typically see the fastest gains by focusing on adoption and utilization before optimizing for efficiency or quality.`;
+    
+    riskStatement = `The risk of staying at this stage: providers may lose confidence in the solution if they don't see consistent value, leading to declining utilization over time — a downward spiral that becomes harder to reverse.`;
+  } 
+  
+  else if (maturityStage === 'Developing') {
+    stageNarrative = `At ${realizationScore}% value realization, your organization has made progress but is at a critical juncture. This is where most organizations plateau without focused optimization. You've proven the solution works — the question now is whether you'll capture its full potential or settle for partial value.`;
+    
+    primaryRecommendation = `Your data shows ${lowestDimension.name} as your biggest gap (${lowestDimension.score}% of benchmark), while ${highestDimension.name} is your strength (${highestDimension.score}%). This suggests targeted intervention on ${lowestDimension.name} could yield disproportionate returns.`;
+    
+    riskStatement = `Organizations that stay in the "Developing" stage often see erosion over time — small drops in utilization, creeping dissatisfaction, gradual return to old habits. The ${formatCurrency(annualGap)} annual gap compounds: every year at this level is another year of unrealized value.`;
+  } 
+  
+  else if (maturityStage === 'Optimized') {
+    stageNarrative = `At ${realizationScore}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI, but there's still a gap of ${formatCurrency(annualGap)} annually that represents optimization opportunity.`;
+    
+    primaryRecommendation = `At this stage, gains often come from fine-tuning rather than wholesale change. Your ${lowestDimension.name} dimension (${lowestDimension.score}%) is the area with most remaining headroom. Consider whether workflow adjustments, additional training, or configuration changes could close this gap.`;
+    
+    riskStatement = `The risk at this stage is complacency. "Good enough" can become the enemy of excellent. Organizations that push from Optimized to Transformed often see the highest ROI on their optimization efforts because the foundation is already strong.`;
+  } 
+  
+  else if (maturityStage === 'Transformed') {
+    stageNarrative = `At ${realizationScore}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining gap of ${formatCurrency(annualGap)} represents marginal optimization opportunity.`;
+    
+    primaryRecommendation = `At this stage, focus shifts from optimization to expansion. Consider: Are there additional care settings, specialties, or use cases where this success could be replicated? The playbook that got you here could be valuable elsewhere in the organization.`;
+    
+    riskStatement = `Even top performers need to maintain vigilance. Technology evolves, staff turns over, workflows change. What got you to Transformed requires ongoing attention to stay there.`;
+  }
+
+  // Dimension-specific insights
+  const dimensionInsights = [];
+  
+  if (utilizationScore < 70) {
+    dimensionInsights.push({
+      dimension: 'Utilization',
+      insight: `At ${utilizationScore}% of benchmark, many encounters aren't using ambient documentation at all. This is often a change management issue — providers may not have formed the habit, or friction in the workflow is preventing adoption.`
+    });
+  }
+  
+  if (efficiencyScore < 60) {
+    dimensionInsights.push({
+      dimension: 'Efficiency',
+      insight: `At ${efficiencyScore}% of benchmark, the time savings per encounter is below expectations. This could indicate workflow issues, suboptimal configuration, or that providers are still editing notes extensively after generation.`
+    });
+  }
+  
+  if (qualityScore < 50) {
+    dimensionInsights.push({
+      dimension: 'Quality',
+      insight: `At ${qualityScore}% of benchmark, documentation quality improvement is lagging. This is often the largest dollar opportunity — better documentation drives better coding and reimbursement. Consider whether note templates, specialty configurations, or coding workflows need attention.`
+    });
+  }
+  
+  if (satisfactionScore < 75) {
+    dimensionInsights.push({
+      dimension: 'Satisfaction',
+      insight: `At ${satisfactionScore}% of benchmark, provider satisfaction is a warning sign. Dissatisfied providers use solutions less over time, creating a downward spiral. Understanding WHY satisfaction is low is critical before it affects utilization.`
+    });
+  }
+
+  return {
+    stageNarrative,
+    primaryRecommendation,
+    riskStatement,
+    dimensionInsights,
+  };
+};
+
+For Scribes: Coverage-Specific Findings
+javascriptCopyconst getScribeFindings = (data) => {
+  const {
+    coveragePercent,
+    unsupportedProviders,
+    totalProviders,
+    costToScale,
+    documentationHours,
+    hoursPerProvider,
+    scribeRatio,
+  } = data;
+
+  let coverageNarrative = '';
+  let burdenStatement = '';
+  let scalingReality = '';
+  let strategicQuestion = '';
+
+  if (coveragePercent < 15) {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program supports a small fraction of your provider base. This creates a significant disparity: ${unsupportedProviders} providers handle documentation alone while a select few receive support. The question isn't whether your scribe program is valuable to those who have it — it's whether this partial coverage model is sustainable or equitable.`;
+    
+    burdenStatement = `Your unsupported providers collectively spend ${formatNumber(documentationHours)} hours annually on documentation — that's ${hoursPerProvider} hours per provider per year, or roughly ${Math.round(hoursPerProvider/50)} hours per week. Much of this occurs outside clinic hours, contributing to burnout and dissatisfaction.`;
+    
+    scalingReality = `To extend scribe coverage to all ${totalProviders} providers would require ${formatCurrency(costToScale)} in additional annual investment. At your current scribe-to-provider ratio of 1:${scribeRatio}, there's no way around this math — scribes scale linearly.`;
+    
+    strategicQuestion = `The strategic question: Is it better to provide excellent support to ${coveragePercent}% of providers, or find a model that can provide meaningful support to 100%?`;
+  } 
+  
+  else if (coveragePercent < 30) {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program has grown beyond a pilot but still leaves the majority of providers unsupported. You've likely seen the value scribes provide — the question is how to extend that value without the linear cost scaling that comes with the scribe model.`;
+    
+    burdenStatement = `The ${unsupportedProviders} providers without scribe support spend a combined ${formatNumber(documentationHours)} hours on documentation annually. That's ${Math.round(documentationHours/2000)} FTE-equivalents of time that could be spent on patient care, research, or simply going home on time.`;
+    
+    scalingReality = `Scaling from ${coveragePercent}% to 100% coverage with scribes would cost ${formatCurrency(costToScale)} more per year. This is the fundamental challenge of the scribe model: the cost curve is a straight line with no efficiency gains at scale.`;
+    
+    strategicQuestion = `Many organizations at this stage face a choice: continue expanding scribes incrementally (expensive), hold at current coverage (creates inequity), or explore alternative models for the unsupported majority.`;
+  } 
+  
+  else if (coveragePercent < 50) {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is substantial but still leaves ${unsupportedProviders} providers without support. You've invested significantly in documentation support — the question is whether doubling down on scribes or exploring complementary approaches makes more sense.`;
+    
+    burdenStatement = `Your unsupported providers still spend ${formatNumber(documentationHours)} hours annually on documentation. While this is fewer providers than organizations with lower coverage, the burden on each individual is the same: ${hoursPerProvider} hours per year of documentation work.`;
+    
+    scalingReality = `Completing the journey to 100% scribe coverage would require an additional ${formatCurrency(costToScale)} annually. At this investment level, the question of ROI becomes critical — are there more efficient ways to support the remaining ${100-coveragePercent}%?`;
+    
+    strategicQuestion = `Organizations with meaningful scribe coverage often find that a hybrid approach works best: scribes for high-complexity providers, alternative solutions for others. This maximizes value while controlling costs.`;
+  } 
+  
+  else {
+    coverageNarrative = `At ${coveragePercent}% coverage, your scribe program is among the more comprehensive we see. You've made a significant commitment to documentation support. The question at this stage is optimization and sustainability.`;
+    
+    burdenStatement = `The remaining ${unsupportedProviders} unsupported providers still spend ${formatNumber(documentationHours)} hours on documentation annually. Even at high coverage levels, there are gaps — and those gaps represent burden on specific providers.`;
+    
+    scalingReality = `Reaching 100% coverage would require an additional ${formatCurrency(costToScale)} annually. At your current coverage level, you may find that the remaining gaps are harder to fill — often they represent providers in settings or specialties where scribes are less practical.`;
+    
+    strategicQuestion = `For organizations with high scribe coverage, the strategic questions shift: How do you maintain quality and reduce turnover? How do you fill gaps where scribes don't fit? And how do you prepare for the evolution of documentation technology?`;
+  }
+
+  return {
+    coverageNarrative,
+    burdenStatement,
+    scalingReality,
+    strategicQuestion,
+  };
+};
+
+Where This Goes in the PDF
+For Ambient AI PDF — Add after "YOUR RESULTS AT A GLANCE":
+CopyOUR FINDINGS
+────────────
+
+[stageNarrative - 2-3 sentences about where they are]
+
+[primaryRecommendation - what to focus on]
+
+[riskStatement - what happens if they don't act]
+
+DIMENSION-SPECIFIC OBSERVATIONS
+
+[For each dimension that's below threshold, show the insight]
+
+- Utilization: [insight if below 70%]
+- Efficiency: [insight if below 60%]
+- Quality: [insight if below 50%]
+- Satisfaction: [insight if below 75%]
+For Scribe PDF — Add after "THE COVERAGE SPECTRUM":
+CopyOUR FINDINGS
+────────────
+
+[coverageNarrative - 2-3 sentences about their coverage situation]
+
+[burdenStatement - what this means for unsupported providers]
+
+[scalingReality - the math of scaling scribes]
+
+[strategicQuestion - framed as a question, not a pitch]
+
+Replit Prompt
+CopyAdd a dynamic "OUR FINDINGS" section to both PDF exports that generates personalized insights based on the user's actual data. This section should feel like a consultant's assessment — specific, insightful, and tailored to their situation.
+
+## AMBIENT AI PDF
+
+Add a new section called "OUR FINDINGS" after "YOUR RESULTS AT A GLANCE" and before "THE VALUE REALIZATION SPECTRUM".
+
+### Content Structure:
+
+```jsx
+<View style={styles.findingsSection}>
+  <Text style={styles.findingsTitle}>OUR FINDINGS</Text>
+  
+  {/* Stage-specific narrative */}
+  <Text style={styles.findingsNarrative}>
+    {getStageNarrative(maturityStage, realizationScore, annualGap)}
+  </Text>
+  
+  {/* Primary recommendation */}
+  <View style={styles.findingsRecommendation}>
+    <Text style={styles.findingsSubtitle}>Primary Opportunity</Text>
+    <Text style={styles.findingsText}>
+      {getPrimaryRecommendation(lowestDimension, highestDimension)}
+    </Text>
+  </View>
+  
+  {/* Risk statement */}
+  <View style={styles.findingsRisk}>
+    <Text style={styles.findingsSubtitle}>What's at Stake</Text>
+    <Text style={styles.findingsText}>
+      {getRiskStatement(maturityStage, annualGap)}
+    </Text>
+  </View>
+  
+  {/* Dimension-specific insights (only show if below threshold) */}
+  {dimensionInsights.length > 0 && (
+    <View style={styles.dimensionInsights}>
+      <Text style={styles.findingsSubtitle}>Dimension-Specific Observations</Text>
+      {dimensionInsights.map((insight, i) => (
+        <View key={i} style={styles.insightItem}>
+          <Text style={styles.insightDimension}>{insight.dimension}:</Text>
+          <Text style={styles.insightText}>{insight.insight}</Text>
+        </View>
+      ))}
+    </View>
+  )}
+</View>
+Logic Functions:
+javascriptCopyconst getStageNarrative = (stage, score, gap) => {
+  switch(stage) {
+    case 'Early Stage':
+      return `At ${score}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments, but it does mean significant value is being left on the table. The gap of ${formatCurrency(gap)} annually represents real dollars that could be recovered with focused optimization.`;
+    
+    case 'Developing':
+      return `At ${score}% value realization, your organization has made progress but is at a critical juncture. This is where most organizations plateau without focused optimization. You've proven the solution works — the question now is whether you'll capture its full potential or settle for partial value.`;
+    
+    case 'Optimized':
+      return `At ${score}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI, but there's still a gap of ${formatCurrency(gap)} annually that represents optimization opportunity.`;
+    
+    case 'Transformed':
+      return `At ${score}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining gap of ${formatCurrency(gap)} represents marginal optimization opportunity.`;
+    
+    default:
+      return '';
+  }
+};
+
+const getPrimaryRecommendation = (lowest, highest) => {
+  return `Your data shows ${lowest.name} as your biggest gap (${lowest.score}% of benchmark), while ${highest.name} is your relative strength (${highest.score}%). This suggests targeted intervention on ${lowest.name} could yield disproportionate returns without disrupting what's already working.`;
+};
+
+const getRiskStatement = (stage, gap) => {
+  switch(stage) {
+    case 'Early Stage':
+      return `The risk of staying at this stage: providers may lose confidence in the solution if they don't see consistent value, leading to declining utilization over time — a downward spiral that becomes harder to reverse.`;
+    
+    case 'Developing':
+      return `Organizations that stay in the "Developing" stage often see erosion over time — small drops in utilization, creeping dissatisfaction, gradual return to old habits. The ${formatCurrency(gap)} annual gap compounds: every year at this level is another year of unrealized value.`;
+    
+    case 'Optimized':
+      return `The risk at this stage is complacency. "Good enough" can become the enemy of excellent. Organizations that push from Optimized to Transformed often see the highest ROI on their optimization efforts because the foundation is already strong.`;
+    
+    case 'Transformed':
+      return `Even top performers need to maintain vigilance. Technology evolves, staff turns over, workflows change. What got you to Transformed requires ongoing attention to stay there.`;
+    
+    default:
+      return '';
+  }
+};
+
+const getDimensionInsights = (scores) => {
+  const insights = [];
+  
+  if (scores.utilization < 70) {
+    insights.push({
+      dimension: 'Utilization',
+      insight: `At ${scores.utilization}% of benchmark, many encounters aren't using ambient documentation at all. This is often a change management issue — providers may not have formed the habit, or friction in the workflow is preventing consistent adoption.`
+    });
+  }
+  
+  if (scores.efficiency < 60) {
+    insights.push({
+      dimension: 'Efficiency',
+      insight: `At ${scores.efficiency}% of benchmark, time savings per encounter is below expectations. This could indicate workflow issues, suboptimal configuration, or that providers are editing notes extensively after generation.`
+    });
+  }
+  
+  if (scores.quality < 50) {
+    insights.push({
+      dimension: 'Quality',
+      insight: `At ${scores.quality}% of benchmark, documentation quality improvement is lagging. This is often the largest dollar opportunity — better documentation drives better coding and reimbursement.`
+    });
+  }
+  
+  if (scores.satisfaction < 75) {
+    insights.push({
+      dimension: 'Satisfaction',
+      insight: `At ${scores.satisfaction}% of benchmark, provider satisfaction is a concern. Dissatisfied providers use solutions less over time. Understanding WHY satisfaction is low is critical before it affects utilization.`
+    });
+  }
+  
+  return insights;
+};
+
+// Calculate lowest and highest dimensions
+const getDimensionRankings = (scores) => {
+  const dimensions = [
+    { name: 'Utilization', score: scores.utilization },
+    { name: 'Efficiency', score: scores.efficiency },
+    { name: 'Quality', score: scores.quality },
+    { name: 'Satisfaction', score: scores.satisfaction },
+  ];
+  
+  const sorted = dimensions.sort((a, b) => a.score - b.score);
+  return {
+    lowest: sorted[0],
+    highest: sorted[sorted.length - 1],
+  };
+};
+Styling:
+javascriptCopyfindingsSection: {
+  backgroundColor: '#F9FAFB',
+  padding: 16,
+  borderRadius: 6,
+  marginBottom: 20,
+  borderLeftWidth: 4,
+  borderLeftColor: '#E85A4F',
+},
+findingsTitle: {
+  fontSize: 11,
+  fontWeight: 'bold',
+  color: '#E85A4F',
+  marginBottom: 12,
+  textTransform: 'uppercase',
+  letterSpacing: 0.5,
+},
+findingsNarrative: {
+  fontSize: 10,
+  color: '#374151',
+  lineHeight: 1.6,
+  marginBottom: 16,
+},
+findingsRecommendation: {
+  marginBottom: 12,
+},
+findingsRisk: {
+  marginBottom: 12,
+},
+findingsSubtitle: {
+  fontSize: 9,
+  fontWeight: 'bold',
+  color: '#111827',
+  marginBottom: 4,
+},
+findingsText: {
+  fontSize: 9,
+  color: '#374151',
+  lineHeight: 1.5,
+},
+dimensionInsights: {
+  marginTop: 12,
+  paddingTop: 12,
+  borderTopWidth: 1,
+  borderTopColor: '#E5E7EB',
+},
+insightItem: {
+  marginBottom: 8,
+},
+insightDimension: {
+  fontSize: 9,
+  fontWeight: 'bold',
+  color: '#111827',
+},
+insightText: {
+  fontSize: 8,
+  color: '#6B7280',
+  lineHeight: 1.4,
+  marginTop: 2,
+},
+
+SCRIBE PDF
+Add a new section called "OUR FINDINGS" after "THE COVERAGE SPECTRUM" and before "HOW SCRIBE PROGRAMS SCALE".
+Content Structure:
+jsxCopy<View style={styles.findingsSection}>
+  <Text style={styles.findingsTitle}>OUR FINDINGS</Text>
+  
+  {/* Coverage narrative */}
+  <Text style={styles.findingsNarrative}>
+    {getCoverageNarrative(coveragePercent, unsupportedProviders, totalProviders)}
+  </Text>
+  
+  {/* Burden statement */}
+  <View style={styles.findingsBurden}>
+    <Text style={styles.findingsSubtitle}>The Documentation Burden</Text>
+    <Text style={styles.findingsText}>
+      {getBurdenStatement(unsupportedProviders, documentationHours, hoursPerProvider)}
+    </Text>
+  </View>
+  
+  {/* Scaling reality */}
+  <View style={styles.findingsScaling}>
+    <Text style={styles.findingsSubtitle}>The Scaling Reality</Text>
+    <Text style={styles.findingsText}>
+      {getScalingReality(coveragePercent, costToScale, scribeRatio, totalProviders)}
+    </Text>
+  </View>
+  
+  {/* Strategic question */}
+  <View style={styles.findingsQuestion}>
+    <Text style={styles.questionText}>
+      {getStrategicQuestion(coveragePercent)}
+    </Text>
+  </View>
+</View>
+Logic Functions:
+javascriptCopyconst getCoverageNarrative = (coverage, unsupported, total) => {
+  if (coverage < 15) {
+    return `At ${coverage}% coverage, your scribe program supports a small fraction of your provider base. This creates a significant disparity: ${unsupported} providers handle documentation alone while a select few receive support. The question isn't whether your scribe program is valuable to those who have it — it's whether this partial coverage model is sustainable or equitable.`;
+  } else if (coverage < 30) {
+    return `At ${coverage}% coverage, your scribe program has grown beyond a pilot but still leaves the majority of providers unsupported. You've likely seen the value scribes provide — the question is how to extend that value without the linear cost scaling that comes with the scribe model.`;
+  } else if (coverage < 50) {
+    return `At ${coverage}% coverage, your scribe program is substantial but still leaves ${unsupported} providers without support. You've invested significantly in documentation support — the question is whether doubling down on scribes or exploring complementary approaches makes more sense.`;
+  } else {
+    return `At ${coverage}% coverage, your scribe program is among the more comprehensive we see. You've made a significant commitment to documentation support. The question at this stage is optimization and sustainability.`;
+  }
+};
+
+const getBurdenStatement = (unsupported, totalHours, hoursPerProvider) => {
+  const fteEquivalent = Math.round(totalHours / 2000);
+  const hoursPerWeek = Math.round(hoursPerProvider / 50);
+  
+  return `Your ${unsupported} unsupported providers collectively spend ${formatNumber(totalHours)} hours annually on documentation — that's ${hoursPerProvider} hours per provider per year, or roughly ${hoursPerWeek} hours per week. This represents ${fteEquivalent} FTE-equivalents of documentation time that could be spent on patient care, research, or personal time.`;
+};
+
+const getScalingReality = (coverage, costToScale, ratio, total) => {
+  return `To extend scribe coverage from ${coverage}% to 100% would require an additional ${formatCurrency(costToScale)} in annual investment. At your current scribe-to-provider ratio of 1:${ratio}, there's no way around this math — scribes scale linearly with no efficiency gains at higher volumes.`;
+};
+
+const getStrategicQuestion = (coverage) => {
+  if (coverage < 15) {
+    return `The strategic question: Is it better to provide excellent support to a select few providers, or find a model that can provide meaningful support to everyone?`;
+  } else if (coverage < 30) {
+    return `Many organizations at this stage face a choice: continue expanding scribes incrementally (expensive), hold at current coverage (creates inequity), or explore alternative models for the unsupported majority.`;
+  } else if (coverage < 50) {
+    return `Organizations with meaningful scribe coverage often find that a hybrid approach works best: scribes for high-complexity cases, alternative solutions for broader coverage. This maximizes value while controlling costs.`;
+  } else {
+    return `For organizations with high scribe coverage, the strategic questions shift: How do you maintain quality and reduce turnover? How do you fill remaining gaps? And how do you prepare for the evolution of documentation technology?`;
+  }
+};
+Styling for question box:
+javascriptCopyfindingsQuestion: {
+  backgroundColor: '#FEF2F2',
+  padding: 12,
+  borderRadius: 4,
+  marginTop: 12,
+},
+questionText: {
+  fontSize: 10,
+  color: '#991B1B',
+  fontStyle: 'italic',
+  lineHeight: 1.5,
+},
