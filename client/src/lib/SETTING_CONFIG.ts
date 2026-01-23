@@ -105,6 +105,16 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       driverSummary: "ED claims face heavy payer scrutiny",
       keyMetric: "$200K-450K for 25 physicians",
     },
+    // Qualitative (not quantified)
+    {
+      id: "edPatientExperience",
+      label: "Patient Experience",
+      category: "additional",
+      description: "Less waiting room frustration, better communication during high-stress encounters",
+      driverSummary: "Not quantified—qualitative value",
+      keyMetric: "Qualitative",
+      isNotQuantified: true,
+    },
   ],
   nursing: [
     // 💰 LABOR COST BENEFITS (Direct budget impact)
@@ -226,7 +236,39 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       driverSummary: "Inpatient denials are high-dollar",
       keyMetric: "$150K-400K for 20 providers",
     },
+    // Qualitative (not quantified)
+    {
+      id: "inpatientCareCoordination",
+      label: "Care Coordination",
+      category: "additional",
+      description: "Complete documentation enables better handoffs between care teams",
+      driverSummary: "Not quantified—qualitative value",
+      keyMetric: "Qualitative",
+      isNotQuantified: true,
+    },
+    {
+      id: "inpatientSurvey",
+      label: "Survey & Compliance Readiness",
+      category: "additional",
+      description: "Charts that are always complete and audit-ready",
+      driverSummary: "Not quantified—qualitative value",
+      keyMetric: "Qualitative",
+      isNotQuantified: true,
+    },
   ],
+};
+
+// Qualitative display style per care setting
+export type QualitativeStyle = 'none' | 'inline' | 'full';
+
+export const QUALITATIVE_CONFIG: Record<CareSettingType, {
+  hasQualitativeSection: boolean;
+  qualitativeStyle: QualitativeStyle;
+}> = {
+  outpatient: { hasQualitativeSection: false, qualitativeStyle: 'none' },
+  ed: { hasQualitativeSection: true, qualitativeStyle: 'inline' },
+  nursing: { hasQualitativeSection: true, qualitativeStyle: 'full' },
+  inpatient: { hasQualitativeSection: true, qualitativeStyle: 'inline' },
 };
 
 export const CARE_SETTING_LABELS: Record<AllSettingType, string> = {

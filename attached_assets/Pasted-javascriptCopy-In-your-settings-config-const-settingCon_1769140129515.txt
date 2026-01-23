@@ -1,0 +1,159 @@
+javascriptCopy// In your settings/config
+
+const settingConfig = {
+  outpatient: {
+    hasQualitativeSection: false,
+    qualitativeStyle: null,
+  },
+  nursing: {
+    hasQualitativeSection: true,
+    qualitativeStyle: 'full', // Full "The Full Picture" section
+    qualitativeDrivers: [
+      'patient-experience-hcahps',
+      'survey-compliance',
+      'care-coordination'
+    ]
+  },
+  ed: {
+    hasQualitativeSection: true,
+    qualitativeStyle: 'inline', // Simple one-liner
+    qualitativeDrivers: [
+      'patient-experience'
+    ]
+  },
+  inpatient: {
+    hasQualitativeSection: true,
+    qualitativeStyle: 'inline', // Simple one-liner
+    qualitativeDrivers: [
+      'care-coordination',
+      'survey-compliance'
+    ]
+  }
+};
+jsxCopy// In your ROI Results page
+
+function QualitativeBenefits({ setting, selectedQualitativeDrivers }) {
+  const config = settingConfig[setting];
+  
+  // No qualitative for outpatient
+  if (!config.hasQualitativeSection) {
+    return null;
+  }
+  
+  // Filter to only show drivers the user actually selected
+  const driversToShow = config.qualitativeDrivers.filter(
+    d => selectedQualitativeDrivers.includes(d)
+  );
+  
+  if (driversToShow.length === 0) {
+    return null;
+  }
+  
+  // Full section for Nursing
+  if (config.qualitativeStyle === 'full') {
+    return <TheFullPictureSection drivers={driversToShow} />;
+  }
+  
+  // Inline callout for ED and Inpatient
+  if (config.qualitativeStyle === 'inline') {
+    return <InlineQualitativeCallout drivers={driversToShow} />;
+  }
+  
+  return null;
+}
+jsxCopy// The inline version for ED/Inpatient
+
+function InlineQualitativeCallout({ drivers }) {
+  const driverContent = {
+    'patient-experience': {
+      icon: '😊',
+      title: 'Patient Experience',
+      description: 'Less waiting room frustration, better communication during high-stress encounters'
+    },
+    'care-coordination': {
+      icon: '🔗',
+      title: 'Care Coordination',
+      description: 'Complete documentation enables better handoffs between care teams'
+    },
+    'survey-compliance': {
+      icon: '✓',
+      title: 'Survey Readiness',
+      description: 'Charts that are always complete and audit-ready'
+    }
+  };
+  
+  return (
+    <div className="inline-qualitative-callout">
+      <div className="callout-header">
+        <span className="callout-icon">✨</span>
+        <span className="callout-label">Also improves (not quantified):</span>
+      </div>
+      <div className="callout-drivers">
+        {drivers.map(driverId => {
+          const driver = driverContent[driverId];
+          return (
+            <div key={driverId} className="callout-driver">
+              <span className="driver-icon">{driver.icon}</span>
+              <span className="driver-title">{driver.title}</span>
+              <span className="driver-description">— {driver.description}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+cssCopy/* Inline qualitative callout (lighter treatment) */
+
+.inline-qualitative-callout {
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 16px;
+}
+
+.inline-qualitative-callout .callout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.inline-qualitative-callout .callout-icon {
+  font-size: 16px;
+}
+
+.inline-qualitative-callout .callout-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.inline-qualitative-callout .callout-drivers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inline-qualitative-callout .callout-driver {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.inline-qualitative-callout .driver-icon {
+  flex-shrink: 0;
+}
+
+.inline-qualitative-callout .driver-title {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.inline-qualitative-callout .driver-description {
+  color: #64748b;
+}

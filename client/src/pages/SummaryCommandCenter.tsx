@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import { type CareSettingType, CARE_SETTING_LABELS } from "@/lib/SETTING_CONFIG";
+import { type CareSettingType, CARE_SETTING_LABELS, QUALITATIVE_CONFIG, SETTING_CONFIG } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
 import { generatePremiumPDF, type PremiumPDFData } from "@/lib/html-pdf-generator";
@@ -618,97 +618,150 @@ export default function SummaryCommandCenter({
           </div>
         </section>
 
-        {/* ============ THE FULL PICTURE ============ */}
-        {qualitativeDrivers.length > 0 && (
-          <section 
-            className="rounded-2xl p-8"
-            style={{
-              background: 'linear-gradient(135deg, #FAFBFC 0%, #F5F7FA 100%)',
-              border: '1px dashed #E2E8F0'
-            }}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Lightbulb className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-[#111827] uppercase tracking-wide">The Full Picture</h2>
-              </div>
-            </div>
-            <p className="text-[15px] text-[#6B7280] mb-8">What else gets better</p>
-            
-            <p className="text-[15px] text-[#475569] mb-6 leading-relaxed">
-              Your ROI model captures the outcomes we can measure with confidence. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization:
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              {qualitativeDrivers.includes("nursingPatientExperience") && (
-                <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
-                  <div className="text-2xl mb-3">
-                    <Users className="w-8 h-8 mx-auto text-[#64748B]" />
+        {/* ============ QUALITATIVE BENEFITS SECTION ============ */}
+        {qualitativeDrivers.length > 0 && QUALITATIVE_CONFIG[activeSetting].hasQualitativeSection && (
+          <>
+            {/* FULL SECTION for Nursing */}
+            {QUALITATIVE_CONFIG[activeSetting].qualitativeStyle === 'full' && (
+              <section 
+                className="rounded-2xl p-8"
+                style={{
+                  background: 'linear-gradient(135deg, #FAFBFC 0%, #F5F7FA 100%)',
+                  border: '1px dashed #E2E8F0'
+                }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <Lightbulb className="w-5 h-5 text-amber-600" />
                   </div>
-                  <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
-                    Patient Experience
-                  </h3>
-                  <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
-                    Nurses who aren't typing are nurses who are present
-                  </p>
-                  <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
-                    Impacts: HCAHPS nurse communication
-                  </p>
-                </div>
-              )}
-              
-              {qualitativeDrivers.includes("nursingSurvey") && (
-                <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
-                  <div className="text-2xl mb-3">
-                    <CheckCircle className="w-8 h-8 mx-auto text-[#64748B]" />
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#111827] uppercase tracking-wide">The Full Picture</h2>
                   </div>
-                  <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
-                    Survey Readiness
-                  </h3>
-                  <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
-                    Charts that are always complete and audit-ready
-                  </p>
-                  <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
-                    Impacts: Joint Commission, CMS
-                  </p>
                 </div>
-              )}
-              
-              {qualitativeDrivers.includes("nursingCareCoordination") && (
-                <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
-                  <div className="text-2xl mb-3">
-                    <Globe className="w-8 h-8 mx-auto text-[#64748B]" />
+                <p className="text-[15px] text-[#6B7280] mb-8">What else gets better</p>
+                
+                <p className="text-[15px] text-[#475569] mb-6 leading-relaxed">
+                  Your ROI model captures the outcomes we can measure with confidence. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization:
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  {qualitativeDrivers.includes("nursingPatientExperience") && (
+                    <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
+                      <div className="text-2xl mb-3">
+                        <Users className="w-8 h-8 mx-auto text-[#64748B]" />
+                      </div>
+                      <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
+                        Patient Experience
+                      </h3>
+                      <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
+                        Nurses who aren't typing are nurses who are present
+                      </p>
+                      <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
+                        Impacts: HCAHPS nurse communication
+                      </p>
+                    </div>
+                  )}
+                  
+                  {qualitativeDrivers.includes("nursingSurvey") && (
+                    <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
+                      <div className="text-2xl mb-3">
+                        <CheckCircle className="w-8 h-8 mx-auto text-[#64748B]" />
+                      </div>
+                      <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
+                        Survey Readiness
+                      </h3>
+                      <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
+                        Charts that are always complete and audit-ready
+                      </p>
+                      <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
+                        Impacts: Joint Commission, CMS
+                      </p>
+                    </div>
+                  )}
+                  
+                  {qualitativeDrivers.includes("nursingCareCoordination") && (
+                    <div className="bg-white rounded-xl border border-[#E2E8F0] p-6 text-center">
+                      <div className="text-2xl mb-3">
+                        <Globe className="w-8 h-8 mx-auto text-[#64748B]" />
+                      </div>
+                      <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
+                        Care Coordination
+                      </h3>
+                      <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
+                        Handoffs that actually have the full picture
+                      </p>
+                      <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
+                        Impacts: Safety, continuity
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
+                  <div className="flex items-start gap-3">
+                    <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900 mb-2">Why we don't quantify these:</p>
+                      <p className="text-sm text-blue-800 leading-relaxed">
+                        Attribution is complex. Patient experience has many drivers. Survey outcomes depend on timing. We'd rather be conservative with your ROI than inflate it with assumptions we can't defend.
+                      </p>
+                      <p className="text-sm text-blue-800 leading-relaxed mt-2">
+                        That said—these outcomes are real, and they matter to your board, your CNO, and your patients.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="font-semibold text-[0.875rem] uppercase tracking-[0.05em] text-[#64748B] mb-2">
-                    Care Coordination
-                  </h3>
-                  <p className="text-[0.9rem] text-[#475569] leading-relaxed mb-3">
-                    Handoffs that actually have the full picture
-                  </p>
-                  <p className="text-[0.8rem] text-[#94A3B8] pt-3 border-t border-[#F1F5F9]">
-                    Impacts: Safety, continuity
-                  </p>
                 </div>
-              )}
-            </div>
-            
-            <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900 mb-2">Why we don't quantify these:</p>
-                  <p className="text-sm text-blue-800 leading-relaxed">
-                    Attribution is complex. Patient experience has many drivers. Survey outcomes depend on timing. We'd rather be conservative with your ROI than inflate it with assumptions we can't defend.
-                  </p>
-                  <p className="text-sm text-blue-800 leading-relaxed mt-2">
-                    That said—these outcomes are real, and they matter to your board, your CNO, and your patients.
-                  </p>
+              </section>
+            )}
+
+            {/* INLINE CALLOUT for ED and Inpatient */}
+            {QUALITATIVE_CONFIG[activeSetting].qualitativeStyle === 'inline' && (
+              <div 
+                className="rounded-xl p-4 mt-4"
+                style={{
+                  background: '#f8fafc',
+                  border: '1px dashed #e2e8f0'
+                }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-base">&#10024;</span>
+                  <span className="text-[13px] font-semibold text-[#64748b] uppercase tracking-[0.03em]">
+                    Also improves (not quantified):
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {qualitativeDrivers.map((driverId) => {
+                    const driverContent: Record<string, { icon: string; title: string; description: string }> = {
+                      edPatientExperience: {
+                        icon: '\u{1F60A}',
+                        title: 'Patient Experience',
+                        description: 'Less waiting room frustration, better communication during high-stress encounters'
+                      },
+                      inpatientCareCoordination: {
+                        icon: '\u{1F517}',
+                        title: 'Care Coordination',
+                        description: 'Complete documentation enables better handoffs between care teams'
+                      },
+                      inpatientSurvey: {
+                        icon: '\u2713',
+                        title: 'Survey Readiness',
+                        description: 'Charts that are always complete and audit-ready'
+                      }
+                    };
+                    const driver = driverContent[driverId];
+                    if (!driver) return null;
+                    return (
+                      <div key={driverId} className="flex items-baseline gap-2 text-[14px]">
+                        <span className="flex-shrink-0">{driver.icon}</span>
+                        <span className="font-semibold text-[#1e293b]">{driver.title}</span>
+                        <span className="text-[#64748b]">— {driver.description}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-          </section>
+            )}
+          </>
         )}
 
         {/* ============ INVESTMENT DETAILS ============ */}

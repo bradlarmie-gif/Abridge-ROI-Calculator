@@ -462,6 +462,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     yPos += introText.length * 5 + 8;
     
     const qualitativeInfo: Record<string, { title: string; desc: string; impacts: string }> = {
+      // Nursing
       nursingPatientExperience: {
         title: 'Patient Experience (HCAHPS)',
         desc: 'Improved nurse communication scores through increased bedside presence and attention quality',
@@ -476,6 +477,23 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
         title: 'Care Coordination',
         desc: 'Better handoffs through complete documentation',
         impacts: 'Safety, continuity'
+      },
+      // ED
+      edPatientExperience: {
+        title: 'Patient Experience',
+        desc: 'Less waiting room frustration, better communication during high-stress encounters',
+        impacts: 'Patient satisfaction'
+      },
+      // Inpatient
+      inpatientCareCoordination: {
+        title: 'Care Coordination',
+        desc: 'Complete documentation enables better handoffs between care teams',
+        impacts: 'Safety, continuity'
+      },
+      inpatientSurvey: {
+        title: 'Survey & Compliance Readiness',
+        desc: 'Charts that are always complete and audit-ready',
+        impacts: 'Joint Commission, CMS'
       }
     };
     
