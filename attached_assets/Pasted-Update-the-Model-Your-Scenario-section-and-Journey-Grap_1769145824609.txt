@@ -1,0 +1,66 @@
+Update the "Model Your Scenario" section and Journey Graph to be setting-aware. The scale units and volume metrics should change based on which care setting the user selected.
+
+## Setting-Specific Configuration:
+
+### Outpatient:
+- Scale unit: "providers"
+- Volume unit: "encounters"
+- Input label: "Total providers in your organization"
+- Optional expand: "Customize encounter volume"
+- Hint: "Primary care: ~1,500-2,000 | Specialty: ~1,000-1,500 encounters/provider"
+
+### ED (Emergency Department):
+- Scale unit: "providers"
+- Volume unit: "visits"
+- Input label: "Total ED providers in your organization"
+- Optional expand: "Customize visit volume"
+- Hint: "Typical range: 2,000-3,500 visits/provider annually"
+
+### Inpatient:
+- Scale unit: "hospitalists"
+- Volume unit: "discharges"
+- Input label: "Total hospitalists in your organization"
+- Optional expand: "Customize discharge volume"
+- Hint: "Typical range: 300-500 discharges/hospitalist annually"
+
+### Nursing:
+- Scale unit: "beds"
+- Volume unit: "documentation events"
+- Input label: "Total staffed beds in your organization"
+- Optional expand: "Customize documentation events"
+- Hint: "Typical range: 300-400 events/bed annually"
+
+## Updates needed:
+
+### 1. "Your Starting Point" card:
+Show setting-appropriate metrics:
+- Outpatient: "✓ 50 providers · ✓ 70,000 encounters · ✓ 65% utilization · ✓ $531,275/year"
+- Nursing: "✓ 200 beds · ✓ 70,000 doc events · ✓ 65% utilization · ✓ $452,500/year"
+
+### 2. "Your Full Scale Potential" card:
+- Change the input label based on setting
+- Change the optional expand label based on setting
+- Change the hint text based on setting
+
+### 3. Journey Graph X-axis annotations:
+Show the scale unit under each time point:
+- "Today" → "50 providers" (or "200 beds" for nursing)
+- "6 mo" → "75 providers" (scales linearly to full scale)
+- "12 mo" → "100 providers"
+- etc.
+
+### 4. Journey Graph Tooltips:
+Show setting-appropriate metrics:
+- Outpatient: Providers, Encounters, Utilization
+- ED: Providers, Visits, Utilization
+- Inpatient: Hospitalists, Discharges, Utilization
+- Nursing: Staffed Beds, Doc Events, Utilization
+
+### 5. Result Cards:
+The labels stay the same (Pilot, Full Scale, Compounding Bonus) but ensure the calculations use the correct volume metrics for each setting.
+
+## Implementation:
+
+Create a settingConfig object that stores all the labels and ranges for each setting. Pass the current setting from the ROI model state to the ModelYourScenario component and JourneyGraph component. Use the config to dynamically render the correct labels.
+
+The calculation logic should work the same way for all settings—it's just the labels that change.

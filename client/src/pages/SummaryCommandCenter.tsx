@@ -105,10 +105,11 @@ const settingConfig: Record<string, { unitName: string; unitNamePlural: string; 
   nursing: { unitName: "staffed bed", unitNamePlural: "staffed beds", encounterName: "documentation events" },
 };
 
-function CustomTooltip({ active, payload, unitName = "beds" }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string; milestoneLabel?: string | null; phase?: string; month?: number } }>; unitName?: string }) {
+function CustomTooltip({ active, payload, unitName = "beds", encountersPerUnit = 0 }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string; milestoneLabel?: string | null; phase?: string; month?: number } }>; unitName?: string; encountersPerUnit?: number }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const compoundingEffect = data.actualValue - data.linearValue;
+    const estimatedEncounters = Math.round(data.providers * encountersPerUnit);
     return (
       <div className="bg-[#1E293B] rounded-xl p-4 shadow-2xl min-w-[220px]">
         {/* Phase & Time */}
@@ -121,11 +122,16 @@ function CustomTooltip({ active, payload, unitName = "beds" }: { active?: boolea
           </p>
         </div>
         
-        {/* Scale & Utilization */}
+        {/* Scale, Encounters & Utilization */}
         <div className="mb-3 pb-3 border-b border-[#334155]">
           <p className="text-[#CBD5E1] text-xs">
             {data.providers.toLocaleString()} {unitName}
           </p>
+          {encountersPerUnit > 0 && (
+            <p className="text-[#CBD5E1] text-xs">
+              ~{estimatedEncounters.toLocaleString()} encounters
+            </p>
+          )}
           <p className="text-[#CBD5E1] text-xs">
             {data.utilization}% utilization
           </p>
@@ -938,7 +944,7 @@ export default function SummaryCommandCenter({
                   width={75}
                 />
                 
-                <Tooltip content={<CustomTooltip unitName={config.unitNamePlural} />} />
+                <Tooltip content={<CustomTooltip unitName={config.unitNamePlural} encountersPerUnit={encountersPerUnit} />} />
                 
                 <Area 
                   type="monotone" 
@@ -1036,6 +1042,11 @@ export default function SummaryCommandCenter({
                   </div>
                   <div className="flex items-center gap-2 text-sm text-[#475569]">
                     <Check className="w-4 h-4 text-[#64748B]" />
+                    <span className="font-medium">{(pilotUnits * encountersPerUnit).toLocaleString()}</span>
+                    <span>encounters</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#475569]">
+                    <Check className="w-4 h-4 text-[#64748B]" />
                     <span className="font-medium">{pilotUtilization}%</span>
                     <span>utilization</span>
                   </div>
@@ -1080,6 +1091,9 @@ export default function SummaryCommandCenter({
                       />
                       <span className="text-sm text-[#64748B]">{config.unitNamePlural}</span>
                     </div>
+                    <p className="text-[13px] text-[#64748B] mt-2">
+                      At {encountersPerUnit.toLocaleString()} encounters/{config.unitName} = <span className="font-semibold">{(fullScaleUnits * encountersPerUnit).toLocaleString()} encounters/year</span>
+                    </p>
                   </div>
                   
                   <div>

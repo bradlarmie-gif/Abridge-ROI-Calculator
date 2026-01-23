@@ -1,0 +1,247 @@
+Update the Journey Graph and Model Your Scenario section to work correctly for all care settings: Nursing, Inpatient, and ED. Use the same design pattern as Outpatient, but with setting-specific labels, units, and metrics.
+
+## Setting Configuration
+
+Create a configuration object that defines the unique characteristics of each setting:
+
+```javascript
+const settingConfig = {
+  outpatient: {
+    scaleUnit: 'providers',
+    scaleUnitSingular: 'provider',
+    volumeUnit: 'encounters',
+    volumePerUnit: 'encounters/provider',
+    typicalVolumeRange: 'Primary care: ~1,500-2,000 | Specialty: ~1,000-1,500',
+    startingPointMetrics: ['providers', 'encounters', 'utilization', 'value'],
+  },
+  nursing: {
+    scaleUnit: 'staffed beds',
+    scaleUnitSingular: 'bed',
+    volumeUnit: 'documentation events',
+    volumePerUnit: 'events/bed',
+    typicalVolumeRange: 'Typical: 300-400 events/bed annually',
+    startingPointMetrics: ['beds', 'documentationEvents', 'utilization', 'value'],
+  },
+  inpatient: {
+    scaleUnit: 'hospitalists',
+    scaleUnitSingular: 'hospitalist',
+    volumeUnit: 'discharges',
+    volumePerUnit: 'discharges/hospitalist',
+    typicalVolumeRange: 'Typical: 300-500 discharges/hospitalist annually',
+    startingPointMetrics: ['hospitalists', 'discharges', 'utilization', 'value'],
+  },
+  ed: {
+    scaleUnit: 'ED providers',
+    scaleUnitSingular: 'ED provider',
+    volumeUnit: 'patient visits',
+    volumePerUnit: 'visits/provider',
+    typicalVolumeRange: 'Typical: 2,000-3,500 visits/provider annually',
+    startingPointMetrics: ['providers', 'visits', 'utilization', 'value'],
+  }
+};
+Updates Required
+1. Journey Graph X-Axis Annotations
+The X-axis should show time labels with scale units below:
+Outpatient:
+CopyToday          6 mo           12 mo          18 mo          Full Scale
+50 providers   75 providers   100 providers  125 providers  150 providers
+Nursing:
+CopyToday          6 mo           12 mo          18 mo          Full Scale
+200 beds       300 beds       400 beds       500 beds       600 beds
+Inpatient:
+CopyToday          6 mo           12 mo          18 mo          Full Scale
+20 hospitalists 30 hospitalists 40 hospitalists 50 hospitalists 60 hospitalists
+ED:
+CopyToday          6 mo           12 mo          18 mo          Full Scale
+10 ED providers 15 ED providers 20 ED providers 25 ED providers 30 ED providers
+2. Journey Graph Tooltip
+The tooltip should show setting-appropriate metrics:
+Outpatient tooltip:
+CopyEarly Expansion
+6 months
+─────────────────
+75 providers
+~105,000 encounters
+70% utilization
+─────────────────
+Linear Value    $796,913
+Actual Value    $879,669
+Compounding     +$82,756
+─────────────────
+ROI             4.9x
+Nursing tooltip:
+CopyEarly Expansion
+6 months
+─────────────────
+300 staffed beds
+~105,000 doc events
+70% utilization
+─────────────────
+Linear Value    $680,000
+Actual Value    $752,000
+Compounding     +$72,000
+─────────────────
+ROI             2.4x
+Inpatient tooltip:
+CopyEarly Expansion
+6 months
+─────────────────
+30 hospitalists
+~12,000 discharges
+70% utilization
+─────────────────
+Linear Value    $520,000
+Actual Value    $575,000
+Compounding     +$55,000
+─────────────────
+ROI             3.1x
+ED tooltip:
+CopyEarly Expansion
+6 months
+─────────────────
+15 ED providers
+~45,000 visits
+70% utilization
+─────────────────
+Linear Value    $380,000
+Actual Value    $420,000
+Compounding     +$40,000
+─────────────────
+ROI             2.8x
+3. "Your Starting Point" Card
+Show setting-appropriate locked metrics:
+Outpatient:
+Copy✓ 50 providers
+✓ 70,000 encounters
+✓ 65% utilization
+✓ $531,275/year
+
+🔒 Locked from your model
+Nursing:
+Copy✓ 200 staffed beds
+✓ 70,000 documentation events
+✓ 65% utilization
+✓ $452,500/year
+
+🔒 Locked from your model
+Inpatient:
+Copy✓ 20 hospitalists
+✓ 8,000 discharges
+✓ 65% utilization
+✓ $380,000/year
+
+🔒 Locked from your model
+ED:
+Copy✓ 10 ED providers
+✓ 30,000 patient visits
+✓ 65% utilization
+✓ $285,000/year
+
+🔒 Locked from your model
+4. "Your Full Scale Potential" Card
+Input label changes by setting:
+
+Outpatient: "Total providers in your organization"
+Nursing: "Total staffed beds in your organization"
+Inpatient: "Total hospitalists in your organization"
+ED: "Total ED providers in your organization"
+
+Unit label changes by setting:
+
+Outpatient: "providers"
+Nursing: "beds"
+Inpatient: "hospitalists"
+ED: "ED providers"
+
+Calculated preview below input:
+
+Outpatient: "📊 At 1,400 encounters/provider = 210,000 encounters/year"
+Nursing: "📊 At 350 events/bed = 210,000 documentation events/year"
+Inpatient: "📊 At 400 discharges/hospitalist = 24,000 discharges/year"
+ED: "📊 At 3,000 visits/provider = 90,000 patient visits/year"
+
+Utilization slider hint stays the same for all:
+"💡 Most organizations reach 75-85% at maturity"
+5. The Compounding Effect Explanation
+The explanation section stays the same for all settings:
+Copy💡 THE COMPOUNDING EFFECT
+
+The gap between the lines represents value that compounds as you scale — not just more of the same:
+
+↗ Utilization: 65% → 80% as adoption matures
+🔄 Retention: Benefits materialize after 6-12 months
+⚡ Efficiency: Shared learnings, optimized workflows
+Implementation
+
+Detect the current setting from the ROI model state (outpatient, nursing, inpatient, or ed)
+Use the settingConfig object to get the correct labels and units
+Pass the setting to both the JourneyGraph component and ModelYourScenario component
+In both components, use the config to render the correct:
+
+Scale unit labels
+Volume unit labels
+Tooltip content
+Input labels
+Preview calculations
+
+
+The calculation logic remains the same for all settings:
+javascriptCopy// Scale multiplier
+const scaleMultiplier = fullScaleUnits / pilotUnits;
+
+// Volume per unit (from pilot)
+const volumePerUnit = pilotVolume / pilotUnits;
+
+// Utilization boost
+const utilizationBoost = fullScaleUtilization / pilotUtilization;
+
+// Maturity multiplier (from pace)
+const maturityMultiplier = paceConfig[pace].maturityMultiplier;
+
+// Linear value (just scaling)
+const linearValue = pilotValue * scaleMultiplier;
+
+// Actual value (with all boosts)
+const actualValue = linearValue * utilizationBoost * maturityMultiplier;
+
+// Compounding bonus
+const compoundingBonus = actualValue - linearValue;
+
+Ensure real-time updates work for all settings when inputs change
+
+Testing
+After implementation, verify each setting:
+
+Outpatient: Shows "providers" and "encounters"
+Nursing: Shows "staffed beds" and "documentation events"
+Inpatient: Shows "hospitalists" and "discharges"
+ED: Shows "ED providers" and "patient visits"
+
+For each setting, verify:
+
+Graph X-axis shows correct scale units
+Tooltip shows correct metrics
+Starting Point shows correct locked values
+Full Scale Potential shows correct input label and unit
+Preview calculation uses correct volume unit
+All three result cards update in real-time
+Changing pace updates the graph and calculations
+
+Copy
+---
+
+## Summary of What This Does
+
+| Setting | Scale Unit | Volume Unit | Example |
+|---------|-----------|-------------|---------|
+| Outpatient | providers | encounters | "150 providers → 210,000 encounters" |
+| Nursing | staffed beds | documentation events | "600 beds → 210,000 doc events" |
+| Inpatient | hospitalists | discharges | "60 hospitalists → 24,000 discharges" |
+| ED | ED providers | patient visits | "30 ED providers → 90,000 visits" |
+
+All four settings will now:
+- ✅ Use the same beautiful graph design
+- ✅ Use the same Model Your Scenario layout
+- ✅ Show setting-appropriate labels and units
+- ✅ Calculate correctly based on their pilot data
+- ✅ Update in real-time
