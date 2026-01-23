@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, CheckCircle, TrendingUp, Rocket } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, CheckCircle, TrendingUp, Rocket, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area, ComposedChart } from "recharts";
@@ -135,70 +135,275 @@ export default function ExpandPerformanceDashboard({
   const satData = metricsData.clinicianSatisfaction;
   const satChange = satData.before && satData.after ? satData.after - satData.before : null;
 
-  // Use tiered values - scale by months for partial year "today" value
-  const yearFraction = months / 12;
-  const calculateValueRealized = Math.round(roiResult.tier1HardValue * yearFraction);
+  // Use Tier 1 hard value (annualized) for the Today card to match graph
+  const calculateValueRealized = roiResult.tier1HardValue;
   
-  // Full scale projection (100% utilization, full year)
+  // Full scale projection with provider expansion and utilization improvement
   const fullScaleValue = useMemo(() => {
     if (utilizationRate === 0) return roiResult.tier1HardValue;
-    return Math.round(roiResult.tier1HardValue * (100 / utilizationRate));
-  }, [roiResult.tier1HardValue, utilizationRate]);
+    
+    const targetProviders = providers * 3;
+    const targetUtil = Math.min(utilizationRate + 15, 90);
+    const providerMultiplier = targetProviders / providers;
+    const utilizationMultiplier = targetUtil / utilizationRate;
+    const maturityMultiplier = 1.15;
+    
+    return Math.round(roiResult.tier1HardValue * providerMultiplier * utilizationMultiplier * maturityMultiplier);
+  }, [roiResult.tier1HardValue, providers, utilizationRate]);
 
   // Journey graph data point type
   interface JourneyDataPoint {
+    id: string;
     time: string;
     label: string;
+    sublabel: string;
     value: number;
     isActual: boolean;
     month: number;
     isToday?: boolean;
     isFullScale?: boolean;
+    phase: 'baseline' | 'ramp' | 'current' | 'maturity' | 'expansion' | 'fullScale';
+    providerCount: number;
+    utilization: number;
   }
 
-  // Journey graph data
+  // Calculate hard value breakdown for tooltip
+  const hardValueBreakdown = useMemo(() => {
+    const breakdown: { name: string; value: number }[] = [];
+    
+    if (roiResult.tier1Breakdown.wrvuValue > 0) {
+      breakdown.push({ name: 'Revenue Capture (wRVU)', value: roiResult.tier1Breakdown.wrvuValue });
+    }
+    if (roiResult.tier1Breakdown.timeConversionValue > 0) {
+      const methodName = valueConfig.timeConversionMethod === 'patientAccess' 
+        ? `Patient Access (${valueConfig.conversionPercent}%)` 
+        : `Overtime Reduction`;
+      breakdown.push({ name: methodName, value: roiResult.tier1Breakdown.timeConversionValue });
+    }
+    if (roiResult.tier1Breakdown.retentionValue > 0) {
+      breakdown.push({ name: 'Retention Value', value: roiResult.tier1Breakdown.retentionValue });
+    }
+    
+    return breakdown;
+  }, [roiResult.tier1Breakdown, valueConfig]);
+
+  // Calculate full scale value based on expansion multipliers
+  const calculateFullScaleValueFromCurrent = (
+    currentValue: number, 
+    currentProviders: number, 
+    currentUtil: number, 
+    targetProviders: number, 
+    targetUtil: number
+  ) => {
+    if (currentUtil === 0 || currentProviders === 0) return currentValue;
+    
+    const providerMultiplier = targetProviders / currentProviders;
+    const utilizationMultiplier = targetUtil / currentUtil;
+    const maturityMultiplier = 1.15; // 15% compounding bonus from full maturity
+    
+    return Math.round(currentValue * providerMultiplier * utilizationMultiplier * maturityMultiplier);
+  };
+
+  // Journey graph data - always ascending, anchored to Tier 1 hard value
   const journeyData = useMemo((): JourneyDataPoint[] => {
-    const annualValue = calculateValueRealized / (months / 12);
+    const todayValue = roiResult.tier1HardValue; // Annualized Tier 1 hard value
+    const targetProviders = providers * 3; // Default 3x expansion
+    const targetUtil = Math.min(utilizationRate + 15, 90); // Improve util by 15% capped at 90%
+    
+    const fullScaleVal = calculateFullScaleValueFromCurrent(
+      todayValue,
+      providers,
+      utilizationRate,
+      targetProviders,
+      targetUtil
+    );
+    
     const data: JourneyDataPoint[] = [
-      { time: "Before", label: "Baseline", value: 0, isActual: true, month: 0 },
+      { 
+        id: 'before',
+        time: "Before", 
+        label: "Before", 
+        sublabel: "Abridge",
+        value: 0, 
+        isActual: true, 
+        month: 0,
+        phase: 'baseline',
+        providerCount: providers,
+        utilization: 0,
+      },
     ];
     
-    // Add intermediate points based on months
-    if (months > 3) {
-      data.push({ time: "Mo 3", label: "3 mo", value: Math.round(annualValue * 0.25), isActual: true, month: 3 });
-    }
-    if (months > 6) {
-      data.push({ time: "Mo 6", label: "6 mo", value: Math.round(annualValue * 0.5), isActual: true, month: 6 });
+    // Add ramp point at midpoint of their journey
+    const midpoint = Math.ceil(months / 2);
+    if (midpoint > 0 && midpoint < months) {
+      data.push({ 
+        id: 'ramp',
+        time: `Mo ${midpoint}`, 
+        label: `Mo ${midpoint}`, 
+        sublabel: "Ramping",
+        value: Math.round(todayValue * 0.45), // ~45% at midpoint (adoption curve)
+        isActual: true, 
+        month: midpoint,
+        phase: 'ramp',
+        providerCount: providers,
+        utilization: Math.round(utilizationRate * 0.7),
+      });
     }
     
-    // Today point
+    // Today point - EXACT match to Tier 1 value
     data.push({ 
+      id: 'today',
       time: `Mo ${months}`, 
       label: "Today", 
-      value: calculateValueRealized, 
+      sublabel: `${providers} providers`,
+      value: todayValue,
       isActual: true, 
       isToday: true,
-      month: months 
+      month: months,
+      phase: 'current',
+      providerCount: providers,
+      utilization: utilizationRate,
     });
     
-    // Projected points
+    // Projected points - always ascending
     if (months < 12) {
-      data.push({ time: "Mo 12", label: "12 mo", value: Math.round(annualValue * 1.1), isActual: false, month: 12 });
+      data.push({ 
+        id: 'month12',
+        time: "Mo 12", 
+        label: "Mo 12", 
+        sublabel: "Maturity",
+        value: Math.round(todayValue * 1.25), // 25% boost from maturity
+        isActual: false, 
+        month: 12,
+        phase: 'maturity',
+        providerCount: providers,
+        utilization: Math.min(utilizationRate + 10, 90),
+      });
     }
+    
     if (months < 24) {
-      data.push({ time: "Mo 24", label: "24 mo", value: Math.round(annualValue * 2.2), isActual: false, month: 24 });
+      data.push({ 
+        id: 'month24',
+        time: "Mo 24", 
+        label: "Mo 24", 
+        sublabel: "Expansion",
+        value: Math.round(todayValue * 2.0), // Starting to scale
+        isActual: false, 
+        month: 24,
+        phase: 'expansion',
+        providerCount: Math.round(providers * 1.5),
+        utilization: Math.min(utilizationRate + 12, 90),
+      });
     }
+    
     data.push({ 
+      id: 'fullScale',
       time: "Full Scale", 
       label: "Full Scale", 
-      value: fullScaleValue, 
+      sublabel: `${targetProviders} providers`,
+      value: fullScaleVal, 
       isActual: false, 
       isFullScale: true,
-      month: 36 
+      month: 36,
+      phase: 'fullScale',
+      providerCount: targetProviders,
+      utilization: targetUtil,
     });
     
     return data;
-  }, [calculateValueRealized, fullScaleValue, months]);
+  }, [roiResult.tier1HardValue, providers, utilizationRate, months]);
+
+  // Custom tooltip component for journey graph
+  const JourneyTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: JourneyDataPoint }> }) => {
+    if (!active || !payload?.[0]) return null;
+    
+    const data = payload[0].payload;
+    const todayValue = roiResult.tier1HardValue;
+    
+    return (
+      <div className="bg-white border border-neutral-200 rounded-lg shadow-lg p-4 min-w-[280px]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-semibold text-[#111827]">{data.label}</span>
+          {data.isToday && (
+            <span className="px-2 py-0.5 bg-[#EA2C00] text-white text-[10px] font-semibold rounded">
+              You are here
+            </span>
+          )}
+          {data.isFullScale && (
+            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">
+              Projected
+            </span>
+          )}
+        </div>
+        
+        <div className="text-xs text-[#6B7280] flex gap-2 mb-3">
+          {data.month > 0 && <span>Month {data.month}</span>}
+          <span>{data.providerCount} providers</span>
+          {data.utilization > 0 && <span>{data.utilization}% utilization</span>}
+        </div>
+        
+        <div className="border-t border-neutral-100 pt-3">
+          {data.isActual && data.isToday ? (
+            // Show breakdown for Today
+            <>
+              <div className="text-[10px] font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
+                HARD VALUE BREAKDOWN
+              </div>
+              {hardValueBreakdown.map((item, i) => (
+                <div key={i} className="flex justify-between text-sm mb-1">
+                  <span className="text-[#6B7280]">{item.name}</span>
+                  <span className="font-medium text-[#111827]">{formatCurrency(item.value)}</span>
+                </div>
+              ))}
+              <div className="border-t border-neutral-100 mt-2 pt-2 flex justify-between">
+                <span className="font-semibold text-[#111827]">Total</span>
+                <span className="font-bold text-emerald-600">{formatCurrency(data.value)}</span>
+              </div>
+              <div className="mt-2 text-xs text-[#6B7280]">
+                ROI: {roiResult.roi.toFixed(1)}x
+              </div>
+            </>
+          ) : data.phase === 'baseline' ? (
+            <div className="text-sm text-[#6B7280]">Your starting point before Abridge</div>
+          ) : data.isActual ? (
+            // Show simple value for actual ramp points
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Value</span>
+              <span className="font-bold text-emerald-600">{formatCurrency(data.value)}</span>
+            </div>
+          ) : (
+            // Show projection explanation for future points
+            <>
+              <div className="text-[10px] font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
+                PROJECTED VALUE
+              </div>
+              <div className="text-xs text-[#6B7280] mb-2">
+                Based on your proven {formatCurrency(todayValue)}
+              </div>
+              <div className="space-y-1 text-xs text-[#6B7280]">
+                {data.providerCount > providers && (
+                  <div>× {(data.providerCount / providers).toFixed(1)}x providers ({providers} → {data.providerCount})</div>
+                )}
+                {data.utilization > utilizationRate && (
+                  <div>× {(data.utilization / utilizationRate).toFixed(2)}x utilization ({utilizationRate}% → {data.utilization}%)</div>
+                )}
+                {data.phase === 'fullScale' && (
+                  <div>× 1.15x maturity effects</div>
+                )}
+              </div>
+              <div className="border-t border-neutral-100 mt-2 pt-2 flex justify-between">
+                <span className="font-semibold text-[#111827]">Projected Total</span>
+                <span className="font-bold text-blue-600">{formatCurrency(data.value)}</span>
+              </div>
+              <div className="mt-2 text-[10px] text-amber-600 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" /> Projection based on current results
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const metricsWithData = selectedMetrics.filter((m) => {
     switch (m) {
@@ -321,13 +526,7 @@ export default function ExpandPerformanceDashboard({
                   tickLine={false}
                 />
                 <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), "Value"]}
-                  labelStyle={{ color: '#111827', fontWeight: 600 }}
-                  contentStyle={{ 
-                    borderRadius: '8px', 
-                    border: '1px solid #E5E7EB',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
+                  content={<JourneyTooltip />}
                 />
                 {/* Actual results - solid line with fill */}
                 <Area

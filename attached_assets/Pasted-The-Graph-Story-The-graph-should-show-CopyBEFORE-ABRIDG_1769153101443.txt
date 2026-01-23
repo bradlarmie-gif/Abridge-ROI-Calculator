@@ -1,0 +1,815 @@
+The Graph Story
+The graph should show:
+CopyBEFORE ABRIDGE → TODAY (Actual) → FULL SCALE (Projected)
+     $0              $570K              $1.7M
+But here's the key: the graph should only show value that's actually being counted.
+If they chose:
+
+wRVU: $407K ✓ (counted)
+Time → Patient Access at 15%: $163K ✓ (counted)
+Work Outside Work: NOT counted (supporting evidence)
+Satisfaction: NOT counted (qualitative)
+
+Then the graph shows $570K at Today, not some inflated number.
+
+The Graph Logic
+CopyVALUE AT EACH POINT
+───────────────────
+
+BEFORE ABRIDGE (Month 0)
+  Value: $0
+  Why: No Abridge yet, no value
+
+MONTH 3 (Midpoint of their journey)
+  Value: ~50% of Today value
+  Why: Ramping up adoption, partial results
+  
+TODAY (Month 6 - their current state)
+  Value: $570K (from their configured Tier 1 value)
+  Why: Their actual proven results
+  
+MONTH 12 (Projected)
+  Value: Today × utilization improvement
+  Why: As adoption matures (65% → 75%), value increases
+  
+MONTH 24 (Projected)  
+  Value: Approaching full current-scale potential
+  Why: Full maturity at current provider count
+
+FULL SCALE (Projected)
+  Value: Today × (Full Scale Providers / Current Providers) × utilization boost
+  Why: Expansion to full organization
+
+The Calculation
+javascriptCopyfunction calculateJourneyData(currentState, expansion, hardValue) {
+  const {
+    providers: currentProviders,
+    utilization: currentUtilization,
+    monthsOnAbridge,
+  } = currentState;
+  
+  const {
+    targetProviders,
+    targetUtilization,
+  } = expansion;
+  
+  // Value per provider at current state
+  const valuePerProvider = hardValue / currentProviders;
+  
+  // Value per provider adjusted for utilization
+  const valuePerProviderPerUtilizationPoint = valuePerProvider / currentUtilization;
+  
+  // Calculate each point
+  const journeyData = [
+    {
+      label: 'Before',
+      sublabel: 'Abridge',
+      month: 0,
+      providers: currentProviders,
+      utilization: 0,
+      value: 0,
+      isActual: true,
+      phase: 'baseline',
+    },
+    {
+      label: `Mo ${Math.floor(monthsOnAbridge / 2)}`,
+      sublabel: `${Math.floor(currentProviders * 0.8)} providers`,
+      month: Math.floor(monthsOnAbridge / 2),
+      providers: currentProviders,
+      utilization: currentUtilization * 0.7, // Ramping
+      value: hardValue * 0.4, // ~40% of current value (ramping up)
+      isActual: true,
+      phase: 'ramp',
+    },
+    {
+      label: 'Today',
+      sublabel: `${currentProviders} providers`,
+      month: monthsOnAbridge,
+      providers: currentProviders,
+      utilization: currentUtilization,
+      value: hardValue, // Their actual proven value
+      isActual: true,
+      isToday: true,
+      phase: 'current',
+    },
+    {
+      label: 'Mo 12',
+      sublabel: `${currentProviders} providers`,
+      month: 12,
+      providers: currentProviders,
+      utilization: Math.min(currentUtilization * 1.15, 90), // 15% utilization improvement
+      value: hardValue * 1.2, // 20% more value from maturity
+      isActual: false,
+      phase: 'maturity',
+    },
+    {
+      label: 'Mo 24',
+      sublabel: `${Math.round(currentProviders * 1.5)} providers`,
+      month: 24,
+      providers: Math.round(currentProviders * 1.5), // Starting to expand
+      utilization: Math.min(currentUtilization * 1.2, 90),
+      value: hardValue * 1.8, // Scale + maturity
+      isActual: false,
+      phase: 'expansion',
+    },
+    {
+      label: 'Full Scale',
+      sublabel: `${targetProviders} providers`,
+      month: 36,
+      providers: targetProviders,
+      utilization: targetUtilization,
+      value: calculateFullScaleValue(hardValue, currentProviders, currentUtilization, targetProviders, targetUtilization),
+      isActual: false,
+      isFullScale: true,
+      phase: 'fullScale',
+    },
+  ];
+  
+  return journeyData;
+}
+
+function calculateFullScaleValue(currentValue, currentProviders, currentUtilization, targetProviders, targetUtilization) {
+  // Scale multiplier
+  const providerMultiplier = targetProviders / currentProviders;
+  
+  // Utilization multiplier
+  const utilizationMultiplier = targetUtilization / currentUtilization;
+  
+  // Maturity multiplier (compounding effects)
+  const maturityMultiplier = 1.15; // 15% bonus from full maturity
+  
+  return currentValue * providerMultiplier * utilizationMultiplier * maturityMultiplier;
+}
+
+The Graph Tooltip
+When hovering, show exactly what's being counted:
+Copy┌─────────────────────────────────────────┐
+│  TODAY                                  │
+│  Month 6 · 50 providers · 65% util      │
+│  ─────────────────────────────────────  │
+│                                         │
+│  HARD VALUE BREAKDOWN                   │
+│  Revenue Capture (wRVU)     $407,550    │
+│  Patient Access (15%)       $162,600    │
+│  ─────────────────────────────────────  │
+│  Total                      $570,150    │
+│                                         │
+│  ROI: 2.8x                              │
+│                                         │
+└─────────────────────────────────────────┘
+For projected points:
+Copy┌─────────────────────────────────────────┐
+│  FULL SCALE                             │
+│  ~36 months · 150 providers · 80% util  │
+│  ─────────────────────────────────────  │
+│                                         │
+│  PROJECTED VALUE                        │
+│  Based on your proven $570K value       │
+│  × 3x providers (50 → 150)              │
+│  × 1.23x utilization (65% → 80%)        │
+│  × 1.15x maturity effects               │
+│  ─────────────────────────────────────  │
+│  Projected Total           $2,420,000   │
+│                                         │
+│  ⚠️ Projection based on current results │
+│                                         │
+└─────────────────────────────────────────┘
+
+Replit Prompt: Fix the Journey Graph
+CopyFix the Journey Graph to show a coherent, always-ascending value story tied directly to the user's configured hard value.
+
+## CORE RULES
+
+1. **Value should NEVER decrease** — The line always goes up
+2. **"Today" value must match their calculated Tier 1 hard value exactly**
+3. **Projected values are clearly marked and explained**
+4. **Tooltips show exactly what's being counted**
+5. **The graph tells the Before → Today → Full Scale story**
+
+## DATA STRUCTURE
+
+```javascript
+// Journey data should be calculated from:
+// - currentState: { providers, utilization, monthsOnAbridge }
+// - hardValue: The Tier 1 total from their value configuration
+// - expansion: { targetProviders, targetUtilization }
+
+function generateJourneyData(currentState, hardValue, expansion) {
+  const { providers, utilization, monthsOnAbridge } = currentState;
+  const { targetProviders, targetUtilization } = expansion;
+  
+  // Value per provider (at current utilization)
+  const valuePerProvider = hardValue / providers;
+  
+  // Calculate full scale value
+  const fullScaleValue = calculateFullScaleValue(
+    hardValue, 
+    providers, 
+    utilization, 
+    targetProviders, 
+    targetUtilization || 80
+  );
+  
+  return [
+    {
+      id: 'before',
+      label: 'Before',
+      sublabel: 'Abridge',
+      month: 0,
+      value: 0,
+      providers: providers,
+      utilization: 0,
+      isActual: true,
+      phase: 'baseline',
+    },
+    {
+      id: 'ramp',
+      label: `Mo ${Math.ceil(monthsOnAbridge / 2)}`,
+      sublabel: 'Ramping',
+      month: Math.ceil(monthsOnAbridge / 2),
+      value: Math.round(hardValue * 0.45), // ~45% at midpoint (adoption curve)
+      providers: providers,
+      utilization: Math.round(utilization * 0.7),
+      isActual: true,
+      phase: 'ramp',
+    },
+    {
+      id: 'today',
+      label: 'Today',
+      sublabel: `${providers} providers`,
+      month: monthsOnAbridge,
+      value: hardValue, // EXACT match to their Tier 1 value
+      providers: providers,
+      utilization: utilization,
+      isActual: true,
+      isToday: true,
+      phase: 'current',
+    },
+    {
+      id: 'month12',
+      label: 'Mo 12',
+      sublabel: 'Maturity',
+      month: 12,
+      value: Math.round(hardValue * 1.25), // 25% boost from maturity
+      providers: providers,
+      utilization: Math.min(utilization + 10, 90),
+      isActual: false,
+      phase: 'maturity',
+    },
+    {
+      id: 'month24',
+      label: 'Mo 24',
+      sublabel: 'Expansion',
+      month: 24,
+      value: Math.round(hardValue * 2.0), // Starting to scale
+      providers: Math.round(providers * 1.5),
+      utilization: Math.min(utilization + 12, 90),
+      isActual: false,
+      phase: 'expansion',
+    },
+    {
+      id: 'fullScale',
+      label: 'Full Scale',
+      sublabel: `${targetProviders || providers * 3} providers`,
+      month: 36,
+      value: fullScaleValue,
+      providers: targetProviders || providers * 3,
+      utilization: targetUtilization || 80,
+      isActual: false,
+      isFullScale: true,
+      phase: 'fullScale',
+    },
+  ];
+}
+
+function calculateFullScaleValue(currentValue, currentProviders, currentUtil, targetProviders, targetUtil) {
+  const providerMultiplier = targetProviders / currentProviders;
+  const utilizationMultiplier = targetUtil / currentUtil;
+  const maturityMultiplier = 1.15; // 15% compounding bonus
+  
+  return Math.round(currentValue * providerMultiplier * utilizationMultiplier * maturityMultiplier);
+}
+GRAPH COMPONENT
+jsxCopyfunction JourneyGraph({ currentState, hardValue, hardValueBreakdown, expansion }) {
+  const journeyData = useMemo(() => 
+    generateJourneyData(currentState, hardValue, expansion),
+    [currentState, hardValue, expansion]
+  );
+  
+  // Find max value for Y-axis
+  const maxValue = Math.max(...journeyData.map(d => d.value)) * 1.1;
+  
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload }) => {
+    if (!active || !payload?.[0]) return null;
+    
+    const data = payload[0].payload;
+    
+    return (
+      <div className="journey-tooltip">
+        <div className="tooltip-header">
+          <span className="tooltip-phase">{data.label}</span>
+          {data.isToday && <span className="tooltip-badge">You are here</span>}
+          {data.isFullScale && <span className="tooltip-badge projected">Projected</span>}
+        </div>
+        
+        <div className="tooltip-meta">
+          {data.month > 0 && <span>Month {data.month}</span>}
+          <span>{data.providers} providers</span>
+          <span>{data.utilization}% utilization</span>
+        </div>
+        
+        <div className="tooltip-divider" />
+        
+        {data.isActual && data.id === 'today' ? (
+          // Show breakdown for Today
+          <div className="tooltip-breakdown">
+            <div className="breakdown-header">HARD VALUE BREAKDOWN</div>
+            {hardValueBreakdown.map((item, i) => (
+              <div key={i} className="breakdown-row">
+                <span>{item.name}</span>
+                <span>{formatCurrency(item.value)}</span>
+              </div>
+            ))}
+            <div className="breakdown-total">
+              <span>Total</span>
+              <span>{formatCurrency(data.value)}</span>
+            </div>
+          </div>
+        ) : data.isActual ? (
+          // Show simple value for actual points
+          <div className="tooltip-value">
+            <span className="value-label">Value</span>
+            <span className="value-amount">{formatCurrency(data.value)}</span>
+          </div>
+        ) : (
+          // Show projection explanation for future points
+          <div className="tooltip-projection">
+            <div className="projection-header">PROJECTED VALUE</div>
+            <div className="projection-basis">
+              Based on your proven {formatCurrency(hardValue)}
+            </div>
+            <div className="projection-multipliers">
+              {data.providers > currentState.providers && (
+                <div className="multiplier">
+                  × {(data.providers / currentState.providers).toFixed(1)}x providers
+                </div>
+              )}
+              {data.utilization > currentState.utilization && (
+                <div className="multiplier">
+                  × {(data.utilization / currentState.utilization).toFixed(2)}x utilization
+                </div>
+              )}
+              <div className="multiplier">
+                × maturity effects
+              </div>
+            </div>
+            <div className="projection-total">
+              <span>Projected</span>
+              <span>{formatCurrency(data.value)}</span>
+            </div>
+            <div className="projection-note">
+              ⚠️ Projection based on current results
+            </div>
+          </div>
+        )}
+        
+        {data.isToday && (
+          <div className="tooltip-roi">
+            ROI: {(data.value / currentState.investment).toFixed(1)}x
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="journey-graph-container">
+      <div className="graph-header">
+        <h3>Your Value Journey</h3>
+        <div className="graph-legend">
+          <div className="legend-item">
+            <span className="legend-line solid" />
+            <span>Actual results</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-line dashed" />
+            <span>Projected growth</span>
+          </div>
+        </div>
+      </div>
+      
+      <ResponsiveContainer width="100%" height={350}>
+        <ComposedChart data={journeyData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+          <defs>
+            {/* Gradient for actual results area */}
+            <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10B981" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          
+          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+          
+          <XAxis 
+            dataKey="label"
+            axisLine={false}
+            tickLine={false}
+            tick={({ x, y, payload }) => {
+              const data = journeyData.find(d => d.label === payload.value);
+              return (
+                <g transform={`translate(${x},${y})`}>
+                  <text 
+                    x={0} 
+                    y={0} 
+                    dy={16} 
+                    textAnchor="middle" 
+                    fill={data?.isToday ? '#E85A4F' : '#6B7280'}
+                    fontWeight={data?.isToday ? 600 : 400}
+                    fontSize={12}
+                  >
+                    {payload.value}
+                  </text>
+                  <text 
+                    x={0} 
+                    y={0} 
+                    dy={32} 
+                    textAnchor="middle" 
+                    fill="#9CA3AF"
+                    fontSize={11}
+                  >
+                    {data?.sublabel}
+                  </text>
+                </g>
+              );
+            }}
+          />
+          
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#6B7280', fontSize: 12 }}
+            tickFormatter={(value) => formatCurrencyShort(value)}
+            domain={[0, maxValue]}
+          />
+          
+          <Tooltip content={<CustomTooltip />} />
+          
+          {/* Area under actual results only */}
+          <Area
+            type="monotone"
+            dataKey={(d) => d.isActual ? d.value : null}
+            stroke="none"
+            fill="url(#actualGradient)"
+            connectNulls={false}
+          />
+          
+          {/* Actual results line (solid) */}
+          <Line
+            type="monotone"
+            dataKey={(d) => d.isActual ? d.value : null}
+            stroke="#10B981"
+            strokeWidth={3}
+            dot={false}
+            connectNulls={false}
+          />
+          
+          {/* Projected line (dashed) */}
+          <Line
+            type="monotone"
+            dataKey={(d) => !d.isActual || d.isToday ? d.value : null}
+            stroke="#10B981"
+            strokeWidth={2}
+            strokeDasharray="8 4"
+            strokeOpacity={0.6}
+            dot={false}
+            connectNulls={true}
+          />
+          
+          {/* Today marker */}
+          <ReferenceDot
+            x="Today"
+            y={hardValue}
+            r={8}
+            fill="#E85A4F"
+            stroke="white"
+            strokeWidth={3}
+          />
+          
+          {/* Full Scale marker */}
+          <ReferenceDot
+            x="Full Scale"
+            y={journeyData.find(d => d.isFullScale)?.value}
+            r={8}
+            fill="#10B981"
+            stroke="white"
+            strokeWidth={3}
+          />
+          
+          {/* "You are here" annotation */}
+          <ReferenceLine
+            x="Today"
+            stroke="#E85A4F"
+            strokeDasharray="4 4"
+            strokeOpacity={0.5}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+      
+      {/* Value callout below graph */}
+      <div className="graph-callout">
+        <div className="callout-item today">
+          <span className="callout-dot today" />
+          <span className="callout-label">Today:</span>
+          <span className="callout-value">{formatCurrency(hardValue)}/year</span>
+          <span className="callout-detail">after {currentState.monthsOnAbridge} months</span>
+        </div>
+        <div className="callout-arrow">→</div>
+        <div className="callout-item fullscale">
+          <span className="callout-dot fullscale" />
+          <span className="callout-label">Full Scale:</span>
+          <span className="callout-value">{formatCurrency(journeyData.find(d => d.isFullScale)?.value)}/year</span>
+          <span className="callout-detail">projected</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+STYLING
+cssCopy/* Journey Graph Container */
+.journey-graph-container {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #E5E7EB;
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.graph-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.graph-legend {
+  display: flex;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-line.solid {
+  background: #10B981;
+}
+
+.legend-line.dashed {
+  background: repeating-linear-gradient(
+    90deg,
+    #10B981 0px,
+    #10B981 6px,
+    transparent 6px,
+    transparent 10px
+  );
+  opacity: 0.6;
+}
+
+/* Tooltip */
+.journey-tooltip {
+  background: #1F2937;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tooltip-phase {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.tooltip-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #E85A4F;
+  color: white;
+}
+
+.tooltip-badge.projected {
+  background: #6B7280;
+}
+
+.tooltip-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 12px;
+}
+
+.tooltip-divider {
+  height: 1px;
+  background: #374151;
+  margin: 12px 0;
+}
+
+.tooltip-breakdown {
+  font-size: 13px;
+}
+
+.breakdown-header {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #9CA3AF;
+  margin-bottom: 8px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  color: #D1D5DB;
+  padding: 4px 0;
+}
+
+.breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  font-weight: 600;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid #374151;
+}
+
+.tooltip-projection {
+  font-size: 13px;
+}
+
+.projection-header {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #9CA3AF;
+  margin-bottom: 8px;
+}
+
+.projection-basis {
+  color: #D1D5DB;
+  margin-bottom: 8px;
+}
+
+.projection-multipliers {
+  margin-bottom: 8px;
+}
+
+.multiplier {
+  color: #9CA3AF;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
+.projection-total {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  font-weight: 600;
+  padding-top: 8px;
+  border-top: 1px solid #374151;
+}
+
+.projection-note {
+  font-size: 11px;
+  color: #F59E0B;
+  margin-top: 8px;
+}
+
+.tooltip-roi {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #374151;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #10B981;
+}
+
+/* Graph Callout */
+.graph-callout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.callout-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.callout-dot.today {
+  background: #E85A4F;
+}
+
+.callout-dot.fullscale {
+  background: #10B981;
+}
+
+.callout-label {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.callout-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.callout-detail {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.callout-arrow {
+  font-size: 20px;
+  color: #D1D5DB;
+}
+INTEGRATION
+The graph should receive:
+jsxCopy<JourneyGraph
+  currentState={{
+    providers: 50,
+    utilization: 65,
+    monthsOnAbridge: 6,
+    investment: 150000,
+  }}
+  hardValue={570150}  // From Tier 1 calculation
+  hardValueBreakdown={[
+    { name: 'Revenue Capture (wRVU)', value: 407550 },
+    { name: 'Patient Access (15%)', value: 162600 },
+  ]}
+  expansion={{
+    targetProviders: 150,  // From expansion inputs
+    targetUtilization: 80,
+  }}
+/>
+KEY BEHAVIORS
+
+"Today" value MUST exactly match the Tier 1 hardValue — No discrepancy
+The line always goes UP — Before (0) → Today (hardValue) → Full Scale (projected)
+Actual vs Projected is visually distinct — Solid line vs dashed line
+Tooltips explain the math — Show breakdown at Today, show multipliers for projections
+"You are here" is prominent — Red dot, annotation line
+Full Scale is clearly projected — Green dot, but marked as projected
+
+Copy
+---
+
+This graph will now:
+1. ✅ Always show value going UP
+2. ✅ Exactly match the Tier 1 hard value at "Today"
+3. ✅ Show clear breakdown of what's counted in tooltip
+4. ✅ Explain projection methodology in tooltip
+5. ✅ Visually distinguish actual vs projected
+6. ✅ Update dynamically when expansion inputs change
