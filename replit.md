@@ -32,7 +32,7 @@ The application guides users through multi-step processes:
        - Time Efficiency: Conversion method selection (None/Patient Access/Overtime)
        - Quality of Life: Optional retention estimation
        - Live preview sidebar with running totals and sanity check warnings
-    5. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey (Before Abridge → Today → Full Scale), uses tiered calculations with partial-year scaling
+    5. Performance Dashboard (ExpandPerformanceDashboard.tsx) - Three-phase journey (Before Abridge → Today → Full Scale), always-ascending journey graph anchored to Tier 1 hard value, custom tooltips with value breakdown for Today and projection multipliers for future points
     6. ROI Story (ExpandROIStory.tsx) - Value breakdown with transparent calculation methodology
     7. Journey Expansion (ExpandJourneyExpansion.tsx) - Expansion planning with tiered projections
 -   **Care Setting Selection**: Users choose a healthcare environment.
