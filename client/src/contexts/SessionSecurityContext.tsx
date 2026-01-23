@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react';
 import { SESSION_TIMEOUT, HIDDEN_TAB_TIMEOUT, clearAllStoredData } from '@/lib/security';
 
 interface SessionSecurityContextType {
@@ -25,7 +25,7 @@ interface SessionSecurityProviderProps {
 
 export function SessionSecurityProvider({ children, onSessionClear }: SessionSecurityProviderProps) {
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const [inactivityTimer, setInactivityTimer] = useState<NodeJS.Timeout | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const clearSession = useCallback(() => {
     clearAllStoredData();
@@ -38,14 +38,13 @@ export function SessionSecurityProvider({ children, onSessionClear }: SessionSec
   }, []);
 
   const resetInactivityTimer = useCallback(() => {
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
     }
-    const timer = setTimeout(() => {
+    inactivityTimerRef.current = setTimeout(() => {
       clearSession();
     }, SESSION_TIMEOUT);
-    setInactivityTimer(timer);
-  }, [inactivityTimer, clearSession]);
+  }, [clearSession]);
 
   useEffect(() => {
     const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
@@ -64,11 +63,11 @@ export function SessionSecurityProvider({ children, onSessionClear }: SessionSec
       events.forEach(event => {
         document.removeEventListener(event, handleActivity);
       });
-      if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
       }
     };
-  }, []);
+  }, [resetInactivityTimer]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {

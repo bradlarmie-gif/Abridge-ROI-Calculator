@@ -132,12 +132,23 @@ export default function ScribeAssessment({
             <div className="relative h-12 bg-slate-100 rounded-lg overflow-hidden">
               <div
                 className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-3 transition-all"
-                style={{ width: `${calculations.coveragePercent}%` }}
-              >
-                <span className="text-xs font-semibold text-white truncate">
+                style={{ width: `${Math.max(calculations.coveragePercent, 2)}%`, minWidth: calculations.coveragePercent > 0 ? '8px' : '0' }}
+              />
+              {calculations.coveragePercent >= 20 ? (
+                <span 
+                  className="absolute top-1/2 -translate-y-1/2 left-3 text-xs font-semibold text-white"
+                  style={{ maxWidth: `${calculations.coveragePercent - 5}%` }}
+                >
                   {inputs.providersWithScribes} with scribes
                 </span>
-              </div>
+              ) : (
+                <span 
+                  className="absolute top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-600"
+                  style={{ left: `${Math.max(calculations.coveragePercent, 2) + 2}%` }}
+                >
+                  {inputs.providersWithScribes} with scribes
+                </span>
+              )}
               <div
                 className="absolute top-0 h-full bg-amber-100 flex items-center justify-center transition-all"
                 style={{
@@ -145,10 +156,19 @@ export default function ScribeAssessment({
                   width: `${100 - calculations.coveragePercent}%`,
                 }}
               >
-                <span className="text-xs font-semibold text-amber-700">
+                {calculations.coveragePercent < 60 && (
+                  <span className="text-xs font-semibold text-amber-700">
+                    {calculations.providersWithoutSupport} without support
+                  </span>
+                )}
+              </div>
+              {calculations.coveragePercent >= 60 && (
+                <span 
+                  className="absolute top-1/2 -translate-y-1/2 right-3 text-xs font-semibold text-amber-700"
+                >
                   {calculations.providersWithoutSupport} without support
                 </span>
-              </div>
+              )}
             </div>
           </div>
 

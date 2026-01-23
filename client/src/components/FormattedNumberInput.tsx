@@ -79,6 +79,9 @@ export function FormattedNumberInput({
       placeholder={placeholder}
       className={className}
       data-testid={testId}
+      autoComplete="off"
+      data-lpignore="true"
+      data-form-type="other"
     />
   );
 }
