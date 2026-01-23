@@ -391,16 +391,33 @@ export default function SummaryCommandCenter({
       hoursReturned: hoursReturnedAnnually,
       additionalVisits: additionalPatientVisits,
       timeSaved: 2.5,
-      laborDrivers: laborDrivers.map((d) => ({
-        name: d.name,
-        value: d.value,
-        description: 'Reduces administrative burden and improves efficiency',
-      })),
-      revenueDrivers: revenueDrivers.map((d) => ({
-        name: d.name,
-        value: d.value,
-        description: 'Improves revenue capture and quality outcomes',
-      })),
+      laborDrivers: laborDrivers.map((d) => {
+        const driverDescriptions: Record<string, string> = {
+          'Patient Access': 'When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue.',
+          'Clinician Retention': 'Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $400K-$800K+ when you factor in recruiting, lost revenue during vacancy, and onboarding.',
+          'Overtime & Locum Savings': 'Reducing documentation time decreases the need for overtime and expensive locum coverage, translating directly to labor cost savings.',
+          'Nurse Documentation Efficiency': 'Nurses spend significant time on documentation. Returning time to bedside care improves patient outcomes and reduces burnout.',
+          'Throughput': 'Faster documentation enables quicker patient turnover, improving overall department efficiency and capacity.',
+        };
+        return {
+          name: d.name,
+          value: d.value,
+          description: driverDescriptions[d.name] || 'Reduces administrative burden and improves efficiency through AI-assisted documentation.',
+        };
+      }),
+      revenueDrivers: revenueDrivers.map((d) => {
+        const driverDescriptions: Record<string, string> = {
+          'Accurate Level of Service': 'Physicians under time pressure document less than the full clinical picture. AI-assisted documentation captures the complexity that supports accurate coding—not upcoding, just getting credit for work already done.',
+          'HCC & Chronic Condition Capture': 'Accurate documentation of chronic conditions ensures proper risk adjustment, improving reimbursement accuracy for value-based care arrangements.',
+          'Documentation-Related Denials': 'Many claim denials stem from incomplete documentation. Comprehensive AI-assisted notes reduce denials and the administrative cost of appeals.',
+          'Critical Decision Making': 'Complete documentation supports better clinical decision-making and care coordination.',
+        };
+        return {
+          name: d.name,
+          value: d.value,
+          description: driverDescriptions[d.name] || 'Improves revenue capture and quality outcomes through comprehensive documentation.',
+        };
+      }),
       laborTotal: laborValue,
       revenueTotal: revenueValue,
       laborPct: laborPercent,
