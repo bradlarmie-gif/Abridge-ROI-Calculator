@@ -46,13 +46,13 @@ export interface PremiumPDFData {
   networkEffect: number;
   qualitativeDrivers?: string[];
   driverDetails?: DriverDetail[];
+  organizationName?: string;
 }
 
-// Premium color palette
+// Premium color palette - brand-aligned
 const COLORS = {
   coral: [232, 90, 79] as [number, number, number],
   coralLight: [254, 242, 242] as [number, number, number],
-  coralDark: [220, 38, 38] as [number, number, number],
   green: [5, 150, 105] as [number, number, number],
   greenLight: [236, 253, 245] as [number, number, number],
   greenDark: [4, 120, 87] as [number, number, number],
@@ -61,7 +61,7 @@ const COLORS = {
   mediumGray: [107, 114, 128] as [number, number, number],
   lightGray: [156, 163, 175] as [number, number, number],
   backgroundGray: [249, 250, 251] as [number, number, number],
-  cream: [250, 250, 249] as [number, number, number],
+  subtleGray: [243, 244, 246] as [number, number, number],
   borderGray: [229, 231, 235] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
   blue: [59, 130, 246] as [number, number, number],
@@ -74,17 +74,17 @@ const formatNumber = (num: number): string => {
   return Math.round(num).toLocaleString();
 };
 
-const formatCurrency = (num: number): string => {
+const formatCurrencyWithPlus = (num: number): string => {
   const prefix = num >= 0 ? '+$' : '-$';
-  return prefix + formatNumber(Math.abs(num));
+  return prefix + Math.round(Math.abs(num)).toLocaleString();
 };
 
 const formatCurrencyPlain = (num: number): string => {
-  return '$' + formatNumber(Math.abs(num));
+  return '$' + Math.round(Math.abs(num)).toLocaleString();
 };
 
-const formatCurrencyFull = (num: number): string => {
-  return '$' + Math.round(num).toLocaleString();
+const formatCurrencyShort = (num: number): string => {
+  return '$' + formatNumber(Math.abs(num));
 };
 
 export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
@@ -96,10 +96,11 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
   let currentPage = 1;
   
   const allDrivers = [...data.laborDrivers, ...data.revenueDrivers];
-  const totalPages = 6 + allDrivers.length;
+  const totalPages = 7 + allDrivers.length;
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const eligibleEncounters = Math.round(data.encounters * data.utilization / 100);
   const paybackMonths = data.investment > 0 ? Math.ceil(12 * data.investment / data.totalValue) : 0;
+  const orgName = data.organizationName || 'Your Organization';
 
   // Helper functions
   const drawHeader = () => {
@@ -112,33 +113,53 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     doc.setFont('helvetica', 'normal');
     doc.text('ROI Analysis', pageWidth - margin, 15, { align: 'right' });
     
-    doc.setDrawColor(...COLORS.borderGray);
+    doc.setDrawColor(...COLORS.coral);
     doc.setLineWidth(0.5);
     doc.line(margin, 20, pageWidth - margin, 20);
   };
 
   const drawFooter = () => {
-    doc.setFontSize(8);
+    doc.setDrawColor(...COLORS.borderGray);
+    doc.setLineWidth(0.3);
+    doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
+    
+    doc.setFontSize(7);
     doc.setTextColor(...COLORS.lightGray);
-    doc.text('This analysis provides estimates for planning purposes based on conservative assumptions.', margin, pageHeight - 12);
+    doc.text('This analysis provides estimates based on your inputs and conservative assumptions. See methodology on final pages.', margin, pageHeight - 12);
     doc.text(`Page ${currentPage} of ${totalPages}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
   };
 
-  const drawSectionTitle = (title: string, y: number): number => {
-    doc.setFontSize(11);
+  const drawSectionTitle = (title: string, y: number, subtitle?: string): number => {
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.black);
     doc.text(title.toUpperCase(), margin, y);
-    return y + 10;
+    
+    doc.setDrawColor(...COLORS.black);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y + 2, margin + doc.getTextWidth(title.toUpperCase()), y + 2);
+    
+    if (subtitle) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.mediumGray);
+      doc.text(subtitle, margin, y + 10);
+      return y + 18;
+    }
+    return y + 12;
   };
 
-  const drawCard = (x: number, y: number, w: number, h: number, bgColor: [number, number, number] = COLORS.white, borderColor?: [number, number, number]) => {
+  const drawCard = (x: number, y: number, w: number, h: number, bgColor: [number, number, number] = COLORS.white, borderColor?: [number, number, number], leftAccent?: [number, number, number]) => {
     doc.setFillColor(...bgColor);
     doc.roundedRect(x, y, w, h, 2, 2, 'F');
     if (borderColor) {
       doc.setDrawColor(...borderColor);
       doc.setLineWidth(0.3);
       doc.roundedRect(x, y, w, h, 2, 2, 'S');
+    }
+    if (leftAccent) {
+      doc.setFillColor(...leftAccent);
+      doc.rect(x, y + 2, 3, h - 4, 'F');
     }
   };
 
@@ -150,348 +171,347 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 1: COVER / EXECUTIVE SUMMARY
+  // PAGE 1: THE HEADLINE
   // ═══════════════════════════════════════════════════════════════════════════
   
   let yPos = 25;
   
-  // Logo and title area with border
-  drawCard(margin, yPos, contentWidth, 55, COLORS.white, COLORS.borderGray);
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.coral);
-  doc.text('ABRIDGE', pageWidth / 2, yPos + 15, { align: 'center' });
-  
-  doc.setDrawColor(...COLORS.borderGray);
-  doc.setLineWidth(0.3);
-  doc.line(margin + 40, yPos + 22, pageWidth - margin - 40, yPos + 22);
-  
+  // Abridge logo and coral accent line
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.black);
-  doc.text('ROI ANALYSIS', pageWidth / 2, yPos + 32, { align: 'center' });
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.darkGray);
-  doc.text(`${data.setting} Ambient Documentation`, pageWidth / 2, yPos + 40, { align: 'center' });
-  
-  doc.setFontSize(9);
-  doc.setTextColor(...COLORS.mediumGray);
-  doc.text(today, pageWidth / 2, yPos + 50, { align: 'center' });
-  
-  yPos += 65;
-  
-  // Divider
-  doc.setDrawColor(...COLORS.coral);
-  doc.setLineWidth(1);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  
-  yPos += 10;
-  
-  // YOUR PROJECTED RETURN section title
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.mediumGray);
-  doc.text('YOUR PROJECTED RETURN', pageWidth / 2, yPos, { align: 'center' });
+  doc.setTextColor(...COLORS.coral);
+  doc.text('ABRIDGE', margin, yPos);
   
   yPos += 8;
+  doc.setDrawColor(...COLORS.coral);
+  doc.setLineWidth(1.5);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
   
-  // Hero Net Value card
-  drawCard(margin, yPos, contentWidth, 45, COLORS.greenLight);
+  yPos += 18;
   
-  doc.setFontSize(36);
+  // Title block
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.green);
-  doc.text(formatCurrency(data.netGain), pageWidth / 2, yPos + 22, { align: 'center' });
+  doc.setTextColor(...COLORS.black);
+  doc.text('ROI ANALYSIS', margin, yPos);
   
+  doc.setDrawColor(...COLORS.black);
+  doc.setLineWidth(0.8);
+  doc.line(margin, yPos + 2, margin + 80, yPos + 2);
+  
+  yPos += 10;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
-  doc.text('Net Annual Value', pageWidth / 2, yPos + 32, { align: 'center' });
+  doc.text(`${data.setting} Ambient Documentation`, margin, yPos);
+  
+  yPos += 10;
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.mediumGray);
+  doc.text(`Prepared for ${orgName}`, margin, yPos);
+  doc.text(today, margin, yPos + 6);
+  
+  yPos += 22;
+  
+  // YOUR PROJECTED ANNUAL VALUE - Hero card with green background
+  drawCard(margin, yPos, contentWidth, 70, COLORS.greenLight);
   
   doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.darkGray);
+  doc.text('YOUR PROJECTED ANNUAL VALUE', pageWidth / 2, yPos + 12, { align: 'center' });
+  
+  // Hero number - 48pt, green, with + sign
+  doc.setFontSize(42);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.green);
+  doc.text(formatCurrencyWithPlus(data.netGain), pageWidth / 2, yPos + 35, { align: 'center' });
+  
+  // Underline the hero number
+  const heroNumWidth = doc.getTextWidth(formatCurrencyWithPlus(data.netGain));
+  doc.setDrawColor(...COLORS.green);
+  doc.setLineWidth(1);
+  doc.line(pageWidth / 2 - heroNumWidth / 2, yPos + 38, pageWidth / 2 + heroNumWidth / 2, yPos + 38);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text(`${formatCurrencyPlain(data.totalValue)} total value  -  ${formatCurrencyPlain(data.investment)} investment`, pageWidth / 2, yPos + 40, { align: 'center' });
+  doc.text('net gain after investment', pageWidth / 2, yPos + 48, { align: 'center' });
   
-  yPos += 55;
-  
-  // Three supporting metrics
-  const metricWidth = (contentWidth - 10) / 3;
-  const metrics = [
-    { value: data.roi.toFixed(1) + 'x', label: 'Return on', sublabel: 'Investment' },
-    { value: paybackMonths + ' mo', label: 'Payback', sublabel: 'Period' },
-    { value: formatCurrencyPlain(data.threeYearNet), label: '3-Year Net', sublabel: 'Value' },
+  // Three metrics in mini cards
+  const miniCardWidth = (contentWidth - 40) / 3;
+  const miniCardY = yPos + 54;
+  const miniCards = [
+    { value: data.roi.toFixed(1) + 'x', label: 'ROI' },
+    { value: paybackMonths + ' mo', label: 'payback' },
+    { value: formatCurrencyShort(data.threeYearNet), label: '3-year' },
   ];
   
-  metrics.forEach((metric, i) => {
-    const x = margin + i * (metricWidth + 5);
-    drawCard(x, yPos, metricWidth, 40, COLORS.white, COLORS.borderGray);
+  miniCards.forEach((card, i) => {
+    const cardX = margin + 10 + i * (miniCardWidth + 10);
+    drawCard(cardX, miniCardY, miniCardWidth, 22, COLORS.white, COLORS.borderGray);
     
-    doc.setFontSize(20);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.black);
-    doc.text(metric.value, x + metricWidth / 2, yPos + 16, { align: 'center' });
+    doc.text(card.value, cardX + miniCardWidth / 2, miniCardY + 10, { align: 'center' });
     
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.mediumGray);
-    doc.text(metric.label, x + metricWidth / 2, yPos + 28, { align: 'center' });
-    doc.text(metric.sublabel, x + metricWidth / 2, yPos + 35, { align: 'center' });
+    doc.text(card.label, cardX + miniCardWidth / 2, miniCardY + 18, { align: 'center' });
   });
   
-  yPos += 50;
+  yPos += 85;
   
-  // Divider
-  doc.setDrawColor(...COLORS.coral);
-  doc.setLineWidth(1);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
+  // YOUR DEPLOYMENT - Single line with dot separators
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.black);
+  doc.text('YOUR DEPLOYMENT', margin, yPos);
   
-  yPos += 10;
+  yPos += 8;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.darkGray);
+  const deploymentText = `${data.providers} ${data.unitNamePlural.toLowerCase()}  ·  ${formatNumber(data.encounters)} encounters  ·  ${data.utilization}% utilization`;
+  doc.text(deploymentText, margin, yPos);
   
-  // YOUR CONFIGURATION
-  yPos = drawSectionTitle('YOUR CONFIGURATION', yPos);
+  yPos += 15;
   
-  const configWidth = (contentWidth - 15) / 4;
-  const configs = [
-    { value: data.providers.toString(), label: `${data.unitNamePlural}`, sublabel: 'in scope' },
-    { value: formatNumber(data.encounters), label: 'Encounters', sublabel: 'per year' },
-    { value: data.utilization + '%', label: 'Utilization', sublabel: 'expected' },
-    { value: allDrivers.length.toString(), label: 'Drivers', sublabel: 'selected' },
-  ];
+  // YOUR SELECTED VALUE DRIVERS
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.black);
+  doc.text('YOUR SELECTED VALUE DRIVERS', margin, yPos);
   
-  configs.forEach((config, i) => {
-    const x = margin + i * (configWidth + 5);
-    drawCard(x, yPos, configWidth, 35, COLORS.backgroundGray);
-    
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.black);
-    doc.text(config.value, x + configWidth / 2, yPos + 14, { align: 'center' });
-    
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.mediumGray);
-    doc.text(config.label, x + configWidth / 2, yPos + 24, { align: 'center' });
-    doc.text(config.sublabel, x + configWidth / 2, yPos + 30, { align: 'center' });
-  });
+  yPos += 8;
   
-  yPos += 45;
+  // Drivers table with mini bar charts
+  const driverCardHeight = 12 + allDrivers.length * 16 + 20;
+  drawCard(margin, yPos, contentWidth, driverCardHeight, COLORS.white, COLORS.borderGray);
   
-  // SELECTED VALUE DRIVERS
-  yPos = drawSectionTitle('SELECTED VALUE DRIVERS', yPos);
-  
-  drawCard(margin, yPos, contentWidth, 8 + allDrivers.length * 14, COLORS.white, COLORS.borderGray);
-  
-  let driverY = yPos + 8;
+  let driverY = yPos + 12;
   const maxDriverValue = Math.max(...allDrivers.map(d => d.value));
   
   allDrivers.forEach((driver) => {
     const pct = Math.round((driver.value / data.totalValue) * 100);
-    const barWidth = 60;
-    const filledWidth = (driver.value / maxDriverValue) * barWidth;
-    
-    // Dot
     const isLabor = data.laborDrivers.some(d => d.name === driver.name);
+    
+    // Colored dot
     doc.setFillColor(...(isLabor ? COLORS.blue : COLORS.green));
-    doc.circle(margin + 8, driverY, 2, 'F');
+    doc.circle(margin + 8, driverY, 2.5, 'F');
     
     // Driver name
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.black);
-    doc.text(driver.name, margin + 15, driverY + 1);
+    doc.text(driver.name, margin + 16, driverY + 1);
     
-    // Value
+    // Dollar value (green)
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.green);
-    doc.text(formatCurrencyPlain(driver.value), margin + 90, driverY + 1);
-    
-    // Progress bar
-    const barX = margin + 115;
-    doc.setFillColor(...COLORS.backgroundGray);
-    doc.roundedRect(barX, driverY - 3, barWidth, 6, 1, 1, 'F');
-    doc.setFillColor(...(isLabor ? COLORS.blue : COLORS.green));
-    doc.roundedRect(barX, driverY - 3, filledWidth, 6, 1, 1, 'F');
+    doc.text(formatCurrencyPlain(driver.value), margin + 95, driverY + 1);
     
     // Percentage
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.mediumGray);
-    doc.text(pct + '%', barX + barWidth + 5, driverY + 1);
+    doc.text(pct + '%', margin + 130, driverY + 1);
     
-    driverY += 14;
+    // Mini bar chart
+    const barX = margin + 145;
+    const barMaxWidth = 25;
+    const barWidth = (driver.value / maxDriverValue) * barMaxWidth;
+    
+    doc.setFillColor(...COLORS.backgroundGray);
+    doc.roundedRect(barX, driverY - 3.5, barMaxWidth, 7, 1, 1, 'F');
+    doc.setFillColor(...(isLabor ? COLORS.blue : COLORS.green));
+    doc.roundedRect(barX, driverY - 3.5, barWidth, 7, 1, 1, 'F');
+    
+    driverY += 16;
   });
   
-  yPos = driverY + 5;
-  
-  // Footer disclaimer
+  // Total row
   doc.setDrawColor(...COLORS.borderGray);
-  doc.setLineWidth(0.3);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
+  doc.setLineWidth(0.5);
+  doc.line(margin + 8, driverY - 4, margin + contentWidth - 8, driverY - 4);
   
-  yPos += 6;
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(...COLORS.lightGray);
-  doc.text('This analysis provides estimates for planning purposes based on your inputs and conservative assumptions. See methodology for details.', margin, yPos);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.black);
+  doc.text('TOTAL VALUE', margin + 16, driverY + 6);
   
-  // Page number
-  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.green);
+  doc.text(formatCurrencyPlain(data.totalValue), margin + 95, driverY + 6);
+  
+  doc.setTextColor(...COLORS.mediumGray);
+  doc.text('100%', margin + 130, driverY + 6);
+  
+  // Page 1 footer
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('Page 1', pageWidth - margin, pageHeight - 12, { align: 'right' });
-  
+  doc.text(`Page ${currentPage} of ${totalPages}`, pageWidth - margin, pageHeight - 12, { align: 'right' });
+
   // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 2: UNDERSTANDING HOW AMBIENT AI CREATES VALUE
+  // PAGE 2: THE FRAMEWORK
   // ═══════════════════════════════════════════════════════════════════════════
   
   newPage();
   yPos = 30;
   
-  yPos = drawSectionTitle('UNDERSTANDING HOW AMBIENT AI CREATES VALUE', yPos);
+  yPos = drawSectionTitle('HOW AMBIENT AI CREATES VALUE', yPos);
   
-  // Intro card
-  drawCard(margin, yPos, contentWidth, 48, COLORS.cream, COLORS.borderGray);
+  // Intro callout card with coral left accent
+  drawCard(margin, yPos, contentWidth, 52, COLORS.backgroundGray, undefined, COLORS.coral);
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
   
-  const introText = [
-    "Ambient AI doesn't generate revenue or cut costs directly. It does two things:",
+  const introLines = [
+    "Ambient AI doesn't generate revenue or cut costs directly.",
+    "It does two things:",
     "",
-    "1. Returns time to clinicians (by handling documentation)",
-    "2. Captures clinical information (that would otherwise be lost)",
+    "   1. Returns time to clinicians (by handling documentation)",
+    "   2. Captures clinical information (that would otherwise be lost or incomplete)",
     "",
-    "That time and information convert to measurable value through specific",
-    "pathways - depending on what matters most to your organization.",
+    "That time and information convert to measurable value through specific pathways",
+    "— depending on what matters most to your organization.",
   ];
   
-  introText.forEach((line, i) => {
-    doc.text(line, margin + 8, yPos + 10 + i * 6);
+  introLines.forEach((line, i) => {
+    doc.text(line, margin + 12, yPos + 10 + i * 5.5);
   });
   
-  yPos += 58;
+  yPos += 62;
   
   // THE TWO VALUE CATEGORIES
   yPos = drawSectionTitle('THE TWO VALUE CATEGORIES', yPos);
   
-  const catWidth = (contentWidth - 5) / 2;
+  const catWidth = (contentWidth - 8) / 2;
   
-  // Capacity & Labor column
-  drawCard(margin, yPos, catWidth, 90, COLORS.blueLight, COLORS.blue);
+  // CAPACITY & LABOR card (blue tint)
+  drawCard(margin, yPos, catWidth, 95, COLORS.blueLight, COLORS.blue);
   
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.blue);
-  doc.text('CAPACITY & LABOR', margin + 8, yPos + 12);
+  doc.text('CAPACITY & LABOR', margin + 10, yPos + 14);
   
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(...COLORS.darkGray);
-  doc.text('Time -> Efficiency', margin + 8, yPos + 20);
+  doc.text('Time → Efficiency', margin + 10, yPos + 22);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
-  const laborDesc = [
-    "When clinicians spend less time on",
-    "documentation, that time can convert to:",
+  const laborBenefits = [
+    "When clinicians spend less time",
+    "documenting, that time converts to:",
     "",
-    "  - More patient visits",
-    "  - Reduced overtime",
-    "  - Lower turnover",
-    "  - Better work-life balance",
+    "  · More patient visits",
+    "  · Reduced overtime",
+    "  · Lower turnover",
+    "  · Better work-life balance",
   ];
-  laborDesc.forEach((line, i) => {
-    doc.text(line, margin + 8, yPos + 30 + i * 5);
+  laborBenefits.forEach((line, i) => {
+    doc.text(line, margin + 10, yPos + 32 + i * 5);
   });
   
-  // Show labor drivers selection
-  doc.setFontSize(8);
+  // YOUR SELECTION in labor card
+  doc.setDrawColor(...COLORS.blue);
+  doc.setLineWidth(0.5);
+  doc.line(margin + 10, yPos + 68, margin + catWidth - 10, yPos + 68);
+  
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.blue);
-  doc.text('YOUR SELECTION', margin + 8, yPos + 68);
-  doc.setDrawColor(...COLORS.blue);
-  doc.line(margin + 8, yPos + 70, margin + 50, yPos + 70);
+  doc.text('YOUR SELECTION:', margin + 10, yPos + 75);
   
-  let laborSelY = yPos + 76;
+  let laborSelY = yPos + 82;
   data.laborDrivers.forEach((d) => {
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.green);
-    doc.text('*', margin + 8, laborSelY);
+    doc.text('✓', margin + 10, laborSelY);
     doc.setTextColor(...COLORS.black);
-    doc.text(d.name, margin + 14, laborSelY);
+    doc.text(d.name, margin + 16, laborSelY);
     doc.setTextColor(...COLORS.green);
-    doc.text(formatCurrencyPlain(d.value), margin + catWidth - 25, laborSelY);
+    doc.text(formatCurrencyPlain(d.value), margin + catWidth - 30, laborSelY);
     laborSelY += 6;
   });
   
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.blue);
-  doc.text('SUBTOTAL: ' + formatCurrencyPlain(data.laborTotal), margin + 8, yPos + 86);
+  if (data.laborDrivers.length === 0) {
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...COLORS.lightGray);
+    doc.text('None selected', margin + 10, laborSelY);
+  }
   
-  // Revenue & Quality column
-  const revX = margin + catWidth + 5;
-  drawCard(revX, yPos, catWidth, 90, COLORS.greenLight, COLORS.green);
+  // REVENUE & QUALITY card (green tint)
+  const revX = margin + catWidth + 8;
+  drawCard(revX, yPos, catWidth, 95, COLORS.greenLight, COLORS.green);
   
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.green);
-  doc.text('REVENUE & QUALITY', revX + 8, yPos + 12);
+  doc.text('REVENUE & QUALITY', revX + 10, yPos + 14);
   
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(...COLORS.darkGray);
-  doc.text('Information -> Accuracy', revX + 8, yPos + 20);
+  doc.text('Information → Accuracy', revX + 10, yPos + 22);
   
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
-  const revDesc = [
-    "When documentation captures the full",
-    "clinical picture, organizations see:",
+  const revBenefits = [
+    "When documentation captures the",
+    "full clinical picture:",
     "",
-    "  - Better coding accuracy",
-    "  - Improved HCC capture",
-    "  - Fewer denials",
-    "  - Complete documentation",
+    "  · Better coding accuracy",
+    "  · Improved HCC capture",
+    "  · Fewer denials",
+    "  · Complete documentation",
   ];
-  revDesc.forEach((line, i) => {
-    doc.text(line, revX + 8, yPos + 30 + i * 5);
+  revBenefits.forEach((line, i) => {
+    doc.text(line, revX + 10, yPos + 32 + i * 5);
   });
   
-  // Show revenue drivers selection
-  doc.setFontSize(8);
+  // YOUR SELECTION in revenue card
+  doc.setDrawColor(...COLORS.green);
+  doc.setLineWidth(0.5);
+  doc.line(revX + 10, yPos + 68, revX + catWidth - 10, yPos + 68);
+  
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.green);
-  doc.text('YOUR SELECTION', revX + 8, yPos + 68);
-  doc.setDrawColor(...COLORS.green);
-  doc.line(revX + 8, yPos + 70, revX + 50, yPos + 70);
+  doc.text('YOUR SELECTION:', revX + 10, yPos + 75);
   
-  let revSelY = yPos + 76;
+  let revSelY = yPos + 82;
   data.revenueDrivers.forEach((d) => {
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.green);
-    doc.text('*', revX + 8, revSelY);
+    doc.text('✓', revX + 10, revSelY);
     doc.setTextColor(...COLORS.black);
-    doc.text(d.name, revX + 14, revSelY);
+    doc.text(d.name, revX + 16, revSelY);
     doc.setTextColor(...COLORS.green);
-    doc.text(formatCurrencyPlain(d.value), revX + catWidth - 25, revSelY);
+    doc.text(formatCurrencyPlain(d.value), revX + catWidth - 30, revSelY);
     revSelY += 6;
   });
   
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.green);
-  doc.text('SUBTOTAL: ' + formatCurrencyPlain(data.revenueTotal), revX + 8, yPos + 86);
+  if (data.revenueDrivers.length === 0) {
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...COLORS.lightGray);
+    doc.text('None selected', revX + 10, revSelY);
+  }
   
-  yPos += 100;
+  yPos += 105;
   
   // WHY WE USE CONSERVATIVE ASSUMPTIONS
   yPos = drawSectionTitle('WHY WE USE CONSERVATIVE ASSUMPTIONS', yPos);
@@ -499,15 +519,15 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
-  doc.text("Every calculation in this analysis applies multiple conservative factors. We'd rather underestimate and overdeliver.", margin, yPos);
+  doc.text("Every calculation applies multiple conservative factors. We'd rather underestimate and overdeliver.", margin, yPos);
   
   yPos += 10;
   
   const factorsData = [
     ['Factor', 'Rate', 'What it means'],
-    ['Time-to-access conversion', '25%', 'Only 1/4 of saved time goes to seeing patients'],
-    ['Visit conversion', '60%', 'Scheduling/capacity limits actual conversion'],
-    ['Burnout attribution', '30%', 'We only claim partial credit for retention'],
+    ['Time-to-access conversion', '25%', 'Only 1/4 of saved time goes to patient visits'],
+    ['Visit conversion', '60%', 'Scheduling and capacity limit actual conversion'],
+    ['Burnout attribution', '30%', 'We claim partial credit for retention improvement'],
     ['HCC audit factor', '25%', 'Accounts for RADV and payer adjustments'],
   ];
   
@@ -520,6 +540,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
       fontSize: 8,
       cellPadding: 4,
       textColor: COLORS.darkGray,
+      overflow: 'linebreak',
     },
     headStyles: {
       fillColor: COLORS.backgroundGray,
@@ -528,578 +549,524 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
       fontSize: 7,
     },
     columnStyles: {
-      0: { cellWidth: 50 },
-      1: { cellWidth: 20, halign: 'center' },
-      2: { cellWidth: 80 },
+      0: { cellWidth: 45 },
+      1: { cellWidth: 15, halign: 'center' },
+      2: { cellWidth: 'auto' },
     },
+    tableWidth: contentWidth,
     margin: { left: margin, right: margin },
   });
-  
+
   // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 3: YOUR SELECTED VALUE DRIVERS
+  // PAGE 3+: VALUE DRIVER DETAILS (one per driver)
   // ═══════════════════════════════════════════════════════════════════════════
-  
-  newPage();
-  yPos = 30;
-  
-  yPos = drawSectionTitle('YOUR SELECTED VALUE DRIVERS', yPos);
-  
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.darkGray);
-  doc.text(`Based on your strategic priorities, you've selected ${allDrivers.length} value pathways. Here's what drives each one.`, margin, yPos);
-  
-  yPos += 12;
-  
-  // Get driver-specific content
-  const getDriverContent = (driverName: string, value: number, index: number): { theory: string[]; variables: { label: string; value: string }[]; logic: string } => {
-    const appendixLetter = String.fromCharCode(65 + index);
-    
-    switch (driverName) {
-      case 'Clinician Retention':
-        return {
-          theory: [
-            "Documentation burden is the #1 driver of physician burnout.",
-            "Reducing this burden improves satisfaction and retention.",
-            "Replacing a physician costs $400K-$800K+.",
-          ],
-          variables: [
-            { label: `${data.providers} ${data.unitNamePlural.toLowerCase()}`, value: 'in scope' },
-            { label: '6% turnover', value: 'rate' },
-            { label: '$400K', value: 'replacement cost' },
-          ],
-          logic: `${data.providers} ${data.unitNamePlural.toLowerCase()} x 6% = ${(data.providers * 0.06).toFixed(1)} departures/yr x 45% burnout-related x 30% Abridge attribution = ${(data.providers * 0.06 * 0.45 * 0.30).toFixed(2)} avoided/yr x $400K = ${formatCurrencyPlain(value)}     Full calculation -> Appendix ${appendixLetter}`,
-        };
-      case 'Patient Access':
-        return {
-          theory: [
-            "When clinicians spend less time on documentation, they have",
-            "capacity to see additional patients. Not all time converts -",
-            "but even a modest portion creates meaningful revenue.",
-          ],
-          variables: [
-            { label: formatNumber(eligibleEncounters), value: 'encounters eligible' },
-            { label: '2 min saved', value: 'per encounter' },
-            { label: '$200/visit', value: 'avg revenue' },
-          ],
-          logic: `${formatNumber(eligibleEncounters)} enc x 2 min = ${formatNumber(Math.round(eligibleEncounters * 2 / 60))} hrs saved x 25% to access x 60% conversion / 30 min = additional visits x $200 = ${formatCurrencyPlain(value)}     Full calculation -> Appendix ${appendixLetter}`,
-        };
-      case 'Accurate Level of Service':
-        return {
-          theory: [
-            "Physicians under time pressure document less than the full",
-            "clinical picture. AI captures complexity that supports accurate",
-            "coding - not upcoding, just getting credit for work done.",
-          ],
-          variables: [
-            { label: formatNumber(eligibleEncounters), value: 'encounters eligible' },
-            { label: '1.5 wRVU/enc', value: 'baseline' },
-            { label: '5% improvement', value: 'expected' },
-          ],
-          logic: `${formatNumber(eligibleEncounters)} enc x 1.5 wRVU x 5% improvement = ${formatNumber(Math.round(eligibleEncounters * 1.5 * 0.05))} additional wRVU x $33 = ${formatCurrencyPlain(value)}     Full calculation -> Appendix ${appendixLetter}`,
-        };
-      case 'HCC & Chronic Condition Capture':
-        return {
-          theory: [
-            "Accurate documentation of chronic conditions ensures proper",
-            "risk adjustment, improving reimbursement accuracy for",
-            "value-based care arrangements.",
-          ],
-          variables: [
-            { label: formatNumber(eligibleEncounters), value: 'encounters eligible' },
-            { label: '$800', value: 'avg HCC value' },
-            { label: '25%', value: 'audit factor' },
-          ],
-          logic: `Estimated HCC captures x $800 value x 25% audit factor = ${formatCurrencyPlain(value)}     Full calculation -> Appendix ${appendixLetter}`,
-        };
-      case 'Overtime & Locum Savings':
-        return {
-          theory: [
-            "Reducing documentation time decreases the need for overtime",
-            "and expensive locum coverage, translating directly to",
-            "labor cost savings.",
-          ],
-          variables: [
-            { label: formatNumber(data.hoursReturned), value: 'hours returned' },
-            { label: '$150/hr', value: 'overtime rate' },
-            { label: '20%', value: 'conversion' },
-          ],
-          logic: `${formatNumber(data.hoursReturned)} hours x $150/hr x 20% overtime conversion = ${formatCurrencyPlain(value)}     Full calculation -> Appendix ${appendixLetter}`,
-        };
-      default:
-        return {
-          theory: [
-            "This driver creates value through improved efficiency",
-            "and reduced administrative burden from AI-assisted",
-            "documentation workflows.",
-          ],
-          variables: [
-            { label: formatNumber(eligibleEncounters), value: 'encounters' },
-            { label: 'Conservative', value: 'factors applied' },
-            { label: 'Industry', value: 'benchmarks used' },
-          ],
-          logic: `Value calculated using conservative industry benchmarks = ${formatCurrencyPlain(value)}     Full calculation -> Appendix ${appendixLetter}`,
-        };
-    }
-  };
   
   allDrivers.forEach((driver, idx) => {
-    const content = getDriverContent(driver.name, driver.value, idx);
-    const isLabor = data.laborDrivers.some(d => d.name === driver.name);
-    const cardHeight = 65;
+    newPage();
+    yPos = 30;
     
-    // Check if we need a new page
-    if (yPos + cardHeight > pageHeight - 25) {
-      newPage();
-      yPos = 30;
+    const isLabor = data.laborDrivers.some(d => d.name === driver.name);
+    const categoryColor = isLabor ? COLORS.blue : COLORS.green;
+    const appendixLetter = String.fromCharCode(65 + idx);
+    
+    // Page section header
+    if (idx === 0) {
+      yPos = drawSectionTitle('YOUR VALUE DRIVERS', yPos, 'Based on your strategic priorities');
+    } else {
+      yPos += 5;
     }
     
-    drawCard(margin, yPos, contentWidth, cardHeight, COLORS.white, COLORS.borderGray);
+    // Driver header card
+    drawCard(margin, yPos, contentWidth, 20, COLORS.white, COLORS.borderGray);
     
-    // Icon indicator
-    doc.setFillColor(...(isLabor ? COLORS.blue : COLORS.green));
-    doc.circle(margin + 8, yPos + 10, 3, 'F');
+    // Colored dot
+    doc.setFillColor(...categoryColor);
+    doc.circle(margin + 10, yPos + 10, 3, 'F');
     
-    // Driver name and value
-    doc.setFontSize(11);
+    // Driver name
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.black);
-    doc.text(driver.name.toUpperCase(), margin + 16, yPos + 12);
+    doc.text(driver.name.toUpperCase(), margin + 20, yPos + 12);
     
+    // Dollar value (green, right-aligned)
     doc.setTextColor(...COLORS.green);
-    doc.text(formatCurrencyPlain(driver.value), pageWidth - margin - 8, yPos + 12, { align: 'right' });
+    doc.text(formatCurrencyPlain(driver.value), pageWidth - margin - 10, yPos + 12, { align: 'right' });
     
-    // Divider
-    doc.setDrawColor(...COLORS.borderGray);
-    doc.line(margin + 8, yPos + 16, pageWidth - margin - 8, yPos + 16);
+    // Underline
+    doc.setDrawColor(...categoryColor);
+    doc.setLineWidth(1);
+    doc.line(margin, yPos + 22, pageWidth - margin, yPos + 22);
     
-    // The Theory
-    doc.setFontSize(8);
+    yPos += 30;
+    
+    // THE THEORY section
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.mediumGray);
-    doc.text('The Theory', margin + 8, yPos + 24);
+    doc.setTextColor(...COLORS.black);
+    doc.text('THE THEORY', margin, yPos);
+    doc.setDrawColor(...COLORS.borderGray);
+    doc.setLineWidth(0.3);
+    doc.line(margin, yPos + 2, margin + 50, yPos + 2);
     
+    yPos += 10;
+    
+    // Theory text based on driver
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkGray);
-    content.theory.forEach((line, i) => {
-      doc.text(line, margin + 8, yPos + 30 + i * 4);
+    
+    const theoryText = getDriverTheory(driver.name);
+    const theoryLines = doc.splitTextToSize(theoryText, contentWidth);
+    theoryLines.forEach((line: string, i: number) => {
+      doc.text(line, margin, yPos + i * 5);
     });
     
-    // Key Variables
-    const varY = yPos + 44;
-    const varWidth = (contentWidth - 30) / 3;
+    yPos += theoryLines.length * 5 + 12;
     
-    content.variables.forEach((v, i) => {
-      const vx = margin + 8 + i * (varWidth + 5);
-      drawCard(vx, varY, varWidth, 12, COLORS.backgroundGray);
+    // YOUR INPUTS section
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.black);
+    doc.text('YOUR INPUTS', margin, yPos);
+    doc.setDrawColor(...COLORS.borderGray);
+    doc.line(margin, yPos + 2, margin + 50, yPos + 2);
+    
+    yPos += 10;
+    
+    // Three input boxes
+    const inputBoxWidth = (contentWidth - 16) / 3;
+    const inputs = getDriverInputs(driver.name, data, eligibleEncounters);
+    
+    inputs.forEach((input, i) => {
+      const boxX = margin + i * (inputBoxWidth + 8);
+      drawCard(boxX, yPos, inputBoxWidth, 35, COLORS.backgroundGray);
       
-      doc.setFontSize(8);
+      doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...COLORS.black);
-      doc.text(v.label, vx + varWidth / 2, varY + 5, { align: 'center' });
+      doc.text(input.value, boxX + inputBoxWidth / 2, yPos + 15, { align: 'center' });
       
-      doc.setFontSize(6);
+      doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...COLORS.mediumGray);
-      doc.text(v.value, vx + varWidth / 2, varY + 10, { align: 'center' });
+      doc.text(input.label, boxX + inputBoxWidth / 2, yPos + 25, { align: 'center' });
+      doc.text(input.sublabel, boxX + inputBoxWidth / 2, yPos + 31, { align: 'center' });
     });
     
-    // The Logic
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(...COLORS.mediumGray);
-    const logicLines = doc.splitTextToSize(content.logic, contentWidth - 16);
-    doc.text(logicLines[0], margin + 8, yPos + 62);
+    yPos += 48;
     
-    yPos += cardHeight + 5;
+    // THE LOGIC section
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...COLORS.black);
+    doc.text('THE LOGIC', margin, yPos);
+    doc.setDrawColor(...COLORS.borderGray);
+    doc.line(margin, yPos + 2, margin + 45, yPos + 2);
+    
+    yPos += 12;
+    
+    // Logic steps with arrows
+    const logicSteps = getDriverLogicSteps(driver.name, data, eligibleEncounters, driver.value);
+    
+    logicSteps.forEach((step, i) => {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.darkGray);
+      doc.text(step.calculation, margin, yPos);
+      
+      // Arrow line pointing to result
+      const calcWidth = doc.getTextWidth(step.calculation);
+      doc.setDrawColor(...COLORS.borderGray);
+      doc.setLineWidth(0.3);
+      doc.line(margin + calcWidth + 5, yPos - 1, margin + 125, yPos - 1);
+      
+      // Arrow head
+      doc.setFillColor(...COLORS.mediumGray);
+      doc.triangle(margin + 127, yPos - 1, margin + 125, yPos - 3, margin + 125, yPos + 1, 'F');
+      
+      // Result
+      const isLast = i === logicSteps.length - 1;
+      doc.setFont('helvetica', isLast ? 'bold' : 'normal');
+      doc.setTextColor(...(isLast ? COLORS.green : COLORS.black));
+      doc.text(step.result, margin + 132, yPos);
+      
+      yPos += 12;
+    });
+    
+    yPos += 8;
+    
+    // Attribution callout box
+    const callout = getDriverCallout(driver.name);
+    if (callout) {
+      drawCard(margin, yPos, contentWidth, 38, COLORS.backgroundGray, COLORS.borderGray);
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.black);
+      doc.text(callout.title, margin + 10, yPos + 12);
+      
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...COLORS.darkGray);
+      const calloutLines = doc.splitTextToSize(callout.text, contentWidth - 20);
+      calloutLines.forEach((line: string, i: number) => {
+        doc.text(line, margin + 10, yPos + 20 + i * 5);
+      });
+      
+      yPos += 45;
+    }
+    
+    // Link to appendix
+    doc.setDrawColor(...COLORS.borderGray);
+    doc.setLineWidth(0.3);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    
+    yPos += 8;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.mediumGray);
+    doc.text(`Full step-by-step calculation → Appendix ${appendixLetter}`, margin, yPos);
   });
-  
+
   // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 4: THE SCALING OPPORTUNITY
+  // THE SCALING OPPORTUNITY PAGE
   // ═══════════════════════════════════════════════════════════════════════════
   
   newPage();
   yPos = 30;
   
-  yPos = drawSectionTitle('THE SCALING OPPORTUNITY', yPos);
+  yPos = drawSectionTitle('THE SCALING OPPORTUNITY', yPos, 'What growth could look like');
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
-  doc.text(`This analysis models a pilot of ${data.providers} ${data.unitNamePlural.toLowerCase()}. Here's what scaling across your organization could look like.`, margin, yPos);
+  doc.text(`This analysis models a deployment of ${data.providers} ${data.unitNamePlural.toLowerCase()}. Here's what scaling across your organization could mean.`, margin, yPos);
   
   yPos += 15;
   
-  // Pilot vs Full Scale comparison
-  const compWidth = (contentWidth - 10) / 2;
+  // PILOT vs FULL SCALE side by side
+  const scaleCardWidth = (contentWidth - 20) / 2;
   
-  // Pilot card
-  drawCard(margin, yPos, compWidth, 70, COLORS.white, COLORS.borderGray);
+  // Pilot card (gray)
+  drawCard(margin, yPos, scaleCardWidth, 85, COLORS.backgroundGray, COLORS.borderGray);
   
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('PILOT (TODAY)', margin + compWidth / 2, yPos + 12, { align: 'center' });
+  doc.text('PILOT (TODAY)', margin + scaleCardWidth / 2, yPos + 12, { align: 'center' });
   
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.black);
-  doc.text(data.providers.toString(), margin + compWidth / 2, yPos + 32, { align: 'center' });
+  doc.text(data.providers.toString(), margin + scaleCardWidth / 2, yPos + 32, { align: 'center' });
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text(data.unitNamePlural.toLowerCase(), margin + compWidth / 2, yPos + 40, { align: 'center' });
+  doc.text(data.unitNamePlural.toLowerCase(), margin + scaleCardWidth / 2, yPos + 40, { align: 'center' });
   
   doc.setFontSize(8);
-  doc.text(formatNumber(data.encounters) + ' encounters', margin + compWidth / 2, yPos + 50, { align: 'center' });
-  doc.text(data.utilization + '% utilization', margin + compWidth / 2, yPos + 56, { align: 'center' });
+  doc.text(`${formatNumber(data.encounters)} encounters`, margin + scaleCardWidth / 2, yPos + 52, { align: 'center' });
+  doc.text(`${data.utilization}% utilization`, margin + scaleCardWidth / 2, yPos + 60, { align: 'center' });
   
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.green);
-  doc.text(formatCurrencyPlain(data.totalValue), margin + compWidth / 2, yPos + 66, { align: 'center' });
+  doc.setTextColor(...COLORS.black);
+  doc.text(formatCurrencyShort(data.totalValue), margin + scaleCardWidth / 2, yPos + 72, { align: 'center' });
   
-  // Full Scale card
-  const fsX = margin + compWidth + 10;
-  drawCard(fsX, yPos, compWidth, 70, COLORS.greenLight, COLORS.green);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.mediumGray);
+  doc.text('annual value', margin + scaleCardWidth / 2, yPos + 79, { align: 'center' });
   
-  doc.setFontSize(9);
+  // Arrow between cards
+  const arrowX = margin + scaleCardWidth + 10;
+  doc.setFillColor(...COLORS.mediumGray);
+  doc.triangle(arrowX + 5, yPos + 42, arrowX - 2, yPos + 38, arrowX - 2, yPos + 46, 'F');
+  doc.setDrawColor(...COLORS.mediumGray);
+  doc.setLineWidth(1.5);
+  doc.line(arrowX - 5, yPos + 42, arrowX, yPos + 42);
+  
+  // Full Scale card (green)
+  const fullX = margin + scaleCardWidth + 20;
+  drawCard(fullX, yPos, scaleCardWidth, 85, COLORS.greenLight, COLORS.green);
+  
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.green);
-  doc.text('FULL SCALE', fsX + compWidth / 2, yPos + 12, { align: 'center' });
+  doc.text('FULL SCALE', fullX + scaleCardWidth / 2, yPos + 12, { align: 'center' });
   
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.black);
-  doc.text(data.fullScaleProviders.toString(), fsX + compWidth / 2, yPos + 32, { align: 'center' });
+  doc.text(data.fullScaleProviders.toString(), fullX + scaleCardWidth / 2, yPos + 32, { align: 'center' });
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text(data.unitNamePlural.toLowerCase(), fsX + compWidth / 2, yPos + 40, { align: 'center' });
+  doc.text(data.unitNamePlural.toLowerCase(), fullX + scaleCardWidth / 2, yPos + 40, { align: 'center' });
   
-  const fsEncounters = Math.round(data.encounters * (data.fullScaleProviders / data.providers));
+  const fullScaleEnc = Math.round(data.encounters * (data.fullScaleProviders / data.providers));
   doc.setFontSize(8);
-  doc.text(formatNumber(fsEncounters) + ' encounters', fsX + compWidth / 2, yPos + 50, { align: 'center' });
-  doc.text(data.fullScaleUtil + '% utilization', fsX + compWidth / 2, yPos + 56, { align: 'center' });
+  doc.text(`${formatNumber(fullScaleEnc)} encounters`, fullX + scaleCardWidth / 2, yPos + 52, { align: 'center' });
+  doc.text(`${data.fullScaleUtil}% utilization`, fullX + scaleCardWidth / 2, yPos + 60, { align: 'center' });
   
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.green);
-  doc.text(formatCurrencyPlain(data.fullScaleValue), fsX + compWidth / 2, yPos + 66, { align: 'center' });
+  doc.text(formatCurrencyShort(data.fullScaleValue), fullX + scaleCardWidth / 2, yPos + 72, { align: 'center' });
   
-  yPos += 85;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.darkGray);
+  doc.text('annual value', fullX + scaleCardWidth / 2, yPos + 79, { align: 'center' });
   
-  // YOUR JOURNEY TO FULL SCALE (simplified text representation)
-  yPos = drawSectionTitle('YOUR JOURNEY TO FULL SCALE', yPos);
+  yPos += 95;
   
-  drawCard(margin, yPos, contentWidth, 50, COLORS.backgroundGray, COLORS.borderGray);
+  // WHY VALUE COMPOUNDS section
+  yPos = drawSectionTitle('WHY VALUE COMPOUNDS (NOT JUST SCALES)', yPos);
   
-  // Journey timeline
-  const timelineY = yPos + 25;
-  doc.setDrawColor(...COLORS.lightGray);
-  doc.setLineWidth(0.5);
-  doc.line(margin + 20, timelineY, pageWidth - margin - 20, timelineY);
+  drawCard(margin, yPos, contentWidth, 50, COLORS.white, COLORS.borderGray);
   
-  const milestones = [
-    { label: 'Today', value: data.providers, amount: data.totalValue },
-    { label: '12 mo', value: Math.round(data.providers * 1.5), amount: data.totalValue * 1.5 },
-    { label: '24 mo', value: Math.round(data.providers * 2), amount: data.totalValue * 2.2 },
-    { label: 'Full Scale', value: data.fullScaleProviders, amount: data.fullScaleValue },
+  const compoundPoints = [
+    { icon: '↗', title: 'UTILIZATION IMPROVES', desc: `${data.utilization}% → ${data.fullScaleUtil}% as adoption matures and habits form` },
+    { icon: '↗', title: 'RETENTION BENEFITS MATERIALIZE', desc: 'Full impact emerges after 6-12 months' },
+    { icon: '↗', title: 'EFFICIENCY COMPOUNDS', desc: 'Shared learnings, optimized workflows, organizational muscle' },
   ];
   
-  const timelineWidth = contentWidth - 40;
-  milestones.forEach((m, i) => {
-    const x = margin + 20 + (i / (milestones.length - 1)) * timelineWidth;
-    
-    doc.setFillColor(...COLORS.green);
-    doc.circle(x, timelineY, 3, 'F');
-    
-    doc.setFontSize(7);
+  let compY = yPos + 12;
+  compoundPoints.forEach((point) => {
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.black);
-    doc.text(m.label, x, timelineY - 8, { align: 'center' });
+    doc.setTextColor(...COLORS.green);
+    doc.text(point.icon, margin + 10, compY);
     
+    doc.setTextColor(...COLORS.black);
+    doc.text(point.title, margin + 22, compY);
+    
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.mediumGray);
-    doc.text(m.value + ' ' + data.unitNamePlural.toLowerCase(), x, timelineY + 10, { align: 'center' });
-    doc.setTextColor(...COLORS.green);
-    doc.text(formatCurrencyPlain(m.amount), x, timelineY + 18, { align: 'center' });
+    doc.text(point.desc, margin + 22, compY + 6);
+    
+    compY += 16;
   });
   
   yPos += 60;
   
-  // WHY VALUE COMPOUNDS
-  yPos = drawSectionTitle('WHY VALUE COMPOUNDS (NOT JUST SCALES)', yPos);
+  // Compounding bonus callout
+  const compoundingBonus = Math.round((data.fullScaleValue * 2) - (data.totalValue * (data.fullScaleProviders / data.providers) * 2));
+  drawCard(margin, yPos, contentWidth, 35, COLORS.greenLight, COLORS.green);
   
-  const compoundReasons = [
-    { title: 'Utilization improves', desc: `${data.utilization}% -> ${data.fullScaleUtil}% as adoption matures and habits form` },
-    { title: 'Retention benefits materialize', desc: 'Full impact emerges after 6-12 months' },
-    { title: 'Efficiency compounds', desc: 'Shared learnings, optimized workflows, organizational muscle' },
-  ];
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.darkGray);
+  doc.text('COMPOUNDING BONUS', margin + 10, yPos + 12);
   
-  drawCard(margin, yPos, contentWidth, 45, COLORS.white, COLORS.borderGray);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.green);
+  doc.text(formatCurrencyWithPlus(Math.abs(compoundingBonus) > 10000 ? compoundingBonus : data.networkEffect), margin + 10, yPos + 26);
   
-  let reasonY = yPos + 10;
-  compoundReasons.forEach((r) => {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.black);
-    doc.text('> ' + r.title, margin + 8, reasonY);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLORS.mediumGray);
-    doc.text(r.desc, margin + 15, reasonY + 6);
-    
-    reasonY += 14;
-  });
-  
-  yPos += 55;
-  
-  // Compounding bonus
-  const compoundBonus = data.fullScaleValue - (data.totalValue * (data.fullScaleProviders / data.providers));
-  if (compoundBonus > 0) {
-    drawCard(margin, yPos, contentWidth, 30, COLORS.greenLight, COLORS.green);
-    
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLORS.green);
-    doc.text('COMPOUNDING BONUS', pageWidth / 2, yPos + 10, { align: 'center' });
-    
-    doc.setFontSize(18);
-    doc.text(formatCurrency(compoundBonus), pageWidth / 2, yPos + 22, { align: 'center' });
-    
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text('over 24 months beyond linear projection', pageWidth / 2, yPos + 28, { align: 'center' });
-  }
-  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.darkGray);
+  doc.text('over 24 months beyond linear projection', margin + 85, yPos + 26);
+
   // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 5: YOUR INVESTMENT
+  // YOUR INVESTMENT PAGE
   // ═══════════════════════════════════════════════════════════════════════════
   
   newPage();
   yPos = 30;
   
-  yPos = drawSectionTitle('YOUR INVESTMENT', yPos);
+  yPos = drawSectionTitle('YOUR INVESTMENT', yPos, 'The financial picture');
   
-  // Two-column layout: Configuration + Multi-Year Projection
+  // Two column layout: Configuration + Multi-Year
   const colWidth = (contentWidth - 10) / 2;
   
-  // Configuration column
-  drawCard(margin, yPos, colWidth, 85, COLORS.white, COLORS.borderGray);
+  // YOUR CONFIGURATION column
+  drawCard(margin, yPos, colWidth, 75, COLORS.white, COLORS.borderGray);
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.black);
-  doc.text('YOUR CONFIGURATION', margin + 8, yPos + 12);
+  doc.text('YOUR CONFIGURATION', margin + 10, yPos + 12);
   
   const configItems = [
-    ['Setting', data.setting],
-    [data.unitNamePlural, data.providers.toString()],
-    ['Price', formatCurrencyPlain(data.costPerProvider) + '/mo'],
-    ['Term', '2 years'],
-    ['', ''],
-    ['Annual Investment', formatCurrencyPlain(data.investment)],
+    { label: 'Setting', value: data.setting },
+    { label: data.unitNamePlural, value: data.providers.toString() },
+    { label: 'Price', value: `$${data.costPerProvider}/mo` },
+    { label: 'Term', value: '2 years' },
   ];
   
   let configY = yPos + 24;
   configItems.forEach((item) => {
-    if (item[0] === '') {
-      doc.setDrawColor(...COLORS.borderGray);
-      doc.line(margin + 8, configY - 2, margin + colWidth - 8, configY - 2);
-    } else if (item[0] === 'Annual Investment') {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...COLORS.black);
-      doc.text(item[0], margin + 8, configY);
-      doc.setTextColor(...COLORS.green);
-      doc.text(item[1], margin + colWidth - 8, configY, { align: 'right' });
-    } else {
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...COLORS.mediumGray);
-      doc.text(item[0], margin + 8, configY);
-      doc.setTextColor(...COLORS.black);
-      doc.text(item[1], margin + colWidth - 8, configY, { align: 'right' });
-    }
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...COLORS.mediumGray);
+    doc.text(item.label, margin + 10, configY);
+    
+    doc.setTextColor(...COLORS.black);
+    doc.text(item.value, margin + colWidth - 10, configY, { align: 'right' });
     configY += 10;
   });
   
-  // Multi-Year Projection column
-  const projX = margin + colWidth + 10;
-  drawCard(projX, yPos, colWidth, 85, COLORS.backgroundGray, COLORS.borderGray);
+  doc.setDrawColor(...COLORS.borderGray);
+  doc.line(margin + 10, configY, margin + colWidth - 10, configY);
+  configY += 8;
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.black);
-  doc.text('MULTI-YEAR PROJECTION', projX + 8, yPos + 12);
+  doc.text('Annual Investment', margin + 10, configY);
+  doc.text(formatCurrencyPlain(data.investment), margin + colWidth - 10, configY, { align: 'right' });
   
-  // Column headers
-  const year1Cost = data.investment;
-  const year2Cost = data.investment;
-  const year3Cost = data.investment;
-  const year1Net = data.year1 - year1Cost;
-  const year2Net = data.year2 - year2Cost;
-  const year3Net = data.year3 - year3Cost;
+  // MULTI-YEAR PROJECTION column
+  const multiX = margin + colWidth + 10;
+  drawCard(multiX, yPos, colWidth, 75, COLORS.white, COLORS.borderGray);
   
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.black);
+  doc.text('MULTI-YEAR PROJECTION', multiX + 10, yPos + 12);
+  
+  // Table headers
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('Year 1', projX + colWidth - 60, yPos + 24);
-  doc.text('Year 2', projX + colWidth - 38, yPos + 24);
-  doc.text('Year 3', projX + colWidth - 16, yPos + 24);
+  doc.text('Yr 1', multiX + 35, yPos + 24);
+  doc.text('Yr 2', multiX + 55, yPos + 24);
+  doc.text('Yr 3', multiX + 75, yPos + 24);
   
-  const projRows = [
-    ['Value', formatCurrencyPlain(data.year1), formatCurrencyPlain(data.year2), formatCurrencyPlain(data.year3)],
-    ['Cost', formatCurrencyPlain(year1Cost), formatCurrencyPlain(year2Cost), formatCurrencyPlain(year3Cost)],
-    ['Net', formatCurrency(year1Net), formatCurrency(year2Net), formatCurrency(year3Net)],
-  ];
+  // Value row
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...COLORS.darkGray);
+  doc.text('Value', multiX + 10, yPos + 34);
+  doc.setTextColor(...COLORS.green);
+  doc.text(formatCurrencyShort(data.year1), multiX + 35, yPos + 34);
+  doc.text(formatCurrencyShort(data.year2), multiX + 55, yPos + 34);
+  doc.text(formatCurrencyShort(data.year3), multiX + 75, yPos + 34);
   
-  let projY = yPos + 34;
-  projRows.forEach((row, i) => {
-    doc.setFontSize(8);
-    doc.setFont('helvetica', i === 2 ? 'bold' : 'normal');
-    doc.setTextColor(...COLORS.darkGray);
-    doc.text(row[0], projX + 8, projY);
-    
-    const textColor = i === 2 ? COLORS.green : COLORS.black;
-    doc.setTextColor(...textColor);
-    doc.text(row[1], projX + colWidth - 60, projY);
-    doc.text(row[2], projX + colWidth - 38, projY);
-    doc.text(row[3], projX + colWidth - 16, projY);
-    
-    if (i === 1) {
-      projY += 4;
-      doc.setDrawColor(...COLORS.borderGray);
-      doc.line(projX + 8, projY, projX + colWidth - 8, projY);
-      projY += 6;
-    } else {
-      projY += 10;
-    }
-  });
+  // Cost row
+  doc.setTextColor(...COLORS.darkGray);
+  doc.text('Cost', multiX + 10, yPos + 44);
+  doc.text(formatCurrencyShort(data.investment), multiX + 35, yPos + 44);
+  doc.text(formatCurrencyShort(data.investment), multiX + 55, yPos + 44);
+  doc.text(formatCurrencyShort(data.investment), multiX + 75, yPos + 44);
+  
+  // Line
+  doc.setDrawColor(...COLORS.borderGray);
+  doc.line(multiX + 10, yPos + 50, multiX + colWidth - 10, yPos + 50);
+  
+  // Net row
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...COLORS.green);
+  doc.text('Net', multiX + 10, yPos + 58);
+  doc.text(formatCurrencyWithPlus(data.year1 - data.investment), multiX + 35, yPos + 58);
+  doc.text(formatCurrencyWithPlus(data.year2 - data.investment), multiX + 55, yPos + 58);
+  doc.text(formatCurrencyWithPlus(data.year3 - data.investment), multiX + 75, yPos + 58);
   
   // 3-Year Total
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.green);
-  doc.text('3-YEAR TOTAL NET: ' + formatCurrency(data.threeYearNet), projX + 8, yPos + 78);
+  doc.text('3-YEAR TOTAL: ' + formatCurrencyWithPlus(data.threeYearNet), multiX + 10, yPos + 70);
   
-  yPos += 95;
+  yPos += 90;
   
   // THE ROI EQUATION
   yPos = drawSectionTitle('THE ROI EQUATION', yPos);
   
-  drawCard(margin, yPos, contentWidth, 50, COLORS.white, COLORS.borderGray);
+  drawCard(margin, yPos, contentWidth, 55, COLORS.white, COLORS.borderGray);
   
-  const eqBoxWidth = (contentWidth - 60) / 3;
-  const eqY = yPos + 22;
+  const eqBoxWidth = 50;
+  const eqY = yPos + 25;
   
   // Value box
-  drawCard(margin + 10, yPos + 8, eqBoxWidth, 35, COLORS.backgroundGray);
-  doc.setFontSize(16);
+  drawCard(margin + 15, yPos + 10, eqBoxWidth, 35, COLORS.backgroundGray);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.black);
-  doc.text(formatCurrencyPlain(data.totalValue), margin + 10 + eqBoxWidth / 2, eqY, { align: 'center' });
+  doc.text(formatCurrencyShort(data.totalValue), margin + 15 + eqBoxWidth / 2, eqY, { align: 'center' });
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('Value', margin + 10 + eqBoxWidth / 2, eqY + 10, { align: 'center' });
+  doc.text('Value', margin + 15 + eqBoxWidth / 2, eqY + 10, { align: 'center' });
   
-  // Minus
+  // Minus sign
   doc.setFontSize(18);
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('-', margin + 15 + eqBoxWidth, eqY, { align: 'center' });
+  doc.text('−', margin + 75, eqY);
   
   // Cost box
-  const costX = margin + 25 + eqBoxWidth;
-  drawCard(costX, yPos + 8, eqBoxWidth, 35, COLORS.backgroundGray);
-  doc.setFontSize(16);
+  drawCard(margin + 85, yPos + 10, eqBoxWidth, 35, COLORS.backgroundGray);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.black);
-  doc.text(formatCurrencyPlain(data.investment), costX + eqBoxWidth / 2, eqY, { align: 'center' });
+  doc.text(formatCurrencyShort(data.investment), margin + 85 + eqBoxWidth / 2, eqY, { align: 'center' });
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('Cost', costX + eqBoxWidth / 2, eqY + 10, { align: 'center' });
+  doc.text('Cost', margin + 85 + eqBoxWidth / 2, eqY + 10, { align: 'center' });
   
-  // Equals
+  // Equals sign
   doc.setFontSize(18);
   doc.setTextColor(...COLORS.mediumGray);
-  doc.text('=', costX + eqBoxWidth + 10, eqY, { align: 'center' });
+  doc.text('=', margin + 145, eqY);
   
-  // Net Gain box
-  const netX = costX + eqBoxWidth + 20;
-  drawCard(netX, yPos + 8, eqBoxWidth, 35, COLORS.greenLight);
-  doc.setFontSize(16);
+  // Net Gain box (green background)
+  drawCard(margin + 155, yPos + 10, eqBoxWidth, 35, COLORS.greenLight);
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.green);
-  doc.text(formatCurrency(data.netGain), netX + eqBoxWidth / 2, eqY, { align: 'center' });
+  doc.text(formatCurrencyWithPlus(data.netGain), margin + 155 + eqBoxWidth / 2, eqY, { align: 'center' });
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...COLORS.darkGray);
-  doc.text('Net Gain', netX + eqBoxWidth / 2, eqY + 10, { align: 'center' });
+  doc.text('Net Gain', margin + 155 + eqBoxWidth / 2, eqY + 10, { align: 'center' });
   
   // ROI callout
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...COLORS.green);
-  doc.text(data.roi.toFixed(1) + 'x ROI', pageWidth / 2, yPos + 48, { align: 'center' });
+  doc.text(data.roi.toFixed(1) + 'x ROI', pageWidth / 2, yPos + 52, { align: 'center' });
   
-  yPos += 60;
+  yPos += 65;
   
   // WHAT THIS MEANS
   yPos = drawSectionTitle('WHAT THIS MEANS', yPos);
   
+  drawCard(margin, yPos, contentWidth, 45, COLORS.white, COLORS.borderGray);
+  
   const meaningPoints = [
     `Your investment pays for itself in approximately ${paybackMonths} months`,
     `After month ${paybackMonths + 1}, every dollar is net positive value`,
-    `Over 3 years, you could realize ${formatCurrencyPlain(data.threeYearNet)}+ in net value`,
+    `Over 3 years, you could realize ${formatCurrencyShort(data.threeYearNet)}+ in net value`,
     'These projections use conservative assumptions throughout',
-    'Value grows as utilization increases and benefits compound',
   ];
   
-  drawCard(margin, yPos, contentWidth, 45, COLORS.white, COLORS.borderGray);
-  
-  let meaningY = yPos + 10;
+  let meaningY = yPos + 12;
   meaningPoints.forEach((point) => {
-    doc.setFontSize(8);
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.green);
+    doc.text('✓', margin + 10, meaningY);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkGray);
-    doc.text('*  ' + point, margin + 8, meaningY);
-    meaningY += 8;
+    doc.text(point, margin + 20, meaningY);
+    meaningY += 10;
   });
-  
-  yPos += 55;
-  
-  // Disclaimer card
-  drawCard(margin, yPos, contentWidth, 35, COLORS.cream, COLORS.borderGray);
-  
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(...COLORS.mediumGray);
-  const disclaimerText = '"This analysis provides estimates for planning purposes based on your inputs and conservative assumptions. Actual results will vary based on implementation, adoption, and organizational factors. Value realization requires consistent usage and organizational commitment."';
-  const disclaimerLines = doc.splitTextToSize(disclaimerText, contentWidth - 16);
-  disclaimerLines.forEach((line: string, i: number) => {
-    doc.text(line, margin + 8, yPos + 10 + i * 5);
-  });
-  
+
   // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 6: KEY ASSUMPTIONS & METHODOLOGY
+  // METHODOLOGY PAGE
   // ═══════════════════════════════════════════════════════════════════════════
   
   newPage();
   yPos = 30;
   
-  yPos = drawSectionTitle('KEY ASSUMPTIONS & METHODOLOGY', yPos);
-  
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.darkGray);
-  doc.text('This analysis combines your inputs with industry benchmarks and conservative assumptions. Everything is designed to be verifiable.', margin, yPos);
-  
-  yPos += 12;
+  yPos = drawSectionTitle('KEY ASSUMPTIONS & METHODOLOGY', yPos, 'Transparent, verifiable, conservative');
   
   // Your Inputs table
   const inputsData = [
@@ -1108,7 +1075,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     ['Annual encounters', formatNumber(data.encounters)],
     ['Expected utilization', data.utilization + '%'],
     ['Eligible encounters', formatNumber(eligibleEncounters)],
-    ['Price per ' + data.unitName.toLowerCase() + '/month', formatCurrencyPlain(data.costPerProvider)],
+    ['Price per ' + data.unitName.toLowerCase() + '/month', `$${data.costPerProvider}`],
     ['Contract term', '2 years'],
     ['Full scale ' + data.unitNamePlural.toLowerCase(), data.fullScaleProviders.toString()],
     ['Target utilization at scale', data.fullScaleUtil + '%'],
@@ -1119,15 +1086,16 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     head: [inputsData[0]],
     body: inputsData.slice(1),
     theme: 'plain',
-    styles: { fontSize: 8, cellPadding: 3, textColor: COLORS.darkGray },
+    styles: { fontSize: 8, cellPadding: 3, textColor: COLORS.darkGray, overflow: 'linebreak' },
     headStyles: { fillColor: COLORS.backgroundGray, textColor: COLORS.darkGray, fontStyle: 'bold' },
-    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 50, halign: 'right' } },
-    margin: { left: margin, right: pageWidth - margin - 120 },
+    columnStyles: { 0: { cellWidth: 55 }, 1: { cellWidth: 35, halign: 'right' } },
+    tableWidth: 90,
+    margin: { left: margin, right: margin },
   });
   
-  yPos = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+  yPos = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
   
-  // Industry Benchmarks Used
+  // Industry Benchmarks
   yPos = drawSectionTitle('INDUSTRY BENCHMARKS USED', yPos);
   
   const benchmarksData = [
@@ -1146,58 +1114,34 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     head: [benchmarksData[0]],
     body: benchmarksData.slice(1),
     theme: 'plain',
-    styles: { fontSize: 7, cellPadding: 3, textColor: COLORS.darkGray },
+    styles: { fontSize: 7, cellPadding: 3, textColor: COLORS.darkGray, overflow: 'linebreak' },
     headStyles: { fillColor: COLORS.backgroundGray, textColor: COLORS.darkGray, fontStyle: 'bold', fontSize: 7 },
-    columnStyles: { 0: { cellWidth: 55 }, 1: { cellWidth: 30, halign: 'center' }, 2: { cellWidth: 35 } },
+    columnStyles: { 0: { cellWidth: 45 }, 1: { cellWidth: 20, halign: 'center' }, 2: { cellWidth: 'auto' } },
+    tableWidth: contentWidth,
     margin: { left: margin, right: margin },
   });
   
-  yPos = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-  
-  // Conservative Factors Applied
-  yPos = drawSectionTitle('CONSERVATIVE FACTORS APPLIED', yPos);
-  
-  const factorsTableData = [
-    ['Factor', 'Rate', 'Rationale'],
-    ['Time allocation to patient access', '25%', 'Only 1/4 of time goes to seeing more patients'],
-    ['Visit conversion', '60%', 'Scheduling and capacity limit actual conversion'],
-    ['Burnout attribution', '30%', 'We only claim 30% of retention improvement'],
-    ['HCC audit factor', '25%', '75% haircut for RADV, payer review, adjustments'],
-    ['wRVU improvement', '5%', 'Validated Abridge benchmark'],
-  ];
-  
-  autoTable(doc, {
-    startY: yPos,
-    head: [factorsTableData[0]],
-    body: factorsTableData.slice(1),
-    theme: 'plain',
-    styles: { fontSize: 7, cellPadding: 3, textColor: COLORS.darkGray },
-    headStyles: { fillColor: COLORS.backgroundGray, textColor: COLORS.darkGray, fontStyle: 'bold', fontSize: 7 },
-    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 15, halign: 'center' }, 2: { cellWidth: 75 } },
-    margin: { left: margin, right: margin },
-  });
-  
-  yPos = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+  yPos = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
   
   // Important Disclaimers
   yPos = drawSectionTitle('IMPORTANT DISCLAIMERS', yPos);
   
   const disclaimers = [
-    'This analysis provides estimates for planning purposes',
-    'Actual results will vary based on implementation and adoption',
-    'Value realization requires organizational commitment',
-    'Past performance of other organizations does not guarantee results',
+    'This analysis provides estimates for planning purposes based on your inputs',
+    'Actual results will vary based on implementation, adoption, and organizational factors',
+    'Value realization requires consistent usage and organizational commitment',
     'All projections use conservative assumptions as described above',
+    'Past performance of other organizations does not guarantee results',
   ];
   
   disclaimers.forEach((d) => {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkGray);
-    doc.text('*  ' + d, margin, yPos);
-    yPos += 7;
+    doc.text('•  ' + d, margin, yPos);
+    yPos += 8;
   });
-  
+
   // ═══════════════════════════════════════════════════════════════════════════
   // APPENDIX PAGES: One per selected driver
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1210,7 +1154,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     const isLabor = data.laborDrivers.some(d => d.name === driver.name);
     
     // Title
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.black);
     doc.text(`APPENDIX ${appendixLetter}: ${driver.name.toUpperCase()}`, margin, yPos);
@@ -1220,21 +1164,21 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     
     yPos += 15;
     
-    // THE THEORY
-    drawCard(margin, yPos, contentWidth, 40, COLORS.cream, COLORS.borderGray);
+    // THE THEORY box
+    drawCard(margin, yPos, contentWidth, 40, COLORS.backgroundGray, COLORS.borderGray, COLORS.coral);
     
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...COLORS.black);
-    doc.text('THE THEORY', margin + 8, yPos + 12);
+    doc.text('THE THEORY', margin + 12, yPos + 12);
     
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...COLORS.darkGray);
     
-    const theoryLines = doc.splitTextToSize(driver.description, contentWidth - 16);
-    theoryLines.forEach((line: string, i: number) => {
-      doc.text(line, margin + 8, yPos + 22 + i * 5);
+    const theoryLines = doc.splitTextToSize(driver.description || getDriverTheory(driver.name), contentWidth - 24);
+    theoryLines.slice(0, 4).forEach((line: string, i: number) => {
+      doc.text(line, margin + 12, yPos + 22 + i * 5);
     });
     
     yPos += 50;
@@ -1242,49 +1186,11 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     // STEP-BY-STEP CALCULATION
     yPos = drawSectionTitle('STEP-BY-STEP CALCULATION', yPos);
     
-    // Generate driver-specific calculation steps
-    const getCalculationSteps = (dName: string): { step: string; calc: string; result: string }[] => {
-      switch (dName) {
-        case 'Clinician Retention':
-          const expectedDepartures = data.providers * 0.06;
-          const burnoutRelated = expectedDepartures * 0.45;
-          const abridgeAttrib = burnoutRelated * 0.30;
-          return [
-            { step: 'STEP 1: BASELINE TURNOVER', calc: `${data.providers} ${data.unitNamePlural.toLowerCase()} x 6% turnover rate`, result: `${expectedDepartures.toFixed(1)} expected departures/year` },
-            { step: 'STEP 2: BURNOUT-RELATED DEPARTURES', calc: `${expectedDepartures.toFixed(1)} departures x 45% burnout-related`, result: `${burnoutRelated.toFixed(2)} burnout departures` },
-            { step: 'STEP 3: ABRIDGE ATTRIBUTION', calc: `${burnoutRelated.toFixed(2)} x 30% Abridge attribution`, result: `${abridgeAttrib.toFixed(2)} avoided departures` },
-            { step: 'STEP 4: VALUE CALCULATION', calc: `${abridgeAttrib.toFixed(2)} avoided x $400,000 replacement cost`, result: formatCurrencyPlain(driver.value) },
-          ];
-        case 'Patient Access':
-          const hoursSaved = Math.round(eligibleEncounters * 2 / 60);
-          const accessHours = hoursSaved * 0.25;
-          const visits = Math.round(accessHours * 0.60 * 2);
-          return [
-            { step: 'STEP 1: TIME SAVED', calc: `${formatNumber(eligibleEncounters)} encounters x 2 min saved`, result: `${formatNumber(hoursSaved)} hours saved` },
-            { step: 'STEP 2: TIME TO ACCESS', calc: `${formatNumber(hoursSaved)} hours x 25% allocation to access`, result: `${formatNumber(Math.round(accessHours))} hours to patient access` },
-            { step: 'STEP 3: VISITS GENERATED', calc: `${formatNumber(Math.round(accessHours))} hours x 60% conversion / 30 min per visit`, result: `${formatNumber(visits)} additional visits` },
-            { step: 'STEP 4: VALUE CALCULATION', calc: `${formatNumber(visits)} visits x $200 avg revenue`, result: formatCurrencyPlain(driver.value) },
-          ];
-        case 'Accurate Level of Service':
-          const additionalWRVU = Math.round(eligibleEncounters * 1.5 * 0.05);
-          return [
-            { step: 'STEP 1: BASELINE wRVUs', calc: `${formatNumber(eligibleEncounters)} encounters x 1.5 avg wRVU`, result: `${formatNumber(Math.round(eligibleEncounters * 1.5))} baseline wRVUs` },
-            { step: 'STEP 2: IMPROVEMENT', calc: `${formatNumber(Math.round(eligibleEncounters * 1.5))} wRVUs x 5% improvement`, result: `${formatNumber(additionalWRVU)} additional wRVUs` },
-            { step: 'STEP 3: VALUE CALCULATION', calc: `${formatNumber(additionalWRVU)} wRVUs x $33 conversion factor`, result: formatCurrencyPlain(driver.value) },
-          ];
-        default:
-          return [
-            { step: 'STEP 1: ESTABLISH BASELINE', calc: `${formatNumber(eligibleEncounters)} eligible encounters`, result: 'Baseline established' },
-            { step: 'STEP 2: APPLY CONSERVATIVE FACTORS', calc: 'Industry benchmarks and Abridge data', result: 'Factors applied' },
-            { step: 'STEP 3: VALUE CALCULATION', calc: 'Conservative methodology', result: formatCurrencyPlain(driver.value) },
-          ];
-      }
-    };
-    
-    const steps = getCalculationSteps(driver.name);
+    const steps = getAppendixSteps(driver.name, data, eligibleEncounters, driver.value);
     
     steps.forEach((s, i) => {
-      drawCard(margin, yPos, contentWidth, 28, i === steps.length - 1 ? COLORS.greenLight : COLORS.white, COLORS.borderGray);
+      const isLast = i === steps.length - 1;
+      drawCard(margin, yPos, contentWidth, 28, isLast ? COLORS.greenLight : COLORS.white, COLORS.borderGray);
       
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
@@ -1297,8 +1203,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
       doc.text(s.calc, margin + 8, yPos + 18);
       
       doc.setFont('helvetica', 'bold');
-      const resultColor = i === steps.length - 1 ? COLORS.green : COLORS.black;
-      doc.setTextColor(...resultColor);
+      doc.setTextColor(...(isLast ? COLORS.green : COLORS.black));
       doc.text(s.result, pageWidth - margin - 8, yPos + 18, { align: 'right' });
       
       yPos += 32;
@@ -1306,7 +1211,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     
     yPos += 5;
     
-    // KEY ASSUMPTIONS FOR THIS DRIVER
+    // KEY ASSUMPTIONS
     yPos = drawSectionTitle('KEY ASSUMPTIONS FOR THIS DRIVER', yPos);
     
     const driverAssumptions = [
@@ -1321,11 +1226,11 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...COLORS.darkGray);
-      doc.text('*  ' + assumption, margin, yPos);
+      doc.text('•  ' + assumption, margin, yPos);
       yPos += 7;
     });
     
-    yPos += 10;
+    yPos += 5;
     
     // Sources
     doc.setFontSize(7);
@@ -1337,4 +1242,169 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
   // Save the PDF
   const filename = `Abridge_ROI_${data.setting.replace(/\s+/g, '_')}_${data.providers}P.pdf`;
   doc.save(filename);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS FOR DRIVER-SPECIFIC CONTENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function getDriverTheory(driverName: string): string {
+  switch (driverName) {
+    case 'Clinician Retention':
+      return "Documentation burden is the #1 driver of physician burnout. The average physician spends 2 hours on documentation for every 1 hour of patient care. Reducing this burden improves satisfaction and retention. When a physician leaves, the true cost ranges from $400,000 to $800,000+ when you factor in recruiting, lost revenue during vacancy, and onboarding time.";
+    case 'Patient Access':
+      return "When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits — scheduling, room availability, and demand all play a role — but even a modest conversion creates meaningful revenue.";
+    case 'Accurate Level of Service':
+      return "Physicians under time pressure document less than the full clinical picture. When documentation is incomplete, coding doesn't reflect the true complexity of care delivered. AI-assisted documentation captures clinical complexity that supports accurate coding — not upcoding, just getting credit for work already done.";
+    case 'HCC & Chronic Condition Capture':
+      return "Accurate documentation of chronic conditions ensures proper risk adjustment, improving reimbursement accuracy for value-based care arrangements. AI captures clinical details that might otherwise be missed in rushed documentation.";
+    case 'Reduced Overtime':
+      return "When documentation happens during the visit rather than after hours, clinicians can go home on time. Reduced overtime directly lowers labor costs and improves satisfaction.";
+    case 'Quality Metrics':
+      return "Better documentation supports quality measure compliance, reducing penalties and maximizing incentive payments under value-based care programs.";
+    default:
+      return "This value driver creates measurable benefit by converting time savings and improved documentation into tangible organizational outcomes.";
+  }
+}
+
+function getDriverInputs(driverName: string, data: PremiumPDFData, eligibleEncounters: number): { value: string; label: string; sublabel: string }[] {
+  switch (driverName) {
+    case 'Clinician Retention':
+      return [
+        { value: data.providers.toString(), label: data.unitNamePlural.toLowerCase(), sublabel: 'in scope' },
+        { value: '6%', label: 'turnover', sublabel: 'rate' },
+        { value: '$400K', label: 'replacement', sublabel: 'cost' },
+      ];
+    case 'Patient Access':
+      return [
+        { value: formatNumber(eligibleEncounters), label: 'eligible', sublabel: 'encounters' },
+        { value: '2 min', label: 'saved', sublabel: 'per enc.' },
+        { value: '$200', label: 'per visit', sublabel: 'revenue' },
+      ];
+    case 'Accurate Level of Service':
+      return [
+        { value: formatNumber(eligibleEncounters), label: 'eligible', sublabel: 'encounters' },
+        { value: '1.5', label: 'avg wRVU/', sublabel: 'encounter' },
+        { value: '5%', label: 'improvement', sublabel: 'expected' },
+      ];
+    case 'HCC & Chronic Condition Capture':
+      return [
+        { value: formatNumber(eligibleEncounters), label: 'eligible', sublabel: 'encounters' },
+        { value: '$800', label: 'avg HCC', sublabel: 'value' },
+        { value: '25%', label: 'audit', sublabel: 'factor' },
+      ];
+    default:
+      return [
+        { value: data.providers.toString(), label: data.unitNamePlural.toLowerCase(), sublabel: 'in scope' },
+        { value: formatNumber(eligibleEncounters), label: 'encounters', sublabel: 'eligible' },
+        { value: data.utilization + '%', label: 'utilization', sublabel: 'rate' },
+      ];
+  }
+}
+
+function getDriverLogicSteps(driverName: string, data: PremiumPDFData, eligibleEncounters: number, value: number): { calculation: string; result: string }[] {
+  switch (driverName) {
+    case 'Clinician Retention': {
+      const departures = (data.providers * 0.06).toFixed(1);
+      const burnout = (data.providers * 0.06 * 0.45).toFixed(2);
+      const avoided = (data.providers * 0.06 * 0.45 * 0.30).toFixed(2);
+      return [
+        { calculation: `${data.providers} ${data.unitNamePlural.toLowerCase()} × 6% turnover`, result: `${departures} departures/yr` },
+        { calculation: `${departures} departures × 45% burnout-related`, result: `${burnout} preventable` },
+        { calculation: `${burnout} preventable × 30% Abridge attribution`, result: `${avoided} avoided` },
+        { calculation: `${avoided} avoided × $400,000 replacement cost`, result: formatCurrencyPlain(value) },
+      ];
+    }
+    case 'Patient Access': {
+      const hours = Math.round(eligibleEncounters * 2 / 60);
+      const accessHours = Math.round(hours * 0.25);
+      const convertedHours = Math.round(accessHours * 0.60);
+      const visits = Math.round(convertedHours * 2);
+      return [
+        { calculation: `${formatNumber(eligibleEncounters)} encounters × 2 min saved`, result: `${formatNumber(hours)} hours` },
+        { calculation: `${formatNumber(hours)} hours × 25% allocated to access`, result: `${formatNumber(accessHours)} hours` },
+        { calculation: `${formatNumber(accessHours)} hours × 60% conversion to visits`, result: `${formatNumber(convertedHours)} hours` },
+        { calculation: `${formatNumber(convertedHours)} hours ÷ 30 min per visit`, result: `${formatNumber(visits)} visits` },
+        { calculation: `${formatNumber(visits)} visits × $200 revenue`, result: formatCurrencyPlain(value) },
+      ];
+    }
+    case 'Accurate Level of Service': {
+      const baseWRVU = Math.round(eligibleEncounters * 1.5);
+      const additionalWRVU = Math.round(baseWRVU * 0.05);
+      return [
+        { calculation: `${formatNumber(eligibleEncounters)} encounters × 1.5 wRVU/enc`, result: `${formatNumber(baseWRVU)} wRVU` },
+        { calculation: `${formatNumber(baseWRVU)} wRVU × 5% improvement`, result: `${formatNumber(additionalWRVU)} wRVU gain` },
+        { calculation: `${formatNumber(additionalWRVU)} wRVU × $33 conversion factor`, result: formatCurrencyPlain(value) },
+      ];
+    }
+    default:
+      return [
+        { calculation: `${formatNumber(eligibleEncounters)} eligible encounters`, result: 'Baseline' },
+        { calculation: 'Apply conservative factors and benchmarks', result: 'Calculated' },
+        { calculation: 'Final value', result: formatCurrencyPlain(value) },
+      ];
+  }
+}
+
+function getDriverCallout(driverName: string): { title: string; text: string } | null {
+  switch (driverName) {
+    case 'Clinician Retention':
+      return {
+        title: 'WHY 30% ATTRIBUTION?',
+        text: "Documentation burden accounts for approximately 50% of burnout drivers. Abridge reduces documentation burden by ~70%. 50% × 70% = 35% theoretical impact. We round to 30% for conservatism.",
+      };
+    case 'Patient Access':
+      return {
+        title: 'WHERE DOES SAVED TIME GO?',
+        text: "We assume saved time splits: 50% → Quality of life (not monetized), 25% → Patient access (this driver), 25% → Cost reduction (overtime savings if selected).",
+      };
+    case 'Accurate Level of Service':
+      return {
+        title: 'WHY $33 CONVERSION FACTOR?',
+        text: "We use the Medicare conversion factor ($33) for conservatism. Commercial rates typically range $45-$65 — actual results may be higher.",
+      };
+    default:
+      return null;
+  }
+}
+
+function getAppendixSteps(driverName: string, data: PremiumPDFData, eligibleEncounters: number, value: number): { step: string; calc: string; result: string }[] {
+  switch (driverName) {
+    case 'Clinician Retention': {
+      const departures = (data.providers * 0.06).toFixed(1);
+      const burnout = (data.providers * 0.06 * 0.45).toFixed(2);
+      const avoided = (data.providers * 0.06 * 0.45 * 0.30).toFixed(2);
+      return [
+        { step: 'STEP 1: BASELINE TURNOVER', calc: `${data.providers} ${data.unitNamePlural.toLowerCase()} × 6% turnover rate`, result: `${departures} expected departures/year` },
+        { step: 'STEP 2: BURNOUT-RELATED DEPARTURES', calc: `${departures} departures × 45% burnout-related`, result: `${burnout} burnout departures` },
+        { step: 'STEP 3: ABRIDGE ATTRIBUTION', calc: `${burnout} × 30% Abridge attribution`, result: `${avoided} avoided departures` },
+        { step: 'STEP 4: VALUE CALCULATION', calc: `${avoided} avoided × $400,000 replacement cost`, result: formatCurrencyPlain(value) },
+      ];
+    }
+    case 'Patient Access': {
+      const hours = Math.round(eligibleEncounters * 2 / 60);
+      const accessHours = Math.round(hours * 0.25);
+      const visits = Math.round(accessHours * 0.60 * 2);
+      return [
+        { step: 'STEP 1: TIME SAVED', calc: `${formatNumber(eligibleEncounters)} encounters × 2 min saved`, result: `${formatNumber(hours)} hours saved` },
+        { step: 'STEP 2: TIME TO ACCESS', calc: `${formatNumber(hours)} hours × 25% allocation to access`, result: `${formatNumber(accessHours)} hours to patient access` },
+        { step: 'STEP 3: VISITS GENERATED', calc: `${formatNumber(accessHours)} hours × 60% conversion / 30 min per visit`, result: `${formatNumber(visits)} additional visits` },
+        { step: 'STEP 4: VALUE CALCULATION', calc: `${formatNumber(visits)} visits × $200 avg revenue`, result: formatCurrencyPlain(value) },
+      ];
+    }
+    case 'Accurate Level of Service': {
+      const additionalWRVU = Math.round(eligibleEncounters * 1.5 * 0.05);
+      return [
+        { step: 'STEP 1: BASELINE wRVUs', calc: `${formatNumber(eligibleEncounters)} encounters × 1.5 avg wRVU`, result: `${formatNumber(Math.round(eligibleEncounters * 1.5))} baseline wRVUs` },
+        { step: 'STEP 2: IMPROVEMENT', calc: `${formatNumber(Math.round(eligibleEncounters * 1.5))} wRVUs × 5% improvement`, result: `${formatNumber(additionalWRVU)} additional wRVUs` },
+        { step: 'STEP 3: VALUE CALCULATION', calc: `${formatNumber(additionalWRVU)} wRVUs × $33 conversion factor`, result: formatCurrencyPlain(value) },
+      ];
+    }
+    default:
+      return [
+        { step: 'STEP 1: ESTABLISH BASELINE', calc: `${formatNumber(eligibleEncounters)} eligible encounters`, result: 'Baseline established' },
+        { step: 'STEP 2: APPLY CONSERVATIVE FACTORS', calc: 'Industry benchmarks and Abridge data', result: 'Factors applied' },
+        { step: 'STEP 3: VALUE CALCULATION', calc: 'Conservative methodology', result: formatCurrencyPlain(value) },
+      ];
+  }
 }
