@@ -5,12 +5,10 @@ import {
   Share2,
   Clock,
   TrendingUp,
-  Copy,
   Check,
   DollarSign,
   BarChart3,
   Plus,
-  Mail,
   FileText,
   Lightbulb,
   Target,
@@ -192,7 +190,6 @@ export default function SummaryCommandCenter({
   onEditModel,
   onBackToJourney,
 }: SummaryCommandCenterProps) {
-  const [copied, setCopied] = useState(false);
   const [assumptionsExpanded, setAssumptionsExpanded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
@@ -385,11 +382,6 @@ export default function SummaryCommandCenter({
   const threeYearCost = year1Cost + year2Cost + year3Cost;
   const threeYearNet = threeYearValue - threeYearCost;
   
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleExportPdf = useCallback(async () => {
     const driverIdMap: Record<string, string> = {
@@ -1554,15 +1546,6 @@ export default function SummaryCommandCenter({
             >
               <FileText className="w-4 h-4" />
               {isExporting ? "Generating..." : "Export PDF"}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
-              onClick={handleCopyLink}
-              data-testid="button-copy-link"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-              {copied ? "Copied!" : "Copy Link"}
             </Button>
           </div>
         </section>
