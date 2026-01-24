@@ -6,6 +6,10 @@ import {
   StyleSheet,
   Image,
   pdf,
+  Svg,
+  Path,
+  Line,
+  Circle,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
@@ -71,16 +75,27 @@ export interface InpatientPDFData {
 
 const colors = {
   primary: "#EA2C00",
-  black: "#1a1a1a",
-  darkGray: "#4a4a4a",
-  mediumGray: "#6b7280",
-  lightGray: "#9ca3af",
-  paleGray: "#f3f4f6",
-  white: "#ffffff",
+  primaryLight: "#FEF2F0",
+  primaryDark: "#C42400",
+  green: "#059669",
+  greenLight: "#ECFDF5",
+  greenDark: "#047857",
+  black: "#111827",
+  darkGray: "#374151",
+  mediumGray: "#6B7280",
+  lightGray: "#9CA3AF",
+  paleGray: "#F9FAFB",
+  borderGray: "#E5E7EB",
+  white: "#FFFFFF",
   success: "#059669",
   successLight: "#d1fae5",
   warning: "#f59e0b",
   warningLight: "#fef3c7",
+  amber: "#F59E0B",
+  amberLight: "#FEF3C7",
+  amberDark: "#92400E",
+  blue: "#3B82F6",
+  blueLight: "#EFF6FF",
 };
 
 const styles = StyleSheet.create({
@@ -506,60 +521,6 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
   },
 
-  journeySection: {
-    marginBottom: 16,
-  },
-  journeyTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
-  },
-  journeySubtitle: {
-    fontSize: 9,
-    color: colors.darkGray,
-    marginBottom: 12,
-  },
-  journeyChart: {
-    height: 120,
-    backgroundColor: colors.paleGray,
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 12,
-  },
-  journeyScenarios: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  journeyScenario: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: colors.paleGray,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  journeyScenarioLast: {
-    marginRight: 0,
-    backgroundColor: colors.successLight,
-    borderWidth: 1,
-    borderColor: colors.success,
-  },
-  journeyScenarioTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-  },
-  journeyScenarioValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.success,
-  },
-  journeyScenarioText: {
-    fontSize: 7,
-    color: colors.darkGray,
-    marginTop: 2,
-  },
 
   methodologyGrid: {
     flexDirection: "row",
@@ -673,6 +634,353 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: colors.darkGray,
     lineHeight: 1.5,
+  },
+
+  narrativeBox: {
+    backgroundColor: colors.paleGray,
+    padding: 14,
+    borderRadius: 4,
+    marginBottom: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  narrativeHighlight: {
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  metricsRow: {
+    flexDirection: "row",
+    marginBottom: 14,
+  },
+  metricBox: {
+    flex: 1,
+    backgroundColor: colors.paleGray,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  metricBoxHighlight: {
+    flex: 1,
+    backgroundColor: colors.greenLight,
+    borderWidth: 2,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  metricBoxLast: {
+    marginRight: 0,
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  metricValueGreen: {
+    fontSize: 18,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    color: colors.green,
+    marginBottom: 4,
+  },
+  metricLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    textAlign: "center",
+    marginBottom: 2,
+  },
+  metricSublabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    textAlign: "center",
+  },
+
+  sectionTitlePrimary: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 10,
+  },
+
+  twoColumn: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  column: {
+    flex: 1,
+    marginRight: 10,
+  },
+  columnLast: {
+    flex: 1,
+    marginRight: 0,
+  },
+
+  valueBreakdownCard: {
+    flex: 1,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 10,
+  },
+  valueBreakdownCardLast: {
+    marginRight: 0,
+  },
+  laborCard: {
+    backgroundColor: colors.blueLight,
+    borderWidth: 1,
+    borderColor: colors.blue,
+  },
+  revenueCard: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+  },
+  valueBreakdownTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  valueBreakdownPct: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginBottom: 6,
+  },
+  valueBreakdownAmount: {
+    fontSize: 14,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    color: colors.black,
+    marginBottom: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  valueBreakdownDriver: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  valueBreakdownDriverLast: {
+    marginBottom: 0,
+  },
+  valueBreakdownDriverName: {
+    fontSize: 7,
+    color: colors.darkGray,
+  },
+  valueBreakdownDriverValue: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+
+  progressBar: {
+    flexDirection: "row",
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+    marginBottom: 14,
+  },
+  progressSegment: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  progressLabel: {
+    fontSize: 5,
+    fontWeight: "bold",
+    color: colors.white,
+  },
+
+  card: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 4,
+    padding: 12,
+  },
+  cardTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 8,
+  },
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  cardLabel: {
+    fontSize: 8,
+    color: colors.mediumGray,
+  },
+  cardValue: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  cardTotal: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  cardTotalLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  cardTotalValue: {
+    fontSize: 10,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    color: colors.primary,
+  },
+
+  table: {
+    marginTop: 4,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+    paddingBottom: 4,
+    marginBottom: 4,
+  },
+  tableHeaderCell: {
+    flex: 1,
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textAlign: "center",
+  },
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.paleGray,
+  },
+  tableRowLast: {
+    borderBottomWidth: 0,
+  },
+  tableCell: {
+    flex: 1,
+    fontSize: 7,
+    color: colors.darkGray,
+    textAlign: "center",
+  },
+  tableCellBold: {
+    flex: 1,
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.black,
+    textAlign: "center",
+  },
+  tableCellGreen: {
+    flex: 1,
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.green,
+    textAlign: "center",
+  },
+
+  journeyChart: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 14,
+  },
+
+  journeyScenario: {
+    flexDirection: "row",
+    marginBottom: 14,
+  },
+  journeyScenarioCard: {
+    flex: 1,
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 8,
+  },
+  journeyScenarioCardHighlight: {
+    flex: 1,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: 4,
+    padding: 12,
+  },
+  journeyScenarioTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  journeyScenarioTitleHighlight: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  journeyScenarioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  journeyScenarioCheck: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginRight: 6,
+  },
+  journeyScenarioText: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  journeyScenarioValue: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  journeyScenarioValueGreen: {
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  compoundingBox: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 14,
+    marginBottom: 14,
+  },
+  compoundingTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.greenDark,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  compoundingValue: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.green,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 4,
+  },
+  compoundingSubtext: {
+    fontSize: 8,
+    color: colors.greenDark,
   },
 });
 
@@ -1049,6 +1357,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPD
 
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
+  const valuePerProvider = Math.round(data.netGain / data.providers);
 
   return (
     <Page size="A4" style={styles.page}>
@@ -1060,97 +1369,161 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPD
         </View>
       </View>
 
-      <View style={styles.heroSection}>
-        <Text style={styles.heroTitle}>
-          {data.organizationName ? `${data.organizationName} ROI Summary` : "Your ROI Summary"}
-        </Text>
-        <Text style={styles.heroSubtitle}>
-          A transparent breakdown of projected value from Abridge implementation
-        </Text>
-      </View>
+      {data.organizationName && (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black }}>{data.organizationName}</Text>
+          <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>
+            {data.providers} {data.unitNamePlural} | {formatNumber(data.encounters)} admissions | {data.utilization}% utilization
+          </Text>
+        </View>
+      )}
 
-      <View style={styles.kpiGrid}>
-        <View style={[styles.kpiCard, styles.kpiCardHighlight]}>
-          <Text style={styles.kpiLabel}>Net Annual Value</Text>
-          <Text style={[styles.kpiValue, styles.kpiValueHighlight]}>{formatCurrency(data.netGain)}</Text>
-        </View>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>ROI Multiple</Text>
-          <Text style={styles.kpiValue}>{data.roi.toFixed(1)}x</Text>
-        </View>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>3-Year Net Value</Text>
-          <Text style={styles.kpiValue}>{formatCurrency(data.threeYearNet)}</Text>
-        </View>
-        <View style={[styles.kpiCard, styles.kpiCardLast]}>
-          <Text style={styles.kpiLabel}>Hours Returned</Text>
-          <Text style={styles.kpiValue}>{formatNumber(data.hoursReturned)}</Text>
-        </View>
-      </View>
-
-      <View style={styles.valueBreakdownSection}>
-        <Text style={styles.sectionTitle}>Value Breakdown</Text>
-        
-        {laborDrivers.length > 0 && (
-          <>
-            <Text style={styles.categoryLabel}>Labor & Operational</Text>
-            {laborDrivers.map((driver) => (
-              <View key={driver.id} style={styles.valueRow}>
-                <Text style={styles.valueRowLabel}>{driver.name}</Text>
-                <Text style={styles.valueRowAmount}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-          </>
-        )}
-        
-        {revenueDrivers.length > 0 && (
-          <>
-            <Text style={styles.categoryLabel}>Revenue Enhancement</Text>
-            {revenueDrivers.map((driver) => (
-              <View key={driver.id} style={styles.valueRow}>
-                <Text style={styles.valueRowLabel}>{driver.name}</Text>
-                <Text style={styles.valueRowAmount}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-          </>
-        )}
-        
-        <View style={styles.valueRowTotal}>
-          <View style={styles.valueRow}>
-            <Text style={[styles.valueRowLabel, styles.bold]}>Total Annual Value</Text>
-            <Text style={[styles.valueRowAmount, { color: colors.success }]}>{formatCurrency(data.totalValue)}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.investmentSection}>
-        <Text style={styles.sectionTitle}>Investment</Text>
-        <View style={styles.investmentGrid}>
-          <View style={styles.investmentItem}>
-            <Text style={styles.investmentLabel}>{data.unitNamePlural}</Text>
-            <Text style={styles.investmentValue}>{data.providers}</Text>
-          </View>
-          <View style={styles.investmentItem}>
-            <Text style={styles.investmentLabel}>Cost per {data.unitName}/month</Text>
-            <Text style={styles.investmentValue}>${data.costPerProvider}</Text>
-          </View>
-          <View style={styles.investmentItem}>
-            <Text style={styles.investmentLabel}>Annual Investment</Text>
-            <Text style={styles.investmentValue}>{formatCurrency(data.investment)}</Text>
-          </View>
-          <View style={styles.investmentItem}>
-            <Text style={styles.investmentLabel}>Utilization</Text>
-            <Text style={styles.investmentValue}>{data.utilization}%</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.narrativeSection}>
-        <Text style={styles.narrativeTitle}>About This Assessment</Text>
+      <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          This analysis is based on <Text style={styles.narrativeBold}>{data.providers} {data.unitNamePlural}</Text> managing <Text style={styles.narrativeBold}>{formatNumber(data.encounters)} admissions</Text> annually at <Text style={styles.narrativeBold}>{data.utilization}% utilization</Text>.
-          {"\n\n"}
+          <Text style={styles.narrativeBold}>Inpatient documentation carries the highest financial stakes in healthcare.</Text> Every note impacts DRG assignment, CDI workflows, denial defense, and physician retention. This assessment models where value actually comes from—and what's recoverable with better documentation.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
+          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
           You selected <Text style={styles.narrativeBold}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
+        </Text>
+      </View>
+
+      <View style={styles.metricsRow}>
+        <View style={styles.metricBoxHighlight}>
+          <Text style={styles.metricValueGreen}>+{formatCurrency(data.netGain)}</Text>
+          <Text style={styles.metricLabel}>Net Annual Gain</Text>
+          <Text style={styles.metricSublabel}>{formatCurrency(data.totalValue)} value - {formatCurrency(data.investment)} cost</Text>
+        </View>
+        <View style={styles.metricBox}>
+          <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
+          <Text style={styles.metricLabel}>Return on Investment</Text>
+          <Text style={styles.metricSublabel}>Every $1 returns ${data.roi.toFixed(2)}</Text>
+        </View>
+        <View style={styles.metricBox}>
+          <Text style={styles.metricValue}>{formatCurrency(valuePerProvider)}</Text>
+          <Text style={styles.metricLabel}>Per {data.unitName}</Text>
+          <Text style={styles.metricSublabel}>Net annual benefit each</Text>
+        </View>
+        <View style={[styles.metricBox, styles.metricBoxLast]}>
+          <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
+          <Text style={styles.metricLabel}>Hours Returned</Text>
+          <Text style={styles.metricSublabel}>Documentation time saved</Text>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Where the Value Comes From</Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.valueBreakdownCard, styles.laborCard]}>
+          <Text style={styles.valueBreakdownTitle}>Labor & Efficiency</Text>
+          <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
+          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
+          {laborDrivers.map((driver, i) => (
+            <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
+              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
+              <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
+            </View>
+          ))}
+          {laborDrivers.length === 0 && (
+            <Text style={{ fontSize: 7, color: colors.mediumGray }}>No labor drivers selected</Text>
+          )}
+        </View>
+
+        <View style={[styles.valueBreakdownCard, styles.revenueCard, styles.valueBreakdownCardLast]}>
+          <Text style={styles.valueBreakdownTitle}>Revenue & Quality</Text>
+          <Text style={styles.valueBreakdownPct}>{data.revenuePct}% of total value</Text>
+          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.revenueTotal)}</Text>
+          {revenueDrivers.map((driver, i) => (
+            <View key={driver.id} style={[styles.valueBreakdownDriver, i === revenueDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
+              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
+              <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
+            </View>
+          ))}
+          {revenueDrivers.length === 0 && (
+            <Text style={{ fontSize: 7, color: colors.mediumGray }}>No revenue drivers selected</Text>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.progressBar}>
+        {data.laborPct > 0 && (
+          <View style={[styles.progressSegment, { flex: data.laborPct, backgroundColor: colors.blue }]}>
+            {data.laborPct > 20 && <Text style={styles.progressLabel}>Labor {data.laborPct}%</Text>}
+          </View>
+        )}
+        {data.revenuePct > 0 && (
+          <View style={[styles.progressSegment, { flex: data.revenuePct, backgroundColor: colors.green }]}>
+            {data.revenuePct > 20 && <Text style={styles.progressLabel}>Revenue {data.revenuePct}%</Text>}
+          </View>
+        )}
+      </View>
+
+      <Text style={styles.sectionTitle}>Investment Details</Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>Your Configuration</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardLabel}>Setting</Text>
+            <Text style={styles.cardValue}>{data.careSetting}</Text>
+          </View>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardLabel}>{data.unitNamePlural}</Text>
+            <Text style={styles.cardValue}>{data.providers}</Text>
+          </View>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardLabel}>Price</Text>
+            <Text style={styles.cardValue}>${data.costPerProvider}/{data.unitName}/month</Text>
+          </View>
+          <View style={styles.cardTotal}>
+            <Text style={styles.cardTotalLabel}>Annual Investment</Text>
+            <Text style={styles.cardTotalValue}>{formatCurrency(data.investment)}</Text>
+          </View>
+        </View>
+
+        <View style={[styles.card, styles.columnLast]}>
+          <Text style={styles.cardTitle}>Multi-Year Projection</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}></Text>
+              <Text style={styles.tableHeaderCell}>Year 1</Text>
+              <Text style={styles.tableHeaderCell}>Year 2</Text>
+              <Text style={styles.tableHeaderCell}>Year 3</Text>
+              <Text style={[styles.tableHeaderCell, { fontWeight: "bold" }]}>3-Yr Total</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Value</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year1Value)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year2Value)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year3Value)}</Text>
+              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearValue)}</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Cost</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year1Cost)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year2Cost)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year3Cost)}</Text>
+              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearCost)}</Text>
+            </View>
+            <View style={[styles.tableRow, styles.tableRowLast]}>
+              <Text style={[styles.tableCellBold, { flex: 0.8, textAlign: "left" }]}>Net</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.threeYearNet)}</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: 6, color: colors.lightGray, marginTop: 4 }}>
+            Assumes 10% annual value growth with increased adoption
+          </Text>
+        </View>
+      </View>
+
+      <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
+        <Text style={styles.narrativeText}>
+          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in net annual value, scaling from {data.providers} to {Math.round(data.providers * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
         </Text>
       </View>
 
@@ -1280,12 +1653,18 @@ const DriverDetailPage = ({
 
 const JourneyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
   const { journey } = data;
-  const valueMultiple = (journey.fullScaleValue / journey.pilotValue).toFixed(1);
+  const valueMultiple = journey.pilotValue > 0 ? (journey.fullScaleValue / journey.pilotValue).toFixed(1) : "N/A";
   const paceLabels: Record<string, string> = {
     measured: "36 months",
     steady: "24 months",
     aggressive: "18 months",
   };
+  const timeline = paceLabels[journey.scalingPace] || "24 months";
+  const midScaleValue = (journey.pilotValue + journey.fullScaleValue) / 2;
+  const maxBarHeight = 70;
+  const pilotBarHeight = 30;
+  const midBarHeight = 50;
+  const fullBarHeight = maxBarHeight;
 
   return (
     <Page size="A4" style={styles.page}>
@@ -1296,58 +1675,108 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pa
         </View>
       </View>
 
-      <View style={styles.journeySection}>
-        <Text style={styles.journeyTitle}>Your Scaling Journey</Text>
-        <Text style={styles.journeySubtitle}>
-          From pilot to full deployment: {valueMultiple}x value growth over {paceLabels[journey.scalingPace] || "24 months"}
+      <View style={{ marginBottom: 8 }}>
+        <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black, letterSpacing: 0.5, marginBottom: 4 }}>
+          YOUR SCALING JOURNEY
         </Text>
+        <Text style={{ fontSize: 9, color: colors.darkGray }}>
+          From pilot to full deployment: {valueMultiple}x value growth over {timeline}
+        </Text>
+      </View>
 
-        <View style={styles.journeyChart}>
-          <Text style={{ fontSize: 8, color: colors.mediumGray, marginBottom: 8 }}>Value Growth Trajectory</Text>
-          <View style={{ flexDirection: "row", alignItems: "flex-end", height: 80 }}>
-            <View style={{ width: "30%", alignItems: "center" }}>
-              <View style={{ height: 30, width: 40, backgroundColor: colors.primary, borderRadius: 3 }} />
-              <Text style={{ fontSize: 7, marginTop: 4, color: colors.darkGray }}>Pilot</Text>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black }}>{formatCurrency(journey.pilotValue)}</Text>
-            </View>
-            <View style={{ width: "40%", alignItems: "center" }}>
-              <View style={{ height: 50, width: 40, backgroundColor: colors.success, opacity: 0.7, borderRadius: 3 }} />
-              <Text style={{ fontSize: 7, marginTop: 4, color: colors.darkGray }}>Scaling</Text>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black }}>{formatCurrency((journey.pilotValue + journey.fullScaleValue) / 2)}</Text>
-            </View>
-            <View style={{ width: "30%", alignItems: "center" }}>
-              <View style={{ height: 70, width: 40, backgroundColor: colors.success, borderRadius: 3 }} />
-              <Text style={{ fontSize: 7, marginTop: 4, color: colors.darkGray }}>Full Scale</Text>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.success }}>{formatCurrency(journey.fullScaleValue)}</Text>
-            </View>
-          </View>
-        </View>
+      <View style={styles.narrativeBox}>
+        <Text style={styles.narrativeText}>
+          <Text style={styles.narrativeBold}>Implementation follows a proven path.</Text> Starting with a pilot group of {journey.pilotProviders} {data.unitNamePlural.toLowerCase()}, you'll prove value quickly before expanding. This isn't just about adding more {data.unitNamePlural.toLowerCase()}—it's about building compounding returns as adoption increases.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
+          At full scale with {journey.fullScaleProviders} {data.unitNamePlural.toLowerCase()} and {journey.fullScaleUtilization}% utilization, annual value reaches {formatCurrency(journey.fullScaleValue)}—a {valueMultiple}x increase from pilot. The journey matters as much as the destination.
+        </Text>
+      </View>
 
-        <View style={styles.journeyScenarios}>
-          <View style={styles.journeyScenario}>
-            <Text style={styles.journeyScenarioTitle}>Pilot Phase</Text>
-            <Text style={styles.journeyScenarioValue}>{formatCurrency(journey.pilotValue)}</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotProviders}</Text> {data.unitNamePlural}</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{formatNumber(journey.pilotEncounters)}</Text> admissions</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotUtilization}%</Text> utilization</Text>
+      <View style={styles.journeyChart}>
+        <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 10 }}>Value Growth Trajectory</Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-end", height: 90, paddingHorizontal: 20 }}>
+          <View style={{ width: "25%", alignItems: "center" }}>
+            <View style={{ height: pilotBarHeight, width: 45, backgroundColor: colors.primary, borderRadius: 3 }} />
+            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>Pilot</Text>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.black }}>{formatCurrency(journey.pilotValue)}</Text>
+            <Text style={{ fontSize: 6, color: colors.lightGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
           </View>
-          
-          <View style={[styles.journeyScenario, styles.journeyScenarioLast]}>
-            <Text style={styles.journeyScenarioTitle}>Full Scale</Text>
-            <Text style={styles.journeyScenarioValue}>{formatCurrency(journey.fullScaleValue)}</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.fullScaleProviders}</Text> {data.unitNamePlural}</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.fullScaleUtilization}%</Text> utilization</Text>
-            <Text style={styles.journeyScenarioText}>{paceLabels[journey.scalingPace] || "24 months"} timeline</Text>
+          <View style={{ width: "25%", alignItems: "center" }}>
+            <View style={{ height: midBarHeight, width: 45, backgroundColor: colors.green, opacity: 0.6, borderRadius: 3 }} />
+            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>Scaling</Text>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.black }}>{formatCurrency(midScaleValue)}</Text>
+            <Text style={{ fontSize: 6, color: colors.lightGray }}>Growing adoption</Text>
+          </View>
+          <View style={{ width: "25%", alignItems: "center" }}>
+            <View style={{ height: fullBarHeight, width: 45, backgroundColor: colors.green, borderRadius: 3 }} />
+            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>Full Scale</Text>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.green }}>{formatCurrency(journey.fullScaleValue)}</Text>
+            <Text style={{ fontSize: 6, color: colors.lightGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
+          </View>
+          <View style={{ width: "25%", alignItems: "center" }}>
+            <View style={{ height: fullBarHeight + 8, width: 45, backgroundColor: colors.greenDark, borderRadius: 3, borderWidth: 1, borderColor: colors.green }} />
+            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>+ Network</Text>
+            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.greenDark }}>{formatCurrency(journey.fullScaleValue + journey.networkEffect)}</Text>
+            <Text style={{ fontSize: 6, color: colors.lightGray }}>Compounded</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.narrativeSection}>
-        <Text style={styles.narrativeTitle}>The Compounding Effect</Text>
+      <View style={styles.journeyScenario}>
+        <View style={styles.journeyScenarioCard}>
+          <Text style={styles.journeyScenarioTitle}>Pilot Phase</Text>
+          <View style={styles.journeyScenarioRow}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotProviders}</Text> {data.unitNamePlural.toLowerCase()}</Text>
+          </View>
+          <View style={styles.journeyScenarioRow}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{formatNumber(journey.pilotEncounters)}</Text> admissions</Text>
+          </View>
+          <View style={styles.journeyScenarioRow}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotUtilization}%</Text> utilization target</Text>
+          </View>
+          <View style={[styles.journeyScenarioRow, { marginTop: 6 }]}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}>Annual value: <Text style={styles.journeyScenarioValue}>{formatCurrency(journey.pilotValue)}</Text></Text>
+          </View>
+        </View>
+
+        <View style={styles.journeyScenarioCardHighlight}>
+          <Text style={styles.journeyScenarioTitleHighlight}>Full Scale</Text>
+          <View style={styles.journeyScenarioRow}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValueGreen}>{journey.fullScaleProviders}</Text> {data.unitNamePlural.toLowerCase()}</Text>
+          </View>
+          <View style={styles.journeyScenarioRow}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValueGreen}>{journey.fullScaleUtilization}%</Text> utilization target</Text>
+          </View>
+          <View style={styles.journeyScenarioRow}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}>{timeline} timeline</Text>
+          </View>
+          <View style={[styles.journeyScenarioRow, { marginTop: 6 }]}>
+            <Text style={styles.journeyScenarioCheck}>-</Text>
+            <Text style={styles.journeyScenarioText}>Annual value: <Text style={styles.journeyScenarioValueGreen}>{formatCurrency(journey.fullScaleValue)}</Text></Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.compoundingBox}>
+        <Text style={styles.compoundingTitle}>The Compounding Effect</Text>
+        <Text style={styles.compoundingValue}>+{formatCurrency(journey.networkEffect)}</Text>
+        <Text style={styles.compoundingSubtext}>Additional annual value from network effects at full scale</Text>
+      </View>
+
+      <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          Value doesn't grow linearly with utilization—it compounds. As more hospitalists adopt Abridge, documentation quality improves across the board. CDI workflows streamline. Denial patterns shift. The value per provider increases even as you add providers.
-          {"\n\n"}
-          At {journey.networkEffect}% network effect, each additional hospitalist adds {(1 + journey.networkEffect/100).toFixed(2)}x the base value. This is why pilot success often understates full-scale potential.
+          <Text style={styles.narrativeBold}>Value doesn't grow linearly—it compounds.</Text> As more hospitalists adopt Abridge, documentation quality improves across the board. CDI teams query less frequently. Denial patterns shift. The value per {data.unitName.toLowerCase()} increases even as you add {data.unitNamePlural.toLowerCase()}.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
+          This is why pilot success often understates full-scale potential. At {journey.fullScaleUtilization}% utilization with {journey.fullScaleProviders} {data.unitNamePlural.toLowerCase()}, network effects add {formatCurrency(journey.networkEffect)} to your annual value—bringing total potential to {formatCurrency(journey.fullScaleValue + journey.networkEffect)}.
         </Text>
       </View>
 

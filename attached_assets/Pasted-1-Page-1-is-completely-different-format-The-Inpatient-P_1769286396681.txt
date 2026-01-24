@@ -1,0 +1,110 @@
+1. Page 1 is completely different format
+The Inpatient PDF has a totally different Page 1 layout than ED/Outpatient. It should match the same structure:
+
+Same opening narrative box ("ROI models can feel like black boxes...")
+Same 4 metric cards in a row (+Net Gain, ROI Multiple, Per Unit, Hours Returned)
+Same two-column value breakdown (Labor & Efficiency | Revenue & Quality)
+Same Investment Details section with Configuration + Multi-Year table
+
+Current (wrong): Simplified "Your ROI Summary" with basic table layout
+Should be: Match ED/Outpatient exactly
+
+2. Page 5 has BROKEN data - "885503% network effect"
+The compounding effect section shows completely broken numbers:
+
+"At 885503% network effect, each additional hospitalist adds 8856.03x the base value"
+
+This is a calculation bug. Should be something like "At 20% network effect" or similar reasonable number.
+
+3. Page 5 chart is different format (bar chart vs line chart)
+ED has the nice curved line chart with Today → Full Scale trajectory. Inpatient has three disconnected bars (Pilot, Scaling, Full Scale).
+Should be: Same line chart format as ED with:
+
+Red dot at pilot
+Green dot at full scale
+Curved green line (with compounding)
+Dashed gray line (linear projection)
+Compounding bonus label in the gap
+
+
+4. Missing the two-column scenario comparison
+ED has "YOUR STARTING POINT" vs "YOUR FULL SCALE POTENTIAL" side by side. Inpatient just has basic "Pilot Phase" and "Full Scale" boxes without the same structure.
+
+5. Text is generic - not Inpatient-specific enough
+The theories and explanations work, but they could be more specific to the inpatient context. For example:
+Current CDI Theory: "Many CDI queries are simply asking physicians to document what they already discussed with the patient."
+Better: "Hospitalists round on 15-20 patients daily. Every undocumented condition discussed at bedside becomes a CDI query—interrupting workflow and delaying DRG finalization. When Abridge captures these conversations automatically, queries become unnecessary."
+
+COMPLETE FIX FOR REPLIT
+Copy## INPATIENT PDF - CRITICAL FIXES
+
+### FIX 1: Page 1 must match ED/Outpatient format
+The Inpatient PDF Page 1 has a completely different layout. It needs to match ED and Outpatient exactly:
+
+1. Same opening narrative box with educational framing
+2. Same 4 metric cards in row: +Net Annual Gain (green) | ROI Multiple | Per Hospitalist | Hours Returned
+3. Same two-column value breakdown: "Labor & Operational" (blue) | "Revenue Enhancement" (green)
+4. Same Investment Details with two-column layout: Your Configuration | Multi-Year Projection table
+5. Same closing callout about scaling potential
+
+Copy the exact structure from ED PDF Page 1 and adapt terminology (providers → hospitalists, visits → admissions).
+
+### FIX 2: Page 5 broken calculation - "885503% network effect"
+There's a calculation bug showing "885503% network effect" and "8856.03x the base value". 
+
+This should be a reasonable number like 15-25% network effect. Fix the calculation that's producing this absurd number.
+
+### FIX 3: Page 5 chart format - use line chart, not bar chart
+Current: Three disconnected bars (Pilot, Scaling, Full Scale)
+Should be: Same curved line chart as ED PDF with:
+- Red dot at pilot (Today)
+- Green dot at full scale
+- Solid green curved line (with compounding) - curves ABOVE the linear projection
+- Dashed gray straight line (linear projection)
+- "+$XXK compounding bonus" label in the gap between lines
+- Same X-axis labels: Today, 6 mo, 12 mo, 18 mo, 24 mo / Full Scale
+- Same Y-axis with value labels
+- Same legend below
+
+### FIX 4: Page 5 scenario comparison - match ED format
+Add the same two-column scenario comparison as ED:
+
+Left column: "YOUR STARTING POINT" (locked from model)
+- 20 hospitalists
+- 8,000 admissions  
+- 65% utilization
+- $619K /year
+- "✓ Locked from your model"
+
+Right column: "YOUR FULL SCALE POTENTIAL" (highlighted border)
+- 60 hospitalists
+- 80% utilization
+- Scaling: 24 months
+- $2.74M /year
+
+### FIX 5: Update inpatient-specific copy for more differentiation
+
+**Page 1 opening narrative - make it inpatient-specific:**
+"Inpatient documentation carries the highest financial stakes in healthcare. Every note impacts DRG assignment, CDI workflows, denial defense, and physician retention. This assessment models where value actually comes from—and what's recoverable with better documentation.
+
+You selected 3 value drivers: Hospitalist Retention, CC/MCC Capture, CDI Query Reduction. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it."
+
+**Hospitalist Retention - add inpatient context:**
+"Hospitalists face a unique documentation burden: rounding on 15-20 patients daily, then spending 2+ hours after shifts completing notes. This 'pajama time' documentation erodes work-life balance and drives burnout faster than in outpatient settings. Turnover runs 15-20%—significantly higher than most specialties."
+
+**CC/MCC Capture - add specificity:**
+"In inpatient care, documentation directly determines reimbursement. A patient with respiratory failure, malnutrition, and acute kidney injury might have all three discussed during rounds—but only one captured in the H&P. Each missed CC/MCC means a lower DRG weight and less revenue for the same care delivered."
+
+**CDI Query Reduction - add workflow context:**
+"CDI specialists spend hours researching charts and crafting queries for information that was discussed but not documented. Each query interrupts hospitalist workflow, delays DRG finalization, and extends billing cycles. When Abridge captures the clinical conversation, many of these queries become unnecessary."
+
+**Closing quote (methodology page) - inpatient specific:**
+"Inpatient documentation has the highest stakes—DRGs, CDI, denials, retention all trace back to the note. The difference between a 3x ROI and a 10x ROI usually isn't the technology. It's utilization, workflow integration, and getting the CDI team engaged from day one."
+
+SUMMARY
+The main issues are:
+
+Page 1 is wrong format - needs to match ED/Outpatient
+Page 5 has broken calculation - "885503%" is obviously wrong
+Page 5 chart is wrong format - bars instead of line chart
+Text is too generic - needs more inpatient-specific language
