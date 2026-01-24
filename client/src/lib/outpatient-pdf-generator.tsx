@@ -864,7 +864,7 @@ const formatNumber = (value: number): string => {
 // ============================================================================
 
 const driverTheories: Record<string, string> = {
-  patientAccess: `When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue. The math is conservative: we assume only a portion of saved time goes to access, and only 60% of that actually converts to visits.`,
+  patientAccess: `When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue. The math is conservative: we assume only a portion of saved time goes to access, and only 50% of that actually converts to visits.`,
   
   wrvu: `Physicians under time pressure document less than the full clinical picture. AI-assisted documentation captures the complexity that supports accurate coding—not upcoding, just getting credit for work already done. A 5% wRVU lift across thousands of encounters compounds into significant revenue without changing clinical behavior.`,
   
@@ -957,7 +957,7 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "How many additional visits does this enable?",
           inputs: [
             { value: formatNumber(Math.round(data.hoursReturned * ((inputs.timeToAccessPct as number || 25) / 100))), label: "hours" },
-            { value: `${inputs.conversionRate || 60}%` },
+            { value: `${inputs.conversionRate || 50}%` },
           ],
           operators: ["x"],
           result: `${formatNumber(inputs.additionalVisits as number || 0)} visits`,
@@ -1792,7 +1792,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
           <Text style={styles.methodologyItem}>wRVU conversion: $33 (Medicare)</Text>
           <Text style={styles.methodologyItem}>Provider replacement: $400K-$800K</Text>
           <Text style={styles.methodologyItem}>Time value: $150/hr (fully-loaded)</Text>
-          <Text style={styles.methodologyItem}>Visit conversion: 60% of capacity</Text>
+          <Text style={styles.methodologyItem}>Visit conversion: 50% of capacity</Text>
           <Text style={styles.methodologyItem}>Burnout attribution: 30%</Text>
         </View>
         
