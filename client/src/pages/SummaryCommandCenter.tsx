@@ -31,6 +31,8 @@ import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
 import { generateOutpatientROIPDF } from "@/lib/outpatient-pdf-generator";
 import { transformToOutpatientPDFData } from "@/lib/outpatient-pdf-data-transformer";
+import { generateEDROIPDF } from "@/lib/ed-pdf-generator";
+import { transformToEDPDFData } from "@/lib/ed-pdf-data-transformer";
 import {
   ComposedChart,
   Area,
@@ -415,23 +417,29 @@ export default function SummaryCommandCenter({
       networkEffect: networkEffect,
     };
 
-    const pdfData = transformToOutpatientPDFData(
-      {
-        totalBenefit: totalAnnualValue,
-        investment: annualInvestment,
-        implementationFee: 0,
-        providers: pilotUnits,
-        encounters: pilotUnits * encountersPerUnit,
-        utilizationRate: pilotUtilization,
-        costPerMonth: pricePerUnit,
-        timeSavedPerEncounter: 2.5,
-        driverResults,
-      },
-      journeyInputs,
-      CARE_SETTING_LABELS[activeSetting]
-    );
+    const modelResultsForPDF = {
+      totalBenefit: totalAnnualValue,
+      investment: annualInvestment,
+      implementationFee: 0,
+      providers: pilotUnits,
+      encounters: pilotUnits * encountersPerUnit,
+      utilizationRate: pilotUtilization,
+      costPerMonth: pricePerUnit,
+      timeSavedPerEncounter: 2.5,
+      driverResults,
+    };
 
-    await generateOutpatientROIPDF(pdfData);
+    if (activeSetting === "ed") {
+      const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs);
+      await generateEDROIPDF(pdfData);
+    } else {
+      const pdfData = transformToOutpatientPDFData(
+        modelResultsForPDF,
+        journeyInputs,
+        CARE_SETTING_LABELS[activeSetting]
+      );
+      await generateOutpatientROIPDF(pdfData);
+    }
   }, [
     activeSetting,
     modelResults.driverResults,

@@ -1,0 +1,144 @@
+## ED PDF GENERATOR - DRIVER CONFIGURATIONS
+
+### DRIVER: Patient Throughput (LWBS Reduction)
+
+**Theory:**
+When patients leave without being seen (LWBS), the ED loses revenue and—more importantly—fails its core mission. LWBS happens for many reasons: long wait times, staffing constraints, perceived non-urgency. But documentation delays play a role too.
+
+When physicians can complete documentation faster, disposition happens sooner. Patients move through the department more quickly. Wait times compress. And fewer patients give up and leave.
+
+We model this conservatively: only 40% of LWBS is attributable to documentation-driven bottlenecks, and Abridge can address about half of that. The rest is driven by factors outside documentation—true capacity constraints, triage decisions, patient behavior.
+
+**Step Notes:**
+- Step 1: "Industry LWBS rates vary from 2-5%. High-volume urban EDs often run higher."
+- Step 2: "Not all LWBS is documentation-related. We estimate 40% is tied to throughput delays that documentation impacts."
+- Step 3: "50% reduction is achievable when documentation becomes synchronous with care. Some organizations see more."
+- Step 4: "Average ED revenue per visit. Adjust based on your payer mix and acuity."
+
+**What This Means:**
+At $109K, throughput improvements contribute X% of your total value. This represents Y patients who would have left but now complete their visit.
+
+Beyond the revenue, there's a quality dimension: patients who leave without being seen may delay necessary care or present later with worse outcomes. Reducing LWBS is both a financial and clinical win.
+
+---
+
+### DRIVER: Scribe Cost Reduction
+
+**Theory:**
+Scribes exist because ED documentation is intensive—high volume, high acuity, time pressure. They're effective, but expensive: $20-30/hr fully loaded, often with scheduling overhead and training costs on top.
+
+When ambient documentation handles the bulk of note generation, the role of scribes shifts. Some organizations eliminate them entirely. Others reduce to a small team for complex cases or training purposes. Either way, the cost structure changes significantly.
+
+We model a 75% reduction in scribe hours. This assumes some organizations will maintain minimal scribe presence for edge cases. If you're comfortable going to zero, actual savings may be higher.
+
+**Step Notes:**
+- Step 1: "Your current scribe investment. Include all costs: wages, benefits, scheduling overhead."
+- Step 2: "75% reduction is typical. Some organizations eliminate scribes entirely; others keep a small team for complex cases."
+
+**What This Means:**
+At $600K, scribe reduction is likely your largest single driver. This is direct cost displacement—every dollar saved here flows straight to the bottom line.
+
+Implementation note: scribe reduction should be managed thoughtfully. Many organizations phase out over 3-6 months rather than eliminating immediately, allowing time for provider adjustment and workflow refinement.
+
+---
+
+### DRIVER: Physician Retention
+
+**Theory:**
+ED physicians face unique burnout pressures: shift work, high acuity, unpredictable volume, and—yes—documentation burden. The charting follows them home. The cognitive load compounds across shifts.
+
+Replacing an ED physician is expensive: $500K+ when you factor recruiting, credentialing, lost revenue during vacancy, and the 6-12 months it takes to reach full productivity in a new environment.
+
+We use the same "Rule of Thirds" as outpatient: documentation burden contributes to roughly half of burnout, Abridge reduces that burden by ~70%, yielding ~35% theoretical impact. We round to 30% for conservatism.
+
+**Warning (for <50 providers):**
+With fewer than 50 ED providers, retention math is probabilistic. Over a 3-4 year period, the cumulative effect is equivalent to retaining one additional physician. The value is real—it just materializes over time.
+
+**Step Notes:**
+- Step 1: "ED turnover often runs higher than outpatient—8-12% is common."
+- Step 2: "Burnout is particularly prevalent in emergency medicine."
+- Step 3: "The Rule of Thirds: 50% of burnout × 70% doc reduction = 35%, rounded to 30%."
+- Step 4: "ED replacement cost is typically higher than outpatient due to specialized credentialing and shift coverage complexity."
+
+**What This Means:**
+At $X, retention contributes Y% of your total value. This represents Z avoided departures annually—or roughly one retained physician every W years.
+
+---
+
+### DRIVER: Level-of-Service Accuracy
+
+**Theory:**
+ED visits are often complex—multiple problems, rapid assessment, time-sensitive decisions. But documentation doesn't always reflect that complexity. Under time pressure, notes get truncated. MDM is summarized rather than detailed. The result: visits that should code at 99285 get billed as 99284.
+
+Abridge captures the clinical narrative as it happens. When the note includes the full reasoning—why you ordered that CT, what differential you were considering, how the patient's presentation evolved—coding can be more accurate.
+
+We model a 5% wRVU improvement, consistent with what we see across ED deployments. Your results depend on current documentation quality and specialty complexity.
+
+**Step Notes:**
+- Step 1: "ED wRVUs vary by acuity mix. 2.0-2.5 per encounter is typical."
+- Step 2: "5% improvement assumes meaningful under-documentation today. If your notes are already comprehensive, improvement may be less."
+- Step 3: "Medicare conversion factor. Commercial rates run $45-65."
+
+**What This Means:**
+At $X, level-of-service accuracy contributes Y% of your total value. This represents getting appropriate credit for the complexity of care you're already delivering.
+
+---
+
+### DRIVER: Documentation-Related Denials
+
+**Theory:**
+ED claims face unique denial challenges. The acuity that justified the visit isn't always clear in the note. The medical necessity for a procedure gets questioned. The MDM that seemed obvious in the moment doesn't translate to paper.
+
+These denials are often recoverable—you appeal, you win. But the rework is expensive, and some claims get written off because the cost of appeal exceeds the value.
+
+Abridge captures the clinical reasoning in real time. When that reasoning is in the note, denials are less likely—and when they happen, appeals are more defensible.
+
+**Step Notes:**
+- Step 1: "ED denial rates often run 8-12%—higher than outpatient due to complexity."
+- Step 2: "35% of ED denials are documentation-related: missing MDM, unclear necessity, incomplete notes."
+- Step 3: "These are claims abandoned without appeal."
+- Step 4: "75% recovery when the clinical reasoning exists but wasn't documented."
+- Step 5: "ED claims average higher than outpatient due to acuity."
+
+**What This Means:**
+At $X, denial prevention contributes Y% of your total value. This represents Z claims that would otherwise be written off.
+
+---
+
+## ED-SPECIFIC SETTINGS
+
+- careSetting: "Emergency Department"
+- unitName: "ED provider"
+- unitNamePlural: "ED providers"
+- encounterName: "patient visits"
+- Default replacement cost: $500,000 (vs $400K outpatient)
+- Default claim value: $350 (vs $250 outpatient)
+- Default wRVU per encounter: 2.0-2.5 (vs 1.5 outpatient)
+
+FOR REPLIT - THE SIMPLEST PATH
+Tell Replit:
+CopyCreate a new file: ed-pdf-generator.tsx
+
+This should be a copy of outpatient-pdf-generator.tsx with the following changes:
+
+1. Change careSetting to "Emergency Department"
+2. Change unitName to "ED provider" and unitNamePlural to "ED providers"  
+3. Change encounterName to "patient visits"
+
+4. Replace the driver configurations with ED-specific drivers:
+   - edThroughput (Patient Throughput / LWBS Reduction)
+   - edScribe (Scribe Cost Reduction)
+   - edRetention (Physician Retention)
+   - edLevelOfService (Level-of-Service Accuracy)
+   - edDenials (Documentation-Related Denials)
+
+5. Use the theory text, step structures, and notes provided above for each ED driver.
+
+6. Update default benchmarks:
+   - Replacement cost: $500,000
+   - Average claim value: $350
+   - wRVU per encounter: 2.0-2.5
+   - ED turnover rate: 8-12%
+   - ED denial rate: 8-12%
+
+The page structure (Executive Summary, Driver Detail Pages, Journey, 
