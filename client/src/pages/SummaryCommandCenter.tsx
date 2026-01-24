@@ -33,6 +33,8 @@ import { generateOutpatientROIPDF } from "@/lib/outpatient-pdf-generator";
 import { transformToOutpatientPDFData } from "@/lib/outpatient-pdf-data-transformer";
 import { generateEDROIPDF } from "@/lib/ed-pdf-generator";
 import { transformToEDPDFData } from "@/lib/ed-pdf-data-transformer";
+import { generateInpatientROIPDF } from "@/lib/inpatient-pdf-generator";
+import { transformToInpatientPDFData } from "@/lib/inpatient-pdf-data-transformer";
 import {
   ComposedChart,
   Area,
@@ -394,6 +396,10 @@ export default function SummaryCommandCenter({
       edDenialReduction: 'edDenials',
       edRetention: 'edRetention',
       edScribe: 'edScribe',
+      inpatientRetention: 'inpatientRetention',
+      inpatientCCMCC: 'inpatientCCMCC',
+      inpatientCDI: 'inpatientCDI',
+      inpatientDenials: 'inpatientDenials',
     };
 
     const rawDriverResults = modelResults.driverResults || {};
@@ -437,6 +443,9 @@ export default function SummaryCommandCenter({
     if (activeSetting === "ed") {
       const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs);
       await generateEDROIPDF(pdfData);
+    } else if (activeSetting === "inpatient") {
+      const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs);
+      await generateInpatientROIPDF(pdfData);
     } else {
       const pdfData = transformToOutpatientPDFData(
         modelResultsForPDF,

@@ -1,0 +1,214 @@
+INPATIENT DRIVERS IDENTIFIED
+1. Hospitalist Retention - $562,500
+Theory: Hospitalists spend 2+ hours per day on documentation—much of it after rounds or at home. This drives burnout and turnover. Replacing a hospitalist costs $400-600K when you factor in recruiting, lost revenue, and onboarding.
+Steps:
+
+BASELINE TURNOVER: Hospitalists × Turnover Rate = X departures/year
+
+Note: "Hospitalist turnover averages 15-20%. Higher than most specialties due to workload and schedule demands."
+
+
+BURNOUT-RELATED: X × 50% = Y preventable
+
+Note: "~50% of hospitalist departures cite burnout as a primary factor. Documentation burden is consistently the top complaint."
+
+
+ABRIDGE ATTRIBUTION: Y × 30% = Z departures avoided
+
+Note: "Documentation is a major burnout driver, but not the only one. We conservatively estimate Abridge impacts 30% of burnout-related turnover."
+
+
+COST SAVINGS: Z × 500,000 = $
+$
+
+
+Benchmark: Hospitalist Replacement Cost
+
+Recruiting + signing bonus: $75K - $150K
+Lost revenue during vacancy: $250K - $400K
+Onboarding & ramp-up: $50K - $75K
+Total: $400K - $600K
+
+What This Means: "Over ~0.9 years, expect to retain 1 additional hospitalist you would have otherwise lost to burnout."
+Warning: "Retention impact typically measurable after 12-18 months."
+
+2. CC/MCC Capture (DRG Optimization) - $1,170,000
+Theory: DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes mean missed CC/MCC assignments and lower DRG weights. Abridge ensures what's discussed gets documented.
+Steps:
+
+ADMISSIONS WITH OPPORTUNITY: Documented Admissions × Gap Rate = X opportunities
+
+Note: "Studies show 30-50% of admissions have undocumented CC/MCC opportunities. We use 40% as a moderate estimate."
+
+
+CAPTURE IMPROVEMENT: X × Improvement Rate = Y admissions improved
+
+Note: "Not every gap is capturable. 15% accounts for cases where Abridge documentation directly enables CC/MCC capture that wouldn't have happened otherwise."
+
+
+DRG WEIGHT IMPACT: Y × DRG Weight Increase × Base DRG Payment = $$$ gross
+
+Benchmark: What Drives 0.4 DRG Weight?
+
+Acute respiratory failure: +0.3 to +0.5
+Sepsis / Severe sepsis: +0.4 to +0.6
+Malnutrition: +0.2 to +0.4
+Acute encephalopathy: +0.3 to +0.5
+Acute kidney injury: +0.1 to +0.3
+Note: "0.4 is a blended average for MCC captures."
+
+
+
+
+REALITY CHECK: Gross Impact × Realization Rate = $$$ final
+
+Note: "50% haircut accounts for RAC/PEPPER audits, coder discretion, and cases where documentation doesn't change final code."
+
+
+
+Warning: "Work with your CDI team to validate capture rates for your specific case mix."
+
+3. CDI Query Reduction - $60,938
+Theory: Many CDI queries are simply asking physicians to document what they already discussed with the patient. When Abridge captures these conversations automatically, the query becomes unnecessary—freeing CDI to focus on complex cases.
+Steps:
+
+CURRENT QUERY VOLUME: Admissions × Query Rate = X queries/year
+
+Note: "CDI query rates typically range 20-40% of admissions. 30% is average for most health systems."
+
+
+QUERIES AVOIDED: X × Reduction Rate = Y queries avoided
+
+Note: "When initial documentation is complete, CDI doesn't need to query. 25% is conservative—many queries ask for info that was discussed but not documented."
+
+
+OPERATIONAL SAVINGS: Y × Cost per Query = $$$
+
+Benchmark: Cost per Query
+
+CDI Specialist time (research, write, follow-up): 20-30 min
+Physician time (read, respond): 5-10 min
+Fully loaded cost: $50-$100 per query. We use $50 conservatively.
+
+Warning: "Additional benefit: Faster DRG finalization → faster billing cycles."
+
+4. Documentation-Related Denials - $639,844
+Theory: Most inpatient denials are appealed due to high stakes—but some are lost forever when documentation can't support the claim. Medical necessity wasn't captured. Status criteria weren't documented. Abridge captures the clinical reasoning that makes the difference.
+Steps:
+
+TOTAL DENIALS: Admissions × Denial Rate = X annual denials
+
+Note: "Inpatient denial rates typically range 5-10%. Varies by payer mix and case complexity."
+
+
+DOCUMENTATION-RELATED: X × Doc-Related % = Y doc denials
+
+Note: "35-40% of inpatient denials stem from documentation gaps: medical necessity, level of care, status (IP vs Obs)."
+
+
+WRITTEN OFF: Y × Write-Off % = Z claims written off
+
+Note: "Due to high claim values, most are appealed. But ~25% are ultimately written off—documentation can't support the appeal. These claims are lost forever."
+
+
+ABRIDGE RECOVERY: Z × Capture Rate = W claims recovered
+
+Note: "Abridge captures the clinical reasoning and medical necessity that physicians discuss but don't document—preventing denials or winning appeals."
+
+
+VALUE RECOVERED: W × Avg Claim Value = $$$
+
+Benchmark: Inpatient Claim Value
+
+Low complexity admission: $6,000 - $10,000
+Medium complexity: $10,000 - $18,000
+High complexity / ICU: $20,000 - $50,000+
+Blended average: ~$12,000
+
+Warning: "Denial patterns vary by payer. Work with your revenue cycle team to validate rates for your specific payer mix."
+
+INPATIENT-SPECIFIC SETTINGS
+
+careSetting: "Inpatient"
+unitName: "hospitalist"
+unitNamePlural: "hospitalists"
+encounterName: "admissions"
+Default replacement cost: $500,000
+Default claim value: $12,000
+Default turnover rate: 15%
+Default denial rate: 5%
+Base DRG payment: $6,000
+
+
+INPATIENT "CONNECTED VALUE" SECTION
+Like ED has "Downstream Value," Inpatient should have the "Connected Value" section (from screenshot 3):
+Title: "Connected Value"
+Subtitle: "ED + Inpatient compounds your results"
+Content:
+"When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense."
+Three benefit items:
+
+DRG Capture - CCs/MCCs documented in ED carry forward—your case mix starts stronger from admission.
+CDI Efficiency - When the ED note is complete, CDI teams query less and focus on complex cases.
+Denial Prevention - Medical necessity documented at admission is your first line of defense against payer audits.
+
+Yellow callout:
+"If you're also using Abridge in ED, the documentation quality benefits below are amplified—you're building on a stronger foundation."
+
+COMPLETE INSTRUCTION FOR REPLIT
+Copy## INPATIENT PDF GENERATOR
+
+Create inpatient-pdf-generator.tsx following the same structure as ED and Outpatient.
+
+### SETTINGS
+- careSetting: "Inpatient"
+- unitName: "hospitalist"
+- unitNamePlural: "hospitalists"
+- encounterName: "admissions"
+
+### DRIVERS (4 total)
+
+1. **inpatientRetention** (Hospitalist Retention) - Category: Labor
+   - 4 steps: Baseline Turnover → Burnout-Related → Abridge Attribution → Cost Savings
+   - Benchmark: Hospitalist Replacement Cost breakdown
+   - Warning: "Retention impact typically measurable after 12-18 months"
+
+2. **inpatientCCMCC** (CC/MCC Capture / DRG Optimization) - Category: Revenue
+   - 4 steps: Admissions with Opportunity → Capture Improvement → DRG Weight Impact → Reality Check (50% haircut)
+   - Benchmark: What Drives 0.4 DRG Weight (list of conditions)
+   - Warning: "Work with your CDI team to validate capture rates"
+
+3. **inpatientCDI** (CDI Query Reduction) - Category: Labor
+   - 3 steps: Current Query Volume → Queries Avoided → Operational Savings
+   - Benchmark: Cost per Query breakdown
+   - Note: "Additional benefit: Faster DRG finalization → faster billing cycles"
+
+4. **inpatientDenials** (Documentation-Related Denials) - Category: Revenue
+   - 5 steps: Total Denials → Doc-Related → Written Off → Abridge Recovery → Value Recovered
+   - Benchmark: Inpatient Claim Value by complexity
+   - Warning: "Denial patterns vary by payer"
+
+### CONNECTED VALUE SECTION (appears on all Inpatient PDFs)
+Add before Methodology section:
+
+Title: "CONNECTED VALUE"
+Subtitle: "ED + Inpatient compounds your results"
+
+Content: "When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense."
+
+Three items:
+- DRG Capture: CCs/MCCs documented in ED carry forward—your case mix starts stronger from admission.
+- CDI Efficiency: When the ED note is complete, CDI teams query less and focus on complex cases.
+- Denial Prevention: Medical necessity documented at admission is your first line of defense against payer audits.
+
+Yellow callout: "If you're also using Abridge in ED, the documentation quality benefits below are amplified—you're building on a stronger foundation."
+
+### METHODOLOGY - Inpatient-Specific Benchmarks
+- Hospitalist replacement: $400K - $600K
+- Base DRG payment: $6,000
+- Average DRG weight lift: 0.4
+- CDI query rate: 20-40%
+- Cost per query: $50-$100
+- Inpatient denial rate: 5-10%
+- Average claim value: $12,000
+- Hospitalist turnover: 15-20%
