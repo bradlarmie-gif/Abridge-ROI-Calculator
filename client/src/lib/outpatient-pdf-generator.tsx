@@ -1683,17 +1683,17 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; p
                 strokeDasharray="6,4" 
               />
               
-              {/* Solid green curved line (with compounding) - quadratic bezier */}
+              {/* Solid green curved line (with compounding) - curves ABOVE the straight line */}
               <Path 
-                d="M 20 85 Q 200 70, 280 35 Q 340 15, 380 10" 
+                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15" 
                 stroke={colors.green} 
                 strokeWidth="2.5" 
                 fill="none" 
               />
               
-              {/* Shaded area between lines */}
+              {/* Shaded area between lines - green curve above, straight line below */}
               <Path 
-                d="M 20 85 Q 200 70, 280 35 Q 340 15, 380 10 L 380 15 L 20 85 Z" 
+                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15 L 380 15 L 20 85 Z" 
                 fill={colors.greenLight} 
                 opacity="0.5" 
               />
