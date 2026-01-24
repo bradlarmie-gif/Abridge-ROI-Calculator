@@ -1,0 +1,47 @@
+ADD: Downstream Value Section for ED PDF
+Add this section to the ED PDF generator. It should appear on the Methodology page, right before the methodology content. This section appears on EVERY ED PDF regardless of which drivers are selected.
+Copy## ED PDF - ADD DOWNSTREAM VALUE SECTION
+
+On the Methodology & Assumptions page (final page), add a new section BEFORE the methodology grid. This section appears for ALL ED PDFs.
+
+### Section Title
+"DOWNSTREAM VALUE"
+Subtitle: "The ED admission note is just the beginning"
+
+### Content
+Opening paragraph:
+"When an ED physician decides to admit a patient, their documentation becomes the foundation for inpatient revenue. The conditions they capture, the medical necessity they establish, and the clinical reasoning they document all determine what happens downstream."
+
+Subheader:
+"Better ED documentation directly impacts:"
+
+### Four benefit items (with icons if possible, otherwise bullets):
+
+1. **DRG & CMI Capture**
+   CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.
+
+2. **Medical Necessity**
+   The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.
+
+3. **CDI Efficiency**
+   When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.
+
+4. **Denial Prevention**
+   Payer audits start with the admission note. Complete documentation from day one means stronger appeals.
+
+### Blue callout box at bottom:
+Background: #3B82F6 (blue)
+Text (white):
+"These benefits are quantified in the **Inpatient Setting**."
+"If your organization admits patients from the ED, the value compounds when both settings use Abridge."
+
+### Styling
+- Section should have a left border (like other callout boxes) - use a subtle gray or blue
+- The four benefit items should be in a card or list format with clear separation
+- The blue callout box should stand out as a "next step" or cross-sell element
+
+### Placement
+This section goes on the final page (Methodology page), positioned:
+- AFTER the journey content (if on same page)
+- BEFORE the "Methodology & Assumptions" header and grid
+- Or as a distinct section between journey and methodology

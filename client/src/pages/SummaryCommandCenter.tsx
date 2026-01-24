@@ -389,6 +389,11 @@ export default function SummaryCommandCenter({
       hcc_capture: 'hcc',
       hcc: 'hcc',
       denials: 'denials',
+      edThroughput: 'edThroughput',
+      edLevelOfService: 'edLevelOfService',
+      edDenialReduction: 'edDenials',
+      edRetention: 'edRetention',
+      edScribe: 'edScribe',
     };
 
     const rawDriverResults = modelResults.driverResults || {};

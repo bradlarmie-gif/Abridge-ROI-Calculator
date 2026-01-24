@@ -1262,7 +1262,7 @@ function getFinalFormula(driver: DriverCalculation): string {
     case "edDenials":
       return `${formatNumber((inputs.claimsRecovered as number) || 0)} claims x $${inputs.avgClaimValue || 350}`;
     case "edScribe":
-      return `${formatCurrency((inputs.annualScribeCost as number) || 0)} x ${inputs.scribeReductionRate || 75}%`;
+      return `${formatCurrency((inputs.annualScribeCost as number) || 0)} x ${inputs.scribeReductionRate || 100}%`;
     default:
       return "";
   }
@@ -1479,7 +1479,7 @@ const DriverDetailPage = ({
   const warnings = getDriverWarnings(driver, data);
 
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
@@ -1487,82 +1487,84 @@ const DriverDetailPage = ({
         </View>
       </View>
 
-      <View style={styles.driverHeader}>
-        <Text style={styles.driverName}>{driver.name}</Text>
-        <Text style={styles.driverValue}>{formatCurrency(driver.value)}</Text>
-      </View>
-
-      <View style={styles.theoryBox}>
-        <Text style={styles.theoryLabel}>The Theory</Text>
-        <Text style={styles.theoryText}>{theory}</Text>
-      </View>
-
-      {warnings && (
-        <View style={styles.calloutBox}>
-          <Text style={styles.calloutTitle}>{warnings.title}</Text>
-          <Text style={styles.calloutText}>{warnings.text}</Text>
+      <View wrap={false}>
+        <View style={styles.driverHeader}>
+          <Text style={styles.driverName}>{driver.name}</Text>
+          <Text style={styles.driverValue}>{formatCurrency(driver.value)}</Text>
         </View>
-      )}
 
-      <View style={styles.calcSection}>
-        <Text style={styles.calcSectionTitle}>Your Calculation</Text>
-        
-        {steps.map((step, index) => (
-          <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]}>
-            <Text style={styles.stepLabel}>{step.label}</Text>
-            <Text style={styles.stepQuestion}>{step.question}</Text>
-            
-            <View style={styles.stepMath}>
-              {step.inputs.map((input, i) => (
-                <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-                  {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
-                  <View style={styles.stepInput}>
-                    <Text style={styles.stepInputText}>{input.value}</Text>
-                  </View>
-                  {input.label && (
-                    <Text style={{ fontSize: 7, color: colors.lightGray, marginLeft: 2 }}>{input.label}</Text>
-                  )}
-                </View>
-              ))}
-              <Text style={styles.stepOperator}>=</Text>
-              <View style={styles.stepResult}>
-                <Text style={styles.stepResultText}>{step.result}</Text>
-              </View>
-            </View>
-            
-            {step.note && (
-              <Text style={step.noteHighlight ? styles.stepNoteHighlight : styles.stepNote}>{step.note}</Text>
-            )}
+        <View style={styles.theoryBox}>
+          <Text style={styles.theoryLabel}>The Theory</Text>
+          <Text style={styles.theoryText}>{theory}</Text>
+        </View>
+
+        {warnings && (
+          <View style={styles.calloutBox}>
+            <Text style={styles.calloutTitle}>{warnings.title}</Text>
+            <Text style={styles.calloutText}>{warnings.text}</Text>
           </View>
-        ))}
-      </View>
+        )}
 
-      {benchmarks && (
-        <View style={styles.benchmarkBox}>
-          <Text style={styles.benchmarkTitle}>Benchmark: {benchmarks.title}</Text>
-          {benchmarks.rows.map((row, i) => (
-            <View key={i} style={styles.benchmarkRow}>
-              <Text style={styles.benchmarkLabel}>{row.label}</Text>
-              <Text style={styles.benchmarkValue}>{row.value}</Text>
+        <View style={styles.calcSection}>
+          <Text style={styles.calcSectionTitle}>Your Calculation</Text>
+          
+          {steps.map((step, index) => (
+            <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]} wrap={false}>
+              <Text style={styles.stepLabel}>{step.label}</Text>
+              <Text style={styles.stepQuestion}>{step.question}</Text>
+              
+              <View style={styles.stepMath}>
+                {step.inputs.map((input, i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
+                    {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
+                    <View style={styles.stepInput}>
+                      <Text style={styles.stepInputText}>{input.value}</Text>
+                    </View>
+                    {input.label && (
+                      <Text style={{ fontSize: 7, color: colors.lightGray, marginLeft: 2 }}>{input.label}</Text>
+                    )}
+                  </View>
+                ))}
+                <Text style={styles.stepOperator}>=</Text>
+                <View style={styles.stepResult}>
+                  <Text style={styles.stepResultText}>{step.result}</Text>
+                </View>
+              </View>
+              
+              {step.note && (
+                <Text style={step.noteHighlight ? styles.stepNoteHighlight : styles.stepNote}>{step.note}</Text>
+              )}
             </View>
           ))}
-          {benchmarks.note && (
-            <Text style={styles.benchmarkNote}>{benchmarks.note}</Text>
-          )}
         </View>
-      )}
 
-      <View style={styles.finalValueBox}>
-        <View>
-          <Text style={styles.finalValueLabel}>Annual {driver.name} Value</Text>
-          <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
+        {benchmarks && (
+          <View style={styles.benchmarkBox} wrap={false}>
+            <Text style={styles.benchmarkTitle}>Benchmark: {benchmarks.title}</Text>
+            {benchmarks.rows.map((row, i) => (
+              <View key={i} style={styles.benchmarkRow}>
+                <Text style={styles.benchmarkLabel}>{row.label}</Text>
+                <Text style={styles.benchmarkValue}>{row.value}</Text>
+              </View>
+            ))}
+            {benchmarks.note && (
+              <Text style={styles.benchmarkNote}>{benchmarks.note}</Text>
+            )}
+          </View>
+        )}
+
+        <View style={styles.finalValueBox} wrap={false}>
+          <View>
+            <Text style={styles.finalValueLabel}>Annual {driver.name} Value</Text>
+            <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
+          </View>
+          <Text style={styles.finalValueAmount}>{formatCurrency(driver.value)}</Text>
         </View>
-        <Text style={styles.finalValueAmount}>{formatCurrency(driver.value)}</Text>
-      </View>
 
-      <View style={styles.implicationBox}>
-        <Text style={styles.implicationTitle}>What This Means</Text>
-        <Text style={styles.implicationText}>{implication}</Text>
+        <View style={styles.implicationBox} wrap={false}>
+          <Text style={styles.implicationTitle}>What This Means</Text>
+          <Text style={styles.implicationText}>{implication}</Text>
+        </View>
       </View>
 
       <View style={styles.footer}>

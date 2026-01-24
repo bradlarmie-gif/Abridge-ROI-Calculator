@@ -1,0 +1,129 @@
+CRITICAL BUGS TO FIX
+BUG 1: All intermediate calculation values showing "0"
+Every driver page shows "0" in the calculation steps even though the final values are correct ($138K, $121K, $114K).
+Examples:
+
+Page 2: "29,250 visits x 3.5% = 0 LWBS" (should be ~1,024 LWBS)
+Page 2: "0 LWBS x 40% = 0 doc-related" (should be ~410)
+Page 4: "29,250 visits x 2.5 = 0 wRVUs" (should be 73,125)
+Page 5: "29,250 visits x 10% = 0 denials" (should be 2,925)
+
+The problem: The inputs object for each driver is not being populated with the calculated intermediate values. The step display is receiving empty/undefined values and defaulting to 0.
+Fix: When generating the PDF data, ensure each driver's inputs object contains ALL intermediate calculated values from the ROI model, not just the final dollar amount. The calculation should happen in the data transformer, and each step result should be passed through.
+CopyFor edThroughput (LWBS), the inputs object needs:
+- visits: 29250
+- lwbsRate: 3.5
+- lwbsPatients: 1024 (calculated: 29250 * 0.035)
+- docAttributable: 410 (calculated: 1024 * 0.40)
+- recovered: 205 (calculated: 410 * 0.50)
+- revenuePerVisit: 350
+
+For edLevelOfService, the inputs object needs:
+- visits: 29250
+- wrvuPerVisit: 2.5
+- baselineWrvus: 73125 (calculated: 29250 * 2.5)
+- improvementPct: 5
+- wrvuGain: 3656 (calculated: 73125 * 0.05)
+- conversionFactor: 33
+
+For edDenials, the inputs object needs:
+- visits: 29250
+- denialRate: 10
+- totalDenials: 2925 (calculated: 29250 * 0.10)
+- docRelatedPct: 40
+- docDenials: 1170 (calculated: 2925 * 0.40)
+- writeOffPct: 30
+- writtenOff: 351 (calculated: 1170 * 0.30)
+- recoveryPct: 50
+- recovered: 176 (calculated: 351 * 0.50)
+- avgClaimValue: 650
+
+BUG 2: Blank pages (Page 3 and Page 6)
+The driver content is splitting across pages incorrectly, leaving mostly-blank pages with just a "WHAT THIS MEANS" section or final value box.
+Fix: Each driver should fit entirely on ONE page. Either:
+
+Reduce the content height so everything fits on one page
+Or use break-inside: avoid / page-break-inside: avoid on the driver content wrapper
+Or manually control page breaks so driver content doesn't split
+
+Preferred approach: Make each driver card a fixed-height component that fits on a single page. If the content is too tall, reduce font sizes or padding slightly rather than allowing it to overflow.
+
+BUG 3: Final Value Box formula shows "0"
+The "Annual X Value" boxes at the bottom of each driver page show formulas with 0:
+
+"0 recovered x $350/visit = $138K"
+"0 wRVU gain x $33 = $121K"
+"0 claims x $650 = $114K"
+
+Fix: Same root cause as Bug 1 - the formula display needs to pull from the same calculated intermediate values that should be in the inputs object.
+
+COMPLETE FIX FOR REPLIT
+Copy and paste this:
+Copy## ED PDF GENERATOR - CRITICAL FIXES NEEDED
+
+### FIX 1: Intermediate calculation values showing "0"
+
+The calculation steps on every driver page show "0" for all intermediate values even though final dollar amounts are correct.
+
+ROOT CAUSE: The driver inputs object is not being populated with calculated intermediate values.
+
+SOLUTION: In the data transformer (or wherever driver data is prepared for the PDF), calculate ALL intermediate values and pass them in the inputs object.
+
+For edThroughput:
+```javascript
+const lwbsPatients = Math.round(visits * (lwbsRate / 100));
+const docAttributable = Math.round(lwbsPatients * 0.40);
+const recovered = Math.round(docAttributable * 0.50);
+
+driver.inputs = {
+  visits: 29250,
+  lwbsRate: 3.5,
+  lwbsPatients: lwbsPatients,  // NOT 0
+  docAttributable: docAttributable,  // NOT 0
+  recovered: recovered,  // NOT 0
+  revenuePerVisit: 350
+};
+For edLevelOfService:
+javascriptCopyconst baselineWrvus = Math.round(visits * wrvuPerVisit);
+const wrvuGain = Math.round(baselineWrvus * (improvementPct / 100));
+
+driver.inputs = {
+  visits: 29250,
+  wrvuPerVisit: 2.5,
+  baselineWrvus: baselineWrvus,  // NOT 0
+  improvementPct: 5,
+  wrvuGain: wrvuGain,  // NOT 0
+  conversionFactor: 33
+};
+For edDenials:
+javascriptCopyconst totalDenials = Math.round(visits * (denialRate / 100));
+const docDenials = Math.round(totalDenials * (docRelatedPct / 100));
+const writtenOff = Math.round(docDenials * (writeOffPct / 100));
+const recovered = Math.round(writtenOff * (recoveryPct / 100));
+
+driver.inputs = {
+  visits: 29250,
+  denialRate: 10,
+  totalDenials: totalDenials,  // NOT 0
+  docRelatedPct: 40,
+  docDenials: docDenials,  // NOT 0
+  writeOffPct: 30,
+  writtenOff: writtenOff,  // NOT 0
+  recoveryPct: 50,
+  recovered: recovered,  // NOT 0
+  avgClaimValue: 650
+};
+FIX 2: Blank pages (driver content splitting across pages)
+Pages 3 and 6 are mostly blank because driver content is overflowing and creating page breaks in the middle of content.
+SOLUTION: Ensure each driver page fits entirely on ONE page. Options:
+
+Add wrap={false} to the driver page View component (prevents page breaks inside)
+Reduce font sizes or padding if content is too tall
+Move "WHAT THIS MEANS" section to be part of the driver card, not a separate element
+
+The driver card should be a single unit that either fits on a page or is redesigned to fit.
+FIX 3: Final Value Box showing "0 x $X = $Y"
+The formula in the green final value box shows 0 for the intermediate value.
+SOLUTION: Same fix as #1 - the formula display needs to reference the calculated intermediate values from the inputs object, not default to 0.
+Example: Instead of "0 recovered x $350/visit"
+Should show: "205 recovered x $350/visit"
