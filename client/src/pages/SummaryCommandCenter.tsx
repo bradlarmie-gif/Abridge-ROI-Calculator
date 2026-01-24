@@ -1098,7 +1098,7 @@ export default function SummaryCommandCenter({
                     <label className="block text-sm text-[#475569] mb-2">
                       Total {config.unitNamePlural} in your organization
                     </label>
-                    <div className="flex items-center gap-3">
+                    <div className="relative">
                       <input 
                         type="number" 
                         value={fullScaleUnits}
@@ -1116,10 +1116,10 @@ export default function SummaryCommandCenter({
                           }
                         }}
                         min={pilotUnits + 1}
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[#E2E8F0] font-mono text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all"
+                        className="w-full px-4 py-2.5 pr-24 rounded-lg border border-[#E2E8F0] font-mono text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all"
                         data-testid="input-fullscale-units"
                       />
-                      <span className="text-sm text-[#64748B]">{config.unitNamePlural}</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#64748B]">{config.unitNamePlural}</span>
                     </div>
                     <p className="text-[13px] text-[#64748B] mt-2">
                       At {encountersPerUnit.toLocaleString()} {config.encounterName}/{config.unitName} = <span className="font-semibold">{(safeFullScaleUnits * encountersPerUnit).toLocaleString()} {config.encounterName}/year</span>
