@@ -667,7 +667,7 @@ export default function ExpandDataEntry({
               {losShowDetailed && (
                 <div className="mt-4 p-4 bg-neutral-50 rounded-xl">
                   <p className="text-xs text-[#6B7280] mb-3">Enter % of encounters at each level (should sum to 100%)</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <span className="text-xs font-semibold text-[#6B7280]">Level</span>
                     <span className="text-xs font-semibold text-[#6B7280] text-center">Before %</span>
                     <span className="text-xs font-semibold text-[#6B7280] text-center">After %</span>
@@ -799,7 +799,7 @@ export default function ExpandDataEntry({
               {closureShowDetailed && (
                 <div className="mt-4 p-4 bg-neutral-50 rounded-xl">
                   <p className="text-xs text-[#6B7280] mb-3">Enter % of charts closed in each time bucket</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     <span className="text-xs font-semibold text-[#6B7280]">Time Bucket</span>
                     <span className="text-xs font-semibold text-[#6B7280] text-center">Before %</span>
                     <span className="text-xs font-semibold text-[#6B7280] text-center">After %</span>

@@ -2447,7 +2447,7 @@ export default function ObjectiveSelectionScreen({
 
       {/* Content */}
       <div
-        className={`relative z-10 flex-1 overflow-y-auto pt-[96px] ${currentPage === "orientation" ? "" : "pb-28"}`}
+        className={`relative z-10 flex-1 overflow-y-auto pt-[96px] ${currentPage === "orientation" ? "" : "pb-32 lg:pb-28"}`}
       >
         {/* Back button in content - only show on orientation and setting pages */}
         {onBackToJourney && (currentPage === "orientation" || currentPage === "setting") && (

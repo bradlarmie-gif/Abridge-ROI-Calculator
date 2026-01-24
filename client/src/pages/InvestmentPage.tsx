@@ -488,7 +488,7 @@ export default function InvestmentPage({
               {/* Contract Term */}
               <div className="mb-8">
                 <label className="text-[15px] font-semibold text-[#111827] block mb-4">Contract Term</label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Custom */}
                   <button
                     onClick={() => {

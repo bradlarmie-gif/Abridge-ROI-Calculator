@@ -1613,7 +1613,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           
           <p className="text-[#6B7280] mb-6">{config?.referenceScenario.description}</p>
           
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
             <div className="bg-[#F8F9FA] rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-[#111827]">{config?.referenceScenario.providers}</div>
               <div className="text-sm text-[#6B7280]">{config?.referenceScenario.providerLabel}</div>

@@ -552,7 +552,7 @@ export default function BaselineSetup({
 
             <p className="text-[17px] font-medium text-[#374151] mb-6">Choose your adoption scenario:</p>
 
-            <div className="grid grid-cols-3 gap-4 md:gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6">
               {utilizationOptions.map((option, idx) => {
                 const isSelected = utilizationRate === option.value;
                 const isRecommended = idx === 1; // Middle option is recommended

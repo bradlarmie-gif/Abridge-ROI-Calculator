@@ -6410,7 +6410,7 @@ export default function RoiCalculator({
                               </div>
                             </div>
                             
-                            <div className="grid grid-cols-3 gap-4 text-center text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center text-sm">
                               <div className="p-4 bg-[#F9FAFB] rounded-lg">
                                 <div className="font-semibold text-[#111827] tabular-nums">
                                   {(totalGap / 250000).toFixed(1)}

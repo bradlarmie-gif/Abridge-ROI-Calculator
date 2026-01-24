@@ -5341,7 +5341,7 @@ export default function ModelBuilder({
         {/* Benchmark callout */}
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: HAPI Cost</p>
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
             <div className="flex flex-col">
               <span className="text-[#6B7280]">Stage 2 pressure injury</span>
               <span className="font-mono text-[#111827]">$10K - $15K</span>
@@ -5548,7 +5548,7 @@ export default function ModelBuilder({
         {/* Benchmark callout */}
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Cost Per Fall</p>
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
             <div className="flex flex-col">
               <span className="text-[#6B7280]">No injury fall</span>
               <span className="font-mono text-[#111827]">$3K - $5K</span>
@@ -5996,7 +5996,7 @@ export default function ModelBuilder({
         {/* Benchmark callout */}
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Nurse Replacement Cost</p>
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
             <div className="flex flex-col">
               <span className="text-[#6B7280]">Recruiting & hiring</span>
               <span className="font-mono text-[#111827]">$5K - $15K</span>

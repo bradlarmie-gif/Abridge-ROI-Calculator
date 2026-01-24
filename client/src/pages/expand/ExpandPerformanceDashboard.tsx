@@ -452,7 +452,7 @@ export default function ExpandPerformanceDashboard({
         </div>
 
         {/* Three-Phase Journey Overview */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
           {/* Before Phase */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
             <span className="text-[10px] font-semibold text-slate-500 tracking-wider uppercase block mb-2">

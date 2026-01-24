@@ -706,3 +706,132 @@ html, body {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* ========================================
+   MOBILE RESPONSIVE UTILITIES
+   ======================================== */
+
+/* Prevent iOS input zoom - minimum 16px font */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Global container safety */
+.page-container,
+.content-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile utility: stack on small screens */
+.stack-mobile {
+  display: flex;
+  gap: 1rem;
+}
+@media (max-width: 640px) {
+  .stack-mobile {
+    flex-direction: column;
+  }
+}
+
+/* Mobile utility: full width on mobile */
+.full-mobile {
+  width: auto;
+}
+@media (max-width: 640px) {
+  .full-mobile {
+    width: 100%;
+  }
+}
+
+/* Mobile utility: hide on mobile */
+.hide-mobile {
+  display: block;
+}
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Mobile utility: show only on mobile */
+.show-mobile {
+  display: none;
+}
+@media (max-width: 640px) {
+  .show-mobile {
+    display: block;
+  }
+}
+
+/* Mobile utility: smaller text on mobile */
+.text-responsive {
+  font-size: 14px;
+}
+@media (max-width: 480px) {
+  .text-responsive {
+    font-size: 12px;
+  }
+}
+
+/* Mobile utility: prevent text overflow */
+.text-truncate-mobile {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile utility: word break for long values */
+.break-words-mobile {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Mobile buttons - full width and larger tap targets */
+@media (max-width: 480px) {
+  .btn-mobile-full {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* Mobile cards - horizontal scroll container */
+.scroll-container-mobile {
+  display: flex;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .scroll-container-mobile {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .scroll-container-mobile > * {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+}
+
+/* Ensure minimum tap target size */
+@media (max-width: 767px) {
+  button,
+  [role="button"],
+  a.btn,
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

@@ -2408,7 +2408,7 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
               </p>
               
               <div className="border-t border-neutral-700 pt-5">
-                <div className="grid grid-cols-3 gap-4 text-center mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center mb-5">
                   <div>
                     <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">{formatCurrency(monthlySpend)}</p>
                     <p className="text-xs text-neutral-400 mt-1">/month</p>

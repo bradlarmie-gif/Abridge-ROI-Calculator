@@ -345,7 +345,7 @@ export default function SwitchAmbientSetup({
                 <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">LIVE</span>
               </div>
               
-              <div className="grid grid-cols-3 gap-4 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-center">
                 <div className="text-center">
                   <span className="block text-xs font-semibold text-slate-400 tracking-wide mb-4">YOU</span>
                   

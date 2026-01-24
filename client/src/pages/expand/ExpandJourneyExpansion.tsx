@@ -372,7 +372,7 @@ export default function ExpandJourneyExpansion({
         </div>
 
         {/* Hero Stats */}
-        <div className="grid grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10">
           <div className="bg-white border border-neutral-200 rounded-2xl p-6 text-center" data-testid="summary-net-value">
             <span className="block text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-2">
               CURRENT NET VALUE

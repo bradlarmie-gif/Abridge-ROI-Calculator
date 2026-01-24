@@ -203,7 +203,7 @@ export default function ExpandResults({
           </p>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
           <div className="bg-white border border-neutral-200 rounded-xl p-6 text-center" data-testid="card-current-value">
             <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center mx-auto mb-3">
               <DollarSign className="w-5 h-5 text-emerald-600" />
@@ -499,7 +499,7 @@ export default function ExpandResults({
           
           {expansionCalc && (
             <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 rounded-lg">
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
                 <div className="text-center">
                   <span className="block text-2xl font-bold text-blue-600">{formatCurrency(expansionCalc.projectedValue)}</span>
                   <span className="text-xs text-[#6B7280] uppercase">Projected Annual Value</span>
@@ -533,7 +533,7 @@ export default function ExpandResults({
             <Info className="w-4 h-4 text-[#6B7280]" />
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Methodology</span>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-sm text-[#6B7280]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm text-[#6B7280]">
             <div>wRVU at ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} (Medicare blended)</div>
             <div>{Math.round(EXPAND_ROI_DEFAULTS.wrvuAttribution * 100)}% attribution to Abridge</div>
             <div className="flex items-center gap-2">
