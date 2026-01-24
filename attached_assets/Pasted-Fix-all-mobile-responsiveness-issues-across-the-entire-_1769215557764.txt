@@ -1,0 +1,413 @@
+Fix all mobile responsiveness issues across the entire application. The app should work flawlessly on screens as small as 320px wide (iPhone SE) up to desktop.
+
+## GLOBAL MOBILE FIXES
+
+### 1. Add Global Responsive Breakpoints
+
+Create a consistent breakpoint system used throughout:
+
+```css
+/* In your global CSS or styled-components theme */
+
+/* Breakpoints */
+--mobile: 480px;
+--tablet: 768px;
+--desktop: 1024px;
+--wide: 1280px;
+
+/* Media query mixins */
+@media (max-width: 480px) { /* Mobile */ }
+@media (max-width: 768px) { /* Tablet and below */ }
+@media (min-width: 769px) { /* Desktop */ }
+2. Fix Container Widths
+cssCopy/* Prevent horizontal overflow globally */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.container, .page-container, .content {
+  width: 100%;
+  max-width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+  .container {
+    padding-left: 24px;
+    padding-right: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+SPECIFIC COMPONENT FIXES
+Fix 1: Scenario Selection Cards (Conservative/Typical/Aggressive)
+The cards are overflowing. They need to stack or scroll on mobile.
+cssCopy.scenario-cards {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .scenario-cards {
+    flex-direction: column;
+  }
+  
+  .scenario-card {
+    width: 100%;
+  }
+}
+
+/* OR if you want horizontal scroll on mobile: */
+@media (max-width: 600px) {
+  .scenario-cards {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+  
+  .scenario-card {
+    min-width: 140px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+}
+Fix 2: Progress/Comparison Bars (You vs Abridge)
+The "You: 45%" and "Abridge: 75%" labels are overlapping. Stack them on mobile.
+cssCopy.comparison-bar-container {
+  position: relative;
+  width: 100%;
+}
+
+.comparison-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 480px) {
+  .comparison-labels {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .comparison-label-you,
+  .comparison-label-benchmark {
+    font-size: 11px;
+  }
+}
+
+/* Or put labels inside the bar segments */
+.bar-segment {
+  position: relative;
+}
+
+.bar-label {
+  position: absolute;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .bar-label {
+    position: static;
+    display: block;
+    margin-top: 4px;
+  }
+}
+Fix 3: Gap Breakdown Cards
+Make sure the dollar values don't overflow.
+cssCopy.gap-card {
+  width: 100%;
+}
+
+.gap-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gap-card-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.gap-card-value {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .gap-card-value {
+    font-size: 16px;
+  }
+  
+  .gap-card-calculation {
+    font-size: 11px;
+    word-break: break-word;
+  }
+}
+Fix 4: Step Progress Indicator (the dots at top)
+cssCopy.progress-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .progress-dots {
+    gap: 6px;
+  }
+  
+  .progress-dot {
+    width: 8px;
+    height: 8px;
+  }
+}
+Fix 5: Input Fields
+cssCopy.input-group {
+  width: 100%;
+}
+
+.input-row {
+  display: flex;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .input-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .input-field {
+    width: 100%;
+  }
+}
+
+/* Number inputs - prevent zoom on iOS */
+input[type="number"],
+input[type="text"] {
+  font-size: 16px; /* Prevents iOS zoom */
+}
+Fix 6: Landing Page Cards (Explore, Switch, Expand)
+cssCopy.landing-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 769px) {
+  .landing-cards {
+    flex-direction: row;
+  }
+}
+
+.landing-card {
+  width: 100%;
+}
+Fix 7: Metric Display Cards
+cssCopy.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .metric-card {
+    padding: 12px;
+  }
+  
+  .metric-value {
+    font-size: 24px;
+  }
+  
+  .metric-label {
+    font-size: 11px;
+  }
+}
+Fix 8: Header/Navigation
+cssCopy.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.header-logo {
+  height: 24px;
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 8px 12px;
+  }
+  
+  .header-logo {
+    height: 20px;
+  }
+  
+  .header-nav {
+    font-size: 12px;
+  }
+}
+Fix 9: Buttons
+cssCopy.button {
+  padding: 12px 24px;
+  font-size: 14px;
+  width: auto;
+}
+
+@media (max-width: 480px) {
+  .button {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px; /* Larger tap target */
+  }
+  
+  .button-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+Fix 10: Tables
+cssCopy.data-table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 600px) {
+  .data-table table {
+    min-width: 500px; /* Allow horizontal scroll */
+  }
+  
+  /* Or convert to card layout */
+  .data-table tr {
+    display: block;
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+  }
+  
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+  }
+}
+
+GLOBAL UTILITY CLASSES
+Add these utility classes that can be used anywhere:
+cssCopy/* Hide on mobile */
+.hide-mobile {
+  display: block;
+}
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none;
+  }
+}
+
+/* Hide on desktop */
+.hide-desktop {
+  display: none;
+}
+@media (max-width: 768px) {
+  .hide-desktop {
+    display: block;
+  }
+}
+
+/* Stack on mobile */
+.stack-mobile {
+  display: flex;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .stack-mobile {
+    flex-direction: column;
+  }
+}
+
+/* Full width on mobile */
+.full-mobile {
+  width: auto;
+}
+@media (max-width: 768px) {
+  .full-mobile {
+    width: 100%;
+  }
+}
+
+/* Smaller text on mobile */
+.text-responsive {
+  font-size: 14px;
+}
+@media (max-width: 480px) {
+  .text-responsive {
+    font-size: 12px;
+  }
+}
+
+/* Prevent text overflow */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-wrap {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+TESTING CHECKLIST
+After implementing, test on these widths:
+
+320px (iPhone SE)
+375px (iPhone 12/13)
+390px (iPhone 14)
+428px (iPhone 14 Plus)
+768px (iPad)
+1024px (iPad Pro / small laptop)
+1440px (desktop)
+
+Check for:
+
+ No horizontal scrolling on any page
+ All text readable without zooming
+ All buttons tappable (min 44px height)
+ Forms usable (inputs don't zoom on iOS)
+ Cards stack properly
+ Progress bars don't overflow
+ Labels don't overlap
+ Navigation accessible
+
+Copy
