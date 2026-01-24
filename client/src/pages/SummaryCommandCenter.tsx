@@ -37,7 +37,7 @@ import { generateNursingROIPDF, generateNursingROIPDFBlob } from "@/lib/nursing-
 import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
 import { useToast } from "@/hooks/use-toast";
 import { saveAs } from "file-saver";
-import { AddDriverSheet } from "@/components/AddDriverSheet";
+import { ManageModelSheet } from "@/components/ManageModelSheet";
 import {
   ComposedChart,
   Area,
@@ -54,7 +54,6 @@ interface SummaryCommandCenterProps {
   selectedLevers: SelectedLever[];
   modelResults: ModelResults;
   onBack: () => void;
-  onEditModel: () => void;
   onBackToJourney?: () => void;
 }
 
@@ -199,12 +198,11 @@ export default function SummaryCommandCenter({
   selectedLevers,
   modelResults,
   onBack,
-  onEditModel,
   onBackToJourney,
 }: SummaryCommandCenterProps) {
   const [assumptionsExpanded, setAssumptionsExpanded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [addDriverSheetOpen, setAddDriverSheetOpen] = useState(false);
+  const [manageModelSheetOpen, setManageModelSheetOpen] = useState(false);
   const [addedDrivers, setAddedDrivers] = useState<Record<string, { name: string; value: number; inputs: Record<string, any> }>>({});
   const { toast } = useToast();
   
@@ -283,6 +281,42 @@ export default function SummaryCommandCenter({
       description: `${driver.name} added: ${formatCurrency(driver.value)} annual value`,
     });
   }, [toast]);
+
+  const handleUpdateDriver = useCallback((driver: { id: string; name: string; value: number; inputs: Record<string, any> }) => {
+    setAddedDrivers(prev => ({
+      ...prev,
+      [driver.id]: {
+        name: driver.name,
+        value: driver.value,
+        inputs: driver.inputs,
+      },
+    }));
+    toast({
+      title: "Driver Updated",
+      description: `${driver.name} updated: ${formatCurrency(driver.value)} annual value`,
+    });
+  }, [toast]);
+
+  const handleRemoveDriver = useCallback((driverId: string) => {
+    setAddedDrivers(prev => {
+      const { [driverId]: removed, ...rest } = prev;
+      return rest;
+    });
+    toast({
+      title: "Driver Removed",
+      description: "Driver has been removed from your model",
+    });
+  }, [toast]);
+
+  // Build array of existing drivers for ManageModelSheet
+  const existingDriversForSheet = useMemo(() => {
+    return Object.entries(mergedDriverResults).map(([id, driver]) => ({
+      id,
+      name: driver.name || id,
+      value: driver.value || 0,
+      inputs: driver.inputs || {},
+    }));
+  }, [mergedDriverResults]);
   
   const pilotEncounters = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
   const valuePerEncounter = pilotEncounters > 0 ? totalAnnualValue / pilotEncounters : 0;
@@ -739,12 +773,12 @@ export default function SummaryCommandCenter({
             <Button
               variant="outline"
               size="sm"
-              onClick={onEditModel}
+              onClick={() => setManageModelSheetOpen(true)}
               className="gap-2 border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
-              data-testid="button-edit-model"
+              data-testid="button-manage-model"
             >
               <Pencil className="w-4 h-4" />
-              <span className="hidden sm:inline">Edit Model</span>
+              <span className="hidden sm:inline">Manage Model</span>
             </Button>
           </div>
         </div>
@@ -1571,11 +1605,11 @@ export default function SummaryCommandCenter({
           <Button
             variant="outline"
             className="gap-2 w-full sm:w-auto border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
-            onClick={() => setAddDriverSheetOpen(true)}
+            onClick={() => setManageModelSheetOpen(true)}
             data-testid="button-add-driver"
           >
             <Plus className="w-4 h-4" />
-            Add Another Driver
+            Manage Drivers
           </Button>
           
           <div className="flex flex-wrap gap-3 w-full sm:w-auto">
@@ -1605,18 +1639,20 @@ export default function SummaryCommandCenter({
         </section>
       </div>
       
-      {/* Add Driver Sheet */}
-      <AddDriverSheet
-        open={addDriverSheetOpen}
-        onClose={() => setAddDriverSheetOpen(false)}
+      {/* Manage Model Sheet - Edit existing drivers and add new ones */}
+      <ManageModelSheet
+        open={manageModelSheetOpen}
+        onClose={() => setManageModelSheetOpen(false)}
         careSetting={activeSetting}
-        existingDriverIds={existingDriverIds}
+        existingDrivers={existingDriversForSheet}
         providers={pilotUnits}
         encounters={pilotUnits * encountersPerUnit}
         utilizationRate={pilotUtilization}
         staffedBeds={isNursingSetting ? pilotUnits : undefined}
         nurseFTEs={isNursingSetting ? modelResults.nursingFTEs : undefined}
         onAddDriver={handleAddDriver}
+        onUpdateDriver={handleUpdateDriver}
+        onRemoveDriver={handleRemoveDriver}
       />
     </div>
   );

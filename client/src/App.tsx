@@ -180,7 +180,6 @@ export default function App() {
             selectedLevers={selectionState.selectedLevers}
             modelResults={modelResults}
             onBack={handleBackToInvestment}
-            onEditModel={handleBackToModelBuilder}
             onBackToJourney={handleBackToJourney}
           />
         )}
