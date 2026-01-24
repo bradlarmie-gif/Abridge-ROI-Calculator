@@ -1162,9 +1162,9 @@ function getFinalFormula(driver: DriverCalculation): string {
     case "nursingAgency":
       return `${formatNumber((inputs.agencyShiftsReduced as number) || 0)} shifts x $${inputs.shiftDifferential || 800}`;
     case "nursingHapi":
-      return `${((inputs.hapisPreventedPerYear as number) || 0).toFixed(1)} HAPIs x ${formatCurrency((inputs.hapiCost as number) || 35000)}`;
+      return `${((inputs.hapisAvoided as number) || 0).toFixed(1)} HAPIs x ${formatCurrency((inputs.hapiCost as number) || 20000)}`;
     case "nursingFalls":
-      return `${((inputs.fallsPreventedPerYear as number) || 0).toFixed(1)} falls x ${formatCurrency((inputs.fallCost as number) || 25000)}`;
+      return `${((inputs.fallsAvoided as number) || 0).toFixed(1)} falls x ${formatCurrency((inputs.fallCost as number) || 6500)}`;
     default:
       return `Annual value: ${formatCurrency(driver.value)}`;
   }
@@ -1386,7 +1386,7 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
   const valuePerBed = Math.round(data.netGain / data.staffedBeds);
 
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
@@ -1687,7 +1687,7 @@ const DriverPage = ({ driver, data, pageNum, totalPages }: { driver: DriverCalcu
 
 const FullPicturePage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
@@ -1763,7 +1763,7 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; page
   const timeline = paceLabels[journey.scalingPace] || "24 months";
 
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
@@ -1925,7 +1925,7 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; page
 
 const MethodologyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
@@ -2035,7 +2035,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; 
 
 const ClosingPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
