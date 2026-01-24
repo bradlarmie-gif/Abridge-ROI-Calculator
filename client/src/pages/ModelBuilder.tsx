@@ -982,14 +982,29 @@ export default function ModelBuilder({
   const handleComplete = () => {
     const getDriverInputs = (driverId: string): Record<string, number | string | boolean> => {
       switch (driverId) {
-        case "overtime":
+        case "overtime": {
+          const pctWithOT = driverInputs.overtime.otPercentWithOT;
+          const hrsPerWk = driverInputs.overtime.otHoursPerWeek;
+          const wksPerYr = driverInputs.overtime.otWeeksPerYear;
+          const redRate = driverInputs.overtime.otReductionRate;
+          const convRate = driverInputs.overtime.otConversionRate;
+          const hrlyRate = driverInputs.overtime.physicianHourlyRate;
+          const providersWithOT = providers * (pctWithOT / 100);
+          const totalOTHours = providersWithOT * hrsPerWk * wksPerYr;
+          const hoursReclaimed = totalOTHours * (redRate / 100);
+          const costSavingsHours = hoursReclaimed * (convRate / 100);
           return {
-            otPercentWithOT: driverInputs.overtime.otPercentWithOT,
-            otHoursPerWeek: driverInputs.overtime.otHoursPerWeek,
-            otWeeksPerYear: driverInputs.overtime.otWeeksPerYear,
-            otReductionRate: driverInputs.overtime.otReductionRate,
-            otConversionRate: driverInputs.overtime.otConversionRate,
-            physicianHourlyRate: driverInputs.overtime.physicianHourlyRate,
+            providers: providers,
+            otPercentWithOT: pctWithOT,
+            providersWithOT: Math.round(providersWithOT),
+            otHoursPerWeek: hrsPerWk,
+            otWeeksPerYear: wksPerYr,
+            totalOTHours: Math.round(totalOTHours),
+            otReductionRate: redRate,
+            hoursReclaimed: Math.round(hoursReclaimed),
+            otConversionRate: convRate,
+            costSavingsHours: Math.round(costSavingsHours),
+            physicianHourlyRate: hrlyRate,
             includeLocum: driverInputs.overtime.includeLocum,
             locumProviders: driverInputs.overtime.locumProviders,
             locumHoursPerWeek: driverInputs.overtime.locumHoursPerWeek,
@@ -997,45 +1012,118 @@ export default function ModelBuilder({
             locumConversionRate: driverInputs.overtime.locumConversionRate,
             locumHourlyRate: driverInputs.overtime.locumHourlyRate,
           };
-        case "patientAccess":
+        }
+        case "patientAccess": {
+          const timeSaved = driverInputs.patientAccess.timeSavedPerEncounter;
+          const accessAlloc = driverInputs.patientAccess.accessAllocation;
+          const convRate = driverInputs.patientAccess.conversionRate;
+          const visitDuration = driverInputs.patientAccess.timePerVisit;
+          const revPerVisit = driverInputs.patientAccess.revenuePerVisit;
+          const minutesReturned = eligibleEncounters * timeSaved;
+          const hrsReturned = minutesReturned / 60;
+          const accessHrs = hrsReturned * (accessAlloc / 100);
+          const usableHrs = accessHrs * (convRate / 100);
+          const usableMins = usableHrs * 60;
+          const addlVisits = usableMins / visitDuration;
           return {
-            timeSavedPerEncounter: driverInputs.patientAccess.timeSavedPerEncounter,
-            accessAllocation: driverInputs.patientAccess.accessAllocation,
-            conversionRate: driverInputs.patientAccess.conversionRate,
-            timePerVisit: driverInputs.patientAccess.timePerVisit,
-            revenuePerVisit: driverInputs.patientAccess.revenuePerVisit,
+            encounters: encounters,
+            eligibleEncounters: eligibleEncounters,
+            utilization: utilizationRate,
+            timeSavedPerEncounter: timeSaved,
+            hoursReturned: Math.round(hrsReturned),
+            timeToAccessPct: accessAlloc,
+            accessHours: Math.round(accessHrs),
+            conversionRate: convRate,
+            convertedHours: Math.round(usableHrs),
+            visitDuration: visitDuration,
+            additionalVisits: Math.round(addlVisits),
+            revenuePerVisit: revPerVisit,
           };
-        case "retention":
+        }
+        case "retention": {
+          const turnover = driverInputs.retention.turnoverRate;
+          const burnout = driverInputs.retention.burnoutAttribution;
+          const impact = driverInputs.retention.abridgeImpact;
+          const replCost = driverInputs.retention.replacementCost;
+          const annualDepartures = providers * (turnover / 100);
+          const preventableDepartures = annualDepartures * (burnout / 100);
+          const departuresAvoided = preventableDepartures * (impact / 100);
           return {
-            turnoverRate: driverInputs.retention.turnoverRate,
-            burnoutAttribution: driverInputs.retention.burnoutAttribution,
-            abridgeImpact: driverInputs.retention.abridgeImpact,
-            replacementCost: driverInputs.retention.replacementCost,
+            providers: providers,
+            turnoverRate: turnover,
+            annualDepartures: annualDepartures,
+            burnoutAttribution: burnout,
+            burnoutDepartures: preventableDepartures,
+            abridgeImpact: impact,
+            departuresAvoided: departuresAvoided,
+            replacementCost: replCost,
           };
-        case "levelOfService":
+        }
+        case "levelOfService": {
+          const wrvuPerEnc = driverInputs.levelOfService.avgWrvuPerEncounter;
+          const improvementRate = driverInputs.levelOfService.wrvuImprovementRate;
+          const convFactor = driverInputs.levelOfService.conversionFactor;
+          const baselineWrvus = eligibleEncounters * wrvuPerEnc;
+          const wrvuGain = baselineWrvus * (improvementRate / 100);
           return {
-            avgWrvuPerEncounter: driverInputs.levelOfService.avgWrvuPerEncounter,
-            wrvuImprovementRate: driverInputs.levelOfService.wrvuImprovementRate,
-            conversionFactor: driverInputs.levelOfService.conversionFactor,
+            eligibleEncounters: eligibleEncounters,
+            avgWrvuPerEncounter: wrvuPerEnc,
+            baselineWrvus: Math.round(baselineWrvus),
+            wrvuImprovementRate: improvementRate,
+            wrvuGain: Math.round(wrvuGain),
+            conversionFactor: convFactor,
           };
-        case "hcc":
+        }
+        case "hcc": {
+          const riskPct = driverInputs.hcc.riskContractPercent;
+          const condPerVisit = driverInputs.hcc.conditionsPerVisit;
+          const docGap = driverInputs.hcc.documentationGap;
+          const hccEligible = driverInputs.hcc.hccEligiblePercent;
+          const captureRate = driverInputs.hcc.abridgeCaptureRate;
+          const hccValue = driverInputs.hcc.avgHccValue;
+          const auditFact = driverInputs.hcc.auditFactor;
+          const riskEncounters = eligibleEncounters * (riskPct / 100);
+          const missedHccsPerEnc = condPerVisit * (docGap / 100) * (hccEligible / 100);
+          const missedHccOpp = riskEncounters * missedHccsPerEnc;
+          const hccsCaptured = missedHccOpp * (captureRate / 100);
           return {
-            riskContractPercent: driverInputs.hcc.riskContractPercent,
-            conditionsPerVisit: driverInputs.hcc.conditionsPerVisit,
-            documentationGap: driverInputs.hcc.documentationGap,
-            hccEligiblePercent: driverInputs.hcc.hccEligiblePercent,
-            abridgeCaptureRate: driverInputs.hcc.abridgeCaptureRate,
-            avgHccValue: driverInputs.hcc.avgHccValue,
-            auditFactor: driverInputs.hcc.auditFactor,
+            eligibleEncounters: eligibleEncounters,
+            riskContractPercent: riskPct,
+            riskEncounters: Math.round(riskEncounters),
+            conditionsPerVisit: condPerVisit,
+            documentationGap: docGap,
+            hccEligiblePercent: hccEligible,
+            missedHccsPerEncounter: missedHccsPerEnc,
+            missedHccOpportunities: Math.round(missedHccOpp),
+            abridgeCaptureRate: captureRate,
+            hccsCaptured: Math.round(hccsCaptured),
+            avgHccValue: hccValue,
+            auditFactor: auditFact,
           };
-        case "denials":
+        }
+        case "denials": {
+          const denialRt = driverInputs.denials.denialRate;
+          const docRelPct = driverInputs.denials.docRelatedPercent;
+          const writeOffPct = driverInputs.denials.writtenOffPercent;
+          const captRate = driverInputs.denials.abridgeCaptureRate;
+          const claimVal = driverInputs.denials.avgClaimValue;
+          const totalDenials = eligibleEncounters * (denialRt / 100);
+          const docRelatedDenials = totalDenials * (docRelPct / 100);
+          const writtenOffDenials = docRelatedDenials * (writeOffPct / 100);
+          const claimsRecovered = writtenOffDenials * (captRate / 100);
           return {
-            denialRate: driverInputs.denials.denialRate,
-            docRelatedPercent: driverInputs.denials.docRelatedPercent,
-            writtenOffPercent: driverInputs.denials.writtenOffPercent,
-            abridgeCaptureRate: driverInputs.denials.abridgeCaptureRate,
-            avgClaimValue: driverInputs.denials.avgClaimValue,
+            eligibleEncounters: eligibleEncounters,
+            denialRate: denialRt,
+            totalDenials: Math.round(totalDenials),
+            docRelatedPercent: docRelPct,
+            docRelatedDenials: Math.round(docRelatedDenials),
+            writtenOffPercent: writeOffPct,
+            writtenOffDenials: Math.round(writtenOffDenials),
+            abridgeCaptureRate: captRate,
+            claimsRecovered: Math.round(claimsRecovered),
+            avgClaimValue: claimVal,
           };
+        }
         // ED drivers
         case "edThroughput":
           return {

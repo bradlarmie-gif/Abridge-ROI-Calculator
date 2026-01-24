@@ -934,29 +934,29 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           label: "Step 1: Time Saved",
           question: "How much documentation time does Abridge return?",
           inputs: [
-            { value: formatNumber(data.eligibleEncounters), label: "enc" },
-            { value: `${data.timeSavedPerEncounter} min` },
+            { value: formatNumber(inputs.eligibleEncounters as number || data.eligibleEncounters), label: "enc" },
+            { value: `${inputs.timeSavedPerEncounter || data.timeSavedPerEncounter} min` },
           ],
           operators: ["x"],
-          result: `${formatNumber(data.hoursReturned)} hours`,
+          result: `${formatNumber(inputs.hoursReturned as number || data.hoursReturned)} hours`,
           note: "Time saved per encounter based on documented Abridge performance.",
         },
         {
           label: "Step 2: Time Allocated",
           question: "How much time can convert to patient access?",
           inputs: [
-            { value: formatNumber(data.hoursReturned), label: "hours" },
+            { value: formatNumber(inputs.hoursReturned as number || data.hoursReturned), label: "hours" },
             { value: `${inputs.timeToAccessPct || 25}%` },
           ],
           operators: ["x"],
-          result: `${formatNumber(Math.round(data.hoursReturned * ((inputs.timeToAccessPct as number || 25) / 100)))} hours`,
+          result: `${formatNumber(inputs.accessHours as number || 0)} hours`,
           note: "Not all saved time converts—some goes to work-life balance, teaching, research.",
         },
         {
           label: "Step 3: Visit Conversion",
           question: "How many additional visits does this enable?",
           inputs: [
-            { value: formatNumber(Math.round(data.hoursReturned * ((inputs.timeToAccessPct as number || 25) / 100))), label: "hours" },
+            { value: formatNumber(inputs.accessHours as number || 0), label: "hours" },
             { value: `${inputs.conversionRate || 50}%` },
           ],
           operators: ["x"],
@@ -981,8 +981,8 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           label: "Step 1: Baseline wRVUs",
           question: "What's your current wRVU generation?",
           inputs: [
-            { value: formatNumber(data.eligibleEncounters), label: "enc" },
-            { value: `${inputs.wrvuPerEncounter || 1.5}` },
+            { value: formatNumber(inputs.eligibleEncounters as number || data.eligibleEncounters), label: "enc" },
+            { value: `${inputs.avgWrvuPerEncounter || 1.5}` },
           ],
           operators: ["x"],
           result: `${formatNumber(inputs.baselineWrvus as number || 0)} wRVUs`,
@@ -992,7 +992,7 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "How much lift does better documentation create?",
           inputs: [
             { value: formatNumber(inputs.baselineWrvus as number || 0), label: "wRVUs" },
-            { value: `${inputs.wrvuLiftPct || 5}%` },
+            { value: `${inputs.wrvuImprovementRate || 5}%` },
           ],
           operators: ["x"],
           result: `${formatNumber(inputs.wrvuGain as number || 0)} wRVU gain`,
@@ -1017,7 +1017,7 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           label: "Step 1: Expected Turnover",
           question: "How many departures occur annually?",
           inputs: [
-            { value: formatNumber(data.providers), label: data.unitNamePlural },
+            { value: formatNumber(inputs.providers as number || data.providers), label: data.unitNamePlural },
             { value: `${inputs.turnoverRate || 7}%` },
           ],
           operators: ["x"],
@@ -1028,7 +1028,7 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "How many are tied to burnout?",
           inputs: [
             { value: (inputs.annualDepartures as number || 0).toFixed(1), label: "departures" },
-            { value: `${inputs.burnoutPct || 50}%` },
+            { value: `${inputs.burnoutAttribution || 50}%` },
           ],
           operators: ["x"],
           result: `${(inputs.burnoutDepartures as number || 0).toFixed(2)} burnout-related`,
@@ -1038,17 +1038,17 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "How many can Abridge help prevent?",
           inputs: [
             { value: (inputs.burnoutDepartures as number || 0).toFixed(2), label: "at-risk" },
-            { value: `${inputs.preventionRate || 30}%` },
+            { value: `${inputs.abridgeImpact || 30}%` },
           ],
           operators: ["x"],
-          result: `${(inputs.avoided as number || 0).toFixed(2)} prevented`,
+          result: `${(inputs.departuresAvoided as number || 0).toFixed(2)} prevented`,
           note: "Conservative estimate—documentation is a major burnout driver but not the only one.",
         },
         {
           label: "Step 4: Value",
           question: "What's the savings?",
           inputs: [
-            { value: (inputs.avoided as number || 0).toFixed(2), label: "prevented" },
+            { value: (inputs.departuresAvoided as number || 0).toFixed(2), label: "prevented" },
             { value: formatCurrency(inputs.replacementCost as number || 400000) },
           ],
           operators: ["x"],
@@ -1059,35 +1059,38 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
     case "overtime":
       return [
         {
-          label: "Step 1: After-Hours Documentation",
-          question: "How much documentation occurs outside work hours?",
+          label: "Step 1: Overtime Hours",
+          question: "How many overtime hours occur annually?",
           inputs: [
-            { value: formatNumber(data.hoursReturned), label: "hours saved" },
-            { value: `${inputs.afterHoursPct || 40}%` },
+            { value: formatNumber(inputs.providersWithOT as number || 0), label: "providers w/ OT" },
+            { value: `${inputs.otHoursPerWeek || 5} hrs/wk` },
+            { value: `${inputs.otWeeksPerYear || 48} wks` },
           ],
-          operators: ["x"],
-          result: `${formatNumber(inputs.afterHoursHours as number || 0)} hours`,
-          note: "This is 'pajama time'—documentation that spills into evenings and weekends.",
+          operators: ["x", "x"],
+          result: `${formatNumber(inputs.totalOTHours as number || 0)} hours`,
+          note: "Annual overtime from documentation that spills past clinic hours.",
         },
         {
-          label: "Step 2: Overtime Reduction",
-          question: "How much overtime does Abridge eliminate?",
+          label: "Step 2: Hours Reclaimed",
+          question: "How much overtime can Abridge eliminate?",
           inputs: [
-            { value: formatNumber(inputs.afterHoursHours as number || 0), label: "hours" },
-            { value: `${inputs.reductionPct || 50}%` },
+            { value: formatNumber(inputs.totalOTHours as number || 0), label: "OT hours" },
+            { value: `${inputs.otReductionRate || 70}%` },
           ],
           operators: ["x"],
-          result: `${formatNumber(inputs.savingsHours as number || 0)} hours saved`,
+          result: `${formatNumber(inputs.hoursReclaimed as number || 0)} hours reclaimed`,
         },
         {
           label: "Step 3: Cost Savings",
-          question: "What's the dollar impact?",
+          question: "How much converts to dollar savings?",
           inputs: [
-            { value: formatNumber(inputs.savingsHours as number || 0), label: "hours" },
-            { value: `$${inputs.hourlyRate || 100}` },
+            { value: formatNumber(inputs.hoursReclaimed as number || 0), label: "hours" },
+            { value: `${inputs.otConversionRate || 33}%` },
+            { value: `$${inputs.physicianHourlyRate || 150}` },
           ],
-          operators: ["x"],
+          operators: ["x", "x"],
           result: formatCurrency(driver.value),
+          note: "Only a portion of reclaimed time converts to cost savings—the rest improves quality of life.",
         },
       ];
 
@@ -1097,8 +1100,8 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           label: "Step 1: Risk Encounters",
           question: "How many encounters involve Medicare Advantage patients?",
           inputs: [
-            { value: formatNumber(data.eligibleEncounters), label: "enc" },
-            { value: `${inputs.maPct || 20}%` },
+            { value: formatNumber(inputs.eligibleEncounters as number || data.eligibleEncounters), label: "enc" },
+            { value: `${inputs.riskContractPercent || 20}%` },
           ],
           operators: ["x"],
           result: `${formatNumber(inputs.riskEncounters as number || 0)} MA encounters`,
@@ -1108,18 +1111,18 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "How many HCCs are being missed?",
           inputs: [
             { value: formatNumber(inputs.riskEncounters as number || 0), label: "enc" },
-            { value: `${inputs.missedPerVisit || 0.5}` },
+            { value: `${(inputs.missedHccsPerEncounter as number || 0.14).toFixed(2)}` },
           ],
           operators: ["x"],
-          result: `${formatNumber(inputs.hccOpportunities as number || 0)} opportunities`,
-          note: "Not every condition discussed is documented, and not every undocumented condition is HCC-eligible.",
+          result: `${formatNumber(inputs.missedHccOpportunities as number || 0)} opportunities`,
+          note: "Based on conditions per visit × documentation gap × HCC-eligible percentage.",
         },
         {
           label: "Step 3: Abridge Capture",
           question: "How many can Abridge recover?",
           inputs: [
-            { value: formatNumber(inputs.hccOpportunities as number || 0), label: "opportunities" },
-            { value: `${inputs.capturePct || 40}%` },
+            { value: formatNumber(inputs.missedHccOpportunities as number || 0), label: "opportunities" },
+            { value: `${inputs.abridgeCaptureRate || 40}%` },
           ],
           operators: ["x"],
           result: `${formatNumber(inputs.hccsCaptured as number || 0)} HCCs captured`,
@@ -1130,12 +1133,12 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "What's the risk-adjusted value?",
           inputs: [
             { value: formatNumber(inputs.hccsCaptured as number || 0), label: "HCCs" },
-            { value: `$${inputs.hccValue || 800}` },
+            { value: `$${inputs.avgHccValue || 800}` },
             { value: `${inputs.auditFactor || 25}%` },
           ],
           operators: ["x", "x"],
           result: formatCurrency(driver.value),
-          note: "25% audit factor accounts for RADV audits and conditions that don't survive payer review.",
+          note: "Audit factor accounts for RADV audits and conditions that don't survive payer review.",
         },
       ];
 
@@ -1145,7 +1148,7 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           label: "Step 1: Total Denials",
           question: "How many claims are denied today?",
           inputs: [
-            { value: formatNumber(data.eligibleEncounters), label: "enc" },
+            { value: formatNumber(inputs.eligibleEncounters as number || data.eligibleEncounters), label: "enc" },
             { value: `${inputs.denialRate || 8}%` },
           ],
           operators: ["x"],
@@ -1156,38 +1159,38 @@ function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): Cal
           question: "How many are caused by documentation gaps?",
           inputs: [
             { value: formatNumber(inputs.totalDenials as number || 0), label: "denials" },
-            { value: `${inputs.docRelatedPct || 35}%` },
+            { value: `${inputs.docRelatedPercent || 35}%` },
           ],
           operators: ["x"],
-          result: `${formatNumber(inputs.docDenials as number || 0)} doc denials`,
+          result: `${formatNumber(inputs.docRelatedDenials as number || 0)} doc denials`,
           note: "30-40% of denials stem from documentation gaps: missing clinical info, insufficient MDM.",
         },
         {
           label: "Step 3: Written Off",
           question: "How many are lost without appeal?",
           inputs: [
-            { value: formatNumber(inputs.docDenials as number || 0), label: "doc denials" },
-            { value: `${inputs.writeOffPct || 60}%` },
+            { value: formatNumber(inputs.docRelatedDenials as number || 0), label: "doc denials" },
+            { value: `${inputs.writtenOffPercent || 60}%` },
           ],
           operators: ["x"],
-          result: `${formatNumber(inputs.writtenOff as number || 0)} written off`,
+          result: `${formatNumber(inputs.writtenOffDenials as number || 0)} written off`,
           note: "These claims are abandoned—documentation can't support an appeal.",
         },
         {
           label: "Step 4: Abridge Recovery",
           question: "How many can Abridge save?",
           inputs: [
-            { value: formatNumber(inputs.writtenOff as number || 0), label: "written off" },
-            { value: `${inputs.recoveryPct || 50}%` },
+            { value: formatNumber(inputs.writtenOffDenials as number || 0), label: "written off" },
+            { value: `${inputs.abridgeCaptureRate || 75}%` },
           ],
           operators: ["x"],
-          result: `${formatNumber(inputs.recovered as number || 0)} recovered`,
+          result: `${formatNumber(inputs.claimsRecovered as number || 0)} recovered`,
         },
         {
           label: "Step 5: Value",
           question: "What's the dollar impact?",
           inputs: [
-            { value: formatNumber(inputs.recovered as number || 0), label: "claims" },
+            { value: formatNumber(inputs.claimsRecovered as number || 0), label: "claims" },
             { value: `$${inputs.avgClaimValue || 250}` },
           ],
           operators: ["x"],
@@ -1647,59 +1650,54 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; p
       </View>
 
       <View style={styles.journeyChart}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
-          <View style={{ width: 50 }}>
+        <View style={{ flexDirection: "row", marginBottom: 8 }}>
+          <View style={{ width: 55, justifyContent: "space-between", paddingVertical: 4, height: 90 }}>
             <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
-            <View style={{ flex: 1 }} />
             <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
-            <View style={{ flex: 1 }} />
             <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
           
-          <View style={{ flex: 1, marginLeft: 10, borderLeftWidth: 1, borderBottomWidth: 1, borderColor: colors.borderGray, height: 80 }}>
-            <View style={{ position: "absolute", bottom: 10, left: 10 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
-              <Text style={{ fontSize: 6, color: colors.primary, marginTop: 2 }}>Today</Text>
+          <View style={{ flex: 1, marginLeft: 8, borderLeftWidth: 1, borderBottomWidth: 1, borderColor: colors.borderGray, height: 90, position: "relative" }}>
+            {/* Red dot - Today/Pilot (bottom left) */}
+            <View style={{ position: "absolute", bottom: 8, left: 10 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary, borderWidth: 2, borderColor: colors.white }} />
             </View>
-            <View style={{ position: "absolute", bottom: 60, right: 10 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green }} />
-              <Text style={{ fontSize: 6, color: colors.green, marginTop: 2 }}>Full Scale</Text>
+            <Text style={{ position: "absolute", bottom: -2, left: 6, fontSize: 6, color: colors.primary, fontWeight: "bold" }}>Today</Text>
+            
+            {/* Green dot - Full Scale (top right) */}
+            <View style={{ position: "absolute", top: 8, right: 10 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green, borderWidth: 2, borderColor: colors.white }} />
+            </View>
+            <Text style={{ position: "absolute", top: 18, right: 4, fontSize: 6, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
+            
+            {/* Compounding bonus label */}
+            <View style={{ position: "absolute", top: 38, left: 100, backgroundColor: colors.greenLight, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 3 }}>
+              <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold" }}>+{formatCurrency(journey.networkEffect)}</Text>
+              <Text style={{ fontSize: 5, color: colors.green }}>compounding bonus</Text>
             </View>
           </View>
         </View>
         
-        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 60 }}>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.primary }}>Today</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.mediumGray }}>6 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.mediumGray }}>12 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.mediumGray }}>18 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
-          </View>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 63, paddingRight: 10 }}>
+          <Text style={{ fontSize: 6, color: colors.primary, fontWeight: "bold" }}>Month 0</Text>
+          <Text style={{ fontSize: 6, color: colors.mediumGray }}>6 mo</Text>
+          <Text style={{ fontSize: 6, color: colors.mediumGray }}>12 mo</Text>
+          <Text style={{ fontSize: 6, color: colors.mediumGray }}>18 mo</Text>
+          <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold" }}>{paceLabels[journey.scalingPace]}</Text>
         </View>
         
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 12, gap: 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary, marginRight: 4 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Pilot (Today)</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
-            <View style={{ width: 12, height: 2, backgroundColor: colors.green, marginRight: 4 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Value (with compounding)</Text>
+            <Text style={{ fontSize: 7, color: colors.black }}>Pilot: {formatCurrency(journey.pilotValue)}</Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green, marginRight: 4 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Full Scale</Text>
+            <Text style={{ fontSize: 7, color: colors.black }}>Full Scale: {formatCurrency(journey.fullScaleValue)}</Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ width: 14, height: 2, backgroundColor: colors.green, marginRight: 4 }} />
+            <Text style={{ fontSize: 7, color: colors.black }}>With compounding</Text>
           </View>
         </View>
       </View>

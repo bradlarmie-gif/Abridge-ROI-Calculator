@@ -379,10 +379,13 @@ export default function SummaryCommandCenter({
   const handleExportPdf = useCallback(async () => {
     const driverIdMap: Record<string, string> = {
       patient_access: 'patientAccess',
+      patientAccess: 'patientAccess',
       level_of_service: 'wrvu',
+      levelOfService: 'wrvu',
       retention: 'workforce',
       overtime: 'overtime',
       hcc_capture: 'hcc',
+      hcc: 'hcc',
       denials: 'denials',
     };
 

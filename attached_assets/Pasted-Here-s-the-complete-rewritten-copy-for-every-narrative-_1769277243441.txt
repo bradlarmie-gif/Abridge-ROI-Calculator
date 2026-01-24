@@ -1,0 +1,193 @@
+Here's the complete rewritten copy for every narrative section. This is the partner/educator tone throughout.
+
+PAGE 1: EXECUTIVE SUMMARY
+Opening Narrative Box
+CopyROI models can feel like black boxes—numbers that sound good but don't explain themselves. This assessment is different.
+
+Every value you see here traces back to your inputs, industry benchmarks, and assumptions you can inspect and adjust. We're not trying to sell you on a number. We're giving you a model you can stress-test, defend internally, and use to make a real decision.
+
+You selected {X} value drivers: {Driver 1}, {Driver 2}, {Driver 3}. For each, we walk through the logic step by step—what we're measuring, why it matters, and exactly how we got to the number.
+Bottom Callout (replace the "every month of delay" language)
+CopyAt {$X per provider} in net annual value, scaling from {50} to {150} providers would move from {$282K} to approximately {$850K} in annual benefit. The methodology page explains how these projections work—and where the assumptions might differ for your organization.
+
+PAGE 2+: DRIVER DETAIL PAGES
+Patient Access
+The Theory
+CopySaved documentation time can become patient access time—but it doesn't happen automatically. 
+
+Schedules need to accommodate more patients. Rooms need to be available. Demand needs to exist. Not all saved time converts, and that's okay—some of it should go to work-life balance, teaching, or just finishing the day on time.
+
+We model this conservatively: only 25% of saved time goes toward access, and only 60% of that actually converts to visits. The rest gets absorbed elsewhere. If your organization has strong scheduling operations and unmet demand, you may see higher conversion. If capacity is already tight, you may see less.
+Step Notes (updated)
+
+Step 1 note: "Based on {X} minutes saved per encounter—typical for Abridge deployments."
+Step 2 note: "We assume a 50/25/25 split: half to quality of life, a quarter to access, a quarter to cost reduction. Adjust if your priorities differ."
+Step 3 note: "60% conversion is conservative. It accounts for scheduling friction, room availability, and days when demand doesn't fill the slot."
+Step 4 note: (none needed)
+Step 5 note: "Your blended rate. Primary care typically runs $100-150, specialty $175-300."
+
+What This Means
+CopyAt {$106K}, patient access contributes {X%} of your total modeled value. This assumes {528} additional visits at {$200} each.
+
+If your scheduling capacity is tighter, conversion might be lower. If you have significant unmet demand and can operationalize the extra time, it could be higher. The inputs are adjustable—the math recalculates automatically.
+
+Accurate Level of Service (wRVU)
+The Theory
+CopyPhysicians under time pressure document less than the full clinical picture. Not because they're cutting corners—because there's only so much time.
+
+The result is systematic under-coding. Not fraud, not upcoding—just not getting credit for work that was actually done. A complex visit gets billed as moderate. A 45-minute conversation gets documented in 10 minutes and loses nuance.
+
+Abridge captures the clinical narrative as it happens. When documentation reflects the actual complexity of the visit, coding can be more accurate. We model a 5% wRVU improvement—consistent with what we see across deployments, though your results will depend on specialty mix and current documentation quality.
+Step Notes
+
+Step 1 note: "If you don't track wRVUs directly, 1.5 per encounter is a reasonable outpatient blend."
+Step 2 note: "5% improvement is our benchmark. Organizations with significant under-documentation may see more; those already optimized may see less."
+Step 3 note: "We use Medicare's conversion factor ($33) for conservatism. If your payer mix is commercial-heavy, actual reimbursement per wRVU is likely $45-65—which would increase this value by 30-50%."
+
+What This Means
+CopyAt {$105K}, level-of-service accuracy contributes {X%} of your total value. This represents {Y} additional wRVUs captured through more complete documentation.
+
+This isn't about changing clinical behavior or coding practices. It's about ensuring the documentation reflects what actually happened in the room. If it does, coding follows.
+
+Clinician Retention
+The Theory
+CopyTurnover is expensive. Replacing a physician costs $400K-$800K+ when you factor in recruiting, lost revenue during vacancy, onboarding, and the 12-18 months it takes a new hire to reach full productivity.
+
+Documentation burden is consistently cited as a top driver of burnout. It's not the only driver—but it's one of the few that's directly addressable without restructuring compensation or patient panels.
+
+We model this carefully. Not all turnover is preventable. Not all preventable turnover is burnout-related. And not all burnout is documentation-driven. We apply what we call the "Rule of Thirds": documentation contributes to roughly half of burnout, Abridge reduces documentation burden by about 70%, yielding ~35% theoretical impact. We round down to 30% to stay conservative.
+Warning Box (for <50 providers)
+CopyWith fewer than 50 providers, retention math gets probabilistic. You're not going to retain 0.4 of a physician this year. 
+
+Think of this as a long-term investment metric: over a 3-4 year period, the cumulative effect is equivalent to retaining one additional physician. The value is real—it just materializes over time rather than in a single year.
+Step Notes
+
+Step 1 note: "National average is 6-8%. Some specialties and regions run higher."
+Step 2 note: "Research suggests 40-50% of departures cite burnout as a primary factor."
+Step 3 note: "The Rule of Thirds: 50% of burnout × 70% documentation reduction = 35%, rounded to 30%."
+Step 4 note: "Replacement cost varies. $400K is conservative; academic centers and specialists often run $600K+."
+
+What This Means
+CopyAt {$162K}, retention contributes {X%} of your total value. This represents {0.4} avoided departures annually—or roughly one retained physician every {2-3} years.
+
+This is a lagging indicator. Burnout doesn't reverse overnight, and the decision to stay (or leave) happens over months. Expect retention benefits to materialize 12+ months into deployment, not immediately.
+
+Overtime & Locum Savings
+The Theory
+CopyOvertime in outpatient settings usually isn't about patient volume—it's about documentation that spills past clinic hours. Providers stay late to finish notes, catch up on inbox, or close charts that couldn't be completed between patients.
+
+When documentation compresses into the encounter, less work spills over. Some of that recovered time goes to finishing on time (quality of life). Some might go to seeing an extra patient. And some—the portion we model here—converts directly to reduced overtime hours.
+
+We don't claim all of it. The 67% that goes to quality of life and patient access is modeled separately (or not at all, in the case of QoL). Here we're focused on the portion that shows up as reduced premium labor cost.
+Step Notes
+
+Step 1 note: "Adjust based on your actual overtime patterns. Some organizations track this closely; others estimate."
+Step 2 note: "70% reduction in documentation time is typical for Abridge."
+Step 3 note: "Only 33% converts to cost savings. The rest goes to quality of life (not monetized) and patient access (modeled separately if selected)."
+Step 4 note: "Blended overtime rate. Adjust for your actual labor costs."
+
+Locum Section Notes (if enabled)
+
+Step 1 note: "Current locum utilization. If you're not using locums, this section won't apply."
+Step 2 note: "We assume roughly 1/3 of locum usage is tied to documentation-driven capacity constraints—not PTO coverage or true volume spikes."
+Step 3 note: "National average locum rate. Specialists can run $350-500/hr."
+
+What This Means
+CopyAt {$125K} in overtime savings (and {$330K} in locum avoidance if applicable), this driver addresses direct labor cost.
+
+Unlike some drivers that require behavior change or operational adjustment, overtime reduction tends to happen naturally. When documentation fits inside the workday, providers go home. The savings follow.
+
+HCC & Chronic Condition Capture
+The Theory
+CopyRisk adjustment depends on documentation—specifically, whether chronic conditions discussed during a visit make it into the note. 
+
+Physicians know their patients' conditions. They address them in conversation. But under time pressure, not everything gets documented. A patient with diabetes, hypertension, and depression might have all three discussed but only one or two coded.
+
+Abridge captures the clinical conversation. When conditions are mentioned and addressed, they're more likely to appear in the note—which supports accurate HCC coding without requiring physicians to "code hunt" or change their clinical workflow.
+
+We apply significant haircuts to this value. Not every condition discussed is HCC-eligible. Not every HCC captured will survive audit. We use a 75% reduction factor to account for RADV audits, payer review, and retrospective adjustments. What remains is revenue you can reasonably count on.
+Step Notes
+
+Step 1 note: "Your Medicare Advantage and risk-based contract percentage. Traditional Medicare and commercial PPO don't apply here."
+Step 2 note (sub-calculation): "We estimate 0.14 missed HCCs per visit based on: 2 conditions discussed × 20% documentation gap × 35% HCC-eligible. Adjust if your situation differs."
+Step 3 note: "40% capture rate. The condition has to be assessed or addressed—not just mentioned in passing."
+Step 4 note: "The 25% that survives is after RADV audits, payer review, and retrospective adjustments. This is conservative."
+
+Warning Box
+CopyHCC value varies significantly by organization. If you have a mature risk adjustment program with high capture rates, the incremental opportunity is smaller. If you're earlier in the journey, it may be larger.
+
+Your payer mix matters too. Organizations with 50%+ Medicare Advantage will see proportionally higher value than those at 10-15%.
+What This Means
+CopyAt {$49K}, HCC capture contributes {X%} of your total value. This represents {246} additional conditions captured and surviving audit.
+
+This is one of the more variable drivers. If your risk programs are already mature, treat this as upside. If you're earlier in the journey, the opportunity may be larger than modeled.
+
+Documentation-Related Denials
+The Theory
+CopyNot all denials are created equal. Some are eligibility issues. Some are authorization problems. And some—the ones we focus on here—stem from documentation that doesn't clearly support medical necessity.
+
+The clinical reasoning was sound. The care was appropriate. But the note didn't tell the story well enough for the payer. These denials create rework, appeals, and in some cases, write-offs when the cost of appeal exceeds the claim value.
+
+Abridge captures the MDM and clinical reasoning that physicians think through but don't always document. When that reasoning is in the note, denials are less likely—and when they happen, appeals are more winnable.
+Step Notes
+
+Step 1 note: "Industry average is 5-10%. Check your actual denial rate if you track it."
+Step 2 note: "30-40% of denials typically stem from documentation gaps: missing clinical info, insufficient MDM, incomplete notes."
+Step 3 note: "These are claims abandoned without appeal—either documentation can't support it, or rework cost exceeds claim value."
+Step 4 note: "75% recovery is achievable when the clinical reasoning exists but wasn't documented. Abridge captures it."
+Step 5 note: "Your blended claim value. Adjust based on your actual revenue per encounter."
+
+What This Means
+CopyAt {$40K}, denial prevention contributes {X%} of your total value. This represents {161} claims that would otherwise be written off.
+
+Unlike some drivers, denial reduction flows directly to the bottom line—there's no additional clinical effort required. The documentation improvement happens at the point of care; the denial prevention is downstream.
+
+JOURNEY PAGE
+Opening Narrative
+CopyWhat you're looking at is a starting point—{50} providers at {65%} utilization, generating {$372K} in annual value.
+
+The question most organizations ask next: "What happens as we scale?"
+
+The chart below shows two scenarios. The dashed line is linear growth—if you simply added providers at the same rate of value per provider, this is what you'd get. The solid line is what typically happens in practice: value per provider increases as utilization matures and long-term benefits (like retention) kick in.
+"Why Value Compounds" Section
+CopyThe gap between the lines isn't magic—it's three specific factors:
+
+**Utilization improves.** Pilot deployments typically run 60-70% utilization. At maturity, organizations reach 75-85%. Higher utilization means more encounters documented, which means more value per provider.
+
+**Retention materializes.** Burnout reduction doesn't translate to retention immediately. It takes 6-12 months for the effect to show up in turnover numbers. By Year 2, this value is real.
+
+**Workflows optimize.** Early deployments involve learning curves. Templates get refined. Edge cases get resolved. Providers who were skeptical become advocates. The result: less friction, more consistent use.
+Model Your Scenario - Intro
+CopyThe numbers below are adjustable. Your starting point is locked from your ROI model, but you can change the full-scale assumptions to see how different scenarios play out.
+
+METHODOLOGY PAGE
+Intro Text
+CopyEvery number in this assessment can be traced back. This section documents what we assumed, what came from you, and where there's room for interpretation.
+Calculation Principles Column
+Copy**How we approach the math:**
+
+- Conservative by default. We'd rather understate than overstate.
+- Medicare rates, not commercial. If your payer mix is favorable, actual results are likely higher.
+- No compounding in Year 1. Multi-year projections assume 10% annual growth from utilization improvement.
+- Transparent logic. Every step is shown. Nothing is hidden.
+Closing Section
+CopyAll benchmarks are based on aggregate data from 200+ health system deployments. Your results will vary based on specialty mix, payer composition, EHR environment, and operational factors.
+
+These are starting assumptions, not guarantees. The value of a model like this isn't that it predicts the future—it's that it gives you a structured way to think about the decision.
+Closing Quote
+Copy"Most organizations don't fail to get value from ambient documentation—they fail to optimize for it. The difference between a 2x ROI and a 5x ROI usually isn't the technology. It's utilization, change management, and knowing which drivers matter most for your situation."
+
+SUMMARY FOR REPLIT
+Copy this entire response and tell Replit:
+CopyReplace all narrative text in the PDF generator with the copy provided below. 
+The tone should be educational and partner-like, not salesy.
+Focus on explaining HOW the math works and WHERE assumptions might vary, 
+not on convincing the reader that the value is real.
+
+Key principles:
+- "This assumes..." instead of "This delivers..."
+- "You can adjust..." instead of "Abridge captures..."
+- Acknowledge limitations and variability
+- Explain the logic, don't sell the outcome
+
+[Paste all the copy above]
