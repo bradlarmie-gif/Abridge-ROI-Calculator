@@ -6,6 +6,10 @@ import {
   StyleSheet,
   Image,
   pdf,
+  Svg,
+  Path,
+  Line,
+  Circle,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
@@ -1290,17 +1294,17 @@ function getFinalFormula(driver: DriverCalculation): string {
   const inputs = driver.inputs;
   switch (driver.id) {
     case "patientAccess":
-      return `${inputs.additionalVisits || 0} visits x $${inputs.revenuePerVisit || 200}/visit`;
+      return `${formatNumber((inputs.additionalVisits as number) || 0)} visits x $${inputs.revenuePerVisit || 200}/visit`;
     case "wrvu":
       return `${formatNumber((inputs.wrvuGain as number) || 0)} wRVU gain x $${inputs.conversionFactor || 33}`;
     case "workforce":
-      return `${((inputs.avoided as number) || 0).toFixed(2)} avoided x ${formatCurrency((inputs.replacementCost as number) || 400000)}`;
+      return `${((inputs.departuresAvoided as number) || 0).toFixed(2)} avoided x ${formatCurrency((inputs.replacementCost as number) || 400000)}`;
     case "overtime":
-      return `${formatNumber((inputs.savingsHours as number) || 0)} hrs x $${inputs.hourlyRate || 100}/hr`;
+      return `${formatNumber((inputs.hoursReclaimed as number) || 0)} hrs x ${inputs.otConversionRate || 33}% x $${inputs.physicianHourlyRate || 150}/hr`;
     case "hcc":
-      return `${formatNumber((inputs.hccsCaptured as number) || 0)} HCCs x $${inputs.hccValue || 800} x ${inputs.auditFactor || 25}%`;
+      return `${formatNumber((inputs.hccsCaptured as number) || 0)} HCCs x $${inputs.avgHccValue || 800} x ${inputs.auditFactor || 25}%`;
     case "denials":
-      return `${formatNumber((inputs.recovered as number) || 0)} claims x $${inputs.avgClaimValue || 250}`;
+      return `${formatNumber((inputs.claimsRecovered as number) || 0)} claims x $${inputs.avgClaimValue || 250}`;
     default:
       return "";
   }
@@ -1343,14 +1347,13 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>The case for ambient documentation is not abstract—it's arithmetic. </Text>
-          At {data.providers} {data.unitNamePlural} generating {formatNumber(data.encounters)} encounters annually, your organization carries a quantifiable documentation burden: time lost to note-writing, revenue missed from incomplete capture, and talent eroded by administrative fatigue.
+          <Text style={styles.narrativeBold}>ROI models can feel like black boxes</Text>—numbers that sound good but don't explain themselves. This assessment is different.
         </Text>
         <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          This assessment models what's recoverable. Based on your priorities—{data.drivers.map(d => d.name).join(", ")}—Abridge delivers{" "}
-          <Text style={styles.narrativeHighlight}>{formatCurrency(data.netGain)} in net annual value</Text> at{" "}
-          <Text style={styles.narrativeHighlight}>{data.roi.toFixed(1)}x ROI</Text>. 
-          Every calculation is transparent. Every assumption is conservative. Every number is defensible.
+          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
+          You selected <Text style={styles.narrativeBold}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
         </Text>
       </View>
 
@@ -1385,7 +1388,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
           <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
           <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
           {laborDrivers.map((driver, i) => (
-            <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 && styles.valueBreakdownDriverLast]}>
+            <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
               <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
               <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
             </View>
@@ -1400,7 +1403,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
           <Text style={styles.valueBreakdownPct}>{data.revenuePct}% of total value</Text>
           <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.revenueTotal)}</Text>
           {revenueDrivers.map((driver, i) => (
-            <View key={driver.id} style={[styles.valueBreakdownDriver, i === revenueDrivers.length - 1 && styles.valueBreakdownDriverLast]}>
+            <View key={driver.id} style={[styles.valueBreakdownDriver, i === revenueDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
               <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
               <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
             </View>
@@ -1487,9 +1490,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
 
       <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Every month of delay = {formatCurrency(monthlyValue)} in unrealized value. </Text>
-          Every {data.unitName} not using Abridge = {formatCurrency(valuePerProvider)} left on the table annually. 
-          The question isn't whether ambient documentation creates value—it's how much you'll capture.
+          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in net annual value, scaling from {data.providers} to {Math.round(data.providers * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
         </Text>
       </View>
 
@@ -1550,7 +1551,7 @@ const DriverDetailPage = ({
         <Text style={styles.calcSectionTitle}>Your Calculation</Text>
         
         {steps.map((step, index) => (
-          <View key={index} style={[styles.stepBox, index === steps.length - 1 && styles.stepBoxLast]}>
+          <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]}>
             <Text style={styles.stepLabel}>{step.label}</Text>
             <Text style={styles.stepQuestion}>{step.question}</Text>
             
@@ -1650,54 +1651,110 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; p
       </View>
 
       <View style={styles.journeyChart}>
+        {/* Chart container with SVG */}
         <View style={{ flexDirection: "row", marginBottom: 8 }}>
-          <View style={{ width: 55, justifyContent: "space-between", paddingVertical: 4, height: 90 }}>
+          {/* Y-axis labels */}
+          <View style={{ width: 55, justifyContent: "space-between", paddingVertical: 4, height: 100 }}>
             <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(Math.round((journey.fullScaleValue + journey.pilotValue) / 2))}</Text>
             <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
             <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
           
-          <View style={{ flex: 1, marginLeft: 8, borderLeftWidth: 1, borderBottomWidth: 1, borderColor: colors.borderGray, height: 90, position: "relative" }}>
-            {/* Red dot - Today/Pilot (bottom left) */}
-            <View style={{ position: "absolute", bottom: 8, left: 10 }}>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary, borderWidth: 2, borderColor: colors.white }} />
-            </View>
-            <Text style={{ position: "absolute", bottom: -2, left: 6, fontSize: 6, color: colors.primary, fontWeight: "bold" }}>Today</Text>
+          {/* Chart area with SVG */}
+          <View style={{ flex: 1, marginLeft: 8, height: 100, position: "relative" }}>
+            {/* SVG for lines and dots */}
+            <Svg width="400" height="100" viewBox="0 0 400 100">
+              {/* Background grid lines */}
+              <Line x1="0" y1="25" x2="400" y2="25" stroke={colors.borderGray} strokeWidth="0.5" />
+              <Line x1="0" y1="50" x2="400" y2="50" stroke={colors.borderGray} strokeWidth="0.5" />
+              <Line x1="0" y1="75" x2="400" y2="75" stroke={colors.borderGray} strokeWidth="0.5" />
+              <Line x1="0" y1="100" x2="400" y2="100" stroke={colors.borderGray} strokeWidth="1" />
+              <Line x1="0" y1="0" x2="0" y2="100" stroke={colors.borderGray} strokeWidth="1" />
+              
+              {/* Dashed gray straight line (linear projection) */}
+              <Line 
+                x1="20" 
+                y1="85" 
+                x2="380" 
+                y2="15" 
+                stroke={colors.lightGray} 
+                strokeWidth="2" 
+                strokeDasharray="6,4" 
+              />
+              
+              {/* Solid green curved line (with compounding) - quadratic bezier */}
+              <Path 
+                d="M 20 85 Q 200 70, 280 35 Q 340 15, 380 10" 
+                stroke={colors.green} 
+                strokeWidth="2.5" 
+                fill="none" 
+              />
+              
+              {/* Shaded area between lines */}
+              <Path 
+                d="M 20 85 Q 200 70, 280 35 Q 340 15, 380 10 L 380 15 L 20 85 Z" 
+                fill={colors.greenLight} 
+                opacity="0.5" 
+              />
+              
+              {/* Red dot - Today/Pilot */}
+              <Circle cx="20" cy="85" r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
+              
+              {/* Green dot - Full Scale */}
+              <Circle cx="380" cy="10" r="6" fill={colors.green} stroke={colors.white} strokeWidth="2" />
+            </Svg>
             
-            {/* Green dot - Full Scale (top right) */}
-            <View style={{ position: "absolute", top: 8, right: 10 }}>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green, borderWidth: 2, borderColor: colors.white }} />
-            </View>
-            <Text style={{ position: "absolute", top: 18, right: 4, fontSize: 6, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
+            {/* Labels positioned over the chart */}
+            <Text style={{ position: "absolute", bottom: 2, left: 4, fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
+            <Text style={{ position: "absolute", top: -2, right: 4, fontSize: 7, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
             
             {/* Compounding bonus label */}
-            <View style={{ position: "absolute", top: 38, left: 100, backgroundColor: colors.greenLight, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 3 }}>
-              <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold" }}>+{formatCurrency(journey.networkEffect)}</Text>
-              <Text style={{ fontSize: 5, color: colors.green }}>compounding bonus</Text>
+            <View style={{ position: "absolute", top: 35, left: 160, backgroundColor: colors.greenLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, borderWidth: 1, borderColor: colors.green }}>
+              <Text style={{ fontSize: 8, color: colors.green, fontWeight: "bold", textAlign: "center" }}>+{formatCurrency(journey.networkEffect)}</Text>
+              <Text style={{ fontSize: 6, color: colors.greenDark, textAlign: "center" }}>compounding bonus</Text>
             </View>
           </View>
         </View>
         
-        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 63, paddingRight: 10 }}>
-          <Text style={{ fontSize: 6, color: colors.primary, fontWeight: "bold" }}>Month 0</Text>
-          <Text style={{ fontSize: 6, color: colors.mediumGray }}>6 mo</Text>
-          <Text style={{ fontSize: 6, color: colors.mediumGray }}>12 mo</Text>
-          <Text style={{ fontSize: 6, color: colors.mediumGray }}>18 mo</Text>
-          <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold" }}>{paceLabels[journey.scalingPace]}</Text>
+        {/* X-axis labels */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 63, paddingRight: 10, marginBottom: 4 }}>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>6 mo</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>12 mo</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>18 mo</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold" }}>{paceLabels[journey.scalingPace]}</Text>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
+          </View>
         </View>
         
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 12, gap: 20 }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+        {/* Legend */}
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary, marginRight: 4 }} />
             <Text style={{ fontSize: 7, color: colors.black }}>Pilot: {formatCurrency(journey.pilotValue)}</Text>
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green, marginRight: 4 }} />
             <Text style={{ fontSize: 7, color: colors.black }}>Full Scale: {formatCurrency(journey.fullScaleValue)}</Text>
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
             <View style={{ width: 14, height: 2, backgroundColor: colors.green, marginRight: 4 }} />
             <Text style={{ fontSize: 7, color: colors.black }}>With compounding</Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ width: 14, height: 0, borderTopWidth: 2, borderTopColor: colors.lightGray, borderStyle: "dashed", marginRight: 4 }} />
+            <Text style={{ fontSize: 7, color: colors.black }}>Linear projection</Text>
           </View>
         </View>
       </View>
@@ -1811,8 +1868,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
 
       <View style={styles.closingBox}>
         <Text style={styles.closingText}>
-          "This isn't about whether ambient AI creates value—it does. The question is whether you'll capture 40% of that value or 85%. 
-          That choice is worth <Text style={styles.closingHighlight}>{formatCurrency(data.netGain)}</Text> annually in {data.careSetting.toLowerCase()} alone."
+          "Most organizations don't fail to get value from ambient documentation—they fail to optimize for it. The difference between a 2x ROI and a 5x ROI usually isn't the technology. It's utilization, change management, and knowing which drivers matter most for your situation."
         </Text>
       </View>
 
