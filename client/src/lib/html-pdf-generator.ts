@@ -1,11 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: unknown) => jsPDF;
-  }
-}
+import autoTable from 'jspdf-autotable';
 
 export interface DriverDetail {
   id: string;
@@ -852,7 +846,7 @@ export async function generatePremiumPDF(data: PremiumPDFData): Promise<void> {
     ['HCC audit factor', '25%', 'Accounts for RADV and reviews'],
   ];
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: yPos,
     head: [factorsData[0]],
     body: factorsData.slice(1),
