@@ -1183,7 +1183,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
             { value: `${inputs.otMinutesPerShift || 15}`, label: "min/shift" },
           ],
           result: `${inputs.otMinutesPerShift || 15} min overtime`,
-          note: "Documentation catch-up typically adds e.g., 15-30 min/shift.",
+          note: "Documentation catch-up typically adds 15-30 minutes per shift.",
         },
         {
           label: "Step 2: Annual OT Hours",
@@ -1195,7 +1195,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x", "x", "÷ 60 ="],
           result: `${formatNumber(Math.round(inputs.hoursReduced as number || 0))} hrs`,
-          note: "e.g., 260 shifts = 5 shifts/week × 52 weeks.",
+          note: "260 shifts = 5 shifts/week × 52 weeks average per nurse.",
         },
         {
           label: "Step 3: OT Cost Eliminated",
@@ -1206,7 +1206,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: formatCurrency(driver.value),
-          note: "OT rate = 1.5× base, e.g., $40-50/hr → $60-75/hr.",
+          note: "OT rate = 1.5× base ($40-50/hr → $60-75/hr).",
         },
       ];
 
@@ -1219,7 +1219,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
             { value: formatNumber(inputs.agencyFTEs as number || 5), label: "agency FTEs" },
           ],
           result: `${inputs.agencyFTEs || 5} FTE agency`,
-          note: "Count all agency/travel nurses as FTE equivalents, e.g., 5 FTEs.",
+          note: "Count all agency/travel nurses as FTE equivalents.",
         },
         {
           label: "Step 2: Reduction Target",
@@ -1230,7 +1230,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.ftesReplaced as number || 0).toFixed(1)} FTEs`,
-          note: "Conservative reduction, e.g., 20% through improved retention.",
+          note: "Conservative 20% reduction through improved retention.",
         },
         {
           label: "Step 3: Cost Savings",
@@ -1241,7 +1241,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: formatCurrency(driver.value),
-          note: "Agency premium, e.g., $75K/FTE over staff cost annually.",
+          note: "Agency premium = $75K/FTE over staff cost annually.",
         },
       ];
 
@@ -1256,7 +1256,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.annualDepartures as number || 0).toFixed(1)} departures`,
-          note: "Nursing turnover averages, e.g., 18-25%.",
+          note: "Nursing turnover averages 18-25%.",
         },
         {
           label: "Step 2: Burnout-Related",
@@ -1267,7 +1267,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.burnoutDepartures as number || 0).toFixed(1)} burnout`,
-          note: "Documentation is a top burnout driver, e.g., 40% burnout-related.",
+          note: "Documentation is a top burnout driver in nursing.",
         },
         {
           label: "Step 3: Abridge Impact",
@@ -1278,7 +1278,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.nursesRetained as number || 0).toFixed(1)} retained`,
-          note: "Conservative estimate, e.g., 25% impact over 12+ months.",
+          note: "Conservative estimate—full impact takes 12+ months.",
         },
         {
           label: "Step 4: Cost Savings",
@@ -1289,7 +1289,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: formatCurrency(driver.value),
-          note: "Replacement cost, e.g., $40K-$60K including recruiting/onboarding.",
+          note: "Replacement cost: $40K-$60K including recruiting/onboarding.",
         },
       ];
 
@@ -1304,7 +1304,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.baselineHapis as number || 0).toFixed(1)} HAPIs`,
-          note: "National average HAPI rate, e.g., 2-3% of admissions.",
+          note: "National average HAPI rate is 2-3% of admissions.",
         },
         {
           label: "Step 2: Prevention Potential",
@@ -1315,7 +1315,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.hapisAvoided as number || 0).toFixed(1)} avoided`,
-          note: "Conservative prevention rate, e.g., 10% through better assessment.",
+          note: "Conservative 10% through better assessment time.",
         },
         {
           label: "Step 3: Cost Avoidance",
@@ -1326,7 +1326,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: formatCurrency(driver.value),
-          note: "HAPI cost, e.g., $10K-$50K average. We use $20K.",
+          note: "HAPI cost: $10K-$50K average. We use $20K.",
           noteHighlight: true,
         },
       ];
@@ -1342,7 +1342,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.baselineFalls as number || 0).toFixed(1)} falls`,
-          note: "Average fall rate, e.g., 3-5 per 1,000 patient days.",
+          note: "Average fall rate: 3-5 per 1,000 patient days.",
         },
         {
           label: "Step 2: Prevention Potential",
@@ -1353,7 +1353,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: `${(inputs.fallsAvoided as number || 0).toFixed(1)} avoided`,
-          note: "Conservative prevention rate, e.g., 10% through better bedside time.",
+          note: "Conservative 10% through better bedside time.",
         },
         {
           label: "Step 3: Cost Avoidance",
@@ -1364,7 +1364,7 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
           ],
           operators: ["x"],
           result: formatCurrency(driver.value),
-          note: "Fall cost, e.g., $3K-$30K average. We use $6,500.",
+          note: "Fall cost: $3K-$30K average. We use $6,500.",
           noteHighlight: true,
         },
       ];
