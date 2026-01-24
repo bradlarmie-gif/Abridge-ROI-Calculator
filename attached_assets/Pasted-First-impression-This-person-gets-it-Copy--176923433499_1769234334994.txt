@@ -1,0 +1,585 @@
+First impression = "This person gets it"
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  [Giant faint "A" watermark - left half visible, 60% opacity]        │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │ ABRIDGE LOGO (top left)                                      │   │
+│  │                                                               │   │
+│  │                    OUTPATIENT                                 │   │
+│  │              ROI Assessment                                   │   │
+│  │                                                               │   │
+│  │         ─────────────────────────────                        │   │
+│  │                                                               │   │
+│  │              [Health System Name]                             │   │
+│  │              40 Providers · 60,000 Encounters                 │   │
+│  │              Prepared January 24, 2025                        │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  ════════════════════════════════════════════════════════════════   │
+│                                                                      │
+│  YOUR RESULTS AT A GLANCE                                           │
+│  ┌────────────────┬────────────────┬────────────────┬─────────────┐ │
+│  │   +$286,172    │     4.1×       │    2,664       │    $7,154   │ │
+│  │   Net Annual   │    Return on   │    Hours       │   Per       │ │
+│  │   Gain         │    Investment  │    Returned    │   Provider  │ │
+│  └────────────────┴────────────────┴────────────────┴─────────────┘ │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │ VALUE COMPOSITION                                             │   │
+│  │ ████████████████████████████░░░░░░░░░░░░░░░░ $377K Total     │   │
+│  │ ▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ $91K Investment │   │
+│  │                                                               │   │
+│  │ Labor & Efficiency (34%)     Revenue & Quality (66%)          │   │
+│  │ ████████████░░░░░░░░░░░░░░░  ██████████████████████████       │   │
+│  │ $129,600                      $247,772                        │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  THE FRAME                                                          │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │ "Most organizations ask 'What's the ROI of ambient AI?'       │   │
+│  │                                                               │   │
+│  │  That's the wrong question.                                   │   │
+│  │                                                               │   │
+│  │  The right question is: 'Which value drivers matter most      │   │
+│  │  to us, and how do we capture them?'                          │   │
+│  │                                                               │   │
+│  │  This assessment models your specific priorities:             │   │
+│  │  ✓ Patient Access        ✓ Accurate Level of Service         │   │
+│  │  ✓ Clinician Retention   ✓ Documentation-Related Denials     │   │
+│  │                                                               │   │
+│  │  Each driver includes transparent calculations you can        │   │
+│  │  validate, adjust, and defend to your leadership."            │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│                                                    Page 1 of 6       │
+└─────────────────────────────────────────────────────────────────────┘
+
+PAGE 2: YOUR ORGANIZATION + THE VALUE DRIVER FRAMEWORK
+"Here's what we know about you, and how we think about value"
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ABRIDGE                              Outpatient ROI Assessment      │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                      │
+│ YOUR ORGANIZATION                                                    │
+│ ┌────────────────────────────────────────────────────────────────┐  │
+│ │                                                                 │  │
+│ │  DEPLOYMENT SCOPE                    YOUR BASELINE              │  │
+│ │  ┌─────────────┬─────────────┐      ┌─────────────────────┐    │  │
+│ │  │ 40          │ 60,000      │      │     39,000          │    │  │
+│ │  │ Providers   │ Encounters  │      │ Eligible Encounters │    │  │
+│ │  │ in scope    │ annually    │      │     per year        │    │  │
+│ │  └─────────────┴─────────────┘      │                     │    │  │
+│ │                                      │ 40 × 60,000 × 65%   │    │  │
+│ │  UTILIZATION ASSUMPTION              └─────────────────────┘    │  │
+│ │  ┌─────────────────────────────────────────────────────────┐   │  │
+│ │  │ ○ Conservative (50%)  ● Typical (65%)  ○ Aggressive (80%) │ │  │
+│ │  │                                                          │   │  │
+│ │  │ At 65% utilization, we assume Abridge is used for 65%   │   │  │
+│ │  │ of eligible encounters. Most organizations reach 70-80%  │   │  │
+│ │  │ at maturity — this is a realistic starting assumption.   │   │  │
+│ │  └─────────────────────────────────────────────────────────┘   │  │
+│ │                                                                 │  │
+│ └────────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│                                                                      │
+│ HOW WE THINK ABOUT VALUE                                            │
+│                                                                      │
+│ Ambient documentation creates value through multiple channels.       │
+│ Most organizations focus on one or two. The complete picture         │
+│ requires understanding all of them.                                  │
+│                                                                      │
+│ ┌─────────────────────────────┬─────────────────────────────────┐   │
+│ │ LABOR & EFFICIENCY          │ REVENUE & QUALITY               │   │
+│ │ Value from time returned    │ Value from better documentation │   │
+│ ├─────────────────────────────┼─────────────────────────────────┤   │
+│ │                             │                                 │   │
+│ │ ○ Patient Access            │ ○ Accurate Level of Service     │   │
+│ │   Time → capacity → visits  │   Complexity → coding → revenue │   │
+│ │                             │                                 │   │
+│ │ ○ Overtime & Locum Savings  │ ○ HCC & Chronic Condition       │   │
+│ │   Reduced after-hours work  │   Risk adjustment capture       │   │
+│ │                             │                                 │   │
+│ │ ○ Clinician Retention       │ ○ Documentation-Related Denials │   │
+│ │   Burnout → turnover costs  │   Clearer MDM → fewer denials   │   │
+│ │                             │                                 │   │
+│ └─────────────────────────────┴─────────────────────────────────┘   │
+│                                                                      │
+│ YOUR SELECTED PRIORITIES (4 of 6)                                    │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │ ✓ Patient Access           $97,500    26% of total value     │    │
+│ │ ✓ Accurate Level of Service $96,525   26% of total value     │    │
+│ │ ✓ Clinician Retention      $129,600   34% of total value     │    │
+│ │ ✓ Doc-Related Denials      $53,747    14% of total value     │    │
+│ │ ─────────────────────────────────────────────────────────    │    │
+│ │   TOTAL ANNUAL VALUE       $377,372                          │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│                                                    Page 2 of 6       │
+└─────────────────────────────────────────────────────────────────────┘
+
+PAGE 3: VALUE DRIVER DEEP DIVE (Part 1)
+Two drivers per page, full calculation transparency
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ABRIDGE                              Outpatient ROI Assessment      │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                      │
+│ VALUE DRIVER #1                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │ 👥 PATIENT ACCESS                                   $97,500  │    │
+│ │    Turn documentation efficiency into additional visits       │    │
+│ ├──────────────────────────────────────────────────────────────┤    │
+│ │                                                               │    │
+│ │ THE THEORY                                                    │    │
+│ │ ┌────────────────────────────────────────────────────────┐   │    │
+│ │ │ When clinicians spend less time on documentation, they  │   │    │
+│ │ │ have capacity to see additional patients. Not all saved │   │    │
+│ │ │ time converts to visits—scheduling, room availability,  │   │    │
+│ │ │ and demand limit realization—but even a modest portion  │   │    │
+│ │ │ creates meaningful revenue.                              │   │    │
+│ │ └────────────────────────────────────────────────────────┘   │    │
+│ │                                                               │    │
+│ │ THE CALCULATION                                               │    │
+│ │                                                               │    │
+│ │ Step 1: Time Returned                                         │    │
+│ │ 39,000 enc × 65% util × 2.5 min saved = 1,625 hours          │    │
+│ │                                                               │    │
+│ │ Step 2: Time Allocated to Access (25%)                        │    │
+│ │ 1,625 hrs × 25% = 406 hours                                   │    │
+│ │ ┌─────────────────────────────────────────────────────────┐  │    │
+│ │ │ We assume saved time splits: 50% quality of life,       │  │    │
+│ │ │ 25% patient access, 25% cost reduction                   │  │    │
+│ │ └─────────────────────────────────────────────────────────┘  │    │
+│ │                                                               │    │
+│ │ Step 3: Conversion to Visits (60%)                            │    │
+│ │ 406 hrs × 60% = 244 hours of actual patient care             │    │
+│ │                                                               │    │
+│ │ Step 4: New Visits                                            │    │
+│ │ 244 hrs ÷ 30 min/visit = 488 additional visits               │    │
+│ │                                                               │    │
+│ │ Step 5: Revenue Impact                                        │    │
+│ │ 488 visits × $200/visit = $97,500                            │    │
+│ │                                                               │    │
+│ │ ┌─────────────────────────────────────────────────────────┐  │    │
+│ │ │ BENCHMARK: Revenue per Visit                             │  │    │
+│ │ │ Primary Care: $100-$150  │  Specialty: $175-$300         │  │    │
+│ │ │ Procedural: $300-$600+   │  Your input: $200 (blended)   │  │    │
+│ │ └─────────────────────────────────────────────────────────┘  │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ VALUE DRIVER #2                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │ 📊 ACCURATE LEVEL OF SERVICE                        $96,525  │    │
+│ │    Ensure visits are billed at the level actually delivered   │    │
+│ ├──────────────────────────────────────────────────────────────┤    │
+│ │                                                               │    │
+│ │ THE THEORY                                                    │    │
+│ │ ┌────────────────────────────────────────────────────────┐   │    │
+│ │ │ Physicians under time pressure document less than the   │   │    │
+│ │ │ full clinical picture. AI-assisted documentation        │   │    │
+│ │ │ captures the complexity that supports accurate coding—  │   │    │
+│ │ │ not upcoding, just getting credit for work already done.│   │    │
+│ │ └────────────────────────────────────────────────────────┘   │    │
+│ │                                                               │    │
+│ │ THE CALCULATION                                               │    │
+│ │                                                               │    │
+│ │ Step 1: Baseline wRVUs                                        │    │
+│ │ 39,000 encounters × 1.5 avg wRVU = 58,500 wRVUs              │    │
+│ │                                                               │    │
+│ │ Step 2: wRVU Improvement (5%)                                 │    │
+│ │ 58,500 wRVUs × 5% = 2,925 wRVU gain                          │    │
+│ │ ┌─────────────────────────────────────────────────────────┐  │    │
+│ │ │ On average, Abridge improves wRVU capture by 5% through │  │    │
+│ │ │ more complete documentation of clinical complexity.      │  │    │
+│ │ └─────────────────────────────────────────────────────────┘  │    │
+│ │                                                               │    │
+│ │ Step 3: Revenue Impact                                        │    │
+│ │ 2,925 wRVU × $33 conversion factor = $96,525                 │    │
+│ │                                                               │    │
+│ │ ┌─────────────────────────────────────────────────────────┐  │    │
+│ │ │ BENCHMARK: Conversion Factor                             │  │    │
+│ │ │ Medicare (2024): $33  │  Commercial: $45-$65             │  │    │
+│ │ │ We anchor to Medicare for conservatism.                  │  │    │
+│ │ └─────────────────────────────────────────────────────────┘  │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│                                                    Page 3 of 6       │
+└─────────────────────────────────────────────────────────────────────┘
+
+PAGE 4: VALUE DRIVER DEEP DIVE (Part 2)
+Remaining two drivers with same format
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ABRIDGE                              Outpatient ROI Assessment      │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                      │
+│ VALUE DRIVER #3                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │ ❤️ CLINICIAN RETENTION                              $129,600 │    │
+│ │    Lower burnout and turnover by reducing admin burden        │    │
+│ ├──────────────────────────────────────────────────────────────┤    │
+│ │                                                               │    │
+│ │ THE THEORY                                                    │    │
+│ │ ┌────────────────────────────────────────────────────────┐   │    │
+│ │ │ Documentation burden is the #1 driver of physician      │   │    │
+│ │ │ burnout. Reducing this burden improves satisfaction     │   │    │
+│ │ │ and retention. Replacing a physician costs $400K-$800K+ │   │    │
+│ │ │ when you factor in recruiting, lost revenue during      │   │    │
+│ │ │ vacancy, and onboarding.                                 │   │    │
+│ │ └────────────────────────────────────────────────────────┘   │    │
+│ │                                                               │    │
+│ │ ⚠️ With fewer than 50 providers, retention savings are       │    │
+│ │    probabilistic over multi-year periods. Consider this a    │    │
+│ │    long-term investment metric rather than near-term ROI.    │    │
+│ │                                                               │    │
+│ │ THE CALCULATION                                               │    │
+│ │                                                               │    │
+│ │ Step 1: Baseline Turnover                                     │    │
+│ │ 40 providers × 6% turnover = 2.4 departures/year             │    │
+│ │                                                               │    │
+│ │ Step 2: Burnout-Related Departures (45%)                      │    │
+│ │ 2.4 departures × 45% = 1.08 preventable                      │    │
+│ │ ┌─────────────────────────────────────────────────────────┐  │    │
+│ │ │ Research indicates 40-50% of physician departures cite  │  │    │
+│ │ │ burnout as a primary factor.                             │  │    │
+│ │ └─────────────────────────────────────────────────────────┘  │    │
+│ │                                                               │    │
+│ │ Step 3: Abridge Attribution (30%)                             │    │
+│ │ 1.08 preventable × 30% = 0.32/year avoided                   │    │
+│ │ ┌─────────────────────────────────────────────────────────┐  │    │
+│ │ │ WHY 30%? The Rule of Thirds                              │  │    │
+│ │ │ • Documentation burden = ~50% of burnout drivers         │  │    │
+│ │ │ • Abridge reduces documentation burden by 70%            │  │    │
+│ │ │ • 50% × 70% = 35% theoretical impact                     │  │    │
+│ │ │ • Rounded to 30% for conservatism                        │  │    │
+│ │ └─────────────────────────────────────────────────────────┘  │    │
+│ │                                                               │    │
+│ │ Step 4: Cost Savings                                          │    │
+│ │ 0.32 avoided × $400,000 replacement cost = $129,600          │    │
+│ │                                                               │    │
+│ │ WHAT THIS MEANS: Over ~3 years, retain 1 additional physician│    │
+│ │ Total savings of $400,000 realized over 3-year period.       │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ VALUE DRIVER #4                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │ 📄 DOCUMENTATION-RELATED DENIALS                    $53,747  │    │
+│ │    Reduce preventable denials caused by incomplete notes      │    │
+│ ├──────────────────────────────────────────────────────────────┤    │
+│ │                                                               │    │
+│ │ THE THEORY                                                    │    │
+│ │ ┌────────────────────────────────────────────────────────┐   │    │
+│ │ │ Most denials are recoverable—you appeal, you win, it    │   │    │
+│ │ │ just costs time. But a portion of documentation-related │   │    │
+│ │ │ denials are written off without appeal, either because  │   │    │
+│ │ │ the MDM can't support it or the rework cost exceeds the │   │    │
+│ │ │ claim value. Abridge captures the clinical reasoning    │   │    │
+│ │ │ that saves these.                                        │   │    │
+│ │ └────────────────────────────────────────────────────────┘   │    │
+│ │                                                               │    │
+│ │ THE CALCULATION                                               │    │
+│ │                                                               │    │
+│ │ Step 1: Total Denials                                         │    │
+│ │ 39,000 encounters × 7% denial rate = 2,730 denials           │    │
+│ │                                                               │    │
+│ │ Step 2: Documentation-Related (35%)                           │    │
+│ │ 2,730 denials × 35% = 956 doc denials                        │    │
+│ │                                                               │    │
+│ │ Step 3: Written Off (30%)                                     │    │
+│ │ 956 doc denials × 30% = 287 written off                      │    │
+│ │                                                               │    │
+│ │ Step 4: Abridge Recovery (75%)                                │    │
+│ │ 287 written off × 75% = 215 recovered                        │    │
+│ │                                                               │    │
+│ │ Step 5: Value                                                 │    │
+│ │ 215 claims × $250 avg value = $53,747                        │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│                                                    Page 4 of 6       │
+└─────────────────────────────────────────────────────────────────────┘
+
+PAGE 5: INVESTMENT & THE JOURNEY
+This is the money page — shows the path forward
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ABRIDGE                              Outpatient ROI Assessment      │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                      │
+│ YOUR INVESTMENT                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │                                                               │    │
+│ │  ┌─────────────────────────────────────────────────────────┐ │    │
+│ │  │ INVESTMENT          │███░░░░░░░│  ANNUAL VALUE          │ │    │
+│ │  │ $91,200             │          │  $377,372              │ │    │
+│ │  └─────────────────────────────────────────────────────────┘ │    │
+│ │                                                               │    │
+│ │              ┌─────────────────────────────────┐              │    │
+│ │              │         4.1× ROI                │              │    │
+│ │              │   Every $1 returns $4.14        │              │    │
+│ │              │                                 │              │    │
+│ │              │   NET ANNUAL GAIN: +$286,172    │              │    │
+│ │              │   That's $23,848/month          │              │    │
+│ │              └─────────────────────────────────┘              │    │
+│ │                                                               │    │
+│ │  YOUR CONFIGURATION                                           │    │
+│ │  ───────────────────────────────────────────────────────────  │    │
+│ │  Model              Per Provider/Month                        │    │
+│ │  Providers          40                                        │    │
+│ │  Price              $190/provider/month                       │    │
+│ │  Term               2 years                                   │    │
+│ │  Annual Investment  $91,200                                   │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│                                                                      │
+│ YOUR JOURNEY WITH ABRIDGE                                           │
+│ Start with a pilot. Prove the value. Scale across your organization.│
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │                                                               │    │
+│ │  $1.8M ┤                                              ●      │    │
+│ │        │                                         ╱           │    │
+│ │  $1.35M┤                                    ╱                │    │
+│ │        │                               ╱   - - - - - -       │    │
+│ │  $900K ┤                          ╱                          │    │
+│ │        │                     ╱                               │    │
+│ │  $450K ┤               ╱                                     │    │
+│ │        │  ●───────╱                                          │    │
+│ │    $0  ┼────┬────┬────┬────┬────┬                           │    │
+│ │        Today 6mo  12mo 18mo Full                             │    │
+│ │        40   60   80   100  120 providers                     │    │
+│ │                                                               │    │
+│ │   ● Pilot (Today)  ── Actual value   - - Linear projection   │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ ┌─────────────────────────┐  ┌────────────────────────────────┐    │
+│ │ YOUR STARTING POINT     │  │ YOUR FULL SCALE POTENTIAL      │    │
+│ │                         │  │                                │    │
+│ │ 40 providers            │  │ 120 providers                  │    │
+│ │ 60,000 encounters       │  │ 180,000 encounters             │    │
+│ │ 65% utilization         │  │ 80% utilization (at maturity)  │    │
+│ │ $377,372/year           │  │ $1.7M/year                     │    │
+│ │                         │  │                                │    │
+│ │ 4.1× ROI                │  │ 6.1× ROI                       │    │
+│ └─────────────────────────┘  └────────────────────────────────┘    │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │  COMPOUNDING BONUS: +$539,932 over 24 months                 │    │
+│ │  Beyond linear projection                                     │    │
+│ │                                                               │    │
+│ │  THE COMPOUNDING EFFECT                                       │    │
+│ │  The gap between the lines represents value that compounds:   │    │
+│ │  • Utilization: 65% → 80% as adoption matures                │    │
+│ │  • Retention: Benefits materialize after 6-12 months         │    │
+│ │  • Efficiency: Shared learnings, optimized workflows          │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│                                                    Page 5 of 6       │
+└─────────────────────────────────────────────────────────────────────┘
+
+PAGE 6: METHODOLOGY + ANNUAL BENEFIT PER PROVIDER
+The defensibility page — plus the incentive to scale
+Copy┌─────────────────────────────────────────────────────────────────────┐
+│ ABRIDGE                              Outpatient ROI Assessment      │
+│ ═══════════════════════════════════════════════════════════════════ │
+│                                                                      │
+│ THE ECONOMICS OF ADDING PROVIDERS                                   │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │                                                               │    │
+│ │  ANNUAL BENEFIT PER PROVIDER                                  │    │
+│ │  ┌─────────────────────────────────────────────────────────┐ │    │
+│ │  │                                                          │ │    │
+│ │  │     $9,434              $7,154                $2,280     │ │    │
+│ │  │     ───────             ───────               ───────    │ │    │
+│ │  │     Gross Value         Net Benefit           Investment │ │    │
+│ │  │     per provider        per provider          per provider│ │    │
+│ │  │                                                          │ │    │
+│ │  └─────────────────────────────────────────────────────────┘ │    │
+│ │                                                               │    │
+│ │  WHAT THIS MEANS                                              │    │
+│ │  Every provider added to Abridge generates $7,154 in net     │    │
+│ │  annual value. More importantly: every provider NOT using     │    │
+│ │  Abridge represents $9,434 in unrealized value.               │    │
+│ │                                                               │    │
+│ │  ┌─────────────────────────────────────────────────────────┐ │    │
+│ │  │  +10 providers  = +$71,540 net annual value             │ │    │
+│ │  │  +25 providers  = +$178,850 net annual value            │ │    │
+│ │  │  +50 providers  = +$357,700 net annual value            │ │    │
+│ │  └─────────────────────────────────────────────────────────┘ │    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│                                                                      │
+│ MULTI-YEAR PROJECTION                                               │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │                   Year 1    Year 2    Year 3    3-Yr Total   │    │
+│ │  ─────────────────────────────────────────────────────────   │    │
+│ │  Value            $377K     $415K     $457K     $1.25M       │    │
+│ │  Cost             $91K      $91K      $91K      $274K        │    │
+│ │  Net              $286K     $324K     $365K     $976K        │    │
+│ │                                                               │    │
+│ │  Assumes 10% annual value growth with increased adoption     │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│                                                                      │
+│ METHODOLOGY & ASSUMPTIONS                                           │
+│                                                                      │
+│ ┌───────────────────────────┬──────────────────────────────────┐   │
+│ │ YOUR INPUTS               │ ABRIDGE BENCHMARKS               │   │
+│ ├───────────────────────────┼──────────────────────────────────┤   │
+│ │ • 40 providers            │ • 65% typical utilization        │   │
+│ │ • 60,000 annual encounters│ • 2.5 min saved per encounter    │   │
+│ │ • 65% utilization         │ • 5% wRVU improvement            │   │
+│ │ • $190/provider/month     │ • $33 Medicare conversion factor │   │
+│ │ • 2-year term             │ • $400K replacement cost         │   │
+│ └───────────────────────────┴──────────────────────────────────┘   │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │ VALUATION ASSUMPTIONS                                         │    │
+│ │                                                               │    │
+│ │ • Provider time: $150/hr (fully-loaded cost)                 │    │
+│ │ • Saved time allocation: 50% QoL, 25% access, 25% cost       │    │
+│ │ • Visit conversion: 60% of allocated time becomes visits     │    │
+│ │ • wRVU: Medicare conversion factor ($33) for conservatism    │    │
+│ │ • Retention: 30% attribution to documentation burden          │    │
+│ │ • Denials: 30% write-off rate, 75% Abridge recovery          │    │
+│ │                                                               │    │
+│ │ All benchmarks based on aggregate data from 200+ health      │    │
+│ │ system partners across 50M+ encounters. Individual results   │    │
+│ │ vary based on specialty mix and operational factors.          │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ ─────────────────────────────────────────────────────────────────── │
+│                                                                      │
+│ ┌──────────────────────────────────────────────────────────────┐    │
+│ │                                                               │    │
+│ │  "This isn't about whether ambient AI creates value.         │    │
+│ │   It does. The question is whether you'll capture 40%        │    │
+│ │   of that value, or 85%.                                      │    │
+│ │                                                               │    │
+│ │   That choice is worth $286,172 annually in outpatient alone."│    │
+│ │                                                               │    │
+│ └──────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│ ┌────────────────────────────────────────────────────────────────┐  │
+│ │  [ABRIDGE LOGO]                                                │  │
+│ │                                                                │  │
+│ │  Questions about this assessment?                              │  │
+│ │  Contact: [Sales Director Name] | [Email] | [Phone]            │  │
+│ └────────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  Generated by Abridge ROI Calculator                Page 6 of 6     │
+└─────────────────────────────────────────────────────────────────────┘
+
+NOW LET'S TURN THIS INTO REPLIT INSTRUCTIONS
+Here's what to tell Replit to make this happen:
+
+REPLIT PROMPT: PDF Generation for Outpatient ROI Assessment
+CopyI need you to create a premium PDF export for my Outpatient ROI Calculator. 
+This PDF should feel like the "Stripe of healthcare" — clean, confident, 
+sophisticated, with zero wasted space.
+
+## DESIGN REQUIREMENTS:
+
+### Brand Elements:
+- Use Abridge brand colors: Red (#E94E3D), Warm Gray (#F5F5F5), 
+  Dark text (#1A1A1A), Accent green for positive numbers (#10B981)
+- Include a LARGE, FAINT watermark of the Abridge "A" logo, split 
+  vertically so only the left half is visible, positioned at 5-10% 
+  opacity as a background element on the cover page
+- Abridge logo in header of every page
+- Page numbers in footer: "Page X of 6"
+- Red accent bar under header (like the existing PDF you've seen)
+
+### Typography:
+- Headlines: Bold, clean sans-serif (similar to current app)
+- Body text: 11-12pt for readability
+- Numbers: Large, bold, slightly stylized for key metrics
+- Use monospace for calculation steps
+
+### Layout Principles:
+- Dense, information-rich pages — no unnecessary white space
+- Clear visual hierarchy with boxed sections
+- Two-column layouts where appropriate
+- Progress/comparison bars for visual impact
+- Subtle shadows/borders on cards
+
+## PAGE STRUCTURE:
+
+### PAGE 1: Cover + Executive Summary
+Include:
+- Health system name (input field or auto-populate)
+- Provider count and encounter count
+- Date generated
+- "Results at a Glance" with 4 key metrics:
+  - Net Annual Gain (large, green)
+  - ROI multiple (4.1×)
+  - Hours Returned
+  - Benefit Per Provider (NEW CALCULATION: Net Annual Gain ÷ Providers)
+- Value composition bar showing investment vs total value
+- "The Frame" explanation text
+- List of selected strategic priorities
+
+### PAGE 2: Organization + Framework
+Include:
+- Deployment Scope (providers, encounters)
+- Utilization assumption with explanation
+- Value driver framework (2x3 grid showing all 6 possible drivers)
+- Selected priorities with their dollar values and % of total
+
+### PAGE 3: Value Driver Deep Dive Part 1
+Include:
+- Patient Access calculation (all 5 steps with THE THEORY box)
+- Accurate Level of Service calculation (all 3 steps with THE THEORY box)
+- Benchmarks for each
+
+### PAGE 4: Value Driver Deep Dive Part 2
+Include:
+- Clinician Retention calculation (with warning about small provider counts)
+- Documentation-Related Denials calculation
+- Both with THE THEORY boxes
+
+### PAGE 5: Investment & Journey
+Include:
+- Investment vs Value bar
+- ROI calculation and net annual gain
+- Configuration details
+- THE JOURNEY CHART (the scaling graph showing pilot to full scale)
+- Starting point vs full scale potential comparison
+- Compounding bonus callout
+
+### PAGE 6: Methodology + Per-Provider Economics
+Include:
+- NEW SECTION: "Annual Benefit Per Provider" showing:
+  - Gross value per provider
+  - Net benefit per provider  
+  - Investment per provider
+  - What adding 10/25/50 providers would mean
+- Multi-year projection table
+- Methodology & Assumptions (your inputs vs Abridge benchmarks)
+- Valuation assumptions with explanations
+- Closing quote
+- Contact information
+
+## DATA TO PULL:
+Pull all values from the calculator state:
+- providers, encounters, utilization
+- Each value driver's calculated amount
+- Total annual value, investment, net gain, ROI
+- Journey scaling parameters
+- All configurable inputs from each driver
+
+## CALCULATIONS TO ADD:
+- Benefit Per Provider = Total Annual Value ÷ Providers
+- Net Benefit Per Provider = Net Annual Gain ÷ Providers
+- Investment Per Provider = Annual Investment ÷ Providers
+
+Generate this as a downloadable PDF using a library like jsPDF or 
+react-pdf. The styling should match the premium look of my web app.
