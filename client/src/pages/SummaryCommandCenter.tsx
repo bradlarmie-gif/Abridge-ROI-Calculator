@@ -37,6 +37,7 @@ import { generateNursingROIPDF, generateNursingROIPDFBlob } from "@/lib/nursing-
 import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
 import { useToast } from "@/hooks/use-toast";
 import { saveAs } from "file-saver";
+import { AddDriverSheet } from "@/components/AddDriverSheet";
 import {
   ComposedChart,
   Area,
@@ -80,24 +81,35 @@ const formatCompactCurrency = (value: number): string => {
 };
 
 const DRIVER_CATEGORIES: Record<string, { category: "labor" | "revenue"; label: string }> = {
+  // Outpatient drivers - both underscore and camelCase versions
   overtime: { category: "labor", label: "Overtime Reduction" },
-  nursingOvertime: { category: "labor", label: "Overtime Reduction" },
   patient_access: { category: "revenue", label: "Patient Access" },
+  patientAccess: { category: "revenue", label: "Patient Access" },
   retention: { category: "labor", label: "Provider Retention" },
+  workforce: { category: "labor", label: "Clinician Retention" },
+  level_of_service: { category: "revenue", label: "Level of Service" },
+  levelOfService: { category: "revenue", label: "Level of Service" },
+  wrvu: { category: "revenue", label: "Accurate Level of Service" },
+  hcc_capture: { category: "revenue", label: "HCC Capture" },
+  hcc: { category: "revenue", label: "HCC Risk Capture" },
+  denials: { category: "revenue", label: "Denial Prevention" },
+  // Nursing drivers
+  nursingOvertime: { category: "labor", label: "Overtime Reduction" },
   nursingRetention: { category: "labor", label: "Nurse Retention" },
   nursingAgency: { category: "labor", label: "Agency Reduction" },
-  level_of_service: { category: "revenue", label: "Level of Service" },
-  hcc_capture: { category: "revenue", label: "HCC Capture" },
-  denials: { category: "revenue", label: "Denial Prevention" },
   nursingHAPI: { category: "revenue", label: "HAPI Prevention" },
+  nursingFalls: { category: "revenue", label: "Falls Prevention" },
   nursingSurvey: { category: "labor", label: "Survey & Compliance Readiness" },
   nursingCareCoordination: { category: "labor", label: "Care Coordination" },
   nursingPatientExperience: { category: "labor", label: "Patient Experience (HCAHPS)" },
+  // ED drivers
   edThroughput: { category: "labor", label: "Patient Throughput (LWBS Reduction)" },
   edScribe: { category: "labor", label: "Scribe Cost Reduction" },
   edRetention: { category: "labor", label: "Physician Retention" },
   edLevelOfService: { category: "revenue", label: "Level-of-Service Accuracy" },
   edDenials: { category: "revenue", label: "Documentation-Related Denials" },
+  edPatientExperience: { category: "labor", label: "Patient Experience" },
+  // Inpatient drivers
   inpatientRounding: { category: "labor", label: "Rounding Efficiency" },
   inpatientRetention: { category: "labor", label: "Hospitalist Retention" },
   inpatientCCMCC: { category: "revenue", label: "CC/MCC Capture" },
@@ -192,6 +204,8 @@ export default function SummaryCommandCenter({
 }: SummaryCommandCenterProps) {
   const [assumptionsExpanded, setAssumptionsExpanded] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [addDriverSheetOpen, setAddDriverSheetOpen] = useState(false);
+  const [addedDrivers, setAddedDrivers] = useState<Record<string, { name: string; value: number; inputs: Record<string, any> }>>({});
   const { toast } = useToast();
   
   // Check if Web Share API is available (typically mobile devices)
@@ -220,12 +234,55 @@ export default function SummaryCommandCenter({
   const safeFullScaleUnits = fullScaleUnits === "" ? pilotUnits + 1 : fullScaleUnits;
   const [selectedPace, setSelectedPace] = useState<"measured" | "steady" | "aggressive">("steady");
   
-  const totalAnnualValue = modelResults.totalBenefit;
+  // Merge original driver results with any drivers added via the sheet
+  const mergedDriverResults = useMemo(() => {
+    const merged = { ...modelResults.driverResults };
+    Object.entries(addedDrivers).forEach(([id, driver]) => {
+      merged[id] = {
+        id,
+        name: driver.name,
+        value: driver.value,
+        inputs: driver.inputs,
+      };
+    });
+    return merged;
+  }, [modelResults.driverResults, addedDrivers]);
+  
+  // Calculate additional value from newly added drivers
+  const addedDriversValue = useMemo(() => {
+    return Object.values(addedDrivers).reduce((sum, d) => sum + d.value, 0);
+  }, [addedDrivers]);
+  
+  const totalAnnualValue = modelResults.totalBenefit + addedDriversValue;
   const annualInvestment = modelResults.investment || 0;
   const implementationFee = modelResults.implementationFee || 0;
   const netValue = totalAnnualValue - annualInvestment;
   const roiMultiple = annualInvestment > 0 ? (totalAnnualValue / annualInvestment) : 0;
   const paybackMonths = totalAnnualValue > 0 ? Math.round((annualInvestment / totalAnnualValue) * 12) : 0;
+  
+  // Get list of existing driver IDs (both original and added)
+  const existingDriverIds = useMemo(() => {
+    const originalIds = Object.keys(modelResults.driverResults || {});
+    const addedIds = Object.keys(addedDrivers);
+    const allIds = [...originalIds, ...addedIds];
+    return Array.from(new Set(allIds));
+  }, [modelResults.driverResults, addedDrivers]);
+  
+  // Handler for adding a new driver from the sheet
+  const handleAddDriver = useCallback((driver: { id: string; name: string; value: number; inputs: Record<string, any> }) => {
+    setAddedDrivers(prev => ({
+      ...prev,
+      [driver.id]: {
+        name: driver.name,
+        value: driver.value,
+        inputs: driver.inputs,
+      },
+    }));
+    toast({
+      title: "Driver Added",
+      description: `${driver.name} added: ${formatCurrency(driver.value)} annual value`,
+    });
+  }, [toast]);
   
   const pilotEncounters = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
   const valuePerEncounter = pilotEncounters > 0 ? totalAnnualValue / pilotEncounters : 0;
@@ -346,9 +403,8 @@ export default function SummaryCommandCenter({
   
   const valueBreakdown = useMemo(() => {
     const breakdown: { id: string; name: string; value: number; category: "labor" | "revenue" }[] = [];
-    const driverResults = modelResults.driverResults || {};
     
-    Object.entries(driverResults).forEach(([key, result]) => {
+    Object.entries(mergedDriverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {
         const meta = DRIVER_CATEGORIES[key];
         breakdown.push({
@@ -361,7 +417,7 @@ export default function SummaryCommandCenter({
     });
     
     return breakdown.sort((a, b) => b.value - a.value);
-  }, [modelResults.driverResults]);
+  }, [mergedDriverResults]);
   
   const laborDrivers = valueBreakdown.filter(d => d.category === "labor");
   const revenueDrivers = valueBreakdown.filter(d => d.category === "revenue");
@@ -405,10 +461,9 @@ export default function SummaryCommandCenter({
       inpatientDenials: 'inpatientDenials',
     };
 
-    const rawDriverResults = modelResults.driverResults || {};
     const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
     
-    Object.entries(rawDriverResults).forEach(([key, result]) => {
+    Object.entries(mergedDriverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {
         const normalizedId = driverIdMap[key] || key;
         driverResults[normalizedId] = {
@@ -484,7 +539,7 @@ export default function SummaryCommandCenter({
     }
   }, [
     activeSetting,
-    modelResults.driverResults,
+    mergedDriverResults,
     pilotUnits,
     encountersPerUnit,
     pilotUtilization,
@@ -521,10 +576,9 @@ export default function SummaryCommandCenter({
       inpatientDenials: 'inpatientDenials',
     };
 
-    const rawDriverResults = modelResults.driverResults || {};
     const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
     
-    Object.entries(rawDriverResults).forEach(([key, result]) => {
+    Object.entries(mergedDriverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {
         const normalizedId = driverIdMap[key] || key;
         driverResults[normalizedId] = {
@@ -600,7 +654,7 @@ export default function SummaryCommandCenter({
     }
   }, [
     activeSetting,
-    modelResults.driverResults,
+    mergedDriverResults,
     pilotUnits,
     encountersPerUnit,
     pilotUtilization,
@@ -1517,7 +1571,7 @@ export default function SummaryCommandCenter({
           <Button
             variant="outline"
             className="gap-2 w-full sm:w-auto border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
-            onClick={onEditModel}
+            onClick={() => setAddDriverSheetOpen(true)}
             data-testid="button-add-driver"
           >
             <Plus className="w-4 h-4" />
@@ -1550,6 +1604,20 @@ export default function SummaryCommandCenter({
           </div>
         </section>
       </div>
+      
+      {/* Add Driver Sheet */}
+      <AddDriverSheet
+        open={addDriverSheetOpen}
+        onClose={() => setAddDriverSheetOpen(false)}
+        careSetting={activeSetting}
+        existingDriverIds={existingDriverIds}
+        providers={pilotUnits}
+        encounters={pilotUnits * encountersPerUnit}
+        utilizationRate={pilotUtilization}
+        staffedBeds={isNursingSetting ? pilotUnits : undefined}
+        nurseFTEs={isNursingSetting ? modelResults.nursingFTEs : undefined}
+        onAddDriver={handleAddDriver}
+      />
     </div>
   );
 }
