@@ -5,6 +5,8 @@ import {
   View,
   StyleSheet,
   Image,
+  Svg,
+  Rect,
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
@@ -1073,10 +1075,10 @@ const OutpatientPDFDocument = ({
         {/* Key takeaways */}
         <View style={styles.takeawaysBox}>
           <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
-          <Text style={styles.takeawayItem}>Investment of {formatCurrency(annualInvestment)}/year generates {formatCurrency(results.totalAnnualBenefit)} in value ({roi.toFixed(1)}x ROI)</Text>
-          <Text style={styles.takeawayItem}>Net annual gain of {formatCurrency(netGain)} represents real operational and financial improvement</Text>
-          <Text style={styles.takeawayItem}>Each provider generates {formatCurrency(netPerProvider)} in net annual value after investment cost</Text>
-          <Text style={styles.takeawayItem}>Over 3 years, cumulative net benefit reaches {formatCurrency(threeYearNet)} (assumes 10% annual growth)</Text>
+          <Text style={styles.takeawayItem}>• Investment of {formatCurrency(annualInvestment)}/year generates {formatCurrency(results.totalAnnualBenefit)} in value ({roi.toFixed(1)}x ROI)</Text>
+          <Text style={styles.takeawayItem}>• Net annual gain of {formatCurrency(netGain)} represents real operational and financial improvement</Text>
+          <Text style={styles.takeawayItem}>• Each provider generates {formatCurrency(netPerProvider)} in net annual value after investment cost</Text>
+          <Text style={styles.takeawayItem}>• Over 3 years, cumulative net benefit reaches {formatCurrency(threeYearNet)} (assumes 10% annual growth)</Text>
         </View>
 
         {/* Methodology */}
@@ -1085,19 +1087,19 @@ const OutpatientPDFDocument = ({
           <View style={styles.methodologyGrid}>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Your Inputs</Text>
-              <Text style={styles.methodologyItem}>{inputs.numberOfProviders} providers</Text>
-              <Text style={styles.methodologyItem}>{formatNumber(inputs.annualOutpatientEncounters)} annual encounters</Text>
-              <Text style={styles.methodologyItem}>{inputs.abridgeUtilizationPct}% utilization</Text>
-              <Text style={styles.methodologyItem}>{inputs.minutesSavedPerEncounter} min saved/encounter</Text>
-              <Text style={styles.methodologyItem}>${inputs.monthlyCostPerProvider}/provider/month</Text>
+              <Text style={styles.methodologyItem}>• {inputs.numberOfProviders} providers</Text>
+              <Text style={styles.methodologyItem}>• {formatNumber(inputs.annualOutpatientEncounters)} annual encounters</Text>
+              <Text style={styles.methodologyItem}>• {inputs.abridgeUtilizationPct}% utilization</Text>
+              <Text style={styles.methodologyItem}>• {inputs.minutesSavedPerEncounter} min saved/encounter</Text>
+              <Text style={styles.methodologyItem}>• ${inputs.monthlyCostPerProvider}/provider/month</Text>
             </View>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Benchmarks Used</Text>
-              <Text style={styles.methodologyItem}>wRVU conversion: ${inputs.wrvu?.wrvuConversionFactor || 33} (Medicare)</Text>
-              <Text style={styles.methodologyItem}>Provider replacement: ${(inputs.workforce?.costPerDeparture || 400000).toLocaleString()}</Text>
-              <Text style={styles.methodologyItem}>Time value: $150/hr (fully-loaded)</Text>
-              <Text style={styles.methodologyItem}>Visit conversion: 60% of capacity</Text>
-              <Text style={styles.methodologyItem}>Burnout attribution: 30%</Text>
+              <Text style={styles.methodologyItem}>• wRVU conversion: ${inputs.wrvu?.wrvuConversionFactor || 33} (Medicare)</Text>
+              <Text style={styles.methodologyItem}>• Provider replacement: ${(inputs.workforce?.costPerDeparture || 400000).toLocaleString()}</Text>
+              <Text style={styles.methodologyItem}>• Time value: $150/hr (fully-loaded)</Text>
+              <Text style={styles.methodologyItem}>• Visit conversion: 60% of capacity</Text>
+              <Text style={styles.methodologyItem}>• Burnout attribution: 30%</Text>
             </View>
           </View>
           <Text style={styles.methodologyNote}>
