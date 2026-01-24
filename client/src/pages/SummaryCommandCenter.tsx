@@ -35,6 +35,8 @@ import { generateEDROIPDF } from "@/lib/ed-pdf-generator";
 import { transformToEDPDFData } from "@/lib/ed-pdf-data-transformer";
 import { generateInpatientROIPDF } from "@/lib/inpatient-pdf-generator";
 import { transformToInpatientPDFData } from "@/lib/inpatient-pdf-data-transformer";
+import { generateNursingROIPDF } from "@/lib/nursing-pdf-generator";
+import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
 import {
   ComposedChart,
   Area,
@@ -446,6 +448,31 @@ export default function SummaryCommandCenter({
     } else if (activeSetting === "inpatient") {
       const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs);
       await generateInpatientROIPDF(pdfData);
+    } else if (activeSetting === "nursing") {
+      const nursingJourneyInputs = {
+        pilotBeds: pilotUnits,
+        pilotEvents: Math.round(pilotUnits * 365 * 8 * (pilotUtilization / 100)),
+        pilotUtilization,
+        pilotValue: Math.round(totalAnnualValue * (pilotUnits / safeFullScaleUnits) * (pilotUtilization / fullScaleUtilization)),
+        fullScaleBeds: safeFullScaleUnits,
+        fullScaleUtilization,
+        fullScaleValue: fullScale.value,
+        scalingPace: selectedPace as "measured" | "steady" | "aggressive",
+        networkEffect,
+      };
+      const nursingModelResults = {
+        totalBenefit: totalAnnualValue,
+        investment: annualInvestment,
+        staffedBeds: safeFullScaleUnits,
+        nurseFTEs: Math.round(safeFullScaleUnits * 1.5),
+        documentationEvents: safeFullScaleUnits * 365 * 8,
+        utilizationRate: fullScaleUtilization,
+        costPerMonth: pricePerUnit,
+        timeSavedPerEvent: 5,
+        driverResults,
+      };
+      const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs);
+      await generateNursingROIPDF(pdfData);
     } else {
       const pdfData = transformToOutpatientPDFData(
         modelResultsForPDF,

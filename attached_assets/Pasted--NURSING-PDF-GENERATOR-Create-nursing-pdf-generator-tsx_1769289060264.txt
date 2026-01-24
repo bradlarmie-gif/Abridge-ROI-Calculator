@@ -1,0 +1,61 @@
+## NURSING PDF GENERATOR
+
+Create nursing-pdf-generator.tsx following the same structure as ED/Outpatient/Inpatient.
+
+### SETTINGS
+- careSetting: "Nursing"
+- unitName: "staffed bed"
+- unitNamePlural: "staffed beds"
+- encounterName: "documentation events"
+
+### DRIVERS - THREE CATEGORIES
+
+**LABOR COST BENEFITS (Quantified)**
+1. nursingOvertime - Overtime Reduction - Category: Labor
+2. nursingAgency - Agency & Travel Nurse Reduction - Category: Labor
+3. nursingRetention - Nurse Retention - Category: Labor
+
+**QUALITY & SAFETY BENEFITS (Quantified as "Potential Value")**
+4. nursingHAPI - HAPI Prevention - Category: Quality (mark as "Potential Value")
+5. nursingFalls - Falls Prevention - Category: Quality (mark as "Potential Value")
+
+**ADDITIONAL BENEFITS (Qualitative, $0)**
+6. nursingSurvey - Survey & Compliance Readiness - Category: Qualitative
+7. nursingCareCoordination - Care Coordination - Category: Qualitative
+8. nursingPatientExperience - Patient Experience (HCAHPS) - Category: Qualitative
+
+### PAGE 1: EXECUTIVE SUMMARY
+Same format as ED/Outpatient/Inpatient but with:
+- Value breakdown split into "Labor Cost Benefits" and "Quality & Safety Benefits"
+- Add a note that HAPI/Falls are "Potential Value" (indirect)
+- Add a small "Qualitative Benefits" section listing the $0 drivers that add narrative value
+
+### DRIVER PAGES
+- One page per QUANTIFIED driver (5 pages)
+- HAPI and Falls pages should have the "WHY THIS IS POTENTIAL VALUE" callout box
+- Qualitative drivers get a COMBINED page (all 3 on one page) explaining they add narrative value but aren't quantified
+
+### QUALITATIVE BENEFITS PAGE (special for Nursing)
+Title: "THE FULL PICTURE"
+Subtitle: "What else gets better"
+
+Intro: "Your ROI model captures the outcomes we can measure with confidence. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization:"
+
+Three cards:
+1. Patient Experience - Nurses who aren't typing are nurses who are present. Impacts: HCAHPS nurse communication
+2. Survey Readiness - Charts that are always complete and audit-ready. Impacts: Joint Commission, CMS
+3. Care Coordination - Handoffs that actually have the full picture. Impacts: Safety, continuity
+
+Blue callout: "Why we don't quantify these: Attribution is complex. Patient experience has many drivers. Survey outcomes depend on timing. We'd rather be conservative with your ROI than inflate it with assumptions we can't defend. That said—these outcomes are real, and they matter to your board, your CNO, and your patients."
+
+### METHODOLOGY PAGE - Nursing-Specific Benchmarks
+- Base RN hourly rate: $40-$50
+- OT rate (1.5×): $60-$75
+- Agency vs Staff premium: $75,000
+- Nurse replacement cost: $40K-$60K
+- Nursing turnover rate: 18-25%
+- HAPI cost: $10K-$50K (avg $20K)
+- Falls cost: $3K-$30K (avg $6,500)
+
+### NURSING-SPECIFIC CLOSING QUOTE
+"Nursing documentation carries a different kind of weight—it's not just about coding or billing. It's about patient safety, regulatory compliance, and the daily experience of nurses who spend 25-35% of their shift charting instead of caring. The ROI is measurable. The impact on culture is harder to quantify—but often matters more."
