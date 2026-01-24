@@ -258,6 +258,9 @@ interface DriverInputs {
   nursingPatientExperience: {
     enabled: boolean;  // Not quantified - qualitative value
   };
+  edPatientExperience: {
+    enabled: boolean;  // Not quantified - qualitative value
+  };
 }
 
 const DRIVER_ICONS: Record<string, typeof Clock> = {
@@ -286,6 +289,7 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
   nursingSurvey: CheckCircle,
   nursingCareCoordination: Link2,
   nursingPatientExperience: Heart,
+  edPatientExperience: Heart,
 };
 
 const DRIVER_NAMES: Record<string, string> = {
@@ -314,6 +318,7 @@ const DRIVER_NAMES: Record<string, string> = {
   nursingSurvey: "Survey & Compliance Readiness",
   nursingCareCoordination: "Care Coordination",
   nursingPatientExperience: "Patient Experience (HCAHPS)",
+  edPatientExperience: "Patient Experience",
 };
 
 const DRIVER_THEORIES: Record<string, string> = {
@@ -342,6 +347,7 @@ const DRIVER_THEORIES: Record<string, string> = {
   nursingSurvey: "Real-time documentation supports audit confidence and survey readiness. This is qualitative value that strengthens the overall ROI narrative.",
   nursingCareCoordination: "Complete, timely documentation improves handoffs between shifts and departments. This is qualitative value that improves patient outcomes.",
   nursingPatientExperience: "Patients notice when nurses are fully present versus distracted by documentation. Ambient charting improves how patients perceive nurse communication—a key HCAHPS domain.",
+  edPatientExperience: "ED encounters are high-stress moments. When physicians are present and engaged rather than focused on documentation, patients feel heard and communication improves—directly impacting satisfaction scores.",
 };
 
 export default function ModelBuilder({
@@ -550,6 +556,9 @@ export default function ModelBuilder({
     nursingPatientExperience: {
       enabled: false,  // Not quantified - qualitative value
     },
+    edPatientExperience: {
+      enabled: false,  // Not quantified - qualitative value
+    },
   });
   
   const isInpatientSetting = selectedSettings.includes("inpatient");
@@ -593,6 +602,7 @@ export default function ModelBuilder({
       edRetention: "edRetention",
       edLevelOfService: "edLevelOfService",
       edDenials: "edDenials",
+      edPatientExperience: "edPatientExperience",
       // Inpatient mappings
       inpatientRetention: "inpatientRetention",
       inpatientCCMCC: "inpatientCCMCC",
@@ -919,7 +929,8 @@ export default function ModelBuilder({
       }
       case "nursingSurvey":
       case "nursingCareCoordination":
-      case "nursingPatientExperience": {
+      case "nursingPatientExperience":
+      case "edPatientExperience": {
         // Not quantified - qualitative value only
         return 0;
       }
@@ -1347,6 +1358,8 @@ export default function ModelBuilder({
         return renderNursingCareCoordinationInputs();
       case "nursingPatientExperience":
         return renderNursingPatientExperienceInputs();
+      case "edPatientExperience":
+        return renderEDPatientExperienceInputs();
       default:
         return null;
     }
@@ -6314,6 +6327,73 @@ export default function ModelBuilder({
             <li className="flex items-start gap-2">
               <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
               <span>Reduced perception of rushed care</span>
+            </li>
+          </ul>
+        </div>
+        
+        {/* Final Result */}
+        <div className="p-4 bg-slate-100 rounded-lg border border-slate-200">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Qualitative Value</span>
+            <span className="font-mono font-medium text-slate-600 text-sm">
+              Not Quantified
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Adds to narrative, not included in ROI total
+          </p>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderEDPatientExperienceInputs = () => {
+    return (
+      <div className="space-y-6">
+        {/* The Theory */}
+        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                ED encounters are high-stress moments for patients. When physicians are fully present and engaged rather than focused on documentation, patients feel heard and communication improves—directly impacting satisfaction scores and reducing complaints.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Not Quantified Notice */}
+        <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <Info className="h-4 w-4 text-slate-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-slate-800">
+            <p className="font-medium mb-1">Not Quantified</p>
+            <p>This driver adds to the narrative value of Abridge but is not included in the ROI total. The value is qualitative—improving patient perception of physician attentiveness during high-stress ED encounters.</p>
+          </div>
+        </div>
+        
+        {/* Value Examples */}
+        <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="h-4 w-4 text-[#6B7280]" />
+            <span className="text-xs font-semibold text-[#6B7280]">Qualitative Value Examples</span>
+          </div>
+          <ul className="space-y-2 text-xs text-[#6B7280]">
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Less waiting room frustration when physicians are more present</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Better communication during high-stress encounters</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Improved "doctor explained things" ratings</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Check className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <span>Reduced patient complaints about feeling rushed</span>
             </li>
           </ul>
         </div>
