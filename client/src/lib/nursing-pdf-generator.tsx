@@ -106,8 +106,9 @@ const colors = {
 const styles = StyleSheet.create({
   page: {
     padding: 40,
+    paddingBottom: 50,
     fontFamily: "Helvetica",
-    fontSize: 10,
+    fontSize: 9,
     color: colors.black,
     backgroundColor: colors.white,
   },
@@ -115,21 +116,52 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
     paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
   },
   logo: {
-    width: 80,
-    height: 20,
+    width: 85,
+    height: 17,
   },
   headerRight: {
     textAlign: "right",
   },
   headerTitle: {
-    fontSize: 9,
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 0.3,
+  },
+  headerSubtitle: {
+    fontSize: 8,
     color: colors.mediumGray,
+    marginTop: 2,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 25,
+    left: 40,
+    right: 40,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  footerText: {
+    fontSize: 7,
+    color: colors.lightGray,
+  },
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 10,
+    marginTop: 16,
   },
   pageTitle: {
     fontSize: 11,
@@ -147,36 +179,28 @@ const styles = StyleSheet.create({
   },
   narrativeBox: {
     backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
     padding: 14,
-    marginBottom: 16,
+    borderRadius: 4,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
   },
   narrativeText: {
     fontSize: 8.5,
-    lineHeight: 1.5,
     color: colors.darkGray,
+    lineHeight: 1.55,
   },
   narrativeBold: {
     fontWeight: "bold",
     color: colors.black,
   },
-  sectionTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 8,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
   metricsRow: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  metricCard: {
+  metricBox: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
@@ -184,111 +208,234 @@ const styles = StyleSheet.create({
     marginRight: 8,
     alignItems: "center",
   },
-  metricCardLast: {
+  metricBoxLast: {
     marginRight: 0,
+  },
+  metricBoxHighlight: {
+    flex: 1,
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 10,
+    marginRight: 8,
+    alignItems: "center",
   },
   metricValue: {
     fontSize: 18,
     fontWeight: "bold",
+    color: colors.black,
+    fontFamily: "Helvetica-Bold",
+  },
+  metricValueGreen: {
+    fontSize: 18,
+    fontWeight: "bold",
     color: colors.green,
     fontFamily: "Helvetica-Bold",
-    marginBottom: 2,
   },
   metricLabel: {
     fontSize: 7,
+    fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 3,
     textAlign: "center",
   },
-  valueBreakdown: {
+  metricSublabel: {
+    fontSize: 6,
+    color: colors.lightGray,
+    marginTop: 2,
+    textAlign: "center",
+  },
+  twoColumn: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  valueColumn: {
+  column: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 8,
   },
-  valueColumnLast: {
+  columnLast: {
+    flex: 1,
     marginRight: 0,
   },
-  valueColumnTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  progressContainer: {
-    marginBottom: 8,
-  },
-  progressLabel: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 3,
-  },
-  progressName: {
-    fontSize: 7.5,
-    color: colors.darkGray,
-  },
-  progressValue: {
-    fontSize: 7.5,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: colors.paleGray,
-    borderRadius: 3,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 3,
-  },
-  investmentSection: {
+  card: {
     backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
     padding: 12,
-    marginBottom: 16,
+    marginBottom: 10,
   },
-  investmentTitle: {
+  cardTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  cardLabel: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  cardValue: {
+    fontSize: 8,
+    color: colors.black,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+  },
+  cardTotal: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+    marginTop: 4,
+  },
+  cardTotalLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  cardTotalValue: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    fontFamily: "Helvetica-Bold",
+  },
+  valueBreakdownCard: {
+    flex: 1,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 8,
+  },
+  valueBreakdownCardLast: {
+    marginRight: 0,
+  },
+  laborCard: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+  },
+  qualityCard: {
+    backgroundColor: colors.amberLight,
+    borderWidth: 1,
+    borderColor: colors.amber,
+  },
+  valueBreakdownTitle: {
     fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 8,
     textTransform: "uppercase",
     letterSpacing: 0.3,
+    marginBottom: 2,
   },
-  investmentRow: {
-    flexDirection: "row",
+  valueBreakdownPct: {
+    fontSize: 7,
+    color: colors.mediumGray,
     marginBottom: 6,
   },
-  investmentCard: {
-    flex: 1,
-    backgroundColor: colors.white,
+  valueBreakdownAmount: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 8,
+  },
+  valueBreakdownDriver: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.08)",
+  },
+  valueBreakdownDriverLast: {
+    borderBottomWidth: 0,
+  },
+  valueBreakdownDriverName: {
+    fontSize: 7.5,
+    color: colors.darkGray,
+  },
+  valueBreakdownDriverValue: {
+    fontSize: 7.5,
+    fontWeight: "bold",
+    color: colors.green,
+  },
+  progressBar: {
+    height: 10,
+    flexDirection: "row",
+    borderRadius: 5,
+    overflow: "hidden",
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  progressSegment: {
+    height: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  progressLabel: {
+    fontSize: 6,
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  table: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 8,
-    marginRight: 6,
-    alignItems: "center",
+    overflow: "hidden",
   },
-  investmentCardLast: {
-    marginRight: 0,
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: colors.paleGray,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
   },
-  cardLabel: {
-    fontSize: 6,
+  tableHeaderCell: {
+    flex: 1,
+    padding: 6,
+    fontSize: 7,
+    fontWeight: "bold",
     color: colors.mediumGray,
-    textTransform: "uppercase",
-    marginBottom: 2,
+    textAlign: "center",
   },
-  cardValue: {
-    fontSize: 10,
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  tableRowLast: {
+    borderBottomWidth: 0,
+  },
+  tableCell: {
+    flex: 1,
+    padding: 6,
+    fontSize: 8,
+    color: colors.darkGray,
+    textAlign: "center",
+  },
+  tableCellBold: {
+    flex: 1,
+    padding: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
+    textAlign: "center",
+  },
+  tableCellGreen: {
+    flex: 1,
+    padding: 6,
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.green,
+    textAlign: "center",
   },
   potentialValueNote: {
     backgroundColor: colors.amberLight,
@@ -338,19 +485,6 @@ const styles = StyleSheet.create({
   qualitativeText: {
     fontSize: 7.5,
     color: colors.darkGray,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 40,
-    right: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 7,
-    color: colors.lightGray,
   },
   driverHeader: {
     marginBottom: 16,
@@ -680,41 +814,6 @@ const styles = StyleSheet.create({
     fontSize: 7.5,
     color: colors.darkGray,
     marginBottom: 3,
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-  },
-  tableHeaderCell: {
-    flex: 1,
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.darkGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  tableRow: {
-    flexDirection: "row",
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderColor: colors.borderGray,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-  },
-  tableCell: {
-    flex: 1,
-    fontSize: 8,
-    color: colors.darkGray,
-  },
-  tableCellBold: {
-    flex: 1,
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
   },
   closingSection: {
     marginTop: 20,
@@ -1162,15 +1261,15 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
 }
 
 const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const qualityDrivers = data.drivers.filter(d => d.category === "quality");
-  const qualitativeDrivers = data.drivers.filter(d => d.category === "qualitative");
   const valuePerBed = Math.round(data.netGain / data.staffedBeds);
-
-  const getDriverColor = (index: number, total: number, isLabor: boolean): string => {
-    const baseColor = isLabor ? colors.green : colors.amber;
-    return baseColor;
-  };
 
   return (
     <Page size="A4" style={styles.page}>
@@ -1178,141 +1277,169 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
           <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
+          <Text style={styles.headerSubtitle}>{today}</Text>
         </View>
       </View>
 
-      <Text style={styles.pageTitle}>EXECUTIVE SUMMARY</Text>
-      <Text style={styles.pageSubtitle}>
-        {data.staffedBeds} {data.unitNamePlural} | {formatNumber(data.documentationEvents)} documentation events | {data.utilization}% utilization
-      </Text>
+      {data.organizationName && (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black }}>{data.organizationName}</Text>
+          <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>
+            {data.staffedBeds} {data.unitNamePlural} | {formatNumber(data.documentationEvents)} documentation events | {data.utilization}% utilization
+          </Text>
+        </View>
+      )}
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Nursing documentation is different from physician documentation—and so is the ROI model.</Text>
-          {"\n\n"}In outpatient and ED settings, the value story is relatively straightforward: time saved converts to visits, wRVUs, and revenue. In nursing, the story is more complex. Time saved doesn't generate revenue directly—it changes how nurses spend their shift, which cascades into retention, agency costs, patient safety, and experience scores.
-          {"\n\n"}This assessment models that cascade. We start with what's most measurable (overtime, retention, agency spend) and work toward outcomes that are real but harder to attribute directly (HAPI prevention, falls, HCAHPS). We're transparent about where we're confident and where we're being conservative.
-          {"\n\n"}The goal isn't to hand you a number. It's to give you a framework for thinking about value—one you can stress-test with your CNO, your finance team, and your frontline nursing leaders.
+          <Text style={styles.narrativeBold}>ROI models can feel like black boxes</Text>—numbers that sound good but don't explain themselves. This assessment is different.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
+          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
+        </Text>
+        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
+          You selected <Text style={styles.narrativeBold}>{laborDrivers.length + qualityDrivers.length} value drivers</Text>: {[...laborDrivers, ...qualityDrivers].map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
         </Text>
       </View>
 
       <View style={styles.metricsRow}>
-        <View style={styles.metricCard}>
-          <Text style={styles.metricValue}>{formatCurrency(data.netGain)}</Text>
-          <Text style={styles.metricLabel}>Net Annual Value</Text>
+        <View style={styles.metricBoxHighlight}>
+          <Text style={styles.metricValueGreen}>+{formatCurrency(data.netGain)}</Text>
+          <Text style={styles.metricLabel}>Net Annual Gain</Text>
+          <Text style={styles.metricSublabel}>{formatCurrency(data.totalValue)} value - {formatCurrency(data.investment)} cost</Text>
         </View>
-        <View style={styles.metricCard}>
+        <View style={styles.metricBox}>
           <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
-          <Text style={styles.metricLabel}>ROI Multiple</Text>
+          <Text style={styles.metricLabel}>Return on Investment</Text>
+          <Text style={styles.metricSublabel}>Every $1 returns ${data.roi.toFixed(2)}</Text>
         </View>
-        <View style={styles.metricCard}>
+        <View style={styles.metricBox}>
           <Text style={styles.metricValue}>{formatCurrency(valuePerBed)}</Text>
-          <Text style={styles.metricLabel}>Value per Bed</Text>
+          <Text style={styles.metricLabel}>Per {data.unitName}</Text>
+          <Text style={styles.metricSublabel}>Net annual benefit each</Text>
         </View>
-        <View style={[styles.metricCard, styles.metricCardLast]}>
-          <Text style={[styles.metricValue, { color: colors.amber }]}>{formatCurrency(data.potentialValue)}</Text>
-          <Text style={styles.metricLabel}>Potential Value</Text>
+        <View style={[styles.metricBox, styles.metricBoxLast]}>
+          <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
+          <Text style={styles.metricLabel}>Hours Returned</Text>
+          <Text style={styles.metricSublabel}>Documentation time saved</Text>
         </View>
       </View>
 
-      <View style={styles.valueBreakdownIntro}>
-        <Text style={styles.valueBreakdownIntroTitle}>Where Nursing Value Comes From</Text>
-        <Text style={styles.valueBreakdownIntroText}>
-          <Text style={{ fontWeight: "bold" }}>Labor & Operational</Text> — Direct cost savings you can track in payroll and staffing data. Overtime goes down. Agency utilization drops. Turnover slows. These are measurable month-over-month.
-          {"\n\n"}<Text style={{ fontWeight: "bold" }}>Quality & Safety</Text> — Cost avoidance through better outcomes. Fewer HAPIs. Fewer falls. These are real, but the causal link to documentation is indirect—we show them as "potential value" to be intellectually honest.
-          {"\n\n"}<Text style={{ fontWeight: "bold" }}>Qualitative</Text> — Benefits that matter (HCAHPS, care coordination) but aren't included in the ROI total. They're part of the full picture, not the financial model.
-        </Text>
-      </View>
-
-      <View style={styles.valueBreakdown}>
-        <View style={styles.valueColumn}>
-          <Text style={styles.valueColumnTitle}>Labor Cost Benefits ({formatCurrency(data.laborTotal)})</Text>
+      <Text style={styles.sectionTitle}>Where the Value Comes From</Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.valueBreakdownCard, styles.laborCard]}>
+          <Text style={styles.valueBreakdownTitle}>Labor & Efficiency</Text>
+          <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
+          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
           {laborDrivers.map((driver, i) => (
-            <View key={driver.id} style={styles.progressContainer}>
-              <View style={styles.progressLabel}>
-                <Text style={styles.progressName}>{driver.name}</Text>
-                <Text style={styles.progressValue}>{formatCurrency(driver.value)}</Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${Math.min((driver.value / data.laborTotal) * 100, 100)}%`,
-                      backgroundColor: colors.green,
-                    },
-                  ]}
-                />
-              </View>
+            <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
+              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
+              <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
             </View>
           ))}
+          {laborDrivers.length === 0 && (
+            <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No labor drivers selected</Text>
+          )}
         </View>
-        <View style={[styles.valueColumn, styles.valueColumnLast]}>
-          <Text style={[styles.valueColumnTitle, { color: colors.amber }]}>Quality & Safety Benefits ({formatCurrency(data.qualityTotal)})</Text>
+
+        <View style={[styles.valueBreakdownCard, styles.qualityCard, styles.valueBreakdownCardLast]}>
+          <Text style={styles.valueBreakdownTitle}>Quality & Safety</Text>
+          <Text style={styles.valueBreakdownPct}>{data.qualityPct}% of total value</Text>
+          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.qualityTotal)}</Text>
           {qualityDrivers.map((driver, i) => (
-            <View key={driver.id} style={styles.progressContainer}>
-              <View style={styles.progressLabel}>
-                <Text style={styles.progressName}>{driver.name}</Text>
-                <Text style={[styles.progressValue, { color: colors.amber }]}>{formatCurrency(driver.value)}</Text>
-              </View>
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${Math.min((driver.value / data.qualityTotal) * 100, 100)}%`,
-                      backgroundColor: colors.amber,
-                    },
-                  ]}
-                />
-              </View>
+            <View key={driver.id} style={[styles.valueBreakdownDriver, i === qualityDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
+              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
+              <Text style={[styles.valueBreakdownDriverValue, { color: colors.amber }]}>{formatCurrency(driver.value)}</Text>
             </View>
           ))}
-          <Text style={{ fontSize: 7, color: colors.amberDark, fontStyle: "italic", marginTop: 4 }}>
-            * Shown as "Potential Value" — indirect causal link
+          {qualityDrivers.length === 0 && (
+            <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No quality drivers selected</Text>
+          )}
+          <Text style={{ fontSize: 6, color: colors.amberDark, fontStyle: "italic", marginTop: 4 }}>
+            * Shown as "Potential Value"
           </Text>
         </View>
       </View>
 
-      <View style={styles.potentialValueNote}>
-        <Text style={styles.potentialValueTitle}>About Potential Value</Text>
-        <Text style={styles.potentialValueText}>
-          Quality & Safety benefits (HAPI Prevention, Falls Prevention) are shown separately because the causal link is indirect. More bedside time → better assessments → fewer adverse events. The mechanism is clear, but attribution is complex. We include these as "potential value" rather than in the main ROI calculation.
-        </Text>
-      </View>
-
-      <View style={styles.qualitativeSection}>
-        <Text style={styles.qualitativeTitle}>Qualitative Benefits (Not Quantified)</Text>
-        {qualitativeDrivers.map((driver) => (
-          <View key={driver.id} style={styles.qualitativeItem}>
-            <Text style={styles.qualitativeBullet}>•</Text>
-            <Text style={styles.qualitativeText}>{driver.name}</Text>
+      <View style={styles.progressBar}>
+        {data.laborPct > 0 && (
+          <View style={[styles.progressSegment, { flex: data.laborPct, backgroundColor: colors.green }]}>
+            {data.laborPct > 20 && <Text style={styles.progressLabel}>Labor {data.laborPct}%</Text>}
           </View>
-        ))}
-        <Text style={{ fontSize: 7, color: colors.blue, marginTop: 6, fontStyle: "italic" }}>
-          These outcomes matter—they're just harder to quantify with confidence. See "The Full Picture" page for details.
-        </Text>
+        )}
+        {data.qualityPct > 0 && (
+          <View style={[styles.progressSegment, { flex: data.qualityPct, backgroundColor: colors.amber }]}>
+            {data.qualityPct > 20 && <Text style={styles.progressLabel}>Quality {data.qualityPct}%</Text>}
+          </View>
+        )}
       </View>
 
-      <View style={styles.investmentSection}>
-        <Text style={styles.investmentTitle}>Your Investment</Text>
-        <View style={styles.investmentRow}>
-          <View style={styles.investmentCard}>
-            <Text style={styles.cardLabel}>Staffed Beds</Text>
+      <Text style={styles.sectionTitle}>Investment Details</Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>Your Configuration</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardLabel}>Setting</Text>
+            <Text style={styles.cardValue}>{data.careSetting}</Text>
+          </View>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardLabel}>{data.unitNamePlural}</Text>
             <Text style={styles.cardValue}>{data.staffedBeds}</Text>
           </View>
-          <View style={styles.investmentCard}>
-            <Text style={styles.cardLabel}>Monthly Cost</Text>
-            <Text style={styles.cardValue}>${data.costPerBed}/{data.unitName}</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardLabel}>Price</Text>
+            <Text style={styles.cardValue}>${data.costPerBed}/{data.unitName}/month</Text>
           </View>
-          <View style={styles.investmentCard}>
-            <Text style={styles.cardLabel}>Annual Investment</Text>
-            <Text style={styles.cardValue}>{formatCurrency(data.investment)}</Text>
-          </View>
-          <View style={[styles.investmentCard, styles.investmentCardLast]}>
-            <Text style={styles.cardLabel}>Net Value Created</Text>
-            <Text style={[styles.cardValue, { color: colors.green }]}>{formatCurrency(data.netGain)}</Text>
+          <View style={styles.cardTotal}>
+            <Text style={styles.cardTotalLabel}>Annual Investment</Text>
+            <Text style={styles.cardTotalValue}>{formatCurrency(data.investment)}</Text>
           </View>
         </View>
+
+        <View style={[styles.card, styles.columnLast]}>
+          <Text style={styles.cardTitle}>Multi-Year Projection</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}></Text>
+              <Text style={styles.tableHeaderCell}>Year 1</Text>
+              <Text style={styles.tableHeaderCell}>Year 2</Text>
+              <Text style={styles.tableHeaderCell}>Year 3</Text>
+              <Text style={[styles.tableHeaderCell, { fontWeight: "bold" }]}>3-Yr Total</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Value</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year1Value)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year2Value)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year3Value)}</Text>
+              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearValue)}</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Cost</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year1Cost)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year2Cost)}</Text>
+              <Text style={styles.tableCell}>{formatCurrency(data.year3Cost)}</Text>
+              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearCost)}</Text>
+            </View>
+            <View style={[styles.tableRow, styles.tableRowLast]}>
+              <Text style={[styles.tableCellBold, { flex: 0.8, textAlign: "left" }]}>Net</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
+              <Text style={styles.tableCellGreen}>{formatCurrency(data.threeYearNet)}</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: 6, color: colors.lightGray, marginTop: 4, fontStyle: "italic" }}>
+            Assumes 10% annual value growth with increased adoption
+          </Text>
+        </View>
+      </View>
+
+      <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
+        <Text style={styles.narrativeText}>
+          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerBed)} per {data.unitName}</Text> in net annual value, scaling from {data.staffedBeds} to {Math.round(data.staffedBeds * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
+        </Text>
       </View>
 
       <View style={styles.footer}>
