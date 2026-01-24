@@ -843,6 +843,75 @@ const styles = StyleSheet.create({
   mono: {
     fontFamily: "Courier",
   },
+
+  downstreamSection: {
+    marginBottom: 20,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.lightGray,
+    paddingLeft: 12,
+  },
+  downstreamTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  downstreamSubtitle: {
+    fontSize: 9,
+    color: colors.darkGray,
+    fontStyle: "italic",
+    marginBottom: 10,
+  },
+  downstreamIntro: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 10,
+  },
+  downstreamSubheader: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 8,
+  },
+  downstreamGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 12,
+  },
+  downstreamItem: {
+    width: "47%",
+    backgroundColor: colors.paleGray,
+    padding: 8,
+    borderRadius: 3,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  downstreamItemTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 3,
+  },
+  downstreamItemText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.4,
+  },
+  downstreamCallout: {
+    backgroundColor: "#3B82F6",
+    padding: 10,
+    borderRadius: 4,
+  },
+  downstreamCalloutText: {
+    fontSize: 8,
+    color: "#FFFFFF",
+    lineHeight: 1.5,
+  },
+  downstreamCalloutBold: {
+    fontWeight: "bold",
+  },
 });
 
 // ============================================================================
@@ -1771,6 +1840,56 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
           <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
+        </View>
+      </View>
+
+      <View style={styles.downstreamSection}>
+        <Text style={styles.downstreamTitle}>DOWNSTREAM VALUE</Text>
+        <Text style={styles.downstreamSubtitle}>The ED admission note is just the beginning</Text>
+        
+        <Text style={styles.downstreamIntro}>
+          When an ED physician decides to admit a patient, their documentation becomes the foundation for inpatient revenue. The conditions they capture, the medical necessity they establish, and the clinical reasoning they document all determine what happens downstream.
+        </Text>
+        
+        <Text style={styles.downstreamSubheader}>Better ED documentation directly impacts:</Text>
+        
+        <View style={styles.downstreamGrid}>
+          <View style={styles.downstreamItem}>
+            <Text style={styles.downstreamItemTitle}>DRG & CMI Capture</Text>
+            <Text style={styles.downstreamItemText}>
+              CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.
+            </Text>
+          </View>
+          
+          <View style={styles.downstreamItem}>
+            <Text style={styles.downstreamItemTitle}>Medical Necessity</Text>
+            <Text style={styles.downstreamItemText}>
+              The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.
+            </Text>
+          </View>
+          
+          <View style={styles.downstreamItem}>
+            <Text style={styles.downstreamItemTitle}>CDI Efficiency</Text>
+            <Text style={styles.downstreamItemText}>
+              When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.
+            </Text>
+          </View>
+          
+          <View style={styles.downstreamItem}>
+            <Text style={styles.downstreamItemTitle}>Denial Prevention</Text>
+            <Text style={styles.downstreamItemText}>
+              Payer audits start with the admission note. Complete documentation from day one means stronger appeals.
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.downstreamCallout}>
+          <Text style={styles.downstreamCalloutText}>
+            These benefits are quantified in the <Text style={styles.downstreamCalloutBold}>Inpatient Setting</Text>.
+          </Text>
+          <Text style={styles.downstreamCalloutText}>
+            If your organization admits patients from the ED, the value compounds when both settings use Abridge.
+          </Text>
         </View>
       </View>
 
