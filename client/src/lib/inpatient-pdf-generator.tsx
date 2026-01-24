@@ -1700,11 +1700,6 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pa
     aggressive: "18 months",
   };
   const timeline = paceLabels[journey.scalingPace] || "24 months";
-  const midScaleValue = (journey.pilotValue + journey.fullScaleValue) / 2;
-  const maxBarHeight = 70;
-  const pilotBarHeight = 30;
-  const midBarHeight = 50;
-  const fullBarHeight = maxBarHeight;
 
   return (
     <Page size="A4" style={styles.page}>
@@ -1734,31 +1729,76 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pa
       </View>
 
       <View style={styles.journeyChart}>
-        <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 10 }}>Value Growth Trajectory</Text>
-        <View style={{ flexDirection: "row", alignItems: "flex-end", height: 90, paddingHorizontal: 20 }}>
-          <View style={{ width: "25%", alignItems: "center" }}>
-            <View style={{ height: pilotBarHeight, width: 45, backgroundColor: colors.primary, borderRadius: 3 }} />
-            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>Pilot</Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.black }}>{formatCurrency(journey.pilotValue)}</Text>
-            <Text style={{ fontSize: 6, color: colors.lightGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
+        <View style={{ flexDirection: "row", marginBottom: 8 }}>
+          <View style={{ width: 55, justifyContent: "space-between", paddingVertical: 4, height: 100 }}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(Math.round((journey.fullScaleValue + journey.pilotValue) / 2))}</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
-          <View style={{ width: "25%", alignItems: "center" }}>
-            <View style={{ height: midBarHeight, width: 45, backgroundColor: colors.green, opacity: 0.6, borderRadius: 3 }} />
-            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>Scaling</Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.black }}>{formatCurrency(midScaleValue)}</Text>
-            <Text style={{ fontSize: 6, color: colors.lightGray }}>Growing adoption</Text>
+          
+          <View style={{ flex: 1, marginLeft: 8, height: 100, position: "relative" }}>
+            <Svg width={400} height={100} viewBox="0 0 400 100">
+              <Line x1="0" y1="25" x2="400" y2="25" stroke={colors.borderGray} strokeWidth="0.5" />
+              <Line x1="0" y1="50" x2="400" y2="50" stroke={colors.borderGray} strokeWidth="0.5" />
+              <Line x1="0" y1="75" x2="400" y2="75" stroke={colors.borderGray} strokeWidth="0.5" />
+              <Line x1="0" y1="100" x2="400" y2="100" stroke={colors.borderGray} strokeWidth="1" />
+              <Line x1="0" y1="0" x2="0" y2="100" stroke={colors.borderGray} strokeWidth="1" />
+              
+              <Line 
+                x1="20" 
+                y1="85" 
+                x2="380" 
+                y2="15" 
+                stroke={colors.lightGray} 
+                strokeWidth="2" 
+                strokeDasharray="6,4" 
+              />
+              
+              <Path 
+                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15" 
+                stroke={colors.green} 
+                strokeWidth="2.5" 
+                fill="none" 
+              />
+              
+              <Path 
+                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15 L 380 15 L 20 85 Z" 
+                fill={colors.greenLight} 
+                opacity="0.5" 
+              />
+              
+              <Circle cx="20" cy="85" r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
+              <Circle cx="380" cy="10" r="6" fill={colors.green} stroke={colors.white} strokeWidth="2" />
+            </Svg>
+            
+            <Text style={{ position: "absolute", bottom: 2, left: 4, fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
+            <Text style={{ position: "absolute", top: -2, right: 4, fontSize: 7, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
+            
+            <View style={{ position: "absolute", top: 35, left: 160, backgroundColor: colors.greenLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, borderWidth: 1, borderColor: colors.green }}>
+              <Text style={{ fontSize: 8, color: colors.green, fontWeight: "bold", textAlign: "center" }}>+{formatCurrency(journey.networkEffect)}</Text>
+              <Text style={{ fontSize: 6, color: colors.greenDark, textAlign: "center" }}>compounding bonus</Text>
+            </View>
           </View>
-          <View style={{ width: "25%", alignItems: "center" }}>
-            <View style={{ height: fullBarHeight, width: 45, backgroundColor: colors.green, borderRadius: 3 }} />
-            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>Full Scale</Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.green }}>{formatCurrency(journey.fullScaleValue)}</Text>
-            <Text style={{ fontSize: 6, color: colors.lightGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
+        </View>
+        
+        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 63, paddingRight: 10, marginBottom: 4 }}>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
           </View>
-          <View style={{ width: "25%", alignItems: "center" }}>
-            <View style={{ height: fullBarHeight + 8, width: 45, backgroundColor: colors.greenDark, borderRadius: 3, borderWidth: 1, borderColor: colors.green }} />
-            <Text style={{ fontSize: 7, marginTop: 6, color: colors.darkGray }}>+ Network</Text>
-            <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.greenDark }}>{formatCurrency(journey.fullScaleValue + journey.networkEffect)}</Text>
-            <Text style={{ fontSize: 6, color: colors.lightGray }}>Compounded</Text>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>6 mo</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>12 mo</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>18 mo</Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
           </View>
         </View>
       </View>
