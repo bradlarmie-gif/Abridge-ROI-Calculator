@@ -29,14 +29,16 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { type CareSettingType, CARE_SETTING_LABELS, QUALITATIVE_CONFIG, SETTING_CONFIG } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
-import { generateOutpatientROIPDF } from "@/lib/outpatient-pdf-generator";
+import { generateOutpatientROIPDF, generateOutpatientROIPDFBlob } from "@/lib/outpatient-pdf-generator";
 import { transformToOutpatientPDFData } from "@/lib/outpatient-pdf-data-transformer";
-import { generateEDROIPDF } from "@/lib/ed-pdf-generator";
+import { generateEDROIPDF, generateEDROIPDFBlob } from "@/lib/ed-pdf-generator";
 import { transformToEDPDFData } from "@/lib/ed-pdf-data-transformer";
-import { generateInpatientROIPDF } from "@/lib/inpatient-pdf-generator";
+import { generateInpatientROIPDF, generateInpatientROIPDFBlob } from "@/lib/inpatient-pdf-generator";
 import { transformToInpatientPDFData } from "@/lib/inpatient-pdf-data-transformer";
-import { generateNursingROIPDF } from "@/lib/nursing-pdf-generator";
+import { generateNursingROIPDF, generateNursingROIPDFBlob } from "@/lib/nursing-pdf-generator";
 import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
+import { useToast } from "@/hooks/use-toast";
+import { saveAs } from "file-saver";
 import {
   ComposedChart,
   Area,
@@ -192,6 +194,13 @@ export default function SummaryCommandCenter({
 }: SummaryCommandCenterProps) {
   const [copied, setCopied] = useState(false);
   const [assumptionsExpanded, setAssumptionsExpanded] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+  
+  // Check if Web Share API is available (typically mobile devices)
+  const canShare = typeof navigator !== 'undefined' && 
+                   typeof navigator.share === 'function' &&
+                   typeof navigator.canShare === 'function';
   
   const activeSetting = selectedSettings[0] || "outpatient";
   const config = settingConfig[activeSetting] || settingConfig.outpatient;
@@ -496,6 +505,159 @@ export default function SummaryCommandCenter({
     selectedPace,
     networkEffect,
   ]);
+
+  // Helper to generate PDF blob for sharing
+  const generatePdfBlob = useCallback(async (): Promise<{ blob: Blob; filename: string }> => {
+    const driverIdMap: Record<string, string> = {
+      patient_access: 'patientAccess',
+      patientAccess: 'patientAccess',
+      level_of_service: 'wrvu',
+      levelOfService: 'wrvu',
+      retention: 'workforce',
+      overtime: 'overtime',
+      hcc_capture: 'hcc',
+      hcc: 'hcc',
+      denials: 'denials',
+      edThroughput: 'edThroughput',
+      edLevelOfService: 'edLevelOfService',
+      edDenialReduction: 'edDenials',
+      edRetention: 'edRetention',
+      edScribe: 'edScribe',
+      inpatientRetention: 'inpatientRetention',
+      inpatientCCMCC: 'inpatientCCMCC',
+      inpatientCDI: 'inpatientCDI',
+      inpatientDenials: 'inpatientDenials',
+    };
+
+    const rawDriverResults = modelResults.driverResults || {};
+    const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
+    
+    Object.entries(rawDriverResults).forEach(([key, result]) => {
+      if (result && result.value > 0) {
+        const normalizedId = driverIdMap[key] || key;
+        driverResults[normalizedId] = {
+          name: result.name || key,
+          value: result.value,
+          inputs: result.inputs || {},
+        };
+      }
+    });
+
+    const journeyInputs = {
+      pilotProviders: pilotUnits,
+      pilotEncounters: pilotUnits * encountersPerUnit,
+      pilotUtilization: pilotUtilization,
+      pilotValue: totalAnnualValue,
+      fullScaleProviders: safeFullScaleUnits,
+      fullScaleUtilization: fullScaleUtilization,
+      fullScaleValue: fullScale.value,
+      scalingPace: selectedPace,
+      networkEffect: networkEffect,
+    };
+
+    const modelResultsForPDF = {
+      totalBenefit: totalAnnualValue,
+      investment: annualInvestment,
+      implementationFee: 0,
+      providers: pilotUnits,
+      encounters: pilotUnits * encountersPerUnit,
+      utilizationRate: pilotUtilization,
+      costPerMonth: pricePerUnit,
+      timeSavedPerEncounter: 2.5,
+      driverResults,
+    };
+
+    if (activeSetting === "ed") {
+      const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs);
+      return generateEDROIPDFBlob(pdfData);
+    } else if (activeSetting === "inpatient") {
+      const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs);
+      return generateInpatientROIPDFBlob(pdfData);
+    } else if (activeSetting === "nursing") {
+      const nursingJourneyInputs = {
+        pilotBeds: pilotUnits,
+        pilotEvents: Math.round(pilotUnits * 365 * 8 * (pilotUtilization / 100)),
+        pilotUtilization,
+        pilotValue: Math.round(totalAnnualValue * (pilotUnits / safeFullScaleUnits) * (pilotUtilization / fullScaleUtilization)),
+        fullScaleBeds: safeFullScaleUnits,
+        fullScaleUtilization,
+        fullScaleValue: fullScale.value,
+        scalingPace: selectedPace as "measured" | "steady" | "aggressive",
+        networkEffect,
+      };
+      const nursingModelResults = {
+        totalBenefit: totalAnnualValue,
+        investment: annualInvestment,
+        staffedBeds: safeFullScaleUnits,
+        nurseFTEs: Math.round(safeFullScaleUnits * 1.5),
+        documentationEvents: safeFullScaleUnits * 365 * 8,
+        utilizationRate: fullScaleUtilization,
+        costPerMonth: pricePerUnit,
+        timeSavedPerEvent: 5,
+        driverResults,
+      };
+      const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs);
+      return generateNursingROIPDFBlob(pdfData);
+    } else {
+      const pdfData = transformToOutpatientPDFData(
+        modelResultsForPDF,
+        journeyInputs,
+        CARE_SETTING_LABELS[activeSetting]
+      );
+      return generateOutpatientROIPDFBlob(pdfData);
+    }
+  }, [
+    activeSetting,
+    modelResults.driverResults,
+    pilotUnits,
+    encountersPerUnit,
+    pilotUtilization,
+    totalAnnualValue,
+    annualInvestment,
+    pricePerUnit,
+    safeFullScaleUnits,
+    fullScaleUtilization,
+    fullScale,
+    selectedPace,
+    networkEffect,
+  ]);
+
+  // Share PDF using native Web Share API (mobile)
+  const handleSharePdf = useCallback(async () => {
+    setIsExporting(true);
+    
+    try {
+      const { blob, filename } = await generatePdfBlob();
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `${CARE_SETTING_LABELS[activeSetting]} ROI Assessment`,
+          text: 'Abridge ROI Assessment - see attached PDF',
+          files: [file],
+        });
+      } else {
+        saveAs(blob, filename);
+      }
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error('Share failed:', err);
+        toast({
+          title: "Share failed",
+          description: "Falling back to download...",
+          variant: "destructive",
+        });
+        try {
+          const { blob, filename } = await generatePdfBlob();
+          saveAs(blob, filename);
+        } catch (downloadErr) {
+          console.error('Download also failed:', downloadErr);
+        }
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  }, [generatePdfBlob, activeSetting, toast]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -1370,23 +1532,32 @@ export default function SummaryCommandCenter({
             Add Another Driver
           </Button>
           
-          <div className="flex gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+            {canShare && (
+              <Button 
+                variant="outline" 
+                className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
+                onClick={handleSharePdf}
+                disabled={isExporting}
+                data-testid="button-share-pdf"
+              >
+                <Share2 className="w-4 h-4" />
+                {isExporting ? "Generating..." : "Share"}
+              </Button>
+            )}
             <Button 
               variant="outline" 
               className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
               onClick={handleExportPdf}
+              disabled={isExporting}
               data-testid="button-export-pdf"
             >
               <FileText className="w-4 h-4" />
-              Export PDF
-            </Button>
-            <Button variant="outline" className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" data-testid="button-share-email">
-              <Mail className="w-4 h-4" />
-              Share via Email
+              {isExporting ? "Generating..." : "Export PDF"}
             </Button>
             <Button 
               variant="outline" 
-              className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]"
+              className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
               onClick={handleCopyLink}
               data-testid="button-copy-link"
             >

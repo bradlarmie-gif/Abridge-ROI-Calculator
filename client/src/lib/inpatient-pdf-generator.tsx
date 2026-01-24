@@ -1993,7 +1993,7 @@ const InpatientROIDocument = ({ data }: { data: InpatientPDFData }) => {
   );
 };
 
-export async function generateInpatientROIPDF(data: InpatientPDFData): Promise<void> {
+export async function generateInpatientROIPDFBlob(data: InpatientPDFData): Promise<{ blob: Blob; filename: string }> {
   const blob = await pdf(<InpatientROIDocument data={data} />).toBlob();
 
   const today = new Date().toISOString().split("T")[0];
@@ -2004,6 +2004,11 @@ export async function generateInpatientROIPDF(data: InpatientPDFData): Promise<v
     ? `abridge-inpatient-roi-${orgSlug}-${today}.pdf`
     : `abridge-inpatient-roi-${today}.pdf`;
 
+  return { blob, filename };
+}
+
+export async function generateInpatientROIPDF(data: InpatientPDFData): Promise<void> {
+  const { blob, filename } = await generateInpatientROIPDFBlob(data);
   saveAs(blob, filename);
 }
 

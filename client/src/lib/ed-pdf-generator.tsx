@@ -1976,7 +1976,7 @@ const EDROIDocument = ({ data }: { data: EDPDFData }) => {
 // EXPORT FUNCTION
 // ============================================================================
 
-export async function generateEDROIPDF(data: EDPDFData): Promise<void> {
+export async function generateEDROIPDFBlob(data: EDPDFData): Promise<{ blob: Blob; filename: string }> {
   const blob = await pdf(<EDROIDocument data={data} />).toBlob();
 
   const today = new Date().toISOString().split("T")[0];
@@ -1987,6 +1987,11 @@ export async function generateEDROIPDF(data: EDPDFData): Promise<void> {
     ? `abridge-ed-roi-${orgSlug}-${today}.pdf`
     : `abridge-ed-roi-${today}.pdf`;
 
+  return { blob, filename };
+}
+
+export async function generateEDROIPDF(data: EDPDFData): Promise<void> {
+  const { blob, filename } = await generateEDROIPDFBlob(data);
   saveAs(blob, filename);
 }
 

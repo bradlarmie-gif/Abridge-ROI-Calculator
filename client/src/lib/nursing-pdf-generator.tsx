@@ -2111,8 +2111,13 @@ const NursingROIDocument = ({ data }: { data: NursingPDFData }) => {
   );
 };
 
-export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
+export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {
   const blob = await pdf(<NursingROIDocument data={data} />).toBlob();
   const filename = `Abridge_Nursing_ROI_${data.organizationName?.replace(/\s+/g, "_") || "Assessment"}_${new Date().toISOString().split("T")[0]}.pdf`;
+  return { blob, filename };
+}
+
+export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
+  const { blob, filename } = await generateNursingROIPDFBlob(data);
   saveAs(blob, filename);
 }

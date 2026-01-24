@@ -1913,7 +1913,7 @@ const OutpatientROIDocument = ({ data }: { data: OutpatientPDFData }) => {
 // EXPORT FUNCTION
 // ============================================================================
 
-export async function generateOutpatientROIPDF(data: OutpatientPDFData): Promise<void> {
+export async function generateOutpatientROIPDFBlob(data: OutpatientPDFData): Promise<{ blob: Blob; filename: string }> {
   const blob = await pdf(<OutpatientROIDocument data={data} />).toBlob();
 
   const today = new Date().toISOString().split("T")[0];
@@ -1924,6 +1924,11 @@ export async function generateOutpatientROIPDF(data: OutpatientPDFData): Promise
     ? `abridge-${data.careSetting.toLowerCase()}-roi-${orgSlug}-${today}.pdf`
     : `abridge-${data.careSetting.toLowerCase()}-roi-${today}.pdf`;
 
+  return { blob, filename };
+}
+
+export async function generateOutpatientROIPDF(data: OutpatientPDFData): Promise<void> {
+  const { blob, filename } = await generateOutpatientROIPDFBlob(data);
   saveAs(blob, filename);
 }
 
