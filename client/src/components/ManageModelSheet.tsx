@@ -6,8 +6,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -555,21 +555,14 @@ export function ManageModelSheet({
     return (
       <div key={config.key} className="space-y-1">
         <Label className="text-sm text-gray-600">{config.label}</Label>
-        <Input
-          type="number"
-          value={value}
-          onChange={(e) => {
-            const newVal = parseFloat(e.target.value) || 0;
-            onChange(config.key, newVal);
-          }}
+        <FormattedNumberInput
+          value={typeof value === 'number' ? value : 0}
+          onChange={(newVal) => onChange(config.key, newVal)}
           min={config.min}
           max={config.max}
           step={config.step || 1}
           className="h-9"
           data-testid={`${prefix}-${config.key}`}
-          autoComplete="off"
-          data-lpignore="true"
-          data-form-type="other"
         />
       </div>
     );

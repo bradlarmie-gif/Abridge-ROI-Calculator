@@ -26,10 +26,11 @@ export function FormattedNumberInput({
   disabled,
 }: FormattedNumberInputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const [displayValue, setDisplayValue] = useState(value.toString());
+  const [displayValue, setDisplayValue] = useState(value === 0 ? "" : value.toLocaleString("en-US"));
 
-  // Format number with commas
+  // Format number with commas (empty string for 0 to allow clearing)
   const formatWithCommas = useCallback((num: number): string => {
+    if (num === 0) return "";
     return num.toLocaleString("en-US");
   }, []);
 
@@ -42,8 +43,8 @@ export function FormattedNumberInput({
 
   const handleFocus = () => {
     setIsFocused(true);
-    // Show raw number without commas when focused
-    setDisplayValue(value.toString());
+    // Show raw number without commas when focused (empty for 0)
+    setDisplayValue(value === 0 ? "" : value.toString());
   };
 
   const handleBlur = () => {
