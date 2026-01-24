@@ -487,20 +487,18 @@ const styles = StyleSheet.create({
     color: colors.darkGray,
   },
   driverHeader: {
-    marginBottom: 16,
-  },
-  driverCategory: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
   },
   driverName: {
     fontSize: 14,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 4,
   },
   driverValue: {
     fontSize: 18,
@@ -515,28 +513,28 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
   theoryBox: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 1,
-    borderColor: colors.amber,
+    backgroundColor: colors.paleGray,
+    padding: 12,
     borderRadius: 4,
-    padding: 14,
-    marginBottom: 16,
+    marginBottom: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.amber,
   },
-  theoryTitle: {
-    fontSize: 8,
+  theoryLabel: {
+    fontSize: 7,
     fontWeight: "bold",
-    color: colors.amberDark,
-    marginBottom: 6,
+    color: colors.amber,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+    marginBottom: 6,
   },
   theoryText: {
-    fontSize: 8.5,
+    fontSize: 8,
+    color: colors.darkGray,
     lineHeight: 1.5,
-    color: colors.amberDark,
   },
   calcSection: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   calcTitle: {
     fontSize: 9,
@@ -546,22 +544,44 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-  stepBox: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  stepLabel: {
+  calcSectionTitle: {
     fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 2,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  stepBox: {
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  stepBoxLast: {
+    borderBottomWidth: 0,
+    marginBottom: 0,
+    paddingBottom: 0,
+  },
+  stepLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 3,
   },
   stepQuestion: {
-    fontSize: 7.5,
-    color: colors.mediumGray,
+    fontSize: 8,
+    color: colors.darkGray,
     fontStyle: "italic",
     marginBottom: 6,
+  },
+  stepMath: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: 4,
   },
   stepCalc: {
     flexDirection: "row",
@@ -570,52 +590,50 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   stepInput: {
-    backgroundColor: colors.paleGray,
+    backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginRight: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    marginRight: 4,
     marginBottom: 4,
   },
   stepInputText: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
+    fontSize: 8,
     fontFamily: "Courier",
+    color: colors.black,
   },
   mono: {
     fontFamily: "Courier",
   },
   stepOperator: {
-    fontSize: 10,
+    fontSize: 8,
     color: colors.mediumGray,
-    marginRight: 6,
-  },
-  stepEquals: {
-    fontSize: 10,
-    color: colors.mediumGray,
-    marginHorizontal: 6,
+    marginHorizontal: 4,
   },
   stepResult: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
+    backgroundColor: colors.paleGray,
     borderRadius: 3,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    marginLeft: 4,
   },
   stepResultText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Courier",
+    fontFamily: "Courier-Bold",
+    color: colors.black,
   },
   stepNote: {
     fontSize: 7,
-    color: colors.mediumGray,
+    color: colors.lightGray,
     fontStyle: "italic",
+    marginTop: 4,
+  },
+  stepNoteHighlight: {
+    fontSize: 7,
+    color: colors.primary,
     marginTop: 4,
   },
   calloutBox: {
@@ -623,99 +641,105 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.amber,
     borderRadius: 4,
-    padding: 12,
-    marginBottom: 14,
+    padding: 10,
+    marginBottom: 12,
   },
   calloutTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.amberDark,
     marginBottom: 4,
   },
   calloutText: {
-    fontSize: 7.5,
+    fontSize: 7,
     color: colors.amberDark,
     lineHeight: 1.4,
   },
   benchmarkBox: {
     backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 12,
-    marginBottom: 14,
+    padding: 10,
+    marginBottom: 12,
   },
   benchmarkTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
-    color: colors.darkGray,
-    marginBottom: 6,
+    color: colors.mediumGray,
     textTransform: "uppercase",
     letterSpacing: 0.3,
+    marginBottom: 6,
   },
   benchmarkRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
+    marginBottom: 3,
   },
   benchmarkLabel: {
-    fontSize: 7.5,
+    fontSize: 7,
     color: colors.darkGray,
   },
   benchmarkValue: {
-    fontSize: 7.5,
-    fontWeight: "bold",
+    fontSize: 7,
     color: colors.black,
+    fontWeight: "bold",
+  },
+  benchmarkNote: {
+    fontSize: 6,
+    color: colors.lightGray,
+    fontStyle: "italic",
+    marginTop: 4,
   },
   finalValueBox: {
     backgroundColor: colors.greenLight,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.green,
     borderRadius: 4,
-    padding: 14,
-    marginBottom: 14,
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
   finalValueLabel: {
-    fontSize: 8,
-    color: colors.greenDark,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 4,
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
   },
   finalValueAmount: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.green,
     fontFamily: "Helvetica-Bold",
   },
   finalValueAmountPotential: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.amber,
     fontFamily: "Helvetica-Bold",
   },
+  finalValueFormula: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
   implicationBox: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
+    backgroundColor: colors.paleGray,
+    padding: 10,
     borderRadius: 4,
-    padding: 12,
-    marginBottom: 14,
+    marginTop: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.green,
   },
   implicationTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
-    color: colors.greenDark,
-    marginBottom: 4,
+    color: colors.green,
     textTransform: "uppercase",
     letterSpacing: 0.3,
+    marginBottom: 4,
   },
   implicationText: {
     fontSize: 8,
-    color: colors.greenDark,
+    color: colors.darkGray,
     lineHeight: 1.5,
   },
   potentialCallout: {
@@ -1054,6 +1078,96 @@ interface StepData {
   result: string;
   note?: string;
   noteHighlight?: boolean;
+}
+
+interface Benchmark {
+  title: string;
+  rows: { label: string; value: string }[];
+  note?: string;
+}
+
+function getDriverBenchmarks(driverId: string): Benchmark | null {
+  switch (driverId) {
+    case "nursingOvertime":
+      return {
+        title: "Nursing Overtime Rates",
+        rows: [
+          { label: "Typical OT Rate", value: "1.5x base" },
+          { label: "Avg Hourly Rate (RN)", value: "$35 - $50" },
+          { label: "OT Hourly Cost", value: "$52 - $75" },
+          { label: "Doc-Related OT", value: "30 - 45 min/shift" },
+        ],
+        note: "Documentation is a leading driver of nursing overtime.",
+      };
+
+    case "nursingRetention":
+      return {
+        title: "Nursing Turnover Costs",
+        rows: [
+          { label: "Recruiting & Hiring", value: "$15K - $25K" },
+          { label: "Onboarding & Training", value: "$10K - $20K" },
+          { label: "Lost Productivity", value: "$20K - $35K" },
+          { label: "Total Replacement", value: "$45K - $80K" },
+        ],
+        note: "Average RN replacement cost is 0.5-1x annual salary.",
+      };
+
+    case "nursingAgency":
+      return {
+        title: "Agency Staff Costs",
+        rows: [
+          { label: "Staff RN Hourly", value: "$35 - $50" },
+          { label: "Agency RN Hourly", value: "$75 - $150+" },
+          { label: "Agency Premium", value: "2x - 3x staff" },
+          { label: "Shift Differential", value: "$500 - $1,500" },
+        ],
+        note: "Agency costs spike during high-turnover periods.",
+      };
+
+    default:
+      return null;
+  }
+}
+
+interface Warning {
+  title: string;
+  text: string;
+}
+
+function getDriverWarnings(driver: DriverCalculation, data: NursingPDFData): Warning | null {
+  if (driver.id === "nursingRetention" && data.nurseFTEs < 100) {
+    return {
+      title: "Smaller Nursing Staff",
+      text: "With fewer than 100 nursing FTEs, retention math is probabilistic over multi-year periods. The value is real—it materializes as reduced turnover over 2-3 years rather than in a single year.",
+    };
+  }
+
+  if (driver.isPotentialValue) {
+    return {
+      title: "Potential Value Note",
+      text: "This benefit has an indirect causal chain. The mechanism is well-supported in literature, but direct attribution is complex. We include this as potential value for transparency.",
+    };
+  }
+
+  return null;
+}
+
+function getFinalFormula(driver: DriverCalculation): string {
+  const inputs = driver.inputs;
+  switch (driver.id) {
+    case "nursingOvertime":
+      return `${formatNumber((inputs.totalOvertimeHoursSaved as number) || 0)} OT hrs x $${inputs.hourlyRate || 50} x 1.5`;
+    case "nursingRetention":
+      return `${((inputs.nursesRetained as number) || 0).toFixed(2)} retained x ${formatCurrency((inputs.replacementCost as number) || 65000)}`;
+    case "nursingAgency":
+      return `${formatNumber((inputs.agencyShiftsReduced as number) || 0)} shifts x $${inputs.shiftDifferential || 800}`;
+    case "nursingHapi":
+      return `${((inputs.hapisPreventedPerYear as number) || 0).toFixed(1)} HAPIs x ${formatCurrency((inputs.hapiCost as number) || 35000)}`;
+    case "nursingFalls":
+      return `${((inputs.fallsPreventedPerYear as number) || 0).toFixed(1)} falls x ${formatCurrency((inputs.fallCost as number) || 25000)}`;
+    default:
+      return `Annual value: ${formatCurrency(driver.value)}`;
+  }
 }
 
 function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepData[] {
@@ -1451,14 +1565,16 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
 };
 
 const DriverPage = ({ driver, data, pageNum, totalPages }: { driver: DriverCalculation; data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  const theory = driverTheories[driver.id] || "";
-  const implication = driverImplications[driver.id]?.(driver.value, data) || "";
+  const theory = driverTheories[driver.id] || "This driver creates measurable value through improved documentation workflows.";
+  const implicationFn = driverImplications[driver.id];
+  const implication = implicationFn ? implicationFn(driver.value, data) : `This driver contributes ${formatCurrency(driver.value)} annually to your ROI.`;
   const steps = getDriverSteps(driver, data);
   const isPotential = driver.isPotentialValue;
-  const categoryLabel = driver.category === "labor" ? "Labor Cost Benefit" : "Quality & Safety Benefit";
+  const benchmarks = getDriverBenchmarks(driver.id);
+  const warnings = getDriverWarnings(driver, data);
 
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={styles.page} wrap={false}>
       <View style={styles.header}>
         <Image src={abridgeLogoPath} style={styles.logo} />
         <View style={styles.headerRight}>
@@ -1466,73 +1582,99 @@ const DriverPage = ({ driver, data, pageNum, totalPages }: { driver: DriverCalcu
         </View>
       </View>
 
-      <View style={styles.driverHeader}>
-        <Text style={styles.driverCategory}>{categoryLabel}</Text>
-        <Text style={styles.driverName}>{driver.name}</Text>
-        <Text style={isPotential ? styles.driverValuePotential : styles.driverValue}>
-          {formatCurrency(driver.value)} {isPotential ? "(Potential)" : "annually"}
-        </Text>
-      </View>
-
-      <View style={styles.theoryBox}>
-        <Text style={styles.theoryTitle}>Why This Matters</Text>
-        <Text style={styles.theoryText}>{theory}</Text>
-      </View>
-
-      {isPotential && (
-        <View style={styles.potentialCallout}>
-          <Text style={styles.potentialCalloutTitle}>Why This Is Potential Value</Text>
-          <Text style={styles.potentialCalloutText}>
-            This benefit has an indirect causal chain: ambient documentation → less time charting → more time at bedside → better assessments → fewer adverse events. The mechanism is well-supported in literature, but direct attribution is complex. We show this separately from hard ROI so you can evaluate it with appropriate context.
+      <View wrap={false}>
+        <View style={styles.driverHeader}>
+          <Text style={styles.driverName}>{driver.name}</Text>
+          <Text style={isPotential ? styles.driverValuePotential : styles.driverValue}>
+            {formatCurrency(driver.value)}
           </Text>
         </View>
-      )}
 
-      <View style={styles.calcSection}>
-        <Text style={styles.calcTitle}>How We Calculate This</Text>
-        {steps.map((step, i) => (
-          <View key={i} style={styles.stepBox}>
-            <Text style={styles.stepLabel}>{step.label}</Text>
-            <Text style={styles.stepQuestion}>{step.question}</Text>
-            <View style={styles.stepCalc}>
-              {step.inputs.map((input, j) => (
-                <View key={j} style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View style={styles.stepInput}>
-                    <Text style={styles.stepInputText}>
-                      {input.value}{input.label ? ` ${input.label}` : ""}
-                    </Text>
+        <View style={styles.theoryBox}>
+          <Text style={styles.theoryLabel}>The Theory</Text>
+          <Text style={styles.theoryText}>{theory}</Text>
+        </View>
+
+        {warnings && (
+          <View style={styles.calloutBox}>
+            <Text style={styles.calloutTitle}>{warnings.title}</Text>
+            <Text style={styles.calloutText}>{warnings.text}</Text>
+          </View>
+        )}
+
+        {isPotential && (
+          <View style={styles.potentialCallout}>
+            <Text style={styles.potentialCalloutTitle}>Why This Is Potential Value</Text>
+            <Text style={styles.potentialCalloutText}>
+              This benefit has an indirect causal chain: ambient documentation → less time charting → more time at bedside → better assessments → fewer adverse events. The mechanism is well-supported in literature, but direct attribution is complex. We show this separately from hard ROI so you can evaluate it with appropriate context.
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.calcSection}>
+          <Text style={styles.calcSectionTitle}>Your Calculation</Text>
+          
+          {steps.map((step, index) => (
+            <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]} wrap={false}>
+              <Text style={styles.stepLabel}>{step.label}</Text>
+              <Text style={styles.stepQuestion}>{step.question}</Text>
+              
+              <View style={styles.stepMath}>
+                {step.inputs.map((input, i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
+                    {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
+                    <View style={styles.stepInput}>
+                      <Text style={styles.stepInputText}>{input.value}</Text>
+                    </View>
+                    {input.label && (
+                      <Text style={{ fontSize: 7, color: colors.lightGray, marginLeft: 2 }}>{input.label}</Text>
+                    )}
                   </View>
-                  {step.operators && step.operators[j] && (
-                    <Text style={styles.stepOperator}>{step.operators[j]}</Text>
-                  )}
+                ))}
+                <Text style={styles.stepOperator}>=</Text>
+                <View style={isPotential ? [styles.stepResult, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.stepResult}>
+                  <Text style={isPotential ? [styles.stepResultText, { color: colors.amber }] : styles.stepResultText}>{step.result}</Text>
                 </View>
-              ))}
-              <Text style={styles.stepEquals}>=</Text>
-              <View style={isPotential ? [styles.stepResult, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.stepResult}>
-                <Text style={isPotential ? [styles.stepResultText, { color: colors.amber }] : styles.stepResultText}>{step.result}</Text>
               </View>
+              
+              {step.note && (
+                <Text style={step.noteHighlight ? styles.stepNoteHighlight : styles.stepNote}>{step.note}</Text>
+              )}
             </View>
-            {step.note && (
-              <Text style={[styles.stepNote, step.noteHighlight ? { color: colors.amberDark, fontWeight: "bold" } : {}]}>
-                {step.note}
-              </Text>
+          ))}
+        </View>
+
+        {benchmarks && (
+          <View style={styles.benchmarkBox} wrap={false}>
+            <Text style={styles.benchmarkTitle}>Benchmark: {benchmarks.title}</Text>
+            {benchmarks.rows.map((row, i) => (
+              <View key={i} style={styles.benchmarkRow}>
+                <Text style={styles.benchmarkLabel}>{row.label}</Text>
+                <Text style={styles.benchmarkValue}>{row.value}</Text>
+              </View>
+            ))}
+            {benchmarks.note && (
+              <Text style={styles.benchmarkNote}>{benchmarks.note}</Text>
             )}
           </View>
-        ))}
-      </View>
+        )}
 
-      <View style={isPotential ? [styles.finalValueBox, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.finalValueBox}>
-        <Text style={[styles.finalValueLabel, isPotential ? { color: colors.amberDark } : {}]}>
-          {isPotential ? "Potential Annual Value" : "Annual Value"}
-        </Text>
-        <Text style={isPotential ? styles.finalValueAmountPotential : styles.finalValueAmount}>
-          {formatCurrency(driver.value)}
-        </Text>
-      </View>
+        <View style={isPotential ? [styles.finalValueBox, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.finalValueBox} wrap={false}>
+          <View>
+            <Text style={[styles.finalValueLabel, isPotential ? { color: colors.amberDark } : {}]}>
+              Annual {driver.name} Value
+            </Text>
+            <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
+          </View>
+          <Text style={isPotential ? styles.finalValueAmountPotential : styles.finalValueAmount}>
+            {formatCurrency(driver.value)}
+          </Text>
+        </View>
 
-      <View style={isPotential ? [styles.implicationBox, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.implicationBox}>
-        <Text style={[styles.implicationTitle, isPotential ? { color: colors.amberDark } : {}]}>What This Means</Text>
-        <Text style={[styles.implicationText, isPotential ? { color: colors.amberDark } : {}]}>{implication}</Text>
+        <View style={isPotential ? [styles.implicationBox, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.implicationBox} wrap={false}>
+          <Text style={[styles.implicationTitle, isPotential ? { color: colors.amberDark } : {}]}>What This Means</Text>
+          <Text style={[styles.implicationText, isPotential ? { color: colors.amberDark } : {}]}>{implication}</Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
