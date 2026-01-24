@@ -630,6 +630,33 @@ const styles = StyleSheet.create({
     color: colors.mediumGray,
     fontStyle: "italic",
   },
+  fullPictureWhyNot: {
+    fontSize: 7,
+    color: colors.blue,
+    fontStyle: "italic",
+    lineHeight: 1.4,
+  },
+  valueBreakdownIntro: {
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 12,
+  },
+  valueBreakdownIntroTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  valueBreakdownIntroText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
   methodologySection: {
     marginBottom: 16,
   },
@@ -844,25 +871,57 @@ const formatNumber = (value: number): string => {
 };
 
 const driverTheories: Record<string, string> = {
-  nursingOvertime: `Nurses spend 25-35% of their shift on documentation—often completing charts after their shift ends. This overtime adds up fast: just 15 minutes per shift per nurse across a unit creates substantial payroll impact.
+  nursingOvertime: `Every nursing unit has a rhythm: shift start, rounds, assessments, medications, documentation, handoff, shift end. In theory, documentation fits within the shift. In practice, it doesn't.
 
-When documentation happens in real-time during care, the end-of-shift catch-up disappears. That's measurable savings that show up directly in payroll data.`,
+Nurses routinely stay 30-60 minutes past their scheduled shift to finish charting. Multiply that across your FTEs, 5 days a week, 50 weeks a year—and you're looking at tens of thousands of overtime hours. At 1.5× pay, that's real budget impact.
 
-  nursingAgency: `Agency and travel nurses cost 2-3x what staff nurses cost. Organizations use them to fill gaps, but those gaps often exist because of burnout and turnover—driven in part by documentation burden.
+But here's the thing: not all overtime is documentation. Some is patient acuity. Some is understaffing. Some is just the nature of nursing. We estimate ~33% of overtime is specifically end-of-shift charting catch-up—the kind that real-time ambient documentation can address.
 
-Reducing reliance on agency staff requires improving working conditions for staff nurses. Documentation is a controllable variable.`,
+This is the most measurable driver in nursing. You can track it in payroll data, week over week, unit by unit. If overtime drops after Abridge deployment, you'll see it.`,
 
-  nursingRetention: `Nursing turnover costs $40K-$60K per nurse when you factor in recruiting, onboarding, and productivity loss. Documentation burden is consistently cited as a top driver of nursing burnout.
+  nursingAgency: `Agency and travel nurses exist because hospitals can't retain enough staff nurses. The reasons are complex—compensation, schedules, ratios, culture—but documentation burden is consistently in the top 3 complaints in nursing exit interviews.
 
-Turnover impact takes 12+ months to fully measure, but early indicators—satisfaction scores, vacancy rates—often improve within the first year.`,
+The math is stark: a staff RN costs $70-90K fully loaded. An agency RN costs $140-200K when you factor agency fees, housing, travel stipends, and benefits. That's a $75,000+ premium per FTE.
 
-  nursingHAPI: `Hospital-acquired pressure injuries (HAPIs) cost $10K-$50K per event in extended stays, treatment, and potential penalties. Prevention depends on timely skin assessments and intervention.
+Now here's the chain of logic: Documentation burden drives burnout. Burnout drives turnover. Turnover creates staffing gaps. Gaps get filled with agency nurses. Agency nurses cost 2× staff nurses.
 
-When nurses aren't spending time typing, they have more time for the assessments that catch early-stage pressure injuries before they progress.`,
+If you can break any link in that chain, you reduce agency spend. Abridge targets the first link: documentation burden. When nurses spend less time charting, they're less burned out. When they're less burned out, more of them stay. When more of them stay, you need fewer travelers.
+
+We model only 10% of agency FTEs converting back to staff positions—driven by the retention improvement from documentation burden reduction. Some organizations see more. But we'd rather understate than overstate an indirect benefit.`,
+
+  nursingRetention: `Nursing turnover runs 18-25% annually—significantly higher than most hospital roles. The cost per departure is $40-60K when you factor in recruiting, hiring, onboarding, training, and the productivity ramp for new nurses learning unit workflows.
+
+But the real cost is harder to measure: institutional knowledge lost, team dynamics disrupted, patient relationships broken, and the burden on remaining staff who pick up extra shifts.
+
+Why do nurses leave? The research is consistent: workload and patient ratios, schedules and work-life balance, compensation and career growth, and administrative burden and documentation.
+
+Documentation burden shows up in every nursing satisfaction survey. It's the thing nurses didn't sign up for. They became nurses to care for patients, not to chart about caring for patients.
+
+Here's where we're careful: nursing burnout is multifactorial. Documentation is ONE driver, not THE driver. Unlike physicians—where 50% of burnout is documentation-related—nurses face additional pressures (ratios, acuity, physical demands) that Abridge doesn't address.
+
+We use 15% attribution for nursing (vs 30% for physicians) because we want to be honest about what documentation improvement can and can't do. It helps. It's not a silver bullet.`,
+
+  nursingHAPI: `Hospital-acquired pressure injuries (HAPIs) are a quality measure, a patient safety issue, and a financial drain. CMS doesn't reimburse for them. The hospital absorbs the full cost—$10,000 to $50,000+ depending on severity.
+
+HAPIs happen when: skin assessments are missed or delayed, turning schedules aren't followed, risk factors aren't communicated across shifts, and early warning signs aren't documented and acted on.
+
+Real-time documentation can help with all of these. When assessments are charted as they happen (not hours later at end of shift), the information is available sooner. When risk factors are captured in conversation, they're less likely to be forgotten.
+
+BUT HERE'S WHERE WE'RE CAREFUL: HAPIs are prevented through clinical care—turning, positioning, nutrition, skin care, mobility. Documentation supports this but doesn't replace it. A perfectly documented patient can still develop a pressure injury if the interventions don't happen.
+
+The causal link between documentation and HAPI prevention is indirect: Better documentation → better visibility → earlier intervention → fewer HAPIs. We believe this link is real. We've seen it in nursing units that improved documentation practices. But we can't claim a direct 1:1 relationship.
+
+That's why we show this as "POTENTIAL VALUE"—not to diminish it, but to be intellectually honest about the causal chain.`,
 
   nursingFalls: `Patient falls cost $3K-$30K per incident. Prevention depends on real-time risk awareness and timely interventions—both of which require time at the bedside.
 
-Documentation that happens during care rather than after means more time for fall prevention activities and better real-time situational awareness.`,
+Falls happen when: risk assessments are incomplete or delayed, mobility and toileting schedules aren't followed, environmental hazards aren't identified and addressed, and nursing staff are stretched too thin to provide adequate supervision.
+
+Real-time documentation means nurses spend less time charting and more time at the bedside where they can observe early signs of fall risk—confusion, restlessness, attempts to get out of bed.
+
+Like HAPI prevention, this is an indirect benefit. The chain is: less charting time → more bedside presence → better situational awareness → faster intervention → fewer falls. The mechanism is clear, but direct attribution is complex.
+
+We show this as "POTENTIAL VALUE" because the causal link, while well-supported, is indirect. Your quality team can help you assess whether the assumed prevention rate fits your patient population.`,
 };
 
 const driverImplications: Record<string, (value: number, data: NursingPDFData) => string> = {
@@ -1129,7 +1188,10 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Nursing documentation carries a different kind of weight.</Text> It's not primarily about coding or billing—it's about patient safety, regulatory compliance, and the daily experience of nurses who spend 25-35% of their shift charting instead of caring. This assessment quantifies the measurable value, acknowledges the potential impact on quality outcomes, and respects what's harder to measure but equally important.
+          <Text style={styles.narrativeBold}>Nursing documentation is different from physician documentation—and so is the ROI model.</Text>
+          {"\n\n"}In outpatient and ED settings, the value story is relatively straightforward: time saved converts to visits, wRVUs, and revenue. In nursing, the story is more complex. Time saved doesn't generate revenue directly—it changes how nurses spend their shift, which cascades into retention, agency costs, patient safety, and experience scores.
+          {"\n\n"}This assessment models that cascade. We start with what's most measurable (overtime, retention, agency spend) and work toward outcomes that are real but harder to attribute directly (HAPI prevention, falls, HCAHPS). We're transparent about where we're confident and where we're being conservative.
+          {"\n\n"}The goal isn't to hand you a number. It's to give you a framework for thinking about value—one you can stress-test with your CNO, your finance team, and your frontline nursing leaders.
         </Text>
       </View>
 
@@ -1150,6 +1212,15 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
           <Text style={[styles.metricValue, { color: colors.amber }]}>{formatCurrency(data.potentialValue)}</Text>
           <Text style={styles.metricLabel}>Potential Value</Text>
         </View>
+      </View>
+
+      <View style={styles.valueBreakdownIntro}>
+        <Text style={styles.valueBreakdownIntroTitle}>Where Nursing Value Comes From</Text>
+        <Text style={styles.valueBreakdownIntroText}>
+          <Text style={{ fontWeight: "bold" }}>Labor & Operational</Text> — Direct cost savings you can track in payroll and staffing data. Overtime goes down. Agency utilization drops. Turnover slows. These are measurable month-over-month.
+          {"\n\n"}<Text style={{ fontWeight: "bold" }}>Quality & Safety</Text> — Cost avoidance through better outcomes. Fewer HAPIs. Fewer falls. These are real, but the causal link to documentation is indirect—we show them as "potential value" to be intellectually honest.
+          {"\n\n"}<Text style={{ fontWeight: "bold" }}>Qualitative</Text> — Benefits that matter (HCAHPS, care coordination) but aren't included in the ROI total. They're part of the full picture, not the financial model.
+        </Text>
       </View>
 
       <View style={styles.valueBreakdown}>
@@ -1356,45 +1427,51 @@ const FullPicturePage = ({ data, pageNum, totalPages }: { data: NursingPDFData; 
       </View>
 
       <Text style={styles.pageTitle}>THE FULL PICTURE</Text>
-      <Text style={styles.pageSubtitle}>What else gets better</Text>
+      <Text style={styles.pageSubtitle}>What else gets better—and why we don't put a number on it</Text>
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          Your ROI model captures the outcomes we can measure with confidence. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization:
+          Your ROI model captures outcomes we can measure with confidence: overtime, retention, agency spend, and (with caveats) patient safety events. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization.
+          {"\n\n"}We're showing these separately because we want to be honest about what we can and can't measure. These benefits are real. They show up in surveys, in audits, in patient feedback, in the daily experience of nurses. But attributing a dollar value would require assumptions we're not comfortable making.
         </Text>
       </View>
 
       <View style={styles.fullPictureCard}>
-        <Text style={styles.fullPictureTitle}>Patient Experience</Text>
+        <Text style={styles.fullPictureTitle}>Patient Experience (HCAHPS)</Text>
         <Text style={styles.fullPictureDescription}>
-          Nurses who aren't typing are nurses who are present. Patients notice when their nurse is making eye contact instead of staring at a screen. Families notice when explanations feel conversational, not scripted. The documentation happens—it just happens invisibly.
+          Patients notice when nurses are fully present versus distracted by documentation. The research is clear: nurse communication scores correlate with bedside presence. When nurses chart at the bedside on a laptop, patients perceive divided attention. When nurses are fully present—making eye contact, listening actively, explaining clearly—scores improve.
+          {"\n\n"}Ambient documentation removes the laptop from the interaction. The nurse can focus on the patient. The charting happens automatically.
         </Text>
-        <Text style={styles.fullPictureImpact}>Impacts: HCAHPS nurse communication scores, patient satisfaction surveys, complaint volumes</Text>
+        <Text style={styles.fullPictureImpact}>Impacts: "Nurse listened carefully" scores, "Nurse explained things" ratings, overall nurse communication domain, VBP reimbursement tied to HCAHPS</Text>
+        <Text style={[styles.fullPictureWhyNot, { marginTop: 6 }]}>Why we don't quantify: HCAHPS is influenced by dozens of factors—staffing, acuity, room cleanliness, food quality, pain management. Isolating the documentation effect is nearly impossible.</Text>
       </View>
 
       <View style={styles.fullPictureCard}>
         <Text style={styles.fullPictureTitle}>Survey & Compliance Readiness</Text>
         <Text style={styles.fullPictureDescription}>
-          Charts that are always complete and audit-ready. When documentation happens in real-time during care, there's no scramble before a survey. The record reflects what actually happened, when it happened—not what was remembered hours later.
+          Complete documentation is your first line of defense in any survey. Joint Commission, CMS, state surveys—they all start with the chart. When documentation is complete, timely, and accurate, surveyors find what they're looking for. When it's not, you get findings, corrective action plans, and follow-up visits.
+          {"\n\n"}Real-time documentation means charts are always current. There's no end-of-shift catch-up. No "I'll finish that later." The documentation exists because the conversation happened.
         </Text>
-        <Text style={styles.fullPictureImpact}>Impacts: Joint Commission readiness, CMS surveys, audit findings, citation risk</Text>
+        <Text style={styles.fullPictureImpact}>Impacts: Survey deficiency rates, time spent preparing for surveys, remediation costs after findings, staff anxiety around survey readiness</Text>
+        <Text style={[styles.fullPictureWhyNot, { marginTop: 6 }]}>Why we don't quantify: Survey outcomes are binary and infrequent. Attributing a dollar value would require assumptions about deficiency probability that vary too much by organization.</Text>
       </View>
 
       <View style={styles.fullPictureCard}>
         <Text style={styles.fullPictureTitle}>Care Coordination</Text>
         <Text style={styles.fullPictureDescription}>
-          Handoffs that actually have the full picture. When documentation is complete and real-time, the next nurse inherits context—not gaps. "What did the patient say about their pain?" has an answer. "Did they tolerate the medication?" is documented.
+          Handoffs are only as good as the documentation behind them. Shift-to-shift handoffs, department-to-department transfers, discharge planning—they all depend on complete, accurate, timely documentation. When documentation lags, information gets lost. When it's real-time, everyone works from the same current picture.
         </Text>
-        <Text style={styles.fullPictureImpact}>Impacts: Handoff quality, continuity errors, safety events, nurse confidence</Text>
+        <Text style={styles.fullPictureImpact}>Impacts: Shift-to-shift handoff quality, interdepartmental communication, miscommunication-related safety events, time spent "hunting" for information</Text>
+        <Text style={[styles.fullPictureWhyNot, { marginTop: 6 }]}>Why we don't quantify: Care coordination benefits are diffuse and hard to isolate. Better handoffs lead to fewer errors, faster care, better outcomes—but the causal chain is long and confounded.</Text>
       </View>
 
       <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>Why We Don't Quantify These</Text>
+        <Text style={styles.calloutTitle}>Why This Matters</Text>
         <Text style={styles.calloutText}>
-          Attribution is complex. Patient experience has many drivers. Survey outcomes depend on timing and surveyor interpretation. We'd rather be conservative with your ROI than inflate it with assumptions we can't defend.
+          We could have assigned dollar values to these outcomes. Other vendors do. But we'd rather give you a conservative ROI you can defend than an inflated one that falls apart under scrutiny.
         </Text>
         <Text style={[styles.calloutText, { marginTop: 8, fontWeight: "bold" }]}>
-          That said—these outcomes are real, and they matter to your board, your CNO, and your patients.
+          These outcomes are real—they show up in surveys, in patient feedback, in the daily experience of nurses. And they matter to your board, your CNO, and your patients.
         </Text>
       </View>
 
