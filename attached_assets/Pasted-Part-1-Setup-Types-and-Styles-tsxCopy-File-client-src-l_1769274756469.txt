@@ -1,0 +1,965 @@
+Part 1: Setup, Types, and Styles
+tsxCopy// File: client/src/lib/outpatient-pdf-generator.tsx
+
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  pdf,
+} from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export interface DriverCalculation {
+  id: string;
+  name: string;
+  value: number;
+  category: "labor" | "revenue";
+  inputs: Record<string, number | string>;
+}
+
+export interface JourneyData {
+  pilotProviders: number;
+  pilotEncounters: number;
+  pilotUtilization: number;
+  pilotValue: number;
+  fullScaleProviders: number;
+  fullScaleUtilization: number;
+  fullScaleValue: number;
+  scalingPace: "measured" | "steady" | "aggressive";
+  scalingMonths: number;
+  networkEffect: number;
+}
+
+export interface OutpatientPDFData {
+  // Organization
+  organizationName?: string;
+  careSetting: string;
+  unitName: string;
+  unitNamePlural: string;
+  
+  // Core metrics
+  providers: number;
+  encounters: number;
+  eligibleEncounters: number;
+  utilization: number;
+  timeSavedPerEncounter: number;
+  hoursReturned: number;
+  
+  // Financial
+  totalValue: number;
+  investment: number;
+  netGain: number;
+  roi: number;
+  costPerProvider: number;
+  
+  // Drivers
+  drivers: DriverCalculation[];
+  laborTotal: number;
+  revenueTotal: number;
+  laborPct: number;
+  revenuePct: number;
+  
+  // Multi-year
+  year1Value: number;
+  year2Value: number;
+  year3Value: number;
+  year1Cost: number;
+  year2Cost: number;
+  year3Cost: number;
+  threeYearValue: number;
+  threeYearCost: number;
+  threeYearNet: number;
+  
+  // Journey
+  journey: JourneyData;
+}
+
+// ============================================================================
+// COLORS
+// ============================================================================
+
+const colors = {
+  primary: "#EA2C00",
+  primaryLight: "#FEF2F0",
+  primaryDark: "#C42400",
+  green: "#059669",
+  greenLight: "#ECFDF5",
+  greenDark: "#047857",
+  black: "#111827",
+  darkGray: "#374151",
+  mediumGray: "#6B7280",
+  lightGray: "#9CA3AF",
+  paleGray: "#F9FAFB",
+  borderGray: "#E5E7EB",
+  white: "#FFFFFF",
+  amber: "#F59E0B",
+  amberLight: "#FEF3C7",
+  amberDark: "#92400E",
+  blue: "#3B82F6",
+  blueLight: "#EFF6FF",
+};
+
+// ============================================================================
+// STYLES - Dense, professional, McKinsey-inspired
+// ============================================================================
+
+const styles = StyleSheet.create({
+  // Page
+  page: {
+    padding: 40,
+    paddingBottom: 50,
+    fontFamily: "Helvetica",
+    fontSize: 9,
+    color: colors.black,
+    backgroundColor: colors.white,
+  },
+
+  // Header
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+  },
+  logo: {
+    width: 85,
+    height: 17,
+  },
+  headerRight: {
+    textAlign: "right",
+  },
+  headerTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 0.3,
+  },
+  headerSubtitle: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+
+  // Footer
+  footer: {
+    position: "absolute",
+    bottom: 25,
+    left: 40,
+    right: 40,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  footerText: {
+    fontSize: 7,
+    color: colors.lightGray,
+  },
+
+  // Section titles
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 10,
+    marginTop: 16,
+  },
+  sectionTitlePrimary: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 10,
+    marginTop: 16,
+  },
+
+  // Narrative blocks
+  narrativeBox: {
+    backgroundColor: colors.paleGray,
+    padding: 14,
+    borderRadius: 4,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  narrativeText: {
+    fontSize: 8.5,
+    color: colors.darkGray,
+    lineHeight: 1.55,
+  },
+  narrativeBold: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  narrativeHighlight: {
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  // Metrics grid
+  metricsRow: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  metricBox: {
+    flex: 1,
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 10,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  metricBoxLast: {
+    marginRight: 0,
+  },
+  metricBoxHighlight: {
+    flex: 1,
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 10,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.black,
+    fontFamily: "Helvetica-Bold",
+  },
+  metricValueGreen: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.green,
+    fontFamily: "Helvetica-Bold",
+  },
+  metricLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 3,
+    textAlign: "center",
+  },
+  metricSublabel: {
+    fontSize: 6,
+    color: colors.lightGray,
+    marginTop: 2,
+    textAlign: "center",
+  },
+
+  // Two-column layout
+  twoColumn: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  column: {
+    flex: 1,
+    marginRight: 8,
+  },
+  columnLast: {
+    flex: 1,
+    marginRight: 0,
+  },
+
+  // Cards
+  card: {
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 10,
+  },
+  cardTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  cardLabel: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  cardValue: {
+    fontSize: 8,
+    color: colors.black,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+  },
+  cardValueGreen: {
+    fontSize: 8,
+    color: colors.green,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+  },
+  cardDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+    marginVertical: 6,
+  },
+  cardTotal: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+    marginTop: 4,
+  },
+  cardTotalLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  cardTotalValue: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    fontFamily: "Helvetica-Bold",
+  },
+
+  // Value breakdown
+  valueBreakdownCard: {
+    flex: 1,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 8,
+  },
+  valueBreakdownCardLast: {
+    marginRight: 0,
+  },
+  laborCard: {
+    backgroundColor: colors.blueLight,
+    borderWidth: 1,
+    borderColor: colors.blue,
+  },
+  revenueCard: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+  },
+  valueBreakdownTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  valueBreakdownPct: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginBottom: 6,
+  },
+  valueBreakdownAmount: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 8,
+  },
+  valueBreakdownDriver: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.08)",
+  },
+  valueBreakdownDriverLast: {
+    borderBottomWidth: 0,
+  },
+  valueBreakdownDriverName: {
+    fontSize: 7.5,
+    color: colors.darkGray,
+  },
+  valueBreakdownDriverValue: {
+    fontSize: 7.5,
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  // Progress bar
+  progressBar: {
+    height: 10,
+    flexDirection: "row",
+    borderRadius: 5,
+    overflow: "hidden",
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  progressSegment: {
+    height: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  progressLabel: {
+    fontSize: 6,
+    color: colors.white,
+    fontWeight: "bold",
+  },
+
+  // Table
+  table: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: colors.paleGray,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  tableHeaderCell: {
+    flex: 1,
+    padding: 6,
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textAlign: "center",
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  tableRowLast: {
+    borderBottomWidth: 0,
+  },
+  tableCell: {
+    flex: 1,
+    padding: 6,
+    fontSize: 8,
+    color: colors.darkGray,
+    textAlign: "center",
+  },
+  tableCellBold: {
+    flex: 1,
+    padding: 6,
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    textAlign: "center",
+  },
+  tableCellGreen: {
+    flex: 1,
+    padding: 6,
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.green,
+    textAlign: "center",
+  },
+
+  // Driver page
+  driverHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  driverName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  driverValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.green,
+    fontFamily: "Helvetica-Bold",
+  },
+
+  // Theory box
+  theoryBox: {
+    backgroundColor: colors.paleGray,
+    padding: 12,
+    borderRadius: 4,
+    marginBottom: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.amber,
+  },
+  theoryLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.amber,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  theoryText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+
+  // Calculation steps
+  calcSection: {
+    marginBottom: 14,
+  },
+  calcSectionTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  stepBox: {
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  stepBoxLast: {
+    borderBottomWidth: 0,
+    marginBottom: 0,
+    paddingBottom: 0,
+  },
+  stepLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 3,
+  },
+  stepQuestion: {
+    fontSize: 8,
+    color: colors.darkGray,
+    fontStyle: "italic",
+    marginBottom: 6,
+  },
+  stepMath: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: 4,
+  },
+  stepInput: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    marginRight: 4,
+  },
+  stepInputText: {
+    fontSize: 8,
+    fontFamily: "Courier",
+    color: colors.black,
+  },
+  stepOperator: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginHorizontal: 4,
+  },
+  stepResult: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 4,
+  },
+  stepResultText: {
+    fontSize: 8,
+    fontWeight: "bold",
+    fontFamily: "Courier-Bold",
+    color: colors.black,
+  },
+  stepNote: {
+    fontSize: 7,
+    color: colors.lightGray,
+    fontStyle: "italic",
+    marginTop: 4,
+  },
+  stepNoteHighlight: {
+    fontSize: 7,
+    color: colors.primary,
+    marginTop: 4,
+  },
+
+  // Callout boxes
+  calloutBox: {
+    backgroundColor: colors.amberLight,
+    borderWidth: 1,
+    borderColor: colors.amber,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 12,
+  },
+  calloutTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.amberDark,
+    marginBottom: 4,
+  },
+  calloutText: {
+    fontSize: 7,
+    color: colors.amberDark,
+    lineHeight: 1.4,
+  },
+
+  // Benchmark box
+  benchmarkBox: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 12,
+  },
+  benchmarkTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 6,
+  },
+  benchmarkRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 3,
+  },
+  benchmarkLabel: {
+    fontSize: 7,
+    color: colors.darkGray,
+  },
+  benchmarkValue: {
+    fontSize: 7,
+    color: colors.black,
+    fontWeight: "bold",
+  },
+  benchmarkNote: {
+    fontSize: 6,
+    color: colors.lightGray,
+    fontStyle: "italic",
+    marginTop: 4,
+  },
+
+  // Final value box
+  finalValueBox: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  finalValueLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  finalValueAmount: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.green,
+    fontFamily: "Helvetica-Bold",
+  },
+  finalValueFormula: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+
+  // Implication box
+  implicationBox: {
+    backgroundColor: colors.paleGray,
+    padding: 10,
+    borderRadius: 4,
+    marginTop: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.green,
+  },
+  implicationTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.green,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  implicationText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+
+  // Journey page
+  journeyIntro: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 14,
+  },
+  journeyChart: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 4,
+    padding: 16,
+    marginBottom: 14,
+    minHeight: 120,
+  },
+  journeyChartPlaceholder: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    textAlign: "center",
+    paddingVertical: 40,
+  },
+  journeyScenario: {
+    flexDirection: "row",
+    marginBottom: 14,
+  },
+  journeyScenarioCard: {
+    flex: 1,
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 12,
+    marginRight: 8,
+  },
+  journeyScenarioCardHighlight: {
+    flex: 1,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: 4,
+    padding: 12,
+  },
+  journeyScenarioTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  journeyScenarioTitleHighlight: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  journeyScenarioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  journeyScenarioCheck: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginRight: 6,
+  },
+  journeyScenarioText: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  journeyScenarioValue: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  journeyScenarioValueGreen: {
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  // Compounding box
+  compoundingBox: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 4,
+    padding: 14,
+    marginBottom: 14,
+  },
+  compoundingTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.greenDark,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  compoundingValue: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.green,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 4,
+  },
+  compoundingSubtext: {
+    fontSize: 8,
+    color: colors.greenDark,
+  },
+
+  // Methodology
+  methodologyGrid: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  methodologyColumn: {
+    flex: 1,
+    marginRight: 12,
+  },
+  methodologyColumnLast: {
+    marginRight: 0,
+  },
+  methodologyTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 6,
+  },
+  methodologyItem: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 2,
+  },
+  methodologyNote: {
+    fontSize: 7,
+    color: colors.lightGray,
+    lineHeight: 1.5,
+    fontStyle: "italic",
+    marginTop: 8,
+  },
+
+  // Closing
+  closingBox: {
+    backgroundColor: colors.paleGray,
+    padding: 14,
+    borderRadius: 4,
+    marginTop: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  closingText: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    fontStyle: "italic",
+  },
+  closingHighlight: {
+    fontWeight: "bold",
+    color: colors.black,
+    fontStyle: "normal",
+  },
+
+  // Utility
+  bold: {
+    fontWeight: "bold",
+  },
+  mono: {
+    fontFamily: "Courier",
+  },
+});
+
+Part 2: Helper Functions and Driver Content
+tsxCopy// ============================================================================
+// HELPERS
+// ============================================================================
+
+const formatCurrency = (value: number): string => {
+  if (Math.abs(value) >= 1000000) {
+    return `$${(value / 1000000).toFixed(2)}M`;
+  }
+  if (Math.abs(value) >= 1000) {
+    return `$${Math.round(value / 1000)}K`;
+  }
+  return `$${value.toLocaleString()}`;
+};
+
+const formatNumber = (value: number): string => {
+  return value.toLocaleString();
+};
+
+const formatPercent = (value: number): string => {
+  return `${value}%`;
+};
+
+// ============================================================================
+// DRIVER EDUCATIONAL CONTENT
+// ============================================================================
+
+const driverTheories: Record<string, string> = {
+  patient_access: `When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue. The math is conservative: we assume only 25% of saved time goes to access, and only 60% of that actually converts to visits.`,
+  
+  level_of_service: `Physicians under time pressure document less than the full clinical picture. AI-assisted documentation captures the complexity that supports accurate coding—not upcoding, just getting credit for work already done. A 5% wRVU lift across thousands of encounters compounds into significant revenue without changing clinical behavior.`,
+  
+  retention: `Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $400K-$800K+ when you factor in recruiting, lost revenue during vacancy, and onboarding. Even preventing a fraction of turnover creates substantial value. We use the "Rule of Thirds": documentation is ~50% of burnout, Abridge reduces it by ~70%, yielding ~35% theoretical impact—rounded to 30% for conservatism.`,
+  
+  overtime: `Overtime commonly reflects workflow spillover rather than true staffing gaps. When documentation fits inside the workday, premium labor drops naturally and predictably. The remaining time goes to quality of life (67%) and seeing more patients (33%)—we only claim credit for the portion that converts to measurable savings.`,
+  
+  hcc_capture: `Risk adjustment relies on complete documentation of chronic conditions. Physicians discuss multiple conditions per visit, but time pressure means not all make it to the note. Abridge captures what's said, recovering HCC opportunities that would otherwise be missed. We apply a 75% haircut for audit risk, payer review, and retrospective adjustments—this is revenue you can actually count on.`,
+  
+  denials: `Most denials are recoverable—you appeal, you win, it just costs time. But a portion of documentation-related denials are written off without appeal, either because the MDM can't support it or the rework cost exceeds the claim value. Abridge captures the clinical reasoning that physicians think but don't document. This either prevents the denial upfront or makes it winnable on appeal.`,
+};
+
+const driverImplications: Record<string, (value: number, data: OutpatientPDFData) => string> = {
+  patient_access: (value, data) => {
+    const pctOfInvestment = Math.round((value / data.investment) * 100);
+    const visits = Math.round(value / 200); // Approximate
+    return `At ${formatCurrency(value)} annually, patient access alone covers ${pctOfInvestment}% of your Abridge investment. This represents approximately ${formatNumber(visits)} additional patient visits that would otherwise be lost to documentation burden.`;
+  },
+  
+  level_of_service: (value, data) => {
+    const pctOfInvestment = Math.round((value / data.investment) * 100);
+    return `Level-of-service improvements contribute ${formatCurrency(value)} annually—${pctOfInvestment}% of your investment. If your payer mix skews commercial (where conversion factors run $45-65 vs. Medicare's $33), actual results could be 30-50% higher.`;
+  },
+  
+  retention: (value, data) => {
+    const yearsToRealize = Math.round(400000 / value);
+    return `Retention value of ${formatCurrency(value)} annually is equivalent to preventing one physician departure every ${yearsToRealize} years. This is a long-term investment metric—benefits compound over 12+ months as documentation burden lifts and satisfaction improves.`;
+  },
+  
+  overtime: (value, data) => {
+    const hoursAvoided = Math.round(value / 150);
+    return `Overtime savings of ${formatCurrency(value)} represents approximately ${formatNumber(hoursAvoided)} premium labor hours eliminated annually. The remaining 67% of documentation time savings goes to quality of life—which drives the retention benefits.`;
+  },
+  
+  hcc_capture: (value, data) => {
+    const conditions = Math.round(value / 200); // Approximate HCCs captured
+    return `HCC capture adds ${formatCurrency(value)} in risk-adjusted revenue annually. This reflects ${formatNumber(conditions)} conditions that were discussed but not documented—now captured. Organizations with higher MA populations will see proportionally higher value.`;
+  },
+  
+  denials: (value, data) => {
+    const claimsRecovered = Math.round(value / 250);
+    return `Denial prevention recovers ${formatCurrency(value)} annually—approximately ${formatNumber(claimsRecovered)} claims that would otherwise be written off. This value flows directly to the bottom line without additional clinical or administrative effort.`;
+  },
+};

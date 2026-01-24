@@ -29,7 +29,8 @@ import { GlobalHeader } from "@/components/GlobalHeader";
 import { type CareSettingType, CARE_SETTING_LABELS, QUALITATIVE_CONFIG, SETTING_CONFIG } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
-import { generatePremiumPDF, type PremiumPDFData } from "@/lib/html-pdf-generator";
+import { generateOutpatientROIPDF } from "@/lib/outpatient-pdf-generator";
+import { transformToOutpatientPDFData } from "@/lib/outpatient-pdf-data-transformer";
 import {
   ComposedChart,
   Area,
@@ -376,97 +377,72 @@ export default function SummaryCommandCenter({
   };
 
   const handleExportPdf = useCallback(async () => {
-    const pdfData: PremiumPDFData = {
-      setting: CARE_SETTING_LABELS[activeSetting],
-      unitName: config.unitName,
-      unitNamePlural: config.unitNamePlural,
-      providers: pilotUnits,
-      encounters: pilotUnits * encountersPerUnit,
-      utilization: pilotUtilization,
-      totalValue: totalAnnualValue,
-      investment: annualInvestment,
-      netGain: netValue,
-      roi: roiMultiple,
-      costPerProvider: pricePerUnit,
-      hoursReturned: hoursReturnedAnnually,
-      additionalVisits: additionalPatientVisits,
-      timeSaved: 2.5,
-      laborDrivers: laborDrivers.map((d) => {
-        const driverDescriptions: Record<string, string> = {
-          'Patient Access': 'When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue.',
-          'Clinician Retention': 'Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $400K-$800K+ when you factor in recruiting, lost revenue during vacancy, and onboarding.',
-          'Overtime & Locum Savings': 'Reducing documentation time decreases the need for overtime and expensive locum coverage, translating directly to labor cost savings.',
-          'Nurse Documentation Efficiency': 'Nurses spend significant time on documentation. Returning time to bedside care improves patient outcomes and reduces burnout.',
-          'Throughput': 'Faster documentation enables quicker patient turnover, improving overall department efficiency and capacity.',
-        };
-        return {
-          name: d.name,
-          value: d.value,
-          description: driverDescriptions[d.name] || 'Reduces administrative burden and improves efficiency through AI-assisted documentation.',
-        };
-      }),
-      revenueDrivers: revenueDrivers.map((d) => {
-        const driverDescriptions: Record<string, string> = {
-          'Accurate Level of Service': 'Physicians under time pressure document less than the full clinical picture. AI-assisted documentation captures the complexity that supports accurate coding—not upcoding, just getting credit for work already done.',
-          'HCC & Chronic Condition Capture': 'Accurate documentation of chronic conditions ensures proper risk adjustment, improving reimbursement accuracy for value-based care arrangements.',
-          'Documentation-Related Denials': 'Many claim denials stem from incomplete documentation. Comprehensive AI-assisted notes reduce denials and the administrative cost of appeals.',
-          'Critical Decision Making': 'Complete documentation supports better clinical decision-making and care coordination.',
-        };
-        return {
-          name: d.name,
-          value: d.value,
-          description: driverDescriptions[d.name] || 'Improves revenue capture and quality outcomes through comprehensive documentation.',
-        };
-      }),
-      laborTotal: laborValue,
-      revenueTotal: revenueValue,
-      laborPct: laborPercent,
-      revenuePct: revenuePercent,
-      year1,
-      year2,
-      year3,
-      threeYearValue,
-      threeYearCost,
-      threeYearNet,
-      fullScaleProviders: safeFullScaleUnits,
-      fullScaleUtil: fullScaleUtilization,
-      fullScaleValue: fullScale.value,
-      fullScaleROI: annualInvestment > 0 ? fullScale.value / (safeFullScaleUnits * pricePerUnit * 12) : 0,
-      networkEffect,
-      qualitativeDrivers,
+    const driverIdMap: Record<string, string> = {
+      patient_access: 'patientAccess',
+      level_of_service: 'wrvu',
+      retention: 'workforce',
+      overtime: 'overtime',
+      hcc_capture: 'hcc',
+      denials: 'denials',
     };
 
-    await generatePremiumPDF(pdfData);
+    const rawDriverResults = modelResults.driverResults || {};
+    const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
+    
+    Object.entries(rawDriverResults).forEach(([key, result]) => {
+      if (result && result.value > 0) {
+        const normalizedId = driverIdMap[key] || key;
+        driverResults[normalizedId] = {
+          name: result.name || key,
+          value: result.value,
+          inputs: result.inputs || {},
+        };
+      }
+    });
+
+    const journeyInputs = {
+      pilotProviders: pilotUnits,
+      pilotEncounters: pilotUnits * encountersPerUnit,
+      pilotUtilization: pilotUtilization,
+      pilotValue: totalAnnualValue,
+      fullScaleProviders: safeFullScaleUnits,
+      fullScaleUtilization: fullScaleUtilization,
+      fullScaleValue: fullScale.value,
+      scalingPace: selectedPace,
+      networkEffect: networkEffect,
+    };
+
+    const pdfData = transformToOutpatientPDFData(
+      {
+        totalBenefit: totalAnnualValue,
+        investment: annualInvestment,
+        implementationFee: 0,
+        providers: pilotUnits,
+        encounters: pilotUnits * encountersPerUnit,
+        utilizationRate: pilotUtilization,
+        costPerMonth: pricePerUnit,
+        timeSavedPerEncounter: 2.5,
+        driverResults,
+      },
+      journeyInputs,
+      CARE_SETTING_LABELS[activeSetting]
+    );
+
+    await generateOutpatientROIPDF(pdfData);
   }, [
     activeSetting,
-    config,
+    modelResults.driverResults,
     pilotUnits,
     encountersPerUnit,
     pilotUtilization,
     totalAnnualValue,
     annualInvestment,
-    netValue,
-    roiMultiple,
     pricePerUnit,
-    hoursReturnedAnnually,
-    additionalPatientVisits,
-    laborDrivers,
-    revenueDrivers,
-    laborValue,
-    revenueValue,
-    laborPercent,
-    revenuePercent,
-    year1,
-    year2,
-    year3,
-    threeYearValue,
-    threeYearCost,
-    threeYearNet,
-    fullScaleUnits,
+    safeFullScaleUnits,
     fullScaleUtilization,
     fullScale,
+    selectedPace,
     networkEffect,
-    qualitativeDrivers,
   ]);
 
   return (
