@@ -147,15 +147,15 @@ const colors = {
 };
 
 // ============================================================================
-// STYLES
+// STYLES - DENSE LAYOUT
 // ============================================================================
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    paddingBottom: 50,
+    padding: 32,
+    paddingBottom: 45,
     fontFamily: "Helvetica",
-    fontSize: 9,
+    fontSize: 8,
     color: colors.black,
     backgroundColor: colors.white,
   },
@@ -164,98 +164,152 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
-    paddingBottom: 8,
+    marginBottom: 8,
+    paddingBottom: 6,
     borderBottomWidth: 2,
     borderBottomColor: colors.primary,
   },
   logo: {
-    width: 85,
-    height: 17,
+    width: 75,
+    height: 15,
   },
   headerRight: {
     textAlign: "right",
   },
   headerTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
     letterSpacing: 0.3,
   },
   headerSubtitle: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.mediumGray,
-    marginTop: 2,
+    marginTop: 1,
   },
 
   footer: {
     position: "absolute",
-    bottom: 20,
-    left: 36,
-    right: 36,
+    bottom: 16,
+    left: 32,
+    right: 32,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: 6,
+    paddingTop: 4,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   footerText: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.lightGray,
   },
 
   orgContext: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   orgName: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.black,
   },
   orgDetails: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.mediumGray,
-    marginTop: 2,
+    marginTop: 1,
   },
 
   pageTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    marginTop: 6,
+  },
   sectionTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
-    letterSpacing: 0.6,
-    marginBottom: 6,
-    marginTop: 8,
+    letterSpacing: 0.5,
+    marginLeft: 4,
   },
 
-  narrativeBox: {
-    backgroundColor: colors.paleGray,
-    padding: 10,
+  executiveCallout: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primary,
     borderRadius: 4,
-    marginBottom: 8,
-    borderLeftWidth: 3,
+    padding: 8,
+    marginBottom: 6,
+    borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
-  narrativeTitle: {
-    fontSize: 8,
+  executiveCalloutTitle: {
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.primary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
+    marginBottom: 3,
+  },
+  executiveCalloutText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.4,
+  },
+
+  keyTakeaway: {
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 6,
+    marginTop: 6,
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  keyTakeawayLabel: {
+    fontSize: 6,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    marginRight: 6,
+    marginTop: 1,
+  },
+  keyTakeawayText: {
+    flex: 1,
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.3,
+  },
+
+  narrativeBox: {
+    backgroundColor: colors.paleGray,
+    padding: 8,
+    borderRadius: 4,
     marginBottom: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  narrativeTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginBottom: 4,
   },
   narrativeText: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
+    lineHeight: 1.4,
+    marginBottom: 2,
   },
   narrativeBold: {
     fontWeight: "bold",
@@ -264,8 +318,8 @@ const styles = StyleSheet.create({
 
   heroRow: {
     flexDirection: "row",
-    marginBottom: 8,
-    gap: 6,
+    marginBottom: 6,
+    gap: 4,
   },
   heroBox: {
     flex: 1,
@@ -273,7 +327,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 8,
+    padding: 6,
     alignItems: "center",
   },
   heroBoxHighlight: {
@@ -282,36 +336,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.green,
     borderRadius: 4,
-    padding: 8,
+    padding: 6,
     alignItems: "center",
   },
   heroValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   heroValueGreen: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   heroLabel: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
     textAlign: "center",
-    marginTop: 3,
+    marginTop: 2,
   },
   heroSublabel: {
-    fontSize: 6,
+    fontSize: 5,
     color: colors.lightGray,
-    marginTop: 2,
+    marginTop: 1,
     textAlign: "center",
   },
 
@@ -319,12 +373,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 6,
+    marginBottom: 4,
     overflow: "hidden",
   },
   cardHeader: {
     backgroundColor: colors.paleGray,
-    padding: 8,
+    padding: 6,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -333,7 +387,7 @@ const styles = StyleSheet.create({
   },
   cardHeaderGreen: {
     backgroundColor: colors.greenLight,
-    padding: 8,
+    padding: 6,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -341,30 +395,30 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.green,
   },
   cardTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
   },
   cardSubtitle: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
     marginTop: 1,
   },
   cardValue: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
   },
   cardContent: {
-    padding: 8,
+    padding: 6,
   },
 
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingVertical: 5,
+    paddingVertical: 3,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
@@ -373,29 +427,29 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     flex: 1,
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
   },
   rowFormula: {
-    fontSize: 6.5,
+    fontSize: 6,
     color: colors.lightGray,
-    marginTop: 2,
+    marginTop: 1,
     fontFamily: "Courier",
   },
   rowExplanation: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
-    marginTop: 2,
-    lineHeight: 1.4,
+    marginTop: 1,
+    lineHeight: 1.3,
   },
   rowValue: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.green,
     textAlign: "right",
   },
   rowValueNeutral: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
     textAlign: "right",
@@ -405,12 +459,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 14,
+    marginBottom: 8,
     overflow: "hidden",
   },
   metricHeader: {
     backgroundColor: colors.paleGray,
-    padding: 10,
+    padding: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -418,77 +472,77 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.borderGray,
   },
   metricName: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
   },
   metricDesc: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
-    marginTop: 2,
+    marginTop: 1,
   },
   metricValue: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
     textAlign: "right",
   },
   metricContent: {
-    padding: 10,
+    padding: 8,
   },
 
   comparisonRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
-    paddingVertical: 8,
+    marginBottom: 6,
+    paddingVertical: 6,
     backgroundColor: colors.white,
   },
   comparisonBox: {
     alignItems: "center",
-    minWidth: 70,
+    minWidth: 60,
   },
   comparisonLabel: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 3,
+    letterSpacing: 0.2,
+    marginBottom: 2,
   },
   comparisonValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.black,
   },
   comparisonUnit: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
     marginTop: 1,
   },
-  comparisonArrow: {
-    fontSize: 14,
-    color: colors.mediumGray,
-    marginHorizontal: 14,
+  comparisonArrowContainer: {
+    marginHorizontal: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   comparisonChange: {
     alignItems: "center",
     backgroundColor: colors.greenLight,
     borderRadius: 4,
-    padding: 8,
-    minWidth: 70,
+    padding: 6,
+    minWidth: 60,
   },
   comparisonChangeValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
   },
   comparisonChangePercent: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.greenDark,
     marginTop: 1,
   },
@@ -497,151 +551,151 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 8,
-    marginBottom: 8,
+    padding: 6,
+    marginBottom: 6,
   },
   sectionBoxTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
     letterSpacing: 0.3,
-    marginBottom: 6,
+    marginBottom: 4,
   },
 
   benchmarkBox: {
     backgroundColor: colors.blueLight,
     borderLeftWidth: 3,
     borderLeftColor: colors.blue,
-    padding: 8,
-    marginBottom: 8,
+    padding: 6,
+    marginBottom: 6,
     borderRadius: 3,
   },
   benchmarkTitle: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.blueDark,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   benchmarkText: {
-    fontSize: 7.5,
+    fontSize: 7,
     color: colors.blueDark,
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 
   warningBox: {
     backgroundColor: colors.amberLight,
     borderLeftWidth: 3,
     borderLeftColor: colors.amber,
-    padding: 8,
-    marginBottom: 8,
+    padding: 6,
+    marginBottom: 6,
     borderRadius: 3,
   },
   warningTitle: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.amberDark,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   warningText: {
-    fontSize: 7.5,
+    fontSize: 7,
     color: colors.amberDark,
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 
   valueCalcBox: {
     backgroundColor: colors.greenLight,
     borderLeftWidth: 3,
     borderLeftColor: colors.green,
-    padding: 8,
-    marginBottom: 8,
+    padding: 6,
+    marginBottom: 6,
     borderRadius: 3,
   },
   valueCalcTitle: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.greenDark,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   valueCalcFormula: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.green,
     fontFamily: "Courier",
     fontWeight: "bold",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   valueCalcText: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.greenDark,
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 
   meaningBox: {
     backgroundColor: colors.paleGray,
     borderLeftWidth: 3,
     borderLeftColor: colors.mediumGray,
-    padding: 8,
-    marginTop: 6,
+    padding: 6,
+    marginTop: 4,
     borderRadius: 3,
   },
   meaningTitle: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.darkGray,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   meaningText: {
-    fontSize: 7.5,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
 
   trendChartContainer: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 10,
-    marginBottom: 8,
-    minHeight: 80,
+    padding: 8,
+    marginBottom: 6,
   },
   trendLabel: {
     fontSize: 7,
     fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    marginBottom: 8,
+    color: colors.darkGray,
+    marginBottom: 6,
   },
   trendSummary: {
     fontSize: 7,
     color: colors.darkGray,
-    marginTop: 6,
+    marginTop: 4,
   },
 
   checkItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   checkMark: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.green,
-    marginRight: 6,
+    marginRight: 4,
     fontWeight: "bold",
   },
   arrowMark: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.amber,
-    marginRight: 6,
+    marginRight: 4,
     fontWeight: "bold",
   },
   checkText: {
     flex: 1,
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 
   opportunityCard: {
@@ -649,16 +703,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 10,
-    marginBottom: 8,
+    padding: 8,
+    marginBottom: 6,
   },
   opportunityCardExpanded: {
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 10,
-    marginBottom: 10,
+    padding: 8,
+    marginBottom: 6,
     borderLeftWidth: 3,
     borderLeftColor: colors.green,
   },
@@ -667,53 +721,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.amber,
     borderRadius: 4,
-    padding: 10,
-    marginTop: 10,
-    marginBottom: 10,
+    padding: 8,
+    marginTop: 6,
+    marginBottom: 6,
   },
   bottomLineBox: {
     backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.darkGray,
     borderRadius: 4,
-    padding: 12,
-    marginTop: 10,
+    padding: 8,
+    marginTop: 6,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
   },
   opportunityTitle: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.primary,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   opportunityRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 3,
+    marginBottom: 2,
   },
   opportunityLabel: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.mediumGray,
   },
   opportunityValue: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.black,
   },
   opportunityAction: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    marginTop: 4,
+    marginTop: 3,
     fontStyle: "italic",
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 
   twoColumn: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 6,
   },
   column: {
     flex: 1,
@@ -722,47 +776,85 @@ const styles = StyleSheet.create({
   journeyChart: {
     backgroundColor: colors.paleGray,
     borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
-    minHeight: 70,
+    padding: 6,
+    marginBottom: 4,
+    minHeight: 65,
   },
 
   methodologyGrid: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 6,
   },
   methodologyColumn: {
     flex: 1,
   },
   methodologyTitle: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
     letterSpacing: 0.3,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   methodologyItem: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 2,
+    lineHeight: 1.4,
+    marginBottom: 1,
   },
 
   closingBox: {
     backgroundColor: colors.paleGray,
-    padding: 12,
+    padding: 8,
     borderRadius: 4,
-    marginTop: 10,
+    marginTop: 6,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
   },
   closingText: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
     fontStyle: "italic",
+  },
+
+  progressBar: {
+    height: 8,
+    backgroundColor: colors.borderGray,
+    borderRadius: 4,
+    overflow: "hidden",
+    marginVertical: 4,
+  },
+  progressFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  progressLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 2,
+  },
+  progressLabel: {
+    fontSize: 5,
+    color: colors.mediumGray,
+  },
+
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+
+  sparklineContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
 
@@ -792,6 +884,169 @@ const getToday = (): string => {
   });
 };
 
+const getStatusColor = (status: "good" | "warning" | "alert"): string => {
+  switch (status) {
+    case "good": return colors.green;
+    case "warning": return colors.amber;
+    case "alert": return colors.primary;
+  }
+};
+
+const getMaturityLevel = (utilization: number): { label: string; color: string; percent: number } => {
+  if (utilization >= 80) return { label: "Optimized", color: colors.green, percent: 100 };
+  if (utilization >= 60) return { label: "Developing", color: colors.blue, percent: 75 };
+  if (utilization >= 40) return { label: "Emerging", color: colors.amber, percent: 50 };
+  return { label: "Early Stage", color: colors.lightGray, percent: 25 };
+};
+
+// ============================================================================
+// SVG ICON COMPONENTS
+// ============================================================================
+
+const IconChart = ({ size = 10, color = colors.primary }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M3 3v18h18" stroke={color} strokeWidth="2" fill="none" />
+    <Path d="M7 14l4-4 4 4 5-5" stroke={color} strokeWidth="2" fill="none" />
+  </Svg>
+);
+
+const IconTarget = ({ size = 10, color = colors.primary }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2" fill="none" />
+    <Circle cx="12" cy="12" r="5" stroke={color} strokeWidth="2" fill="none" />
+    <Circle cx="12" cy="12" r="1" fill={color} />
+  </Svg>
+);
+
+const IconLightbulb = ({ size = 10, color = colors.amber }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M9 21h6M12 3a6 6 0 0 0-6 6c0 2.5 1.5 4.5 4 5.5V17h4v-2.5c2.5-1 4-3 4-5.5a6 6 0 0 0-6-6z" stroke={color} strokeWidth="2" fill="none" />
+  </Svg>
+);
+
+const IconCheckCircle = ({ size = 10, color = colors.green }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" fill="none" />
+    <Path d="M9 12l2 2 4-4" stroke={color} strokeWidth="2" fill="none" />
+  </Svg>
+);
+
+const IconTrendUp = ({ size = 10, color = colors.green }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M23 6l-9 9-5-5-7 7" stroke={color} strokeWidth="2" fill="none" />
+    <Path d="M17 6h6v6" stroke={color} strokeWidth="2" fill="none" />
+  </Svg>
+);
+
+const IconExpand = ({ size = 10, color = colors.blue }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke={color} strokeWidth="2" fill="none" />
+  </Svg>
+);
+
+const IconBook = ({ size = 10, color = colors.mediumGray }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke={color} strokeWidth="2" fill="none" />
+    <Path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke={color} strokeWidth="2" fill="none" />
+  </Svg>
+);
+
+const ArrowRight = ({ size = 12, color = colors.green }: { size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M5 12h14M12 5l7 7-7 7" stroke={color} strokeWidth="2.5" fill="none" />
+  </Svg>
+);
+
+// ============================================================================
+// TRAFFIC LIGHT STATUS DOT
+// ============================================================================
+
+const StatusDot = ({ status }: { status: "good" | "warning" | "alert" }) => (
+  <View style={[styles.statusDot, { backgroundColor: getStatusColor(status) }]} />
+);
+
+// ============================================================================
+// MINI SPARKLINE COMPONENT
+// ============================================================================
+
+const MiniSparkline = ({ 
+  values, 
+  width = 40, 
+  height = 12,
+  color = colors.green 
+}: { 
+  values: number[]; 
+  width?: number; 
+  height?: number;
+  color?: string;
+}) => {
+  if (values.length < 2) return null;
+  
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * width;
+    const y = height - ((v - min) / range) * (height - 2) - 1;
+    return `${x},${y}`;
+  }).join(" ");
+  
+  return (
+    <View style={{ marginLeft: 6 }}>
+      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+        <Polyline points={points} stroke={color} strokeWidth="1.5" fill="none" />
+        <Circle 
+          cx={(values.length - 1) / (values.length - 1) * width} 
+          cy={height - ((values[values.length - 1] - min) / range) * (height - 2) - 1}
+          r="2" 
+          fill={color} 
+        />
+      </Svg>
+    </View>
+  );
+};
+
+// ============================================================================
+// PROGRESS INDICATOR COMPONENT
+// ============================================================================
+
+const ProgressIndicator = ({ 
+  current, 
+  target, 
+  label,
+  showLabels = true,
+  barWidth = 100
+}: { 
+  current: number; 
+  target: number; 
+  label: string;
+  showLabels?: boolean;
+  barWidth?: number;
+}) => {
+  const percent = Math.min((current / target) * 100, 100);
+  const color = percent >= 80 ? colors.green : percent >= 50 ? colors.blue : colors.amber;
+  const fillWidth = (percent / 100) * barWidth;
+  
+  return (
+    <View style={{ marginBottom: 4 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
+        <Text style={{ fontSize: 6, color: colors.mediumGray }}>{label}</Text>
+        <Text style={{ fontSize: 6, fontWeight: "bold", color }}>{current}%</Text>
+      </View>
+      <View style={[styles.progressBar, { width: barWidth }]}>
+        <View style={[styles.progressFill, { width: fillWidth, backgroundColor: color }]} />
+      </View>
+      {showLabels && (
+        <View style={[styles.progressLabels, { width: barWidth }]}>
+          <Text style={styles.progressLabel}>0%</Text>
+          <Text style={[styles.progressLabel, { color }]}>{target}% target</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
 // ============================================================================
 // HEADER COMPONENT
 // ============================================================================
@@ -818,7 +1073,58 @@ const Footer = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }
 );
 
 // ============================================================================
-// TREND CHART COMPONENT - Professional SVG Chart for React-PDF
+// SECTION TITLE WITH ICON
+// ============================================================================
+
+const SectionTitle = ({ 
+  icon, 
+  title 
+}: { 
+  icon: "chart" | "target" | "lightbulb" | "check" | "trend" | "expand" | "book";
+  title: string;
+}) => {
+  const IconComponent = {
+    chart: IconChart,
+    target: IconTarget,
+    lightbulb: IconLightbulb,
+    check: IconCheckCircle,
+    trend: IconTrendUp,
+    expand: IconExpand,
+    book: IconBook,
+  }[icon];
+  
+  return (
+    <View style={styles.sectionTitleRow}>
+      <IconComponent size={10} />
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+};
+
+// ============================================================================
+// KEY TAKEAWAY BOX
+// ============================================================================
+
+const KeyTakeaway = ({ text }: { text: string }) => (
+  <View style={styles.keyTakeaway} wrap={false}>
+    <Text style={styles.keyTakeawayLabel}>KEY TAKEAWAY</Text>
+    <Text style={styles.keyTakeawayText}>{text}</Text>
+  </View>
+);
+
+// ============================================================================
+// EXECUTIVE CALLOUT BOX
+// ============================================================================
+
+const ExecutiveCallout = ({ title, text }: { title: string; text: string }) => (
+  <View style={styles.executiveCallout} wrap={false}>
+    <Text style={styles.executiveCalloutTitle}>{title}</Text>
+    <Text style={styles.executiveCalloutText}>{text}</Text>
+  </View>
+);
+
+// ============================================================================
+// ENHANCED TREND CHART - LARGER AND MORE PROMINENT
 // ============================================================================
 
 interface TrendDataPoint {
@@ -840,7 +1146,6 @@ const TrendChart = ({
     return null;
   }
 
-  // Transform metric data to chart data points
   const data: TrendDataPoint[] = [
     { label: "BL", value: baseline, isBaseline: true },
     ...trend.map((t, i) => ({
@@ -850,19 +1155,17 @@ const TrendChart = ({
     })),
   ];
 
-  const width = 460;
-  const height = 100;
+  const width = 480;
+  const height = 120;
   const positiveIsGood = metric.isPositiveGood;
   const valueSuffix = metric.unit;
 
-  // Chart dimensions - SVG width accounts for Y-axis labels column (35px)
-  const yAxisColumnWidth = 35;
+  const yAxisColumnWidth = 40;
   const svgWidth = width - yAxisColumnWidth;
-  const padding = { top: 15, right: 15, bottom: 25, left: 10 }; // Reduced left padding since Y-axis is external
+  const padding = { top: 15, right: 15, bottom: 20, left: 10 };
   const chartWidth = svgWidth - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  // Calculate value range
   const values = data.map(d => d.value);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
@@ -872,52 +1175,41 @@ const TrendChart = ({
   const yMax = maxValue + valuePadding;
   const yRange = yMax - yMin;
 
-  // Calculate positions
   const xStep = chartWidth / (data.length - 1);
   
   const getX = (index: number) => padding.left + (index * xStep);
   const getY = (value: number) => padding.top + chartHeight - ((value - yMin) / yRange * chartHeight);
 
-  // Generate path for the line
   const linePath = data.map((point, i) => {
     const x = getX(i);
     const y = getY(point.value);
     return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
   }).join(" ");
 
-  // Generate path for the area fill
   const areaPath = `${linePath} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
 
-  // Calculate trend summary
   const current = data[data.length - 1];
   const change = current.value - baseline;
   const changePercent = baseline !== 0 ? (change / baseline) * 100 : 0;
   const isPositiveTrend = positiveIsGood ? change >= 0 : change <= 0;
-  const trendIndicator = isPositiveTrend ? "↗" : "↘";
-  const trendLabel = Math.abs(changePercent) < 2 ? "Stable" : 
-                     isPositiveTrend ? "Consistent improvement" : "Needs attention";
 
-  // Chart colors
   const chartColors = {
     line: colors.green,
-    area: "#10B98120",
+    area: "#10B98118",
     baseline: colors.primary,
     current: colors.green,
     currentRing: colors.white,
     grid: "#E5E7EB",
     text: colors.mediumGray,
-    labelText: colors.darkGray,
     axisLine: "#D1D5DB",
   };
 
-  // Y-axis tick values (3 ticks)
   const yTicks = [
     { value: yMin + yRange * 0.1, y: getY(yMin + yRange * 0.1) },
     { value: yMin + yRange * 0.5, y: getY(yMin + yRange * 0.5) },
     { value: yMin + yRange * 0.9, y: getY(yMin + yRange * 0.9) },
   ];
 
-  // Format value for display
   const formatValue = (val: number) => {
     if (valueSuffix === "%" || valueSuffix.includes("wRVU")) {
       return val.toFixed(2);
@@ -928,28 +1220,35 @@ const TrendChart = ({
     return val.toFixed(1);
   };
 
-  // Generate Y-axis labels for display outside SVG
   const yAxisLabels = yTicks.map(tick => ({
     value: formatValue(tick.value),
     topOffset: tick.y - padding.top,
   }));
 
   return (
-    <View style={styles.trendChartContainer}>
-      <Text style={styles.trendLabel}>YOUR TREND ({trend.length} months)</Text>
+    <View style={styles.trendChartContainer} wrap={false}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <Text style={styles.trendLabel}>TREND OVER {trend.length} MONTHS</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <StatusDot status={isPositiveTrend ? "good" : "warning"} />
+          <Text style={{ fontSize: 6, color: isPositiveTrend ? colors.green : colors.amber, fontWeight: "bold" }}>
+            {isPositiveTrend ? "IMPROVING" : "NEEDS ATTENTION"}
+          </Text>
+        </View>
+      </View>
+      
       <View style={{ flexDirection: "row" }}>
-        {/* Y-axis labels column */}
         <View style={{ width: yAxisColumnWidth, height: chartHeight + padding.top + padding.bottom, justifyContent: "flex-start", paddingTop: padding.top }}>
           {yAxisLabels.map((label, i) => (
             <Text
               key={`y-label-${i}`}
               style={{
-                fontSize: 7,
+                fontSize: 6,
                 color: chartColors.text,
                 textAlign: "right",
                 position: "absolute",
                 top: label.topOffset - 4,
-                right: 2,
+                right: 4,
               }}
             >
               {label.value}
@@ -957,105 +1256,65 @@ const TrendChart = ({
           ))}
         </View>
         
-        {/* Chart SVG */}
         <Svg width={svgWidth} height={height} viewBox={`0 0 ${svgWidth} ${height}`}>
-        {/* Background */}
-        <Rect x={0} y={0} width={svgWidth} height={height} fill="#F9FAFB" rx={4} />
-        
-        {/* Chart area background */}
-        <Rect 
-          x={padding.left} 
-          y={padding.top} 
-          width={chartWidth} 
-          height={chartHeight} 
-          fill={colors.white} 
-        />
+          <Rect x={0} y={0} width={svgWidth} height={height} fill={colors.white} rx={4} />
+          <Rect x={padding.left} y={padding.top} width={chartWidth} height={chartHeight} fill={colors.paleGray} />
 
-        {/* Horizontal grid lines */}
-        {yTicks.map((tick, i) => (
-          <Line
-            key={`grid-${i}`}
-            x1={padding.left}
-            y1={tick.y}
-            x2={padding.left + chartWidth}
-            y2={tick.y}
-            stroke={chartColors.grid}
-            strokeWidth={0.5}
-            strokeDasharray="2,2"
-          />
-        ))}
+          {yTicks.map((tick, i) => (
+            <Line
+              key={`grid-${i}`}
+              x1={padding.left}
+              y1={tick.y}
+              x2={padding.left + chartWidth}
+              y2={tick.y}
+              stroke={chartColors.grid}
+              strokeWidth={0.5}
+              strokeDasharray="3,3"
+            />
+          ))}
 
-        {/* Y-axis line */}
-        <Line
-          x1={padding.left}
-          y1={padding.top}
-          x2={padding.left}
-          y2={padding.top + chartHeight}
-          stroke={chartColors.axisLine}
-          strokeWidth={1}
-        />
+          <Line x1={padding.left} y1={padding.top} x2={padding.left} y2={padding.top + chartHeight} stroke={chartColors.axisLine} strokeWidth={1} />
+          <Line x1={padding.left} y1={padding.top + chartHeight} x2={padding.left + chartWidth} y2={padding.top + chartHeight} stroke={chartColors.axisLine} strokeWidth={1} />
 
-        {/* X-axis line */}
-        <Line
-          x1={padding.left}
-          y1={padding.top + chartHeight}
-          x2={padding.left + chartWidth}
-          y2={padding.top + chartHeight}
-          stroke={chartColors.axisLine}
-          strokeWidth={1}
-        />
+          <Path d={areaPath} fill={chartColors.area} />
+          <Path d={linePath} stroke={chartColors.line} strokeWidth={2.5} fill="none" />
 
-        {/* Area fill under line */}
-        <Path
-          d={areaPath}
-          fill={chartColors.area}
-        />
-
-        {/* Main line */}
-        <Path
-          d={linePath}
-          stroke={chartColors.line}
-          strokeWidth={2.5}
-          fill="none"
-        />
-
-        {/* Data points */}
-        {data.map((point, i) => {
-          const x = getX(i);
-          const y = getY(point.value);
-          
-          if (point.isBaseline) {
-            return (
-              <G key={`point-${i}`}>
-                <Circle cx={x} cy={y} r={5} fill={chartColors.baseline} />
-                <Circle cx={x} cy={y} r={3} fill={colors.white} />
-                <Circle cx={x} cy={y} r={2} fill={chartColors.baseline} />
-              </G>
-            );
-          } else if (point.isCurrent) {
-            return (
-              <G key={`point-${i}`}>
-                <Circle cx={x} cy={y} r={8} fill={chartColors.current} />
-                <Circle cx={x} cy={y} r={5} fill={chartColors.currentRing} />
-                <Circle cx={x} cy={y} r={3} fill={chartColors.current} />
-              </G>
-            );
-          } else {
-            return (
-              <Circle key={`point-${i}`} cx={x} cy={y} r={4} fill={chartColors.line} />
-            );
-          }
-        })}
-      </Svg>
+          {data.map((point, i) => {
+            const x = getX(i);
+            const y = getY(point.value);
+            
+            if (point.isBaseline) {
+              return (
+                <G key={`point-${i}`}>
+                  <Circle cx={x} cy={y} r={5} fill={chartColors.baseline} />
+                  <Circle cx={x} cy={y} r={3} fill={colors.white} />
+                  <Circle cx={x} cy={y} r={1.5} fill={chartColors.baseline} />
+                </G>
+              );
+            } else if (point.isCurrent) {
+              return (
+                <G key={`point-${i}`}>
+                  <Circle cx={x} cy={y} r={8} fill={chartColors.current} opacity={0.2} />
+                  <Circle cx={x} cy={y} r={5} fill={chartColors.current} />
+                  <Circle cx={x} cy={y} r={3} fill={chartColors.currentRing} />
+                  <Circle cx={x} cy={y} r={1.5} fill={chartColors.current} />
+                </G>
+              );
+            } else {
+              return (
+                <Circle key={`point-${i}`} cx={x} cy={y} r={3} fill={chartColors.line} />
+              );
+            }
+          })}
+        </Svg>
       </View>
       
-      {/* X-axis labels - rendered outside SVG for reliable text rendering */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: yAxisColumnWidth + padding.left, paddingRight: padding.right, marginTop: 4 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: yAxisColumnWidth + padding.left, paddingRight: padding.right, marginTop: 3 }}>
         {data.map((point, i) => (
           <Text 
             key={`x-label-${i}`}
             style={{ 
-              fontSize: 7, 
+              fontSize: 6, 
               color: point.isBaseline ? chartColors.baseline : point.isCurrent ? chartColors.current : chartColors.text,
               fontWeight: (point.isBaseline || point.isCurrent) ? "bold" : "normal",
               textAlign: "center",
@@ -1067,18 +1326,21 @@ const TrendChart = ({
         ))}
       </View>
       
-      {/* Summary line - rendered outside SVG for reliable text rendering */}
-      <Text style={styles.trendSummary}>
-        <Text style={{ fontWeight: "bold" }}>Baseline:</Text> {formatValue(baseline)} {valueSuffix}  →  <Text style={{ fontWeight: "bold" }}>Current:</Text> {formatValue(current.value)} {valueSuffix}  =  
-        <Text style={{ fontWeight: "bold", color: isPositiveTrend ? chartColors.current : chartColors.baseline }}>
-          {change >= 0 ? "+" : ""}{formatValue(change)} ({changePercent >= 0 ? "+" : ""}{changePercent.toFixed(0)}%)
-        </Text>
-      </Text>
-      
-      {/* Trend indicator */}
-      <Text style={[styles.trendSummary, { color: isPositiveTrend ? chartColors.current : chartColors.baseline }]}>
-        {trendIndicator} {trendLabel}
-      </Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 10, height: 3, backgroundColor: chartColors.baseline, borderRadius: 1, marginRight: 4 }} />
+          <Text style={{ fontSize: 6, color: colors.mediumGray }}>Baseline: {formatValue(baseline)} {valueSuffix}</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 10, height: 3, backgroundColor: chartColors.current, borderRadius: 1, marginRight: 4 }} />
+          <Text style={{ fontSize: 6, color: colors.mediumGray }}>Current: {formatValue(current.value)} {valueSuffix}</Text>
+        </View>
+        <View style={{ backgroundColor: isPositiveTrend ? colors.greenLight : colors.amberLight, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>
+          <Text style={{ fontSize: 6, fontWeight: "bold", color: isPositiveTrend ? colors.green : colors.amber }}>
+            {change >= 0 ? "+" : ""}{formatValue(change)} ({changePercent >= 0 ? "+" : ""}{changePercent.toFixed(0)}%)
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
@@ -1090,6 +1352,7 @@ const TrendChart = ({
 
 const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; totalPages: number }) => {
   const hardValueMetrics = data.metrics.filter(m => m.value && m.value > 0);
+  const maturity = getMaturityLevel(data.utilizationRate);
   
   return (
     <Page size="A4" style={styles.page}>
@@ -1104,15 +1367,10 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
         </Text>
       </View>
 
-      <View style={styles.narrativeBox} wrap={false}>
-        <Text style={styles.narrativeTitle}>THE STORY SO FAR</Text>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>{data.monthsOnAbridge} months ago</Text>, you deployed Abridge to {data.providers} providers. Since then, those providers have documented <Text style={styles.narrativeBold}>{formatNumber(data.documentedEncounters)} encounters</Text>—each generating data about value creation. <Text style={styles.narrativeBold}>The short answer: it's working.</Text>
-        </Text>
-        <Text style={[styles.narrativeText, { marginBottom: 0 }]}>
-          This report breaks down where value is coming from, how your results compare to typical outcomes, and what the path forward looks like. Every number traces back to your data with assumptions flagged.
-        </Text>
-      </View>
+      <ExecutiveCallout 
+        title="Executive Summary" 
+        text={`In ${data.monthsOnAbridge} months, your ${data.providers} providers have generated ${formatCurrency(data.tier1Value)} in measurable annual value. With expansion to ${data.expansion.targetProviders} providers at ${data.expansion.targetUtilization}% utilization, projected value reaches ${formatCurrency(data.expansion.projectedValue)}.`}
+      />
 
       <View style={styles.heroRow} wrap={false}>
         <View style={styles.heroBoxHighlight}>
@@ -1132,116 +1390,102 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }} wrap={false}>
+        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 6 }}>
+          <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.mediumGray, marginBottom: 4 }}>DEPLOYMENT MATURITY</Text>
+          <ProgressIndicator current={data.utilizationRate} target={85} label="Utilization Rate" showLabels={false} />
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: maturity.color, marginRight: 4 }} />
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: maturity.color }}>{maturity.label}</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 6 }}>
+          <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.mediumGray, marginBottom: 4 }}>VALUE INDICATORS</Text>
+          {hardValueMetrics.slice(0, 2).map((m, idx) => (
+            <View key={idx} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <StatusDot status="good" />
+                <Text style={{ fontSize: 6, color: colors.darkGray }}>{m.name}</Text>
+              </View>
+              {m.trend && m.trend.length > 0 && (
+                <MiniSparkline values={[m.before, ...m.trend.map(t => t.value)]} />
+              )}
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <SectionTitle icon="chart" title="Your Value Journey" />
       
       <View style={styles.journeyChart} wrap={false}>
-        {/* Row with Y-axis labels + Chart SVG */}
         <View style={{ flexDirection: "row" }}>
-          {/* Y-axis labels column */}
-          <View style={{ width: 45, justifyContent: "space-between", height: 55, paddingRight: 4 }}>
-            <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-            <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
+          <View style={{ width: 40, justifyContent: "space-between", height: 50, paddingRight: 4 }}>
+            <Text style={{ fontSize: 5, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
+            <Text style={{ fontSize: 5, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
+            <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
           
-          {/* Chart SVG */}
-          <Svg width="430" height="60" viewBox="0 0 430 60">
-            {/* Background grid lines */}
-            <Rect x="0" y="0" width="430" height="60" fill={colors.white} />
-            <Line x1="0" y1="55" x2="430" y2="55" stroke={colors.borderGray} strokeWidth="1" />
-            <Line x1="0" y1="30" x2="430" y2="30" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
-            <Line x1="0" y1="6" x2="430" y2="6" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+          <Svg width="430" height="55" viewBox="0 0 430 55">
+            <Rect x="0" y="0" width="430" height="55" fill={colors.white} />
+            <Line x1="0" y1="50" x2="430" y2="50" stroke={colors.borderGray} strokeWidth="1" />
+            <Line x1="0" y1="27" x2="430" y2="27" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+            <Line x1="0" y1="5" x2="430" y2="5" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
             
-            {/* Shaded area under actual results */}
-            <Path
-              d="M 15 55 L 15 48 Q 60 42 110 36 T 170 30 T 220 27 L 220 55 Z"
-              fill={colors.green}
-              opacity="0.12"
-            />
+            <Path d="M 15 50 L 15 45 Q 60 40 110 34 T 170 28 T 220 25 L 220 50 Z" fill={colors.green} opacity="0.12" />
+            <Path d="M 15 45 Q 60 40 110 34 T 170 28 T 220 25" fill="none" stroke={colors.green} strokeWidth="2" />
+            <Path d="M 220 25 Q 280 16 340 10 T 420 5" fill="none" stroke={colors.blue} strokeWidth="1.5" strokeDasharray="4,3" />
             
-            {/* Actual results line (solid green) */}
-            <Path
-              d="M 15 48 Q 60 42 110 36 T 170 30 T 220 27"
-              fill="none"
-              stroke={colors.green}
-              strokeWidth="2"
-            />
+            <Circle cx="15" cy="45" r="3" fill={colors.lightGray} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="110" cy="34" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="170" cy="29" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
             
-            {/* Projected growth line (dashed blue) */}
-            <Path
-              d="M 220 27 Q 280 18 340 12 T 420 6"
-              fill="none"
-              stroke={colors.blue}
-              strokeWidth="1.5"
-              strokeDasharray="4,3"
-            />
+            <Circle cx="220" cy="25" r="7" fill={colors.primaryLight} opacity="0.5" />
+            <Circle cx="220" cy="25" r="5" fill={colors.primary} stroke={colors.white} strokeWidth="1.5" />
             
-            {/* Data points - baseline */}
-            <Circle cx="15" cy="48" r="3" fill={colors.lightGray} stroke={colors.white} strokeWidth="1" />
-            
-            {/* Data points - progress */}
-            <Circle cx="110" cy="36" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="170" cy="32" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-            
-            {/* TODAY marker - prominent with glow effect */}
-            <Circle cx="220" cy="27" r="7" fill={colors.primaryLight} opacity="0.5" />
-            <Circle cx="220" cy="27" r="5" fill={colors.primary} stroke={colors.white} strokeWidth="1.5" />
-            
-            {/* Future projections */}
-            <Circle cx="320" cy="15" r="2.5" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="420" cy="6" r="4" fill={colors.green} stroke={colors.white} strokeWidth="1.5" />
+            <Circle cx="320" cy="13" r="2.5" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="420" cy="5" r="4" fill={colors.green} stroke={colors.white} strokeWidth="1.5" />
           </Svg>
         </View>
         
-        {/* X-axis labels */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingLeft: 45 }}>
-          <View style={{ alignItems: "flex-start", width: 60 }}>
-            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4, paddingLeft: 40 }}>
+          <View style={{ alignItems: "flex-start", width: 55 }}>
+            <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
           </View>
           <View style={{ alignItems: "center", flex: 1 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={{ fontSize: 5, color: colors.mediumGray }}>{data.providers} providers · {data.utilizationRate}%</Text>
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
           </View>
-          <View style={{ alignItems: "flex-end", width: 70 }}>
-            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-            <Text style={{ fontSize: 5, color: colors.mediumGray }}>{data.expansion.targetProviders} providers · {data.expansion.targetUtilization}%</Text>
-          </View>
-        </View>
-        
-        {/* Legend */}
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 4, gap: 20 }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 14, height: 2, backgroundColor: colors.green, marginRight: 4, borderRadius: 1 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Actual results</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 14, height: 2, borderWidth: 1, borderColor: colors.blue, borderStyle: "dashed", marginRight: 4 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Projected growth</Text>
+          <View style={{ alignItems: "flex-end", width: 60 }}>
+            <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
           </View>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>VALUE BREAKDOWN</Text>
-      <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 4, marginTop: -2 }}>
-        We separate value into three tiers based on how confidently we can measure and attribute it:
-      </Text>
+      <SectionTitle icon="target" title="Value Breakdown" />
 
       <View style={styles.card} wrap={false}>
         <View style={styles.cardHeaderGreen}>
-          <View>
-            <Text style={styles.cardTitle}>Tier 1: Hard Value</Text>
-            <Text style={styles.cardSubtitle}>Directly measurable financial impact</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <StatusDot status="good" />
+            <View>
+              <Text style={styles.cardTitle}>Tier 1: Hard Value</Text>
+              <Text style={styles.cardSubtitle}>Directly measurable financial impact</Text>
+            </View>
           </View>
           <Text style={styles.cardValue}>{formatCurrency(data.tier1Value)}</Text>
         </View>
         <View style={styles.cardContent}>
           {hardValueMetrics.map((metric, idx) => (
             <View key={metric.id} style={[styles.row, idx === hardValueMetrics.length - 1 ? styles.rowLast : {}]}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.rowLabel}>{metric.name}</Text>
-                {metric.formula && <Text style={styles.rowFormula}>{metric.formula}</Text>}
+              <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowLabel}>{metric.name}</Text>
+                  {metric.formula && <Text style={styles.rowFormula}>{metric.formula}</Text>}
+                </View>
+                {metric.trend && metric.trend.length > 0 && (
+                  <MiniSparkline values={[metric.before, ...metric.trend.map(t => t.value)]} width={35} height={10} />
+                )}
               </View>
               <Text style={styles.rowValue}>{formatCurrency(metric.value!)}</Text>
             </View>
@@ -1252,24 +1496,21 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       {data.tier2Items.length > 0 && (
         <View style={styles.card} wrap={false}>
           <View style={styles.cardHeader}>
-            <View>
-              <Text style={styles.cardTitle}>Tier 2: Efficiency Gains</Text>
-              <Text style={styles.cardSubtitle}>Measured improvements—not yet converted to dollars</Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <StatusDot status="warning" />
+              <View>
+                <Text style={styles.cardTitle}>Tier 2: Efficiency Gains</Text>
+                <Text style={styles.cardSubtitle}>Measured improvements—not yet converted to dollars</Text>
+              </View>
             </View>
           </View>
           <View style={styles.cardContent}>
             {data.tier2Items.map((item, idx) => (
               <View key={idx} style={[styles.row, idx === data.tier2Items.length - 1 ? styles.rowLast : {}]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowLabel}>{item.label}</Text>
-                  {item.formula && <Text style={styles.rowFormula}>{item.formula}</Text>}
-                </View>
+                <Text style={styles.rowLabel}>{item.label}</Text>
                 <Text style={styles.rowValueNeutral}>{item.value}</Text>
               </View>
             ))}
-            <Text style={[styles.rowExplanation, { marginTop: 4 }]}>
-              We show these in hours/percentages rather than dollars because conversion varies by organization.
-            </Text>
           </View>
         </View>
       )}
@@ -1285,16 +1526,17 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
           <View style={styles.cardContent}>
             {data.tier3Items.map((item, idx) => (
               <View key={idx} style={[styles.row, idx === data.tier3Items.length - 1 ? styles.rowLast : {}]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowLabel}>{item.label}</Text>
-                  {item.explanation && <Text style={styles.rowExplanation}>{item.explanation}</Text>}
-                </View>
+                <Text style={styles.rowLabel}>{item.label}</Text>
                 <Text style={styles.rowValueNeutral}>{item.value}</Text>
               </View>
             ))}
           </View>
         </View>
       )}
+
+      <KeyTakeaway 
+        text={`Your ${data.providers} providers are generating ${formatCurrency(data.tier1Value / data.providers)} each annually. At ${data.utilizationRate}% utilization, there's still significant room to grow—expansion to ${data.expansion.targetProviders} providers at ${data.expansion.targetUtilization}% unlocks an additional ${formatCurrency(data.expansion.expansionValue)}.`}
+      />
 
       <Footer pageNum={1} totalPages={totalPages} />
     </Page>
@@ -1323,23 +1565,27 @@ const MetricDeepDivePage = ({
       {metrics.map((metric) => {
         const isValueMetric = metric.value && metric.value > 0;
         const isTimeMetric = metric.id === "timeSavings" || metric.id === "workOutsideWork";
+        const status: "good" | "warning" | "alert" = isValueMetric ? "good" : metric.changePercent > 0 ? "good" : "warning";
         
         return (
         <View key={metric.id} style={styles.metricCard} wrap={false}>
           <View style={[styles.metricHeader, isValueMetric ? { backgroundColor: colors.greenLight, borderBottomColor: colors.green } : {}]}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.metricName}>{metric.name.toUpperCase()}</Text>
-              <Text style={styles.metricDesc}>{metric.description}</Text>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}>
+              <StatusDot status={status} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.metricName}>{metric.name.toUpperCase()}</Text>
+                <Text style={styles.metricDesc}>{metric.description}</Text>
+              </View>
             </View>
             {isValueMetric ? (
               <View style={{ alignItems: "flex-end" }}>
                 <Text style={[styles.metricValue, { color: colors.green }]}>{formatCurrency(metric.value!)}</Text>
-                <Text style={{ fontSize: 6, color: colors.mediumGray }}>annual value</Text>
+                <Text style={{ fontSize: 5, color: colors.mediumGray }}>annual value</Text>
               </View>
             ) : isTimeMetric ? (
               <View style={{ alignItems: "flex-end" }}>
                 <Text style={styles.metricValue}>{Math.abs(metric.change).toFixed(1)} {metric.unit}</Text>
-                <Text style={{ fontSize: 6, color: colors.mediumGray }}>saved per encounter</Text>
+                <Text style={{ fontSize: 5, color: colors.mediumGray }}>saved per encounter</Text>
               </View>
             ) : null}
           </View>
@@ -1350,13 +1596,17 @@ const MetricDeepDivePage = ({
                 <Text style={styles.comparisonValue}>{metric.before.toFixed(2)}</Text>
                 <Text style={styles.comparisonUnit}>{metric.unit}</Text>
               </View>
-              <Text style={styles.comparisonArrow}>→</Text>
+              <View style={styles.comparisonArrowContainer}>
+                <ArrowRight size={16} color={colors.mediumGray} />
+              </View>
               <View style={styles.comparisonBox}>
                 <Text style={styles.comparisonLabel}>AFTER ABRIDGE</Text>
                 <Text style={styles.comparisonValue}>{metric.after.toFixed(2)}</Text>
                 <Text style={styles.comparisonUnit}>{metric.unit}</Text>
               </View>
-              <Text style={styles.comparisonArrow}>=</Text>
+              <View style={styles.comparisonArrowContainer}>
+                <Text style={{ fontSize: 12, color: colors.mediumGray }}>=</Text>
+              </View>
               <View style={styles.comparisonChange}>
                 <Text style={styles.comparisonChangeValue}>
                   {metric.change >= 0 ? "+" : ""}{metric.change.toFixed(2)}
@@ -1372,26 +1622,31 @@ const MetricDeepDivePage = ({
             )}
 
             {metric.benchmark && (
-              <View style={styles.benchmarkBox}>
-                <Text style={styles.benchmarkTitle}>BENCHMARK</Text>
-                <Text style={styles.benchmarkText}>
-                  Typical Abridge customers see: {metric.benchmark.typicalRange}
-                </Text>
-                <Text style={[styles.benchmarkText, { fontWeight: "bold", marginTop: 2 }]}>
-                  You're at: {metric.changePercent.toFixed(0)}% — {metric.benchmark.statusLabel}
-                </Text>
+              <View style={styles.benchmarkBox} wrap={false}>
+                <Text style={styles.benchmarkTitle}>BENCHMARK COMPARISON</Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={styles.benchmarkText}>
+                    Typical range: {metric.benchmark.typicalRange}
+                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <StatusDot status={metric.benchmark.status === "within" || metric.benchmark.status === "above" ? "good" : "warning"} />
+                    <Text style={[styles.benchmarkText, { fontWeight: "bold" }]}>
+                      {metric.benchmark.statusLabel}
+                    </Text>
+                  </View>
+                </View>
               </View>
             )}
 
             {metric.warningMessage && (
-              <View style={styles.warningBox}>
+              <View style={styles.warningBox} wrap={false}>
                 <Text style={styles.warningTitle}>VALIDATION RECOMMENDED</Text>
                 <Text style={styles.warningText}>{metric.warningMessage}</Text>
               </View>
             )}
 
             {metric.value && metric.value > 0 && metric.formula && (
-              <View style={styles.valueCalcBox}>
+              <View style={styles.valueCalcBox} wrap={false}>
                 <Text style={styles.valueCalcTitle}>VALUE CALCULATION</Text>
                 <Text style={styles.valueCalcFormula}>{metric.formula} = {formatCurrency(metric.value)}</Text>
                 {metric.formulaExplanation && (
@@ -1401,7 +1656,7 @@ const MetricDeepDivePage = ({
             )}
 
             {metric.whatThisMeans && (
-              <View style={styles.meaningBox}>
+              <View style={styles.meaningBox} wrap={false}>
                 <Text style={styles.meaningTitle}>WHAT THIS MEANS</Text>
                 <Text style={styles.meaningText}>{metric.whatThisMeans}</Text>
               </View>
@@ -1433,26 +1688,32 @@ const NarrativeAnalysisPage = ({
     <Page size="A4" style={styles.page}>
       <Header title="What We're Seeing" />
 
-      <Text style={styles.pageTitle}>EARLY INDICATORS</Text>
+      <SectionTitle icon="lightbulb" title="Early Indicators" />
 
-      <View style={styles.twoColumn}>
+      <View style={styles.twoColumn} wrap={false}>
         <View style={styles.column}>
-          <View style={styles.sectionBox}>
-            <Text style={[styles.sectionBoxTitle, { color: colors.green }]}>What's Working Well</Text>
+          <View style={[styles.sectionBox, { borderLeftWidth: 3, borderLeftColor: colors.green }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <IconCheckCircle size={8} color={colors.green} />
+              <Text style={[styles.sectionBoxTitle, { color: colors.green, marginLeft: 4, marginBottom: 0 }]}>What's Working Well</Text>
+            </View>
             {data.workingWell.map((item, idx) => (
-              <View key={idx} style={styles.checkItem}>
-                <Text style={styles.checkMark}>✓</Text>
+              <View key={idx} style={styles.statusRow}>
+                <StatusDot status="good" />
                 <Text style={styles.checkText}>{item}</Text>
               </View>
             ))}
           </View>
         </View>
         <View style={styles.column}>
-          <View style={styles.sectionBox}>
-            <Text style={[styles.sectionBoxTitle, { color: colors.amber }]}>Areas to Watch</Text>
+          <View style={[styles.sectionBox, { borderLeftWidth: 3, borderLeftColor: colors.amber }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <IconTarget size={8} color={colors.amber} />
+              <Text style={[styles.sectionBoxTitle, { color: colors.amber, marginLeft: 4, marginBottom: 0 }]}>Areas to Watch</Text>
+            </View>
             {data.areasToWatch.map((item, idx) => (
-              <View key={idx} style={styles.checkItem}>
-                <Text style={styles.arrowMark}>→</Text>
+              <View key={idx} style={styles.statusRow}>
+                <StatusDot status="warning" />
                 <Text style={styles.checkText}>{item}</Text>
               </View>
             ))}
@@ -1460,69 +1721,91 @@ const NarrativeAnalysisPage = ({
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>OPTIMIZATION OPPORTUNITIES</Text>
+      <SectionTitle icon="trend" title="Optimization Opportunities" />
 
       {data.optimizationOpportunities.map((opp, idx) => (
         <View key={idx} style={styles.opportunityCardExpanded} wrap={false}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-            <Text style={styles.opportunityTitle}>{idx + 1}. {opp.title}</Text>
-            <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 10 }]}>+{formatCurrency(opp.potentialValue)}/yr</Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{ backgroundColor: colors.green, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 2, marginRight: 6 }}>
+                <Text style={{ fontSize: 6, color: colors.white, fontWeight: "bold" }}>{idx + 1}</Text>
+              </View>
+              <Text style={[styles.opportunityTitle, { marginBottom: 0 }]}>{opp.title}</Text>
+            </View>
+            <Text style={{ color: colors.green, fontSize: 9, fontWeight: "bold" }}>+{formatCurrency(opp.potentialValue)}/yr</Text>
           </View>
-          <View style={{ flexDirection: "row", gap: 12, marginBottom: 6 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>CURRENT</Text>
-              <Text style={{ fontSize: 8, fontWeight: "bold" }}>{opp.current}</Text>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 4 }}>
+            <View style={{ flex: 1, backgroundColor: colors.paleGray, padding: 4, borderRadius: 3 }}>
+              <Text style={{ fontSize: 5, color: colors.mediumGray, marginBottom: 1 }}>CURRENT</Text>
+              <Text style={{ fontSize: 7, fontWeight: "bold" }}>{opp.current}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>TARGET</Text>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.green }}>{opp.target}</Text>
+            <View style={{ alignItems: "center", justifyContent: "center" }}>
+              <ArrowRight size={10} color={colors.green} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>GAP</Text>
-              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber }}>{opp.title === "Utilization Focus" ? `${parseFloat(opp.target) - parseFloat(opp.current)} pp` : "See action"}</Text>
+            <View style={{ flex: 1, backgroundColor: colors.greenLight, padding: 4, borderRadius: 3 }}>
+              <Text style={{ fontSize: 5, color: colors.greenDark, marginBottom: 1 }}>TARGET</Text>
+              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>{opp.target}</Text>
             </View>
           </View>
-          <View style={{ backgroundColor: colors.lightGray, padding: 6, borderRadius: 3 }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>RECOMMENDED ACTION</Text>
-            <Text style={{ fontSize: 7, lineHeight: 1.3 }}>{opp.action}</Text>
+          <View style={{ backgroundColor: colors.paleGray, padding: 4, borderRadius: 3 }}>
+            <Text style={{ fontSize: 5, color: colors.mediumGray, marginBottom: 1 }}>RECOMMENDED ACTION</Text>
+            <Text style={{ fontSize: 6, lineHeight: 1.3 }}>{opp.action}</Text>
           </View>
         </View>
       ))}
 
-      {/* Value Realization Context for Low Utilization */}
       {data.utilizationRate < 70 && (
         <View style={styles.contextBox} wrap={false}>
-          <Text style={[styles.sectionBoxTitle, { color: colors.amber, marginBottom: 4 }]}>EARLY STAGE CONTEXT</Text>
-          <Text style={{ fontSize: 7, lineHeight: 1.4, marginBottom: 6 }}>
-            At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months in, you're still in early deployment. This is common—adoption takes time. Here's the path forward:
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+            <IconLightbulb size={10} color={colors.amber} />
+            <Text style={[styles.sectionBoxTitle, { color: colors.amber, marginLeft: 4, marginBottom: 0 }]}>EARLY STAGE CONTEXT</Text>
+          </View>
+          <Text style={{ fontSize: 6, lineHeight: 1.3, marginBottom: 4 }}>
+            At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months in, you're still in early deployment. Here's the path forward:
           </Text>
-          <View style={{ paddingLeft: 8 }}>
-            <Text style={{ fontSize: 7, marginBottom: 3 }}>• Increase utilization to 70%: Value improves ~{Math.round((70 / data.utilizationRate - 1) * 100)}%</Text>
-            <Text style={{ fontSize: 7, marginBottom: 3 }}>• Increase utilization to 80%: Value improves ~{Math.round((80 / data.utilizationRate - 1) * 100)}%</Text>
-            <Text style={{ fontSize: 7 }}>• Full adoption (85%): Unlocks maximum value potential</Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <ProgressIndicator current={data.utilizationRate} target={70} label="To 70%" showLabels={false} />
+              <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "center" }}>+{Math.round((70 / data.utilizationRate - 1) * 100)}% value</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <ProgressIndicator current={data.utilizationRate} target={80} label="To 80%" showLabels={false} />
+              <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "center" }}>+{Math.round((80 / data.utilizationRate - 1) * 100)}% value</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <ProgressIndicator current={data.utilizationRate} target={85} label="To 85%" showLabels={false} />
+              <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "center" }}>Maximum</Text>
+            </View>
           </View>
         </View>
       )}
 
-      {/* Bottom Line Summary */}
       <View style={styles.bottomLineBox} wrap={false}>
-        <Text style={[styles.sectionBoxTitle, { marginBottom: 6 }]}>THE BOTTOM LINE</Text>
-        <Text style={{ fontSize: 7, lineHeight: 1.4, marginBottom: 8 }}>
-          {data.monthsOnAbridge} months in, you're building a foundation:
-        </Text>
-        <View style={{ paddingLeft: 8, marginBottom: 8 }}>
-          <Text style={{ fontSize: 7, marginBottom: 2 }}>• {formatCurrency(data.tier1Value)} in annual value from measurable improvements</Text>
-          {data.tier2Items.length > 0 && <Text style={{ fontSize: 7, marginBottom: 2 }}>• Efficiency gains captured but not yet converted to dollars</Text>}
-          {data.tier3Items.length > 0 && <Text style={{ fontSize: 7, marginBottom: 2 }}>• Leading indicators showing positive trajectory</Text>}
-          <Text style={{ fontSize: 7 }}>• Expansion potential of +{formatCurrency(data.expansion.expansionValue)} at full scale</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+          <IconChart size={10} color={colors.primary} />
+          <Text style={[styles.sectionBoxTitle, { marginLeft: 4, marginBottom: 0 }]}>THE BOTTOM LINE</Text>
         </View>
-        <Text style={{ fontSize: 7, lineHeight: 1.4, fontStyle: "italic" }}>
+        <View style={{ flexDirection: "row", gap: 6, marginBottom: 4 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 6, marginBottom: 2 }}>• {formatCurrency(data.tier1Value)} in annual value</Text>
+            {data.tier2Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Efficiency gains captured</Text>}
+          </View>
+          <View style={{ flex: 1 }}>
+            {data.tier3Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Positive leading indicators</Text>}
+            <Text style={{ fontSize: 6 }}>• +{formatCurrency(data.expansion.expansionValue)} at full scale</Text>
+          </View>
+        </View>
+        <Text style={{ fontSize: 6, lineHeight: 1.3, fontStyle: "italic", color: colors.darkGray }}>
           {data.utilizationRate < 70 
-            ? `At ${data.utilizationRate}% utilization, you're capturing less than half the potential. The path to multiplying this value is clear: push utilization to 80%+, validate gains, and consider converting efficiency to access.`
-            : `With ${data.utilizationRate}% utilization, you're already capturing strong value. Focus on maintaining gains, expanding coverage, and converting efficiency improvements to additional capacity.`
+            ? `At ${data.utilizationRate}% utilization, you're capturing less than half the potential. Push to 80%+ to multiply value.`
+            : `With ${data.utilizationRate}% utilization, focus on maintaining gains and expanding coverage.`
           }
         </Text>
       </View>
+
+      <KeyTakeaway 
+        text={`Focus on these ${data.optimizationOpportunities.length} optimization opportunities to unlock an additional ${formatCurrency(data.optimizationOpportunities.reduce((sum, o) => sum + o.potentialValue, 0))} annually.`}
+      />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
     </Page>
@@ -1550,15 +1833,14 @@ const ExpansionOpportunityPage = ({
     <Page size="A4" style={styles.page}>
       <Header title="Expansion Opportunity" />
 
-      <Text style={styles.pageTitle}>THE PATH TO FULL SCALE</Text>
+      <SectionTitle icon="expand" title="The Path to Full Scale" />
 
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          Based on your proven results at {expansion.currentProviders} providers and {expansion.currentUtilization}% utilization, here's what full-scale deployment could look like. These projections use your actual per-provider value generation—no hypotheticals.
-        </Text>
-      </View>
+      <ExecutiveCallout 
+        title="Expansion Summary" 
+        text={`Based on proven results at ${expansion.currentProviders} providers and ${expansion.currentUtilization}% utilization, scaling to ${expansion.targetProviders} providers at ${expansion.targetUtilization}% unlocks ${formatCurrency(expansion.projectedValue)} annually—an additional ${formatCurrency(expansion.expansionValue)} beyond current.`}
+      />
 
-      <View style={styles.heroRow}>
+      <View style={styles.heroRow} wrap={false}>
         <View style={styles.heroBox}>
           <Text style={styles.heroValueGreen}>{formatCurrency(expansion.projectedValue)}</Text>
           <Text style={styles.heroLabel}>PROJECTED ANNUAL VALUE</Text>
@@ -1576,35 +1858,40 @@ const ExpansionOpportunityPage = ({
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>SCALING MATH</Text>
+      <SectionTitle icon="chart" title="Scaling Math" />
 
-      <View style={styles.card}>
+      <View style={styles.card} wrap={false}>
         <View style={styles.cardContent}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Current annual value</Text>
             <Text style={styles.rowValue}>{formatCurrency(expansion.currentValue)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>× Provider scale ({expansion.currentProviders} → {expansion.targetProviders})</Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.rowLabel}>× Provider scale ({expansion.currentProviders} → {expansion.targetProviders})</Text>
+            </View>
             <Text style={styles.rowValueNeutral}>{providerMultiplier.toFixed(1)}x</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>× Utilization improvement ({expansion.currentUtilization}% → {expansion.targetUtilization}%)</Text>
             <Text style={styles.rowValueNeutral}>{utilizationMultiplier.toFixed(2)}x</Text>
           </View>
-          <View style={[styles.row, styles.rowLast, { backgroundColor: colors.greenLight, margin: -8, marginTop: 8, padding: 8 }]}>
+          <View style={[styles.row, styles.rowLast, { backgroundColor: colors.greenLight, margin: -6, marginTop: 6, padding: 6 }]}>
             <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>Projected annual value at scale</Text>
-            <Text style={styles.rowValue}>{formatCurrency(expansion.projectedValue)}</Text>
+            <Text style={[styles.rowValue, { fontSize: 10 }]}>{formatCurrency(expansion.projectedValue)}</Text>
           </View>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>CURRENT VS. PROJECTED</Text>
+      <SectionTitle icon="target" title="Current vs. Projected" />
 
-      <View style={styles.twoColumn}>
+      <View style={styles.twoColumn} wrap={false}>
         <View style={styles.column}>
           <View style={styles.sectionBox}>
-            <Text style={styles.sectionBoxTitle}>Current State</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.mediumGray, marginRight: 4 }} />
+              <Text style={styles.sectionBoxTitle}>Current State</Text>
+            </View>
             <View style={styles.opportunityRow}>
               <Text style={styles.opportunityLabel}>Providers:</Text>
               <Text style={styles.opportunityValue}>{expansion.currentProviders}</Text>
@@ -1623,9 +1910,15 @@ const ExpansionOpportunityPage = ({
             </View>
           </View>
         </View>
+        <View style={{ alignItems: "center", justifyContent: "center", width: 30 }}>
+          <ArrowRight size={20} color={colors.green} />
+        </View>
         <View style={styles.column}>
-          <View style={[styles.sectionBox, { borderColor: colors.green, borderWidth: 2 }]}>
-            <Text style={[styles.sectionBoxTitle, { color: colors.green }]}>Full Scale Target</Text>
+          <View style={[styles.sectionBox, { borderColor: colors.green, borderWidth: 2, backgroundColor: colors.greenLight }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green, marginRight: 4 }} />
+              <Text style={[styles.sectionBoxTitle, { color: colors.green }]}>Full Scale Target</Text>
+            </View>
             <View style={styles.opportunityRow}>
               <Text style={styles.opportunityLabel}>Providers:</Text>
               <Text style={styles.opportunityValue}>{expansion.targetProviders}</Text>
@@ -1646,11 +1939,15 @@ const ExpansionOpportunityPage = ({
         </View>
       </View>
 
-      <View style={styles.closingBox}>
+      <View style={styles.closingBox} wrap={false}>
         <Text style={styles.closingText}>
           The value you're capturing today isn't a ceiling—it's a proof point. At {expansion.currentProviders} providers and {expansion.currentUtilization}% utilization, you've demonstrated {formatCurrency(data.tier1Value)} in annual value. Scaling to {expansion.targetProviders} providers at {expansion.targetUtilization}% utilization projects to {formatCurrency(expansion.projectedValue)}.
         </Text>
       </View>
+
+      <KeyTakeaway 
+        text={`Every additional provider at target utilization adds approximately ${formatCurrency(expansion.projectedValue / expansion.targetProviders)} in annual value. The math is proven—now it's about execution.`}
+      />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
     </Page>
@@ -1674,95 +1971,101 @@ const MethodologyPage = ({
     <Page size="A4" style={styles.page}>
       <Header title="Methodology" />
 
-      <Text style={styles.pageTitle}>HOW WE CALCULATED YOUR VALUE</Text>
+      <SectionTitle icon="book" title="How We Calculated Your Value" />
 
-      <View style={styles.narrativeBox}>
+      <View style={styles.narrativeBox} wrap={false}>
         <Text style={styles.narrativeText}>
-          Every number in this report traces back to data you provided or industry-standard benchmarks. We've used conservative assumptions throughout—if anything, actual value is likely higher. Here's exactly how we calculated each component.
+          Every number traces back to your data or industry-standard benchmarks. We've used conservative assumptions throughout—actual value is likely higher. Here's exactly how we calculated each component.
         </Text>
       </View>
 
-      <Text style={styles.sectionTitle}>YOUR INPUTS</Text>
-      
-      <View style={styles.methodologyGrid} wrap={false}>
-        <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>Deployment</Text>
-          <Text style={styles.methodologyItem}>• {data.providers} providers</Text>
-          <Text style={styles.methodologyItem}>• {formatNumber(data.encounters)} annual encounters</Text>
-          <Text style={styles.methodologyItem}>• {data.utilizationRate}% utilization rate</Text>
-          <Text style={styles.methodologyItem}>• {data.monthsOnAbridge} months on Abridge</Text>
+      <View style={styles.twoColumn} wrap={false}>
+        <View style={styles.column}>
+          <View style={styles.sectionBox}>
+            <Text style={styles.sectionBoxTitle}>Your Inputs</Text>
+            <Text style={styles.methodologyItem}>• {data.providers} providers</Text>
+            <Text style={styles.methodologyItem}>• {formatNumber(data.encounters)} annual encounters</Text>
+            <Text style={styles.methodologyItem}>• {data.utilizationRate}% utilization rate</Text>
+            <Text style={styles.methodologyItem}>• {data.monthsOnAbridge} months on Abridge</Text>
+            <Text style={styles.methodologyItem}>• {formatNumber(data.documentedEncounters)} documented encounters</Text>
+          </View>
         </View>
-        <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>Documented Volume</Text>
-          <Text style={styles.methodologyItem}>• {formatNumber(data.documentedEncounters)} documented encounters</Text>
-          <Text style={styles.methodologyItem}>• = encounters × utilization × (months/12)</Text>
+        <View style={styles.column}>
+          <View style={styles.sectionBox}>
+            <Text style={styles.sectionBoxTitle}>Value Attribution</Text>
+            <Text style={styles.methodologyItem}>• wRVU: $33/wRVU (Medicare), 50% attribution</Text>
+            <Text style={styles.methodologyItem}>• Time: $150/hr provider value</Text>
+            <Text style={styles.methodologyItem}>• Retention: $500K per departure</Text>
+            <Text style={styles.methodologyItem}>• Commercial payers: 30-50% higher</Text>
+          </View>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>VALUE ATTRIBUTION</Text>
+      <SectionTitle icon="chart" title="Benchmark Ranges" />
+
+      <View style={styles.twoColumn} wrap={false}>
+        <View style={styles.column}>
+          <View style={[styles.sectionBox, { backgroundColor: colors.blueLight }]}>
+            <Text style={[styles.sectionBoxTitle, { color: colors.blueDark }]}>Typical Abridge Results</Text>
+            <View style={styles.statusRow}>
+              <StatusDot status="good" />
+              <Text style={styles.methodologyItem}>wRVU lift: 3-7%</Text>
+            </View>
+            <View style={styles.statusRow}>
+              <StatusDot status="good" />
+              <Text style={styles.methodologyItem}>Time reduction: 3-5 min/enc</Text>
+            </View>
+            <View style={styles.statusRow}>
+              <StatusDot status="good" />
+              <Text style={styles.methodologyItem}>Chart closure: +5-15 pp</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.column}>
+          <View style={[styles.sectionBox, { backgroundColor: colors.greenLight }]}>
+            <Text style={[styles.sectionBoxTitle, { color: colors.greenDark }]}>Quality of Life</Text>
+            <View style={styles.statusRow}>
+              <StatusDot status="good" />
+              <Text style={styles.methodologyItem}>Pajama time: -2-5 hrs/wk</Text>
+            </View>
+            <View style={styles.statusRow}>
+              <StatusDot status="good" />
+              <Text style={styles.methodologyItem}>Satisfaction: +10-20 pts</Text>
+            </View>
+            <View style={styles.statusRow}>
+              <StatusDot status="warning" />
+              <Text style={styles.methodologyItem}>Burnout: varies by org</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <SectionTitle icon="lightbulb" title="What We Don't Include" />
 
       <View style={styles.card} wrap={false}>
         <View style={styles.cardContent}>
-          <View style={styles.row}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>wRVU Value</Text>
-              <Text style={styles.rowExplanation}>
-                $33/wRVU (Medicare) with 50% attribution. Commercial payers may yield 30-50% higher value.
-              </Text>
+              <Text style={styles.methodologyItem}>• Downstream revenue from patient experience</Text>
+              <Text style={styles.methodologyItem}>• Quality measure incentives (MIPS, HEDIS)</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.methodologyItem}>• Reduced compliance/audit risk</Text>
+              <Text style={styles.methodologyItem}>• Training time reduction & career satisfaction</Text>
             </View>
           </View>
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>Time Conversion</Text>
-              <Text style={styles.rowExplanation}>
-                Time savings at $150/hour provider value with specified conversion percentage.
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowLast]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>Retention Value</Text>
-              <Text style={styles.rowExplanation}>
-                Turnover costs at $500K per departure. Conservative satisfaction attribution.
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>BENCHMARK RANGES</Text>
-
-      <View style={styles.methodologyGrid} wrap={false}>
-        <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>Typical Abridge Results</Text>
-          <Text style={styles.methodologyItem}>• wRVU lift: 3-7%</Text>
-          <Text style={styles.methodologyItem}>• Time reduction: 3-5 min/enc</Text>
-          <Text style={styles.methodologyItem}>• Chart closure: +5-15 pp</Text>
-        </View>
-        <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>Quality of Life</Text>
-          <Text style={styles.methodologyItem}>• Pajama time: -2-5 hrs/wk</Text>
-          <Text style={styles.methodologyItem}>• Satisfaction: +10-20 pts</Text>
-          <Text style={styles.methodologyItem}>• Burnout: varies</Text>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>WHAT WE DON'T INCLUDE</Text>
-
-      <View style={styles.card} wrap={false}>
-        <View style={styles.cardContent}>
-          <Text style={styles.rowExplanation}>• Downstream revenue from patient experience</Text>
-          <Text style={styles.rowExplanation}>• Quality measure incentives (MIPS, HEDIS)</Text>
-          <Text style={styles.rowExplanation}>• Reduced compliance/audit risk</Text>
-          <Text style={[styles.rowExplanation, { marginBottom: 0 }]}>• Training time reduction & career satisfaction</Text>
         </View>
       </View>
 
       <View style={styles.closingBox} wrap={false}>
         <Text style={styles.closingText}>
-          Questions about our methodology? We're happy to walk through any calculation in detail.
+          Questions about our methodology? We're happy to walk through any calculation in detail. All assumptions are designed to be conservative and defensible.
         </Text>
       </View>
+
+      <KeyTakeaway 
+        text={`This analysis uses conservative assumptions throughout. With commercial payer rates and full attribution, actual value could be 30-50% higher than shown.`}
+      />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
     </Page>
