@@ -442,7 +442,7 @@ export default function InvestmentPage({
                       <input
                         type="number"
                         value={costPerUnit}
-                        placeholder={config.defaultPrice.toString()}
+                        placeholder={`e.g., ${config.defaultPrice}`}
                         onChange={(e) => {
                           const val = e.target.value;
                           setCostPerUnit(val === "" ? "" : Number(val));
@@ -467,7 +467,7 @@ export default function InvestmentPage({
                         type="text"
                         inputMode="numeric"
                         value={enterpriseAnnual === "" ? "" : enterpriseAnnual.toLocaleString()}
-                        placeholder="100,000"
+                        placeholder="e.g., 100,000"
                         onChange={(e) => {
                           const val = e.target.value.replace(/[^0-9]/g, '');
                           setEnterpriseAnnual(val === "" ? "" : parseInt(val, 10));
