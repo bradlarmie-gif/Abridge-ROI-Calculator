@@ -157,12 +157,20 @@ export default function ExpandResults({
     
     const metrics: ExpandPDFData['metrics'] = [];
     
+    // Helper to convert timeline data to trend array
+    const getTrend = (timelinePoints: typeof timelineData.timeSavings) => {
+      const validPoints = timelinePoints.filter(p => p.value !== null);
+      if (validPoints.length < 2) return undefined;
+      return validPoints.map(p => ({ month: p.month, value: p.value as number, label: p.label }));
+    };
+    
     // wRVU metric with full details
     if (roiResult.tier1Breakdown.wrvuValue > 0 || metricsData.wrvuCapture.before || metricsData.wrvuCapture.after) {
       const wrvuLift = (metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0);
       const wrvuLiftPercent = metricsData.wrvuCapture.before ? (wrvuLift / metricsData.wrvuCapture.before) * 100 : 0;
       const isAboveTypical = wrvuLiftPercent > 7;
       const isBelowTypical = wrvuLiftPercent < 3 && wrvuLiftPercent > 0;
+      const wrvuTrend = getTrend(timelineData.wrvuCapture);
       
       metrics.push({
         id: 'wrvu',
@@ -187,25 +195,28 @@ export default function ExpandResults({
         },
         warningMessage: isAboveTypical ? `Your results exceed our typical range. This isn't necessarily wrong—some organizations do see higher lift, especially if baseline documentation was sparse. But we recommend confirming: Was baseline measured the same way as current? Were there other coding or documentation initiatives during this period? Is the provider population consistent between periods?` : undefined,
         trendDirection: wrvuLift > 0 ? 'improving' : wrvuLift < 0 ? 'declining' : 'stable',
+        trend: wrvuTrend,
       });
     }
     
-    // Time savings metric
+    // Time savings metric - Note: time going DOWN is improvement, so change is positive when improving
     if (metricsData.timeSavings.before || metricsData.timeSavings.after) {
-      const timeSaved = (metricsData.timeSavings.before || 0) - (metricsData.timeSavings.after || 0);
-      const timeSavedPercent = metricsData.timeSavings.before ? (timeSaved / metricsData.timeSavings.before) * 100 : 0;
-      const isWithinTypical = timeSaved >= 3 && timeSaved <= 5;
+      const beforeTime = metricsData.timeSavings.before || 0;
+      const afterTime = metricsData.timeSavings.after || 0;
+      const timeSaved = beforeTime - afterTime; // Positive = improvement
+      const timeSavedPercent = beforeTime > 0 ? (timeSaved / beforeTime) * 100 : 0;
+      const timeTrend = getTrend(timelineData.timeSavings);
       
       metrics.push({
         id: 'timeSavings',
         name: 'Time in Notes',
         description: 'Documentation efficiency',
-        before: metricsData.timeSavings.before || 0,
-        after: metricsData.timeSavings.after || 0,
-        change: -timeSaved,
+        before: beforeTime,
+        after: afterTime,
+        change: timeSaved, // Positive means improvement (time reduced)
         changePercent: timeSavedPercent,
         unit: 'min/encounter',
-        isPositiveGood: false,
+        isPositiveGood: false, // Lower is better for display purposes
         value: roiResult.tier1Breakdown.timeConversionValue > 0 ? roiResult.tier1Breakdown.timeConversionValue : undefined,
         formula: roiResult.tier1Breakdown.timeConversionValue > 0 
           ? `${timeSaved.toFixed(0)} min saved × ${documentedEncounters.toLocaleString()} enc ÷ 60 × $150/hr × ${valueConfig.conversionPercent}%`
@@ -219,6 +230,96 @@ export default function ExpandResults({
           statusLabel: timeSaved > 5 ? 'Above typical' : timeSaved < 3 && timeSaved > 0 ? 'Below typical' : 'Within typical range',
         },
         trendDirection: timeSaved > 0 ? 'improving' : 'stable',
+        trend: timeTrend,
+      });
+    }
+    
+    // Work Outside Work (Pajama Time) metric
+    if (metricsData.workOutsideWork.before || metricsData.workOutsideWork.after) {
+      const beforeHrs = metricsData.workOutsideWork.before || 0;
+      const afterHrs = metricsData.workOutsideWork.after || 0;
+      const hoursReduced = beforeHrs - afterHrs;
+      const reductionPercent = beforeHrs > 0 ? (hoursReduced / beforeHrs) * 100 : 0;
+      const wowTrend = getTrend(timelineData.workOutsideWork);
+      
+      metrics.push({
+        id: 'workOutsideWork',
+        name: 'Work Outside Work',
+        description: 'After-hours documentation',
+        before: beforeHrs,
+        after: afterHrs,
+        change: hoursReduced,
+        changePercent: reductionPercent,
+        unit: 'hrs/week',
+        isPositiveGood: false, // Lower is better
+        whatThisMeans: `Reducing after-hours documentation by ${hoursReduced.toFixed(1)} hours per week per provider directly improves work-life balance. This is often the most emotionally resonant metric for clinicians—it represents time reclaimed for family, rest, and personal pursuits.`,
+        benchmark: {
+          typicalRange: '2-4 hr/week reduction',
+          typicalMin: 2,
+          typicalMax: 4,
+          status: hoursReduced > 4 ? 'above' : hoursReduced < 2 && hoursReduced > 0 ? 'below' : 'within',
+          statusLabel: hoursReduced > 4 ? 'Above typical' : hoursReduced < 2 && hoursReduced > 0 ? 'Below typical' : 'Within typical range',
+        },
+        trendDirection: hoursReduced > 0 ? 'improving' : 'stable',
+        trend: wowTrend,
+      });
+    }
+    
+    // Chart Closure metric
+    const chartClosureBefore = metricsData.chartClosure.sameDayBefore ?? metricsData.chartClosure.before.within24;
+    const chartClosureAfter = metricsData.chartClosure.sameDayAfter ?? metricsData.chartClosure.after.within24;
+    if (chartClosureBefore || chartClosureAfter) {
+      const closureImprovement = (chartClosureAfter || 0) - (chartClosureBefore || 0);
+      
+      metrics.push({
+        id: 'chartClosure',
+        name: 'Same-Day Chart Closure',
+        description: 'Documentation timeliness',
+        before: chartClosureBefore || 0,
+        after: chartClosureAfter || 0,
+        change: closureImprovement,
+        changePercent: closureImprovement, // Already in percentage points
+        unit: '%',
+        isPositiveGood: true,
+        whatThisMeans: `Same-day chart closure improves billing cycle times, reduces compliance risk, and indicates providers are completing documentation in real-time rather than batching. A ${closureImprovement > 0 ? `+${closureImprovement}%` : `${closureImprovement}%`} improvement suggests AI-assisted documentation is enabling more efficient workflows.`,
+        benchmark: {
+          typicalRange: '10-20 percentage point improvement',
+          typicalMin: 10,
+          typicalMax: 20,
+          status: closureImprovement > 20 ? 'above' : closureImprovement < 10 && closureImprovement > 0 ? 'below' : 'within',
+          statusLabel: closureImprovement > 20 ? 'Exceptional' : closureImprovement < 10 && closureImprovement > 0 ? 'Below typical' : 'Within typical range',
+        },
+        trendDirection: closureImprovement > 0 ? 'improving' : closureImprovement < 0 ? 'declining' : 'stable',
+      });
+    }
+    
+    // Clinician Satisfaction metric
+    if (metricsData.clinicianSatisfaction.before || metricsData.clinicianSatisfaction.after) {
+      const satBefore = metricsData.clinicianSatisfaction.before || 0;
+      const satAfter = metricsData.clinicianSatisfaction.after || 0;
+      const satImprovement = satAfter - satBefore;
+      const satTrend = getTrend(timelineData.clinicianSatisfaction);
+      
+      metrics.push({
+        id: 'clinicianSatisfaction',
+        name: 'Clinician Satisfaction',
+        description: 'Provider experience indicator',
+        before: satBefore,
+        after: satAfter,
+        change: satImprovement,
+        changePercent: satBefore > 0 ? (satImprovement / satBefore) * 100 : 0,
+        unit: 'points',
+        isPositiveGood: true,
+        whatThisMeans: `Clinician satisfaction is a leading indicator of retention. Organizations typically see satisfaction improvements 3-6 months before measurable retention benefits. A ${satImprovement > 0 ? `+${satImprovement}` : satImprovement} point improvement indicates meaningful positive impact on provider experience.`,
+        benchmark: {
+          typicalRange: '5-15 point improvement',
+          typicalMin: 5,
+          typicalMax: 15,
+          status: satImprovement > 15 ? 'above' : satImprovement < 5 && satImprovement > 0 ? 'below' : 'within',
+          statusLabel: satImprovement > 15 ? 'Exceptional' : satImprovement < 5 && satImprovement > 0 ? 'Early stage' : 'Within typical range',
+        },
+        trendDirection: satImprovement > 0 ? 'improving' : satImprovement < 0 ? 'declining' : 'stable',
+        trend: satTrend,
       });
     }
     
@@ -263,17 +364,24 @@ export default function ExpandResults({
       workingWell.push(`wRVU capture showing ${wrvuMetric.benchmark?.status === 'above' ? 'strong' : 'solid'} improvement (${wrvuMetric.changePercent.toFixed(0)}% lift)`);
     }
     const timeMetric = metrics.find(m => m.id === 'timeSavings');
-    if (timeMetric && timeMetric.change < 0) {
-      workingWell.push(`Time in notes reduced by ${Math.abs(timeMetric.change).toFixed(0)} minutes per encounter`);
+    if (timeMetric && timeMetric.change > 0) {
+      workingWell.push(`Time in notes reduced by ${timeMetric.change.toFixed(0)} minutes per encounter`);
     }
-    if (roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly > 0) {
-      workingWell.push(`Pajama time down ${roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hours per week—significant QoL impact`);
+    const wowMetric = metrics.find(m => m.id === 'workOutsideWork');
+    if (wowMetric && wowMetric.change > 0) {
+      workingWell.push(`After-hours work reduced by ${wowMetric.change.toFixed(1)} hours per week`);
     }
-    if (roiResult.tier2EfficiencyMetrics.chartClosureImprovement > 0) {
-      workingWell.push(`Chart closure up ${roiResult.tier2EfficiencyMetrics.chartClosureImprovement} percentage points`);
+    const chartMetric = metrics.find(m => m.id === 'chartClosure');
+    if (chartMetric && chartMetric.change > 0) {
+      workingWell.push(`Same-day chart closure up ${chartMetric.change.toFixed(0)} percentage points`);
     }
-    if (roiResult.tier3LeadingIndicators.satisfactionImprovement > 0) {
-      workingWell.push(`Clinician satisfaction improved ${roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(0)} points`);
+    const satMetric = metrics.find(m => m.id === 'clinicianSatisfaction');
+    if (satMetric && satMetric.change > 0) {
+      workingWell.push(`Clinician satisfaction improved ${satMetric.change.toFixed(0)} points`);
+    }
+    // Add default message if nothing is working well yet
+    if (workingWell.length === 0) {
+      workingWell.push('Data collection in progress—continue monitoring as deployment matures');
     }
     
     // Generate "Areas to Watch"
@@ -368,7 +476,7 @@ export default function ExpandResults({
         severity: w.severity,
       })),
     };
-  }, [providers, encounters, utilizationRate, months, metricsData, valueConfig, roiResult, currentValue, currentInvestment, currentROI, expansionCalc, investmentPerProvider]);
+  }, [providers, encounters, utilizationRate, months, metricsData, timelineData, valueConfig, roiResult, currentValue, currentInvestment, currentROI, expansionCalc, investmentPerProvider]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
