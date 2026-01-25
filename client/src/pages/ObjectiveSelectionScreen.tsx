@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { LiveReceipt } from "@/components/LiveReceipt";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { Button } from "@/components/ui/button";
@@ -2357,6 +2358,37 @@ export default function ObjectiveSelectionScreen({
     annualSubscriptionCost !== null &&
     (!implementationEnabled ||
       (implementationFee !== null && implementationFee > 0));
+
+  // Keyboard navigation for Enter/Escape
+  const handleKeyboardContinue = () => {
+    if (currentPage === "setting" && canContinuePage1) {
+      handleContinueToPage2();
+    } else if (currentPage === "priorities" && canContinuePage2) {
+      handleContinueToPage3();
+    } else if (currentPage === "value-blueprint") {
+      handleContinueToPage4();
+    } else if (currentPage === "model-setup" && canContinuePage3) {
+      handleFinalSubmit();
+    }
+  };
+
+  const handleKeyboardBack = () => {
+    if (currentPage === "setting") {
+      onBackToJourney?.();
+    } else if (currentPage === "priorities") {
+      setCurrentPage("setting");
+    } else if (currentPage === "value-blueprint") {
+      setCurrentPage("priorities");
+    } else if (currentPage === "model-setup") {
+      setCurrentPage("value-blueprint");
+    }
+  };
+
+  useKeyboardNavigation({
+    onEnter: handleKeyboardContinue,
+    onEscape: handleKeyboardBack,
+    enabled: true,
+  });
 
   // ============================================
   // Render helpers

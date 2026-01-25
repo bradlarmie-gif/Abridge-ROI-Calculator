@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import {
@@ -114,6 +115,12 @@ export default function BaselineSetup({
   const canContinue = isNursingSetting 
     ? numericStaffedBeds > 0 && numericNurseFTEs > 0 && numericEventsPerPatientDay > 0
     : numericProviders > 0 && numericEncounters > 0;
+
+  useKeyboardNavigation({
+    onEnter: canContinue ? handleContinue : undefined,
+    onEscape: onBack,
+    enabled: true,
+  });
 
   // Get setting-specific labels
   const getProviderLabel = () => {

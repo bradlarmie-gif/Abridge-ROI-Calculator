@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
@@ -252,6 +253,14 @@ export default function InvestmentPage({
       contractYears: effectiveContractTerm,
     });
   };
+
+  const canComplete = hasPricingEntered;
+
+  useKeyboardNavigation({
+    onEnter: canComplete ? handleComplete : undefined,
+    onEscape: onBack,
+    enabled: true,
+  });
 
   const investmentBarWidth = totalAnnualValue > 0 ? Math.min((annualInvestment / totalAnnualValue) * 100, 100) : 50;
 
