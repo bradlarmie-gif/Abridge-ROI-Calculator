@@ -222,61 +222,64 @@ function QuickEntry({
   const isGood = change !== null && change > 0;
 
   return (
-    <div className="flex items-end gap-4 p-5 bg-neutral-50 rounded-xl">
-      <div className="flex-1">
-        <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">
-          BEFORE ABRIDGE
-        </span>
-        <input
-          type="number"
-          step={step}
-          placeholder="—"
-          value={before ?? ""}
-          onChange={(e) => onBeforeChange(e.target.value ? Number(e.target.value) : null)}
-          className="w-full px-4 py-3 text-xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
-          data-testid={`input-${testIdPrefix}-before`}
-        />
-        <span className="text-xs text-[#6B7280] text-center block mt-1">{unit}</span>
+    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 p-4 sm:p-5 bg-neutral-50 rounded-xl">
+      {/* Before/After row */}
+      <div className="flex items-end gap-3 flex-1">
+        <div className="flex-1">
+          <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">
+            BEFORE ABRIDGE
+          </span>
+          <input
+            type="number"
+            step={step}
+            placeholder="—"
+            value={before ?? ""}
+            onChange={(e) => onBeforeChange(e.target.value ? Number(e.target.value) : null)}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 text-lg sm:text-xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
+            data-testid={`input-${testIdPrefix}-before`}
+          />
+          <span className="text-xs text-[#6B7280] text-center block mt-1">{unit}</span>
+        </div>
+
+        <div className="text-xl sm:text-2xl text-neutral-300 pb-6">→</div>
+
+        <div className="flex-1">
+          <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">
+            AFTER ABRIDGE
+          </span>
+          <input
+            type="number"
+            step={step}
+            placeholder="—"
+            value={after ?? ""}
+            onChange={(e) => onAfterChange(e.target.value ? Number(e.target.value) : null)}
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 text-lg sm:text-xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
+            data-testid={`input-${testIdPrefix}-after`}
+          />
+          <span className="text-xs text-[#6B7280] text-center block mt-1">{unit}</span>
+        </div>
       </div>
 
-      <div className="text-2xl text-neutral-300 pb-6">→</div>
-
-      <div className="flex-1">
-        <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">
-          AFTER ABRIDGE
-        </span>
-        <input
-          type="number"
-          step={step}
-          placeholder="—"
-          value={after ?? ""}
-          onChange={(e) => onAfterChange(e.target.value ? Number(e.target.value) : null)}
-          className="w-full px-4 py-3 text-xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
-          data-testid={`input-${testIdPrefix}-after`}
-        />
-        <span className="text-xs text-[#6B7280] text-center block mt-1">{unit}</span>
-      </div>
-
-      <div className="text-xl text-neutral-300 pb-6">=</div>
-
-      <div className="flex-1">
-        <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">
+      {/* Change result - stacks below on mobile */}
+      <div className="sm:flex-1 sm:max-w-[160px]">
+        <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2 text-center sm:text-left">
           CHANGE
         </span>
         {change !== null ? (
-          <div className={`px-4 py-3 rounded-lg text-center ${isGood ? "bg-emerald-50" : "bg-red-50"}`}>
-            <span className={`text-xl font-bold block ${isGood ? "text-emerald-600" : "text-red-600"}`}>
+          <div className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg text-center ${isGood ? "bg-emerald-50" : "bg-red-50"}`}>
+            <span className={`text-lg sm:text-xl font-bold ${isGood ? "text-emerald-600" : "text-red-600"}`}>
               {isPositiveGood ? (after! > before! ? "+" : "") : (before! > after! ? "-" : "+")}
-              {Math.abs(change).toFixed(step < 1 ? 2 : 0)} {unit}
+              {Math.abs(change).toFixed(step < 1 ? 2 : 0)}
             </span>
+            <span className={`text-xs sm:text-sm ml-1 ${isGood ? "text-emerald-600" : "text-red-600"}`}>{unit}</span>
             {percentChange !== null && (
-              <span className={`text-sm ${isGood ? "text-emerald-700" : "text-red-700"}`}>
+              <span className={`text-xs sm:text-sm block ${isGood ? "text-emerald-700" : "text-red-700"}`}>
                 {percentChange}% {isPositiveGood ? "lift" : "reduction"}
               </span>
             )}
           </div>
         ) : (
-          <div className="px-4 py-3 bg-neutral-100 rounded-lg text-center">
+          <div className="px-3 py-2 sm:px-4 sm:py-3 bg-neutral-100 rounded-lg text-center">
             <span className="text-sm text-neutral-400">Enter data</span>
           </div>
         )}
