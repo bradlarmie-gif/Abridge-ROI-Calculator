@@ -147,15 +147,15 @@ const colors = {
 };
 
 // ============================================================================
-// STYLES - DENSE LAYOUT
+// STYLES - PREMIUM LAYOUT (Larger fonts, more spacing, better hierarchy)
 // ============================================================================
 
 const styles = StyleSheet.create({
   page: {
-    padding: 32,
-    paddingBottom: 45,
+    padding: 40,
+    paddingBottom: 55,
     fontFamily: "Helvetica",
-    fontSize: 8,
+    fontSize: 10,
     color: colors.black,
     backgroundColor: colors.white,
   },
@@ -164,152 +164,152 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
-    paddingBottom: 6,
+    marginBottom: 16,
+    paddingBottom: 12,
     borderBottomWidth: 2,
     borderBottomColor: colors.primary,
   },
   logo: {
-    width: 75,
-    height: 15,
+    width: 90,
+    height: 18,
   },
   headerRight: {
     textAlign: "right",
   },
   headerTitle: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.black,
     letterSpacing: 0.3,
   },
   headerSubtitle: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.mediumGray,
-    marginTop: 1,
+    marginTop: 2,
   },
 
   footer: {
     position: "absolute",
-    bottom: 16,
-    left: 32,
-    right: 32,
+    bottom: 20,
+    left: 40,
+    right: 40,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: 4,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   footerText: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.lightGray,
   },
 
   orgContext: {
-    marginBottom: 6,
+    marginBottom: 12,
   },
   orgName: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.black,
   },
   orgDetails: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.mediumGray,
-    marginTop: 1,
+    marginTop: 3,
   },
 
   pageTitle: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 6,
+    marginBottom: 12,
   },
 
   sectionTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 4,
-    marginTop: 6,
+    marginBottom: 10,
+    marginTop: 16,
   },
   sectionTitle: {
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginLeft: 4,
+    letterSpacing: 0.6,
+    marginLeft: 6,
   },
 
   executiveCallout: {
     backgroundColor: colors.primaryLight,
     borderWidth: 1,
     borderColor: colors.primary,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 16,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
   executiveCalloutTitle: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.primary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 3,
+    marginBottom: 6,
   },
   executiveCalloutText: {
-    fontSize: 7,
+    fontSize: 10,
     color: colors.darkGray,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
   },
 
   keyTakeaway: {
     backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 6,
-    marginTop: 6,
+    borderRadius: 6,
+    padding: 12,
+    marginTop: 16,
     flexDirection: "row",
     alignItems: "flex-start",
   },
   keyTakeawayLabel: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.primary,
     textTransform: "uppercase",
-    marginRight: 6,
+    marginRight: 10,
     marginTop: 1,
   },
   keyTakeawayText: {
     flex: 1,
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
 
   narrativeBox: {
     backgroundColor: colors.paleGray,
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 6,
-    borderLeftWidth: 3,
+    padding: 14,
+    borderRadius: 6,
+    marginBottom: 12,
+    borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
   narrativeTitle: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.primary,
     textTransform: "uppercase",
     letterSpacing: 0.4,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   narrativeText: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 2,
+    lineHeight: 1.5,
+    marginBottom: 4,
   },
   narrativeBold: {
     fontWeight: "bold",
@@ -318,67 +318,67 @@ const styles = StyleSheet.create({
 
   heroRow: {
     flexDirection: "row",
-    marginBottom: 6,
-    gap: 4,
+    marginBottom: 16,
+    gap: 12,
   },
   heroBox: {
     flex: 1,
     backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 6,
+    borderRadius: 8,
+    padding: 16,
     alignItems: "center",
   },
   heroBoxHighlight: {
     flex: 1,
     backgroundColor: colors.greenLight,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.green,
-    borderRadius: 4,
-    padding: 6,
+    borderRadius: 8,
+    padding: 16,
     alignItems: "center",
   },
   heroValue: {
-    fontSize: 16,
+    fontSize: 28,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.black,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   heroValueGreen: {
-    fontSize: 16,
+    fontSize: 28,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   heroLabel: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     textAlign: "center",
-    marginTop: 2,
+    marginTop: 4,
   },
   heroSublabel: {
-    fontSize: 5,
+    fontSize: 7,
     color: colors.lightGray,
-    marginTop: 1,
+    marginTop: 2,
     textAlign: "center",
   },
 
   card: {
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    marginBottom: 4,
+    borderRadius: 6,
+    marginBottom: 12,
     overflow: "hidden",
   },
   cardHeader: {
     backgroundColor: colors.paleGray,
-    padding: 6,
+    padding: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   cardHeaderGreen: {
     backgroundColor: colors.greenLight,
-    padding: 6,
+    padding: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -395,30 +395,30 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.green,
   },
   cardTitle: {
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.black,
   },
   cardSubtitle: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.mediumGray,
-    marginTop: 1,
+    marginTop: 2,
   },
   cardValue: {
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
   },
   cardContent: {
-    padding: 6,
+    padding: 12,
   },
 
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingVertical: 3,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
@@ -427,29 +427,29 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     flex: 1,
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
   },
   rowFormula: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.lightGray,
-    marginTop: 1,
+    marginTop: 2,
     fontFamily: "Courier",
   },
   rowExplanation: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.mediumGray,
-    marginTop: 1,
-    lineHeight: 1.3,
+    marginTop: 2,
+    lineHeight: 1.4,
   },
   rowValue: {
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.green,
     textAlign: "right",
   },
   rowValueNeutral: {
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.black,
     textAlign: "right",
@@ -458,13 +458,13 @@ const styles = StyleSheet.create({
   metricCard: {
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    marginBottom: 8,
+    borderRadius: 6,
+    marginBottom: 16,
     overflow: "hidden",
   },
   metricHeader: {
     backgroundColor: colors.paleGray,
-    padding: 8,
+    padding: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -472,302 +472,302 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.borderGray,
   },
   metricName: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.black,
   },
   metricDesc: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.mediumGray,
-    marginTop: 1,
+    marginTop: 2,
   },
   metricValue: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
     color: colors.green,
     textAlign: "right",
   },
   metricContent: {
-    padding: 8,
+    padding: 14,
   },
 
   comparisonRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 6,
-    paddingVertical: 6,
+    marginBottom: 12,
+    paddingVertical: 12,
     backgroundColor: colors.white,
   },
   comparisonBox: {
     alignItems: "center",
-    minWidth: 60,
+    minWidth: 80,
   },
   comparisonLabel: {
-    fontSize: 6,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.2,
-    marginBottom: 2,
-  },
-  comparisonValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: colors.black,
-  },
-  comparisonUnit: {
-    fontSize: 6,
-    color: colors.mediumGray,
-    marginTop: 1,
-  },
-  comparisonArrowContainer: {
-    marginHorizontal: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  comparisonChange: {
-    alignItems: "center",
-    backgroundColor: colors.greenLight,
-    borderRadius: 4,
-    padding: 6,
-    minWidth: 60,
-  },
-  comparisonChangeValue: {
-    fontSize: 12,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: colors.green,
-  },
-  comparisonChangePercent: {
-    fontSize: 6,
-    color: colors.greenDark,
-    marginTop: 1,
-  },
-
-  sectionBox: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 6,
-    marginBottom: 6,
-  },
-  sectionBoxTitle: {
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
     letterSpacing: 0.3,
     marginBottom: 4,
   },
+  comparisonValue: {
+    fontSize: 22,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    color: colors.black,
+  },
+  comparisonUnit: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  comparisonArrowContainer: {
+    marginHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  comparisonChange: {
+    alignItems: "center",
+    backgroundColor: colors.greenLight,
+    borderRadius: 6,
+    padding: 12,
+    minWidth: 80,
+  },
+  comparisonChangeValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    color: colors.green,
+  },
+  comparisonChangePercent: {
+    fontSize: 8,
+    color: colors.greenDark,
+    marginTop: 2,
+  },
+
+  sectionBox: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 12,
+  },
+  sectionBoxTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginBottom: 8,
+  },
 
   benchmarkBox: {
     backgroundColor: colors.blueLight,
-    borderLeftWidth: 3,
+    borderLeftWidth: 4,
     borderLeftColor: colors.blue,
-    padding: 6,
-    marginBottom: 6,
-    borderRadius: 3,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 4,
   },
   benchmarkTitle: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.blueDark,
     textTransform: "uppercase",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   benchmarkText: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.blueDark,
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
 
   warningBox: {
     backgroundColor: colors.amberLight,
-    borderLeftWidth: 3,
+    borderLeftWidth: 4,
     borderLeftColor: colors.amber,
-    padding: 6,
-    marginBottom: 6,
-    borderRadius: 3,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 4,
   },
   warningTitle: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.amberDark,
     textTransform: "uppercase",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   warningText: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.amberDark,
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
 
   valueCalcBox: {
     backgroundColor: colors.greenLight,
-    borderLeftWidth: 3,
+    borderLeftWidth: 4,
     borderLeftColor: colors.green,
-    padding: 6,
-    marginBottom: 6,
-    borderRadius: 3,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 4,
   },
   valueCalcTitle: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.greenDark,
     textTransform: "uppercase",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   valueCalcFormula: {
-    fontSize: 7,
+    fontSize: 10,
     color: colors.green,
     fontFamily: "Courier",
     fontWeight: "bold",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   valueCalcText: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.greenDark,
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
 
   meaningBox: {
     backgroundColor: colors.paleGray,
-    borderLeftWidth: 3,
+    borderLeftWidth: 4,
     borderLeftColor: colors.mediumGray,
-    padding: 6,
-    marginTop: 4,
-    borderRadius: 3,
+    padding: 12,
+    marginTop: 8,
+    borderRadius: 4,
   },
   meaningTitle: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.darkGray,
     textTransform: "uppercase",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   meaningText: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
   },
 
   trendChartContainer: {
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 12,
   },
   trendLabel: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.darkGray,
-    marginBottom: 6,
+    marginBottom: 10,
   },
   trendSummary: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
-    marginTop: 4,
+    marginTop: 8,
   },
 
   checkItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 3,
+    marginBottom: 6,
   },
   checkMark: {
-    fontSize: 7,
+    fontSize: 10,
     color: colors.green,
-    marginRight: 4,
+    marginRight: 8,
     fontWeight: "bold",
   },
   arrowMark: {
-    fontSize: 7,
+    fontSize: 10,
     color: colors.amber,
-    marginRight: 4,
+    marginRight: 8,
     fontWeight: "bold",
   },
   checkText: {
     flex: 1,
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
 
   opportunityCard: {
     backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 12,
   },
   opportunityCardExpanded: {
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
-    borderLeftWidth: 3,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 12,
+    borderLeftWidth: 4,
     borderLeftColor: colors.green,
   },
   contextBox: {
     backgroundColor: colors.amberLight,
     borderWidth: 1,
     borderColor: colors.amber,
-    borderRadius: 4,
-    padding: 8,
-    marginTop: 6,
-    marginBottom: 6,
+    borderRadius: 6,
+    padding: 14,
+    marginTop: 12,
+    marginBottom: 12,
   },
   bottomLineBox: {
     backgroundColor: colors.paleGray,
     borderWidth: 1,
     borderColor: colors.darkGray,
-    borderRadius: 4,
-    padding: 8,
-    marginTop: 6,
-    borderLeftWidth: 3,
+    borderRadius: 6,
+    padding: 14,
+    marginTop: 12,
+    borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
   opportunityTitle: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.primary,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   opportunityRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   opportunityLabel: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.mediumGray,
   },
   opportunityValue: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
   },
   opportunityAction: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.darkGray,
-    marginTop: 3,
+    marginTop: 6,
     fontStyle: "italic",
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
 
   twoColumn: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 6,
+    gap: 16,
+    marginBottom: 12,
   },
   column: {
     flex: 1,
@@ -775,76 +775,76 @@ const styles = StyleSheet.create({
 
   journeyChart: {
     backgroundColor: colors.paleGray,
-    borderRadius: 4,
-    padding: 6,
-    marginBottom: 4,
-    minHeight: 55,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    minHeight: 120,
   },
 
   methodologyGrid: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 6,
+    gap: 16,
+    marginBottom: 12,
   },
   methodologyColumn: {
     flex: 1,
   },
   methodologyTitle: {
-    fontSize: 6,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 4,
+    letterSpacing: 0.4,
+    marginBottom: 8,
   },
   methodologyItem: {
-    fontSize: 6,
+    fontSize: 8,
     color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 1,
+    lineHeight: 1.5,
+    marginBottom: 3,
   },
 
   closingBox: {
     backgroundColor: colors.paleGray,
-    padding: 8,
-    borderRadius: 4,
-    marginTop: 6,
-    borderLeftWidth: 3,
+    padding: 14,
+    borderRadius: 6,
+    marginTop: 12,
+    borderLeftWidth: 4,
     borderLeftColor: colors.primary,
   },
   closingText: {
-    fontSize: 7,
+    fontSize: 9,
     color: colors.darkGray,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
     fontStyle: "italic",
   },
 
   progressBar: {
-    height: 8,
+    height: 10,
     backgroundColor: colors.borderGray,
-    borderRadius: 4,
+    borderRadius: 5,
     overflow: "hidden",
-    marginVertical: 4,
+    marginVertical: 8,
   },
   progressFill: {
-    height: 8,
-    borderRadius: 4,
+    height: 10,
+    borderRadius: 5,
   },
   progressLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 2,
+    marginTop: 4,
   },
   progressLabel: {
-    fontSize: 5,
+    fontSize: 7,
     color: colors.mediumGray,
   },
 
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
   },
   statusRow: {
     flexDirection: "row",
@@ -971,8 +971,8 @@ const StatusDot = ({ status }: { status: "good" | "warning" | "alert" }) => (
 
 const MiniSparkline = ({ 
   values, 
-  width = 40, 
-  height = 12,
+  width = 50, 
+  height = 16,
   color = colors.green 
 }: { 
   values: number[]; 
@@ -1003,6 +1003,174 @@ const MiniSparkline = ({
           fill={color} 
         />
       </Svg>
+    </View>
+  );
+};
+
+// ============================================================================
+// DATA-DRIVEN JOURNEY CHART - Premium visualization
+// ============================================================================
+
+const DataDrivenJourneyChart = ({
+  currentValue,
+  projectedValue,
+  metrics,
+}: {
+  currentValue: number;
+  projectedValue: number;
+  metrics: ExpandMetricData[];
+}) => {
+  const chartWidth = 450;
+  const chartHeight = 100;
+  const padding = { left: 50, right: 20, top: 15, bottom: 5 };
+  const graphWidth = chartWidth - padding.left - padding.right;
+  const graphHeight = chartHeight - padding.top - padding.bottom;
+  
+  const maxValue = projectedValue * 1.1;
+  const midValue = maxValue / 2;
+  
+  const valueToY = (value: number) => {
+    const normalized = value / maxValue;
+    return chartHeight - padding.bottom - (normalized * graphHeight);
+  };
+  
+  const wrvuMetric = metrics.find(m => m.id === "wrvu_per_encounter");
+  const hasTrendData = wrvuMetric?.trend && wrvuMetric.trend.length > 0;
+  
+  let dataPoints: { x: number; y: number; value: number; label?: string }[] = [];
+  
+  if (hasTrendData && wrvuMetric?.trend) {
+    const totalPoints = wrvuMetric.trend.length + 1;
+    const valueAtStart = 0;
+    
+    const segmentWidth = graphWidth * 0.55;
+    
+    dataPoints.push({ 
+      x: padding.left, 
+      y: valueToY(valueAtStart), 
+      value: valueAtStart, 
+      label: "Start" 
+    });
+    
+    wrvuMetric.trend.forEach((point, idx) => {
+      const progress = (idx + 1) / totalPoints;
+      const x = padding.left + (progress * segmentWidth);
+      const estimatedValue = currentValue * progress * 1.2;
+      dataPoints.push({ 
+        x, 
+        y: valueToY(Math.min(estimatedValue, currentValue)), 
+        value: estimatedValue 
+      });
+    });
+    
+    dataPoints.push({ 
+      x: padding.left + segmentWidth, 
+      y: valueToY(currentValue), 
+      value: currentValue, 
+      label: "Now" 
+    });
+  } else {
+    dataPoints = [
+      { x: padding.left, y: valueToY(0), value: 0, label: "Start" },
+      { x: padding.left + graphWidth * 0.15, y: valueToY(currentValue * 0.25), value: currentValue * 0.25 },
+      { x: padding.left + graphWidth * 0.3, y: valueToY(currentValue * 0.5), value: currentValue * 0.5 },
+      { x: padding.left + graphWidth * 0.45, y: valueToY(currentValue * 0.75), value: currentValue * 0.75 },
+      { x: padding.left + graphWidth * 0.55, y: valueToY(currentValue), value: currentValue, label: "Now" },
+    ];
+  }
+  
+  const currentX = dataPoints[dataPoints.length - 1].x;
+  const currentY = valueToY(currentValue);
+  const projectedX = padding.left + graphWidth;
+  const projectedY = valueToY(projectedValue);
+  
+  const createSmoothPath = (points: { x: number; y: number }[]): string => {
+    if (points.length < 2) return "";
+    
+    let path = `M ${points[0].x} ${points[0].y}`;
+    
+    for (let i = 0; i < points.length - 1; i++) {
+      const curr = points[i];
+      const next = points[i + 1];
+      const midX = (curr.x + next.x) / 2;
+      
+      path += ` Q ${curr.x + (next.x - curr.x) * 0.5} ${curr.y}, ${midX} ${(curr.y + next.y) / 2}`;
+      path += ` Q ${midX + (next.x - midX) * 0.5} ${next.y}, ${next.x} ${next.y}`;
+    }
+    
+    return path;
+  };
+  
+  const solidPath = createSmoothPath(dataPoints);
+  
+  const areaPath = solidPath + 
+    ` L ${currentX} ${chartHeight - padding.bottom}` +
+    ` L ${padding.left} ${chartHeight - padding.bottom} Z`;
+  
+  const projectionMidX = (currentX + projectedX) / 2;
+  const projectionMidY = (currentY + projectedY) / 2;
+  const dashedPath = `M ${currentX} ${currentY} Q ${projectionMidX} ${currentY * 0.8}, ${projectedX} ${projectedY}`;
+  
+  return (
+    <View style={styles.journeyChart} wrap={false}>
+      <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+        <Rect x="0" y="0" width={chartWidth} height={chartHeight} fill={colors.white} rx="4" />
+        
+        <Line 
+          x1={padding.left} y1={chartHeight - padding.bottom} 
+          x2={chartWidth - padding.right} y2={chartHeight - padding.bottom} 
+          stroke={colors.borderGray} strokeWidth="1" 
+        />
+        <Line 
+          x1={padding.left} y1={valueToY(midValue)} 
+          x2={chartWidth - padding.right} y2={valueToY(midValue)} 
+          stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="4,4" opacity="0.5" 
+        />
+        <Line 
+          x1={padding.left} y1={valueToY(maxValue * 0.9)} 
+          x2={chartWidth - padding.right} y2={valueToY(maxValue * 0.9)} 
+          stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="4,4" opacity="0.5" 
+        />
+        
+        <Path d={areaPath} fill={colors.green} opacity="0.15" />
+        <Path d={solidPath} fill="none" stroke={colors.green} strokeWidth="3" />
+        
+        <Path d={dashedPath} fill="none" stroke={colors.blue} strokeWidth="2" strokeDasharray="6,4" />
+        
+        {dataPoints.slice(1, -1).map((point, idx) => (
+          <Circle 
+            key={idx}
+            cx={point.x} 
+            cy={point.y} 
+            r="3" 
+            fill={colors.green} 
+            stroke={colors.white} 
+            strokeWidth="1.5" 
+          />
+        ))}
+        
+        <Circle cx={padding.left} cy={valueToY(0)} r="4" fill={colors.lightGray} stroke={colors.white} strokeWidth="2" />
+        
+        <Circle cx={currentX} cy={currentY} r="10" fill={colors.primaryLight} opacity="0.4" />
+        <Circle cx={currentX} cy={currentY} r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
+        
+        <Circle cx={projectedX} cy={projectedY} r="5" fill={colors.blue} stroke={colors.white} strokeWidth="2" />
+      </Svg>
+      
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8, paddingHorizontal: 4 }}>
+        <View style={{ alignItems: "flex-start", width: 70 }}>
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
+          <Text style={{ fontSize: 9, color: colors.lightGray }}>$0</Text>
+        </View>
+        <View style={{ alignItems: "center", flex: 1 }}>
+          <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary, textTransform: "uppercase" }}>YOU ARE HERE</Text>
+          <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(currentValue)}</Text>
+        </View>
+        <View style={{ alignItems: "flex-end", width: 70 }}>
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.blue }}>Full Scale</Text>
+          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.blue, fontFamily: "Helvetica-Bold" }}>{formatCurrency(projectedValue)}</Text>
+        </View>
+      </View>
     </View>
   );
 };
@@ -1418,50 +1586,11 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
 
       <SectionTitle icon="chart" title="Your Value Journey" />
       
-      <View style={styles.journeyChart} wrap={false}>
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ width: 35, justifyContent: "space-between", height: 40, paddingRight: 4 }}>
-            <Text style={{ fontSize: 5, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-            <Text style={{ fontSize: 5, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
-          </View>
-          
-          <Svg width="100%" height="45" viewBox="0 0 350 45" preserveAspectRatio="xMidYMid meet">
-            <Rect x="0" y="0" width="350" height="45" fill={colors.white} />
-            <Line x1="0" y1="42" x2="350" y2="42" stroke={colors.borderGray} strokeWidth="1" />
-            <Line x1="0" y1="22" x2="350" y2="22" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
-            <Line x1="0" y1="4" x2="350" y2="4" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
-            
-            <Path d="M 10 42 L 10 38 Q 50 33 90 28 T 140 22 T 175 19 L 175 42 Z" fill={colors.green} opacity="0.12" />
-            <Path d="M 10 38 Q 50 33 90 28 T 140 22 T 175 19" fill="none" stroke={colors.green} strokeWidth="2" />
-            <Path d="M 175 19 Q 230 12 280 7 T 340 4" fill="none" stroke={colors.blue} strokeWidth="1.5" strokeDasharray="4,3" />
-            
-            <Circle cx="10" cy="38" r="2.5" fill={colors.lightGray} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="90" cy="28" r="2" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="140" cy="23" r="2" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-            
-            <Circle cx="175" cy="19" r="6" fill={colors.primaryLight} opacity="0.5" />
-            <Circle cx="175" cy="19" r="4" fill={colors.primary} stroke={colors.white} strokeWidth="1.5" />
-            
-            <Circle cx="260" cy="10" r="2" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="340" cy="4" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1.5" />
-          </Svg>
-        </View>
-        
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 3, paddingLeft: 35 }}>
-          <View style={{ alignItems: "flex-start", width: 50 }}>
-            <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
-          </View>
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.primary }}>YOU ARE HERE</Text>
-            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
-          </View>
-          <View style={{ alignItems: "flex-end", width: 55 }}>
-            <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
-            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-          </View>
-        </View>
-      </View>
+      <DataDrivenJourneyChart 
+        currentValue={data.tier1Value}
+        projectedValue={data.expansion.projectedValue}
+        metrics={data.metrics}
+      />
 
       <SectionTitle icon="target" title="Value Breakdown" />
 
@@ -1485,7 +1614,7 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
                   {metric.formula && <Text style={styles.rowFormula}>{metric.formula}</Text>}
                 </View>
                 {metric.trend && metric.trend.length > 0 && (
-                  <MiniSparkline values={[metric.before, ...metric.trend.map(t => t.value)]} width={35} height={10} />
+                  <MiniSparkline values={[metric.before, ...metric.trend.map(t => t.value)]} width={50} height={16} />
                 )}
               </View>
               <Text style={styles.rowValue}>{formatCurrency(metric.value!)}</Text>
@@ -1850,89 +1979,93 @@ const ExpansionOpportunityPage = ({
         </View>
       </View>
 
-      <SectionTitle icon="chart" title="Scaling Math" />
+      <SectionTitle icon="chart" title="How We Calculate Your Expansion" />
 
       <View style={styles.card} wrap={false}>
         <View style={styles.cardContent}>
-          <View style={styles.row}>
-            <Text style={styles.rowLabel}>Current annual value</Text>
-            <Text style={styles.rowValue}>{formatCurrency(expansion.currentValue)}</Text>
+          <View style={[styles.row, { paddingVertical: 10 }]}>
+            <Text style={[styles.rowLabel, { fontSize: 10 }]}>Current annual value</Text>
+            <Text style={[styles.rowValue, { fontSize: 12 }]}>{formatCurrency(expansion.currentValue)}</Text>
           </View>
-          <View style={styles.row}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.rowLabel}>× Provider scale ({expansion.currentProviders} → {expansion.targetProviders})</Text>
+          <View style={[styles.row, { paddingVertical: 10 }]}>
+            <View>
+              <Text style={[styles.rowLabel, { fontSize: 10 }]}>Provider scale</Text>
+              <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>{expansion.currentProviders} providers → {expansion.targetProviders} providers</Text>
             </View>
-            <Text style={styles.rowValueNeutral}>{providerMultiplier.toFixed(1)}x</Text>
+            <Text style={[styles.rowValueNeutral, { fontSize: 12 }]}>{providerMultiplier.toFixed(1)}x</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.rowLabel}>× Utilization improvement ({expansion.currentUtilization}% → {expansion.targetUtilization}%)</Text>
-            <Text style={styles.rowValueNeutral}>{utilizationMultiplier.toFixed(2)}x</Text>
+          <View style={[styles.row, { paddingVertical: 10 }]}>
+            <View>
+              <Text style={[styles.rowLabel, { fontSize: 10 }]}>Utilization improvement</Text>
+              <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>{expansion.currentUtilization}% → {expansion.targetUtilization}%</Text>
+            </View>
+            <Text style={[styles.rowValueNeutral, { fontSize: 12 }]}>{utilizationMultiplier.toFixed(2)}x</Text>
           </View>
-          <View style={[styles.row, styles.rowLast, { backgroundColor: colors.greenLight, margin: -6, marginTop: 6, padding: 6 }]}>
-            <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>Projected annual value at scale</Text>
-            <Text style={[styles.rowValue, { fontSize: 10 }]}>{formatCurrency(expansion.projectedValue)}</Text>
+          <View style={[styles.row, styles.rowLast, { backgroundColor: colors.greenLight, borderRadius: 6, marginTop: 8, padding: 12 }]}>
+            <Text style={[styles.rowLabel, { fontWeight: "bold", fontSize: 11 }]}>Projected annual value at scale</Text>
+            <Text style={[styles.rowValue, { fontSize: 14 }]}>{formatCurrency(expansion.projectedValue)}</Text>
           </View>
         </View>
       </View>
 
-      <SectionTitle icon="target" title="Current vs. Projected" />
+      <SectionTitle icon="target" title="Current vs. Full Scale" />
 
       <View style={styles.twoColumn} wrap={false}>
         <View style={styles.column}>
-          <View style={styles.sectionBox}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.mediumGray, marginRight: 4 }} />
-              <Text style={styles.sectionBoxTitle}>Current State</Text>
+          <View style={[styles.sectionBox, { padding: 16 }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.mediumGray, marginRight: 6 }} />
+              <Text style={[styles.sectionBoxTitle, { fontSize: 10, marginBottom: 0 }]}>Current State</Text>
+            </View>
+            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Providers:</Text>
+              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.currentProviders}</Text>
+            </View>
+            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Utilization:</Text>
+              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.currentUtilization}%</Text>
+            </View>
+            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Annual value:</Text>
+              <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 11 }]}>{formatCurrency(expansion.currentValue)}</Text>
             </View>
             <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Providers:</Text>
-              <Text style={styles.opportunityValue}>{expansion.currentProviders}</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Utilization:</Text>
-              <Text style={styles.opportunityValue}>{expansion.currentUtilization}%</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Annual value:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green }]}>{formatCurrency(expansion.currentValue)}</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Value/provider:</Text>
-              <Text style={styles.opportunityValue}>{formatCurrency(expansion.currentProviders > 0 ? expansion.currentValue / expansion.currentProviders : 0)}</Text>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Value/provider:</Text>
+              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{formatCurrency(expansion.currentProviders > 0 ? expansion.currentValue / expansion.currentProviders : 0)}</Text>
             </View>
           </View>
         </View>
-        <View style={{ alignItems: "center", justifyContent: "center", width: 30 }}>
-          <ArrowRight size={20} color={colors.green} />
+        <View style={{ alignItems: "center", justifyContent: "center", width: 40 }}>
+          <ArrowRight size={24} color={colors.green} />
         </View>
         <View style={styles.column}>
-          <View style={[styles.sectionBox, { borderColor: colors.green, borderWidth: 2, backgroundColor: colors.greenLight }]}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green, marginRight: 4 }} />
-              <Text style={[styles.sectionBoxTitle, { color: colors.green }]}>Full Scale Target</Text>
+          <View style={[styles.sectionBox, { borderColor: colors.green, borderWidth: 2, backgroundColor: colors.greenLight, padding: 16 }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green, marginRight: 6 }} />
+              <Text style={[styles.sectionBoxTitle, { color: colors.green, fontSize: 10, marginBottom: 0 }]}>Full Scale Target</Text>
+            </View>
+            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Providers:</Text>
+              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.targetProviders}</Text>
+            </View>
+            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Utilization:</Text>
+              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.targetUtilization}%</Text>
+            </View>
+            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Annual value:</Text>
+              <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 11 }]}>{formatCurrency(expansion.projectedValue)}</Text>
             </View>
             <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Providers:</Text>
-              <Text style={styles.opportunityValue}>{expansion.targetProviders}</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Utilization:</Text>
-              <Text style={styles.opportunityValue}>{expansion.targetUtilization}%</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Annual value:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green }]}>{formatCurrency(expansion.projectedValue)}</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Added value:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green }]}>+{formatCurrency(expansion.expansionValue)}</Text>
+              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Added value:</Text>
+              <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 11, fontWeight: "bold" }]}>+{formatCurrency(expansion.expansionValue)}</Text>
             </View>
           </View>
         </View>
       </View>
 
-      <View style={styles.closingBox} wrap={false}>
-        <Text style={styles.closingText}>
+      <View style={[styles.closingBox, { padding: 16 }]} wrap={false}>
+        <Text style={[styles.closingText, { fontSize: 10, lineHeight: 1.6 }]}>
           Think of your current deployment as a pilot that's already delivering. The patterns you're seeing at {expansion.currentProviders} providers translate predictably as you scale—this isn't a leap of faith, it's an extension of demonstrated results.
         </Text>
       </View>
