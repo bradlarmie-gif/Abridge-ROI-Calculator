@@ -891,9 +891,14 @@ export default function ExpandResults({
                         </span>
                       </div>
                       
+                      {/* Y-axis label */}
+                      <div className="text-[9px] text-[#9CA3AF] text-center mb-1 uppercase tracking-wide">
+                        {display.unit}
+                      </div>
+                      
                       <div className="h-32">
                         <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                          <LineChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                             <XAxis 
                               dataKey="month" 
@@ -906,7 +911,7 @@ export default function ExpandResults({
                               tick={{ fontSize: 10, fill: '#9CA3AF' }}
                               axisLine={false}
                               tickLine={false}
-                              width={40}
+                              width={35}
                             />
                             <Tooltip 
                               contentStyle={{ 
