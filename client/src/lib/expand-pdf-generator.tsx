@@ -12,6 +12,7 @@ import {
   Circle,
   Rect,
   Polyline,
+  G,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
@@ -593,9 +594,7 @@ const styles = StyleSheet.create({
   },
 
   trendChartContainer: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
+    backgroundColor: "#F9FAFB",
     borderRadius: 4,
     padding: 10,
     marginBottom: 8,
@@ -812,8 +811,15 @@ const Footer = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }
 );
 
 // ============================================================================
-// TREND CHART COMPONENT
+// TREND CHART COMPONENT - Professional SVG Chart for React-PDF
 // ============================================================================
+
+interface TrendDataPoint {
+  label: string;
+  value: number;
+  isBaseline?: boolean;
+  isCurrent?: boolean;
+}
 
 const TrendChart = ({ 
   metric, 
@@ -827,73 +833,249 @@ const TrendChart = ({
     return null;
   }
 
-  const chartWidth = 450;
-  const chartHeight = 50;
-  const padding = { left: 30, right: 20, top: 10, bottom: 15 };
-  const graphWidth = chartWidth - padding.left - padding.right;
-  const graphHeight = chartHeight - padding.top - padding.bottom;
+  // Transform metric data to chart data points
+  const data: TrendDataPoint[] = [
+    { label: "BL", value: baseline, isBaseline: true },
+    ...trend.map((t, i) => ({
+      label: `M${i + 1}`,
+      value: t.value,
+      isCurrent: i === trend.length - 1,
+    })),
+  ];
 
-  const allValues = [baseline, ...trend.map(t => t.value)];
-  const minVal = Math.min(...allValues) * 0.95;
-  const maxVal = Math.max(...allValues) * 1.05;
-  const range = maxVal - minVal || 1;
+  const width = 460;
+  const height = 100;
+  const positiveIsGood = metric.isPositiveGood;
+  const valueSuffix = metric.unit;
 
-  const getY = (val: number) => padding.top + graphHeight - ((val - minVal) / range) * graphHeight;
-  const getX = (idx: number) => padding.left + (idx / trend.length) * graphWidth;
+  // Chart dimensions - SVG width accounts for Y-axis labels column (35px)
+  const yAxisColumnWidth = 35;
+  const svgWidth = width - yAxisColumnWidth;
+  const padding = { top: 15, right: 15, bottom: 25, left: 10 }; // Reduced left padding since Y-axis is external
+  const chartWidth = svgWidth - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
 
-  const points = trend.map((t, i) => `${getX(i + 1)},${getY(t.value)}`).join(" ");
-  const baselineY = getY(baseline);
+  // Calculate value range
+  const values = data.map(d => d.value);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const valueRange = maxValue - minValue || 1;
+  const valuePadding = valueRange * 0.15;
+  const yMin = minValue - valuePadding;
+  const yMax = maxValue + valuePadding;
+  const yRange = yMax - yMin;
 
-  const trendIndicator = metric.trendDirection === "improving" ? "Consistent improvement" :
-    metric.trendDirection === "stable" ? "Stable performance" : "Declining - needs attention";
+  // Calculate positions
+  const xStep = chartWidth / (data.length - 1);
+  
+  const getX = (index: number) => padding.left + (index * xStep);
+  const getY = (value: number) => padding.top + chartHeight - ((value - yMin) / yRange * chartHeight);
+
+  // Generate path for the line
+  const linePath = data.map((point, i) => {
+    const x = getX(i);
+    const y = getY(point.value);
+    return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+  }).join(" ");
+
+  // Generate path for the area fill
+  const areaPath = `${linePath} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
+
+  // Calculate trend summary
+  const current = data[data.length - 1];
+  const change = current.value - baseline;
+  const changePercent = baseline !== 0 ? (change / baseline) * 100 : 0;
+  const isPositiveTrend = positiveIsGood ? change >= 0 : change <= 0;
+  const trendIndicator = isPositiveTrend ? "↗" : "↘";
+  const trendLabel = Math.abs(changePercent) < 2 ? "Stable" : 
+                     isPositiveTrend ? "Consistent improvement" : "Needs attention";
+
+  // Chart colors
+  const chartColors = {
+    line: colors.green,
+    area: "#10B98120",
+    baseline: colors.primary,
+    current: colors.green,
+    currentRing: colors.white,
+    grid: "#E5E7EB",
+    text: colors.mediumGray,
+    labelText: colors.darkGray,
+    axisLine: "#D1D5DB",
+  };
+
+  // Y-axis tick values (3 ticks)
+  const yTicks = [
+    { value: yMin + yRange * 0.1, y: getY(yMin + yRange * 0.1) },
+    { value: yMin + yRange * 0.5, y: getY(yMin + yRange * 0.5) },
+    { value: yMin + yRange * 0.9, y: getY(yMin + yRange * 0.9) },
+  ];
+
+  // Format value for display
+  const formatValue = (val: number) => {
+    if (valueSuffix === "%" || valueSuffix.includes("wRVU")) {
+      return val.toFixed(2);
+    }
+    if (Math.abs(val) >= 1000) {
+      return `${(val / 1000).toFixed(1)}K`;
+    }
+    return val.toFixed(1);
+  };
+
+  // Generate Y-axis labels for display outside SVG
+  const yAxisLabels = yTicks.map(tick => ({
+    value: formatValue(tick.value),
+    topOffset: tick.y - padding.top,
+  }));
 
   return (
     <View style={styles.trendChartContainer}>
       <Text style={styles.trendLabel}>YOUR TREND ({trend.length} months)</Text>
-      <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-        <Line 
-          x1={padding.left} 
-          y1={baselineY} 
-          x2={chartWidth - padding.right} 
-          y2={baselineY} 
-          stroke={colors.lightGray} 
-          strokeWidth="1" 
-          strokeDasharray="3,3" 
+      <View style={{ flexDirection: "row" }}>
+        {/* Y-axis labels column */}
+        <View style={{ width: yAxisColumnWidth, height: chartHeight + padding.top + padding.bottom, justifyContent: "flex-start", paddingTop: padding.top }}>
+          {yAxisLabels.map((label, i) => (
+            <Text
+              key={`y-label-${i}`}
+              style={{
+                fontSize: 7,
+                color: chartColors.text,
+                textAlign: "right",
+                position: "absolute",
+                top: label.topOffset - 4,
+                right: 2,
+              }}
+            >
+              {label.value}
+            </Text>
+          ))}
+        </View>
+        
+        {/* Chart SVG */}
+        <Svg width={svgWidth} height={height} viewBox={`0 0 ${svgWidth} ${height}`}>
+        {/* Background */}
+        <Rect x={0} y={0} width={svgWidth} height={height} fill="#F9FAFB" rx={4} />
+        
+        {/* Chart area background */}
+        <Rect 
+          x={padding.left} 
+          y={padding.top} 
+          width={chartWidth} 
+          height={chartHeight} 
+          fill={colors.white} 
         />
-        <Circle cx={padding.left} cy={baselineY} r="4" fill={colors.primary} />
-        <Polyline
-          points={`${padding.left},${baselineY} ${points}`}
-          fill="none"
-          stroke={colors.green}
-          strokeWidth="2"
-        />
-        {trend.map((t, i) => (
-          <Circle 
-            key={i} 
-            cx={getX(i + 1)} 
-            cy={getY(t.value)} 
-            r={i === trend.length - 1 ? 5 : 3} 
-            fill={i === trend.length - 1 ? colors.green : colors.green} 
-            stroke={colors.white}
-            strokeWidth={i === trend.length - 1 ? 2 : 1}
+
+        {/* Horizontal grid lines */}
+        {yTicks.map((tick, i) => (
+          <Line
+            key={`grid-${i}`}
+            x1={padding.left}
+            y1={tick.y}
+            x2={padding.left + chartWidth}
+            y2={tick.y}
+            stroke={chartColors.grid}
+            strokeWidth={0.5}
+            strokeDasharray="2,2"
           />
         ))}
-        <Text x={padding.left} y={chartHeight - 2} style={{ fontSize: 6, fill: colors.mediumGray }}>BL</Text>
-        {trend.map((t, i) => (
-          <Text key={i} x={getX(i + 1) - 5} y={chartHeight - 2} style={{ fontSize: 6, fill: colors.mediumGray }}>
-            M{i + 1}
+
+        {/* Y-axis line */}
+        <Line
+          x1={padding.left}
+          y1={padding.top}
+          x2={padding.left}
+          y2={padding.top + chartHeight}
+          stroke={chartColors.axisLine}
+          strokeWidth={1}
+        />
+
+        {/* X-axis line */}
+        <Line
+          x1={padding.left}
+          y1={padding.top + chartHeight}
+          x2={padding.left + chartWidth}
+          y2={padding.top + chartHeight}
+          stroke={chartColors.axisLine}
+          strokeWidth={1}
+        />
+
+        {/* Area fill under line */}
+        <Path
+          d={areaPath}
+          fill={chartColors.area}
+        />
+
+        {/* Main line */}
+        <Path
+          d={linePath}
+          stroke={chartColors.line}
+          strokeWidth={2.5}
+          fill="none"
+        />
+
+        {/* Data points */}
+        {data.map((point, i) => {
+          const x = getX(i);
+          const y = getY(point.value);
+          
+          if (point.isBaseline) {
+            return (
+              <G key={`point-${i}`}>
+                <Circle cx={x} cy={y} r={5} fill={chartColors.baseline} />
+                <Circle cx={x} cy={y} r={3} fill={colors.white} />
+                <Circle cx={x} cy={y} r={2} fill={chartColors.baseline} />
+              </G>
+            );
+          } else if (point.isCurrent) {
+            return (
+              <G key={`point-${i}`}>
+                <Circle cx={x} cy={y} r={8} fill={chartColors.current} />
+                <Circle cx={x} cy={y} r={5} fill={chartColors.currentRing} />
+                <Circle cx={x} cy={y} r={3} fill={chartColors.current} />
+              </G>
+            );
+          } else {
+            return (
+              <Circle key={`point-${i}`} cx={x} cy={y} r={4} fill={chartColors.line} />
+            );
+          }
+        })}
+      </Svg>
+      </View>
+      
+      {/* X-axis labels - rendered outside SVG for reliable text rendering */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: yAxisColumnWidth + padding.left, paddingRight: padding.right, marginTop: 4 }}>
+        {data.map((point, i) => (
+          <Text 
+            key={`x-label-${i}`}
+            style={{ 
+              fontSize: 7, 
+              color: point.isBaseline ? chartColors.baseline : point.isCurrent ? chartColors.current : chartColors.text,
+              fontWeight: (point.isBaseline || point.isCurrent) ? "bold" : "normal",
+              textAlign: "center",
+              width: chartWidth / data.length,
+            }}
+          >
+            {point.label}
           </Text>
         ))}
-      </Svg>
+      </View>
+      
+      {/* Summary line - rendered outside SVG for reliable text rendering */}
       <Text style={styles.trendSummary}>
-        Baseline: {baseline.toFixed(2)} → Current: {metric.after.toFixed(2)} = {metric.change >= 0 ? "+" : ""}{metric.change.toFixed(2)} ({metric.changePercent.toFixed(0)}% {metric.isPositiveGood ? "lift" : "reduction"})
+        <Text style={{ fontWeight: "bold" }}>Baseline:</Text> {formatValue(baseline)} {valueSuffix}  →  <Text style={{ fontWeight: "bold" }}>Current:</Text> {formatValue(current.value)} {valueSuffix}  =  
+        <Text style={{ fontWeight: "bold", color: isPositiveTrend ? chartColors.current : chartColors.baseline }}>
+          {change >= 0 ? "+" : ""}{formatValue(change)} ({changePercent >= 0 ? "+" : ""}{changePercent.toFixed(0)}%)
+        </Text>
       </Text>
-      <Text style={[styles.trendSummary, { color: metric.trendDirection === "declining" ? colors.amber : colors.green }]}>
-        {metric.trendDirection === "improving" ? "↗" : metric.trendDirection === "stable" ? "→" : "↘"} {trendIndicator}
+      
+      {/* Trend indicator */}
+      <Text style={[styles.trendSummary, { color: isPositiveTrend ? chartColors.current : chartColors.baseline }]}>
+        {trendIndicator} {trendLabel}
       </Text>
     </View>
   );
 };
+
 
 // ============================================================================
 // PAGE 1: EXECUTIVE SUMMARY
