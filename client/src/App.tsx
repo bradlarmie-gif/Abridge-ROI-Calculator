@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "./lib/queryClient";
 import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
 import { PageTransition } from "@/components/PageTransition";
-import { SplashScreen } from "@/components/SplashScreen";
 
 import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
@@ -33,7 +31,6 @@ interface SelectionState {
 }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
   const [currentView, setCurrentView] = useState<AppView>("journey");
 
   const navigateTo = (view: AppView) => {
@@ -117,17 +114,7 @@ export default function App() {
         <TooltipProvider>
           <Toaster />
 
-          <AnimatePresence mode="wait">
-            {showSplash && (
-              <SplashScreen 
-                key="splash"
-                onComplete={() => setShowSplash(false)} 
-              />
-            )}
-          </AnimatePresence>
-
-          {!showSplash && (
-            <PageTransition pageKey={currentView}>
+          <PageTransition pageKey={currentView}>
               {currentView === "journey" && (
                 <JourneySelector
                   onSelectExplore={() => navigateTo("explore")}
@@ -220,8 +207,7 @@ export default function App() {
                 }}
               />
             )}
-            </PageTransition>
-          )}
+          </PageTransition>
         </TooltipProvider>
       </SessionSecurityProvider>
     </QueryClientProvider>
