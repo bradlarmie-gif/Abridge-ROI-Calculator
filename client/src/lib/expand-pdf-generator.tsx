@@ -646,6 +646,35 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 8,
   },
+  opportunityCardExpanded: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.green,
+  },
+  contextBox: {
+    backgroundColor: colors.amberLight,
+    borderWidth: 1,
+    borderColor: colors.amber,
+    borderRadius: 4,
+    padding: 10,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  bottomLineBox: {
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.darkGray,
+    borderRadius: 4,
+    padding: 12,
+    marginTop: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
   opportunityTitle: {
     fontSize: 8,
     fontWeight: "bold",
@@ -889,7 +918,7 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeTitle}>THE STORY SO FAR</Text>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>{data.monthsOnAbridge} months ago</Text>, you deployed Abridge to {data.providers} providers. Since then, those providers have documented <Text style={styles.narrativeBold}>{formatNumber(data.documentedEncounters)} encounters</Text>—each one generating data about whether this investment is working.
+          <Text style={styles.narrativeBold}>{data.monthsOnAbridge} months ago</Text>, you deployed Abridge to {data.providers} providers. Since then, those providers have documented <Text style={styles.narrativeBold}>{formatNumber(data.documentedEncounters)} encounters</Text>—each one generating data about the value Abridge is creating.
         </Text>
         <Text style={styles.narrativeText}>
           <Text style={styles.narrativeBold}>The short answer: it is.</Text>
@@ -923,40 +952,78 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
       
       <View style={styles.journeyChart}>
-        <Svg width="100%" height="70" viewBox="0 0 500 70">
-          <Rect x="40" y="55" width="420" height="1" fill={colors.borderGray} />
+        <Svg width="100%" height="90" viewBox="0 0 500 90">
+          {/* Y-axis labels */}
+          <Text x="5" y="15" style={{ fontSize: 6, fill: colors.mediumGray }}>{formatCurrency(data.expansion.projectedValue)}</Text>
+          <Text x="5" y="45" style={{ fontSize: 6, fill: colors.mediumGray }}>{formatCurrency(data.tier1Value)}</Text>
+          <Text x="5" y="75" style={{ fontSize: 6, fill: colors.mediumGray }}>$0</Text>
+          
+          {/* Grid lines */}
+          <Rect x="50" y="75" width="430" height="1" fill={colors.borderGray} />
+          <Rect x="50" y="45" width="430" height="1" fill={colors.borderGray} strokeDasharray="3,3" opacity="0.3" />
+          <Rect x="50" y="15" width="430" height="1" fill={colors.borderGray} strokeDasharray="3,3" opacity="0.3" />
+          
+          {/* Shaded area under actual results */}
           <Path
-            d={`M 40 50 Q 80 48 120 42 T 200 35 T 280 28 T 360 20 T 460 8`}
+            d={`M 60 75 L 60 70 Q 100 65 140 55 T 220 45 T 280 42 L 280 75 Z`}
+            fill={colors.green}
+            opacity="0.15"
+          />
+          
+          {/* Actual results line (solid green) */}
+          <Path
+            d={`M 60 70 Q 100 65 140 55 T 220 45 T 280 42`}
             fill="none"
             stroke={colors.green}
-            strokeWidth="2.5"
+            strokeWidth="3"
           />
+          
+          {/* Projected growth line (dashed blue) */}
           <Path
-            d="M 280 28 Q 350 18 400 12 T 460 8"
+            d="M 280 42 Q 340 30 400 20 T 480 12"
             fill="none"
             stroke={colors.blue}
             strokeWidth="2"
-            strokeDasharray="4,3"
+            strokeDasharray="5,4"
           />
-          <Circle cx="40" cy="50" r="5" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
-          <Circle cx="280" cy="28" r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
-          <Circle cx="460" cy="8" r="5" fill={colors.green} stroke={colors.white} strokeWidth="2" />
+          
+          {/* Data points */}
+          <Circle cx="60" cy="70" r="4" fill={colors.mediumGray} stroke={colors.white} strokeWidth="1.5" />
+          <Circle cx="140" cy="55" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+          <Circle cx="220" cy="48" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+          
+          {/* TODAY marker - prominent red/orange */}
+          <Circle cx="280" cy="42" r="8" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
+          
+          {/* Future projections */}
+          <Circle cx="380" cy="25" r="3" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
+          <Circle cx="480" cy="12" r="5" fill={colors.green} stroke={colors.white} strokeWidth="2" />
         </Svg>
         
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}>
-          <View style={{ alignItems: "flex-start" }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.primary }}>Before</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
+          <View style={{ alignItems: "flex-start", width: 60 }}>
+            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
             <Text style={{ fontSize: 6, color: colors.mediumGray }}>Baseline</Text>
           </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primary }}>TODAY</Text>
+          <View style={{ alignItems: "center", width: 90 }}>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
             <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>{formatCurrency(data.tier1Value)}</Text>
             <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.providers} providers · {data.utilizationRate}%</Text>
           </View>
-          <View style={{ alignItems: "flex-end" }}>
+          <View style={{ alignItems: "flex-end", width: 75 }}>
             <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
             <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.expansion.targetProviders} providers</Text>
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.expansion.targetProviders} providers · {data.expansion.targetUtilization}%</Text>
+          </View>
+        </View>
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 6, gap: 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ width: 16, height: 3, backgroundColor: colors.green, marginRight: 4 }} />
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Actual results</Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ width: 16, height: 2, borderWidth: 1, borderColor: colors.blue, borderStyle: "dashed", marginRight: 4 }} />
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Projected growth</Text>
           </View>
         </View>
       </View>
@@ -1058,16 +1125,28 @@ const MetricDeepDivePage = ({
     <Page size="A4" style={styles.page}>
       <Header title="Metric Deep Dives" />
 
-      {metrics.map((metric) => (
+      {metrics.map((metric) => {
+        const isValueMetric = metric.value && metric.value > 0;
+        const isTimeMetric = metric.id === "timeSavings" || metric.id === "workOutsideWork";
+        
+        return (
         <View key={metric.id} style={styles.metricCard} wrap={false}>
-          <View style={styles.metricHeader}>
+          <View style={[styles.metricHeader, isValueMetric && { backgroundColor: colors.greenLight, borderBottomColor: colors.green }]}>
             <View style={{ flex: 1 }}>
               <Text style={styles.metricName}>{metric.name.toUpperCase()}</Text>
               <Text style={styles.metricDesc}>{metric.description}</Text>
             </View>
-            {metric.value && metric.value > 0 && (
-              <Text style={styles.metricValue}>{formatCurrency(metric.value)}</Text>
-            )}
+            {isValueMetric ? (
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={[styles.metricValue, { color: colors.green }]}>{formatCurrency(metric.value!)}</Text>
+                <Text style={{ fontSize: 6, color: colors.mediumGray }}>annual value</Text>
+              </View>
+            ) : isTimeMetric ? (
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={styles.metricValue}>{Math.abs(metric.change).toFixed(1)} {metric.unit}</Text>
+                <Text style={{ fontSize: 6, color: colors.mediumGray }}>saved per encounter</Text>
+              </View>
+            ) : null}
           </View>
           <View style={styles.metricContent}>
             <View style={styles.comparisonRow}>
@@ -1134,7 +1213,8 @@ const MetricDeepDivePage = ({
             )}
           </View>
         </View>
-      ))}
+        );
+      })}
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
     </Page>
@@ -1188,23 +1268,66 @@ const NarrativeAnalysisPage = ({
       <Text style={styles.sectionTitle}>OPTIMIZATION OPPORTUNITIES</Text>
 
       {data.optimizationOpportunities.map((opp, idx) => (
-        <View key={idx} style={styles.opportunityCard}>
-          <Text style={styles.opportunityTitle}>{idx + 1}. {opp.title}</Text>
-          <View style={styles.opportunityRow}>
-            <Text style={styles.opportunityLabel}>Current:</Text>
-            <Text style={styles.opportunityValue}>{opp.current}</Text>
+        <View key={idx} style={styles.opportunityCardExpanded} wrap={false}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+            <Text style={styles.opportunityTitle}>{idx + 1}. {opp.title}</Text>
+            <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 10 }]}>+{formatCurrency(opp.potentialValue)}/yr</Text>
           </View>
-          <View style={styles.opportunityRow}>
-            <Text style={styles.opportunityLabel}>Target:</Text>
-            <Text style={styles.opportunityValue}>{opp.target}</Text>
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 6 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>CURRENT</Text>
+              <Text style={{ fontSize: 8, fontWeight: "bold" }}>{opp.current}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>TARGET</Text>
+              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.green }}>{opp.target}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>GAP</Text>
+              <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber }}>{opp.title === "Utilization Focus" ? `${parseFloat(opp.target) - parseFloat(opp.current)} pp` : "See action"}</Text>
+            </View>
           </View>
-          <View style={styles.opportunityRow}>
-            <Text style={styles.opportunityLabel}>Potential value:</Text>
-            <Text style={[styles.opportunityValue, { color: colors.green }]}>{formatCurrency(opp.potentialValue)}</Text>
+          <View style={{ backgroundColor: colors.lightGray, padding: 6, borderRadius: 3 }}>
+            <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 2 }}>RECOMMENDED ACTION</Text>
+            <Text style={{ fontSize: 7, lineHeight: 1.3 }}>{opp.action}</Text>
           </View>
-          <Text style={styles.opportunityAction}>Action: {opp.action}</Text>
         </View>
       ))}
+
+      {/* Value Realization Context for Low Utilization */}
+      {data.utilizationRate < 70 && (
+        <View style={styles.contextBox} wrap={false}>
+          <Text style={[styles.sectionBoxTitle, { color: colors.amber, marginBottom: 4 }]}>EARLY STAGE CONTEXT</Text>
+          <Text style={{ fontSize: 7, lineHeight: 1.4, marginBottom: 6 }}>
+            At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months in, you're still in early deployment. This is common—adoption takes time. Here's the path forward:
+          </Text>
+          <View style={{ paddingLeft: 8 }}>
+            <Text style={{ fontSize: 7, marginBottom: 3 }}>• Increase utilization to 70%: Value improves ~{Math.round((70 / data.utilizationRate - 1) * 100)}%</Text>
+            <Text style={{ fontSize: 7, marginBottom: 3 }}>• Increase utilization to 80%: Value improves ~{Math.round((80 / data.utilizationRate - 1) * 100)}%</Text>
+            <Text style={{ fontSize: 7 }}>• Full adoption (85%): Unlocks maximum value potential</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Bottom Line Summary */}
+      <View style={styles.bottomLineBox} wrap={false}>
+        <Text style={[styles.sectionBoxTitle, { marginBottom: 6 }]}>THE BOTTOM LINE</Text>
+        <Text style={{ fontSize: 7, lineHeight: 1.4, marginBottom: 8 }}>
+          {data.monthsOnAbridge} months in, you're building a foundation:
+        </Text>
+        <View style={{ paddingLeft: 8, marginBottom: 8 }}>
+          <Text style={{ fontSize: 7, marginBottom: 2 }}>• {formatCurrency(data.tier1Value)} in annual value from measurable improvements</Text>
+          {data.tier2Items.length > 0 && <Text style={{ fontSize: 7, marginBottom: 2 }}>• Efficiency gains captured but not yet converted to dollars</Text>}
+          {data.tier3Items.length > 0 && <Text style={{ fontSize: 7, marginBottom: 2 }}>• Leading indicators showing positive trajectory</Text>}
+          <Text style={{ fontSize: 7 }}>• Expansion potential of +{formatCurrency(data.expansion.expansionValue)} at full scale</Text>
+        </View>
+        <Text style={{ fontSize: 7, lineHeight: 1.4, fontStyle: "italic" }}>
+          {data.utilizationRate < 70 
+            ? `At ${data.utilizationRate}% utilization, you're capturing less than half the potential. The path to multiplying this value is clear: push utilization to 80%+, validate gains, and consider converting efficiency to access.`
+            : `With ${data.utilizationRate}% utilization, you're already capturing strong value. Focus on maintaining gains, expanding coverage, and converting efficiency improvements to additional capacity.`
+          }
+        </Text>
+      </View>
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
     </Page>

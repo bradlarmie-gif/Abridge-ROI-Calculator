@@ -59,7 +59,7 @@ The application guides users through multi-step processes:
          - CTAs: Export PDF, Share with Team
       - **Key Frame**: Educational analysis - no Abridge pricing, savings, or value claims
       - **Calculation Engine**: scribeGapCalculator.ts with coverage and scaling math (no Abridge calculations)
--   **Expand Path**: A 5-step performance analysis flow for current Abridge customers with tiered ROI calculations:
+-   **Expand Path**: A 5-step performance analysis flow for current Abridge customers focused on "Value Created" (not ROI):
     1. Setting Selection (ExpandSettingSelection.tsx)
     2. Deployment Setup (ExpandDeploymentSetup.tsx) - providers, encounters, utilization, months on Abridge, metric selection
     3. Data Entry (ExpandDataEntry.tsx) - Per-metric Quick/Trend entry modes with before/after values
@@ -67,13 +67,19 @@ The application guides users through multi-step processes:
        - Revenue Capture: wRVU always valued ($33/wRVU, 50% attribution)
        - Time Efficiency: Conversion method selection (None/Patient Access/Overtime)
        - Quality of Life: Optional retention estimation
-       - Live preview sidebar with running totals and sanity check warnings
+       - Live preview sidebar showing "Annual Value Created" (no investment/ROI display)
     5. Your Results (ExpandResults.tsx) - Consolidated results page with:
-       - Headline metrics: Current Value (Tier 1), ROI multiple, Expansion Potential
-       - Time-based journey graph (Before Abridge → Today → Full Scale)
+       - Headline metrics: Current Value, Value/Provider, Expansion Potential (no ROI)
+       - Enhanced journey chart with "YOU ARE HERE" marker, Y-axis labels, legend
        - Tiered value breakdown (Tier 1: Hard Value, Tier 2: Efficiency, Tier 3: Leading Indicators)
-       - Inline expansion modeling with editable providers, utilization (max 85%), and investment
+       - Inline expansion modeling with editable providers and utilization (max 85%)
        - Export/Share functionality (PDF, email, copy link)
+    - **PDF Export**: Comprehensive 6-page coaching document with:
+       - Executive Summary: Annual Value Created, Value/Provider, Expansion Potential
+       - Metric Deep Dives: Trend charts, benchmarks, value calculations, warnings
+       - Narrative Analysis: Working well/Areas to watch, Optimization opportunities with actions, Bottom Line summary
+       - Expansion Opportunity: Current state vs Full Scale projections (value-focused)
+       - Methodology: Calculation approaches and benchmark ranges
 -   **Care Setting Selection**: Users choose a healthcare environment.
 -   **Strategic Priorities Selection**: Users identify relevant ROI levers.
 -   **Baseline Assumptions Wizard**: Defines adoption rates, value posture, and investment details.
