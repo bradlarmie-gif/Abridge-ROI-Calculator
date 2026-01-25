@@ -135,18 +135,49 @@ export default function ExpandValueConfiguration({
               </div>
               
               {wrvuLift > 0 ? (
-                <div className="bg-neutral-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="bg-neutral-50 rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm text-[#6B7280]">Your wRVU lift:</span>
                     <span className="font-semibold text-[#1F2937]">+{wrvuLift.toFixed(2)}/encounter</span>
                   </div>
-                  <div className="flex items-center justify-between mb-3">
+                  
+                  {/* What-if slider for attribution */}
+                  <div className="border-t border-neutral-200 pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <SlidersHorizontal className="w-4 h-4 text-neutral-400" />
+                        <span className="text-sm text-[#6B7280]">
+                          <TermTooltip term="Attribution" short="Credit to Abridge" full="What percentage of the improvement is attributable to Abridge vs other factors? 50% is conservative, 60% is optimistic." />
+                        </span>
+                      </div>
+                      <span className="font-semibold text-[#1F2937] w-12 text-right">
+                        {Math.round(valueConfig.wrvuAttribution * 100)}%
+                      </span>
+                    </div>
+                    <Slider
+                      value={[valueConfig.wrvuAttribution * 100]}
+                      onValueChange={(val) => setValueConfig({ 
+                        ...valueConfig, 
+                        wrvuAttribution: val[0] / 100 
+                      })}
+                      min={30}
+                      max={70}
+                      step={5}
+                      className="w-full"
+                      data-testid="slider-attribution"
+                    />
+                    <div className="flex justify-between text-xs text-neutral-400 mt-1">
+                      <span>Conservative</span>
+                      <span>Optimistic</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-200">
                     <span className="text-sm text-[#6B7280]">Annual value:</span>
                     <span className="font-bold text-lg text-emerald-600">{formatCurrency(wrvuValue)}</span>
                   </div>
                   <div className="text-xs font-mono text-[#6B7280] bg-neutral-100 p-2 rounded">
-                    +{wrvuLift.toFixed(2)} wRVU × {encounters.toLocaleString()} enc × {utilizationRate}% util × ${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU ×{" "}
-                    <TermTooltip term="50% attribution" short="How much credit Abridge gets" full="We conservatively attribute 50% of the improvement to Abridge, accounting for other workflow changes that may contribute." />
+                    +{wrvuLift.toFixed(2)} wRVU × {encounters.toLocaleString()} enc × {utilizationRate}% util × ${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU × {Math.round(valueConfig.wrvuAttribution * 100)}% attribution
                   </div>
                 </div>
               ) : (
@@ -227,26 +258,33 @@ export default function ExpandValueConfiguration({
                     
                     {valueConfig.timeConversionMethod === "patientAccess" && totalHoursSaved > 0 && (
                       <div className="mt-4 space-y-4">
-                        <div>
-                          <label className="text-sm text-[#6B7280] block mb-2">
-                            What % of saved time converts to patient access?
-                          </label>
-                          <div className="flex items-center gap-4">
-                            <input
-                              type="range"
-                              min="5"
-                              max="30"
-                              value={valueConfig.conversionPercent}
-                              onChange={(e) => setValueConfig({ 
-                                ...valueConfig, 
-                                conversionPercent: parseInt(e.target.value) 
-                              })}
-                              className="flex-1 accent-[#EA2C00]"
-                              data-testid="slider-conversion-percent"
-                            />
+                        <div className="bg-neutral-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <SlidersHorizontal className="w-4 h-4 text-neutral-400" />
+                              <label className="text-sm text-[#6B7280]">
+                                What % of saved time converts to patient access?
+                              </label>
+                            </div>
                             <span className="font-semibold text-[#1F2937] w-12 text-right">
                               {valueConfig.conversionPercent}%
                             </span>
+                          </div>
+                          <Slider
+                            value={[valueConfig.conversionPercent]}
+                            onValueChange={(val) => setValueConfig({ 
+                              ...valueConfig, 
+                              conversionPercent: val[0] 
+                            })}
+                            min={5}
+                            max={30}
+                            step={5}
+                            className="w-full"
+                            data-testid="slider-conversion-percent"
+                          />
+                          <div className="flex justify-between text-xs text-neutral-400 mt-1">
+                            <span>5% (minimal)</span>
+                            <span>30% (ambitious)</span>
                           </div>
                         </div>
                         

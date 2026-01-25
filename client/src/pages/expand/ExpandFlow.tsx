@@ -175,6 +175,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     overtimeReduction: null,
     estimateRetention: false,
     departuresPrevented: 0,
+    wrvuAttribution: EXPAND_ROI_DEFAULTS.wrvuAttribution,
   });
   
   // Actual metrics data (before/after) - all blank

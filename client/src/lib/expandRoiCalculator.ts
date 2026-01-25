@@ -13,6 +13,7 @@ export interface ValueConfigData {
   overtimeReduction: number | null;
   estimateRetention: boolean;
   departuresPrevented: number;
+  wrvuAttribution: number; // Configurable attribution rate (default 50%)
 }
 
 export interface ExpandROIDefaults {
@@ -237,8 +238,11 @@ function calculateWRVU(
   // Eligible encounters = total encounters × utilization rate
   const eligibleEncounters = Math.round(inputs.encounters * (inputs.utilizationRate / 100));
   
+  // Use configurable attribution from valueConfig, fallback to defaults
+  const attribution = inputs.valueConfig?.wrvuAttribution ?? defaults.wrvuAttribution;
+  
   const annualValue = Math.round(
-    lift * eligibleEncounters * defaults.dollarPerWRVU * defaults.wrvuAttribution
+    lift * eligibleEncounters * defaults.dollarPerWRVU * attribution
   );
   
   return {
@@ -249,7 +253,7 @@ function calculateWRVU(
     liftPercent,
     encounters: eligibleEncounters,
     dollarPerWRVU: defaults.dollarPerWRVU,
-    attribution: defaults.wrvuAttribution,
+    attribution,
     annualValue,
   };
 }

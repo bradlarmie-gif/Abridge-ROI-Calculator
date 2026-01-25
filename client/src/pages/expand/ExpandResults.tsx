@@ -108,7 +108,7 @@ export default function ExpandResults({
     const todayValue = currentValue;
     const fullScaleValue = expansionCalc?.projectedValue || todayValue * 3;
     const dollarPerWRVU = EXPAND_ROI_DEFAULTS.dollarPerWRVU;
-    const attribution = EXPAND_ROI_DEFAULTS.wrvuAttribution;
+    const attribution = valueConfig.wrvuAttribution;
     const eligibleEnc = encounters * (utilizationRate / 100);
     
     // Check if we have real trend data from wRVU (primary value driver)
@@ -240,8 +240,8 @@ export default function ExpandResults({
         unit: 'wRVU/enc',
         isPositiveGood: true,
         value: roiResult.tier1Breakdown.wrvuValue,
-        formula: `+${wrvuLift.toFixed(2)} wRVU/enc × ${documentedEncounters.toLocaleString()} encounters × $${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU × 50% attribution`,
-        formulaExplanation: `We use Medicare's $33 conversion factor and 50% attribution to Abridge. If your payer mix is commercial-heavy (where conversion factors run $45-65), actual revenue impact may be 30-50% higher.`,
+        formula: `+${wrvuLift.toFixed(2)} wRVU/enc × ${documentedEncounters.toLocaleString()} encounters × $${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU × ${Math.round(valueConfig.wrvuAttribution * 100)}% attribution`,
+        formulaExplanation: `We use Medicare's $33 conversion factor and ${Math.round(valueConfig.wrvuAttribution * 100)}% attribution to Abridge. If your payer mix is commercial-heavy (where conversion factors run $45-65), actual revenue impact may be 30-50% higher.`,
         whatThisMeans: `Here's what we're seeing: A ${wrvuLiftPercent.toFixed(1)}% lift in wRVU typically means your documentation is now capturing clinical complexity that was always there—providers aren't doing more, the notes are just reflecting reality better. ${isAboveTypical ? `Your ${wrvuLiftPercent.toFixed(0)}% lift is above our typical 3-7% range, which is interesting. This could mean several things: your baseline documentation may have been particularly sparse, or you have complex patient populations that benefit more from thorough capture. It's worth exploring—if you can validate the baseline methodology, this becomes a powerful proof point.` : `This is a pattern we see across deployments: when AI handles the documentation mechanics, providers naturally capture more detail because the friction is gone.`}`,
         benchmark: {
           typicalRange: '3-7% lift',
@@ -656,11 +656,12 @@ export default function ExpandResults({
           </motion.div>
           
           <motion.div 
-            className={`rounded-xl p-4 md:p-6 text-center ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} 
+            className={`rounded-xl p-4 md:p-6 text-center cursor-pointer hover-elevate active-elevate-2 ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} 
             data-testid="card-expansion"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+            onClick={() => document.getElementById('expansion-section')?.scrollIntoView({ behavior: 'smooth' })}
           >
             <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center mx-auto mb-2 md:mb-3 ${expansionCalc ? 'bg-blue-100' : 'bg-neutral-200'}`}>
               <Rocket className={`w-4 h-4 md:w-5 md:h-5 ${expansionCalc ? 'text-blue-600' : 'text-neutral-400'}`} />
@@ -670,7 +671,10 @@ export default function ExpandResults({
             </span>
             <span className="block text-xs font-medium text-[#6B7280] uppercase tracking-wide mt-1">Expansion Potential</span>
             <span className="text-xs text-[#9CA3AF]">
-              {expansionCalc ? `At ${expansionCalc.targetProviders} providers` : 'Configure below'}
+              {expansionCalc ? `At ${expansionCalc.targetProviders} providers` : 'Click to model growth'}
+            </span>
+            <span className="block text-xs text-blue-500 mt-1">
+              Click to explore
             </span>
           </motion.div>
         </div>
@@ -757,96 +761,134 @@ export default function ExpandResults({
         </div>
         
         <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
-          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-3 md:mb-4">
-            Value Breakdown
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-[#1F2937]">
+              How We Measure Value
+            </h2>
+            <span className="text-xs text-[#6B7280] px-2 py-1 bg-neutral-100 rounded-full">
+              3 categories
+            </span>
+          </div>
+          <p className="text-sm text-[#6B7280] mb-4">
+            We organize value into three tiers based on how defensible the numbers are
+          </p>
           
           <div className="space-y-4">
-            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-600" />
-                  <span className="font-semibold text-[#1F2937]">Core Financial Value</span>
+            {/* Tier 1: Measurable Financial Impact */}
+            <div className="p-4 bg-gradient-to-r from-emerald-50 to-white border border-emerald-200 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                    </div>
+                    <span className="font-semibold text-[#1F2937]">Measurable Financial Impact</span>
+                  </div>
+                  <p className="text-xs text-[#6B7280] ml-8">Revenue you can track in billing reports</p>
                 </div>
-                <span className="text-lg font-bold text-emerald-600">{formatCurrency(roiResult.tier1HardValue)}</span>
+                <span className="text-xl font-bold text-emerald-600">{formatCurrency(roiResult.tier1HardValue)}</span>
               </div>
               
-              <div className="space-y-2 ml-6 text-sm text-[#6B7280]">
+              <div className="space-y-2 ml-8 text-sm text-[#6B7280]">
                 {roiResult.tier1Breakdown.wrvuValue > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span>
-                      <TermTooltip {...TERMS.wRVU} /> Lift: +{(metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0) > 0 
-                        ? ((metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0)).toFixed(2) 
-                        : '0'} × {Math.round(encounters * utilizationRate / 100).toLocaleString()} enc × ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} × <TermTooltip term="50%" short="Attribution Rate" full="We conservatively attribute 50% of the improvement to Abridge, accounting for other workflow changes." />
+                  <div className="flex items-center justify-between py-1 border-b border-emerald-100 last:border-0">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                      <TermTooltip {...TERMS.wRVU} /> Lift
                     </span>
-                    <span className="font-medium text-[#1F2937]">{formatCurrency(roiResult.tier1Breakdown.wrvuValue)}</span>
+                    <span className="font-medium text-emerald-700">{formatCurrency(roiResult.tier1Breakdown.wrvuValue)}</span>
                   </div>
                 )}
                 {roiResult.tier1Breakdown.timeConversionValue > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span>
+                  <div className="flex items-center justify-between py-1 border-b border-emerald-100 last:border-0">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
                       {valueConfig.timeConversionMethod === 'patientAccess' 
-                        ? `Patient Access (${valueConfig.conversionPercent}%)`
-                        : 'Overtime Reduction'}
+                        ? `Additional Patient Access`
+                        : 'Overtime Cost Reduction'}
                     </span>
-                    <span className="font-medium text-[#1F2937]">{formatCurrency(roiResult.tier1Breakdown.timeConversionValue)}</span>
+                    <span className="font-medium text-emerald-700">{formatCurrency(roiResult.tier1Breakdown.timeConversionValue)}</span>
                   </div>
                 )}
                 {roiResult.tier1Breakdown.retentionValue > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span>Retention ({valueConfig.departuresPrevented} departures prevented)</span>
-                    <span className="font-medium text-[#1F2937]">{formatCurrency(roiResult.tier1Breakdown.retentionValue)}</span>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                      Retention Value
+                    </span>
+                    <span className="font-medium text-emerald-700">{formatCurrency(roiResult.tier1Breakdown.retentionValue)}</span>
                   </div>
                 )}
               </div>
             </div>
             
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold text-[#1F2937]">Operational Efficiency</span>
-                <span className="text-xs text-[#6B7280] ml-auto">(not dollarized)</span>
+            {/* Tier 2: Operational Gains */}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Clock className="w-3.5 h-3.5 text-blue-600" />
+                </div>
+                <div>
+                  <span className="font-semibold text-[#1F2937]">Operational Gains</span>
+                  <span className="text-xs text-blue-600 ml-2 px-2 py-0.5 bg-blue-100 rounded-full">Time-based</span>
+                </div>
               </div>
+              <p className="text-xs text-[#6B7280] ml-8 mb-3">Real improvements, but harder to convert to dollars</p>
               
-              <div className="space-y-2 ml-6 text-sm text-[#6B7280]">
+              <div className="space-y-2 ml-8 text-sm text-[#6B7280]">
                 {roiResult.tier2EfficiencyMetrics.hoursSaved > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Clock className="w-3 h-3" /> Time saved
+                  <div className="flex items-center justify-between py-1 border-b border-blue-100 last:border-0">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                      Documentation time saved
                     </span>
-                    <span className="font-medium text-blue-600">{roiResult.tier2EfficiencyMetrics.hoursSaved.toLocaleString()} hours/year</span>
+                    <span className="font-medium text-blue-600">{roiResult.tier2EfficiencyMetrics.hoursSaved.toLocaleString()} hrs/year</span>
                   </div>
                 )}
                 {roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Moon className="w-3 h-3" /> <TermTooltip {...TERMS.pajamaTime} /> eliminated
+                  <div className="flex items-center justify-between py-1 border-b border-blue-100 last:border-0">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                      <TermTooltip {...TERMS.pajamaTime} /> eliminated
                     </span>
-                    <span className="font-medium text-blue-600">-{roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hrs/week</span>
+                    <span className="font-medium text-blue-600">{roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hrs/week</span>
                   </div>
                 )}
                 {roiResult.tier2EfficiencyMetrics.chartClosureImprovement > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span>Chart closure improvement</span>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                      Same-day chart closure
+                    </span>
                     <span className="font-medium text-blue-600">+{roiResult.tier2EfficiencyMetrics.chartClosureImprovement}%</span>
                   </div>
                 )}
               </div>
             </div>
             
+            {/* Tier 3: Leading Indicators */}
             {roiResult.tier3LeadingIndicators.satisfactionImprovement > 0 && (
-              <div className="p-4 bg-purple-50 border border-purple-100 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Smile className="w-4 h-4 text-purple-600" />
-                  <span className="font-semibold text-[#1F2937]">Strategic Indicators</span>
-                  <span className="text-xs text-[#6B7280] ml-auto">(qualitative)</span>
+              <div className="p-4 bg-gradient-to-r from-purple-50 to-white border border-purple-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Smile className="w-3.5 h-3.5 text-purple-600" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-[#1F2937]">Leading Indicators</span>
+                    <span className="text-xs text-purple-600 ml-2 px-2 py-0.5 bg-purple-100 rounded-full">Experience</span>
+                  </div>
                 </div>
+                <p className="text-xs text-[#6B7280] ml-8 mb-3">Signals that predict long-term success</p>
                 
-                <div className="ml-6 text-sm text-[#6B7280]">
-                  <div className="flex items-center justify-between">
-                    <span>Satisfaction improvement</span>
+                <div className="ml-8 text-sm text-[#6B7280]">
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 bg-purple-400 rounded-full"></span>
+                      Clinician satisfaction
+                    </span>
                     <span className="font-medium text-purple-600">
-                      {roiResult.tier3LeadingIndicators.satisfactionBefore} → {roiResult.tier3LeadingIndicators.satisfactionAfter} (+{roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(1)} points)
+                      {roiResult.tier3LeadingIndicators.satisfactionBefore} → {roiResult.tier3LeadingIndicators.satisfactionAfter}
+                      <span className="text-purple-500 ml-1">(+{roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(0)} pts)</span>
                     </span>
                   </div>
                 </div>
@@ -990,9 +1032,12 @@ export default function ExpandResults({
           );
         })()}
         
-        <div className="bg-gradient-to-br from-blue-50 via-white to-emerald-50 border-2 border-blue-200 rounded-xl p-4 md:p-6 mb-8 shadow-sm">
+        <div 
+          id="expansion-section"
+          className="bg-gradient-to-br from-blue-50 via-white to-emerald-50 border-2 border-blue-200 rounded-xl p-4 md:p-6 mb-8 shadow-sm scroll-mt-20"
+        >
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide">
+            <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide animate-pulse">
               Expansion Opportunity
             </span>
           </div>
@@ -1118,7 +1163,7 @@ export default function ExpandResults({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-[#6B7280]">
             <div>wRVU valued at ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} (Medicare blended conversion factor)</div>
-            <div>{Math.round(EXPAND_ROI_DEFAULTS.wrvuAttribution * 100)}% attribution to Abridge (conservative)</div>
+            <div>{Math.round(valueConfig.wrvuAttribution * 100)}% attribution to Abridge {valueConfig.wrvuAttribution <= 0.5 ? '(conservative)' : valueConfig.wrvuAttribution >= 0.6 ? '(optimistic)' : ''}</div>
           </div>
         </div>
         
