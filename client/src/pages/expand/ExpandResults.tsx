@@ -155,84 +155,181 @@ export default function ExpandResults({
   const buildPDFData = useCallback((): ExpandPDFData => {
     const documentedEncounters = Math.round(encounters * utilizationRate / 100);
     
-    const metrics = [];
+    const metrics: ExpandPDFData['metrics'] = [];
     
-    if (roiResult.tier1Breakdown.wrvuValue > 0) {
+    // wRVU metric with full details
+    if (roiResult.tier1Breakdown.wrvuValue > 0 || metricsData.wrvuCapture.before || metricsData.wrvuCapture.after) {
       const wrvuLift = (metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0);
+      const wrvuLiftPercent = metricsData.wrvuCapture.before ? (wrvuLift / metricsData.wrvuCapture.before) * 100 : 0;
+      const isAboveTypical = wrvuLiftPercent > 7;
+      const isBelowTypical = wrvuLiftPercent < 3 && wrvuLiftPercent > 0;
+      
       metrics.push({
         id: 'wrvu',
-        name: 'wRVU Capture',
+        name: 'wRVU Per Encounter',
+        description: 'Revenue capture improvement',
         before: metricsData.wrvuCapture.before || 0,
         after: metricsData.wrvuCapture.after || 0,
         change: wrvuLift,
-        changePercent: metricsData.wrvuCapture.before ? (wrvuLift / metricsData.wrvuCapture.before) * 100 : 0,
+        changePercent: wrvuLiftPercent,
         unit: 'wRVU/enc',
         isPositiveGood: true,
         value: roiResult.tier1Breakdown.wrvuValue,
-        formula: `+${wrvuLift.toFixed(2)} × ${documentedEncounters.toLocaleString()} enc × $${EXPAND_ROI_DEFAULTS.dollarPerWRVU} × 50%`,
+        formula: `+${wrvuLift.toFixed(2)} wRVU/enc × ${documentedEncounters.toLocaleString()} encounters × $${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU × 50% attribution`,
+        formulaExplanation: `We use Medicare's $33 conversion factor and 50% attribution to Abridge. If your payer mix is commercial-heavy (where conversion factors run $45-65), actual revenue impact may be 30-50% higher.`,
+        whatThisMeans: `wRVU improvement indicates that documentation is capturing more of the clinical complexity that was always present in your encounters. This isn't about changing how providers practice—it's about making sure the note reflects what actually happened in the room.${isAboveTypical ? ` The ${wrvuLiftPercent.toFixed(0)}% lift you're seeing is substantial. If confirmed, it suggests there was significant under-documentation in your baseline state.` : ''}`,
+        benchmark: {
+          typicalRange: '3-7% lift',
+          typicalMin: 3,
+          typicalMax: 7,
+          status: isAboveTypical ? 'above' : isBelowTypical ? 'below' : 'within',
+          statusLabel: isAboveTypical ? 'Above typical range' : isBelowTypical ? 'Below typical range' : 'Within typical range',
+        },
+        warningMessage: isAboveTypical ? `Your results exceed our typical range. This isn't necessarily wrong—some organizations do see higher lift, especially if baseline documentation was sparse. But we recommend confirming: Was baseline measured the same way as current? Were there other coding or documentation initiatives during this period? Is the provider population consistent between periods?` : undefined,
+        trendDirection: wrvuLift > 0 ? 'improving' : wrvuLift < 0 ? 'declining' : 'stable',
       });
     }
     
-    if (roiResult.tier1Breakdown.timeConversionValue > 0) {
+    // Time savings metric
+    if (metricsData.timeSavings.before || metricsData.timeSavings.after) {
+      const timeSaved = (metricsData.timeSavings.before || 0) - (metricsData.timeSavings.after || 0);
+      const timeSavedPercent = metricsData.timeSavings.before ? (timeSaved / metricsData.timeSavings.before) * 100 : 0;
+      const isWithinTypical = timeSaved >= 3 && timeSaved <= 5;
+      
       metrics.push({
-        id: 'timeConversion',
-        name: valueConfig.timeConversionMethod === 'patientAccess' 
-          ? `Patient Access (${valueConfig.conversionPercent}% conversion)`
-          : 'Overtime Reduction',
+        id: 'timeSavings',
+        name: 'Time in Notes',
+        description: 'Documentation efficiency',
         before: metricsData.timeSavings.before || 0,
         after: metricsData.timeSavings.after || 0,
-        change: (metricsData.timeSavings.before || 0) - (metricsData.timeSavings.after || 0),
-        changePercent: 0,
-        unit: 'min/enc',
-        isPositiveGood: true,
-        value: roiResult.tier1Breakdown.timeConversionValue,
+        change: -timeSaved,
+        changePercent: timeSavedPercent,
+        unit: 'min/encounter',
+        isPositiveGood: false,
+        value: roiResult.tier1Breakdown.timeConversionValue > 0 ? roiResult.tier1Breakdown.timeConversionValue : undefined,
+        formula: roiResult.tier1Breakdown.timeConversionValue > 0 
+          ? `${timeSaved.toFixed(0)} min saved × ${documentedEncounters.toLocaleString()} enc ÷ 60 × $150/hr × ${valueConfig.conversionPercent}%`
+          : undefined,
+        whatThisMeans: `Each minute saved per encounter translates to ${Math.round(timeSaved * documentedEncounters / 60).toLocaleString()} hours annually. This time can go toward patient care, work-life balance, or additional encounters—depending on your organizational priorities.`,
+        benchmark: {
+          typicalRange: '3-5 min reduction',
+          typicalMin: 3,
+          typicalMax: 5,
+          status: timeSaved > 5 ? 'above' : timeSaved < 3 && timeSaved > 0 ? 'below' : 'within',
+          statusLabel: timeSaved > 5 ? 'Above typical' : timeSaved < 3 && timeSaved > 0 ? 'Below typical' : 'Within typical range',
+        },
+        trendDirection: timeSaved > 0 ? 'improving' : 'stable',
       });
     }
     
-    if (roiResult.tier1Breakdown.retentionValue > 0) {
-      metrics.push({
-        id: 'retention',
-        name: `Retention (${valueConfig.departuresPrevented} departures prevented)`,
-        before: 0,
-        after: 0,
-        change: 0,
-        changePercent: 0,
-        unit: '',
-        isPositiveGood: true,
-        value: roiResult.tier1Breakdown.retentionValue,
-      });
-    }
-    
-    const tier2Items: { label: string; value: string }[] = [];
+    // Build tier 2 items with formulas
+    const tier2Items: ExpandPDFData['tier2Items'] = [];
     if (roiResult.tier2EfficiencyMetrics.hoursSaved > 0) {
       tier2Items.push({ 
-        label: 'Time saved', 
-        value: `${roiResult.tier2EfficiencyMetrics.hoursSaved.toLocaleString()} hours/year` 
+        label: 'Time Saved', 
+        value: `${roiResult.tier2EfficiencyMetrics.hoursSaved.toLocaleString()} hours/year`,
+        formula: `${((metricsData.timeSavings.before || 0) - (metricsData.timeSavings.after || 0)).toFixed(0)} min/encounter × ${documentedEncounters.toLocaleString()} encounters ÷ 60`,
       });
     }
     if (roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly > 0) {
       tier2Items.push({ 
-        label: 'Pajama time eliminated', 
-        value: `-${roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hrs/week` 
+        label: 'Pajama Time Eliminated', 
+        value: `-${roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hrs/week`,
+        explanation: 'Per-provider average reduction in after-hours documentation',
       });
     }
     if (roiResult.tier2EfficiencyMetrics.chartClosureImprovement > 0) {
       tier2Items.push({ 
-        label: 'Chart closure improvement', 
-        value: `+${roiResult.tier2EfficiencyMetrics.chartClosureImprovement}%` 
+        label: 'Chart Closure Improvement', 
+        value: `+${roiResult.tier2EfficiencyMetrics.chartClosureImprovement}%`,
+        explanation: `Same-day closure rate improved by ${roiResult.tier2EfficiencyMetrics.chartClosureImprovement} percentage points`,
       });
     }
     
-    const tier3Items: { label: string; value: string }[] = [];
+    // Build tier 3 items
+    const tier3Items: ExpandPDFData['tier3Items'] = [];
     if (roiResult.tier3LeadingIndicators.satisfactionImprovement > 0) {
       tier3Items.push({
-        label: 'Satisfaction improvement',
-        value: `${roiResult.tier3LeadingIndicators.satisfactionBefore} → ${roiResult.tier3LeadingIndicators.satisfactionAfter} (+${roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(1)} points)`,
+        label: 'Clinician Satisfaction',
+        value: `${roiResult.tier3LeadingIndicators.satisfactionBefore} → ${roiResult.tier3LeadingIndicators.satisfactionAfter} (+${roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(0)} pts)`,
+        explanation: 'Satisfaction is a leading indicator for retention. Improvements here typically precede turnover reduction by 6-12 months.',
+      });
+    }
+    
+    // Generate "What's Working Well" based on metrics
+    const workingWell: string[] = [];
+    const wrvuMetric = metrics.find(m => m.id === 'wrvu');
+    if (wrvuMetric && wrvuMetric.changePercent > 0) {
+      workingWell.push(`wRVU capture showing ${wrvuMetric.benchmark?.status === 'above' ? 'strong' : 'solid'} improvement (${wrvuMetric.changePercent.toFixed(0)}% lift)`);
+    }
+    const timeMetric = metrics.find(m => m.id === 'timeSavings');
+    if (timeMetric && timeMetric.change < 0) {
+      workingWell.push(`Time in notes reduced by ${Math.abs(timeMetric.change).toFixed(0)} minutes per encounter`);
+    }
+    if (roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly > 0) {
+      workingWell.push(`Pajama time down ${roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hours per week—significant QoL impact`);
+    }
+    if (roiResult.tier2EfficiencyMetrics.chartClosureImprovement > 0) {
+      workingWell.push(`Chart closure up ${roiResult.tier2EfficiencyMetrics.chartClosureImprovement} percentage points`);
+    }
+    if (roiResult.tier3LeadingIndicators.satisfactionImprovement > 0) {
+      workingWell.push(`Clinician satisfaction improved ${roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(0)} points`);
+    }
+    
+    // Generate "Areas to Watch"
+    const areasToWatch: string[] = [];
+    if (utilizationRate < 80) {
+      areasToWatch.push(`Utilization at ${utilizationRate}%—room to grow toward 80-85% at maturity`);
+    }
+    if (wrvuMetric?.benchmark?.status === 'above') {
+      areasToWatch.push(`wRVU lift above typical range—recommend validating baseline`);
+    }
+    if (valueConfig.timeConversionMethod === 'none' || !roiResult.tier1Breakdown.timeConversionValue) {
+      areasToWatch.push(`Time savings not yet converting to patient access or overtime reduction`);
+    }
+    if (areasToWatch.length === 0) {
+      areasToWatch.push(`Continue monitoring metrics as deployment matures`);
+    }
+    
+    // Generate optimization opportunities
+    const optimizationOpportunities: ExpandPDFData['optimizationOpportunities'] = [];
+    
+    if (utilizationRate < 80) {
+      const utilizationGap = 85 - utilizationRate;
+      const potentialValue = Math.round(currentValue * (utilizationGap / utilizationRate) * 0.7);
+      optimizationOpportunities.push({
+        title: 'Utilization Focus',
+        current: `${utilizationRate}%`,
+        target: '80-85%',
+        potentialValue,
+        action: 'Identify providers below 60% and address barriers to adoption',
+      });
+    }
+    
+    if (valueConfig.timeConversionMethod === 'none' && roiResult.tier2EfficiencyMetrics.hoursSaved > 0) {
+      const hoursSaved = roiResult.tier2EfficiencyMetrics.hoursSaved;
+      const potentialValue = Math.round(hoursSaved * 150 * 0.15);
+      optimizationOpportunities.push({
+        title: 'Time Conversion',
+        current: `${hoursSaved.toLocaleString()} hrs/year saved, 0% converted`,
+        target: '15-20% conversion to patient access',
+        potentialValue,
+        action: 'Review scheduling capacity with operations to convert saved time to visits',
+      });
+    }
+    
+    if (wrvuMetric?.benchmark?.status === 'above') {
+      optimizationOpportunities.push({
+        title: 'Validate High Performers',
+        current: `${wrvuMetric.changePercent.toFixed(0)}% wRVU lift`,
+        target: 'Confirmed methodology',
+        potentialValue: 0,
+        action: 'Audit baseline methodology, confirm no other initiatives contributing to lift',
       });
     }
     
     return {
-      organizationName: deploymentData.organizationName,
+      organizationName: undefined,
       careSetting: 'Outpatient',
       providers,
       encounters,
@@ -261,6 +358,9 @@ export default function ExpandResults({
         conversionPercent: valueConfig.conversionPercent,
         retentionEnabled: valueConfig.estimateRetention,
       },
+      workingWell,
+      areasToWatch,
+      optimizationOpportunities,
       warnings: roiResult.warnings.map(w => ({
         type: w.type,
         title: w.title,
@@ -268,7 +368,7 @@ export default function ExpandResults({
         severity: w.severity,
       })),
     };
-  }, [providers, encounters, utilizationRate, months, metricsData, valueConfig, roiResult, currentValue, currentInvestment, currentROI, expansionCalc, investmentPerProvider, deploymentData.organizationName]);
+  }, [providers, encounters, utilizationRate, months, metricsData, valueConfig, roiResult, currentValue, currentInvestment, currentROI, expansionCalc, investmentPerProvider]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
