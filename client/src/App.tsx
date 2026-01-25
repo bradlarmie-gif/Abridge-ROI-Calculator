@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { queryClient } from "./lib/queryClient";
 import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
-import { SessionExpiredModal } from "@/components/SessionExpiredModal";
 
 import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
@@ -32,11 +31,10 @@ interface SelectionState {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("journey");
-  const [sessionExpired, setSessionExpired] = useState(false);
 
   const navigateTo = (view: AppView) => {
     setCurrentView(view);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const [selectionState, setSelectionState] = useState<SelectionState>({
@@ -56,11 +54,6 @@ export default function App() {
     setValueResults(null);
     setModelResults(null);
     setCurrentView("journey");
-    setSessionExpired(true);
-  }, []);
-
-  const handleDismissExpired = useCallback(() => {
-    setSessionExpired(false);
   }, []);
 
   const handleSelectionComplete = (
@@ -119,7 +112,6 @@ export default function App() {
       <SessionSecurityProvider onSessionClear={handleSessionClear}>
         <TooltipProvider>
           <Toaster />
-          <SessionExpiredModal isOpen={sessionExpired} onClose={handleDismissExpired} />
 
           {currentView === "journey" && (
           <JourneySelector
