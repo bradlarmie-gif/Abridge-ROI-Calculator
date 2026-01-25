@@ -121,2090 +121,1093 @@ export interface ExpandPDFData {
 }
 
 // ============================================================================
-// COLORS
+// COLORS - Professional palette
 // ============================================================================
 
-const colors = {
+const c = {
   primary: "#EA2C00",
   primaryLight: "#FEF2F0",
-  primaryDark: "#C42400",
   green: "#059669",
-  greenLight: "#ECFDF5",
+  greenLight: "#D1FAE5",
   greenDark: "#047857",
   black: "#111827",
-  darkGray: "#374151",
-  mediumGray: "#6B7280",
-  lightGray: "#9CA3AF",
-  paleGray: "#F9FAFB",
-  borderGray: "#E5E7EB",
+  dark: "#374151",
+  medium: "#6B7280",
+  light: "#9CA3AF",
+  pale: "#F3F4F6",
+  border: "#E5E7EB",
   white: "#FFFFFF",
-  amber: "#F59E0B",
+  amber: "#D97706",
   amberLight: "#FEF3C7",
-  amberDark: "#92400E",
-  blue: "#3B82F6",
-  blueLight: "#EFF6FF",
-  blueDark: "#1E40AF",
+  blue: "#2563EB",
+  blueLight: "#DBEAFE",
 };
 
 // ============================================================================
-// STYLES - PREMIUM LAYOUT (Larger fonts, more spacing, better hierarchy)
+// STYLES - Dense McKinsey-style layout
 // ============================================================================
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   page: {
-    padding: 40,
-    paddingBottom: 55,
+    padding: 28,
+    paddingBottom: 45,
     fontFamily: "Helvetica",
-    fontSize: 10,
-    color: colors.black,
-    backgroundColor: colors.white,
+    fontSize: 9,
+    color: c.black,
+    backgroundColor: c.white,
   },
-
+  
+  // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    paddingBottom: 12,
+    alignItems: "flex-end",
+    marginBottom: 12,
+    paddingBottom: 8,
     borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
+    borderBottomColor: c.primary,
   },
-  logo: {
-    width: 90,
-    height: 18,
-  },
-  headerRight: {
-    textAlign: "right",
-  },
-  headerTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: colors.black,
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    fontSize: 9,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-
+  logo: { width: 80, height: 16 },
+  headerRight: { textAlign: "right" },
+  headerTitle: { fontSize: 11, fontWeight: "bold", color: c.black },
+  headerDate: { fontSize: 8, color: c.medium, marginTop: 2 },
+  
+  // Footer
   footer: {
     position: "absolute",
-    bottom: 20,
-    left: 40,
-    right: 40,
+    bottom: 16,
+    left: 28,
+    right: 28,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: 8,
+    paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
+    borderTopColor: c.border,
   },
-  footerText: {
-    fontSize: 8,
-    color: colors.lightGray,
-  },
-
-  orgContext: {
-    marginBottom: 12,
-  },
-  orgName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  orgDetails: {
-    fontSize: 9,
-    color: colors.mediumGray,
-    marginTop: 3,
-  },
-
-  pageTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 12,
-  },
-
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  footerText: { fontSize: 7, color: c.light },
+  
+  // Context bar
+  contextBar: {
+    backgroundColor: c.pale,
+    borderRadius: 4,
+    padding: 8,
     marginBottom: 10,
-    marginTop: 16,
-  },
-  sectionTitle: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    marginLeft: 6,
-  },
-
-  executiveCallout: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 6,
-    padding: 14,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  executiveCalloutTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  executiveCalloutText: {
-    fontSize: 10,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-  },
-
-  keyTakeaway: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    padding: 12,
-    marginTop: 16,
     flexDirection: "row",
-    alignItems: "flex-start",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
   },
-  keyTakeawayLabel: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
-    marginRight: 10,
-    marginTop: 1,
-  },
-  keyTakeawayText: {
-    flex: 1,
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-  },
-
-  narrativeBox: {
-    backgroundColor: colors.paleGray,
-    padding: 14,
-    borderRadius: 6,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  narrativeTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-    marginBottom: 6,
-  },
-  narrativeText: {
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
-  },
-  narrativeBold: {
-    fontWeight: "bold",
-    color: colors.black,
-  },
-
+  contextItem: { fontSize: 8, color: c.dark },
+  contextValue: { fontWeight: "bold" },
+  
+  // Hero metrics row
   heroRow: {
     flexDirection: "row",
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: 12,
+    gap: 8,
   },
-  heroBox: {
+  heroCard: {
     flex: 1,
-    backgroundColor: colors.paleGray,
+    backgroundColor: c.pale,
+    borderRadius: 4,
+    padding: 10,
+    alignItems: "center",
+  },
+  heroCardPrimary: {
+    flex: 1,
+    backgroundColor: c.greenLight,
+    borderRadius: 4,
+    padding: 10,
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-  },
-  heroBoxHighlight: {
-    flex: 1,
-    backgroundColor: colors.greenLight,
-    borderWidth: 2,
-    borderColor: colors.green,
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
+    borderColor: c.green,
   },
   heroValue: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
-    color: colors.black,
-    marginBottom: 4,
+    color: c.black,
   },
   heroValueGreen: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     fontFamily: "Helvetica-Bold",
-    color: colors.green,
-    marginBottom: 4,
+    color: c.green,
   },
   heroLabel: {
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: "bold",
-    color: colors.mediumGray,
+    color: c.medium,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginTop: 2,
+  },
+  heroSub: { fontSize: 6, color: c.light, marginTop: 1 },
+  
+  // Section headers
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  sectionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  sectionTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: c.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    textAlign: "center",
-    marginTop: 4,
   },
-  heroSublabel: {
-    fontSize: 7,
-    color: colors.lightGray,
-    marginTop: 2,
-    textAlign: "center",
-  },
-
+  
+  // Cards
   card: {
     borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    marginBottom: 12,
+    borderColor: c.border,
+    borderRadius: 4,
+    marginBottom: 8,
     overflow: "hidden",
   },
   cardHeader: {
-    backgroundColor: colors.paleGray,
-    padding: 12,
+    backgroundColor: c.pale,
+    padding: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
+    borderBottomColor: c.border,
   },
   cardHeaderGreen: {
-    backgroundColor: colors.greenLight,
-    padding: 12,
+    backgroundColor: c.greenLight,
+    padding: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: colors.green,
+    borderBottomColor: c.green,
   },
-  cardTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  cardSubtitle: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-  cardValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: colors.green,
-  },
-  cardContent: {
-    padding: 12,
-  },
-
+  cardTitle: { fontSize: 9, fontWeight: "bold", color: c.black },
+  cardSub: { fontSize: 7, color: c.medium },
+  cardValue: { fontSize: 12, fontWeight: "bold", color: c.green },
+  cardBody: { padding: 8 },
+  
+  // Table rows
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingVertical: 8,
+    alignItems: "center",
+    paddingVertical: 4,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
+    borderBottomColor: c.border,
   },
-  rowLast: {
-    borderBottomWidth: 0,
-  },
-  rowLabel: {
-    flex: 1,
-    fontSize: 9,
-    color: colors.darkGray,
-  },
-  rowFormula: {
-    fontSize: 8,
-    color: colors.lightGray,
-    marginTop: 2,
-    fontFamily: "Courier",
-  },
-  rowExplanation: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-    lineHeight: 1.4,
-  },
-  rowValue: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.green,
-    textAlign: "right",
-  },
-  rowValueNeutral: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
-    textAlign: "right",
-  },
-
-  metricCard: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    marginBottom: 16,
-    overflow: "hidden",
-  },
-  metricHeader: {
-    backgroundColor: colors.paleGray,
-    padding: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  metricName: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  metricDesc: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-  metricValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: colors.green,
-    textAlign: "right",
-  },
-  metricContent: {
-    padding: 14,
-  },
-
-  comparisonRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-    paddingVertical: 12,
-    backgroundColor: colors.white,
-  },
-  comparisonBox: {
-    alignItems: "center",
-    minWidth: 80,
-  },
-  comparisonLabel: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 4,
-  },
-  comparisonValue: {
-    fontSize: 22,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: colors.black,
-  },
-  comparisonUnit: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-  comparisonArrowContainer: {
-    marginHorizontal: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  comparisonChange: {
-    alignItems: "center",
-    backgroundColor: colors.greenLight,
-    borderRadius: 6,
-    padding: 12,
-    minWidth: 80,
-  },
-  comparisonChangeValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: colors.green,
-  },
-  comparisonChangePercent: {
-    fontSize: 8,
-    color: colors.greenDark,
-    marginTop: 2,
-  },
-
-  sectionBox: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 12,
-  },
-  sectionBoxTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-    marginBottom: 8,
-  },
-
-  benchmarkBox: {
-    backgroundColor: colors.blueLight,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.blue,
-    padding: 12,
-    marginBottom: 12,
-    borderRadius: 4,
-  },
-  benchmarkTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.blueDark,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  benchmarkText: {
-    fontSize: 9,
-    color: colors.blueDark,
-    lineHeight: 1.4,
-  },
-
-  warningBox: {
-    backgroundColor: colors.amberLight,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.amber,
-    padding: 12,
-    marginBottom: 12,
-    borderRadius: 4,
-  },
-  warningTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.amberDark,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  warningText: {
-    fontSize: 9,
-    color: colors.amberDark,
-    lineHeight: 1.4,
-  },
-
-  valueCalcBox: {
-    backgroundColor: colors.greenLight,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.green,
-    padding: 12,
-    marginBottom: 12,
-    borderRadius: 4,
-  },
-  valueCalcTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.greenDark,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  valueCalcFormula: {
-    fontSize: 10,
-    color: colors.green,
-    fontFamily: "Courier",
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  valueCalcText: {
-    fontSize: 8,
-    color: colors.greenDark,
-    lineHeight: 1.4,
-  },
-
-  meaningBox: {
-    backgroundColor: colors.paleGray,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.mediumGray,
-    padding: 12,
-    marginTop: 8,
-    borderRadius: 4,
-  },
-  meaningTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.darkGray,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  meaningText: {
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-  },
-
-  trendChartContainer: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    padding: 14,
-    marginBottom: 12,
-  },
-  trendLabel: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.darkGray,
+  rowLast: { borderBottomWidth: 0 },
+  rowLabel: { flex: 1, fontSize: 8, color: c.dark },
+  rowValue: { fontSize: 9, fontWeight: "bold", color: c.green },
+  rowValueNeutral: { fontSize: 9, fontWeight: "bold", color: c.black },
+  
+  // Two column layout
+  twoCol: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  col: { flex: 1 },
+  
+  // Callout boxes
+  callout: {
+    backgroundColor: c.primaryLight,
+    borderLeftWidth: 3,
+    borderLeftColor: c.primary,
+    padding: 8,
     marginBottom: 10,
+    borderRadius: 2,
   },
-  trendSummary: {
-    fontSize: 9,
-    color: colors.darkGray,
-    marginTop: 8,
-  },
-
-  checkItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 6,
-  },
-  checkMark: {
-    fontSize: 10,
-    color: colors.green,
-    marginRight: 8,
+  calloutTitle: {
+    fontSize: 7,
     fontWeight: "bold",
-  },
-  arrowMark: {
-    fontSize: 10,
-    color: colors.amber,
-    marginRight: 8,
-    fontWeight: "bold",
-  },
-  checkText: {
-    flex: 1,
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-  },
-
-  opportunityCard: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    padding: 14,
-    marginBottom: 12,
-  },
-  opportunityCardExpanded: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 6,
-    padding: 14,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.green,
-  },
-  contextBox: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 1,
-    borderColor: colors.amber,
-    borderRadius: 6,
-    padding: 14,
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  bottomLineBox: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.darkGray,
-    borderRadius: 6,
-    padding: 14,
-    marginTop: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  opportunityTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.primary,
+    color: c.primary,
     textTransform: "uppercase",
-    marginBottom: 8,
-  },
-  opportunityRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  opportunityLabel: {
-    fontSize: 8,
-    color: colors.mediumGray,
-  },
-  opportunityValue: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  opportunityAction: {
-    fontSize: 8,
-    color: colors.darkGray,
-    marginTop: 6,
-    fontStyle: "italic",
-    lineHeight: 1.4,
-  },
-
-  twoColumn: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 12,
-  },
-  column: {
-    flex: 1,
-  },
-
-  journeyChart: {
-    backgroundColor: colors.paleGray,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    minHeight: 120,
-  },
-
-  methodologyGrid: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 12,
-  },
-  methodologyColumn: {
-    flex: 1,
-  },
-  methodologyTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-    marginBottom: 8,
-  },
-  methodologyItem: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
     marginBottom: 3,
   },
-
-  closingBox: {
-    backgroundColor: colors.paleGray,
-    padding: 14,
-    borderRadius: 6,
-    marginTop: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
+  calloutText: { fontSize: 8, color: c.dark, lineHeight: 1.4 },
+  
+  // Key takeaway
+  takeaway: {
+    backgroundColor: c.pale,
+    borderWidth: 1,
+    borderColor: c.border,
+    borderRadius: 4,
+    padding: 8,
+    marginTop: 8,
+    flexDirection: "row",
   },
-  closingText: {
-    fontSize: 9,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    fontStyle: "italic",
+  takeawayLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: c.primary,
+    textTransform: "uppercase",
+    marginRight: 8,
   },
-
-  progressBar: {
-    height: 10,
-    backgroundColor: colors.borderGray,
-    borderRadius: 5,
-    overflow: "hidden",
-    marginVertical: 8,
+  takeawayText: { flex: 1, fontSize: 8, color: c.dark, lineHeight: 1.3 },
+  
+  // Metric comparison
+  comparison: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    gap: 12,
   },
-  progressFill: {
-    height: 10,
-    borderRadius: 5,
+  compBox: { alignItems: "center", minWidth: 60 },
+  compLabel: { fontSize: 6, fontWeight: "bold", color: c.medium, textTransform: "uppercase", marginBottom: 2 },
+  compValue: { fontSize: 18, fontWeight: "bold", color: c.black },
+  compUnit: { fontSize: 7, color: c.medium },
+  compChange: {
+    alignItems: "center",
+    backgroundColor: c.greenLight,
+    borderRadius: 4,
+    padding: 8,
   },
-  progressLabels: {
+  compChangeValue: { fontSize: 14, fontWeight: "bold", color: c.green },
+  compChangePercent: { fontSize: 7, color: c.greenDark },
+  
+  // Benchmark/Warning boxes
+  benchBox: {
+    backgroundColor: c.blueLight,
+    padding: 6,
+    borderRadius: 3,
+    marginTop: 6,
+  },
+  benchTitle: { fontSize: 6, fontWeight: "bold", color: c.blue, textTransform: "uppercase", marginBottom: 2 },
+  benchText: { fontSize: 7, color: c.blue },
+  
+  warnBox: {
+    backgroundColor: c.amberLight,
+    padding: 6,
+    borderRadius: 3,
+    marginTop: 6,
+  },
+  warnTitle: { fontSize: 6, fontWeight: "bold", color: c.amber, textTransform: "uppercase", marginBottom: 2 },
+  warnText: { fontSize: 7, color: c.amber },
+  
+  // Value calc
+  valueBox: {
+    backgroundColor: c.greenLight,
+    padding: 6,
+    borderRadius: 3,
+    marginTop: 6,
+  },
+  valueFormula: { fontSize: 8, fontWeight: "bold", color: c.green, fontFamily: "Courier" },
+  valueNote: { fontSize: 6, color: c.greenDark, marginTop: 2 },
+  
+  // What this means
+  meaningBox: {
+    backgroundColor: c.pale,
+    padding: 6,
+    borderRadius: 3,
+    marginTop: 6,
+  },
+  meaningTitle: { fontSize: 6, fontWeight: "bold", color: c.dark, textTransform: "uppercase", marginBottom: 2 },
+  meaningText: { fontSize: 7, color: c.dark, lineHeight: 1.4 },
+  
+  // Opportunity cards
+  oppCard: {
+    backgroundColor: c.white,
+    borderWidth: 1,
+    borderColor: c.border,
+    borderRadius: 4,
+    padding: 8,
+    marginBottom: 6,
+  },
+  oppHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 4,
+    alignItems: "center",
+    marginBottom: 4,
   },
-  progressLabel: {
-    fontSize: 7,
-    color: colors.mediumGray,
-  },
-
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  oppNum: {
+    backgroundColor: c.green,
+    borderRadius: 2,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
     marginRight: 6,
   },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2,
+  oppNumText: { fontSize: 6, color: c.white, fontWeight: "bold" },
+  oppTitle: { fontSize: 8, fontWeight: "bold", color: c.black },
+  oppValue: { fontSize: 9, fontWeight: "bold", color: c.green },
+  oppRow: { flexDirection: "row", gap: 6, marginBottom: 3 },
+  oppLabel: { fontSize: 6, color: c.medium },
+  oppData: { fontSize: 7, fontWeight: "bold", color: c.black },
+  oppAction: { fontSize: 6, color: c.dark, lineHeight: 1.3, marginTop: 3 },
+  
+  // Progress bar
+  progressTrack: {
+    height: 6,
+    backgroundColor: c.border,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginVertical: 4,
   },
-
-  sparklineContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+  progressFill: { height: 6, borderRadius: 3 },
+  
+  // Status dots
+  statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 4 },
+  statusRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 3 },
+  statusText: { flex: 1, fontSize: 7, color: c.dark, lineHeight: 1.3 },
+  
+  // Chart container
+  chartContainer: {
+    backgroundColor: c.pale,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 8,
   },
+  chartTitle: { fontSize: 7, fontWeight: "bold", color: c.dark, textTransform: "uppercase", marginBottom: 6 },
 });
 
 // ============================================================================
-// HELPER FUNCTIONS
+// HELPERS
 // ============================================================================
 
-const formatCurrency = (value: number): string => {
-  if (Math.abs(value) >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (Math.abs(value) >= 1000) {
-    return `$${Math.round(value / 1000)}K`;
-  }
+const fmt = (value: number): string => {
+  if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+  if (Math.abs(value) >= 1000) return `$${Math.round(value / 1000)}K`;
   return `$${value.toLocaleString()}`;
 };
 
-const formatNumber = (value: number): string => {
-  return value.toLocaleString();
-};
+const fmtNum = (value: number): string => value.toLocaleString();
 
-const getToday = (): string => {
-  return new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
+const today = (): string => new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
-const getStatusColor = (status: "good" | "warning" | "alert"): string => {
-  switch (status) {
-    case "good": return colors.green;
-    case "warning": return colors.amber;
-    case "alert": return colors.primary;
-  }
-};
-
-const getMaturityLevel = (utilization: number): { label: string; color: string; percent: number } => {
-  if (utilization >= 80) return { label: "Optimized", color: colors.green, percent: 100 };
-  if (utilization >= 60) return { label: "Developing", color: colors.blue, percent: 75 };
-  if (utilization >= 40) return { label: "Emerging", color: colors.amber, percent: 50 };
-  return { label: "Early Stage", color: colors.lightGray, percent: 25 };
+const statusColor = (status: "good" | "warning" | "alert"): string => {
+  return status === "good" ? c.green : status === "warning" ? c.amber : c.primary;
 };
 
 // ============================================================================
-// SVG ICON COMPONENTS
+// COMPONENTS
 // ============================================================================
 
-const IconChart = ({ size = 10, color = colors.primary }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M3 3v18h18" stroke={color} strokeWidth="2" fill="none" />
-    <Path d="M7 14l4-4 4 4 5-5" stroke={color} strokeWidth="2" fill="none" />
-  </Svg>
+const Header = ({ title }: { title: string }) => (
+  <View style={s.header} fixed>
+    <Image src={abridgeLogoPath} style={s.logo} />
+    <View style={s.headerRight}>
+      <Text style={s.headerTitle}>{title}</Text>
+      <Text style={s.headerDate}>{today()}</Text>
+    </View>
+  </View>
 );
 
-const IconTarget = ({ size = 10, color = colors.primary }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2" fill="none" />
-    <Circle cx="12" cy="12" r="5" stroke={color} strokeWidth="2" fill="none" />
-    <Circle cx="12" cy="12" r="1" fill={color} />
-  </Svg>
+const Footer = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
+  <View style={s.footer} fixed>
+    <Text style={s.footerText}>Abridge Value Realization Report</Text>
+    <Text style={s.footerText}>Page {pageNum} of {totalPages}</Text>
+  </View>
 );
 
-const IconLightbulb = ({ size = 10, color = colors.amber }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M9 21h6M12 3a6 6 0 0 0-6 6c0 2.5 1.5 4.5 4 5.5V17h4v-2.5c2.5-1 4-3 4-5.5a6 6 0 0 0-6-6z" stroke={color} strokeWidth="2" fill="none" />
-  </Svg>
+const SectionHeader = ({ title, color = c.primary }: { title: string; color?: string }) => (
+  <View style={s.sectionHeader}>
+    <View style={[s.sectionDot, { backgroundColor: color }]} />
+    <Text style={s.sectionTitle}>{title}</Text>
+  </View>
 );
 
-const IconCheckCircle = ({ size = 10, color = colors.green }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" fill="none" />
-    <Path d="M9 12l2 2 4-4" stroke={color} strokeWidth="2" fill="none" />
-  </Svg>
+const StatusDot = ({ status }: { status: "good" | "warning" | "alert" }) => (
+  <View style={[s.statusDot, { backgroundColor: statusColor(status) }]} />
 );
 
-const IconTrendUp = ({ size = 10, color = colors.green }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M23 6l-9 9-5-5-7 7" stroke={color} strokeWidth="2" fill="none" />
-    <Path d="M17 6h6v6" stroke={color} strokeWidth="2" fill="none" />
-  </Svg>
-);
-
-const IconExpand = ({ size = 10, color = colors.blue }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke={color} strokeWidth="2" fill="none" />
-  </Svg>
-);
-
-const IconBook = ({ size = 10, color = colors.mediumGray }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke={color} strokeWidth="2" fill="none" />
-    <Path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke={color} strokeWidth="2" fill="none" />
-  </Svg>
-);
-
-const ArrowRight = ({ size = 12, color = colors.green }: { size?: number; color?: string }) => (
+const Arrow = ({ size = 10, color = c.medium }: { size?: number; color?: string }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path d="M5 12h14M12 5l7 7-7 7" stroke={color} strokeWidth="2.5" fill="none" />
   </Svg>
 );
 
-// ============================================================================
-// TRAFFIC LIGHT STATUS DOT
-// ============================================================================
-
-const StatusDot = ({ status }: { status: "good" | "warning" | "alert" }) => (
-  <View style={[styles.statusDot, { backgroundColor: getStatusColor(status) }]} />
-);
-
-// ============================================================================
-// MINI SPARKLINE COMPONENT
-// ============================================================================
-
-const MiniSparkline = ({ 
-  values, 
-  width = 50, 
-  height = 16,
-  color = colors.green 
-}: { 
-  values: number[]; 
-  width?: number; 
-  height?: number;
-  color?: string;
-}) => {
+// Mini sparkline for compact display
+const Sparkline = ({ values, width = 40, height = 12, color = c.green }: { values: number[]; width?: number; height?: number; color?: string }) => {
   if (values.length < 2) return null;
-  
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
-  
   const points = values.map((v, i) => {
     const x = (i / (values.length - 1)) * width;
-    const y = height - ((v - min) / range) * (height - 2) - 1;
+    const y = height - 1 - ((v - min) / range) * (height - 2);
     return `${x},${y}`;
   }).join(" ");
   
   return (
-    <View style={{ marginLeft: 6 }}>
-      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-        <Polyline points={points} stroke={color} strokeWidth="1.5" fill="none" />
-        <Circle 
-          cx={(values.length - 1) / (values.length - 1) * width} 
-          cy={height - ((values[values.length - 1] - min) / range) * (height - 2) - 1}
-          r="2" 
-          fill={color} 
-        />
-      </Svg>
-    </View>
+    <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <Polyline points={points} stroke={color} strokeWidth="1.5" fill="none" />
+      <Circle cx={width} cy={height - 1 - ((values[values.length - 1] - min) / range) * (height - 2)} r="2" fill={color} />
+    </Svg>
   );
 };
 
-// ============================================================================
-// DATA-DRIVEN JOURNEY CHART - Premium visualization
-// ============================================================================
-
-const DataDrivenJourneyChart = ({
-  currentValue,
-  projectedValue,
-  metrics,
-}: {
-  currentValue: number;
-  projectedValue: number;
-  metrics: ExpandMetricData[];
-}) => {
-  const chartWidth = 450;
-  const chartHeight = 100;
-  const padding = { left: 50, right: 20, top: 15, bottom: 5 };
-  const graphWidth = chartWidth - padding.left - padding.right;
-  const graphHeight = chartHeight - padding.top - padding.bottom;
+// Journey visualization - larger, cleaner
+const JourneyChart = ({ current, projected }: { current: number; projected: number }) => {
+  const width = 500;
+  const height = 60;
+  const padding = { left: 45, right: 20, top: 10, bottom: 10 };
+  const graphWidth = width - padding.left - padding.right;
+  const graphHeight = height - padding.top - padding.bottom;
   
-  const maxValue = projectedValue * 1.1;
-  const midValue = maxValue / 2;
-  
-  const valueToY = (value: number) => {
-    const normalized = value / maxValue;
-    return chartHeight - padding.bottom - (normalized * graphHeight);
-  };
-  
-  const wrvuMetric = metrics.find(m => m.id === "wrvu_per_encounter");
-  const hasTrendData = wrvuMetric?.trend && wrvuMetric.trend.length > 0;
-  
-  let dataPoints: { x: number; y: number; value: number; label?: string }[] = [];
-  
-  if (hasTrendData && wrvuMetric?.trend) {
-    const totalPoints = wrvuMetric.trend.length + 1;
-    const valueAtStart = 0;
-    
-    const segmentWidth = graphWidth * 0.55;
-    
-    dataPoints.push({ 
-      x: padding.left, 
-      y: valueToY(valueAtStart), 
-      value: valueAtStart, 
-      label: "Start" 
-    });
-    
-    wrvuMetric.trend.forEach((point, idx) => {
-      const progress = (idx + 1) / totalPoints;
-      const x = padding.left + (progress * segmentWidth);
-      const estimatedValue = currentValue * progress * 1.2;
-      dataPoints.push({ 
-        x, 
-        y: valueToY(Math.min(estimatedValue, currentValue)), 
-        value: estimatedValue 
-      });
-    });
-    
-    dataPoints.push({ 
-      x: padding.left + segmentWidth, 
-      y: valueToY(currentValue), 
-      value: currentValue, 
-      label: "Now" 
-    });
-  } else {
-    dataPoints = [
-      { x: padding.left, y: valueToY(0), value: 0, label: "Start" },
-      { x: padding.left + graphWidth * 0.15, y: valueToY(currentValue * 0.25), value: currentValue * 0.25 },
-      { x: padding.left + graphWidth * 0.3, y: valueToY(currentValue * 0.5), value: currentValue * 0.5 },
-      { x: padding.left + graphWidth * 0.45, y: valueToY(currentValue * 0.75), value: currentValue * 0.75 },
-      { x: padding.left + graphWidth * 0.55, y: valueToY(currentValue), value: currentValue, label: "Now" },
-    ];
-  }
-  
-  const currentX = dataPoints[dataPoints.length - 1].x;
-  const currentY = valueToY(currentValue);
+  const maxVal = projected * 1.1;
+  const currentX = padding.left + (current / maxVal) * graphWidth * 0.6;
   const projectedX = padding.left + graphWidth;
-  const projectedY = valueToY(projectedValue);
-  
-  const createSmoothPath = (points: { x: number; y: number }[]): string => {
-    if (points.length < 2) return "";
-    
-    let path = `M ${points[0].x} ${points[0].y}`;
-    
-    for (let i = 0; i < points.length - 1; i++) {
-      const curr = points[i];
-      const next = points[i + 1];
-      const midX = (curr.x + next.x) / 2;
-      
-      path += ` Q ${curr.x + (next.x - curr.x) * 0.5} ${curr.y}, ${midX} ${(curr.y + next.y) / 2}`;
-      path += ` Q ${midX + (next.x - midX) * 0.5} ${next.y}, ${next.x} ${next.y}`;
-    }
-    
-    return path;
-  };
-  
-  const solidPath = createSmoothPath(dataPoints);
-  
-  const areaPath = solidPath + 
-    ` L ${currentX} ${chartHeight - padding.bottom}` +
-    ` L ${padding.left} ${chartHeight - padding.bottom} Z`;
-  
-  const projectionMidX = (currentX + projectedX) / 2;
-  const projectionMidY = (currentY + projectedY) / 2;
-  const dashedPath = `M ${currentX} ${currentY} Q ${projectionMidX} ${currentY * 0.8}, ${projectedX} ${projectedY}`;
+  const currentY = padding.top + graphHeight * 0.5;
   
   return (
-    <View style={styles.journeyChart} wrap={false}>
-      <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-        <Rect x="0" y="0" width={chartWidth} height={chartHeight} fill={colors.white} rx="4" />
+    <View style={s.chartContainer}>
+      <Text style={s.chartTitle}>Value Journey: Current to Full Scale</Text>
+      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+        {/* Background track */}
+        <Rect x={padding.left} y={currentY - 3} width={graphWidth} height={6} fill={c.border} rx={3} />
         
-        <Line 
-          x1={padding.left} y1={chartHeight - padding.bottom} 
-          x2={chartWidth - padding.right} y2={chartHeight - padding.bottom} 
-          stroke={colors.borderGray} strokeWidth="1" 
-        />
-        <Line 
-          x1={padding.left} y1={valueToY(midValue)} 
-          x2={chartWidth - padding.right} y2={valueToY(midValue)} 
-          stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="4,4" opacity="0.5" 
-        />
-        <Line 
-          x1={padding.left} y1={valueToY(maxValue * 0.9)} 
-          x2={chartWidth - padding.right} y2={valueToY(maxValue * 0.9)} 
-          stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="4,4" opacity="0.5" 
-        />
+        {/* Progress fill */}
+        <Rect x={padding.left} y={currentY - 3} width={currentX - padding.left} height={6} fill={c.green} rx={3} />
         
-        <Path d={areaPath} fill={colors.green} opacity="0.15" />
-        <Path d={solidPath} fill="none" stroke={colors.green} strokeWidth="3" />
+        {/* Current position marker */}
+        <Circle cx={currentX} cy={currentY} r={8} fill={c.green} />
+        <Circle cx={currentX} cy={currentY} r={4} fill={c.white} />
         
-        <Path d={dashedPath} fill="none" stroke={colors.blue} strokeWidth="2" strokeDasharray="6,4" />
-        
-        {dataPoints.slice(1, -1).map((point, idx) => (
-          <Circle 
-            key={idx}
-            cx={point.x} 
-            cy={point.y} 
-            r="3" 
-            fill={colors.green} 
-            stroke={colors.white} 
-            strokeWidth="1.5" 
-          />
-        ))}
-        
-        <Circle cx={padding.left} cy={valueToY(0)} r="4" fill={colors.lightGray} stroke={colors.white} strokeWidth="2" />
-        
-        <Circle cx={currentX} cy={currentY} r="10" fill={colors.primaryLight} opacity="0.4" />
-        <Circle cx={currentX} cy={currentY} r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
-        
-        <Circle cx={projectedX} cy={projectedY} r="5" fill={colors.blue} stroke={colors.white} strokeWidth="2" />
+        {/* Target marker */}
+        <Circle cx={projectedX} cy={currentY} r={6} fill={c.pale} stroke={c.green} strokeWidth={2} />
       </Svg>
-      
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8, paddingHorizontal: 4 }}>
-        <View style={{ alignItems: "flex-start", width: 70 }}>
-          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
-          <Text style={{ fontSize: 9, color: colors.lightGray }}>$0</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.green, marginRight: 4 }} />
+          <Text style={{ fontSize: 7, color: c.dark }}>Now: {fmt(current)}</Text>
         </View>
-        <View style={{ alignItems: "center", flex: 1 }}>
-          <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.primary, textTransform: "uppercase" }}>YOU ARE HERE</Text>
-          <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(currentValue)}</Text>
-        </View>
-        <View style={{ alignItems: "flex-end", width: 70 }}>
-          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.blue }}>Full Scale</Text>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.blue, fontFamily: "Helvetica-Bold" }}>{formatCurrency(projectedValue)}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.pale, borderWidth: 1, borderColor: c.green, marginRight: 4 }} />
+          <Text style={{ fontSize: 7, color: c.dark }}>Target: {fmt(projected)}</Text>
         </View>
       </View>
     </View>
   );
 };
 
-// ============================================================================
-// PROGRESS INDICATOR COMPONENT
-// ============================================================================
-
-const ProgressIndicator = ({ 
-  current, 
-  target, 
-  label,
-  showLabels = true,
-  barWidth = 100
-}: { 
-  current: number; 
-  target: number; 
-  label: string;
-  showLabels?: boolean;
-  barWidth?: number;
-}) => {
-  const percent = Math.min((current / target) * 100, 100);
-  const color = percent >= 80 ? colors.green : percent >= 50 ? colors.blue : colors.amber;
-  const fillWidth = (percent / 100) * barWidth;
-  
-  return (
-    <View style={{ marginBottom: 4 }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 2 }}>
-        <Text style={{ fontSize: 6, color: colors.mediumGray }}>{label}</Text>
-        <Text style={{ fontSize: 6, fontWeight: "bold", color }}>{current}%</Text>
-      </View>
-      <View style={[styles.progressBar, { width: barWidth }]}>
-        <View style={[styles.progressFill, { width: fillWidth, backgroundColor: color }]} />
-      </View>
-      {showLabels && (
-        <View style={[styles.progressLabels, { width: barWidth }]}>
-          <Text style={styles.progressLabel}>0%</Text>
-          <Text style={[styles.progressLabel, { color }]}>{target}% target</Text>
-        </View>
-      )}
-    </View>
-  );
-};
-
-// ============================================================================
-// HEADER COMPONENT
-// ============================================================================
-
-const Header = ({ title }: { title: string }) => (
-  <View style={styles.header}>
-    <Image src={abridgeLogoPath} style={styles.logo} />
-    <View style={styles.headerRight}>
-      <Text style={styles.headerTitle}>{title}</Text>
-      <Text style={styles.headerSubtitle}>{getToday()}</Text>
-    </View>
-  </View>
-);
-
-// ============================================================================
-// FOOTER COMPONENT
-// ============================================================================
-
-const Footer = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
-  <View style={styles.footer}>
-    <Text style={styles.footerText}>Abridge Value Realization Report</Text>
-    <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-  </View>
-);
-
-// ============================================================================
-// SECTION TITLE WITH ICON
-// ============================================================================
-
-const SectionTitle = ({ 
-  icon, 
-  title 
-}: { 
-  icon: "chart" | "target" | "lightbulb" | "check" | "trend" | "expand" | "book";
-  title: string;
-}) => {
-  const IconComponent = {
-    chart: IconChart,
-    target: IconTarget,
-    lightbulb: IconLightbulb,
-    check: IconCheckCircle,
-    trend: IconTrendUp,
-    expand: IconExpand,
-    book: IconBook,
-  }[icon];
-  
-  return (
-    <View style={styles.sectionTitleRow}>
-      <IconComponent size={10} />
-      <Text style={styles.sectionTitle}>{title}</Text>
-    </View>
-  );
-};
-
-// ============================================================================
-// KEY TAKEAWAY BOX
-// ============================================================================
-
-const KeyTakeaway = ({ text }: { text: string }) => (
-  <View style={styles.keyTakeaway} wrap={false}>
-    <Text style={styles.keyTakeawayLabel}>KEY TAKEAWAY</Text>
-    <Text style={styles.keyTakeawayText}>{text}</Text>
-  </View>
-);
-
-// ============================================================================
-// EXECUTIVE CALLOUT BOX
-// ============================================================================
-
-const ExecutiveCallout = ({ title, text }: { title: string; text: string }) => (
-  <View style={styles.executiveCallout} wrap={false}>
-    <Text style={styles.executiveCalloutTitle}>{title}</Text>
-    <Text style={styles.executiveCalloutText}>{text}</Text>
-  </View>
-);
-
-// ============================================================================
-// ENHANCED TREND CHART - LARGER AND MORE PROMINENT
-// ============================================================================
-
-interface TrendDataPoint {
-  label: string;
-  value: number;
-  isBaseline?: boolean;
-  isCurrent?: boolean;
-}
-
-const TrendChart = ({ 
-  metric, 
-  baseline 
-}: { 
-  metric: ExpandMetricData;
-  baseline: number;
-}) => {
+// Compact trend chart
+const TrendChart = ({ metric, baseline }: { metric: ExpandMetricData; baseline: number }) => {
   const trend = metric.trend || [];
-  if (trend.length === 0) {
-    return null;
-  }
-
-  const data: TrendDataPoint[] = [
-    { label: "BL", value: baseline, isBaseline: true },
-    ...trend.map((t, i) => ({
-      label: `M${i + 1}`,
-      value: t.value,
-      isCurrent: i === trend.length - 1,
-    })),
-  ];
-
-  const width = 480;
-  const height = 120;
-  const positiveIsGood = metric.isPositiveGood;
-  const valueSuffix = metric.unit;
-
-  const yAxisColumnWidth = 40;
-  const svgWidth = width - yAxisColumnWidth;
-  const padding = { top: 15, right: 15, bottom: 20, left: 10 };
-  const chartWidth = svgWidth - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-
-  const values = data.map(d => d.value);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-  const valueRange = maxValue - minValue || 1;
-  const valuePadding = valueRange * 0.15;
-  const yMin = minValue - valuePadding;
-  const yMax = maxValue + valuePadding;
-  const yRange = yMax - yMin;
-
-  const xStep = chartWidth / (data.length - 1);
+  if (trend.length === 0) return null;
   
-  const getX = (index: number) => padding.left + (index * xStep);
-  const getY = (value: number) => padding.top + chartHeight - ((value - yMin) / yRange * chartHeight);
-
-  const linePath = data.map((point, i) => {
-    const x = getX(i);
-    const y = getY(point.value);
-    return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-  }).join(" ");
-
-  const areaPath = `${linePath} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z`;
-
+  const data = [{ label: "BL", value: baseline }, ...trend.map((t, i) => ({ label: `M${i + 1}`, value: t.value }))];
+  const width = 480;
+  const height = 80;
+  const padding = { left: 35, right: 10, top: 10, bottom: 18 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  
+  const values = data.map(d => d.value);
+  const minVal = Math.min(...values) * 0.9;
+  const maxVal = Math.max(...values) * 1.1;
+  const range = maxVal - minVal || 1;
+  
+  const getX = (i: number) => padding.left + (i / (data.length - 1)) * chartWidth;
+  const getY = (v: number) => padding.top + chartHeight - ((v - minVal) / range) * chartHeight;
+  
+  const linePath = data.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.value)}`).join(" ");
   const current = data[data.length - 1];
   const change = current.value - baseline;
-  const changePercent = baseline !== 0 ? (change / baseline) * 100 : 0;
-  const isPositiveTrend = positiveIsGood ? change >= 0 : change <= 0;
-
-  const chartColors = {
-    line: colors.green,
-    area: "#9CA3AF20",
-    baseline: colors.primary,
-    current: colors.green,
-    currentRing: colors.white,
-    grid: "#E5E7EB",
-    text: colors.mediumGray,
-    axisLine: "#D1D5DB",
-  };
-
-  const yTicks = [
-    { value: yMin + yRange * 0.1, y: getY(yMin + yRange * 0.1) },
-    { value: yMin + yRange * 0.5, y: getY(yMin + yRange * 0.5) },
-    { value: yMin + yRange * 0.9, y: getY(yMin + yRange * 0.9) },
-  ];
-
-  const formatValue = (val: number) => {
-    if (valueSuffix === "%" || valueSuffix.includes("wRVU")) {
-      return val.toFixed(2);
-    }
-    if (Math.abs(val) >= 1000) {
-      return `${(val / 1000).toFixed(1)}K`;
-    }
-    return val.toFixed(1);
-  };
-
-  const yAxisLabels = yTicks.map(tick => ({
-    value: formatValue(tick.value),
-    topOffset: tick.y - padding.top,
-  }));
-
+  const isPositive = metric.isPositiveGood ? change >= 0 : change <= 0;
+  
   return (
-    <View style={styles.trendChartContainer} wrap={false}>
+    <View style={[s.chartContainer, { padding: 8 }]}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-        <Text style={styles.trendLabel}>TREND OVER {trend.length} MONTHS</Text>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <StatusDot status={isPositiveTrend ? "good" : "warning"} />
-          <Text style={{ fontSize: 6, color: isPositiveTrend ? colors.green : colors.amber, fontWeight: "bold" }}>
-            {isPositiveTrend ? "IMPROVING" : "NEEDS ATTENTION"}
+        <Text style={{ fontSize: 7, fontWeight: "bold", color: c.dark }}>TREND: {trend.length} MONTHS</Text>
+        <View style={{ backgroundColor: isPositive ? c.greenLight : c.amberLight, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 2 }}>
+          <Text style={{ fontSize: 6, fontWeight: "bold", color: isPositive ? c.green : c.amber }}>
+            {change >= 0 ? "+" : ""}{change.toFixed(2)} ({baseline !== 0 ? `${((change / baseline) * 100).toFixed(0)}%` : "n/a"})
           </Text>
         </View>
       </View>
-      
-      <View style={{ flexDirection: "row" }}>
-        <View style={{ width: yAxisColumnWidth, height: chartHeight + padding.top + padding.bottom, justifyContent: "flex-start", paddingTop: padding.top }}>
-          {yAxisLabels.map((label, i) => (
-            <Text
-              key={`y-label-${i}`}
-              style={{
-                fontSize: 6,
-                color: chartColors.text,
-                textAlign: "right",
-                position: "absolute",
-                top: label.topOffset - 4,
-                right: 4,
-              }}
-            >
-              {label.value}
-            </Text>
-          ))}
-        </View>
+      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+        <Rect x={padding.left} y={padding.top} width={chartWidth} height={chartHeight} fill={c.white} />
         
-        <Svg width={svgWidth} height={height} viewBox={`0 0 ${svgWidth} ${height}`}>
-          <Rect x={0} y={0} width={svgWidth} height={height} fill={colors.white} rx={4} />
-          <Rect x={padding.left} y={padding.top} width={chartWidth} height={chartHeight} fill={colors.paleGray} />
-
-          {yTicks.map((tick, i) => (
-            <Line
-              key={`grid-${i}`}
-              x1={padding.left}
-              y1={tick.y}
-              x2={padding.left + chartWidth}
-              y2={tick.y}
-              stroke={chartColors.grid}
-              strokeWidth={0.5}
-              strokeDasharray="3,3"
-            />
-          ))}
-
-          <Line x1={padding.left} y1={padding.top} x2={padding.left} y2={padding.top + chartHeight} stroke={chartColors.axisLine} strokeWidth={1} />
-          <Line x1={padding.left} y1={padding.top + chartHeight} x2={padding.left + chartWidth} y2={padding.top + chartHeight} stroke={chartColors.axisLine} strokeWidth={1} />
-
-          <Path d={areaPath} fill={chartColors.area} />
-          <Path d={linePath} stroke={chartColors.line} strokeWidth={2.5} fill="none" />
-
-          {data.map((point, i) => {
-            const x = getX(i);
-            const y = getY(point.value);
-            
-            if (point.isBaseline) {
-              return (
-                <G key={`point-${i}`}>
-                  <Circle cx={x} cy={y} r={5} fill={chartColors.baseline} />
-                  <Circle cx={x} cy={y} r={3} fill={colors.white} />
-                  <Circle cx={x} cy={y} r={1.5} fill={chartColors.baseline} />
-                </G>
-              );
-            } else if (point.isCurrent) {
-              return (
-                <G key={`point-${i}`}>
-                  <Circle cx={x} cy={y} r={8} fill={chartColors.current} opacity={0.2} />
-                  <Circle cx={x} cy={y} r={5} fill={chartColors.current} />
-                  <Circle cx={x} cy={y} r={3} fill={chartColors.currentRing} />
-                  <Circle cx={x} cy={y} r={1.5} fill={chartColors.current} />
-                </G>
-              );
-            } else {
-              return (
-                <Circle key={`point-${i}`} cx={x} cy={y} r={3} fill={chartColors.line} />
-              );
-            }
-          })}
-        </Svg>
-      </View>
-      
-      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: yAxisColumnWidth + padding.left, paddingRight: padding.right, marginTop: 3 }}>
-        {data.map((point, i) => (
-          <Text 
-            key={`x-label-${i}`}
-            style={{ 
-              fontSize: 6, 
-              color: point.isBaseline ? chartColors.baseline : point.isCurrent ? chartColors.current : chartColors.text,
-              fontWeight: (point.isBaseline || point.isCurrent) ? "bold" : "normal",
-              textAlign: "center",
-              width: chartWidth / data.length,
-            }}
-          >
-            {point.label}
+        {/* Grid lines */}
+        {[0.25, 0.5, 0.75].map((pct, i) => (
+          <Line key={i} x1={padding.left} y1={padding.top + chartHeight * (1 - pct)} x2={padding.left + chartWidth} y2={padding.top + chartHeight * (1 - pct)} stroke={c.border} strokeWidth={0.5} strokeDasharray="2,2" />
+        ))}
+        
+        {/* Line */}
+        <Path d={linePath} stroke={c.green} strokeWidth={2} fill="none" />
+        
+        {/* Points */}
+        {data.map((d, i) => (
+          <Circle key={i} cx={getX(i)} cy={getY(d.value)} r={i === 0 ? 4 : i === data.length - 1 ? 5 : 3} fill={i === 0 ? c.primary : c.green} />
+        ))}
+        
+        {/* X labels */}
+        {data.map((d, i) => (
+          <G key={`label-${i}`}>
+            <Rect x={getX(i) - 8} y={height - 12} width={16} height={10} fill="transparent" />
+          </G>
+        ))}
+      </Svg>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: padding.left - 8, paddingRight: padding.right }}>
+        {data.map((d, i) => (
+          <Text key={i} style={{ fontSize: 6, color: i === 0 ? c.primary : i === data.length - 1 ? c.green : c.medium, fontWeight: i === 0 || i === data.length - 1 ? "bold" : "normal", width: 16, textAlign: "center" }}>
+            {d.label}
           </Text>
         ))}
-      </View>
-      
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View style={{ width: 10, height: 3, backgroundColor: chartColors.baseline, borderRadius: 1, marginRight: 4 }} />
-          <Text style={{ fontSize: 6, color: colors.mediumGray }}>Baseline: {formatValue(baseline)} {valueSuffix}</Text>
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View style={{ width: 10, height: 3, backgroundColor: chartColors.current, borderRadius: 1, marginRight: 4 }} />
-          <Text style={{ fontSize: 6, color: colors.mediumGray }}>Current: {formatValue(current.value)} {valueSuffix}</Text>
-        </View>
-        <View style={{ backgroundColor: isPositiveTrend ? colors.greenLight : colors.amberLight, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 3 }}>
-          <Text style={{ fontSize: 6, fontWeight: "bold", color: isPositiveTrend ? colors.green : colors.amber }}>
-            {change >= 0 ? "+" : ""}{formatValue(change)} ({changePercent >= 0 ? "+" : ""}{changePercent.toFixed(0)}%)
-          </Text>
-        </View>
       </View>
     </View>
   );
 };
 
-
 // ============================================================================
-// PAGE 1: EXECUTIVE SUMMARY
+// PAGE 1: EXECUTIVE DASHBOARD
 // ============================================================================
 
-const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; totalPages: number }) => {
-  const hardValueMetrics = data.metrics.filter(m => m.value && m.value > 0);
-  const maturity = getMaturityLevel(data.utilizationRate);
+const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages: number }) => {
   const valuePerProvider = data.providers > 0 ? data.tier1Value / data.providers : 0;
+  const hardMetrics = data.metrics.filter(m => m.value && m.value > 0);
+  const maturityLabel = data.utilizationRate >= 80 ? "Optimized" : data.utilizationRate >= 60 ? "Developing" : data.utilizationRate >= 40 ? "Emerging" : "Early Stage";
+  const maturityColor = data.utilizationRate >= 80 ? c.green : data.utilizationRate >= 60 ? c.blue : c.amber;
   
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={s.page}>
       <Header title="Value Realization Report" />
-
-      <View style={styles.orgContext} wrap={false}>
-        {data.organizationName && (
-          <Text style={styles.orgName}>{data.organizationName}</Text>
-        )}
-        <Text style={styles.orgDetails}>
-          {data.providers} providers · {data.monthsOnAbridge} months on Abridge · {data.utilizationRate}% utilization · {formatNumber(data.documentedEncounters)} documented encounters
+      
+      {/* Context bar */}
+      <View style={s.contextBar}>
+        <Text style={s.contextItem}><Text style={s.contextValue}>{data.providers}</Text> providers</Text>
+        <Text style={s.contextItem}><Text style={s.contextValue}>{data.monthsOnAbridge}</Text> months on Abridge</Text>
+        <Text style={s.contextItem}><Text style={s.contextValue}>{data.utilizationRate}%</Text> utilization</Text>
+        <Text style={s.contextItem}><Text style={s.contextValue}>{fmtNum(data.documentedEncounters)}</Text> documented encounters</Text>
+      </View>
+      
+      {/* Executive callout */}
+      <View style={s.callout}>
+        <Text style={s.calloutTitle}>At a Glance</Text>
+        <Text style={s.calloutText}>
+          Your {data.providers} providers are generating {fmt(valuePerProvider)} each annually in documented value. At {data.utilizationRate}% utilization, you're capturing {fmt(data.tier1Value)} today—with a clear path to {fmt(data.expansion.projectedValue)} at scale.
         </Text>
       </View>
-
-      <ExecutiveCallout 
-        title="At a Glance" 
-        text={`Your ${data.providers} providers are generating ${formatCurrency(valuePerProvider)} each annually in documented value. At ${data.utilizationRate}% utilization, you're capturing ${formatCurrency(data.tier1Value)} today—with a clear path to ${formatCurrency(data.expansion.projectedValue)} at scale.`}
-      />
-
-      <View style={styles.heroRow} wrap={false}>
-        <View style={styles.heroBoxHighlight}>
-          <Text style={styles.heroValueGreen}>{formatCurrency(data.tier1Value)}</Text>
-          <Text style={styles.heroLabel}>ANNUAL VALUE CREATED</Text>
-          <Text style={styles.heroSublabel}>Defensible hard dollars</Text>
-        </View>
-        <View style={styles.heroBox}>
-          <Text style={styles.heroValue}>{formatCurrency(data.providers > 0 ? data.tier1Value / data.providers : 0)}</Text>
-          <Text style={styles.heroLabel}>VALUE / PROVIDER</Text>
-          <Text style={styles.heroSublabel}>Based on {data.providers} providers</Text>
-        </View>
-        <View style={styles.heroBox}>
-          <Text style={styles.heroValueGreen}>+{formatCurrency(data.expansion.expansionValue)}</Text>
-          <Text style={styles.heroLabel}>EXPANSION POTENTIAL</Text>
-          <Text style={styles.heroSublabel}>At {data.expansion.targetProviders} providers</Text>
-        </View>
-      </View>
-
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }} wrap={false}>
-        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 8, borderWidth: 1, borderColor: colors.borderGray }}>
-          <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.3 }}>DEPLOYMENT MATURITY</Text>
-          <ProgressIndicator current={data.utilizationRate} target={85} label="Utilization Rate" showLabels={false} />
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: maturity.color, marginRight: 6 }} />
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: maturity.color }}>{maturity.label}</Text>
-          </View>
-        </View>
-        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 8, borderWidth: 1, borderColor: colors.borderGray }}>
-          <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.3 }}>VALUE DRIVERS</Text>
-          {hardValueMetrics.slice(0, 2).map((m, idx) => (
-            <View key={idx} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <StatusDot status="good" />
-                <Text style={{ fontSize: 7, color: colors.darkGray }}>{m.name}</Text>
-              </View>
-              {m.trend && m.trend.length > 0 && (
-                <MiniSparkline values={[m.before, ...m.trend.map(t => t.value)]} />
-              )}
-            </View>
-          ))}
-        </View>
-      </View>
-
-      <SectionTitle icon="chart" title="Your Value Journey" />
       
-      <DataDrivenJourneyChart 
-        currentValue={data.tier1Value}
-        projectedValue={data.expansion.projectedValue}
-        metrics={data.metrics}
-      />
-
-      <SectionTitle icon="target" title="Value Breakdown" />
-
-      <View style={styles.card} wrap={false}>
-        <View style={styles.cardHeaderGreen}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <StatusDot status="good" />
-            <View>
-              <Text style={styles.cardTitle}>Core Financial Value</Text>
-              <Text style={styles.cardSubtitle}>Directly measurable revenue impact</Text>
+      {/* Hero metrics */}
+      <View style={s.heroRow}>
+        <View style={s.heroCardPrimary}>
+          <Text style={s.heroValueGreen}>{fmt(data.tier1Value)}</Text>
+          <Text style={s.heroLabel}>Annual Value Created</Text>
+          <Text style={s.heroSub}>Defensible hard dollars</Text>
+        </View>
+        <View style={s.heroCard}>
+          <Text style={s.heroValue}>{fmt(valuePerProvider)}</Text>
+          <Text style={s.heroLabel}>Value / Provider</Text>
+          <Text style={s.heroSub}>Based on {data.providers} providers</Text>
+        </View>
+        <View style={s.heroCard}>
+          <Text style={s.heroValueGreen}>+{fmt(data.expansion.expansionValue)}</Text>
+          <Text style={s.heroLabel}>Expansion Potential</Text>
+          <Text style={s.heroSub}>At {data.expansion.targetProviders} providers</Text>
+        </View>
+      </View>
+      
+      {/* Two column: Maturity + Drivers */}
+      <View style={s.twoCol}>
+        <View style={s.col}>
+          <View style={[s.card, { marginBottom: 0 }]}>
+            <View style={s.cardHeader}>
+              <Text style={s.cardTitle}>Deployment Maturity</Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: maturityColor, marginRight: 4 }} />
+                <Text style={{ fontSize: 7, fontWeight: "bold", color: maturityColor }}>{maturityLabel}</Text>
+              </View>
+            </View>
+            <View style={s.cardBody}>
+              <Text style={{ fontSize: 7, color: c.medium, marginBottom: 2 }}>Utilization Rate</Text>
+              <View style={s.progressTrack}>
+                <View style={[s.progressFill, { width: `${data.utilizationRate}%`, backgroundColor: maturityColor }]} />
+              </View>
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ fontSize: 6, color: c.medium }}>0%</Text>
+                <Text style={{ fontSize: 6, fontWeight: "bold", color: maturityColor }}>{data.utilizationRate}%</Text>
+                <Text style={{ fontSize: 6, color: c.medium }}>100%</Text>
+              </View>
             </View>
           </View>
-          <Text style={styles.cardValue}>{formatCurrency(data.tier1Value)}</Text>
         </View>
-        <View style={styles.cardContent}>
-          {hardValueMetrics.map((metric, idx) => (
-            <View key={metric.id} style={[styles.row, idx === hardValueMetrics.length - 1 ? styles.rowLast : {}]}>
-              <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowLabel}>{metric.name}</Text>
-                  {metric.formula && <Text style={styles.rowFormula}>{metric.formula}</Text>}
+        <View style={s.col}>
+          <View style={[s.card, { marginBottom: 0 }]}>
+            <View style={s.cardHeader}>
+              <Text style={s.cardTitle}>Key Value Drivers</Text>
+            </View>
+            <View style={s.cardBody}>
+              {hardMetrics.slice(0, 3).map((m, idx) => (
+                <View key={idx} style={[s.row, idx === Math.min(2, hardMetrics.length - 1) ? s.rowLast : {}]}>
+                  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                    <StatusDot status="good" />
+                    <Text style={s.rowLabel}>{m.name}</Text>
+                  </View>
+                  {m.trend && m.trend.length > 0 && <Sparkline values={[m.before, ...m.trend.map(t => t.value)]} />}
+                  <Text style={[s.rowValue, { marginLeft: 8 }]}>{fmt(m.value!)}</Text>
                 </View>
-                {metric.trend && metric.trend.length > 0 && (
-                  <MiniSparkline values={[metric.before, ...metric.trend.map(t => t.value)]} width={50} height={16} />
-                )}
+              ))}
+            </View>
+          </View>
+        </View>
+      </View>
+      
+      {/* Journey chart */}
+      <SectionHeader title="Your Value Journey" color={c.green} />
+      <JourneyChart current={data.tier1Value} projected={data.expansion.projectedValue} />
+      
+      {/* Value breakdown */}
+      <SectionHeader title="Value Breakdown" color={c.green} />
+      
+      <View style={s.card}>
+        <View style={s.cardHeaderGreen}>
+          <View>
+            <Text style={s.cardTitle}>Core Financial Value</Text>
+            <Text style={s.cardSub}>Directly measurable revenue impact</Text>
+          </View>
+          <Text style={s.cardValue}>{fmt(data.tier1Value)}</Text>
+        </View>
+        <View style={s.cardBody}>
+          {hardMetrics.map((m, idx) => (
+            <View key={m.id} style={[s.row, idx === hardMetrics.length - 1 ? s.rowLast : {}]}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowLabel}>{m.name}</Text>
+                {m.formula && <Text style={{ fontSize: 6, color: c.light, fontFamily: "Courier" }}>{m.formula}</Text>}
               </View>
-              <Text style={styles.rowValue}>{formatCurrency(metric.value!)}</Text>
+              <Text style={s.rowValue}>{fmt(m.value!)}</Text>
             </View>
           ))}
         </View>
       </View>
-
+      
       {data.tier2Items.length > 0 && (
-        <View style={styles.card} wrap={false}>
-          <View style={styles.cardHeader}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <StatusDot status="warning" />
-              <View>
-                <Text style={styles.cardTitle}>Operational Efficiency</Text>
-                <Text style={styles.cardSubtitle}>Time and workflow improvements</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.cardContent}>
-            {data.tier2Items.map((item, idx) => (
-              <View key={idx} style={[styles.row, idx === data.tier2Items.length - 1 ? styles.rowLast : {}]}>
-                <Text style={styles.rowLabel}>{item.label}</Text>
-                <Text style={styles.rowValueNeutral}>{item.value}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {data.tier3Items.length > 0 && (
-        <View style={styles.card} wrap={false}>
-          <View style={styles.cardHeader}>
+        <View style={s.card}>
+          <View style={s.cardHeader}>
             <View>
-              <Text style={styles.cardTitle}>Strategic Indicators</Text>
-              <Text style={styles.cardSubtitle}>Quality-of-life and satisfaction metrics</Text>
+              <Text style={s.cardTitle}>Operational Efficiency</Text>
+              <Text style={s.cardSub}>Time and workflow improvements</Text>
             </View>
           </View>
-          <View style={styles.cardContent}>
-            {data.tier3Items.map((item, idx) => (
-              <View key={idx} style={[styles.row, idx === data.tier3Items.length - 1 ? styles.rowLast : {}]}>
-                <Text style={styles.rowLabel}>{item.label}</Text>
-                <Text style={styles.rowValueNeutral}>{item.value}</Text>
+          <View style={s.cardBody}>
+            {data.tier2Items.map((item, idx) => (
+              <View key={idx} style={[s.row, idx === data.tier2Items.length - 1 ? s.rowLast : {}]}>
+                <Text style={s.rowLabel}>{item.label}</Text>
+                <Text style={s.rowValueNeutral}>{item.value}</Text>
               </View>
             ))}
           </View>
         </View>
       )}
-
-      <KeyTakeaway 
-        text={`The foundation is solid. Your deployment is proving out the value model in your environment—the next step is deepening adoption among existing providers and extending to new ones.`}
-      />
-
+      
+      <View style={s.takeaway}>
+        <Text style={s.takeawayLabel}>Key Takeaway</Text>
+        <Text style={s.takeawayText}>
+          The foundation is solid. Your deployment is proving out the value model in your environment—the next step is deepening adoption among existing providers and extending to new ones.
+        </Text>
+      </View>
+      
       <Footer pageNum={1} totalPages={totalPages} />
     </Page>
   );
 };
 
 // ============================================================================
-// PAGES 2-3: METRIC DEEP DIVES
+// PAGE 2+: METRIC DEEP DIVES (Compact, 2 per page)
 // ============================================================================
 
-const MetricDeepDivePage = ({ 
-  metrics, 
-  pageNum, 
-  totalPages,
-  startIdx
-}: { 
-  metrics: ExpandMetricData[]; 
-  pageNum: number; 
-  totalPages: number;
-  startIdx: number;
-}) => {
+const MetricSection = ({ metric }: { metric: ExpandMetricData }) => {
+  const isValueMetric = metric.value && metric.value > 0;
+  const status: "good" | "warning" | "alert" = isValueMetric ? "good" : metric.changePercent > 0 ? "good" : "warning";
+  
   return (
-    <Page size="A4" style={styles.page}>
-      <Header title="Metric Deep Dives" />
-
-      {metrics.map((metric) => {
-        const isValueMetric = metric.value && metric.value > 0;
-        const isTimeMetric = metric.id === "timeSavings" || metric.id === "workOutsideWork";
-        const status: "good" | "warning" | "alert" = isValueMetric ? "good" : metric.changePercent > 0 ? "good" : "warning";
+    <View style={s.card}>
+      <View style={[s.cardHeader, isValueMetric ? { backgroundColor: c.greenLight, borderBottomColor: c.green } : {}]}>
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          <StatusDot status={status} />
+          <View>
+            <Text style={s.cardTitle}>{metric.name.toUpperCase()}</Text>
+            <Text style={s.cardSub}>{metric.description}</Text>
+          </View>
+        </View>
+        {isValueMetric && (
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={s.cardValue}>{fmt(metric.value!)}</Text>
+            <Text style={{ fontSize: 6, color: c.medium }}>annual value</Text>
+          </View>
+        )}
+      </View>
+      <View style={s.cardBody}>
+        {/* Before/After comparison */}
+        <View style={s.comparison}>
+          <View style={s.compBox}>
+            <Text style={s.compLabel}>Before</Text>
+            <Text style={s.compValue}>{metric.before.toFixed(2)}</Text>
+            <Text style={s.compUnit}>{metric.unit}</Text>
+          </View>
+          <Arrow size={14} color={c.medium} />
+          <View style={s.compBox}>
+            <Text style={s.compLabel}>After</Text>
+            <Text style={s.compValue}>{metric.after.toFixed(2)}</Text>
+            <Text style={s.compUnit}>{metric.unit}</Text>
+          </View>
+          <Text style={{ fontSize: 12, color: c.medium, marginHorizontal: 6 }}>=</Text>
+          <View style={s.compChange}>
+            <Text style={s.compChangeValue}>{metric.change >= 0 ? "+" : ""}{metric.change.toFixed(2)}</Text>
+            <Text style={s.compChangePercent}>
+              {Math.abs(metric.changePercent).toFixed(0)}% {metric.isPositiveGood ? (metric.change >= 0 ? "lift" : "decline") : (metric.change <= 0 ? "reduction" : "increase")}
+            </Text>
+          </View>
+        </View>
         
-        return (
-        <View key={metric.id} style={styles.metricCard} wrap={false}>
-          <View style={[styles.metricHeader, isValueMetric ? { backgroundColor: colors.greenLight, borderBottomColor: colors.green } : {}]}>
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}>
-              <StatusDot status={status} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.metricName}>{metric.name.toUpperCase()}</Text>
-                <Text style={styles.metricDesc}>{metric.description}</Text>
-              </View>
+        {/* Trend chart */}
+        {metric.trend && metric.trend.length > 0 && <TrendChart metric={metric} baseline={metric.before} />}
+        
+        {/* Benchmark */}
+        {metric.benchmark && (
+          <View style={s.benchBox}>
+            <Text style={s.benchTitle}>Benchmark</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={s.benchText}>Typical range: {metric.benchmark.typicalRange}</Text>
+              <Text style={[s.benchText, { fontWeight: "bold" }]}>{metric.benchmark.statusLabel}</Text>
             </View>
-            {isValueMetric ? (
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={[styles.metricValue, { color: colors.green }]}>{formatCurrency(metric.value!)}</Text>
-                <Text style={{ fontSize: 5, color: colors.mediumGray }}>annual value</Text>
-              </View>
-            ) : isTimeMetric ? (
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.metricValue}>{Math.abs(metric.change).toFixed(1)} {metric.unit}</Text>
-                <Text style={{ fontSize: 5, color: colors.mediumGray }}>saved per encounter</Text>
-              </View>
-            ) : null}
           </View>
-          <View style={styles.metricContent}>
-            <View style={styles.comparisonRow}>
-              <View style={styles.comparisonBox}>
-                <Text style={styles.comparisonLabel}>BEFORE ABRIDGE</Text>
-                <Text style={styles.comparisonValue}>{metric.before.toFixed(2)}</Text>
-                <Text style={styles.comparisonUnit}>{metric.unit}</Text>
-              </View>
-              <View style={styles.comparisonArrowContainer}>
-                <ArrowRight size={16} color={colors.mediumGray} />
-              </View>
-              <View style={styles.comparisonBox}>
-                <Text style={styles.comparisonLabel}>AFTER ABRIDGE</Text>
-                <Text style={styles.comparisonValue}>{metric.after.toFixed(2)}</Text>
-                <Text style={styles.comparisonUnit}>{metric.unit}</Text>
-              </View>
-              <View style={styles.comparisonArrowContainer}>
-                <Text style={{ fontSize: 12, color: colors.mediumGray }}>=</Text>
-              </View>
-              <View style={styles.comparisonChange}>
-                <Text style={styles.comparisonChangeValue}>
-                  {metric.change >= 0 ? "+" : ""}{metric.change.toFixed(2)}
-                </Text>
-                <Text style={styles.comparisonChangePercent}>
-                  {metric.changePercent.toFixed(0)}% {metric.isPositiveGood ? "lift" : "reduction"}
-                </Text>
-              </View>
-            </View>
-
-            {metric.trend && metric.trend.length > 0 && (
-              <TrendChart metric={metric} baseline={metric.before} />
-            )}
-
-            {metric.benchmark && (
-              <View style={styles.benchmarkBox} wrap={false}>
-                <Text style={styles.benchmarkTitle}>BENCHMARK COMPARISON</Text>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={styles.benchmarkText}>
-                    Typical range: {metric.benchmark.typicalRange}
-                  </Text>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <StatusDot status={metric.benchmark.status === "within" || metric.benchmark.status === "above" ? "good" : "warning"} />
-                    <Text style={[styles.benchmarkText, { fontWeight: "bold" }]}>
-                      {metric.benchmark.statusLabel}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {metric.warningMessage && (
-              <View style={styles.warningBox} wrap={false}>
-                <Text style={styles.warningTitle}>VALIDATION RECOMMENDED</Text>
-                <Text style={styles.warningText}>{metric.warningMessage}</Text>
-              </View>
-            )}
-
-            {metric.value && metric.value > 0 && metric.formula && (
-              <View style={styles.valueCalcBox} wrap={false}>
-                <Text style={styles.valueCalcTitle}>VALUE CALCULATION</Text>
-                <Text style={styles.valueCalcFormula}>{metric.formula} = {formatCurrency(metric.value)}</Text>
-                {metric.formulaExplanation && (
-                  <Text style={styles.valueCalcText}>{metric.formulaExplanation}</Text>
-                )}
-              </View>
-            )}
-
-            {metric.whatThisMeans && (
-              <View style={styles.meaningBox} wrap={false}>
-                <Text style={styles.meaningTitle}>WHAT THIS MEANS</Text>
-                <Text style={styles.meaningText}>{metric.whatThisMeans}</Text>
-              </View>
-            )}
+        )}
+        
+        {/* Warning */}
+        {metric.warningMessage && (
+          <View style={s.warnBox}>
+            <Text style={s.warnTitle}>Validation Recommended</Text>
+            <Text style={s.warnText}>{metric.warningMessage}</Text>
           </View>
-        </View>
-        );
-      })}
-
-      <Footer pageNum={pageNum} totalPages={totalPages} />
-    </Page>
+        )}
+        
+        {/* Value calculation */}
+        {isValueMetric && metric.formula && (
+          <View style={s.valueBox}>
+            <Text style={s.valueFormula}>{metric.formula} = {fmt(metric.value!)}</Text>
+            {metric.formulaExplanation && <Text style={s.valueNote}>{metric.formulaExplanation}</Text>}
+          </View>
+        )}
+        
+        {/* What this means */}
+        {metric.whatThisMeans && (
+          <View style={s.meaningBox}>
+            <Text style={s.meaningTitle}>What This Means</Text>
+            <Text style={s.meaningText}>{metric.whatThisMeans}</Text>
+          </View>
+        )}
+      </View>
+    </View>
   );
 };
 
+const MetricDeepDivePage = ({ metrics, pageNum, totalPages }: { metrics: ExpandMetricData[]; pageNum: number; totalPages: number }) => (
+  <Page size="A4" style={s.page}>
+    <Header title="Metric Deep Dives" />
+    {metrics.map(m => <MetricSection key={m.id} metric={m} />)}
+    <Footer pageNum={pageNum} totalPages={totalPages} />
+  </Page>
+);
+
 // ============================================================================
-// PAGE 4: WHAT WE'RE SEEING (NARRATIVE ANALYSIS)
+// PAGE: STRATEGIC ANALYSIS
 // ============================================================================
 
-const NarrativeAnalysisPage = ({ 
-  data, 
-  pageNum, 
-  totalPages 
-}: { 
-  data: ExpandPDFData; 
-  pageNum: number; 
-  totalPages: number;
-}) => {
-  return (
-    <Page size="A4" style={styles.page}>
-      <Header title="What We're Seeing" />
-
-      <SectionTitle icon="lightbulb" title="Early Indicators" />
-
-      <View style={styles.twoColumn} wrap={false}>
-        <View style={styles.column}>
-          <View style={[styles.sectionBox, { borderLeftWidth: 3, borderLeftColor: colors.green }]}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <IconCheckCircle size={8} color={colors.green} />
-              <Text style={[styles.sectionBoxTitle, { color: colors.green, marginLeft: 4, marginBottom: 0 }]}>What's Working Well</Text>
-            </View>
+const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => (
+  <Page size="A4" style={s.page}>
+    <Header title="Strategic Analysis" />
+    
+    <SectionHeader title="Early Indicators" color={c.blue} />
+    
+    <View style={s.twoCol}>
+      <View style={s.col}>
+        <View style={[s.card, { marginBottom: 0 }]}>
+          <View style={[s.cardHeader, { backgroundColor: c.greenLight, borderBottomColor: c.green }]}>
+            <Text style={[s.cardTitle, { color: c.green }]}>What's Working Well</Text>
+          </View>
+          <View style={s.cardBody}>
             {data.workingWell.map((item, idx) => (
-              <View key={idx} style={styles.statusRow}>
+              <View key={idx} style={s.statusRow}>
                 <StatusDot status="good" />
-                <Text style={styles.checkText}>{item}</Text>
+                <Text style={s.statusText}>{item}</Text>
               </View>
             ))}
           </View>
         </View>
-        <View style={styles.column}>
-          <View style={[styles.sectionBox, { borderLeftWidth: 3, borderLeftColor: colors.amber }]}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <IconTarget size={8} color={colors.amber} />
-              <Text style={[styles.sectionBoxTitle, { color: colors.amber, marginLeft: 4, marginBottom: 0 }]}>Areas to Watch</Text>
-            </View>
+      </View>
+      <View style={s.col}>
+        <View style={[s.card, { marginBottom: 0 }]}>
+          <View style={[s.cardHeader, { backgroundColor: c.amberLight, borderBottomColor: c.amber }]}>
+            <Text style={[s.cardTitle, { color: c.amber }]}>Areas to Watch</Text>
+          </View>
+          <View style={s.cardBody}>
             {data.areasToWatch.map((item, idx) => (
-              <View key={idx} style={styles.statusRow}>
+              <View key={idx} style={s.statusRow}>
                 <StatusDot status="warning" />
-                <Text style={styles.checkText}>{item}</Text>
+                <Text style={s.statusText}>{item}</Text>
               </View>
             ))}
           </View>
         </View>
       </View>
-
-      <SectionTitle icon="trend" title="Optimization Opportunities" />
-
-      {data.optimizationOpportunities.map((opp, idx) => (
-        <View key={idx} style={styles.opportunityCardExpanded} wrap={false}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ backgroundColor: colors.green, borderRadius: 3, paddingHorizontal: 4, paddingVertical: 2, marginRight: 6 }}>
-                <Text style={{ fontSize: 6, color: colors.white, fontWeight: "bold" }}>{idx + 1}</Text>
-              </View>
-              <Text style={[styles.opportunityTitle, { marginBottom: 0 }]}>{opp.title}</Text>
-            </View>
-            <Text style={{ color: colors.green, fontSize: 9, fontWeight: "bold" }}>+{formatCurrency(opp.potentialValue)}/yr</Text>
+    </View>
+    
+    <SectionHeader title="Optimization Opportunities" color={c.green} />
+    
+    {data.optimizationOpportunities.map((opp, idx) => (
+      <View key={idx} style={s.oppCard} wrap={false}>
+        <View style={s.oppHeader}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={s.oppNum}><Text style={s.oppNumText}>{idx + 1}</Text></View>
+            <Text style={s.oppTitle}>{opp.title}</Text>
           </View>
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 4 }}>
-            <View style={{ flex: 1, backgroundColor: colors.paleGray, padding: 4, borderRadius: 3 }}>
-              <Text style={{ fontSize: 5, color: colors.mediumGray, marginBottom: 1 }}>CURRENT</Text>
-              <Text style={{ fontSize: 7, fontWeight: "bold" }}>{opp.current}</Text>
-            </View>
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <ArrowRight size={10} color={colors.green} />
-            </View>
-            <View style={{ flex: 1, backgroundColor: colors.greenLight, padding: 4, borderRadius: 3 }}>
-              <Text style={{ fontSize: 5, color: colors.greenDark, marginBottom: 1 }}>TARGET</Text>
-              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>{opp.target}</Text>
-            </View>
+          <Text style={s.oppValue}>+{fmt(opp.potentialValue)}/yr</Text>
+        </View>
+        <View style={s.oppRow}>
+          <View style={{ flex: 1, backgroundColor: c.pale, padding: 4, borderRadius: 2 }}>
+            <Text style={s.oppLabel}>CURRENT</Text>
+            <Text style={s.oppData}>{opp.current}</Text>
           </View>
-          <View style={{ backgroundColor: colors.paleGray, padding: 4, borderRadius: 3 }}>
-            <Text style={{ fontSize: 5, color: colors.mediumGray, marginBottom: 1 }}>RECOMMENDED ACTION</Text>
-            <Text style={{ fontSize: 6, lineHeight: 1.3 }}>{opp.action}</Text>
+          <View style={{ justifyContent: "center", paddingHorizontal: 4 }}><Arrow size={10} color={c.green} /></View>
+          <View style={{ flex: 1, backgroundColor: c.greenLight, padding: 4, borderRadius: 2 }}>
+            <Text style={[s.oppLabel, { color: c.greenDark }]}>TARGET</Text>
+            <Text style={[s.oppData, { color: c.green }]}>{opp.target}</Text>
           </View>
         </View>
-      ))}
-
-      {data.utilizationRate < 70 && (
-        <View style={styles.contextBox} wrap={false}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <IconLightbulb size={10} color={colors.amber} />
-            <Text style={[styles.sectionBoxTitle, { color: colors.amber, marginLeft: 4, marginBottom: 0 }]}>EARLY STAGE CONTEXT</Text>
-          </View>
-          <Text style={{ fontSize: 6, lineHeight: 1.3, marginBottom: 4 }}>
-            At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months in, you're still in early deployment. Here's the path forward:
-          </Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <View style={{ flex: 1 }}>
-              <ProgressIndicator current={data.utilizationRate} target={70} label="To 70%" showLabels={false} />
-              <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "center" }}>+{Math.round((70 / data.utilizationRate - 1) * 100)}% value</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <ProgressIndicator current={data.utilizationRate} target={80} label="To 80%" showLabels={false} />
-              <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "center" }}>+{Math.round((80 / data.utilizationRate - 1) * 100)}% value</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <ProgressIndicator current={data.utilizationRate} target={85} label="To 85%" showLabels={false} />
-              <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "center" }}>Maximum</Text>
-            </View>
-          </View>
-        </View>
-      )}
-
-      <View style={styles.bottomLineBox} wrap={false}>
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-          <IconChart size={10} color={colors.primary} />
-          <Text style={[styles.sectionBoxTitle, { marginLeft: 4, marginBottom: 0 }]}>THE BIGGER PICTURE</Text>
-        </View>
-        <Text style={{ fontSize: 7, lineHeight: 1.4, color: colors.darkGray }}>
-          {data.utilizationRate < 70 
-            ? `Here's what's worth noting: at ${data.utilizationRate}% utilization, you're seeing ${formatCurrency(data.tier1Value)} annually with significant runway remaining. The value you're capturing today is real—and it's just a fraction of what's possible as adoption deepens.`
-            : `At ${data.utilizationRate}% utilization, you've moved past the early adoption phase into optimization. The focus shifts from "does this work?" to "how do we maximize it?"—protecting these gains while extending to new areas.`
-          }
+        <Text style={s.oppAction}>{opp.action}</Text>
+      </View>
+    ))}
+    
+    {data.utilizationRate < 70 && (
+      <View style={[s.callout, { backgroundColor: c.amberLight, borderLeftColor: c.amber }]}>
+        <Text style={[s.calloutTitle, { color: c.amber }]}>Early Stage Context</Text>
+        <Text style={[s.calloutText, { fontSize: 7 }]}>
+          At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months in, you're still in early deployment. Focus on adoption before optimization.
         </Text>
       </View>
-
-      <KeyTakeaway 
-        text={`We've identified ${data.optimizationOpportunities.length} optimization areas worth exploring. Start with whichever feels most actionable—even partial progress on any of these moves the needle meaningfully.`}
-      />
-
-      <Footer pageNum={pageNum} totalPages={totalPages} />
-    </Page>
-  );
-};
+    )}
+    
+    <View style={s.takeaway}>
+      <Text style={s.takeawayLabel}>Bottom Line</Text>
+      <Text style={s.takeawayText}>
+        {data.utilizationRate < 70 
+          ? `At ${data.utilizationRate}% utilization, you're seeing ${fmt(data.tier1Value)} annually with significant runway remaining. The value is real—and it's just a fraction of what's possible.`
+          : `At ${data.utilizationRate}% utilization, you've moved past early adoption into optimization. Focus shifts from "does this work?" to "how do we maximize it?"`
+        }
+      </Text>
+    </View>
+    
+    <Footer pageNum={pageNum} totalPages={totalPages} />
+  </Page>
+);
 
 // ============================================================================
-// PAGE 5: EXPANSION OPPORTUNITY
+// PAGE: EXPANSION OPPORTUNITY
 // ============================================================================
 
-const ExpansionOpportunityPage = ({ 
-  data, 
-  pageNum, 
-  totalPages 
-}: { 
-  data: ExpandPDFData; 
-  pageNum: number; 
-  totalPages: number;
-}) => {
+const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => {
   const { expansion } = data;
-  const utilizationMultiplier = expansion.targetUtilization / expansion.currentUtilization;
-  const providerMultiplier = expansion.targetProviders / expansion.currentProviders;
-  const valuePerProviderAtScale = expansion.targetProviders > 0 ? expansion.projectedValue / expansion.targetProviders : 0;
-
+  const providerMult = expansion.targetProviders / expansion.currentProviders;
+  const utilMult = expansion.targetUtilization / expansion.currentUtilization;
+  const valuePerProvider = expansion.targetProviders > 0 ? expansion.projectedValue / expansion.targetProviders : 0;
+  
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={s.page}>
       <Header title="Expansion Opportunity" />
-
-      <SectionTitle icon="expand" title="The Path to Full Scale" />
-
-      <ExecutiveCallout 
-        title="The Expansion Story" 
-        text={`You've established proof of concept. The question now is: how does this scale? The math suggests each additional provider at target utilization adds roughly ${formatCurrency(valuePerProviderAtScale)} annually.`}
-      />
-
-      <View style={styles.heroRow} wrap={false}>
-        <View style={styles.heroBox}>
-          <Text style={styles.heroValueGreen}>{formatCurrency(expansion.projectedValue)}</Text>
-          <Text style={styles.heroLabel}>PROJECTED ANNUAL VALUE</Text>
-          <Text style={styles.heroSublabel}>At full scale</Text>
-        </View>
-        <View style={styles.heroBoxHighlight}>
-          <Text style={styles.heroValueGreen}>+{formatCurrency(expansion.expansionValue)}</Text>
-          <Text style={styles.heroLabel}>ADDITIONAL VALUE</Text>
-          <Text style={styles.heroSublabel}>Beyond current</Text>
-        </View>
-        <View style={styles.heroBox}>
-          <Text style={styles.heroValue}>{expansion.targetProviders}</Text>
-          <Text style={styles.heroLabel}>TARGET PROVIDERS</Text>
-          <Text style={styles.heroSublabel}>{expansion.targetUtilization}% utilization</Text>
-        </View>
-      </View>
-
-      <SectionTitle icon="chart" title="How We Calculate Your Expansion" />
-
-      <View style={styles.card} wrap={false}>
-        <View style={styles.cardContent}>
-          <View style={[styles.row, { paddingVertical: 10 }]}>
-            <Text style={[styles.rowLabel, { fontSize: 10 }]}>Current annual value</Text>
-            <Text style={[styles.rowValue, { fontSize: 12 }]}>{formatCurrency(expansion.currentValue)}</Text>
-          </View>
-          <View style={[styles.row, { paddingVertical: 10 }]}>
-            <View>
-              <Text style={[styles.rowLabel, { fontSize: 10 }]}>Provider scale</Text>
-              <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>{expansion.currentProviders} providers → {expansion.targetProviders} providers</Text>
-            </View>
-            <Text style={[styles.rowValueNeutral, { fontSize: 12 }]}>{providerMultiplier.toFixed(1)}x</Text>
-          </View>
-          <View style={[styles.row, { paddingVertical: 10 }]}>
-            <View>
-              <Text style={[styles.rowLabel, { fontSize: 10 }]}>Utilization improvement</Text>
-              <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>{expansion.currentUtilization}% → {expansion.targetUtilization}%</Text>
-            </View>
-            <Text style={[styles.rowValueNeutral, { fontSize: 12 }]}>{utilizationMultiplier.toFixed(2)}x</Text>
-          </View>
-          <View style={[styles.row, styles.rowLast, { backgroundColor: colors.greenLight, borderRadius: 6, marginTop: 8, padding: 12 }]}>
-            <Text style={[styles.rowLabel, { fontWeight: "bold", fontSize: 11 }]}>Projected annual value at scale</Text>
-            <Text style={[styles.rowValue, { fontSize: 14 }]}>{formatCurrency(expansion.projectedValue)}</Text>
-          </View>
-        </View>
-      </View>
-
-      <SectionTitle icon="target" title="Current vs. Full Scale" />
-
-      <View style={styles.twoColumn} wrap={false}>
-        <View style={styles.column}>
-          <View style={[styles.sectionBox, { padding: 16 }]}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.mediumGray, marginRight: 6 }} />
-              <Text style={[styles.sectionBoxTitle, { fontSize: 10, marginBottom: 0 }]}>Current State</Text>
-            </View>
-            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Providers:</Text>
-              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.currentProviders}</Text>
-            </View>
-            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Utilization:</Text>
-              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.currentUtilization}%</Text>
-            </View>
-            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Annual value:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 11 }]}>{formatCurrency(expansion.currentValue)}</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Value/provider:</Text>
-              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{formatCurrency(expansion.currentProviders > 0 ? expansion.currentValue / expansion.currentProviders : 0)}</Text>
-            </View>
-          </View>
-        </View>
-        <View style={{ alignItems: "center", justifyContent: "center", width: 40 }}>
-          <ArrowRight size={24} color={colors.green} />
-        </View>
-        <View style={styles.column}>
-          <View style={[styles.sectionBox, { borderColor: colors.green, borderWidth: 2, backgroundColor: colors.greenLight, padding: 16 }]}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green, marginRight: 6 }} />
-              <Text style={[styles.sectionBoxTitle, { color: colors.green, fontSize: 10, marginBottom: 0 }]}>Full Scale Target</Text>
-            </View>
-            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Providers:</Text>
-              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.targetProviders}</Text>
-            </View>
-            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Utilization:</Text>
-              <Text style={[styles.opportunityValue, { fontSize: 10 }]}>{expansion.targetUtilization}%</Text>
-            </View>
-            <View style={[styles.opportunityRow, { marginBottom: 6 }]}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Annual value:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 11 }]}>{formatCurrency(expansion.projectedValue)}</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={[styles.opportunityLabel, { fontSize: 9 }]}>Added value:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green, fontSize: 11, fontWeight: "bold" }]}>+{formatCurrency(expansion.expansionValue)}</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      <View style={[styles.closingBox, { padding: 16 }]} wrap={false}>
-        <Text style={[styles.closingText, { fontSize: 10, lineHeight: 1.6 }]}>
-          Think of your current deployment as a pilot that's already delivering. The patterns you're seeing at {expansion.currentProviders} providers translate predictably as you scale—this isn't a leap of faith, it's an extension of demonstrated results.
+      
+      <View style={s.callout}>
+        <Text style={s.calloutTitle}>The Expansion Story</Text>
+        <Text style={s.calloutText}>
+          You've established proof of concept. The math suggests each additional provider at target utilization adds roughly {fmt(valuePerProvider)} annually.
         </Text>
       </View>
-
-      <KeyTakeaway 
-        text={`The model works in your environment. The expansion opportunity is about replicating what's already proven—methodically extending to new providers while deepening adoption with existing ones.`}
-      />
-
+      
+      <View style={s.heroRow}>
+        <View style={s.heroCardPrimary}>
+          <Text style={s.heroValueGreen}>{fmt(expansion.projectedValue)}</Text>
+          <Text style={s.heroLabel}>Projected Annual Value</Text>
+          <Text style={s.heroSub}>At full scale</Text>
+        </View>
+        <View style={s.heroCard}>
+          <Text style={s.heroValueGreen}>+{fmt(expansion.expansionValue)}</Text>
+          <Text style={s.heroLabel}>Additional Value</Text>
+          <Text style={s.heroSub}>Beyond current</Text>
+        </View>
+        <View style={s.heroCard}>
+          <Text style={s.heroValue}>{expansion.targetProviders}</Text>
+          <Text style={s.heroLabel}>Target Providers</Text>
+          <Text style={s.heroSub}>{expansion.targetUtilization}% utilization</Text>
+        </View>
+      </View>
+      
+      <SectionHeader title="Expansion Calculation" color={c.green} />
+      
+      <View style={s.card}>
+        <View style={s.cardBody}>
+          <View style={s.row}>
+            <Text style={s.rowLabel}>Current annual value</Text>
+            <Text style={s.rowValue}>{fmt(expansion.currentValue)}</Text>
+          </View>
+          <View style={s.row}>
+            <View>
+              <Text style={s.rowLabel}>Provider scale</Text>
+              <Text style={{ fontSize: 6, color: c.medium }}>{expansion.currentProviders} → {expansion.targetProviders} providers</Text>
+            </View>
+            <Text style={s.rowValueNeutral}>{providerMult.toFixed(1)}x</Text>
+          </View>
+          <View style={s.row}>
+            <View>
+              <Text style={s.rowLabel}>Utilization improvement</Text>
+              <Text style={{ fontSize: 6, color: c.medium }}>{expansion.currentUtilization}% → {expansion.targetUtilization}%</Text>
+            </View>
+            <Text style={s.rowValueNeutral}>{utilMult.toFixed(2)}x</Text>
+          </View>
+          <View style={[s.row, s.rowLast, { backgroundColor: c.greenLight, borderRadius: 4, marginTop: 4, padding: 8 }]}>
+            <Text style={[s.rowLabel, { fontWeight: "bold", fontSize: 9 }]}>Projected annual value at scale</Text>
+            <Text style={[s.rowValue, { fontSize: 12 }]}>{fmt(expansion.projectedValue)}</Text>
+          </View>
+        </View>
+      </View>
+      
+      <SectionHeader title="Current vs. Full Scale" color={c.blue} />
+      
+      <View style={s.twoCol}>
+        <View style={s.col}>
+          <View style={s.card}>
+            <View style={s.cardHeader}>
+              <Text style={s.cardTitle}>Current State</Text>
+            </View>
+            <View style={s.cardBody}>
+              <View style={s.row}><Text style={s.rowLabel}>Providers</Text><Text style={s.rowValueNeutral}>{expansion.currentProviders}</Text></View>
+              <View style={s.row}><Text style={s.rowLabel}>Utilization</Text><Text style={s.rowValueNeutral}>{expansion.currentUtilization}%</Text></View>
+              <View style={s.row}><Text style={s.rowLabel}>Annual value</Text><Text style={s.rowValue}>{fmt(expansion.currentValue)}</Text></View>
+              <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Value/provider</Text><Text style={s.rowValueNeutral}>{fmt(expansion.currentProviders > 0 ? expansion.currentValue / expansion.currentProviders : 0)}</Text></View>
+            </View>
+          </View>
+        </View>
+        <View style={s.col}>
+          <View style={[s.card, { borderColor: c.green, borderWidth: 2 }]}>
+            <View style={s.cardHeaderGreen}>
+              <Text style={[s.cardTitle, { color: c.green }]}>Full Scale Target</Text>
+            </View>
+            <View style={s.cardBody}>
+              <View style={s.row}><Text style={s.rowLabel}>Providers</Text><Text style={s.rowValueNeutral}>{expansion.targetProviders}</Text></View>
+              <View style={s.row}><Text style={s.rowLabel}>Utilization</Text><Text style={s.rowValueNeutral}>{expansion.targetUtilization}%</Text></View>
+              <View style={s.row}><Text style={s.rowLabel}>Annual value</Text><Text style={s.rowValue}>{fmt(expansion.projectedValue)}</Text></View>
+              <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Added value</Text><Text style={[s.rowValue, { fontWeight: "bold" }]}>+{fmt(expansion.expansionValue)}</Text></View>
+            </View>
+          </View>
+        </View>
+      </View>
+      
+      <View style={s.takeaway}>
+        <Text style={s.takeawayLabel}>Key Insight</Text>
+        <Text style={s.takeawayText}>
+          The model works in your environment. The expansion opportunity is about replicating what's already proven—methodically extending to new providers while deepening adoption.
+        </Text>
+      </View>
+      
       <Footer pageNum={pageNum} totalPages={totalPages} />
     </Page>
   );
 };
 
 // ============================================================================
-// PAGE 6: METHODOLOGY
+// PAGE: METHODOLOGY
 // ============================================================================
 
-const MethodologyPage = ({ 
-  data, 
-  pageNum, 
-  totalPages 
-}: { 
-  data: ExpandPDFData; 
-  pageNum: number; 
-  totalPages: number;
-}) => {
-  return (
-    <Page size="A4" style={styles.page}>
-      <Header title="Methodology" />
-
-      <SectionTitle icon="book" title="How We Calculated Your Value" />
-
-      <View style={styles.narrativeBox} wrap={false}>
-        <Text style={styles.narrativeText}>
-          Every calculation here traces back to either your data or industry-standard benchmarks. We lean conservative throughout—no optimistic assumptions. The methodology is transparent so you can validate the logic yourself.
-        </Text>
-      </View>
-
-      <View style={styles.twoColumn} wrap={false}>
-        <View style={styles.column}>
-          <View style={styles.sectionBox}>
-            <Text style={styles.sectionBoxTitle}>Your Inputs</Text>
-            <Text style={styles.methodologyItem}>• {data.providers} providers</Text>
-            <Text style={styles.methodologyItem}>• {formatNumber(data.encounters)} annual encounters</Text>
-            <Text style={styles.methodologyItem}>• {data.utilizationRate}% utilization rate</Text>
-            <Text style={styles.methodologyItem}>• {data.monthsOnAbridge} months on Abridge</Text>
-            <Text style={styles.methodologyItem}>• {formatNumber(data.documentedEncounters)} documented encounters</Text>
-          </View>
-        </View>
-        <View style={styles.column}>
-          <View style={styles.sectionBox}>
-            <Text style={styles.sectionBoxTitle}>Value Attribution</Text>
-            <Text style={styles.methodologyItem}>• wRVU: $33/wRVU (Medicare), 50% attribution</Text>
-            <Text style={styles.methodologyItem}>• Time: $150/hr provider value</Text>
-            <Text style={styles.methodologyItem}>• Retention: $500K per departure</Text>
-            <Text style={styles.methodologyItem}>• Commercial payers: 30-50% higher</Text>
+const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => (
+  <Page size="A4" style={s.page}>
+    <Header title="Methodology" />
+    
+    <View style={[s.callout, { marginBottom: 8 }]}>
+      <Text style={s.calloutText}>
+        Every calculation here traces back to either your data or industry-standard benchmarks. We lean conservative throughout—no optimistic assumptions. The methodology is transparent so you can validate the logic yourself.
+      </Text>
+    </View>
+    
+    <View style={s.twoCol}>
+      <View style={s.col}>
+        <View style={s.card}>
+          <View style={s.cardHeader}><Text style={s.cardTitle}>Your Inputs</Text></View>
+          <View style={s.cardBody}>
+            <View style={s.row}><Text style={s.rowLabel}>Providers</Text><Text style={s.rowValueNeutral}>{data.providers}</Text></View>
+            <View style={s.row}><Text style={s.rowLabel}>Annual encounters</Text><Text style={s.rowValueNeutral}>{fmtNum(data.encounters)}</Text></View>
+            <View style={s.row}><Text style={s.rowLabel}>Utilization rate</Text><Text style={s.rowValueNeutral}>{data.utilizationRate}%</Text></View>
+            <View style={s.row}><Text style={s.rowLabel}>Months on Abridge</Text><Text style={s.rowValueNeutral}>{data.monthsOnAbridge}</Text></View>
+            <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Documented encounters</Text><Text style={s.rowValueNeutral}>{fmtNum(data.documentedEncounters)}</Text></View>
           </View>
         </View>
       </View>
-
-      <SectionTitle icon="chart" title="Benchmark Ranges" />
-
-      <View style={styles.twoColumn} wrap={false}>
-        <View style={styles.column}>
-          <View style={[styles.sectionBox, { backgroundColor: colors.blueLight }]}>
-            <Text style={[styles.sectionBoxTitle, { color: colors.blueDark }]}>Typical Abridge Results</Text>
-            <View style={styles.statusRow}>
-              <StatusDot status="good" />
-              <Text style={styles.methodologyItem}>wRVU lift: 3-7%</Text>
-            </View>
-            <View style={styles.statusRow}>
-              <StatusDot status="good" />
-              <Text style={styles.methodologyItem}>Time reduction: 3-5 min/enc</Text>
-            </View>
-            <View style={styles.statusRow}>
-              <StatusDot status="good" />
-              <Text style={styles.methodologyItem}>Chart closure: +5-15 pp</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.column}>
-          <View style={[styles.sectionBox, { backgroundColor: colors.greenLight }]}>
-            <Text style={[styles.sectionBoxTitle, { color: colors.greenDark }]}>Quality of Life</Text>
-            <View style={styles.statusRow}>
-              <StatusDot status="good" />
-              <Text style={styles.methodologyItem}>Pajama time: -2-5 hrs/wk</Text>
-            </View>
-            <View style={styles.statusRow}>
-              <StatusDot status="good" />
-              <Text style={styles.methodologyItem}>Satisfaction: +10-20 pts</Text>
-            </View>
-            <View style={styles.statusRow}>
-              <StatusDot status="warning" />
-              <Text style={styles.methodologyItem}>Burnout: varies by org</Text>
-            </View>
+      <View style={s.col}>
+        <View style={s.card}>
+          <View style={s.cardHeader}><Text style={s.cardTitle}>Value Attribution</Text></View>
+          <View style={s.cardBody}>
+            <View style={s.row}><Text style={s.rowLabel}>wRVU conversion</Text><Text style={s.rowValueNeutral}>$33/wRVU</Text></View>
+            <View style={s.row}><Text style={s.rowLabel}>wRVU attribution</Text><Text style={s.rowValueNeutral}>50%</Text></View>
+            <View style={s.row}><Text style={s.rowLabel}>Provider hourly value</Text><Text style={s.rowValueNeutral}>$150/hr</Text></View>
+            <View style={s.row}><Text style={s.rowLabel}>Retention cost</Text><Text style={s.rowValueNeutral}>$500K/departure</Text></View>
+            <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Commercial uplift</Text><Text style={s.rowValueNeutral}>30-50% higher</Text></View>
           </View>
         </View>
       </View>
-
-      <SectionTitle icon="lightbulb" title="What We Don't Include" />
-
-      <View style={styles.card} wrap={false}>
-        <View style={styles.cardContent}>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.methodologyItem}>• Downstream revenue from patient experience</Text>
-              <Text style={styles.methodologyItem}>• Quality measure incentives (MIPS, HEDIS)</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.methodologyItem}>• Reduced compliance/audit risk</Text>
-              <Text style={styles.methodologyItem}>• Training time reduction & career satisfaction</Text>
-            </View>
+    </View>
+    
+    <SectionHeader title="Benchmark Ranges" color={c.blue} />
+    
+    <View style={s.twoCol}>
+      <View style={s.col}>
+        <View style={[s.card, { backgroundColor: c.blueLight }]}>
+          <View style={s.cardBody}>
+            <Text style={[s.cardTitle, { color: c.blue, marginBottom: 6 }]}>Typical Abridge Results</Text>
+            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>wRVU lift: 3-7%</Text></View>
+            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Time reduction: 3-5 min/encounter</Text></View>
+            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Chart closure: +5-15 percentage points</Text></View>
           </View>
         </View>
       </View>
-
-      <View style={styles.closingBox} wrap={false}>
-        <Text style={styles.closingText}>
-          Have questions about any calculation? We're happy to walk through the details—every number here is designed to be defensible in a CFO conversation.
-        </Text>
+      <View style={s.col}>
+        <View style={[s.card, { backgroundColor: c.greenLight }]}>
+          <View style={s.cardBody}>
+            <Text style={[s.cardTitle, { color: c.green, marginBottom: 6 }]}>Quality of Life</Text>
+            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Pajama time: -2-5 hrs/week</Text></View>
+            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Satisfaction: +10-20 points</Text></View>
+            <View style={s.statusRow}><StatusDot status="warning" /><Text style={s.statusText}>Burnout: varies by organization</Text></View>
+          </View>
+        </View>
       </View>
-
-      <KeyTakeaway 
-        text={`Conservative by design: with commercial payer rates and full attribution, actual value is typically 30-50% higher than shown here.`}
-      />
-
-      <Footer pageNum={pageNum} totalPages={totalPages} />
-    </Page>
-  );
-};
+    </View>
+    
+    <SectionHeader title="What We Don't Include" color={c.medium} />
+    
+    <View style={s.card}>
+      <View style={s.cardBody}>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Downstream revenue from patient experience</Text>
+            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Quality measure incentives (MIPS, HEDIS)</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Reduced compliance/audit risk</Text>
+            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Training time reduction</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+    
+    <View style={s.takeaway}>
+      <Text style={s.takeawayLabel}>Conservative by Design</Text>
+      <Text style={s.takeawayText}>
+        With commercial payer rates and full attribution, actual value is typically 30-50% higher than shown here. Every number is designed to be defensible in a CFO conversation.
+      </Text>
+    </View>
+    
+    <Footer pageNum={pageNum} totalPages={totalPages} />
+  </Page>
+);
 
 // ============================================================================
 // MAIN DOCUMENT
 // ============================================================================
 
 const ExpandROIDocument = ({ data }: { data: ExpandPDFData }) => {
-  const metricsWithDeepDive = data.metrics.filter(m => 
-    (m.value && m.value > 0) || m.trend || m.before !== m.after
-  );
+  const metricsWithDeepDive = data.metrics.filter(m => (m.value && m.value > 0) || m.trend || m.before !== m.after);
   
   const metricsPerPage = 2;
   const metricPages: ExpandMetricData[][] = [];
@@ -2216,35 +1219,15 @@ const ExpandROIDocument = ({ data }: { data: ExpandPDFData }) => {
   
   return (
     <Document>
-      <ExecutiveSummaryPage data={data} totalPages={totalPages} />
+      <Page1Dashboard data={data} totalPages={totalPages} />
       
       {metricPages.map((metrics, idx) => (
-        <MetricDeepDivePage 
-          key={idx} 
-          metrics={metrics} 
-          pageNum={2 + idx} 
-          totalPages={totalPages}
-          startIdx={idx * metricsPerPage}
-        />
+        <MetricDeepDivePage key={idx} metrics={metrics} pageNum={2 + idx} totalPages={totalPages} />
       ))}
       
-      <NarrativeAnalysisPage 
-        data={data} 
-        pageNum={2 + metricPages.length} 
-        totalPages={totalPages} 
-      />
-      
-      <ExpansionOpportunityPage 
-        data={data} 
-        pageNum={3 + metricPages.length} 
-        totalPages={totalPages} 
-      />
-      
-      <MethodologyPage 
-        data={data} 
-        pageNum={4 + metricPages.length} 
-        totalPages={totalPages} 
-      />
+      <StrategicAnalysisPage data={data} pageNum={2 + metricPages.length} totalPages={totalPages} />
+      <ExpansionPage data={data} pageNum={3 + metricPages.length} totalPages={totalPages} />
+      <MethodologyPage data={data} pageNum={4 + metricPages.length} totalPages={totalPages} />
     </Document>
   );
 };
@@ -2260,9 +1243,7 @@ export const generateExpandROIPDF = async (data: ExpandPDFData): Promise<void> =
   saveAs(blob, filename);
 };
 
-export const generateExpandROIPDFBlob = async (
-  data: ExpandPDFData
-): Promise<{ blob: Blob; filename: string }> => {
+export const generateExpandROIPDFBlob = async (data: ExpandPDFData): Promise<{ blob: Blob; filename: string }> => {
   const blob = await pdf(<ExpandROIDocument data={data} />).toBlob();
   const date = new Date().toISOString().split("T")[0];
   const filename = `abridge-value-realization-${date}.pdf`;
