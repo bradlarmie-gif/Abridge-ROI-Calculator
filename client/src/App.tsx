@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { queryClient } from "./lib/queryClient";
 import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
+import { PageTransition } from "@/components/PageTransition";
 
 import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
@@ -113,98 +114,100 @@ export default function App() {
         <TooltipProvider>
           <Toaster />
 
-          {currentView === "journey" && (
-          <JourneySelector
-            onSelectExplore={() => navigateTo("explore")}
-            onSelectExpand={() => navigateTo("expand")}
-            onSelectSwitch={() => navigateTo("switch")}
-            onSelectLearn={() => navigateTo("learn")}
-          />
-        )}
+          <PageTransition pageKey={currentView}>
+            {currentView === "journey" && (
+              <JourneySelector
+                onSelectExplore={() => navigateTo("explore")}
+                onSelectExpand={() => navigateTo("expand")}
+                onSelectSwitch={() => navigateTo("switch")}
+                onSelectLearn={() => navigateTo("learn")}
+              />
+            )}
 
-        {currentView === "explore" && (
-          <ObjectiveSelectionScreen
-            onComplete={handleSelectionComplete}
-            initialSelectedSettings={selectionState.selectedSettings}
-            initialSelectedLevers={selectionState.selectedLevers}
-            onBackToJourney={handleBackToJourney}
-            initialSeedInputs={seedInputs}
-          />
-        )}
+            {currentView === "explore" && (
+              <ObjectiveSelectionScreen
+                onComplete={handleSelectionComplete}
+                initialSelectedSettings={selectionState.selectedSettings}
+                initialSelectedLevers={selectionState.selectedLevers}
+                onBackToJourney={handleBackToJourney}
+                initialSeedInputs={seedInputs}
+              />
+            )}
 
-        {currentView === "baseline-setup" && hasSelection && (
-          <BaselineSetup
-            selectedSettings={selectionState.selectedSettings}
-            selectedLevers={selectionState.selectedLevers}
-            onBack={handleBackToExplore}
-            onComplete={handleBaselineComplete}
-            initialBaseline={baselineInfo}
-            onBackToJourney={handleBackToJourney}
-            seedInputs={seedInputs}
-          />
-        )}
+            {currentView === "baseline-setup" && hasSelection && (
+              <BaselineSetup
+                selectedSettings={selectionState.selectedSettings}
+                selectedLevers={selectionState.selectedLevers}
+                onBack={handleBackToExplore}
+                onComplete={handleBaselineComplete}
+                initialBaseline={baselineInfo}
+                onBackToJourney={handleBackToJourney}
+                seedInputs={seedInputs}
+              />
+            )}
 
-        {currentView === "model-builder" && hasSelection && baselineInfo && (
-          <ModelBuilder
-            selectedSettings={selectionState.selectedSettings}
-            selectedLevers={selectionState.selectedLevers}
-            onBack={handleBackToBaseline}
-            onComplete={handleValueComplete}
-            initialResults={valueResults}
-            initialBaseline={baselineInfo}
-            onBackToJourney={handleBackToJourney}
-          />
-        )}
+            {currentView === "model-builder" && hasSelection && baselineInfo && (
+              <ModelBuilder
+                selectedSettings={selectionState.selectedSettings}
+                selectedLevers={selectionState.selectedLevers}
+                onBack={handleBackToBaseline}
+                onComplete={handleValueComplete}
+                initialResults={valueResults}
+                initialBaseline={baselineInfo}
+                onBackToJourney={handleBackToJourney}
+              />
+            )}
 
-        {currentView === "investment" && hasSelection && valueResults && (
-          <InvestmentPage
-            selectedSettings={selectionState.selectedSettings}
-            valueResults={valueResults}
-            onBack={handleBackToValue}
-            onComplete={handleInvestmentComplete}
-            onBackToJourney={handleBackToJourney}
-          />
-        )}
+            {currentView === "investment" && hasSelection && valueResults && (
+              <InvestmentPage
+                selectedSettings={selectionState.selectedSettings}
+                valueResults={valueResults}
+                onBack={handleBackToValue}
+                onComplete={handleInvestmentComplete}
+                onBackToJourney={handleBackToJourney}
+              />
+            )}
 
-        {currentView === "calculator" && hasSelection && modelResults && (
-          <SummaryCommandCenter
-            selectedSettings={selectionState.selectedSettings}
-            selectedLevers={selectionState.selectedLevers}
-            modelResults={modelResults}
-            onBack={handleBackToInvestment}
-            onBackToJourney={handleBackToJourney}
-          />
-        )}
+            {currentView === "calculator" && hasSelection && modelResults && (
+              <SummaryCommandCenter
+                selectedSettings={selectionState.selectedSettings}
+                selectedLevers={selectionState.selectedLevers}
+                modelResults={modelResults}
+                onBack={handleBackToInvestment}
+                onBackToJourney={handleBackToJourney}
+              />
+            )}
 
-          {currentView === "expand" && (
-            <ExpandFlow 
-              onBackToJourney={handleBackToJourney}
-              onGoToExplore={() => navigateTo("explore")}
-            />
-          )}
+            {currentView === "expand" && (
+              <ExpandFlow 
+                onBackToJourney={handleBackToJourney}
+                onGoToExplore={() => navigateTo("explore")}
+              />
+            )}
 
-          {currentView === "switch" && (
-            <SwitchFlow 
-              onBackToJourney={handleBackToJourney} 
-              onExploreAmbientAI={(providers, encounters) => {
-                setSeedInputs({ 
-                  numberOfProviders: providers, 
-                  annualOutpatientEncounters: encounters 
-                });
-                navigateTo("explore");
-              }}
-            />
-          )}
+            {currentView === "switch" && (
+              <SwitchFlow 
+                onBackToJourney={handleBackToJourney} 
+                onExploreAmbientAI={(providers, encounters) => {
+                  setSeedInputs({ 
+                    numberOfProviders: providers, 
+                    annualOutpatientEncounters: encounters 
+                  });
+                  navigateTo("explore");
+                }}
+              />
+            )}
 
-          {currentView === "learn" && (
-            <LearnPath 
-              onBack={handleBackToJourney} 
-              onStartCalculator={(setting) => {
-                setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
-                navigateTo("explore");
-              }}
-            />
-          )}
+            {currentView === "learn" && (
+              <LearnPath 
+                onBack={handleBackToJourney} 
+                onStartCalculator={(setting) => {
+                  setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
+                  navigateTo("explore");
+                }}
+              />
+            )}
+          </PageTransition>
         </TooltipProvider>
       </SessionSecurityProvider>
     </QueryClientProvider>
