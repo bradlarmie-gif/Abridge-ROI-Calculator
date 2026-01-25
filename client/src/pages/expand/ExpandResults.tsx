@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area, LineChart, CartesianGrid } from "recharts";
 import { useToast } from "@/hooks/use-toast";
+import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import type { DeploymentData, MetricType, MetricsData, TimelineData, MetricTrendData, MetricEntryModeState } from "./ExpandFlow";
 import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS, formatCurrency } from "@/lib/expandRoiCalculator";
 import { generateExpandROIPDFBlob, generateExpandROIPDF, type ExpandPDFData } from "@/lib/expand-pdf-generator";
@@ -773,9 +774,11 @@ export default function ExpandResults({
               <div className="space-y-2 ml-6 text-sm text-[#6B7280]">
                 {roiResult.tier1Breakdown.wrvuValue > 0 && (
                   <div className="flex items-center justify-between">
-                    <span>wRVU Lift: +{(metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0) > 0 
-                      ? ((metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0)).toFixed(2) 
-                      : '0'} × {Math.round(encounters * utilizationRate / 100).toLocaleString()} enc × ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} × 50%</span>
+                    <span>
+                      <TermTooltip {...TERMS.wRVU} /> Lift: +{(metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0) > 0 
+                        ? ((metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0)).toFixed(2) 
+                        : '0'} × {Math.round(encounters * utilizationRate / 100).toLocaleString()} enc × ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} × <TermTooltip term="50%" short="Attribution Rate" full="We conservatively attribute 50% of the improvement to Abridge, accounting for other workflow changes." />
+                    </span>
                     <span className="font-medium text-[#1F2937]">{formatCurrency(roiResult.tier1Breakdown.wrvuValue)}</span>
                   </div>
                 )}
@@ -817,7 +820,7 @@ export default function ExpandResults({
                 {roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <Moon className="w-3 h-3" /> Pajama time eliminated
+                      <Moon className="w-3 h-3" /> <TermTooltip {...TERMS.pajamaTime} /> eliminated
                     </span>
                     <span className="font-medium text-blue-600">-{roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hrs/week</span>
                   </div>

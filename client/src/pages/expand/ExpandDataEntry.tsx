@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import type { 
   DeploymentData, 
   MetricType, 
@@ -71,6 +72,7 @@ const METRIC_CONFIG = {
     benchmarkMax: 9,
     isPositiveGood: true,
     step: 0.01,
+    tooltipKey: "wRVU" as keyof typeof TERMS,
   },
   timeSavings: {
     name: "Time in Notes",
@@ -113,6 +115,7 @@ const METRIC_CONFIG = {
     benchmarkMax: 0.5,
     isPositiveGood: true,
     step: 0.01,
+    tooltipKey: "emLevel" as keyof typeof TERMS,
   },
   workOutsideWork: {
     name: "Work Outside of Work",
@@ -127,6 +130,7 @@ const METRIC_CONFIG = {
     benchmarkMax: 5,
     isPositiveGood: false,
     step: 0.1,
+    tooltipKey: "pajamaTime" as keyof typeof TERMS,
   },
   clinicianSatisfaction: {
     name: "Clinician Satisfaction",
@@ -892,7 +896,9 @@ export default function ExpandDataEntry({
               <Icon className={`w-5 h-5 ${config.iconColor}`} />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-[#111827]">{config.name}</h2>
+              <h2 className="text-base font-semibold text-[#111827]">
+                Average <TermTooltip {...TERMS.emLevel} />
+              </h2>
               <p className="text-sm text-[#6B7280]">{config.description}</p>
             </div>
           </div>
@@ -904,7 +910,7 @@ export default function ExpandDataEntry({
               <div className="flex items-center gap-2 mb-3 p-3 bg-amber-50 border border-amber-100 rounded-lg">
                 <Info className="w-4 h-4 text-amber-600" />
                 <span className="text-xs text-amber-800">
-                  This is your weighted average E&M level (usually in billing reports as "Average Level of Service")
+                  This is your weighted average <TermTooltip {...TERMS.emLevel} /> (usually in billing reports as "Average Level of Service")
                 </span>
               </div>
 
@@ -1179,7 +1185,13 @@ export default function ExpandDataEntry({
             <Icon className={`w-5 h-5 ${config.iconColor}`} />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-[#111827]">{config.name}</h2>
+            <h2 className="text-base font-semibold text-[#111827]">
+              {config.tooltipKey === "wRVU" ? (
+                <><TermTooltip {...TERMS.wRVU} /> per Encounter</>
+              ) : config.tooltipKey === "pajamaTime" ? (
+                <>Work Outside Work (<TermTooltip {...TERMS.pajamaTime} />)</>
+              ) : config.name}
+            </h2>
             <p className="text-sm text-[#6B7280]">{config.description}</p>
           </div>
         </div>
