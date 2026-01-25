@@ -1,0 +1,769 @@
+PAGE 1: EXECUTIVE SUMMARY
+Header Context Line
+Copy[Organization Name if provided]
+70 providers · 5 months on Abridge · 70% utilization · 66,500 documented encounters
+THE STORY SO FAR (Opening Frame)
+CopyFive months ago, you deployed Abridge to 70 providers. Since then, those providers have documented 66,500 encounters—each one generating data about whether this investment is working.
+
+The short answer: it is.
+
+This report breaks down exactly where value is coming from, how your results compare to what we typically see, and what the path forward looks like. Every number traces back to your data. Where we've made assumptions, we've flagged them. Where results look unusual, we've called that out too.
+
+The goal isn't to make Abridge look good. It's to give you a picture you can trust—and act on.
+Hero Metrics (3 boxes - keep visual, add sublabels)
+Copy$308K                    1.5x                     +$937K
+PROVEN VALUE             ROI                      EXPANSION POTENTIAL
+Hard dollars captured    On $210K/yr invested     At 210 providers
+YOUR VALUE JOURNEY - Chart Caption
+CopyThis chart shows your value accumulating over time. The green area represents what you've already captured. The blue projection shows where you're headed based on current trajectory—assuming continued adoption improvement and the maturity effects we see across deployments.
+
+The red dot is today. Everything to the left is measured. Everything to the right is projected from your actual results.
+VALUE BREAKDOWN - Section Intro
+CopyWe separate value into three tiers based on how confidently we can measure and attribute it:
+Tier 1: Hard Value — $308K
+Directly measurable financial impact
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ wRVU Capture                                                   $219K  │
+│ +0.20 wRVU/enc × 66,500 enc × $33/wRVU × 50% attribution              │
+│                                                                       │
+│ Your wRVU improvement of 11% indicates documentation is capturing     │
+│ clinical complexity that was present but not being recorded.          │
+├────────────────────────────────────────────────────────────────────────┤
+│ Patient Access                                                  $89K  │
+│ 10% of saved time converting to additional visits                     │
+│                                                                       │
+│ You're converting a modest portion of time savings to patient         │
+│ access. There may be room to increase this with scheduling changes.   │
+└────────────────────────────────────────────────────────────────────────┘
+Tier 2: Efficiency Gains
+Measured improvements shown in natural units—not yet converted to dollars
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ Time Saved                                          4,433 hours/year  │
+│ 4 min/encounter × 66,500 encounters ÷ 60                              │
+│                                                                       │
+│ Pajama Time Eliminated                                   -6 hrs/week  │
+│ Per-provider average reduction in after-hours documentation           │
+│                                                                       │
+│ Chart Closure Improvement                                       +13%  │
+│ Same-day closure rate: 72% → 85%                                      │
+└────────────────────────────────────────────────────────────────────────┘
+
+We show these in hours and percentages rather than dollars because the conversion varies by organization. If you want to dollarize time savings (via patient access or overtime reduction), we can adjust the model.
+Tier 3: Leading Indicators (if satisfaction or other qualitative metrics tracked)
+Directional signals that predict future value
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ Clinician Satisfaction                              50 → 58 (+8 pts)  │
+│ Survey-based measurement                                              │
+│                                                                       │
+│ Satisfaction is a leading indicator for retention. Improvements       │
+│ here typically precede turnover reduction by 6-12 months.             │
+└────────────────────────────────────────────────────────────────────────┘
+
+PAGES 2-3: METRIC DEEP DIVES
+wRVU PER ENCOUNTER
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ wRVU PER ENCOUNTER                                                    │
+│ Revenue capture improvement                                    $219K  │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│      BEFORE ABRIDGE              AFTER ABRIDGE           CHANGE       │
+│           1.80          →            2.00           =     +0.20       │
+│         wRVU/enc                   wRVU/enc              11% lift     │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ YOUR TREND                                                            │
+│                                                                       │
+│  2.05 ┤                                              ●────            │
+│       │                                    ●─────────                 │
+│  1.95 ┤                          ●─────────                           │
+│       │                ●─────────                                     │
+│  1.85 ┤      ●─────────                                               │
+│       │                                                               │
+│  1.80 ●──────                                                         │
+│       └────BL────M1────M2────M3────M4────M5                           │
+│                                                                       │
+│  Baseline: 1.80  →  Month 5: 2.00  =  +0.20 (11% lift)               │
+│  ↗ Consistent upward trend                                            │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📊 BENCHMARK                                                          │
+│ Typical Abridge customers see: 3-7% wRVU lift                         │
+│ You're at: 11% lift — Above typical range                             │
+│                                                                       │
+│ ⚠️ VALIDATION RECOMMENDED                                             │
+│ Your results exceed our typical range. This isn't necessarily wrong   │
+│ —some organizations do see higher lift, especially if baseline        │
+│ documentation was sparse. But we recommend confirming:                │
+│                                                                       │
+│ • Was baseline measured the same way as current?                      │
+│ • Were there other coding or documentation initiatives during this    │
+│   period that might contribute?                                       │
+│ • Is the provider population consistent between periods?              │
+│                                                                       │
+│ If validated, this is a significant success story worth highlighting. │
+│ If not, a more conservative estimate would still show strong ROI.     │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 💰 VALUE CALCULATION                                                  │
+│                                                                       │
+│ +0.20 wRVU/enc × 66,500 encounters × $33/wRVU × 50% attribution       │
+│ = $219,450 annual value                                               │
+│                                                                       │
+│ We use Medicare's $33 conversion factor and 50% attribution to        │
+│ Abridge. If your payer mix is commercial-heavy (where conversion      │
+│ factors run $45-65), actual revenue impact may be 30-50% higher.      │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📝 WHAT THIS MEANS                                                    │
+│                                                                       │
+│ wRVU improvement indicates that documentation is capturing more of    │
+│ the clinical complexity that was always present in your encounters.   │
+│ This isn't about changing how providers practice—it's about making    │
+│ sure the note reflects what actually happened in the room.            │
+│                                                                       │
+│ The 11% lift you're seeing is substantial. If confirmed, it suggests  │
+│ there was significant under-documentation in your baseline state.     │
+│ This is common—under time pressure, providers document less than      │
+│ the full clinical picture.                                            │
+│                                                                       │
+│ At current trajectory, wRVU capture alone covers your entire Abridge  │
+│ investment with room to spare.                                        │
+└────────────────────────────────────────────────────────────────────────┘
+
+TIME IN NOTES
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ TIME IN NOTES                                                         │
+│ Documentation efficiency                              4,433 hrs/year  │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│      BEFORE ABRIDGE              AFTER ABRIDGE           CHANGE       │
+│           12          →              8            =        -4         │
+│           min                       min                  33% faster   │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ YOUR TREND                                                            │
+│                                                                       │
+│  12 ●──────                                                           │
+│     │      ●─────────                                                 │
+│  10 ┤                ●─────────                                       │
+│     │                          ●─────────                             │
+│   8 ┤                                    ●───────────●────            │
+│     │                                                                 │
+│   6 ┤                                                                 │
+│     └────BL────M1────M2────M3────M4────M5                             │
+│                                                                       │
+│  Baseline: 12 min  →  Month 5: 8 min  =  -4 min (33% reduction)      │
+│  ↗ Improved quickly, now stabilized                                   │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📊 BENCHMARK                                                          │
+│ Typical Abridge customers see: 3-5 minute reduction per encounter     │
+│ You're at: 4 minutes — Within expected range                          │
+│                                                                       │
+│ ✓ Your time savings are consistent with what we see across            │
+│   deployments. The curve suggests initial rapid improvement           │
+│   followed by stabilization—this is normal.                           │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 🧮 HOURS CALCULATION                                                  │
+│                                                                       │
+│ 4 min saved × 66,500 encounters ÷ 60 = 4,433 hours/year              │
+│                                                                       │
+│ That's equivalent to 2.1 FTE worth of documentation time returned     │
+│ to your clinical workforce annually.                                  │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 💵 HOW THIS TIME IS BEING USED                                        │
+│                                                                       │
+│ Currently: 10% converting to patient access ($89K value captured)     │
+│                                                                       │
+│ The remaining 90% is going to:                                        │
+│ • Quality of life (going home on time, less stress)                   │
+│ • Non-monetized efficiency (inbox, patient communication)             │
+│ • Buffer time that hasn't been operationalized                        │
+│                                                                       │
+│ This is a choice, not a problem. Many organizations intentionally     │
+│ let providers keep this time for wellbeing. But if you want to        │
+│ capture more value, there's room to increase conversion.              │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📝 WHAT THIS MEANS                                                    │
+│                                                                       │
+│ Four minutes per encounter might not sound like much, but it          │
+│ compounds. Across 66,500 encounters, it's 4,433 hours—time that       │
+│ used to be spent typing and is now available for something else.      │
+│                                                                       │
+│ The question isn't whether the time is being saved—you're measuring   │
+│ it. The question is what happens to it. Right now, you're             │
+│ intentionally taking a conservative approach (not forcing conversion  │
+│ to dollars). That's fine. But know that every 10% you convert to      │
+│ patient access is roughly $89K in additional value.                   │
+└────────────────────────────────────────────────────────────────────────┘
+
+SAME-DAY CHART CLOSURE
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ SAME-DAY CHART CLOSURE                                                │
+│ Revenue cycle acceleration                                      +13%  │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│      BEFORE ABRIDGE              AFTER ABRIDGE           CHANGE       │
+│          72%          →             85%           =       +13pp       │
+│      same-day                    same-day                18% lift     │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ YOUR TREND                                                            │
+│                                                                       │
+│  90% ┤                                                                │
+│      │                                    ●───────────●────           │
+│  85% ┤                          ●─────────                            │
+│      │                                                                │
+│  80% ┤                ●─────────                                      │
+│      │      ●─────────                                                │
+│  75% ┤                                                                │
+│      │                                                                │
+│  72% ●──────                                                          │
+│      └────BL────M1────M2────M3────M4────M5                            │
+│                                                                       │
+│  Baseline: 72%  →  Month 5: 85%  =  +13 percentage points            │
+│  ↗ Strong improvement, approaching optimal range                      │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📊 BENCHMARK                                                          │
+│ Typical Abridge customers see: 5-15 percentage point improvement      │
+│ You're at: +13 pp — Within expected range (upper end)                 │
+│                                                                       │
+│ ✓ Strong performance. You're approaching the 85-90% range that        │
+│   represents optimal chart closure for most organizations.            │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📝 WHAT THIS MEANS                                                    │
+│                                                                       │
+│ Chart closure affects multiple downstream processes:                  │
+│                                                                       │
+│ • Revenue cycle: Charts closed same-day bill faster                   │
+│ • Documentation quality: Fresh context = more accurate notes          │
+│ • Provider wellbeing: Open charts are cognitive overhead              │
+│ • Compliance: Reduces risk of incomplete documentation                │
+│                                                                       │
+│ At 85%, you're in a healthy range. The last 10-15% is often the       │
+│ hardest to capture (complex cases, end-of-day visits), but you're     │
+│ past the point of diminishing returns. This is a success.             │
+│                                                                       │
+│ One thing to watch: If chart closure improvement doesn't translate    │
+│ to reduced pajama time, providers may be shifting when they           │
+│ document rather than how much time it takes. Check that both          │
+│ metrics are moving together.                                          │
+└────────────────────────────────────────────────────────────────────────┘
+
+WORK OUTSIDE OF WORK (Pajama Time)
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ WORK OUTSIDE OF WORK                                                  │
+│ After-hours documentation burden                        -6 hrs/week   │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│      BEFORE ABRIDGE              AFTER ABRIDGE           CHANGE       │
+│          10          →              4            =        -6          │
+│        hrs/week                  hrs/week               60% less      │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ YOUR TREND                                                            │
+│                                                                       │
+│  10 ●──────                                                           │
+│     │                                                                 │
+│   8 ┤      ●─────────                                                 │
+│     │                                                                 │
+│   6 ┤                ●─────────                                       │
+│     │                          ●─────────●───────────●────            │
+│   4 ┤                                                                 │
+│     │                                                                 │
+│   2 ┤                                                                 │
+│     └────BL────M1────M2────M3────M4────M5                             │
+│                                                                       │
+│  Baseline: 10 hrs/wk  →  Month 5: 4 hrs/wk  =  -6 hrs (60% less)     │
+│  ↗ Dramatic early improvement, now stable                             │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📊 BENCHMARK                                                          │
+│ Typical Abridge customers see: 2-5 hours/week reduction               │
+│ You're at: 6 hours/week — Above typical range                         │
+│                                                                       │
+│ ✓ This is excellent. Your providers are getting significant time      │
+│   back in their personal lives.                                       │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📝 WHAT THIS MEANS                                                    │
+│                                                                       │
+│ "Pajama time"—hours spent on documentation at home—is one of the      │
+│ most corrosive aspects of modern clinical practice. It's not just     │
+│ lost time; it's the erosion of the boundary between work and life     │
+│ that makes medicine sustainable.                                      │
+│                                                                       │
+│ A 6-hour weekly reduction is substantial. Across 70 providers,        │
+│ that's 420 hours per week—21,840 hours per year—returned to           │
+│ evenings, weekends, and family time.                                  │
+│                                                                       │
+│ We don't dollarize this metric because the value isn't financial      │
+│ —it's human. But it's also a leading indicator: organizations that    │
+│ see pajama time reductions typically see satisfaction improve and,    │
+│ over 12-18 months, turnover decrease.                                 │
+│                                                                       │
+│ This metric alone often determines whether providers become Abridge   │
+│ advocates or skeptics. Based on these numbers, your providers are     │
+│ feeling the difference.                                               │
+└────────────────────────────────────────────────────────────────────────┘
+
+CLINICIAN SATISFACTION (if tracked)
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ CLINICIAN SATISFACTION                                                │
+│ Provider experience                                     +8 points     │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│      BEFORE ABRIDGE              AFTER ABRIDGE           CHANGE       │
+│          50          →             58            =        +8          │
+│        points                    points                 16% lift      │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ YOUR TREND                                                            │
+│                                                                       │
+│  60 ┤                                              ●────              │
+│     │                                    ●─────────                   │
+│  55 ┤                          ●─────────                             │
+│     │                ●─────────                                       │
+│  52 ┤      ●─────────                                                 │
+│     │                                                                 │
+│  50 ●──────                                                           │
+│     └────BL────M1────M2────M3────M4────M5                             │
+│                                                                       │
+│  Baseline: 50  →  Month 5: 58  =  +8 points (16% improvement)        │
+│  ↗ Steady improvement, still climbing                                 │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📊 BENCHMARK                                                          │
+│ Typical Abridge customers see: 10-20 point improvement                │
+│ You're at: 8 points at 5 months — On track (expect continued growth)  │
+│                                                                       │
+│ ℹ️ Satisfaction typically continues improving for 6-12 months as      │
+│    providers fully adapt to the workflow. You're on a good            │
+│    trajectory.                                                        │
+│                                                                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ 📝 WHAT THIS MEANS                                                    │
+│                                                                       │
+│ Satisfaction is a lagging indicator that predicts retention.          │
+│ Providers who report higher satisfaction are less likely to leave,    │
+│ less likely to reduce hours, and more likely to become advocates      │
+│ for the technology.                                                   │
+│                                                                       │
+│ At +8 points in 5 months, you're seeing meaningful movement. The      │
+│ correlation with your pajama time reduction (-6 hrs/week) is clear    │
+│ —providers who spend less time on documentation at home report        │
+│ being more satisfied with their jobs.                                 │
+│                                                                       │
+│ The financial value of satisfaction is hard to quantify directly,     │
+│ but it flows through retention. If this trajectory continues,         │
+│ expect to see turnover benefits materialize in months 12-18.          │
+└────────────────────────────────────────────────────────────────────────┘
+
+PAGE 4: WHAT WE'RE SEEING (Narrative Analysis)
+Copy┌────────────────────────────────────────────────────────────────────────┐
+│ EARLY INDICATORS: 5 MONTHS IN                                         │
+│                                                                       │
+│ Based on your data, here's our read on where you are and where to     │
+│ focus next.                                                           │
+└────────────────────────────────────────────────────────────────────────┘
+
+WHAT'S WORKING WELL
+───────────────────────────────────────────────────────────────────────
+
+✓ wRVU capture is strong
+  11% lift exceeds typical range. If validated, this suggests 
+  significant documentation improvement with direct revenue impact.
+
+✓ Pajama time dramatically reduced  
+  6 hours/week is above average. Your providers are feeling this 
+  difference in their daily lives—this drives advocacy and retention.
+
+✓ Chart closure improving steadily
+  72% → 85% same-day closure puts you in a healthy operational range.
+  This has downstream benefits for revenue cycle and provider wellbeing.
+
+✓ Time savings are real and measurable
+  4 minutes per encounter × 66,500 encounters = 4,433 hours returned.
+  Whether you dollarize this or let providers keep it, the value exists.
+
+✓ Satisfaction trending up
+  +8 points in 5 months, with trajectory suggesting continued growth.
+  This is a leading indicator for retention benefits down the road.
+
+
+AREAS TO WATCH
+───────────────────────────────────────────────────────────────────────
+
+→ Utilization at 70%
+  Typical mature deployments reach 80-85%. You have room to grow.
+  Every 5 percentage points of utilization improvement adds 
+  approximately $22K in annual value at current provider count.
+
+→ wRVU lift above typical range
+  11% lift is strong—possibly too strong to take at face value.
+  We recommend validating baseline methodology before using this
+  number externally or in expansion planning.
+
+→ Time savings mostly staying as efficiency, not converting to $
+  You're deliberately taking a conservative approach (10% conversion).
+  That's fine, but know there's latent value available if you want it.
+
+
+OPTIMIZATION OPPORTUNITIES
+───────────────────────────────────────────────────────────────────────
+
+┌─ 1. INCREASE UTILIZATION ─────────────────────────────────────────────┐
+│                                                                       │
+│ Current: 70%  |  Target: 80-85%  |  Gap: 10-15 percentage points     │
+│                                                                       │
+│ Potential additional value: ~$44K annually (at current scale)         │
+│                                                                       │
+│ Why it matters:                                                       │
+│ Utilization is the highest-leverage optimization available. Every     │
+│ encounter documented with Abridge generates value; encounters         │
+│ documented without it don't. At 70%, you're leaving 30% of            │
+│ potential value on the table.                                         │
+│                                                                       │
+│ What to do:                                                           │
+│ • Identify providers below 60% utilization—what are their barriers?   │
+│ • Look for workflow friction points (mobile app issues, specific      │
+│   visit types where Abridge doesn't fit, training gaps)               │
+│ • Consider a utilization-focused campaign with your Abridge CSM       │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ 2. VALIDATE WRVU RESULTS ────────────────────────────────────────────┐
+│                                                                       │
+│ Current: 11% lift  |  Typical: 3-7%  |  Status: Needs validation     │
+│                                                                       │
+│ Why it matters:                                                       │
+│ If your 11% lift is real, it's a remarkable result worth              │
+│ celebrating and sharing. If it's a measurement artifact, you're       │
+│ overestimating value by ~$100K annually.                              │
+│                                                                       │
+│ What to do:                                                           │
+│ • Confirm baseline wRVU/encounter was measured the same way           │
+│ • Check for other coding initiatives that launched during this period │
+│ • Verify the provider population is consistent (same docs, same mix)  │
+│ • If validated, document the methodology for internal stakeholders    │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ 3. CONSIDER TIME CONVERSION ─────────────────────────────────────────┐
+│                                                                       │
+│ Current: 10% converting to patient access ($89K captured)             │
+│ Potential: 20% conversion would add ~$89K more                        │
+│                                                                       │
+│ Why it matters:                                                       │
+│ You're saving 4,433 hours annually. Right now, you're deliberately    │
+│ not converting most of that to dollars—letting providers keep it      │
+│ for wellbeing. That's a valid choice. But there's value available.    │
+│                                                                       │
+│ What to do:                                                           │
+│ • Talk to your operations team: Is there scheduling capacity?         │
+│ • Talk to providers: Would they rather see more patients or keep      │
+│   the time savings for work-life balance?                             │
+│ • Consider a pilot: Track whether providers who have extra capacity   │
+│   are actually seeing more patients                                   │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+
+THE BOTTOM LINE
+───────────────────────────────────────────────────────────────────────
+
+Five months in, you're seeing real value:
+- $308K in hard dollars (1.5x ROI)
+- 4,433 hours of documentation time returned
+- Providers getting 6 fewer hours of homework per week
+- Satisfaction trending in the right direction
+
+The foundation is solid. The question now isn't whether Abridge is 
+working—it's how much additional value you can capture through 
+optimization and expansion.
+
+At current trajectory, your path to $1.2M at 210 providers is credible.
+
+PAGE 5: EXPANSION OPPORTUNITY
+CopyEXPANSION OPPORTUNITY
+───────────────────────────────────────────────────────────────────────
+
+Based on your proven results of $308K with 70 providers, here's what 
+full-scale expansion could look like.
+
+This isn't a projection from industry benchmarks. It's an extrapolation 
+from what you've already demonstrated—adjusted for the utilization 
+improvements and maturity effects we typically see as deployments scale.
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│     $1.2M                2.0x                    +$937K             │
+│  PROJECTED VALUE      PROJECTED ROI         ADDITIONAL VALUE        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+┌─ CURRENT STATE ───────────────────┬─ EXPANSION TARGET ──────────────┐
+│                                   │                                 │
+│ Providers           70            │ Providers           210         │
+│ Utilization         70%           │ Utilization         82%         │
+│ Annual Value        $308K         │ Projected Value     $1.2M       │
+│ Value per Provider  $4.4K         │ Investment          $630K/yr    │
+│                                   │                                 │
+└───────────────────────────────────┴─────────────────────────────────┘
+
+
+HOW WE CALCULATE EXPANSION
+───────────────────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ Base value per provider                                      $4.4K  │
+├─────────────────────────────────────────────────────────────────────┤
+│ × Provider scaling (70 → 210)                                 3.0x  │
+├─────────────────────────────────────────────────────────────────────┤
+│ × Utilization improvement (70% → 82%)                        1.17x  │
+├─────────────────────────────────────────────────────────────────────┤
+│ × Maturity multiplier                                        1.15x  │
+├─────────────────────────────────────────────────────────────────────┤
+│ Projected annual value                                       $1.2M  │
+├─────────────────────────────────────────────────────────────────────┤
+│ Investment (210 × $250/mo × 12)                             $630K   │
+├─────────────────────────────────────────────────────────────────────┤
+│ Net annual value                                            $570K   │
+├─────────────────────────────────────────────────────────────────────┤
+│ Projected ROI                                                 2.0x  │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+WHAT THE MULTIPLIERS MEAN
+───────────────────────────────────────────────────────────────────────
+
+Provider scaling (3.0x)
+Linear multiplication of your current per-provider value. This is 
+straightforward math: 3× the providers, 3× the documented encounters, 
+3× the value.
+
+Utilization improvement (1.17x)
+You're currently at 70% utilization. We assume you'll reach 82% at 
+scale—consistent with what mature deployments achieve. Higher 
+utilization means more encounters documented per provider, which 
+increases value proportionally.
+
+Why not 100%? Some encounters legitimately don't fit the Abridge 
+workflow (quick follow-ups, specific visit types). 82% is realistic.
+
+Maturity multiplier (1.15x)
+Organizations at scale typically see 15% higher per-provider value 
+than their pilot deployment. This comes from:
+
+- Workflow optimization (templates, integrations, workflows refined)
+- Institutional knowledge (best practices shared across providers)
+- Network effects (more providers = more feedback = better product fit)
+- Long-term benefits (retention effects that take 12+ months)
+
+This is a conservative estimate based on aggregate customer data.
+
+
+INVESTMENT CONTEXT
+───────────────────────────────────────────────────────────────────────
+
+At $250/provider/month:
+
+- 210 providers × $250 × 12 months = $630K annual investment
+- Projected value: $1.2M
+- Net gain: $570K
+- ROI: 2.0x
+
+For comparison, your current deployment:
+- 70 providers × $250 × 12 months = $210K annual investment
+- Measured value: $308K
+- Net gain: $98K
+- ROI: 1.5x
+
+The improvement in ROI at scale (1.5x → 2.0x) comes from utilization 
+improvement and maturity effects—not from optimistic assumptions.
+
+
+WHAT THIS MEANS
+───────────────────────────────────────────────────────────────────────
+
+Expansion from 70 to 210 providers would require $420K in additional 
+annual investment ($630K total vs $210K current).
+
+Based on your proven results, that investment would generate 
+approximately $892K in additional value ($1.2M total vs $308K current).
+
+The math works. The question is operational: Can you deploy to 140 
+additional providers effectively? Do you have the change management 
+capacity? Is the organization ready?
+
+Those are implementation questions, not ROI questions. The ROI case 
+is clear.
+
+PAGE 6: METHODOLOGY & ASSUMPTIONS
+CopyMETHODOLOGY & ASSUMPTIONS
+───────────────────────────────────────────────────────────────────────
+
+Every number in this report can be traced back. This section documents 
+what came from you, what we assumed, and where there's room for 
+interpretation.
+
+
+YOUR DATA
+───────────────────────────────────────────────────────────────────────
+- 70 providers using Abridge
+- 95,000 total annual encounters
+- 70% utilization rate (66,500 documented encounters)
+- 5 months since deployment
+- Data sources: Clarity (billing reports), internal surveys
+
+
+INDUSTRY BENCHMARKS USED
+───────────────────────────────────────────────────────────────────────
+- wRVU conversion factor: $33 (Medicare 2024)
+- Abridge attribution: 50% of measured improvement
+- Provider replacement cost: $400,000 (not used in this report)
+- Time value: $150/hour (not used—showing hours, not dollars)
+- Maximum utilization assumption: 85%
+- Maturity multiplier: 1.15x
+
+
+ATTRIBUTION METHODOLOGY
+───────────────────────────────────────────────────────────────────────
+We apply 50% attribution to Abridge for revenue improvements (wRVU, 
+E&M level). This acknowledges that Abridge is a contributing factor 
+alongside other initiatives, coder behavior, and documentation 
+practices.
+
+Why 50%? It's conservative. Some organizations use 75-100% when they 
+have controlled studies or A/B comparisons. We default to 50% because:
+
+- Other factors always exist (coding education, EHR changes, etc.)
+- It makes the numbers defensible to skeptics
+- It leaves upside if true attribution is higher
+
+If you have data suggesting different attribution (e.g., controlled 
+comparison with non-Abridge providers), we can adjust.
+
+
+CALCULATION PRINCIPLES
+───────────────────────────────────────────────────────────────────────
+- Conservative by default. We'd rather understate than overstate.
+- Medicare rates, not commercial. If your payer mix is favorable, 
+  actual results are likely higher.
+- Transparent logic. Every step is shown. Nothing is hidden.
+- Based on your results. Expansion projections use your measured 
+  per-provider value, not industry averages.
+
+
+DATA QUALITY NOTES
+───────────────────────────────────────────────────────────────────────
+⚠️ wRVU lift (11%) exceeds typical range (3-7%). We recommend 
+   validating baseline methodology before using externally.
+
+✓ Time savings, pajama time, and chart closure all within expected 
+  ranges. No concerns about data quality on these metrics.
+
+✓ Satisfaction trending consistently upward with no anomalies.
+
+
+WHAT'S NOT INCLUDED
+───────────────────────────────────────────────────────────────────────
+This report does not include:
+
+- Retention value: Too early to measure (typically requires 12-18 
+  months). Your satisfaction trajectory suggests this will materialize.
+
+- Denial reduction: Not currently tracking. If you have before/after 
+  denial data, we can add this driver.
+
+- Quality metrics: MIPS, patient safety indicators, etc. These are 
+  real but harder to attribute directly to documentation.
+
+These represent potential upside not captured in current numbers.
+
+CLOSING SECTION
+Copy───────────────────────────────────────────────────────────────────────
+
+"The organizations that get the most from Abridge aren't the ones 
+with the best technology adoption. They're the ones that treat 
+value realization as an ongoing discipline—measuring, optimizing, 
+and expanding based on what the data tells them.
+
+Five months in, you have proof that this works. The question now 
+is how far you want to take it."
+
+───────────────────────────────────────────────────────────────────────
+
+Questions about this report? Contact your Partner Success team.
+Next review recommended: Month 8-9 (to capture full satisfaction 
+trajectory and validate wRVU results)
+
+───────────────────────────────────────────────────────────────────────
+                                                     Generated by Abridge
+                                                     Page X of X
+
+SUMMARY: WHAT REPLIT NEEDS TO BUILD
+Tell Replit:
+Copy## EXPAND PDF - COMPLETE REBUILD
+
+Replace the current Expand PDF with a comprehensive Value Realization Report.
+
+### STRUCTURE (6-7 pages):
+
+PAGE 1: Executive Summary
+- Organization context
+- "The Story So Far" narrative frame
+- Hero metrics (3 boxes: Proven Value, ROI, Expansion Potential)
+- Journey chart (improved - show actual data points)
+- Value breakdown summary (Tier 1, 2, 3 with context)
+
+PAGES 2-3: Metric Deep Dives
+- One section per tracked metric
+- Each includes: Before/After comparison, Trend chart, Benchmark status, 
+  Value calculation (if applicable), "What This Means" narrative
+- Show warnings for metrics above/below typical range
+
+PAGE 4: What We're Seeing
+- "What's Working Well" checklist
+- "Areas to Watch" section
+- "Optimization Opportunities" (3 specific, actionable recommendations)
+- "The Bottom Line" summary
+
+PAGE 5: Expansion Opportunity
+- Current State vs Expansion Target
+- Calculation breakdown (step by step)
+- "What the multipliers mean" explanation
+- Investment context
+
+PAGE 6: Methodology & Assumptions
+- Your data summary
+- Industry benchmarks used
+- Attribution methodology explanation
+- Calculation principles
+- Data quality notes
+- What's not included
+
+### TONE:
+- Partnership, not sales
+- Explain what numbers mean, not just show them
+- Compare to benchmarks throughout
+- Flag outliers honestly
+- Suggest specific actions
+- Dense but readable
+
+### REQUIRED ELEMENTS:
+1. Trend charts for each metric (line chart showing month-over-month)
+2. Benchmark comparisons with status (below/within/above typical)
+3. Warning boxes for outlier metrics
+4. "What this means" narrative for each metric
+5. Actionable optimization recommendations
+6. Transparent calculation methodology
+
+See complete narrative content provided for exact copy to use.
