@@ -1353,12 +1353,13 @@ const TrendChart = ({
 const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; totalPages: number }) => {
   const hardValueMetrics = data.metrics.filter(m => m.value && m.value > 0);
   const maturity = getMaturityLevel(data.utilizationRate);
+  const valuePerProvider = data.providers > 0 ? data.tier1Value / data.providers : 0;
   
   return (
     <Page size="A4" style={styles.page}>
       <Header title="Value Realization Report" />
 
-      <View style={styles.orgContext}>
+      <View style={styles.orgContext} wrap={false}>
         {data.organizationName && (
           <Text style={styles.orgName}>{data.organizationName}</Text>
         )}
@@ -1368,8 +1369,8 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       </View>
 
       <ExecutiveCallout 
-        title="Executive Summary" 
-        text={`In ${data.monthsOnAbridge} months, your ${data.providers} providers have generated ${formatCurrency(data.tier1Value)} in measurable annual value. With expansion to ${data.expansion.targetProviders} providers at ${data.expansion.targetUtilization}% utilization, projected value reaches ${formatCurrency(data.expansion.projectedValue)}.`}
+        title="At a Glance" 
+        text={`Your ${data.providers} providers are generating ${formatCurrency(valuePerProvider)} each annually in documented value. At ${data.utilizationRate}% utilization, you're capturing ${formatCurrency(data.tier1Value)} today—with a clear path to ${formatCurrency(data.expansion.projectedValue)} at scale.`}
       />
 
       <View style={styles.heroRow} wrap={false}>
@@ -1390,22 +1391,22 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }} wrap={false}>
-        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 6 }}>
-          <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.mediumGray, marginBottom: 4 }}>DEPLOYMENT MATURITY</Text>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }} wrap={false}>
+        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 8, borderWidth: 1, borderColor: colors.borderGray }}>
+          <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.3 }}>DEPLOYMENT MATURITY</Text>
           <ProgressIndicator current={data.utilizationRate} target={85} label="Utilization Rate" showLabels={false} />
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2 }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: maturity.color, marginRight: 4 }} />
-            <Text style={{ fontSize: 6, fontWeight: "bold", color: maturity.color }}>{maturity.label}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: maturity.color, marginRight: 6 }} />
+            <Text style={{ fontSize: 7, fontWeight: "bold", color: maturity.color }}>{maturity.label}</Text>
           </View>
         </View>
-        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 6 }}>
-          <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.mediumGray, marginBottom: 4 }}>VALUE INDICATORS</Text>
+        <View style={{ flex: 1, backgroundColor: colors.paleGray, borderRadius: 4, padding: 8, borderWidth: 1, borderColor: colors.borderGray }}>
+          <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.3 }}>VALUE DRIVERS</Text>
           {hardValueMetrics.slice(0, 2).map((m, idx) => (
-            <View key={idx} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+            <View key={idx} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <StatusDot status="good" />
-                <Text style={{ fontSize: 6, color: colors.darkGray }}>{m.name}</Text>
+                <Text style={{ fontSize: 7, color: colors.darkGray }}>{m.name}</Text>
               </View>
               {m.trend && m.trend.length > 0 && (
                 <MiniSparkline values={[m.before, ...m.trend.map(t => t.value)]} />
@@ -1535,7 +1536,7 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       )}
 
       <KeyTakeaway 
-        text={`Your ${data.providers} providers are generating ${formatCurrency(data.tier1Value / data.providers)} each annually. At ${data.utilizationRate}% utilization, there's still significant room to grow—expansion to ${data.expansion.targetProviders} providers at ${data.expansion.targetUtilization}% unlocks an additional ${formatCurrency(data.expansion.expansionValue)}.`}
+        text={`The foundation is solid. Your deployment is proving out the value model in your environment—the next step is deepening adoption among existing providers and extending to new ones.`}
       />
 
       <Footer pageNum={1} totalPages={totalPages} />
@@ -1783,28 +1784,18 @@ const NarrativeAnalysisPage = ({
       <View style={styles.bottomLineBox} wrap={false}>
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
           <IconChart size={10} color={colors.primary} />
-          <Text style={[styles.sectionBoxTitle, { marginLeft: 4, marginBottom: 0 }]}>PUTTING IT TOGETHER</Text>
+          <Text style={[styles.sectionBoxTitle, { marginLeft: 4, marginBottom: 0 }]}>THE BIGGER PICTURE</Text>
         </View>
-        <View style={{ flexDirection: "row", gap: 6, marginBottom: 4 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 6, marginBottom: 2 }}>• {formatCurrency(data.tier1Value)} documented value annually</Text>
-            {data.tier2Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Efficiency patterns emerging</Text>}
-          </View>
-          <View style={{ flex: 1 }}>
-            {data.tier3Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Leading indicators trending positive</Text>}
-            <Text style={{ fontSize: 6 }}>• Expansion potential: +{formatCurrency(data.expansion.expansionValue)}</Text>
-          </View>
-        </View>
-        <Text style={{ fontSize: 6, lineHeight: 1.3, fontStyle: "italic", color: colors.darkGray }}>
+        <Text style={{ fontSize: 7, lineHeight: 1.4, color: colors.darkGray }}>
           {data.utilizationRate < 70 
-            ? `Here's what's interesting: at ${data.utilizationRate}% utilization, you're seeing this value with less than half your potential activated. That's not a criticism—it's actually good news. It means the math for scaling is compelling.`
-            : `At ${data.utilizationRate}% utilization, you're in the optimization phase. The question now is: how do you protect these gains while expanding thoughtfully?`
+            ? `Here's what's worth noting: at ${data.utilizationRate}% utilization, you're seeing ${formatCurrency(data.tier1Value)} annually with significant runway remaining. The value you're capturing today is real—and it's just a fraction of what's possible as adoption deepens.`
+            : `At ${data.utilizationRate}% utilization, you've moved past the early adoption phase into optimization. The focus shifts from "does this work?" to "how do we maximize it?"—protecting these gains while extending to new areas.`
           }
         </Text>
       </View>
 
       <KeyTakeaway 
-        text={`The patterns here suggest ${data.optimizationOpportunities.length} areas worth exploring. If you pursue all of them, the math points to an additional ${formatCurrency(data.optimizationOpportunities.reduce((sum, o) => sum + o.potentialValue, 0))} annually—but start with the one that feels most actionable for your organization.`}
+        text={`We've identified ${data.optimizationOpportunities.length} optimization areas worth exploring. Start with whichever feels most actionable—even partial progress on any of these moves the needle meaningfully.`}
       />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
@@ -1828,6 +1819,7 @@ const ExpansionOpportunityPage = ({
   const { expansion } = data;
   const utilizationMultiplier = expansion.targetUtilization / expansion.currentUtilization;
   const providerMultiplier = expansion.targetProviders / expansion.currentProviders;
+  const valuePerProviderAtScale = expansion.targetProviders > 0 ? expansion.projectedValue / expansion.targetProviders : 0;
 
   return (
     <Page size="A4" style={styles.page}>
@@ -1836,8 +1828,8 @@ const ExpansionOpportunityPage = ({
       <SectionTitle icon="expand" title="The Path to Full Scale" />
 
       <ExecutiveCallout 
-        title="Expansion Summary" 
-        text={`Based on proven results at ${expansion.currentProviders} providers and ${expansion.currentUtilization}% utilization, scaling to ${expansion.targetProviders} providers at ${expansion.targetUtilization}% unlocks ${formatCurrency(expansion.projectedValue)} annually—an additional ${formatCurrency(expansion.expansionValue)} beyond current.`}
+        title="The Expansion Story" 
+        text={`You've established proof of concept. The question now is: how does this scale? The math suggests each additional provider at target utilization adds roughly ${formatCurrency(valuePerProviderAtScale)} annually.`}
       />
 
       <View style={styles.heroRow} wrap={false}>
@@ -1941,12 +1933,12 @@ const ExpansionOpportunityPage = ({
 
       <View style={styles.closingBox} wrap={false}>
         <Text style={styles.closingText}>
-          Here's how we think about this: What you're seeing today at {expansion.currentProviders} providers and {expansion.currentUtilization}% utilization isn't just a number—it's a proof point. The {formatCurrency(data.tier1Value)} in annual value demonstrates the model works in your environment. The expansion math follows naturally: scale to {expansion.targetProviders} providers at {expansion.targetUtilization}% utilization, and you're looking at {formatCurrency(expansion.projectedValue)} annually. The pattern is proven. Now it's about execution.
+          Think of your current deployment as a pilot that's already delivering. The patterns you're seeing at {expansion.currentProviders} providers translate predictably as you scale—this isn't a leap of faith, it's an extension of demonstrated results.
         </Text>
       </View>
 
       <KeyTakeaway 
-        text={`Here's the math to keep in mind: every additional provider at target utilization adds roughly ${formatCurrency(expansion.projectedValue / expansion.targetProviders)} annually. You've proven the model works in your environment—the expansion opportunity is about replicating what's already working.`}
+        text={`The model works in your environment. The expansion opportunity is about replicating what's already proven—methodically extending to new providers while deepening adoption with existing ones.`}
       />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
@@ -1975,7 +1967,7 @@ const MethodologyPage = ({
 
       <View style={styles.narrativeBox} wrap={false}>
         <Text style={styles.narrativeText}>
-          Let's walk through how we arrived at these numbers. Every calculation traces back to either your data or industry-standard benchmarks—we don't use optimistic assumptions. In fact, we lean conservative throughout, which means actual value is often higher than what we show here. Here's the methodology behind each component, so you can validate the logic yourself.
+          Every calculation here traces back to either your data or industry-standard benchmarks. We lean conservative throughout—no optimistic assumptions. The methodology is transparent so you can validate the logic yourself.
         </Text>
       </View>
 
@@ -2059,12 +2051,12 @@ const MethodologyPage = ({
 
       <View style={styles.closingBox} wrap={false}>
         <Text style={styles.closingText}>
-          Questions about our methodology? We're happy to walk through any calculation in detail. All assumptions are designed to be conservative and defensible.
+          Have questions about any calculation? We're happy to walk through the details—every number here is designed to be defensible in a CFO conversation.
         </Text>
       </View>
 
       <KeyTakeaway 
-        text={`This analysis uses conservative assumptions throughout. With commercial payer rates and full attribution, actual value could be 30-50% higher than shown.`}
+        text={`Conservative by design: with commercial payer rates and full attribution, actual value is typically 30-50% higher than shown here.`}
       />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
