@@ -117,12 +117,16 @@ The application guides users through multi-step processes:
     - CTA buttons: Stack vertically on mobile with `flex-col sm:flex-row`
     - No emojis: Use lucide-react icons instead
 
+### Premium UX Enhancements
+-   **Smooth Page Transitions**: Fade/slide animations between wizard steps using framer-motion (`PageTransition.tsx`)
+-   **Scroll-to-Top**: Automatic smooth scroll to top on page navigation
+-   **Keyboard Navigation** (`useKeyboardNavigation.ts`): Enter advances to next step, Escape goes back
+    - Implemented on ObjectiveSelectionScreen, BaselineSetup, InvestmentPage
+-   **Input Debouncing** (`useDebounce.ts`): Reusable hook for delayed input processing
+
 ### Security & Privacy
 -   **Session Security Provider** (`SessionSecurityContext.tsx`): Wraps the application with automatic session management
-    - 30-minute inactivity timeout with automatic data clear
-    - 10-minute hidden tab timeout (when user switches tabs)
     - Clears all sessionStorage on tab close (beforeunload event)
-    - Shows SessionExpiredModal when session times out
 -   **Privacy Notice**: Displayed on home page explaining client-side processing and data handling
 -   **Input Security**: All FormattedNumberInput components include `autoComplete="off"`, `data-lpignore="true"`, and `data-form-type="other"` to prevent browser/password manager autofill
 -   **Content Security Policy**: Meta tag in index.html restricting script/style sources
