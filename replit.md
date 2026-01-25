@@ -119,6 +119,10 @@ The application guides users through multi-step processes:
 
 ### Premium UX Enhancements
 -   **Smooth Page Transitions**: Fade/slide animations between wizard steps using framer-motion (`PageTransition.tsx`)
+    - Implemented on ExpandFlow (wraps all 5 steps), ObjectiveSelectionScreen, BaselineSetup, InvestmentPage
+-   **Staggered Entrance Animations**: Hero cards on ExpandResults page animate in with 0.1s, 0.2s, 0.3s delays
+-   **Accordion Animations**: AnimatePresence + motion.div for smooth expand/collapse in Data Entry (LOS distribution, Chart Closure breakdown)
+-   **Prominent Share Section**: Dark gradient card (from-[#1e293b] to-[#0f172a]) at bottom of Results page with Download PDF, Email Report, Copy Link CTAs
 -   **Scroll-to-Top**: Automatic smooth scroll to top on page navigation
 -   **Keyboard Navigation** (`useKeyboardNavigation.ts`): Enter advances to next step, Escape goes back
     - Implemented on ObjectiveSelectionScreen, BaselineSetup, InvestmentPage

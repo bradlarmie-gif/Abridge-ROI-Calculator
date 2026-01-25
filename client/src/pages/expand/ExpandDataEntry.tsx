@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, Fragment } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -664,50 +665,56 @@ export default function ExpandDataEntry({
                 {losShowDetailed ? "Hide distribution" : "Don't have the average? Calculate from distribution"}
               </button>
 
-              {losShowDetailed && (
-                <div className="mt-4 p-4 bg-neutral-50 rounded-xl">
-                  <p className="text-xs text-[#6B7280] mb-3">Enter % of encounters at each level (should sum to 100%)</p>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    <span className="text-xs font-semibold text-[#6B7280]">Level</span>
-                    <span className="text-xs font-semibold text-[#6B7280] text-center">Before %</span>
-                    <span className="text-xs font-semibold text-[#6B7280] text-center">After %</span>
-                    
-                    {LEVEL_OF_SERVICE.map(level => (
-                      <>
-                        <span key={`${level.id}-label`} className="text-sm text-[#111827]">{level.label}</span>
-                        <input
-                          key={`${level.id}-before`}
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          value={losData.before[level.id] || ""}
-                          onChange={(e) => updateMetric("levelOfService", {
-                            ...losData,
-                            before: { ...losData.before, [level.id]: Number(e.target.value) || 0 },
-                            averageBefore: calculateLosAverage({ ...losData.before, [level.id]: Number(e.target.value) || 0 }),
-                          })}
-                          className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
-                          data-testid={`input-los-${level.id}-before`}
-                        />
-                        <input
-                          key={`${level.id}-after`}
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          value={losData.after[level.id] || ""}
-                          onChange={(e) => updateMetric("levelOfService", {
-                            ...losData,
-                            after: { ...losData.after, [level.id]: Number(e.target.value) || 0 },
-                            averageAfter: calculateLosAverage({ ...losData.after, [level.id]: Number(e.target.value) || 0 }),
-                          })}
-                          className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
-                          data-testid={`input-los-${level.id}-after`}
-                        />
-                      </>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {losShowDetailed && (
+                  <motion.div 
+                    className="mt-4 p-4 bg-neutral-50 rounded-xl overflow-hidden"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <p className="text-xs text-[#6B7280] mb-3">Enter % of encounters at each level (should sum to 100%)</p>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      <span className="text-xs font-semibold text-[#6B7280]">Level</span>
+                      <span className="text-xs font-semibold text-[#6B7280] text-center">Before %</span>
+                      <span className="text-xs font-semibold text-[#6B7280] text-center">After %</span>
+                      
+                      {LEVEL_OF_SERVICE.map(level => (
+                        <Fragment key={level.id}>
+                          <span className="text-sm text-[#111827]">{level.label}</span>
+                          <input
+                            type="number"
+                            step="1"
+                            placeholder="0"
+                            value={losData.before[level.id] || ""}
+                            onChange={(e) => updateMetric("levelOfService", {
+                              ...losData,
+                              before: { ...losData.before, [level.id]: Number(e.target.value) || 0 },
+                              averageBefore: calculateLosAverage({ ...losData.before, [level.id]: Number(e.target.value) || 0 }),
+                            })}
+                            className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
+                            data-testid={`input-los-${level.id}-before`}
+                          />
+                          <input
+                            type="number"
+                            step="1"
+                            placeholder="0"
+                            value={losData.after[level.id] || ""}
+                            onChange={(e) => updateMetric("levelOfService", {
+                              ...losData,
+                              after: { ...losData.after, [level.id]: Number(e.target.value) || 0 },
+                              averageAfter: calculateLosAverage({ ...losData.after, [level.id]: Number(e.target.value) || 0 }),
+                            })}
+                            className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
+                            data-testid={`input-los-${level.id}-after`}
+                          />
+                        </Fragment>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {hasData && (
                 <BenchmarkCard
@@ -796,51 +803,57 @@ export default function ExpandDataEntry({
                 {closureShowDetailed ? "Hide breakdown" : "Want to enter full breakdown? (24h/48h/72h+)"}
               </button>
 
-              {closureShowDetailed && (
-                <div className="mt-4 p-4 bg-neutral-50 rounded-xl">
-                  <p className="text-xs text-[#6B7280] mb-3">Enter % of charts closed in each time bucket</p>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    <span className="text-xs font-semibold text-[#6B7280]">Time Bucket</span>
-                    <span className="text-xs font-semibold text-[#6B7280] text-center">Before %</span>
-                    <span className="text-xs font-semibold text-[#6B7280] text-center">After %</span>
-                    
-                    {[
-                      { id: "within24", label: "Within 24h" },
-                      { id: "24to48", label: "24-48h" },
-                      { id: "48to72", label: "48-72h" },
-                      { id: "over72", label: "72h+" },
-                    ].map(bucket => (
-                      <>
-                        <span key={`${bucket.id}-label`} className="text-sm text-[#111827]">{bucket.label}</span>
-                        <input
-                          key={`${bucket.id}-before`}
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          value={closureData.before[bucket.id as keyof typeof closureData.before] || ""}
-                          onChange={(e) => updateMetric("chartClosure", {
-                            ...closureData,
-                            before: { ...closureData.before, [bucket.id]: Number(e.target.value) || 0 },
-                          })}
-                          className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
-                        />
-                        <input
-                          key={`${bucket.id}-after`}
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          value={closureData.after[bucket.id as keyof typeof closureData.after] || ""}
-                          onChange={(e) => updateMetric("chartClosure", {
-                            ...closureData,
-                            after: { ...closureData.after, [bucket.id]: Number(e.target.value) || 0 },
-                          })}
-                          className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
-                        />
-                      </>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {closureShowDetailed && (
+                  <motion.div 
+                    className="mt-4 p-4 bg-neutral-50 rounded-xl overflow-hidden"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <p className="text-xs text-[#6B7280] mb-3">Enter % of charts closed in each time bucket</p>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      <span className="text-xs font-semibold text-[#6B7280]">Time Bucket</span>
+                      <span className="text-xs font-semibold text-[#6B7280] text-center">Before %</span>
+                      <span className="text-xs font-semibold text-[#6B7280] text-center">After %</span>
+                      
+                      {[
+                        { id: "within24", label: "Within 24h" },
+                        { id: "24to48", label: "24-48h" },
+                        { id: "48to72", label: "48-72h" },
+                        { id: "over72", label: "72h+" },
+                      ].map(bucket => (
+                        <Fragment key={bucket.id}>
+                          <span className="text-sm text-[#111827]">{bucket.label}</span>
+                          <input
+                            type="number"
+                            step="1"
+                            placeholder="0"
+                            value={closureData.before[bucket.id as keyof typeof closureData.before] || ""}
+                            onChange={(e) => updateMetric("chartClosure", {
+                              ...closureData,
+                              before: { ...closureData.before, [bucket.id]: Number(e.target.value) || 0 },
+                            })}
+                            className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
+                          />
+                          <input
+                            type="number"
+                            step="1"
+                            placeholder="0"
+                            value={closureData.after[bucket.id as keyof typeof closureData.after] || ""}
+                            onChange={(e) => updateMetric("chartClosure", {
+                              ...closureData,
+                              after: { ...closureData.after, [bucket.id]: Number(e.target.value) || 0 },
+                            })}
+                            className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
+                          />
+                        </Fragment>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {hasData && (
                 <BenchmarkCard

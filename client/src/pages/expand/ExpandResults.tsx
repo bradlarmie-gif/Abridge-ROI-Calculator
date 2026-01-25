@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
-import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight, Share2, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight, Share2, Loader2, Download, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area } from "recharts";
@@ -545,50 +546,58 @@ export default function ExpandResults({
       <UnifiedHeaderSpacer />
       
       <div className="py-6 md:py-8 px-4 md:px-6 pb-8 max-w-5xl mx-auto">
-        <div className="flex items-center justify-end mb-4 md:mb-6 gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} data-testid="button-export-pdf">
-            {isExporting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <FileText className="w-4 h-4 mr-1" />}
-            <span className="hidden sm:inline">{isExporting ? 'Generating...' : 'Export PDF'}</span>
-            <span className="sm:hidden">{isExporting ? '...' : 'PDF'}</span>
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleShareEmail} disabled={isSharing} data-testid="button-share-email">
-            {isSharing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Share2 className="w-4 h-4 mr-1" />}
-            <span className="hidden sm:inline">{isSharing ? 'Sharing...' : 'Share'}</span>
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleCopyLink} data-testid="button-copy-link">
-            <Link className="w-4 h-4 sm:mr-1" /><span className="hidden sm:inline">Copy Link</span>
-          </Button>
-        </div>
-        
-        <div className="text-center mb-6 md:mb-8">
+        <motion.div 
+          className="text-center mb-6 md:mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <h1 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-2">
             Your Abridge Results
           </h1>
           <p className="text-sm md:text-base text-[#6B7280]">
             {providers} providers · {months} mo · {utilizationRate}% utilization
           </p>
-        </div>
+        </motion.div>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8">
-          <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 text-center" data-testid="card-current-value">
+          <motion.div 
+            className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 text-center" 
+            data-testid="card-current-value"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
+          >
             <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-emerald-100 flex items-center justify-center mx-auto mb-2 md:mb-3">
               <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
             </div>
             <span className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(currentValue)}</span>
             <span className="block text-xs font-medium text-[#6B7280] uppercase tracking-wide mt-1">Current Value</span>
             <span className="text-xs text-[#9CA3AF]">Proven results</span>
-          </div>
+          </motion.div>
           
-          <div className="bg-[#1e293b] rounded-xl p-4 md:p-6 text-center" data-testid="card-value-per-provider">
+          <motion.div 
+            className="bg-[#1e293b] rounded-xl p-4 md:p-6 text-center" 
+            data-testid="card-value-per-provider"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+          >
             <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white/10 flex items-center justify-center mx-auto mb-2 md:mb-3">
               <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
             <span className="text-2xl md:text-3xl font-bold text-white">{formatCurrency(valuePerProvider)}</span>
             <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wide mt-1">Value/Provider</span>
             <span className="text-xs text-neutral-500">Based on {providers} providers</span>
-          </div>
+          </motion.div>
           
-          <div className={`rounded-xl p-4 md:p-6 text-center ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} data-testid="card-expansion">
+          <motion.div 
+            className={`rounded-xl p-4 md:p-6 text-center ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} 
+            data-testid="card-expansion"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+          >
             <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center mx-auto mb-2 md:mb-3 ${expansionCalc ? 'bg-blue-100' : 'bg-neutral-200'}`}>
               <Rocket className={`w-4 h-4 md:w-5 md:h-5 ${expansionCalc ? 'text-blue-600' : 'text-neutral-400'}`} />
             </div>
@@ -599,7 +608,7 @@ export default function ExpandResults({
             <span className="text-xs text-[#9CA3AF]">
               {expansionCalc ? `At ${expansionCalc.targetProviders} providers` : 'Configure below'}
             </span>
-          </div>
+          </motion.div>
         </div>
         
         <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
@@ -911,19 +920,64 @@ export default function ExpandResults({
           </div>
         )}
         
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          <Button variant="outline" onClick={handleExportPDF} disabled={isExporting} data-testid="button-export-pdf-bottom">
-            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
-            {isExporting ? 'Generating...' : 'Export as PDF'}
-          </Button>
-          <Button variant="outline" onClick={handleShareEmail} disabled={isSharing} data-testid="button-share-email-bottom">
-            {isSharing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Share2 className="w-4 h-4 mr-2" />}
-            {isSharing ? 'Sharing...' : 'Share'}
-          </Button>
-          <Button variant="outline" onClick={handleCopyLink} data-testid="button-copy-link-bottom">
-            <Link className="w-4 h-4 mr-2" /> Copy Link
-          </Button>
-        </div>
+        <motion.div 
+          className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl p-6 md:p-8 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="max-w-lg mx-auto">
+            <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">
+              Share Your Results
+            </h2>
+            <p className="text-sm md:text-base text-neutral-300 mb-6">
+              Export a detailed coaching document or share with your team
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button 
+                onClick={handleExportPDF} 
+                disabled={isExporting}
+                className="w-full sm:w-auto bg-[#EA2C00] text-white"
+                size="lg"
+                data-testid="button-export-pdf-bottom"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-5 h-5 mr-2" />
+                )}
+                {isExporting ? 'Generating PDF...' : 'Download PDF Report'}
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={handleShareEmail} 
+                disabled={isSharing}
+                className="w-full sm:w-auto border-white/20 text-white"
+                size="lg"
+                data-testid="button-share-email-bottom"
+              >
+                {isSharing ? (
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5 mr-2" />
+                )}
+                {isSharing ? 'Sharing...' : 'Email Report'}
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                onClick={handleCopyLink}
+                className="w-full sm:w-auto text-neutral-400"
+                data-testid="button-copy-link-bottom"
+              >
+                <Link className="w-4 h-4 mr-2" />
+                Copy Link
+              </Button>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

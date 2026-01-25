@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageTransition } from "@/components/PageTransition";
 import ExpandSettingSelection from "./ExpandSettingSelection";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
 import ExpandDataEntry from "./ExpandDataEntry";
@@ -259,7 +260,9 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      {renderStep()}
+      <PageTransition pageKey={`expand-step-${currentStep}`}>
+        {renderStep()}
+      </PageTransition>
     </div>
   );
 }
