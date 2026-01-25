@@ -55,7 +55,7 @@ const METRIC_CONFIG = {
     iconBg: "bg-emerald-50",
     iconColor: "text-emerald-600",
     unit: "wRVU/enc",
-    benchmarkText: "Abridge customers typically see 3-7% lift",
+    benchmarkText: "Abridge customers typically see 3-9% lift",
     isPositiveGood: true,
     step: 0.01,
   },

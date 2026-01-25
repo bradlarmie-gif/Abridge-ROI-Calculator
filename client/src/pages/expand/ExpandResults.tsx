@@ -538,8 +538,19 @@ export default function ExpandResults({
         {roiResult.warnings.length > 0 && (
           <div className="space-y-2 mb-8">
             {roiResult.warnings.map((warning, idx) => (
-              <div key={idx} className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700">
-                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <div 
+                key={idx} 
+                className={`flex items-start gap-2 p-3 border rounded-lg ${
+                  warning.severity === "info" 
+                    ? "bg-blue-50 border-blue-200 text-blue-700" 
+                    : "bg-amber-50 border-amber-200 text-amber-700"
+                }`}
+              >
+                {warning.severity === "info" ? (
+                  <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                )}
                 <div>
                   <span className="text-sm font-medium block">{warning.title}</span>
                   <span className="text-xs">{warning.message}</span>

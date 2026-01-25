@@ -116,7 +116,7 @@ export interface TieredROIResult {
 
 export interface SanityWarning {
   type: "roi" | "wrvuLift" | "timeConversion" | "general";
-  severity: "warning" | "error";
+  severity: "info" | "warning" | "error";
   title: string;
   message: string;
 }
@@ -149,12 +149,12 @@ export function calculateTieredROI(
   
   // 1. wRVU Calculation
   const wrvuCalc = calculateWRVU(inputs, defaults);
-  if (wrvuCalc.liftPercent > 10) {
+  if (wrvuCalc.liftPercent > 9) {
     warnings.push({
       type: "wrvuLift",
-      severity: "warning",
-      title: `Your wRVU lift (${wrvuCalc.liftPercent.toFixed(1)}%) is above typical range`,
-      message: "Most customers see 3-7% lift. This may be accurate for your situation, but verify your baseline and current data.",
+      severity: "info",
+      title: `Your wRVU lift (${wrvuCalc.liftPercent.toFixed(1)}%) exceeds typical range`,
+      message: "Most customers see 3-9% lift. Your results are impressive! If this reflects your actual data, you're seeing exceptional value from Abridge.",
     });
   }
   

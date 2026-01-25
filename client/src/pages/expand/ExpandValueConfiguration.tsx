@@ -453,8 +453,19 @@ export default function ExpandValueConfiguration({
               {roiResult.warnings.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {roiResult.warnings.map((warning, idx) => (
-                    <div key={idx} className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg text-amber-700">
-                      <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <div 
+                      key={idx} 
+                      className={`flex items-start gap-2 p-3 rounded-lg ${
+                        warning.severity === "info" 
+                          ? "bg-blue-50 text-blue-700" 
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {warning.severity === "info" ? (
+                        <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      )}
                       <div>
                         <span className="text-sm font-medium block">{warning.title}</span>
                         <span className="text-xs">{warning.message}</span>
