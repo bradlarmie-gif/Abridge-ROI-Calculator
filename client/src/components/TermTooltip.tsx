@@ -10,9 +10,10 @@ interface TermTooltipProps {
   short: string;
   full: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
-export function TermTooltip({ term, short, full, className = "" }: TermTooltipProps) {
+export function TermTooltip({ term, short, full, className = "", children }: TermTooltipProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -20,7 +21,7 @@ export function TermTooltip({ term, short, full, className = "" }: TermTooltipPr
           type="button"
           className={`inline-flex items-center gap-1 text-inherit underline decoration-dotted decoration-neutral-400 underline-offset-2 cursor-help hover:decoration-neutral-600 transition-colors ${className}`}
         >
-          {term}
+          {children || term}
           <HelpCircle className="w-3 h-3 text-neutral-400" />
         </button>
       </TooltipTrigger>

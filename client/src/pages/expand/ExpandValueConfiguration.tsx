@@ -204,7 +204,7 @@ export default function ExpandValueConfiguration({
                   </div>
                   <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
                     {totalHoursSaved > 0 
-                      ? <>Saving {totalHoursSaved.toLocaleString()} hrs/year. How do you <TermTooltip {...TERMS.conversionRate} /> this?</>
+                      ? <>Saving {totalHoursSaved.toLocaleString()} hrs/year. How will you <TermTooltip {...TERMS.conversionRate}>convert</TermTooltip> this time?</>
                       : "Add time savings data to configure value conversion"
                     }
                   </p>
