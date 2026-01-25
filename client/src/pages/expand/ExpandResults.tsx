@@ -789,18 +789,18 @@ export default function ExpandResults({
           </div>
         </div>
         
-        <div className="bg-white border border-neutral-200 rounded-xl p-6 mb-8">
-          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-4">
+        <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-8">
+          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-2 md:mb-4">
             Model Your Expansion
           </h2>
-          <p className="text-sm text-[#6B7280] mb-6">
+          <p className="text-sm text-[#6B7280] mb-4 md:mb-6">
             Based on your proven results, here's what full-scale could look like
           </p>
           
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-start">
-            <div className="bg-neutral-50 rounded-lg p-5">
-              <h4 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-4">Current State</h4>
-              <div className="space-y-3">
+          <div className="flex flex-col md:flex-row md:items-stretch gap-4 md:gap-6">
+            <div className="bg-neutral-50 rounded-lg p-4 md:p-5 flex-1">
+              <h4 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3 md:mb-4">Current State</h4>
+              <div className="space-y-2 md:space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-[#6B7280]">Providers</span>
                   <span className="font-medium text-[#1F2937]">{providers}</span>
@@ -816,13 +816,13 @@ export default function ExpandResults({
               </div>
             </div>
             
-            <div className="flex items-center justify-center h-full pt-12">
+            <div className="hidden md:flex items-center justify-center">
               <ChevronRight className="w-8 h-8 text-neutral-300" />
             </div>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
-              <h4 className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-4">Expansion Target</h4>
-              <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-5 flex-1">
+              <h4 className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 md:mb-4">Expansion Target</h4>
+              <div className="space-y-3 md:space-y-4">
                 <div>
                   <label className="text-sm text-[#6B7280] block mb-1">Total providers</label>
                   <input
