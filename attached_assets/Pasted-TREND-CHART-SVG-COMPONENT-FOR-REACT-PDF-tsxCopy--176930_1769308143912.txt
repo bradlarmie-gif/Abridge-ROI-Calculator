@@ -1,0 +1,746 @@
+TREND CHART SVG COMPONENT FOR REACT-PDF
+tsxCopy// ============================================================================
+// TREND CHART COMPONENT FOR REACT-PDF
+// ============================================================================
+
+import { Svg, Path, Circle, Line, Text, G, Rect } from "@react-pdf/renderer";
+
+interface TrendDataPoint {
+  label: string;      // "BL", "M1", "M2", etc.
+  value: number;
+  isBaseline?: boolean;
+  isCurrent?: boolean;
+}
+
+interface TrendChartProps {
+  data: TrendDataPoint[];
+  width?: number;
+  height?: number;
+  valuePrefix?: string;  // "$", "", etc.
+  valueSuffix?: string;  // "wRVU", "min", "%", etc.
+  showArea?: boolean;    // Fill under the line
+  positiveIsGood?: boolean; // For metrics where decrease is good (time), set to false
+}
+
+const TrendChart = ({
+  data,
+  width = 480,
+  height = 100,
+  valuePrefix = "",
+  valueSuffix = "",
+  showArea = true,
+  positiveIsGood = true,
+}: TrendChartProps) => {
+  if (!data || data.length < 2) return null;
+
+  // Chart dimensions
+  const padding = { top: 15, right: 20, bottom: 25, left: 45 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  // Calculate value range
+  const values = data.map(d => d.value);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const valueRange = maxValue - minValue || 1;
+  const valuePadding = valueRange * 0.15; // 15% padding
+  const yMin = minValue - valuePadding;
+  const yMax = maxValue + valuePadding;
+  const yRange = yMax - yMin;
+
+  // Calculate positions
+  const xStep = chartWidth / (data.length - 1);
+  
+  const getX = (index: number) => padding.left + (index * xStep);
+  const getY = (value: number) => padding.top + chartHeight - ((value - yMin) / yRange * chartHeight);
+
+  // Generate path for the line
+  const linePath = data.map((point, i) => {
+    const x = getX(i);
+    const y = getY(point.value);
+    return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+  }).join(" ");
+
+  // Generate path for the area fill (if enabled)
+  const areaPath = showArea ? 
+    `${linePath} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${padding.left} ${padding.top + chartHeight} Z` 
+    : "";
+
+  // Calculate baseline and current for summary
+  const baseline = data.find(d => d.isBaseline) || data[0];
+  const current = data.find(d => d.isCurrent) || data[data.length - 1];
+  const change = current.value - baseline.value;
+  const changePercent = baseline.value !== 0 ? (change / baseline.value) * 100 : 0;
+  
+  // Determine if trend is positive (considering if increase or decrease is good)
+  const isPositiveTrend = positiveIsGood ? change >= 0 : change <= 0;
+  const trendIndicator = isPositiveTrend ? "↗" : "↘";
+  const trendLabel = Math.abs(changePercent) < 2 ? "Stable" : 
+                     isPositiveTrend ? "Consistent improvement" : "Needs attention";
+
+  // Colors
+  const colors = {
+    line: "#10B981",           // Green
+    lineStroke: "#059669",     // Darker green
+    area: "#10B98120",         // Green with transparency
+    baseline: "#EA2C00",       // Abridge red/orange
+    current: "#10B981",        // Green
+    currentRing: "#FFFFFF",    // White ring around current
+    grid: "#E5E7EB",           // Light gray
+    text: "#6B7280",           // Medium gray
+    labelText: "#374151",      // Dark gray
+    axisLine: "#D1D5DB",       // Gray
+  };
+
+  // Y-axis tick values (3 ticks: min, mid, max)
+  const yTicks = [
+    { value: yMin + yRange * 0.1, y: getY(yMin + yRange * 0.1) },
+    { value: yMin + yRange * 0.5, y: getY(yMin + yRange * 0.5) },
+    { value: yMin + yRange * 0.9, y: getY(yMin + yRange * 0.9) },
+  ];
+
+  // Format value for display
+  const formatValue = (val: number) => {
+    if (valueSuffix === "%" || valueSuffix === "wRVU/enc") {
+      return val.toFixed(2);
+    }
+    if (Math.abs(val) >= 1000) {
+      return `${(val / 1000).toFixed(1)}K`;
+    }
+    return val.toFixed(1);
+  };
+
+  return (
+    <Svg width={width} height={height + 35} viewBox={`0 0 ${width} ${height + 35}`}>
+      {/* Background */}
+      <Rect x={0} y={0} width={width} height={height + 35} fill="#F9FAFB" rx={4} />
+      
+      {/* Chart area background */}
+      <Rect 
+        x={padding.left} 
+        y={padding.top} 
+        width={chartWidth} 
+        height={chartHeight} 
+        fill="#FFFFFF" 
+      />
+
+      {/* Horizontal grid lines */}
+      {yTicks.map((tick, i) => (
+        <Line
+          key={`grid-${i}`}
+          x1={padding.left}
+          y1={tick.y}
+          x2={padding.left + chartWidth}
+          y2={tick.y}
+          stroke={colors.grid}
+          strokeWidth={0.5}
+          strokeDasharray="2,2"
+        />
+      ))}
+
+      {/* Y-axis line */}
+      <Line
+        x1={padding.left}
+        y1={padding.top}
+        x2={padding.left}
+        y2={padding.top + chartHeight}
+        stroke={colors.axisLine}
+        strokeWidth={1}
+      />
+
+      {/* X-axis line */}
+      <Line
+        x1={padding.left}
+        y1={padding.top + chartHeight}
+        x2={padding.left + chartWidth}
+        y2={padding.top + chartHeight}
+        stroke={colors.axisLine}
+        strokeWidth={1}
+      />
+
+      {/* Y-axis labels */}
+      {yTicks.map((tick, i) => (
+        <Text
+          key={`y-label-${i}`}
+          x={padding.left - 5}
+          y={tick.y + 3}
+          fontSize={7}
+          fill={colors.text}
+          textAnchor="end"
+        >
+          {formatValue(tick.value)}
+        </Text>
+      ))}
+
+      {/* Area fill under line */}
+      {showArea && (
+        <Path
+          d={areaPath}
+          fill={colors.area}
+        />
+      )}
+
+      {/* Main line */}
+      <Path
+        d={linePath}
+        stroke={colors.line}
+        strokeWidth={2.5}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Data points */}
+      {data.map((point, i) => {
+        const x = getX(i);
+        const y = getY(point.value);
+        
+        if (point.isBaseline) {
+          // Baseline point - orange/red, smaller
+          return (
+            <G key={`point-${i}`}>
+              <Circle cx={x} cy={y} r={5} fill={colors.baseline} />
+              <Circle cx={x} cy={y} r={3} fill="#FFFFFF" />
+              <Circle cx={x} cy={y} r={2} fill={colors.baseline} />
+            </G>
+          );
+        } else if (point.isCurrent) {
+          // Current point - larger, green with white ring
+          return (
+            <G key={`point-${i}`}>
+              <Circle cx={x} cy={y} r={8} fill={colors.current} />
+              <Circle cx={x} cy={y} r={5} fill={colors.currentRing} />
+              <Circle cx={x} cy={y} r={3} fill={colors.current} />
+            </G>
+          );
+        } else {
+          // Regular point - small green dot
+          return (
+            <Circle key={`point-${i}`} cx={x} cy={y} r={4} fill={colors.line} />
+          );
+        }
+      })}
+
+      {/* X-axis labels */}
+      {data.map((point, i) => {
+        const x = getX(i);
+        const isSpecial = point.isBaseline || point.isCurrent;
+        
+        return (
+          <Text
+            key={`x-label-${i}`}
+            x={x}
+            y={padding.top + chartHeight + 12}
+            fontSize={7}
+            fill={point.isBaseline ? colors.baseline : point.isCurrent ? colors.current : colors.text}
+            fontWeight={isSpecial ? "bold" : "normal"}
+            textAnchor="middle"
+          >
+            {point.label}
+          </Text>
+        );
+      })}
+
+      {/* Summary line below chart */}
+      <G transform={`translate(0, ${height + 5})`}>
+        {/* Baseline → Current summary */}
+        <Text x={padding.left} y={10} fontSize={8} fill={colors.labelText}>
+          <tspan fontWeight="bold">Baseline:</tspan>
+          <tspan> {valuePrefix}{formatValue(baseline.value)}{valueSuffix}</tspan>
+          <tspan fill={colors.text}>  →  </tspan>
+          <tspan fontWeight="bold">Current:</tspan>
+          <tspan> {valuePrefix}{formatValue(current.value)}{valueSuffix}</tspan>
+          <tspan fill={colors.text}>  =  </tspan>
+          <tspan fontWeight="bold" fill={isPositiveTrend ? colors.current : colors.baseline}>
+            {change >= 0 ? "+" : ""}{formatValue(change)} ({changePercent >= 0 ? "+" : ""}{changePercent.toFixed(0)}%)
+          </tspan>
+        </Text>
+
+        {/* Trend indicator */}
+        <Text 
+          x={padding.left} 
+          y={22} 
+          fontSize={7} 
+          fill={isPositiveTrend ? colors.current : colors.baseline}
+        >
+          {trendIndicator} {trendLabel}
+        </Text>
+      </G>
+    </Svg>
+  );
+};
+
+export default TrendChart;
+
+USAGE IN THE METRIC CARD
+tsxCopy// Inside your metric deep dive card:
+
+<View style={styles.trendChartContainer}>
+  <Text style={styles.trendChartTitle}>YOUR TREND ({data.monthsOnAbridge} months)</Text>
+  
+  <TrendChart
+    data={[
+      { label: "BL", value: 2.30, isBaseline: true },
+      { label: "M1", value: 2.35 },
+      { label: "M2", value: 2.38 },
+      { label: "M3", value: 2.42 },
+      { label: "M4", value: 2.47 },
+      { label: "M5", value: 2.50, isCurrent: true },
+    ]}
+    valuePrefix=""
+    valueSuffix=" wRVU"
+    showArea={true}
+    positiveIsGood={true}
+  />
+</View>
+
+STYLES FOR THE CHART CONTAINER
+tsxCopytrendChartContainer: {
+  backgroundColor: "#F9FAFB",
+  borderRadius: 4,
+  padding: 10,
+  marginBottom: 10,
+},
+trendChartTitle: {
+  fontSize: 7,
+  fontWeight: "bold",
+  color: "#6B7280",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  marginBottom: 6,
+},
+
+EXAMPLE DATA TRANSFORMATIONS
+For each metric type, transform the user's input into chart data:
+tsxCopy// wRVU per Encounter (increase is good)
+const wrvuChartData = metric.trendData ? [
+  { label: "BL", value: metric.trendData.baseline, isBaseline: true },
+  ...metric.trendData.months.map((m, i) => ({
+    label: `M${i + 1}`,
+    value: m.value,
+    isCurrent: i === metric.trendData.months.length - 1,
+  })),
+] : null;
+
+// Time in Notes (decrease is good - flip positiveIsGood)
+const timeChartData = metric.trendData ? [
+  { label: "BL", value: metric.trendData.baseline, isBaseline: true },
+  ...metric.trendData.months.map((m, i) => ({
+    label: `M${i + 1}`,
+    value: m.value,
+    isCurrent: i === metric.trendData.months.length - 1,
+  })),
+] : null;
+
+// When rendering:
+<TrendChart 
+  data={timeChartData} 
+  valueSuffix=" min"
+  positiveIsGood={false}  // For time, going DOWN is good
+/>
+
+JOURNEY CHART (The Big One on Page 1)
+This is the more complex chart showing Before → Today → Full Scale:
+tsxCopy// ============================================================================
+// JOURNEY CHART COMPONENT FOR REACT-PDF
+// ============================================================================
+
+interface JourneyChartProps {
+  currentValue: number;
+  currentProviders: number;
+  currentUtilization: number;
+  projectedValue: number;
+  targetProviders: number;
+  monthsOnAbridge: number;
+  width?: number;
+  height?: number;
+}
+
+const JourneyChart = ({
+  currentValue,
+  currentProviders,
+  currentUtilization,
+  projectedValue,
+  targetProviders,
+  monthsOnAbridge,
+  width = 500,
+  height = 140,
+}: JourneyChartProps) => {
+  
+  const padding = { top: 20, right: 60, bottom: 35, left: 50 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  // Define the journey points
+  // X positions: Before (0), Today (~30% based on months), Full Scale (100%)
+  const todayXPercent = Math.min(0.35, monthsOnAbridge / 24); // Cap at 35% for visual balance
+  
+  const points = [
+    { 
+      label: "Before", 
+      sublabel: "Baseline", 
+      x: 0, 
+      value: 0,
+      isActual: true,
+    },
+    { 
+      label: "TODAY", 
+      sublabel: `$${Math.round(currentValue / 1000)}K\n${currentProviders} providers · ${currentUtilization}%`, 
+      x: todayXPercent, 
+      value: currentValue,
+      isActual: true,
+      isCurrent: true,
+    },
+    { 
+      label: "Full Scale", 
+      sublabel: `$${Math.round(projectedValue / 1000)}K\n${targetProviders} providers`, 
+      x: 1, 
+      value: projectedValue,
+      isActual: false,
+    },
+  ];
+
+  // Calculate Y scale
+  const maxValue = projectedValue * 1.1;
+  const getX = (xPercent: number) => padding.left + (xPercent * chartWidth);
+  const getY = (value: number) => padding.top + chartHeight - (value / maxValue * chartHeight);
+
+  // Generate smooth curve path from Before through Today to Full Scale
+  // Using quadratic bezier for nice curve
+  const beforeX = getX(0);
+  const beforeY = getY(0);
+  const todayX = getX(todayXPercent);
+  const todayY = getY(currentValue);
+  const fullX = getX(1);
+  const fullY = getY(projectedValue);
+
+  // Actual results path (Before → Today) - solid green
+  const actualPath = `M ${beforeX} ${beforeY} Q ${(beforeX + todayX) / 2} ${todayY} ${todayX} ${todayY}`;
+  
+  // Area under actual results
+  const actualAreaPath = `${actualPath} L ${todayX} ${padding.top + chartHeight} L ${beforeX} ${padding.top + chartHeight} Z`;
+
+  // Projected path (Today → Full Scale) - dashed blue
+  const projectedPath = `M ${todayX} ${todayY} Q ${(todayX + fullX) / 2} ${(todayY + fullY) / 2 - 20} ${fullX} ${fullY}`;
+
+  const colors = {
+    actualLine: "#10B981",
+    actualArea: "#10B98115",
+    projectedLine: "#3B82F6",
+    baseline: "#EA2C00",
+    current: "#EA2C00",
+    fullScale: "#10B981",
+    grid: "#E5E7EB",
+    text: "#6B7280",
+    labelText: "#374151",
+  };
+
+  // Y-axis labels
+  const yLabels = [
+    { value: 0, label: "$0" },
+    { value: maxValue * 0.5, label: `$${Math.round(maxValue * 0.5 / 1000)}K` },
+    { value: maxValue * 0.9, label: `$${Math.round(maxValue * 0.9 / 1000)}K` },
+  ];
+
+  return (
+    <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      {/* Background */}
+      <Rect x={0} y={0} width={width} height={height} fill="#F9FAFB" rx={6} />
+      
+      {/* Chart area */}
+      <Rect 
+        x={padding.left} 
+        y={padding.top} 
+        width={chartWidth} 
+        height={chartHeight} 
+        fill="#FFFFFF" 
+      />
+
+      {/* Horizontal grid lines */}
+      {yLabels.map((tick, i) => (
+        <G key={`grid-${i}`}>
+          <Line
+            x1={padding.left}
+            y1={getY(tick.value)}
+            x2={padding.left + chartWidth}
+            y2={getY(tick.value)}
+            stroke={colors.grid}
+            strokeWidth={0.5}
+            strokeDasharray={i === 0 ? "0" : "3,3"}
+          />
+          <Text
+            x={padding.left - 8}
+            y={getY(tick.value) + 3}
+            fontSize={7}
+            fill={colors.text}
+            textAnchor="end"
+          >
+            {tick.label}
+          </Text>
+        </G>
+      ))}
+
+      {/* X-axis line */}
+      <Line
+        x1={padding.left}
+        y1={padding.top + chartHeight}
+        x2={padding.left + chartWidth}
+        y2={padding.top + chartHeight}
+        stroke={colors.grid}
+        strokeWidth={1}
+      />
+
+      {/* Area fill under actual results */}
+      <Path
+        d={actualAreaPath}
+        fill={colors.actualArea}
+      />
+
+      {/* Actual results line (solid green) */}
+      <Path
+        d={actualPath}
+        stroke={colors.actualLine}
+        strokeWidth={3}
+        fill="none"
+        strokeLinecap="round"
+      />
+
+      {/* Projected line (dashed blue) */}
+      <Path
+        d={projectedPath}
+        stroke={colors.projectedLine}
+        strokeWidth={2}
+        fill="none"
+        strokeLinecap="round"
+        strokeDasharray="6,4"
+      />
+
+      {/* Before point (orange) */}
+      <G>
+        <Circle cx={beforeX} cy={beforeY} r={6} fill={colors.baseline} />
+        <Circle cx={beforeX} cy={beforeY} r={3} fill="#FFFFFF" />
+        <Text
+          x={beforeX}
+          y={padding.top + chartHeight + 12}
+          fontSize={8}
+          fontWeight="bold"
+          fill={colors.baseline}
+          textAnchor="middle"
+        >
+          Before
+        </Text>
+        <Text
+          x={beforeX}
+          y={padding.top + chartHeight + 22}
+          fontSize={6}
+          fill={colors.text}
+          textAnchor="middle"
+        >
+          Baseline
+        </Text>
+      </G>
+
+      {/* TODAY point (large, red/orange, prominent) */}
+      <G>
+        {/* Glow effect */}
+        <Circle cx={todayX} cy={todayY} r={14} fill={colors.current} opacity={0.15} />
+        <Circle cx={todayX} cy={todayY} r={10} fill={colors.current} opacity={0.3} />
+        {/* Main dot */}
+        <Circle cx={todayX} cy={todayY} r={8} fill={colors.current} />
+        <Circle cx={todayX} cy={todayY} r={4} fill="#FFFFFF" />
+        
+        {/* Label */}
+        <Text
+          x={todayX}
+          y={padding.top + chartHeight + 12}
+          fontSize={9}
+          fontWeight="bold"
+          fill={colors.current}
+          textAnchor="middle"
+        >
+          TODAY
+        </Text>
+        <Text
+          x={todayX}
+          y={padding.top + chartHeight + 22}
+          fontSize={7}
+          fontWeight="bold"
+          fill={colors.labelText}
+          textAnchor="middle"
+        >
+          ${Math.round(currentValue / 1000)}K
+        </Text>
+        <Text
+          x={todayX}
+          y={padding.top + chartHeight + 31}
+          fontSize={6}
+          fill={colors.text}
+          textAnchor="middle"
+        >
+          {currentProviders} providers · {currentUtilization}%
+        </Text>
+      </G>
+
+      {/* Full Scale point (green) */}
+      <G>
+        <Circle cx={fullX} cy={fullY} r={8} fill={colors.fullScale} />
+        <Circle cx={fullX} cy={fullY} r={4} fill="#FFFFFF" />
+        
+        <Text
+          x={fullX}
+          y={padding.top + chartHeight + 12}
+          fontSize={8}
+          fontWeight="bold"
+          fill={colors.fullScale}
+          textAnchor="middle"
+        >
+          Full Scale
+        </Text>
+        <Text
+          x={fullX}
+          y={padding.top + chartHeight + 22}
+          fontSize={7}
+          fontWeight="bold"
+          fill={colors.labelText}
+          textAnchor="middle"
+        >
+          ${Math.round(projectedValue / 1000)}K
+        </Text>
+        <Text
+          x={fullX}
+          y={padding.top + chartHeight + 31}
+          fontSize={6}
+          fill={colors.text}
+          textAnchor="middle"
+        >
+          {targetProviders} providers
+        </Text>
+      </G>
+
+      {/* Legend */}
+      <G transform={`translate(${padding.left + 10}, ${padding.top + 5})`}>
+        {/* Actual results */}
+        <Circle cx={0} cy={0} r={4} fill={colors.actualLine} />
+        <Text x={8} y={3} fontSize={6} fill={colors.text}>
+          Actual results
+        </Text>
+        
+        {/* Projected */}
+        <Line x1={60} y1={0} x2={75} y2={0} stroke={colors.projectedLine} strokeWidth={2} strokeDasharray="4,2" />
+        <Text x={80} y={3} fontSize={6} fill={colors.text}>
+          Projected
+        </Text>
+        
+        {/* You are here */}
+        <Circle cx={140} cy={0} r={4} fill={colors.current} />
+        <Text x={148} y={3} fontSize={6} fill={colors.text}>
+          You are here
+        </Text>
+      </G>
+    </Svg>
+  );
+};
+
+export default JourneyChart;
+
+USAGE
+tsxCopy<View style={styles.journeyChartContainer}>
+  <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
+  
+  <JourneyChart
+    currentValue={118000}
+    currentProviders={50}
+    currentUtilization={55}
+    projectedValue={518000}
+    targetProviders={150}
+    monthsOnAbridge={5}
+  />
+</View>
+
+COMPLETE FIX FOR REPLIT
+Copy## CHART FIXES - COMPREHENSIVE
+
+### 1. ADD TREND CHART COMPONENT
+Create a new TrendChart component using SVG that renders in react-pdf.
+See the complete TrendChart code provided above.
+
+Key features:
+- Line chart with data points
+- Baseline point in orange/red (smaller, distinctive)
+- Current point in green (larger, with glow effect)
+- Regular points in green (medium size)
+- Light green area fill under the line
+- X-axis labels (BL, M1, M2, M3, etc.)
+- Y-axis with 3 tick marks
+- Summary below: "Baseline: X → Current: Y = +Z (N%)"
+- Trend indicator: "↗ Consistent improvement"
+
+### 2. ADD JOURNEY CHART COMPONENT  
+Create a JourneyChart component for the executive summary page.
+See the complete JourneyChart code provided above.
+
+Key features:
+- Three main points: Before, TODAY, Full Scale
+- "TODAY" point is large, red/orange, with glow effect
+- Solid green line for actual results (Before → Today)
+- Light green area fill under actual results
+- Dashed blue line for projected growth (Today → Full Scale)
+- Y-axis showing dollar values
+- X-axis with labels and sublabels
+- Legend showing what each line means
+
+### 3. RENDER TREND CHARTS IN METRIC CARDS
+For each metric that has trend data (monthly entries), render the TrendChart:
+
+```tsx
+{metric.trendData && metric.trendData.months.length > 0 && (
+  <View style={styles.trendChartContainer}>
+    <Text style={styles.trendChartTitle}>
+      YOUR TREND ({metric.trendData.months.length} months)
+    </Text>
+    <TrendChart
+      data={[
+        { label: "BL", value: metric.trendData.baseline, isBaseline: true },
+        ...metric.trendData.months.map((m, i) => ({
+          label: `M${i + 1}`,
+          value: m.value,
+          isCurrent: i === metric.trendData.months.length - 1,
+        })),
+      ]}
+      valueSuffix={metric.unit}
+      positiveIsGood={metric.changeDirection === 'increase'}
+    />
+  </View>
+)}
+4. RENDER JOURNEY CHART ON PAGE 1
+Replace the current simple journey visualization with the full JourneyChart:
+tsxCopy<View style={styles.journeyChartContainer}>
+  <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
+  <JourneyChart
+    currentValue={data.valueBreakdown.tier1.total}
+    currentProviders={data.deployment.providers}
+    currentUtilization={data.deployment.utilizationRate}
+    projectedValue={data.expansion.projection.projectedValue}
+    targetProviders={data.expansion.expansionTarget.totalProviders}
+    monthsOnAbridge={data.deployment.monthsOnAbridge}
+  />
+</View>
+5. CHART STYLING
+Add these styles:
+tsxCopyjourneyChartContainer: {
+  marginBottom: 14,
+},
+trendChartContainer: {
+  backgroundColor: "#F9FAFB",
+  borderRadius: 4,
+  padding: 10,
+  marginBottom: 10,
+},
+trendChartTitle: {
+  fontSize: 7,
+  fontWeight: "bold",
+  color: "#6B7280",
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  marginBottom: 6,
+},

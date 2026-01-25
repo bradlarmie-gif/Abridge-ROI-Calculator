@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { 
-  ArrowLeft, 
+  ArrowLeft,
   ArrowRight, 
   Stethoscope, 
   Zap, 
@@ -26,7 +26,7 @@ import {
   BarChart2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
+import { GlobalHeader } from "@/components/GlobalHeader";
 
 interface LearnPathProps {
   onBack: () => void;
@@ -1409,23 +1409,11 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
   if (screen === "selection") {
     return (
       <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50">
-        <header className="bg-white/95 backdrop-blur-sm border-b border-neutral-200">
-          <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              data-testid="button-back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Home</span>
-            </Button>
-            <div className="flex items-center gap-3">
-              <img src={abridgeLogo} alt="Abridge" className="h-6" data-testid="img-logo" />
-              <span className="text-sm text-[#6B7280] font-medium">ROI Calculator</span>
-            </div>
-          </div>
-        </header>
+        <GlobalHeader 
+          pageName="Learn the Methodology" 
+          onBack={onBack}
+        />
+        <div className="h-[72px]" />
 
         <main className="max-w-3xl mx-auto px-6 py-12 md:py-20">
           <div className="text-center mb-12">
@@ -1518,28 +1506,11 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50">
-      <header className="bg-white/95 backdrop-blur-sm border-b border-neutral-200 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToSelection}
-            data-testid="button-back-methodology"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </Button>
-          <div className="flex items-center gap-4">
-            <img src={abridgeLogo} alt="Abridge" className="h-6 hidden sm:block" data-testid="img-logo-methodology" />
-            {config && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-[#FEF0EC] rounded-full">
-                <config.icon className="w-4 h-4 text-[#EA2C00]" />
-                <span className="text-sm font-medium text-[#EA2C00]">{config.name}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <GlobalHeader 
+        pageName={config?.name || "Methodology"} 
+        onBack={handleBackToSelection}
+      />
+      <div className="h-[72px]" />
 
       <main className="max-w-4xl mx-auto px-6 py-8 md:py-12">
         <div className="mb-8">

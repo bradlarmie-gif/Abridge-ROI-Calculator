@@ -2598,16 +2598,6 @@ export default function ObjectiveSelectionScreen({
         {/* PAGE 2 — STRATEGIC PRIORITIES */}
         {currentPage === "priorities" && selectedSetting && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-12 md:py-16">
-            {/* Back button */}
-            <button
-              onClick={handleBackToPage1}
-              className="inline-flex items-center gap-2 text-[15px] font-medium text-[#6B7280] transition-colors hover:text-[#EA2C00] mb-8"
-              data-testid="button-back-to-setting"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-
             {/* Page Header with Selection Counter */}
             <div className="mb-12">
               <h2 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-6">
@@ -2802,15 +2792,6 @@ export default function ObjectiveSelectionScreen({
         {currentPage === "value-blueprint" && selectedSetting && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16 pb-32">
             <div className="max-w-4xl">
-              <button
-                onClick={handleBackToPage2}
-                className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#EA2C00] transition-opacity hover:opacity-70"
-                data-testid="button-back-to-priorities"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </button>
-
               <div className="mb-10">
                 <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
                   Value Methodology
@@ -3101,15 +3082,6 @@ export default function ObjectiveSelectionScreen({
           <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-16">
             <div className="grid lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
               <div>
-                <button
-                  onClick={handleBackToPage3}
-                  className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-[#EA2C00] transition-opacity hover:opacity-70"
-                  data-testid="button-back-to-blueprint"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
-
                 <div className="mb-10">
                   <h2 className="text-3xl md:text-4xl font-medium text-neutral-900 leading-tight mb-4">
                     Baseline Assumptions

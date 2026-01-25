@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { ArrowLeft } from "lucide-react";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface ProgressDotsProps {
@@ -32,9 +33,11 @@ interface GlobalHeaderProps {
   currentStep?: number;
   totalSteps?: number;
   onLogoClick?: () => void;
+  onBack?: () => void;
+  showBack?: boolean;
 }
 
-export function GlobalHeader({ pageName, showContext = true, currentStep, totalSteps, onLogoClick }: GlobalHeaderProps) {
+export function GlobalHeader({ pageName, showContext = true, currentStep, totalSteps, onLogoClick, onBack, showBack = true }: GlobalHeaderProps) {
   const [, setLocation] = useLocation();
   
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -46,21 +49,46 @@ export function GlobalHeader({ pageName, showContext = true, currentStep, totalS
     }
   };
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      window.history.back();
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 h-[72px]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 h-full flex items-center justify-between">
-        <a 
-          href="/" 
-          onClick={handleLogoClick}
-          className="flex items-center transition-opacity hover:opacity-70 cursor-pointer"
-          data-testid="link-logo-home"
-        >
-          <img 
-            src={abridgeLogo} 
-            alt="Abridge" 
-            className="h-6"
-          />
-        </a>
+        {/* Left: Logo + Back */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
+          <a 
+            href="/" 
+            onClick={handleLogoClick}
+            className="flex items-center transition-opacity hover:opacity-70 cursor-pointer flex-shrink-0"
+            data-testid="link-logo-home"
+          >
+            <img 
+              src={abridgeLogo} 
+              alt="Abridge" 
+              className="h-5 sm:h-6"
+            />
+          </a>
+          
+          {showBack && (
+            <>
+              <div className="w-px h-5 bg-slate-200 hidden sm:block" />
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors p-1.5 -ml-1 rounded-md hover:bg-slate-100"
+                data-testid="button-back"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm font-medium hidden sm:inline">Back</span>
+              </button>
+            </>
+          )}
+        </div>
 
         {showContext && (
           <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-2">
