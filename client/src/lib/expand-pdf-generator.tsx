@@ -290,24 +290,24 @@ const s = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: c.green,
   },
-  cardTitle: { fontSize: 9, fontWeight: "bold", color: c.black },
-  cardSub: { fontSize: 7, color: c.medium },
-  cardValue: { fontSize: 12, fontWeight: "bold", color: c.green },
-  cardBody: { padding: 8 },
+  cardTitle: { fontSize: 11, fontWeight: "bold", color: c.black },
+  cardSub: { fontSize: 8, color: c.medium },
+  cardValue: { fontSize: 14, fontWeight: "bold", color: c.green },
+  cardBody: { padding: 12 },
   
   // Table rows
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: c.border,
   },
   rowLast: { borderBottomWidth: 0 },
-  rowLabel: { flex: 1, fontSize: 8, color: c.dark },
-  rowValue: { fontSize: 9, fontWeight: "bold", color: c.green },
-  rowValueNeutral: { fontSize: 9, fontWeight: "bold", color: c.black },
+  rowLabel: { flex: 1, fontSize: 10, color: c.dark },
+  rowValue: { fontSize: 11, fontWeight: "bold", color: c.green },
+  rowValueNeutral: { fontSize: 11, fontWeight: "bold", color: c.black },
   
   // Two column layout
   twoCol: { flexDirection: "row", gap: 8, marginBottom: 8 },
@@ -318,18 +318,18 @@ const s = StyleSheet.create({
     backgroundColor: c.primaryLight,
     borderLeftWidth: 3,
     borderLeftColor: c.primary,
-    padding: 8,
-    marginBottom: 10,
+    padding: 12,
+    marginBottom: 14,
     borderRadius: 2,
   },
   calloutTitle: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
     color: c.primary,
     textTransform: "uppercase",
-    marginBottom: 3,
+    marginBottom: 4,
   },
-  calloutText: { fontSize: 8, color: c.dark, lineHeight: 1.4 },
+  calloutText: { fontSize: 10, color: c.dark, lineHeight: 1.5 },
   
   // Key takeaway
   takeaway: {
@@ -337,78 +337,78 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: c.border,
     borderRadius: 4,
-    padding: 8,
-    marginTop: 8,
+    padding: 12,
+    marginTop: 14,
     flexDirection: "row",
   },
   takeawayLabel: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
     color: c.primary,
     textTransform: "uppercase",
-    marginRight: 8,
+    marginRight: 10,
   },
-  takeawayText: { flex: 1, fontSize: 8, color: c.dark, lineHeight: 1.3 },
+  takeawayText: { flex: 1, fontSize: 10, color: c.dark, lineHeight: 1.5 },
   
   // Metric comparison
   comparison: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
-    gap: 12,
+    paddingVertical: 16,
+    gap: 20,
   },
-  compBox: { alignItems: "center", minWidth: 60 },
-  compLabel: { fontSize: 6, fontWeight: "bold", color: c.medium, textTransform: "uppercase", marginBottom: 2 },
-  compValue: { fontSize: 18, fontWeight: "bold", color: c.black },
-  compUnit: { fontSize: 7, color: c.medium },
+  compBox: { alignItems: "center", minWidth: 70 },
+  compLabel: { fontSize: 8, fontWeight: "bold", color: c.medium, textTransform: "uppercase", marginBottom: 4 },
+  compValue: { fontSize: 28, fontWeight: "bold", color: c.black },
+  compUnit: { fontSize: 9, color: c.medium, marginTop: 2 },
   compChange: {
     alignItems: "center",
     backgroundColor: c.greenLight,
-    borderRadius: 4,
-    padding: 8,
+    borderRadius: 6,
+    padding: 12,
   },
-  compChangeValue: { fontSize: 14, fontWeight: "bold", color: c.green },
-  compChangePercent: { fontSize: 7, color: c.greenDark },
+  compChangeValue: { fontSize: 20, fontWeight: "bold", color: c.green },
+  compChangePercent: { fontSize: 9, color: c.greenDark, marginTop: 2 },
   
   // Benchmark/Warning boxes
   benchBox: {
     backgroundColor: c.blueLight,
-    padding: 6,
-    borderRadius: 3,
-    marginTop: 6,
+    padding: 10,
+    borderRadius: 4,
+    marginTop: 12,
   },
-  benchTitle: { fontSize: 6, fontWeight: "bold", color: c.blue, textTransform: "uppercase", marginBottom: 2 },
-  benchText: { fontSize: 7, color: c.blue },
+  benchTitle: { fontSize: 8, fontWeight: "bold", color: c.blue, textTransform: "uppercase", marginBottom: 4 },
+  benchText: { fontSize: 9, color: c.blue, lineHeight: 1.4 },
   
   warnBox: {
     backgroundColor: c.amberLight,
-    padding: 6,
-    borderRadius: 3,
-    marginTop: 6,
+    padding: 10,
+    borderRadius: 4,
+    marginTop: 12,
   },
-  warnTitle: { fontSize: 6, fontWeight: "bold", color: c.amber, textTransform: "uppercase", marginBottom: 2 },
-  warnText: { fontSize: 7, color: c.amber },
+  warnTitle: { fontSize: 8, fontWeight: "bold", color: c.amber, textTransform: "uppercase", marginBottom: 4 },
+  warnText: { fontSize: 9, color: c.amber, lineHeight: 1.4 },
   
   // Value calc
   valueBox: {
     backgroundColor: c.greenLight,
-    padding: 6,
-    borderRadius: 3,
-    marginTop: 6,
+    padding: 10,
+    borderRadius: 4,
+    marginTop: 12,
   },
-  valueFormula: { fontSize: 8, fontWeight: "bold", color: c.green, fontFamily: "Courier" },
-  valueNote: { fontSize: 6, color: c.greenDark, marginTop: 2 },
+  valueFormula: { fontSize: 10, fontWeight: "bold", color: c.green, fontFamily: "Courier" },
+  valueNote: { fontSize: 8, color: c.greenDark, marginTop: 4 },
   
   // What this means
   meaningBox: {
     backgroundColor: c.pale,
-    padding: 6,
-    borderRadius: 3,
-    marginTop: 6,
+    padding: 12,
+    borderRadius: 4,
+    marginTop: 12,
   },
-  meaningTitle: { fontSize: 6, fontWeight: "bold", color: c.dark, textTransform: "uppercase", marginBottom: 2 },
-  meaningText: { fontSize: 7, color: c.dark, lineHeight: 1.4 },
+  meaningTitle: { fontSize: 9, fontWeight: "bold", color: c.dark, textTransform: "uppercase", marginBottom: 6 },
+  meaningText: { fontSize: 10, color: c.dark, lineHeight: 1.5 },
   
   // Opportunity cards
   oppCard: {
@@ -1209,7 +1209,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; p
 const ExpandROIDocument = ({ data }: { data: ExpandPDFData }) => {
   const metricsWithDeepDive = data.metrics.filter(m => (m.value && m.value > 0) || m.trend || m.before !== m.after);
   
-  const metricsPerPage = 2;
+  const metricsPerPage = 1;
   const metricPages: ExpandMetricData[][] = [];
   for (let i = 0; i < metricsWithDeepDive.length; i += metricsPerPage) {
     metricPages.push(metricsWithDeepDive.slice(i, i + metricsPerPage));
