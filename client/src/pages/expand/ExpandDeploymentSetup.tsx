@@ -112,24 +112,24 @@ export default function ExpandDeploymentSetup({
       />
       <UnifiedHeaderSpacer />
 
-      <main className="max-w-4xl mx-auto px-6 py-6 md:py-8 pb-10">
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
         {/* Title */}
-        <div className="mb-10">
-          <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
+        <div className="mb-8 md:mb-10">
+          <h1 className="text-xl md:text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
             Your Outpatient Deployment
           </h1>
-          <p className="text-[#6B7280]">
+          <p className="text-sm md:text-base text-[#6B7280]">
             Tell us about your Abridge setup so we can analyze your results
           </p>
         </div>
 
         {/* Deployment Basics */}
-        <section className="mb-10">
-          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-4">
+        <section className="mb-8 md:mb-10">
+          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-3 md:mb-4">
             DEPLOYMENT BASICS
           </h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B7280]">Providers using Abridge</label>
               <FormattedNumberInput
@@ -213,16 +213,16 @@ export default function ExpandDeploymentSetup({
         </section>
 
         {/* Metrics Selection */}
-        <section className="mb-10">
-          <div className="mb-6">
+        <section className="mb-8 md:mb-10">
+          <div className="mb-4 md:mb-6">
             <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-1">
               WHAT METRICS DO YOU HAVE DATA FOR?
             </h2>
           </div>
 
           {/* PRIMARY METRICS */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="mb-4 md:mb-6">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">PRIMARY METRICS</span>
               <span className="text-xs text-[#6B7280]">(Recommended)</span>
             </div>
@@ -236,7 +236,7 @@ export default function ExpandDeploymentSetup({
                 return (
                   <div
                     key={metric.id}
-                    className={`flex items-center gap-4 p-4 bg-white border-l-4 border rounded-lg cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white border-l-4 border rounded-lg cursor-pointer transition-all ${
                       isSelected
                         ? "border-l-emerald-500 border-emerald-200 bg-emerald-50/30"
                         : "border-l-transparent border-neutral-200 hover:border-neutral-300"

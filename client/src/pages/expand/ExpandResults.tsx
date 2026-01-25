@@ -544,54 +544,55 @@ export default function ExpandResults({
       />
       <UnifiedHeaderSpacer />
       
-      <div className="py-6 md:py-8 px-6 pb-8 max-w-5xl mx-auto">
-        <div className="flex items-center justify-end mb-6 gap-2 flex-wrap">
+      <div className="py-6 md:py-8 px-4 md:px-6 pb-8 max-w-5xl mx-auto">
+        <div className="flex items-center justify-end mb-4 md:mb-6 gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} data-testid="button-export-pdf">
             {isExporting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <FileText className="w-4 h-4 mr-1" />}
-            {isExporting ? 'Generating...' : 'Export PDF'}
+            <span className="hidden sm:inline">{isExporting ? 'Generating...' : 'Export PDF'}</span>
+            <span className="sm:hidden">{isExporting ? '...' : 'PDF'}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={handleShareEmail} disabled={isSharing} data-testid="button-share-email">
             {isSharing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Share2 className="w-4 h-4 mr-1" />}
-            {isSharing ? 'Sharing...' : 'Share'}
+            <span className="hidden sm:inline">{isSharing ? 'Sharing...' : 'Share'}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={handleCopyLink} data-testid="button-copy-link">
-            <Link className="w-4 h-4 mr-1" /> Copy Link
+            <Link className="w-4 h-4 sm:mr-1" /><span className="hidden sm:inline">Copy Link</span>
           </Button>
         </div>
         
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-semibold text-[#1F2937] mb-2">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-2">
             Your Abridge Results
           </h1>
-          <p className="text-[#6B7280]">
-            {providers} providers · {months} months on Abridge · {utilizationRate}% utilization
+          <p className="text-sm md:text-base text-[#6B7280]">
+            {providers} providers · {months} mo · {utilizationRate}% utilization
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
-          <div className="bg-white border border-neutral-200 rounded-xl p-6 text-center" data-testid="card-current-value">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center mx-auto mb-3">
-              <DollarSign className="w-5 h-5 text-emerald-600" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8">
+          <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 text-center" data-testid="card-current-value">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-emerald-100 flex items-center justify-center mx-auto mb-2 md:mb-3">
+              <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
             </div>
-            <span className="text-3xl font-bold text-emerald-600">{formatCurrency(currentValue)}</span>
+            <span className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(currentValue)}</span>
             <span className="block text-xs font-medium text-[#6B7280] uppercase tracking-wide mt-1">Current Value</span>
             <span className="text-xs text-[#9CA3AF]">Proven results</span>
           </div>
           
-          <div className="bg-[#1e293b] rounded-xl p-6 text-center" data-testid="card-value-per-provider">
-            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mx-auto mb-3">
-              <TrendingUp className="w-5 h-5 text-white" />
+          <div className="bg-[#1e293b] rounded-xl p-4 md:p-6 text-center" data-testid="card-value-per-provider">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-white/10 flex items-center justify-center mx-auto mb-2 md:mb-3">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            <span className="text-3xl font-bold text-white">{formatCurrency(valuePerProvider)}</span>
+            <span className="text-2xl md:text-3xl font-bold text-white">{formatCurrency(valuePerProvider)}</span>
             <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wide mt-1">Value/Provider</span>
             <span className="text-xs text-neutral-500">Based on {providers} providers</span>
           </div>
           
-          <div className={`rounded-xl p-6 text-center ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} data-testid="card-expansion">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3 ${expansionCalc ? 'bg-blue-100' : 'bg-neutral-200'}`}>
-              <Rocket className={`w-5 h-5 ${expansionCalc ? 'text-blue-600' : 'text-neutral-400'}`} />
+          <div className={`rounded-xl p-4 md:p-6 text-center ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} data-testid="card-expansion">
+            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center mx-auto mb-2 md:mb-3 ${expansionCalc ? 'bg-blue-100' : 'bg-neutral-200'}`}>
+              <Rocket className={`w-4 h-4 md:w-5 md:h-5 ${expansionCalc ? 'text-blue-600' : 'text-neutral-400'}`} />
             </div>
-            <span className={`text-3xl font-bold ${expansionCalc ? 'text-blue-600' : 'text-neutral-400'}`}>
+            <span className={`text-2xl md:text-3xl font-bold ${expansionCalc ? 'text-blue-600' : 'text-neutral-400'}`}>
               {expansionCalc ? `+${formatCurrency(expansionCalc.expansionValue)}` : '--'}
             </span>
             <span className="block text-xs font-medium text-[#6B7280] uppercase tracking-wide mt-1">Expansion Potential</span>
@@ -601,12 +602,12 @@ export default function ExpandResults({
           </div>
         </div>
         
-        <div className="bg-white border border-neutral-200 rounded-xl p-6 mb-8">
-          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-4">
+        <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
+          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-3 md:mb-4">
             Your Value Journey
           </h2>
           
-          <div className="h-64">
+          <div className="h-52 md:h-64 -mx-2 md:mx-0">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={journeyData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
                 <defs>
@@ -666,24 +667,24 @@ export default function ExpandResults({
             </ResponsiveContainer>
           </div>
           
-          <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-              <span className="text-[#6B7280]">Actual results</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-3 md:mt-4 text-xs md:text-sm">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-emerald-500"></div>
+              <span className="text-[#6B7280]">Actual</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-[#6B7280]">Projected growth</span>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-blue-500"></div>
+              <span className="text-[#6B7280]">Projected</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#EA2C00]"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#EA2C00]"></div>
               <span className="text-[#6B7280]">You are here</span>
             </div>
           </div>
         </div>
         
-        <div className="bg-white border border-neutral-200 rounded-xl p-6 mb-8">
-          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-4">
+        <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
+          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-3 md:mb-4">
             Value Breakdown
           </h2>
           

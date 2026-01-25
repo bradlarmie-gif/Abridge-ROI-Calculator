@@ -22,29 +22,29 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
       />
       <UnifiedHeaderSpacer />
 
-      <main className="max-w-4xl mx-auto px-6 py-6 md:py-8 pb-16">
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-16">
         {/* Title */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 md:mb-3" data-testid="text-page-title">
             Analyze Your Results
           </h1>
-          <p className="text-lg text-[#6B7280]">
+          <p className="text-base md:text-lg text-[#6B7280] px-2">
             See how your Abridge deployment is performing and model expansion
           </p>
         </div>
 
         {/* Settings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8 md:mb-12">
           {/* Outpatient - Active */}
           <div 
-            className="relative bg-white rounded-2xl border-2 border-[#EA2C00] p-8 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+            className="relative bg-white rounded-2xl border-2 border-[#EA2C00] p-5 md:p-8 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
             onClick={onNext}
             data-testid="setting-outpatient"
           >
-            <div className="w-14 h-14 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-4">
-              <Stethoscope className="w-7 h-7 text-[#EA2C00]" />
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-3 md:mb-4">
+              <Stethoscope className="w-6 h-6 md:w-7 md:h-7 text-[#EA2C00]" />
             </div>
-            <h3 className="text-xl font-semibold text-[#111827] mb-2">Outpatient</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-2">Outpatient</h3>
             <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full mb-3 tracking-wide">
               AVAILABLE
             </span>
@@ -58,11 +58,11 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
           </div>
 
           {/* ED - Coming Soon */}
-          <div className="relative bg-white rounded-2xl border border-neutral-200 p-8 opacity-70">
-            <div className="w-14 h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-4">
-              <Building2 className="w-7 h-7 text-neutral-400" />
+          <div className="relative bg-white rounded-2xl border border-neutral-200 p-5 md:p-8 opacity-70">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-3 md:mb-4">
+              <Building2 className="w-6 h-6 md:w-7 md:h-7 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-[#111827] mb-2">Emergency Department</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-2">Emergency Department</h3>
             <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-full mb-3 tracking-wide">
               COMING SOON
             </span>
@@ -78,11 +78,11 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
           </div>
 
           {/* Inpatient - Coming Soon */}
-          <div className="relative bg-white rounded-2xl border border-neutral-200 p-8 opacity-70">
-            <div className="w-14 h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-4">
-              <Users className="w-7 h-7 text-neutral-400" />
+          <div className="relative bg-white rounded-2xl border border-neutral-200 p-5 md:p-8 opacity-70">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-3 md:mb-4">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-[#111827] mb-2">Inpatient</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-2">Inpatient</h3>
             <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-full mb-3 tracking-wide">
               COMING SOON
             </span>
@@ -98,11 +98,11 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
           </div>
 
           {/* Nursing - Coming Soon */}
-          <div className="relative bg-white rounded-2xl border border-neutral-200 p-8 opacity-70">
-            <div className="w-14 h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-4">
-              <Heart className="w-7 h-7 text-neutral-400" />
+          <div className="relative bg-white rounded-2xl border border-neutral-200 p-5 md:p-8 opacity-70">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-3 md:mb-4">
+              <Heart className="w-6 h-6 md:w-7 md:h-7 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-[#111827] mb-2">Nursing</h3>
+            <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-2">Nursing</h3>
             <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-full mb-3 tracking-wide">
               COMING SOON
             </span>
@@ -119,9 +119,9 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
         </div>
 
         {/* Explore Link */}
-        <div className="flex items-center justify-center gap-3 p-5 bg-amber-50 border border-amber-200 rounded-xl max-w-lg mx-auto">
+        <div className="flex items-center justify-center gap-3 p-4 md:p-5 bg-amber-50 border border-amber-200 rounded-xl max-w-lg mx-auto">
           <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0" />
-          <p className="text-sm text-amber-800">
+          <p className="text-xs md:text-sm text-amber-800">
             Don't have results yet?{" "}
             <button 
               onClick={onExplore} 
