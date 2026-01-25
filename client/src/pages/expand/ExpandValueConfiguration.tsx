@@ -202,15 +202,22 @@ export default function ExpandValueConfiguration({
                       Time Savings
                     </span>
                   </div>
-                  <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
-                    {totalHoursSaved > 0 
-                      ? <>Saving {totalHoursSaved.toLocaleString()} hrs/year. How will you <TermTooltip {...TERMS.conversionRate}>convert</TermTooltip> this time?</>
-                      : "Add time savings data to configure value conversion"
-                    }
-                  </p>
+                  {totalHoursSaved > 0 && (
+                    <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
+                      Saving {totalHoursSaved.toLocaleString()} hrs/year. How will you <TermTooltip {...TERMS.conversionRate}>convert</TermTooltip> this time?
+                    </p>
+                  )}
                 </div>
               </div>
               
+              {totalHoursSaved <= 0 ? (
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-amber-700">
+                    <Info className="w-4 h-4" />
+                    <span className="text-sm">No time savings data entered. Add documentation time data to configure value conversion.</span>
+                  </div>
+                </div>
+              ) : (
               <div className="space-y-2 lg:space-y-3">
                 <label 
                   className={`flex items-start gap-3 p-3 lg:p-4 rounded-lg border-2 cursor-pointer transition-all ${
@@ -362,6 +369,7 @@ export default function ExpandValueConfiguration({
                   </div>
                 </label>
               </div>
+              )}
             </div>
             
             <div className="bg-white rounded-xl border border-neutral-200 p-4 lg:p-6">
