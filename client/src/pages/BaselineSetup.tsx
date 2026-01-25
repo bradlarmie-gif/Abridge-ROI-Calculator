@@ -148,34 +148,34 @@ export default function BaselineSetup({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="py-8 sm:py-12">
+      <div className="py-6 sm:py-8 md:py-12">
         {/* Centered Page Header */}
-        <div className="text-center max-w-[700px] mx-auto px-6 mb-12 sm:mb-16">
-          <div className="inline-block text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-3 py-1.5 rounded-md mb-6">
+        <div className="text-center max-w-[700px] mx-auto px-4 md:px-6 mb-8 sm:mb-12 md:mb-16">
+          <div className="inline-block text-[11px] md:text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-2.5 md:px-3 py-1 md:py-1.5 rounded-md mb-4 md:mb-6">
             Step 3 of 6
           </div>
-          <h1 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-3 md:mb-4">
             Size your opportunity
           </h1>
-          <p className="text-[17px] leading-relaxed text-[#6B7280]">
+          <p className="text-sm md:text-[17px] leading-relaxed text-[#6B7280]">
             We'll use your deployment scope to calculate your addressable market—the foundation for your ROI model.
           </p>
         </div>
 
         {/* Single Column Form */}
-        <div className="max-w-[900px] mx-auto px-6 md:px-12">
+        <div className="max-w-[900px] mx-auto px-4 md:px-6 lg:px-12">
           
           {/* Section 1: Deployment Scope */}
-          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-8 md:p-10 mb-8">
-            <div className="flex items-start gap-5 mb-8">
-              <div className="w-10 h-10 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[17px] font-bold flex-shrink-0">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl md:rounded-2xl p-5 md:p-8 lg:p-10 mb-6 md:mb-8">
+            <div className="flex items-start gap-3 md:gap-5 mb-6 md:mb-8">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-sm md:text-[17px] font-bold flex-shrink-0">
                 1
               </div>
               <div>
-                <h2 className="text-xl md:text-2xl font-semibold text-[#111827] mb-1">
+                <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-[#111827] mb-1">
                   Deployment Scope
                 </h2>
-                <p className="text-[15px] text-[#6B7280]">
+                <p className="text-sm md:text-[15px] text-[#6B7280]">
                   This could be a pilot or full deployment
                 </p>
               </div>
@@ -183,7 +183,7 @@ export default function BaselineSetup({
 
             {isNursingSetting ? (
               /* Nursing-specific inputs */
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <div>
                   <label className="flex items-center gap-2 text-[15px] font-semibold text-[#111827] mb-3">
                     How many staffed beds are in scope?
@@ -526,22 +526,22 @@ export default function BaselineSetup({
           </div>
 
           {/* Section 2: Expected Utilization */}
-          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-8 md:p-10 mb-8">
-            <div className="flex items-start gap-5 mb-8">
-              <div className="w-10 h-10 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-[17px] font-bold flex-shrink-0">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl md:rounded-2xl p-5 md:p-8 lg:p-10 mb-6 md:mb-8">
+            <div className="flex items-start gap-3 md:gap-5 mb-6 md:mb-8">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#EA2C00] text-white flex items-center justify-center text-sm md:text-[17px] font-bold flex-shrink-0">
                 2
               </div>
               <div>
-                <h2 className="text-xl md:text-2xl font-semibold text-[#111827] mb-1">
+                <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-[#111827] mb-1">
                   Expected Utilization
                 </h2>
-                <p className="text-[15px] text-[#6B7280]">
+                <p className="text-sm md:text-[15px] text-[#6B7280]">
                   What percentage of {isNursingSetting ? "documentation events" : getEncounterLabel()} will use Abridge?
                 </p>
               </div>
             </div>
 
-            <p className="text-[17px] font-medium text-[#374151] mb-6">Choose your adoption scenario:</p>
+            <p className="text-sm md:text-[17px] font-medium text-[#374151] mb-4 md:mb-6">Choose your adoption scenario:</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-6">
               {utilizationOptions.map((option, idx) => {
