@@ -1,0 +1,1217 @@
+This is a complete, separate PDF generator for the Expand (Value Realization) flow.
+
+PART 1: TYPES & DATA STRUCTURES
+typescriptCopy// ============================================================================
+// TYPES & DATA STRUCTURES
+// ============================================================================
+
+// Metric types that can be tracked
+export type MetricId = 
+  | 'wrvuPerEncounter'
+  | 'timeInNotes'
+  | 'sameDayChartClosure'
+  | 'averageEmLevel'
+  | 'workOutsideWork'
+  | 'clinicianSatisfaction';
+
+export type MetricCategory = 'primary' | 'secondary';
+
+export type DataEntryMode = 'quick' | 'trend';
+
+export type TimeConversionMode = 
+  | 'notConverting'      // Show as hours saved, not $
+  | 'patientVisits'      // Converting to additional patient visits
+  | 'overtimeReduction'; // Converting to OT/locum savings
+
+// Individual metric data
+export interface MetricData {
+  id: MetricId;
+  name: string;
+  description: string;
+  category: MetricCategory;
+  dataSource: string; // "Clarity", "Survey", etc.
+  unit: string; // "wRVU/enc", "min", "%", "hrs/week", "pts"
+  
+  // Data entry mode
+  entryMode: DataEntryMode;
+  
+  // Quick mode (before/after only)
+  beforeValue: number | null;
+  afterValue: number | null;
+  
+  // Trend mode (monthly data)
+  trendData?: {
+    baseline: number;
+    months: { month: number; value: number }[];
+  };
+  
+  // Calculated
+  change: number; // Absolute change
+  changePercent: number; // Percentage change
+  changeDirection: 'increase' | 'decrease'; // Which direction is good
+  
+  // Benchmark comparison
+  benchmark: {
+    typicalRange: string; // "3-7% lift", "2-5 hours per week"
+    status: 'below' | 'within' | 'above';
+    statusLabel: string; // "Below typical", "Within expected range", "Above typical"
+  };
+  
+  // For E&M level, optional distribution
+  distribution?: {
+    before: { level: number; percent: number }[];
+    after: { level: number; percent: number }[];
+  };
+}
+
+// Deployment information
+export interface DeploymentData {
+  organizationName?: string;
+  careSetting: string;
+  providers: number;
+  totalEncounters: number;
+  utilizationRate: number;
+  monthsOnAbridge: number;
+  documentedEncounters: number; // providers × encounters × utilization
+}
+
+// Value tier breakdown
+export interface ValueBreakdown {
+  // Tier 1: Hard Value (dollarized)
+  tier1: {
+    total: number;
+    items: {
+      name: string;
+      value: number;
+      formula: string;
+      isSpeculative?: boolean;
+      warning?: string;
+    }[];
+  };
+  
+  // Tier 2: Efficiency Gains (natural units)
+  tier2: {
+    items: {
+      name: string;
+      value: string; // "8,250 hours/year", "-7 hrs/week", "+11%"
+      metric: MetricId;
+    }[];
+  };
+  
+  // Tier 3: Leading Indicators (qualitative)
+  tier3: {
+    items: {
+      name: string;
+      value: string; // "50 → 55 (+5.0 points)"
+      metric: MetricId;
+    }[];
+  };
+}
+
+// Time conversion configuration
+export interface TimeConversionConfig {
+  mode: TimeConversionMode;
+  hoursSaved: number;
+  
+  // If converting to patient visits
+  patientVisits?: {
+    conversionPercent: number; // What % of time converts
+    revenuePerVisit: number;
+    additionalVisits: number;
+    value: number;
+  };
+  
+  // If converting to OT reduction
+  overtimeReduction?: {
+    reductionPercent: number;
+    hourlyRate: number;
+    hoursReduced: number;
+    value: number;
+  };
+}
+
+// Retention estimation (speculative)
+export interface RetentionEstimate {
+  enabled: boolean;
+  departuresPrevented: number;
+  replacementCost: number;
+  totalValue: number;
+  isSpeculative: boolean;
+}
+
+// Expansion projection
+export interface ExpansionProjection {
+  currentState: {
+    providers: number;
+    utilization: number;
+    annualValue: number;
+    valuePerProvider: number;
+  };
+  
+  expansionTarget: {
+    totalProviders: number;
+    targetUtilization: number;
+    investmentPerProvider: number; // $/provider/month
+  };
+  
+  projection: {
+    linearValue: number;           // valuePerProvider × targetProviders
+    utilizationBoost: number;      // multiplier for utilization increase
+    maturityEffects: number;       // multiplier for maturity
+    projectedValue: number;        // final projected value
+    expansionValue: number;        // projectedValue - currentValue
+    annualInvestment: number;      // targetProviders × investmentPerProvider × 12
+    netValue: number;              // projectedValue - investment
+    projectedRoi: number;          // projectedValue / investment
+  };
+  
+  calculation: {
+    steps: string[]; // Step-by-step calculation for transparency
+  };
+}
+
+// Journey chart data
+export interface JourneyChartData {
+  points: {
+    label: string;          // "Before", "Mo 4", "Today", "Mo 12", "Mo 24", "Full Scale"
+    month: number;          // -3, 4, 7, 12, 24, 36 (negative = before Abridge)
+    value: number;
+    isActual: boolean;      // true = measured, false = projected
+    isCurrent: boolean;     // true = "You are here"
+    providers?: number;
+  }[];
+}
+
+// Complete PDF data structure
+export interface ExpandPDFData {
+  // Deployment info
+  deployment: DeploymentData;
+  
+  // Tracked metrics
+  metrics: MetricData[];
+  
+  // Value breakdown
+  valueBreakdown: ValueBreakdown;
+  
+  // Investment & ROI
+  investment: {
+    annualCost: number;
+    costPerProvider: number;
+  };
+  currentRoi: number;
+  
+  // Time conversion config
+  timeConversion: TimeConversionConfig;
+  
+  // Retention estimate (optional)
+  retentionEstimate?: RetentionEstimate;
+  
+  // Journey chart
+  journeyChart: JourneyChartData;
+  
+  // Expansion projection
+  expansion: ExpansionProjection;
+  
+  // Warnings/flags
+  warnings: {
+    metricId?: MetricId;
+    type: 'above_range' | 'below_range' | 'speculative' | 'data_quality';
+    message: string;
+  }[];
+}
+
+PART 2: COLORS & STYLES
+typescriptCopy// ============================================================================
+// COLORS
+// ============================================================================
+
+const colors = {
+  // Brand
+  primary: "#EA2C00",
+  primaryLight: "#FEF2F0",
+  
+  // Status
+  green: "#059669",
+  greenLight: "#ECFDF5",
+  greenDark: "#047857",
+  
+  blue: "#3B82F6",
+  blueLight: "#EFF6FF",
+  
+  amber: "#F59E0B",
+  amberLight: "#FEF3C7",
+  amberDark: "#92400E",
+  
+  // Neutrals
+  black: "#111827",
+  darkGray: "#374151",
+  mediumGray: "#6B7280",
+  lightGray: "#9CA3AF",
+  paleGray: "#F9FAFB",
+  borderGray: "#E5E7EB",
+  white: "#FFFFFF",
+};
+
+// ============================================================================
+// STYLES
+// ============================================================================
+
+const styles = StyleSheet.create({
+  // Page
+  page: {
+    padding: 40,
+    paddingBottom: 50,
+    fontFamily: "Helvetica",
+    fontSize: 9,
+    color: colors.black,
+    backgroundColor: colors.white,
+  },
+
+  // Header
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+  },
+  logo: {
+    width: 85,
+    height: 17,
+  },
+  headerRight: {
+    textAlign: "right",
+  },
+  headerTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 0.3,
+  },
+  headerSubtitle: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+
+  // Footer
+  footer: {
+    position: "absolute",
+    bottom: 25,
+    left: 40,
+    right: 40,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  footerText: {
+    fontSize: 7,
+    color: colors.lightGray,
+  },
+
+  // Organization context
+  orgContext: {
+    marginBottom: 14,
+  },
+  orgName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  orgDetails: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginTop: 3,
+  },
+
+  // Narrative box (the frame)
+  frameBox: {
+    backgroundColor: colors.paleGray,
+    padding: 14,
+    borderRadius: 4,
+    marginBottom: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  frameTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  frameText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.55,
+    marginBottom: 6,
+  },
+  frameBold: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  frameHighlight: {
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  // Hero metrics row
+  heroRow: {
+    flexDirection: "row",
+    marginBottom: 14,
+  },
+  heroBox: {
+    flex: 1,
+    backgroundColor: colors.paleGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    padding: 12,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  heroBoxHighlight: {
+    flex: 1,
+    backgroundColor: colors.blueLight,
+    borderWidth: 1,
+    borderColor: colors.blue,
+    borderRadius: 6,
+    padding: 12,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  heroBoxLast: {
+    marginRight: 0,
+  },
+  heroValue: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  heroValueGreen: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.green,
+    marginBottom: 4,
+  },
+  heroLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    textAlign: "center",
+  },
+  heroSublabel: {
+    fontSize: 6,
+    color: colors.lightGray,
+    marginTop: 2,
+    textAlign: "center",
+  },
+
+  // Section title
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 10,
+    marginTop: 14,
+  },
+
+  // Tier cards
+  tierCard: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    marginBottom: 12,
+    overflow: "hidden",
+  },
+  tierHeader: {
+    backgroundColor: colors.paleGray,
+    padding: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  tierTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  tierSubtitle: {
+    fontSize: 7,
+    color: colors.mediumGray,
+  },
+  tierValue: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.green,
+  },
+  tierContent: {
+    padding: 10,
+  },
+  tierRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  tierRowLast: {
+    borderBottomWidth: 0,
+  },
+  tierRowLabel: {
+    flex: 1,
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  tierRowFormula: {
+    fontSize: 7,
+    color: colors.lightGray,
+    marginTop: 2,
+  },
+  tierRowValue: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.green,
+    textAlign: "right",
+  },
+  tierRowValueNeutral: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    textAlign: "right",
+  },
+
+  // Warning box
+  warningBox: {
+    backgroundColor: colors.amberLight,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.amber,
+    padding: 8,
+    marginTop: 6,
+    borderRadius: 4,
+  },
+  warningText: {
+    fontSize: 7,
+    color: colors.amberDark,
+    lineHeight: 1.4,
+  },
+  warningIcon: {
+    fontSize: 8,
+    marginRight: 4,
+  },
+
+  // Info box
+  infoBox: {
+    backgroundColor: colors.blueLight,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.blue,
+    padding: 8,
+    marginTop: 6,
+    borderRadius: 4,
+  },
+  infoText: {
+    fontSize: 7,
+    color: "#1E40AF",
+    lineHeight: 1.4,
+  },
+
+  // Metric card (for deep dives)
+  metricCard: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    marginBottom: 14,
+    overflow: "hidden",
+  },
+  metricHeader: {
+    backgroundColor: colors.paleGray,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  metricName: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  metricDescription: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  metricContent: {
+    padding: 12,
+  },
+
+  // Before/After comparison
+  comparisonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  comparisonBox: {
+    alignItems: "center",
+    width: 100,
+  },
+  comparisonLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  comparisonValue: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  comparisonUnit: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  comparisonArrow: {
+    fontSize: 14,
+    color: colors.mediumGray,
+    marginHorizontal: 12,
+  },
+  comparisonChange: {
+    alignItems: "center",
+    backgroundColor: colors.greenLight,
+    borderRadius: 6,
+    padding: 10,
+    minWidth: 100,
+  },
+  comparisonChangeValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.green,
+  },
+  comparisonChangePercent: {
+    fontSize: 8,
+    color: colors.greenDark,
+    marginTop: 2,
+  },
+
+  // Trend chart container
+  trendChart: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 10,
+    minHeight: 80,
+  },
+  trendChartTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  trendChartLegend: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  trendChartLegendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 8,
+  },
+  trendChartLegendDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 4,
+  },
+  trendChartLegendLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+  },
+
+  // Benchmark box
+  benchmarkBox: {
+    backgroundColor: colors.paleGray,
+    padding: 10,
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  benchmarkTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  benchmarkText: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  benchmarkStatus: {
+    fontSize: 8,
+    fontWeight: "bold",
+    marginTop: 4,
+  },
+  benchmarkStatusGreen: {
+    color: colors.green,
+  },
+  benchmarkStatusAmber: {
+    color: colors.amber,
+  },
+
+  // What this means box
+  meaningBox: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.green,
+    padding: 10,
+    borderRadius: 4,
+  },
+  meaningTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.green,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 6,
+  },
+  meaningText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+
+  // Journey chart
+  journeyChart: {
+    backgroundColor: colors.paleGray,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 14,
+    minHeight: 140,
+  },
+
+  // Two column layout
+  twoColumn: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  column: {
+    flex: 1,
+    marginRight: 8,
+  },
+  columnLast: {
+    flex: 1,
+    marginRight: 0,
+  },
+
+  // Expansion cards
+  expansionCard: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    padding: 12,
+  },
+  expansionCardHighlight: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: 6,
+    padding: 12,
+  },
+  expansionTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 10,
+  },
+  expansionTitlePrimary: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 10,
+  },
+  expansionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  expansionLabel: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+  expansionValue: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  expansionValueGreen: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.green,
+  },
+
+  // Projection results box
+  projectionBox: {
+    backgroundColor: colors.greenLight,
+    borderWidth: 1,
+    borderColor: colors.green,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 12,
+  },
+  projectionRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 12,
+  },
+  projectionItem: {
+    alignItems: "center",
+  },
+  projectionValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.green,
+  },
+  projectionLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.greenDark,
+    textTransform: "uppercase",
+    marginTop: 2,
+  },
+  projectionCalc: {
+    backgroundColor: colors.white,
+    borderRadius: 4,
+    padding: 10,
+    marginTop: 8,
+  },
+  projectionCalcTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 6,
+  },
+  projectionCalcStep: {
+    fontSize: 7,
+    color: colors.darkGray,
+    marginBottom: 3,
+    paddingLeft: 8,
+  },
+
+  // Checklist
+  checklistBox: {
+    backgroundColor: colors.greenLight,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
+  },
+  checklistItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 4,
+  },
+  checklistIcon: {
+    fontSize: 8,
+    color: colors.green,
+    marginRight: 6,
+    marginTop: 1,
+  },
+  checklistText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    flex: 1,
+  },
+
+  // Opportunity box
+  opportunityBox: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 8,
+  },
+  opportunityTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  opportunitySubtitle: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginBottom: 6,
+  },
+  opportunityText: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+  },
+
+  // Methodology grid
+  methodologyGrid: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  methodologyColumn: {
+    flex: 1,
+    marginRight: 10,
+  },
+  methodologyColumnLast: {
+    flex: 1,
+    marginRight: 0,
+  },
+  methodologyTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 6,
+  },
+  methodologyItem: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 2,
+  },
+
+  // Closing box
+  closingBox: {
+    backgroundColor: colors.paleGray,
+    padding: 14,
+    borderRadius: 4,
+    marginTop: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  closingText: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    fontStyle: "italic",
+  },
+
+  // Utility
+  bold: {
+    fontWeight: "bold",
+  },
+  mono: {
+    fontFamily: "Courier",
+  },
+});
+
+PART 3: METRIC CONFIGURATIONS
+typescriptCopy// ============================================================================
+// METRIC CONFIGURATIONS
+// ============================================================================
+
+interface MetricConfig {
+  id: MetricId;
+  name: string;
+  description: string;
+  unit: string;
+  category: MetricCategory;
+  changeDirection: 'increase' | 'decrease'; // Which direction is good
+  benchmark: {
+    typical: string;
+    context: string;
+  };
+  whatItMeans: string;
+  valueCalculation?: (change: number, data: ExpandPDFData) => {
+    formula: string;
+    value: number;
+  };
+}
+
+const METRIC_CONFIGS: Record<MetricId, MetricConfig> = {
+  wrvuPerEncounter: {
+    id: 'wrvuPerEncounter',
+    name: 'wRVU per Encounter',
+    description: 'Revenue capture improvement',
+    unit: 'wRVU/enc',
+    category: 'primary',
+    changeDirection: 'increase',
+    benchmark: {
+      typical: '3-7% lift',
+      context: 'Most Abridge customers see 3-7% wRVU improvement. Results above this range may reflect specific documentation opportunities in your organization, but we recommend validating baseline methodology.',
+    },
+    whatItMeans: `wRVU improvement indicates that documentation is capturing more of the clinical complexity that was always present in your encounters. This isn't upcoding—it's accurate coding based on complete notes. The improvement comes from capturing the full clinical narrative that physicians think through but don't always have time to document manually.`,
+    valueCalculation: (change, data) => {
+      const encounters = data.deployment.documentedEncounters;
+      const conversionFactor = 33; // Medicare
+      const attribution = 0.50;
+      const value = Math.round(change * encounters * conversionFactor * attribution);
+      return {
+        formula: `+${change.toFixed(2)} wRVU × ${encounters.toLocaleString()} enc × $${conversionFactor}/wRVU × ${attribution * 100}% attribution`,
+        value,
+      };
+    },
+  },
+  
+  timeInNotes: {
+    id: 'timeInNotes',
+    name: 'Time in Notes',
+    description: 'Documentation efficiency',
+    unit: 'min',
+    category: 'primary',
+    changeDirection: 'decrease',
+    benchmark: {
+      typical: '3-5 min reduction per encounter',
+      context: 'Average reduction is 3-5 minutes per encounter. Greater reductions may indicate high baseline documentation burden or particularly effective adoption.',
+    },
+    whatItMeans: `Time saved on documentation represents capacity that can be redirected—to patient care, work-life balance, or additional visits. How this time gets used depends on your operational priorities and workflow design. We show it in hours rather than dollars because the conversion varies by organization.`,
+  },
+  
+  sameDayChartClosure: {
+    id: 'sameDayChartClosure',
+    name: 'Same-Day Chart Closure',
+    description: 'Revenue cycle acceleration',
+    unit: '%',
+    category: 'primary',
+    changeDirection: 'increase',
+    benchmark: {
+      typical: '5-15 percentage point improvement',
+      context: 'Organizations typically see 5-15 percentage point improvement in same-day closure rates. Higher improvements often indicate baseline issues with documentation spillover.',
+    },
+    whatItMeans: `Higher same-day chart closure accelerates revenue cycle and reduces the cognitive burden of open charts. Charts closed within 24 hours also tend to have higher documentation quality—the clinical context is fresh, and details are more accurately captured.`,
+  },
+  
+  averageEmLevel: {
+    id: 'averageEmLevel',
+    name: 'Average E&M Level',
+    description: 'Coding accuracy',
+    unit: 'avg level',
+    category: 'secondary',
+    changeDirection: 'increase',
+    benchmark: {
+      typical: '0.2-0.5 level increase',
+      context: 'Typical E&M level increase is 0.2-0.5. This reflects documentation that better captures visit complexity, not changed clinical behavior.',
+    },
+    whatItMeans: `E&M level improvement indicates that documentation is supporting the full complexity of visits. This is closely related to wRVU improvement—better E&M levels translate directly to revenue capture. If you're seeing E&M improvement without corresponding wRVU lift, check whether billing is aligned with documentation.`,
+  },
+  
+  workOutsideWork: {
+    id: 'workOutsideWork',
+    name: 'Work Outside of Work',
+    description: 'After-hours burden',
+    unit: 'hrs/week',
+    category: 'secondary',
+    changeDirection: 'decrease',
+    benchmark: {
+      typical: '2-5 hours per week reduction',
+      context: 'Average reduction in after-hours work is 2-5 hours per week. This directly impacts burnout and satisfaction.',
+    },
+    whatItMeans: `"Pajama time"—the hours spent on documentation at home—is one of the most corrosive aspects of modern clinical practice. Reducing after-hours work doesn't just save time; it preserves the boundary between work and life that's essential for sustainable practice. This metric is a leading indicator for retention.`,
+  },
+  
+  clinicianSatisfaction: {
+    id: 'clinicianSatisfaction',
+    name: 'Clinician Satisfaction',
+    description: 'Provider experience',
+    unit: 'pts',
+    category: 'secondary',
+    changeDirection: 'increase',
+    benchmark: {
+      typical: '10-20 point improvement',
+      context: 'Average satisfaction improvement is 10-20 points on a 100-point scale. Improvement tends to grow over time as providers fully adopt the workflow.',
+    },
+    whatItMeans: `Satisfaction improvement is a leading indicator for retention and engagement. The correlation between documentation burden reduction and satisfaction is well-established—providers who spend less time on paperwork consistently report higher job satisfaction. This metric typically continues improving for 6-12 months after initial deployment.`,
+  },
+};
+
+PART 4: HELPER FUNCTIONS
+typescriptCopy// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+const formatCurrency = (value: number): string => {
+  if (Math.abs(value) >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  if (Math.abs(value) >= 1000) {
+    return `$${Math.round(value / 1000)}K`;
+  }
+  return `$${value.toLocaleString()}`;
+};
+
+const formatNumber = (value: number): string => {
+  return value.toLocaleString();
+};
+
+const formatChange = (value: number, unit: string, direction: 'increase' | 'decrease'): string => {
+  const prefix = value >= 0 ? '+' : '';
+  
+  if (unit === '%') {
+    return `${prefix}${value}%`;
+  }
+  if (unit === 'min') {
+    return `${prefix}${value} min`;
+  }
+  if (unit === 'hrs/week') {
+    return `${prefix}${value} hrs/week`;
+  }
+  if (unit === 'pts') {
+    return `${prefix}${value} pts`;
+  }
+  if (unit === 'wRVU/enc') {
+    return `${prefix}${value.toFixed(2)} wRVU/enc`;
+  }
+  if (unit === 'avg level') {
+    return `${prefix}${value.toFixed(2)} avg level`;
+  }
+  
+  return `${prefix}${value} ${unit}`;
+};
+
+const formatChangePercent = (beforeValue: number, afterValue: number): string => {
+  if (beforeValue === 0) return 'N/A';
+  const pctChange = ((afterValue - beforeValue) / beforeValue) * 100;
+  const prefix = pctChange >= 0 ? '+' : '';
+  return `${prefix}${pctChange.toFixed(0)}%`;
+};
+
+const getBenchmarkStatus = (
+  metricId: MetricId,
+  changePercent: number
+): { status: 'below' | 'within' | 'above'; label: string } => {
+  // Define typical ranges per metric
+  const ranges: Record<MetricId, { min: number; max: number }> = {
+    wrvuPerEncounter: { min: 3, max: 7 },
+    timeInNotes: { min: 20, max: 40 }, // 20-40% reduction
+    sameDayChartClosure: { min: 5, max: 15 }, // 5-15 pp improvement
+    averageEmLevel: { min: 5, max: 15 }, // rough approximation
+    workOutsideWork: { min: 20, max: 50 }, // 20-50% reduction
+    clinicianSatisfaction: { min: 10, max: 30 }, // 10-30% improvement
+  };
+  
+  const range = ranges[metricId];
+  const absChange = Math.abs(changePercent);
+  
+  if (absChange < range.min) {
+    return { status: 'below', label: 'Below typical range' };
+  } else if (absChange > range.max) {
+    return { status: 'above', label: 'Above typical range' };
+  } else {
+    return { status: 'within', label: 'Within expected range' };
+  }
+};
+
+const getToday = (): string => {
+  return new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+PART 5: PAGE COMPONENTS
+typescriptCopy// ============================================================================
+// PAGE 1: YOUR ABRIDGE RESULTS
+// ============================================================================
+
+const ResultsSummaryPage = ({ 
+  data, 
+  pageNum, 
+  totalPages 
+}: { 
+  data: ExpandPDFData; 
+  pageNum: number; 
+  totalPages: number;
+}) => {
+  const { deployment, valueBreakdown, investment, currentRoi, expansion, journeyChart } = data;
+  
+  return (
+    <Page size="A4" style={styles.page}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Image src={abridgeLogoPath} style={styles.logo} />
+        <View style={styles.headerRight}>
+          <Text style={styles.headerTitle}>Value Realization Report</Text>
+          <Text style={styles.headerSubtitle}>{getToday()}</Text>
+        </View>
+      </View>
+
+      {/* Organization Context */}
+      <View style={styles.orgContext}>
+        {deployment.organizationName && (
+          <Text style={styles.orgName}>{deployment.organizationName}</Text>
+        )}
+        <Text style={styles.orgDetails}>
+          {deployment.providers} providers · {deployment.monthsOnAbridge} months on Abridge · {deployment.utilizationRate}% utilization · {formatNumber(deployment.documentedEncounters)} documented encounters
+        </Text>
+      </View>
+
+      {/* The Frame */}
+      <View style={styles.frameBox}>
+        <Text style={styles.frameTitle}>THE STORY SO FAR</Text>
+        <Text style={styles.frameText}>
+          {deployment.monthsOnAbridge} months ago, you deployed Abridge to {deployment.providers} providers. Since then, those providers have documented {formatNumber(deployment.documentedEncounters)} encounters—each one a data point in understanding whether this investment is working.
+        </Text>
+        <Text style={styles.frameText}>
+          This report answers three questions:
+        </Text>
+        <Text style={styles.frameText}>
+          <Text style={styles.frameBold}>1.</Text> What value have you actually captured? (not projected—measured)
+        </Text>
+        <Text style={styles.frameText}>
+          <Text style={styles.frameBold}>2.</Text> How do your results compare to what we typically see?
+        </Text>
+        <Text style={styles.frameText}>
+          <Text style={styles.frameBold}>3.</Text> What would full-scale expansion look like based on your proven results?
+        </Text>
+        <Text style={[styles.frameText, { marginTop: 8, marginBottom: 0 }]}>
+          The numbers that follow are yours. We've applied conservative attribution and flagged anything that looks unusual. The goal isn't to make Abridge look good—it's to give you a clear picture you can trust.
+        </Text>
+      </View>
+
+      {/* Hero Metrics */}
+      <View style={styles.heroRow}>
+        <View style={styles.heroBox}>
+          <Text style={styles.heroValueGreen}>{formatCurrency(valueBreakdown.tier1.total)}</Text>
+          <Text style={styles.heroLabel}>PROVEN VALUE</Text>
+          <Text style={styles.heroSublabel}>Hard $ captured</Text>
+        </View>
+        <View style={styles.heroBoxHighlight}>
+          <Text style={styles.heroValue}>{currentRoi.toFixed(1)}x</Text>
+          <Text style={styles.heroLabel}>ROI</Text>
+          <Text style={styles.heroSublabel}>{formatCurrency(investment.annualCost)}/yr invested</Text>
+        </View>
+        <View style={[styles.heroBox, styles.heroBoxLast]}>
+          <Text style={styles.heroValueGreen}>+{formatCurrency(expansion.projection.expansionValue)}</Text>
+          <Text style={styles.heroLabel}>EXPANSION POTENTIAL</Text>
+          <Text style={styles.heroSublabel}>At {expansion.expansionTarget.totalProviders} providers</Text>
+        </View>
+      </View>
+
+      {/* Journey Chart */}
+      <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
+      <View style={styles.journeyChart}>
+        {/* Chart visualization - SVG drawing */}
+        <JourneyChartVisualization data={journeyChart} />
+        
+        {/* Legend */}Add to ConversationOpen Response
