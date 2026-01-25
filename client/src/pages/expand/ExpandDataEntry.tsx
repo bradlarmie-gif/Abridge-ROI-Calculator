@@ -289,7 +289,7 @@ function QuickEntry({
             </div>
           ) : (
             <div className="px-4 py-3 bg-neutral-100 rounded-lg text-center border border-dashed border-neutral-300">
-              <span className="text-sm text-neutral-400">Enter data</span>
+              <span className="text-xl font-bold text-neutral-300">—</span>
             </div>
           )}
         </div>
