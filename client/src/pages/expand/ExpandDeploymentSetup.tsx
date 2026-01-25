@@ -114,28 +114,28 @@ export default function ExpandDeploymentSetup({
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
         {/* Why This Matters - Hero Card */}
-        <div className="mb-6 md:mb-8 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 md:p-6">
+        <div className="mb-6 md:mb-8 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl p-4 md:p-6">
           <div className="flex items-start gap-3 md:gap-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
             </div>
             <div className="flex-1">
-              <h2 className="text-base md:text-lg font-semibold text-emerald-900 mb-1">Why This Matters</h2>
-              <p className="text-xs md:text-sm text-emerald-700 leading-relaxed">
+              <h2 className="text-base md:text-lg font-semibold text-blue-900 mb-1">Why This Matters</h2>
+              <p className="text-xs md:text-sm text-blue-700 leading-relaxed">
                 You're about to discover the real value your Abridge deployment is creating. 
                 This analysis will give you concrete numbers to share with leadership, justify 
                 expansion, and celebrate wins with your team.
               </p>
               <div className="flex flex-wrap gap-3 md:gap-4 mt-3">
-                <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                <div className="flex items-center gap-1.5 text-xs text-blue-600">
                   <TrendingUp className="w-3.5 h-3.5" />
                   <span>Track real outcomes</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                <div className="flex items-center gap-1.5 text-xs text-blue-600">
                   <DollarSign className="w-3.5 h-3.5" />
                   <span>Quantify your value</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                <div className="flex items-center gap-1.5 text-xs text-blue-600">
                   <Target className="w-3.5 h-3.5" />
                   <span>Plan your expansion</span>
                 </div>
