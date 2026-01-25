@@ -562,7 +562,7 @@ const JourneyChart = ({ current, projected }: { current: number; projected: numb
   const currentY = padding.top + graphHeight * 0.5;
   
   return (
-    <View style={s.chartContainer}>
+    <View style={s.chartContainer} wrap={false}>
       <Text style={s.chartTitle}>Value Journey: Current to Full Scale</Text>
       <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         {/* Background track */}
@@ -608,7 +608,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
       <Header title="Value Realization Report" />
       
       {/* Context bar */}
-      <View style={s.contextBar}>
+      <View style={s.contextBar} wrap={false}>
         <Text style={s.contextItem}><Text style={s.contextValue}>{data.providers}</Text> providers</Text>
         <Text style={s.contextItem}><Text style={s.contextValue}>{data.monthsOnAbridge}</Text> months on Abridge</Text>
         <Text style={s.contextItem}><Text style={s.contextValue}>{data.utilizationRate}%</Text> utilization</Text>
@@ -616,7 +616,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
       </View>
       
       {/* Executive callout */}
-      <View style={s.callout}>
+      <View style={s.callout} wrap={false}>
         <Text style={s.calloutTitle}>Summary</Text>
         <Text style={s.calloutText}>
           Based on your data, each of your {data.providers} providers is generating approximately {fmt(valuePerProvider)} annually. With {data.utilizationRate}% of eligible encounters documented, the current measured value is {fmt(data.tier1Value)}. As utilization increases, this number would grow proportionally.
@@ -624,7 +624,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
       </View>
       
       {/* Hero metrics */}
-      <View style={s.heroRow}>
+      <View style={s.heroRow} wrap={false}>
         <View style={s.heroCardPrimary}>
           <Text style={s.heroValueGreen}>{fmt(data.tier1Value)}</Text>
           <Text style={s.heroLabel}>Annual Value Created</Text>
@@ -643,7 +643,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
       </View>
       
       {/* Two column: Maturity + Drivers */}
-      <View style={s.twoCol}>
+      <View style={s.twoCol} wrap={false}>
         <View style={s.col}>
           <View style={[s.card, { marginBottom: 0 }]}>
             <View style={s.cardHeader}>
