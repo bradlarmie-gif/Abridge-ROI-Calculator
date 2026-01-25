@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, Legend } from "recharts";
@@ -447,71 +447,137 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        {/* Section 7: Explore Ambient AI CTA */}
-        <section className="mb-6 md:mb-8 pt-6 md:pt-8 border-t border-slate-200">
-          <div className="bg-gradient-to-br from-red-50 to-white border border-red-200 rounded-xl p-5 md:p-8">
-            <div className="flex flex-col lg:flex-row gap-6 lg:items-center lg:justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-5 h-5 text-[#EA2C00]" />
-                  <h3 className="text-lg md:text-xl font-semibold text-[#111827]">Explore Your Options</h3>
+        {/* Section 7: What You've Learned Summary */}
+        <section className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 md:p-8 mb-6 md:mb-8 text-white">
+          <h2 className="text-lg md:text-xl font-bold mb-4 md:mb-6">What You've Learned</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+              <div className="text-slate-300 text-xs uppercase tracking-wide mb-1">Your Investment</div>
+              <div className="text-2xl font-bold">{formatCurrency(calculations.totalScribeCost)}</div>
+              <div className="text-slate-400 text-sm">annual scribe cost</div>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+              <div className="text-slate-300 text-xs uppercase tracking-wide mb-1">Your Coverage</div>
+              <div className="text-2xl font-bold">{calculations.coveragePercent}%</div>
+              <div className="text-slate-400 text-sm">{inputs.providersWithScribes} of {inputs.totalProviders} providers</div>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur">
+              <div className="text-slate-300 text-xs uppercase tracking-wide mb-1">Gap</div>
+              <div className="text-2xl font-bold">{calculations.providersWithoutSupport}</div>
+              <div className="text-slate-400 text-sm">providers without support</div>
+            </div>
+          </div>
+          
+          <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-4">
+            <div className="text-sm text-slate-300 leading-relaxed">
+              <strong className="text-white">Bottom line:</strong> Your scribe program costs{" "}
+              <span className="text-white font-semibold">{formatCurrency(calculations.costPerProviderCovered)}/provider/year</span>{" "}
+              and covers <span className="text-white font-semibold">{calculations.coveragePercent}%</span> of your organization.{" "}
+              {calculations.coveragePercent < 100 && (
+                <>
+                  To reach 100% coverage, you'd need to invest an additional{" "}
+                  <span className="text-white font-semibold">{formatCurrency(calculations.fullScribeCost - calculations.totalScribeCost)}/year</span>.
+                </>
+              )}
+            </div>
+          </div>
+          
+          <div className="text-xs text-slate-400">
+            Scribe programs scale linearly — doubling coverage roughly doubles cost. This analysis helps you understand that economic reality.
+          </div>
+        </section>
+
+        {/* Section 8: Natural Next Step */}
+        <section className="mb-6 md:mb-8">
+          <div className="bg-white border-2 border-slate-200 rounded-xl overflow-hidden">
+            <div className="bg-slate-50 px-5 md:px-8 py-4 border-b border-slate-200">
+              <h3 className="text-base md:text-lg font-semibold text-[#111827]">What's Next?</h3>
+              <p className="text-sm text-[#6B7280] mt-1">
+                You've mapped your scribe program economics. Here's how to use this insight.
+              </p>
+            </div>
+            
+            <div className="p-5 md:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Option 1: Continue with scribes */}
+                <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-slate-600" />
+                    </div>
+                    <h4 className="font-semibold text-[#111827]">Optimize Your Scribe Program</h4>
+                  </div>
+                  <p className="text-sm text-[#6B7280] mb-4">
+                    Use this analysis to negotiate vendor contracts, right-size your coverage, or make the case for additional investment.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-11"
+                    onClick={handleExportPDF}
+                    disabled={isExporting}
+                    data-testid="button-download-analysis"
+                  >
+                    {isExporting ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Download This Analysis
+                  </Button>
                 </div>
-                <p className="text-sm md:text-base text-[#6B7280] mb-4">
-                  Now that you understand your scribe program economics, 
-                  see what ambient AI value realization could look like 
-                  for your organization.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm text-[#374151]">
-                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Model different coverage scenarios</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-[#374151]">
-                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Understand the four dimensions of ambient AI value</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-[#374151]">
-                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>See how utilization, efficiency, quality, and satisfaction compound</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="flex-shrink-0">
-                <Button 
-                  className="w-full lg:w-auto bg-[#EA2C00] hover:bg-[#d12700] text-white h-12 px-6 text-base font-semibold"
-                  onClick={() => onExploreAmbientAI?.(inputs.totalProviders, inputs.annualEncounters)}
-                  data-testid="button-explore-ambient"
-                >
-                  Explore Ambient AI for {inputs.totalProviders} Providers
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </Button>
+                
+                {/* Option 2: Explore ambient AI */}
+                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-5 border-2 border-[#EA2C00]/30 relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-[#EA2C00]/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+                    </div>
+                    <h4 className="font-semibold text-[#111827]">Compare to Ambient AI</h4>
+                  </div>
+                  <p className="text-sm text-[#6B7280] mb-4">
+                    See how ambient AI economics differ from scribes — different cost structure, different value drivers, 100% coverage by default.
+                  </p>
+                  
+                  <div className="bg-white/80 rounded-lg p-3 mb-4 border border-[#EA2C00]/10">
+                    <div className="text-xs text-[#6B7280] mb-2">The Explore path will show you:</div>
+                    <ul className="text-xs text-[#374151] space-y-1">
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                        4 value dimensions beyond documentation
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                        ROI modeling for {inputs.totalProviders} providers
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                        Investment scenarios and break-even analysis
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <Button 
+                    className="w-full bg-[#EA2C00] hover:bg-[#d12700] text-white h-11 font-semibold"
+                    onClick={() => onExploreAmbientAI?.(inputs.totalProviders, inputs.annualEncounters)}
+                    data-testid="button-explore-ambient"
+                  >
+                    Explore Ambient AI
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 8: Export */}
-        <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8">
-          <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
-            <Button 
-              variant="outline" 
-              className="h-11 md:h-12 px-4 md:px-6" 
-              data-testid="button-export-pdf"
-              onClick={handleExportPDF}
-              disabled={isExporting}
-            >
-              {isExporting ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4 mr-2" />
-              )}
-              {isExporting ? "Generating..." : "Export as PDF"}
-            </Button>
-            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
-              <Share2 className="w-4 h-4 mr-2" />
-              Share with Team
-            </Button>
-          </div>
+        {/* Section 9: Share */}
+        <section className="bg-slate-50 rounded-xl border border-slate-200 p-4 md:p-6 text-center">
+          <p className="text-sm text-[#6B7280] mb-3">Want to share this analysis with your team?</p>
+          <Button variant="outline" className="h-10 px-5" data-testid="button-share">
+            <Share2 className="w-4 h-4 mr-2" />
+            Share with Team
+          </Button>
         </section>
       </main>
     </div>
