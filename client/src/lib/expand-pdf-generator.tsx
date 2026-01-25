@@ -152,7 +152,7 @@ const colors = {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 36,
+    padding: 40,
     paddingBottom: 50,
     fontFamily: "Helvetica",
     fontSize: 9,
@@ -164,14 +164,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14,
-    paddingBottom: 10,
+    marginBottom: 16,
+    paddingBottom: 12,
     borderBottomWidth: 2,
     borderBottomColor: colors.primary,
   },
   logo: {
-    width: 80,
-    height: 16,
+    width: 85,
+    height: 17,
   },
   headerRight: {
     textAlign: "right",
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   headerSubtitle: {
-    fontSize: 7,
+    fontSize: 8,
     color: colors.mediumGray,
     marginTop: 2,
   },
@@ -286,29 +286,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   heroValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
     color: colors.black,
-    marginBottom: 2,
+    marginBottom: 3,
   },
   heroValueGreen: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
     color: colors.green,
-    marginBottom: 2,
+    marginBottom: 3,
   },
   heroLabel: {
     fontSize: 7,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     textAlign: "center",
+    marginTop: 3,
   },
   heroSublabel: {
     fontSize: 6,
     color: colors.lightGray,
-    marginTop: 1,
+    marginTop: 2,
     textAlign: "center",
   },
 
@@ -350,6 +353,7 @@ const styles = StyleSheet.create({
   cardValue: {
     fontSize: 11,
     fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
     color: colors.green,
   },
   cardContent: {
@@ -426,6 +430,7 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 12,
     fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
     color: colors.green,
     textAlign: "right",
   },
@@ -456,6 +461,7 @@ const styles = StyleSheet.create({
   comparisonValue: {
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
     color: colors.black,
   },
   comparisonUnit: {
@@ -478,6 +484,7 @@ const styles = StyleSheet.create({
   comparisonChangeValue: {
     fontSize: 14,
     fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
     color: colors.green,
   },
   comparisonChangePercent: {
@@ -1134,78 +1141,91 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
       
       <View style={styles.journeyChart}>
-        <Svg width="100%" height="90" viewBox="0 0 500 90">
-          {/* Y-axis labels */}
-          <Text x="5" y="15" style={{ fontSize: 6, fill: colors.mediumGray }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-          <Text x="5" y="45" style={{ fontSize: 6, fill: colors.mediumGray }}>{formatCurrency(data.tier1Value)}</Text>
-          <Text x="5" y="75" style={{ fontSize: 6, fill: colors.mediumGray }}>$0</Text>
-          
-          {/* Grid lines */}
-          <Rect x="50" y="75" width="430" height="1" fill={colors.borderGray} />
-          <Rect x="50" y="45" width="430" height="1" fill={colors.borderGray} strokeDasharray="3,3" opacity="0.3" />
-          <Rect x="50" y="15" width="430" height="1" fill={colors.borderGray} strokeDasharray="3,3" opacity="0.3" />
-          
-          {/* Shaded area under actual results */}
-          <Path
-            d={`M 60 75 L 60 70 Q 100 65 140 55 T 220 45 T 280 42 L 280 75 Z`}
-            fill={colors.green}
-            opacity="0.15"
-          />
-          
-          {/* Actual results line (solid green) */}
-          <Path
-            d={`M 60 70 Q 100 65 140 55 T 220 45 T 280 42`}
-            fill="none"
-            stroke={colors.green}
-            strokeWidth="3"
-          />
-          
-          {/* Projected growth line (dashed blue) */}
-          <Path
-            d="M 280 42 Q 340 30 400 20 T 480 12"
-            fill="none"
-            stroke={colors.blue}
-            strokeWidth="2"
-            strokeDasharray="5,4"
-          />
-          
-          {/* Data points */}
-          <Circle cx="60" cy="70" r="4" fill={colors.mediumGray} stroke={colors.white} strokeWidth="1.5" />
-          <Circle cx="140" cy="55" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-          <Circle cx="220" cy="48" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-          
-          {/* TODAY marker - prominent red/orange */}
-          <Circle cx="280" cy="42" r="8" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
-          
-          {/* Future projections */}
-          <Circle cx="380" cy="25" r="3" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
-          <Circle cx="480" cy="12" r="5" fill={colors.green} stroke={colors.white} strokeWidth="2" />
-        </Svg>
-        
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
-          <View style={{ alignItems: "flex-start", width: 60 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Baseline</Text>
+        {/* Row with Y-axis labels + Chart SVG */}
+        <View style={{ flexDirection: "row" }}>
+          {/* Y-axis labels column */}
+          <View style={{ width: 45, justifyContent: "space-between", height: 75, paddingRight: 4 }}>
+            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
+            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
-          <View style={{ alignItems: "center", width: 90 }}>
+          
+          {/* Chart SVG */}
+          <Svg width="430" height="80" viewBox="0 0 430 80">
+            {/* Background grid lines */}
+            <Rect x="0" y="0" width="430" height="80" fill={colors.white} />
+            <Line x1="0" y1="75" x2="430" y2="75" stroke={colors.borderGray} strokeWidth="1" />
+            <Line x1="0" y1="40" x2="430" y2="40" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+            <Line x1="0" y1="8" x2="430" y2="8" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+            
+            {/* Shaded area under actual results */}
+            <Path
+              d="M 15 75 L 15 65 Q 60 55 110 48 T 170 40 T 220 36 L 220 75 Z"
+              fill={colors.green}
+              opacity="0.12"
+            />
+            
+            {/* Actual results line (solid green) - thicker */}
+            <Path
+              d="M 15 65 Q 60 55 110 48 T 170 40 T 220 36"
+              fill="none"
+              stroke={colors.green}
+              strokeWidth="2.5"
+            />
+            
+            {/* Projected growth line (dashed blue) */}
+            <Path
+              d="M 220 36 Q 280 25 340 15 T 420 8"
+              fill="none"
+              stroke={colors.blue}
+              strokeWidth="2"
+              strokeDasharray="5,4"
+            />
+            
+            {/* Data points - baseline */}
+            <Circle cx="15" cy="65" r="4" fill={colors.lightGray} stroke={colors.white} strokeWidth="1.5" />
+            
+            {/* Data points - progress */}
+            <Circle cx="110" cy="48" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="170" cy="42" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            
+            {/* TODAY marker - prominent, red/orange with glow effect */}
+            <Circle cx="220" cy="36" r="10" fill={colors.primaryLight} opacity="0.5" />
+            <Circle cx="220" cy="36" r="7" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
+            
+            {/* Future projections */}
+            <Circle cx="320" cy="20" r="3" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="420" cy="8" r="5" fill={colors.green} stroke={colors.white} strokeWidth="2" />
+          </Svg>
+        </View>
+        
+        {/* X-axis labels */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, paddingLeft: 45 }}>
+          <View style={{ alignItems: "flex-start", width: 65 }}>
+            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
+            <Text style={{ fontSize: 6, color: colors.lightGray }}>Baseline</Text>
+          </View>
+          <View style={{ alignItems: "center", flex: 1 }}>
             <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>{formatCurrency(data.tier1Value)}</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
             <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.providers} providers · {data.utilizationRate}%</Text>
           </View>
-          <View style={{ alignItems: "flex-end", width: 75 }}>
+          <View style={{ alignItems: "flex-end", width: 80 }}>
             <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>{formatCurrency(data.expansion.projectedValue)}</Text>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
             <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.expansion.targetProviders} providers · {data.expansion.targetUtilization}%</Text>
           </View>
         </View>
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 6, gap: 20 }}>
+        
+        {/* Legend */}
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 8, gap: 24 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 16, height: 3, backgroundColor: colors.green, marginRight: 4 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Actual results</Text>
+            <View style={{ width: 18, height: 3, backgroundColor: colors.green, marginRight: 5, borderRadius: 1.5 }} />
+            <Text style={{ fontSize: 6.5, color: colors.mediumGray }}>Actual results</Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 16, height: 2, borderWidth: 1, borderColor: colors.blue, borderStyle: "dashed", marginRight: 4 }} />
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Projected growth</Text>
+            <View style={{ width: 18, height: 2, borderWidth: 1, borderColor: colors.blue, borderStyle: "dashed", marginRight: 5 }} />
+            <Text style={{ fontSize: 6.5, color: colors.mediumGray }}>Projected growth</Text>
           </View>
         </View>
       </View>
@@ -1313,7 +1333,7 @@ const MetricDeepDivePage = ({
         
         return (
         <View key={metric.id} style={styles.metricCard} wrap={false}>
-          <View style={[styles.metricHeader, isValueMetric && { backgroundColor: colors.greenLight, borderBottomColor: colors.green }]}>
+          <View style={[styles.metricHeader, isValueMetric ? { backgroundColor: colors.greenLight, borderBottomColor: colors.green } : {}]}>
             <View style={{ flex: 1 }}>
               <Text style={styles.metricName}>{metric.name.toUpperCase()}</Text>
               <Text style={styles.metricDesc}>{metric.description}</Text>
