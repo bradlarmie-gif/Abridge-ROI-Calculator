@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-    paddingBottom: 12,
+    marginBottom: 10,
+    paddingBottom: 8,
     borderBottomWidth: 2,
     borderBottomColor: colors.primary,
   },
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
 
   orgContext: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   orgName: {
     fontSize: 13,
@@ -231,15 +231,15 @@ const styles = StyleSheet.create({
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    marginBottom: 8,
-    marginTop: 12,
+    marginBottom: 6,
+    marginTop: 8,
   },
 
   narrativeBox: {
     backgroundColor: colors.paleGray,
-    padding: 12,
+    padding: 10,
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: 8,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
   },
@@ -264,8 +264,8 @@ const styles = StyleSheet.create({
 
   heroRow: {
     flexDirection: "row",
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: 8,
+    gap: 6,
   },
   heroBox: {
     flex: 1,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    padding: 10,
+    padding: 8,
     alignItems: "center",
   },
   heroBoxHighlight: {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.green,
     borderRadius: 4,
-    padding: 10,
+    padding: 8,
     alignItems: "center",
   },
   heroValue: {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: 6,
     overflow: "hidden",
   },
   cardHeader: {
@@ -722,9 +722,9 @@ const styles = StyleSheet.create({
   journeyChart: {
     backgroundColor: colors.paleGray,
     borderRadius: 4,
-    padding: 12,
-    marginBottom: 12,
-    minHeight: 90,
+    padding: 8,
+    marginBottom: 6,
+    minHeight: 70,
   },
 
   methodologyGrid: {
@@ -1104,23 +1104,17 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
         </Text>
       </View>
 
-      <View style={styles.narrativeBox}>
+      <View style={styles.narrativeBox} wrap={false}>
         <Text style={styles.narrativeTitle}>THE STORY SO FAR</Text>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>{data.monthsOnAbridge} months ago</Text>, you deployed Abridge to {data.providers} providers. Since then, those providers have documented <Text style={styles.narrativeBold}>{formatNumber(data.documentedEncounters)} encounters</Text>—each one generating data about the value Abridge is creating.
-        </Text>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>The short answer: it is.</Text>
-        </Text>
-        <Text style={styles.narrativeText}>
-          This report breaks down exactly where value is coming from, how your results compare to what we typically see, and what the path forward looks like. Every number traces back to your data. Where we've made assumptions, we've flagged them. Where results look unusual, we've called that out too.
+          <Text style={styles.narrativeBold}>{data.monthsOnAbridge} months ago</Text>, you deployed Abridge to {data.providers} providers. Since then, those providers have documented <Text style={styles.narrativeBold}>{formatNumber(data.documentedEncounters)} encounters</Text>—each generating data about value creation. <Text style={styles.narrativeBold}>The short answer: it's working.</Text>
         </Text>
         <Text style={[styles.narrativeText, { marginBottom: 0 }]}>
-          The goal isn't to make Abridge look good. It's to give you a picture you can trust—and act on.
+          This report breaks down where value is coming from, how your results compare to typical outcomes, and what the path forward looks like. Every number traces back to your data with assumptions flagged.
         </Text>
       </View>
 
-      <View style={styles.heroRow}>
+      <View style={styles.heroRow} wrap={false}>
         <View style={styles.heroBoxHighlight}>
           <Text style={styles.heroValueGreen}>{formatCurrency(data.tier1Value)}</Text>
           <Text style={styles.heroLabel}>ANNUAL VALUE CREATED</Text>
@@ -1140,102 +1134,101 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
 
       <Text style={styles.sectionTitle}>YOUR VALUE JOURNEY</Text>
       
-      <View style={styles.journeyChart}>
+      <View style={styles.journeyChart} wrap={false}>
         {/* Row with Y-axis labels + Chart SVG */}
         <View style={{ flexDirection: "row" }}>
           {/* Y-axis labels column */}
-          <View style={{ width: 45, justifyContent: "space-between", height: 75, paddingRight: 4 }}>
-            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
+          <View style={{ width: 45, justifyContent: "space-between", height: 55, paddingRight: 4 }}>
+            <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
+            <Text style={{ fontSize: 6, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
+            <Text style={{ fontSize: 6, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
           
           {/* Chart SVG */}
-          <Svg width="430" height="80" viewBox="0 0 430 80">
+          <Svg width="430" height="60" viewBox="0 0 430 60">
             {/* Background grid lines */}
-            <Rect x="0" y="0" width="430" height="80" fill={colors.white} />
-            <Line x1="0" y1="75" x2="430" y2="75" stroke={colors.borderGray} strokeWidth="1" />
-            <Line x1="0" y1="40" x2="430" y2="40" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
-            <Line x1="0" y1="8" x2="430" y2="8" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+            <Rect x="0" y="0" width="430" height="60" fill={colors.white} />
+            <Line x1="0" y1="55" x2="430" y2="55" stroke={colors.borderGray} strokeWidth="1" />
+            <Line x1="0" y1="30" x2="430" y2="30" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+            <Line x1="0" y1="6" x2="430" y2="6" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
             
             {/* Shaded area under actual results */}
             <Path
-              d="M 15 75 L 15 65 Q 60 55 110 48 T 170 40 T 220 36 L 220 75 Z"
+              d="M 15 55 L 15 48 Q 60 42 110 36 T 170 30 T 220 27 L 220 55 Z"
               fill={colors.green}
               opacity="0.12"
             />
             
-            {/* Actual results line (solid green) - thicker */}
+            {/* Actual results line (solid green) */}
             <Path
-              d="M 15 65 Q 60 55 110 48 T 170 40 T 220 36"
+              d="M 15 48 Q 60 42 110 36 T 170 30 T 220 27"
               fill="none"
               stroke={colors.green}
-              strokeWidth="2.5"
+              strokeWidth="2"
             />
             
             {/* Projected growth line (dashed blue) */}
             <Path
-              d="M 220 36 Q 280 25 340 15 T 420 8"
+              d="M 220 27 Q 280 18 340 12 T 420 6"
               fill="none"
               stroke={colors.blue}
-              strokeWidth="2"
-              strokeDasharray="5,4"
+              strokeWidth="1.5"
+              strokeDasharray="4,3"
             />
             
             {/* Data points - baseline */}
-            <Circle cx="15" cy="65" r="4" fill={colors.lightGray} stroke={colors.white} strokeWidth="1.5" />
+            <Circle cx="15" cy="48" r="3" fill={colors.lightGray} stroke={colors.white} strokeWidth="1" />
             
             {/* Data points - progress */}
-            <Circle cx="110" cy="48" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="170" cy="42" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="110" cy="36" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="170" cy="32" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
             
-            {/* TODAY marker - prominent, red/orange with glow effect */}
-            <Circle cx="220" cy="36" r="10" fill={colors.primaryLight} opacity="0.5" />
-            <Circle cx="220" cy="36" r="7" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
+            {/* TODAY marker - prominent with glow effect */}
+            <Circle cx="220" cy="27" r="7" fill={colors.primaryLight} opacity="0.5" />
+            <Circle cx="220" cy="27" r="5" fill={colors.primary} stroke={colors.white} strokeWidth="1.5" />
             
             {/* Future projections */}
-            <Circle cx="320" cy="20" r="3" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="420" cy="8" r="5" fill={colors.green} stroke={colors.white} strokeWidth="2" />
+            <Circle cx="320" cy="15" r="2.5" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="420" cy="6" r="4" fill={colors.green} stroke={colors.white} strokeWidth="1.5" />
           </Svg>
         </View>
         
         {/* X-axis labels */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, paddingLeft: 45 }}>
-          <View style={{ alignItems: "flex-start", width: 65 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
-            <Text style={{ fontSize: 6, color: colors.lightGray }}>Baseline</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingLeft: 45 }}>
+          <View style={{ alignItems: "flex-start", width: 60 }}>
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
           </View>
           <View style={{ alignItems: "center", flex: 1 }}>
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.providers} providers · {data.utilizationRate}%</Text>
+            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
+            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
+            <Text style={{ fontSize: 5, color: colors.mediumGray }}>{data.providers} providers · {data.utilizationRate}%</Text>
           </View>
-          <View style={{ alignItems: "flex-end", width: 80 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{data.expansion.targetProviders} providers · {data.expansion.targetUtilization}%</Text>
+          <View style={{ alignItems: "flex-end", width: 70 }}>
+            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
+            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
+            <Text style={{ fontSize: 5, color: colors.mediumGray }}>{data.expansion.targetProviders} providers · {data.expansion.targetUtilization}%</Text>
           </View>
         </View>
         
         {/* Legend */}
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 8, gap: 24 }}>
+        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 4, gap: 20 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 18, height: 3, backgroundColor: colors.green, marginRight: 5, borderRadius: 1.5 }} />
-            <Text style={{ fontSize: 6.5, color: colors.mediumGray }}>Actual results</Text>
+            <View style={{ width: 14, height: 2, backgroundColor: colors.green, marginRight: 4, borderRadius: 1 }} />
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Actual results</Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 18, height: 2, borderWidth: 1, borderColor: colors.blue, borderStyle: "dashed", marginRight: 5 }} />
-            <Text style={{ fontSize: 6.5, color: colors.mediumGray }}>Projected growth</Text>
+            <View style={{ width: 14, height: 2, borderWidth: 1, borderColor: colors.blue, borderStyle: "dashed", marginRight: 4 }} />
+            <Text style={{ fontSize: 6, color: colors.mediumGray }}>Projected growth</Text>
           </View>
         </View>
       </View>
 
       <Text style={styles.sectionTitle}>VALUE BREAKDOWN</Text>
-      <Text style={{ fontSize: 7, color: colors.mediumGray, marginBottom: 8, marginTop: -4 }}>
+      <Text style={{ fontSize: 6, color: colors.mediumGray, marginBottom: 4, marginTop: -2 }}>
         We separate value into three tiers based on how confidently we can measure and attribute it:
       </Text>
 
-      <View style={styles.card}>
+      <View style={styles.card} wrap={false}>
         <View style={styles.cardHeaderGreen}>
           <View>
             <Text style={styles.cardTitle}>Tier 1: Hard Value</Text>
@@ -1257,7 +1250,7 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       </View>
 
       {data.tier2Items.length > 0 && (
-        <View style={styles.card}>
+        <View style={styles.card} wrap={false}>
           <View style={styles.cardHeader}>
             <View>
               <Text style={styles.cardTitle}>Tier 2: Efficiency Gains</Text>
@@ -1274,15 +1267,15 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
                 <Text style={styles.rowValueNeutral}>{item.value}</Text>
               </View>
             ))}
-            <Text style={[styles.rowExplanation, { marginTop: 6 }]}>
-              We show these in hours and percentages rather than dollars because the conversion varies by organization. If you want to dollarize time savings, we can adjust the model.
+            <Text style={[styles.rowExplanation, { marginTop: 4 }]}>
+              We show these in hours/percentages rather than dollars because conversion varies by organization.
             </Text>
           </View>
         </View>
       )}
 
       {data.tier3Items.length > 0 && (
-        <View style={styles.card}>
+        <View style={styles.card} wrap={false}>
           <View style={styles.cardHeader}>
             <View>
               <Text style={styles.cardTitle}>Tier 3: Leading Indicators</Text>
@@ -1691,7 +1684,7 @@ const MethodologyPage = ({
 
       <Text style={styles.sectionTitle}>YOUR INPUTS</Text>
       
-      <View style={styles.methodologyGrid}>
+      <View style={styles.methodologyGrid} wrap={false}>
         <View style={styles.methodologyColumn}>
           <Text style={styles.methodologyTitle}>Deployment</Text>
           <Text style={styles.methodologyItem}>• {data.providers} providers</Text>
@@ -1708,13 +1701,13 @@ const MethodologyPage = ({
 
       <Text style={styles.sectionTitle}>VALUE ATTRIBUTION</Text>
 
-      <View style={styles.card}>
+      <View style={styles.card} wrap={false}>
         <View style={styles.cardContent}>
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>wRVU Value</Text>
               <Text style={styles.rowExplanation}>
-                We use Medicare's $33/wRVU conversion factor and apply 50% attribution to Abridge. If your payer mix is commercial-heavy (where conversion factors run $45-65), actual revenue impact may be 30-50% higher.
+                $33/wRVU (Medicare) with 50% attribution. Commercial payers may yield 30-50% higher value.
               </Text>
             </View>
           </View>
@@ -1722,7 +1715,7 @@ const MethodologyPage = ({
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>Time Conversion</Text>
               <Text style={styles.rowExplanation}>
-                Time savings are calculated from before/after documentation time. When converted to patient access, we use $150/hour provider value and your specified conversion percentage.
+                Time savings at $150/hour provider value with specified conversion percentage.
               </Text>
             </View>
           </View>
@@ -1730,7 +1723,7 @@ const MethodologyPage = ({
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowLabel, { fontWeight: "bold" }]}>Retention Value</Text>
               <Text style={styles.rowExplanation}>
-                Provider turnover costs estimated at $500,000 per departure (recruitment, onboarding, lost productivity). Attribution to satisfaction improvement is conservative.
+                Turnover costs at $500K per departure. Conservative satisfaction attribution.
               </Text>
             </View>
           </View>
@@ -1739,46 +1732,35 @@ const MethodologyPage = ({
 
       <Text style={styles.sectionTitle}>BENCHMARK RANGES</Text>
 
-      <View style={styles.methodologyGrid}>
+      <View style={styles.methodologyGrid} wrap={false}>
         <View style={styles.methodologyColumn}>
           <Text style={styles.methodologyTitle}>Typical Abridge Results</Text>
           <Text style={styles.methodologyItem}>• wRVU lift: 3-7%</Text>
-          <Text style={styles.methodologyItem}>• Time in notes reduction: 3-5 min/encounter</Text>
-          <Text style={styles.methodologyItem}>• Chart closure improvement: 5-15 pp</Text>
+          <Text style={styles.methodologyItem}>• Time reduction: 3-5 min/enc</Text>
+          <Text style={styles.methodologyItem}>• Chart closure: +5-15 pp</Text>
         </View>
         <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>Quality of Life Metrics</Text>
-          <Text style={styles.methodologyItem}>• Pajama time reduction: 2-5 hrs/week</Text>
-          <Text style={styles.methodologyItem}>• Satisfaction improvement: 10-20 points</Text>
-          <Text style={styles.methodologyItem}>• Burnout reduction: varies by baseline</Text>
+          <Text style={styles.methodologyTitle}>Quality of Life</Text>
+          <Text style={styles.methodologyItem}>• Pajama time: -2-5 hrs/wk</Text>
+          <Text style={styles.methodologyItem}>• Satisfaction: +10-20 pts</Text>
+          <Text style={styles.methodologyItem}>• Burnout: varies</Text>
         </View>
       </View>
 
       <Text style={styles.sectionTitle}>WHAT WE DON'T INCLUDE</Text>
 
-      <View style={styles.card}>
+      <View style={styles.card} wrap={false}>
         <View style={styles.cardContent}>
-          <Text style={styles.rowExplanation}>
-            • Downstream revenue from improved patient experience and retention
-          </Text>
-          <Text style={styles.rowExplanation}>
-            • Quality measure improvements (MIPS, HEDIS) and associated incentives
-          </Text>
-          <Text style={styles.rowExplanation}>
-            • Reduced compliance and audit risk from better documentation
-          </Text>
-          <Text style={styles.rowExplanation}>
-            • Training and onboarding time reduction for new providers
-          </Text>
-          <Text style={[styles.rowExplanation, { marginBottom: 0 }]}>
-            • Long-term career satisfaction and reduced early retirement
-          </Text>
+          <Text style={styles.rowExplanation}>• Downstream revenue from patient experience</Text>
+          <Text style={styles.rowExplanation}>• Quality measure incentives (MIPS, HEDIS)</Text>
+          <Text style={styles.rowExplanation}>• Reduced compliance/audit risk</Text>
+          <Text style={[styles.rowExplanation, { marginBottom: 0 }]}>• Training time reduction & career satisfaction</Text>
         </View>
       </View>
 
-      <View style={styles.closingBox}>
+      <View style={styles.closingBox} wrap={false}>
         <Text style={styles.closingText}>
-          Questions about our methodology? We're happy to walk through any calculation in detail. The goal is confidence in every number—if something doesn't make sense, we want to know.
+          Questions about our methodology? We're happy to walk through any calculation in detail.
         </Text>
       </View>
 
