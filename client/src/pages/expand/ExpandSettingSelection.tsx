@@ -92,7 +92,7 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
             {/* Overlay */}
             <div className="absolute inset-0 bg-white/60 rounded-2xl flex items-center justify-center">
               <span className="bg-neutral-100 px-4 py-2 rounded-full text-xs font-semibold text-neutral-600">
-                Coming Q2 2025
+                Coming Q4 2025
               </span>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
             {/* Overlay */}
             <div className="absolute inset-0 bg-white/60 rounded-2xl flex items-center justify-center">
               <span className="bg-neutral-100 px-4 py-2 rounded-full text-xs font-semibold text-neutral-600">
-                Coming Q3 2025
+                Coming Q2 2025
               </span>
             </div>
           </div>
