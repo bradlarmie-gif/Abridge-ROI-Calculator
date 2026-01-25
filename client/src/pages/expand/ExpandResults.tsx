@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
-import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight, Share2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import type { DeploymentData, MetricType, MetricsData, TimelineData } from "./ExpandFlow";
 import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS, formatCurrency } from "@/lib/expandRoiCalculator";
+import { generateExpandROIPDFBlob, generateExpandROIPDF, type ExpandPDFData } from "@/lib/expand-pdf-generator";
 
 interface ExpandResultsProps {
   deploymentData: DeploymentData;
@@ -148,12 +149,186 @@ export default function ExpandResults({
     );
   };
 
-  const handleExportPDF = () => {
-    toast({ title: "Export feature", description: "PDF export coming soon" });
+  const [isExporting, setIsExporting] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+
+  const buildPDFData = useCallback((): ExpandPDFData => {
+    const documentedEncounters = Math.round(encounters * utilizationRate / 100);
+    
+    const metrics = [];
+    
+    if (roiResult.tier1Breakdown.wrvuValue > 0) {
+      const wrvuLift = (metricsData.wrvuCapture.after || 0) - (metricsData.wrvuCapture.before || 0);
+      metrics.push({
+        id: 'wrvu',
+        name: 'wRVU Capture',
+        before: metricsData.wrvuCapture.before || 0,
+        after: metricsData.wrvuCapture.after || 0,
+        change: wrvuLift,
+        changePercent: metricsData.wrvuCapture.before ? (wrvuLift / metricsData.wrvuCapture.before) * 100 : 0,
+        unit: 'wRVU/enc',
+        isPositiveGood: true,
+        value: roiResult.tier1Breakdown.wrvuValue,
+        formula: `+${wrvuLift.toFixed(2)} × ${documentedEncounters.toLocaleString()} enc × $${EXPAND_ROI_DEFAULTS.dollarPerWRVU} × 50%`,
+      });
+    }
+    
+    if (roiResult.tier1Breakdown.timeConversionValue > 0) {
+      metrics.push({
+        id: 'timeConversion',
+        name: valueConfig.timeConversionMethod === 'patientAccess' 
+          ? `Patient Access (${valueConfig.conversionPercent}% conversion)`
+          : 'Overtime Reduction',
+        before: metricsData.timeSavings.before || 0,
+        after: metricsData.timeSavings.after || 0,
+        change: (metricsData.timeSavings.before || 0) - (metricsData.timeSavings.after || 0),
+        changePercent: 0,
+        unit: 'min/enc',
+        isPositiveGood: true,
+        value: roiResult.tier1Breakdown.timeConversionValue,
+      });
+    }
+    
+    if (roiResult.tier1Breakdown.retentionValue > 0) {
+      metrics.push({
+        id: 'retention',
+        name: `Retention (${valueConfig.departuresPrevented} departures prevented)`,
+        before: 0,
+        after: 0,
+        change: 0,
+        changePercent: 0,
+        unit: '',
+        isPositiveGood: true,
+        value: roiResult.tier1Breakdown.retentionValue,
+      });
+    }
+    
+    const tier2Items: { label: string; value: string }[] = [];
+    if (roiResult.tier2EfficiencyMetrics.hoursSaved > 0) {
+      tier2Items.push({ 
+        label: 'Time saved', 
+        value: `${roiResult.tier2EfficiencyMetrics.hoursSaved.toLocaleString()} hours/year` 
+      });
+    }
+    if (roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly > 0) {
+      tier2Items.push({ 
+        label: 'Pajama time eliminated', 
+        value: `-${roiResult.tier2EfficiencyMetrics.pajamaTimeWeekly} hrs/week` 
+      });
+    }
+    if (roiResult.tier2EfficiencyMetrics.chartClosureImprovement > 0) {
+      tier2Items.push({ 
+        label: 'Chart closure improvement', 
+        value: `+${roiResult.tier2EfficiencyMetrics.chartClosureImprovement}%` 
+      });
+    }
+    
+    const tier3Items: { label: string; value: string }[] = [];
+    if (roiResult.tier3LeadingIndicators.satisfactionImprovement > 0) {
+      tier3Items.push({
+        label: 'Satisfaction improvement',
+        value: `${roiResult.tier3LeadingIndicators.satisfactionBefore} → ${roiResult.tier3LeadingIndicators.satisfactionAfter} (+${roiResult.tier3LeadingIndicators.satisfactionImprovement.toFixed(1)} points)`,
+      });
+    }
+    
+    return {
+      organizationName: deploymentData.organizationName,
+      careSetting: 'Outpatient',
+      providers,
+      encounters,
+      utilizationRate,
+      monthsOnAbridge: months,
+      documentedEncounters,
+      tier1Value: roiResult.tier1HardValue,
+      tier2Items,
+      tier3Items,
+      investment: currentInvestment,
+      roi: currentROI,
+      metrics,
+      expansion: {
+        currentProviders: providers,
+        currentUtilization: utilizationRate,
+        currentValue: currentValue,
+        targetProviders: expansionCalc?.targetProviders || providers * 3,
+        targetUtilization: expansionCalc?.targetUtilization || Math.min(utilizationRate + 15, MAX_UTILIZATION),
+        projectedValue: expansionCalc?.projectedValue || currentValue * 3,
+        investmentPerProvider,
+        projectedROI: expansionCalc?.projectedROI || currentROI,
+        expansionValue: expansionCalc?.expansionValue || currentValue * 2,
+      },
+      valueConfig: {
+        timeConversionMethod: valueConfig.timeConversionMethod,
+        conversionPercent: valueConfig.conversionPercent,
+        retentionEnabled: valueConfig.estimateRetention,
+      },
+      warnings: roiResult.warnings.map(w => ({
+        type: w.type,
+        title: w.title,
+        message: w.message,
+        severity: w.severity,
+      })),
+    };
+  }, [providers, encounters, utilizationRate, months, metricsData, valueConfig, roiResult, currentValue, currentInvestment, currentROI, expansionCalc, investmentPerProvider, deploymentData.organizationName]);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const pdfData = buildPDFData();
+      await generateExpandROIPDF(pdfData);
+      toast({ 
+        title: "PDF exported", 
+        description: "Your value realization report has been downloaded" 
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({ 
+        title: "Export failed", 
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
   
-  const handleShareEmail = () => {
-    toast({ title: "Share feature", description: "Email sharing coming soon" });
+  const handleShareEmail = async () => {
+    setIsSharing(true);
+    try {
+      const pdfData = buildPDFData();
+      const { blob, filename } = await generateExpandROIPDFBlob(pdfData);
+      
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], filename, { type: 'application/pdf' });
+        
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Abridge Value Realization Report',
+            text: `Value realization report for ${providers} providers over ${months} months on Abridge`,
+          });
+          toast({ title: "Shared successfully" });
+        } else {
+          const url = URL.createObjectURL(blob);
+          window.open(`mailto:?subject=Abridge Value Realization Report&body=Please find the attached value realization report. Download: ${window.location.href}`);
+          URL.revokeObjectURL(url);
+          toast({ title: "Email client opened", description: "Attach the downloaded PDF to share" });
+        }
+      } else {
+        window.open(`mailto:?subject=Abridge Value Realization Report&body=View the value realization report at: ${window.location.href}`);
+        toast({ title: "Email client opened" });
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Share error:', error);
+        toast({ 
+          title: "Share failed", 
+          description: "There was an error sharing. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsSharing(false);
+    }
   };
   
   const handleCopyLink = () => {
@@ -175,11 +350,13 @@ export default function ExpandResults({
       
       <div className="py-6 md:py-8 px-6 pb-8 max-w-5xl mx-auto">
         <div className="flex items-center justify-end mb-6 gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={handleExportPDF} data-testid="button-export-pdf">
-            <FileText className="w-4 h-4 mr-1" /> Export PDF
+          <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={isExporting} data-testid="button-export-pdf">
+            {isExporting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <FileText className="w-4 h-4 mr-1" />}
+            {isExporting ? 'Generating...' : 'Export PDF'}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleShareEmail} data-testid="button-share-email">
-            <Mail className="w-4 h-4 mr-1" /> Share
+          <Button variant="outline" size="sm" onClick={handleShareEmail} disabled={isSharing} data-testid="button-share-email">
+            {isSharing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Share2 className="w-4 h-4 mr-1" />}
+            {isSharing ? 'Sharing...' : 'Share'}
           </Button>
           <Button variant="outline" size="sm" onClick={handleCopyLink} data-testid="button-copy-link">
             <Link className="w-4 h-4 mr-1" /> Copy Link
@@ -560,12 +737,14 @@ export default function ExpandResults({
           </div>
         )}
         
-        <div className="flex items-center justify-center gap-3">
-          <Button variant="outline" onClick={handleExportPDF} data-testid="button-export-pdf-bottom">
-            <FileText className="w-4 h-4 mr-2" /> Export as PDF
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <Button variant="outline" onClick={handleExportPDF} disabled={isExporting} data-testid="button-export-pdf-bottom">
+            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+            {isExporting ? 'Generating...' : 'Export as PDF'}
           </Button>
-          <Button variant="outline" onClick={handleShareEmail} data-testid="button-share-email-bottom">
-            <Mail className="w-4 h-4 mr-2" /> Share via Email
+          <Button variant="outline" onClick={handleShareEmail} disabled={isSharing} data-testid="button-share-email-bottom">
+            {isSharing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Share2 className="w-4 h-4 mr-2" />}
+            {isSharing ? 'Sharing...' : 'Share'}
           </Button>
           <Button variant="outline" onClick={handleCopyLink} data-testid="button-copy-link-bottom">
             <Link className="w-4 h-4 mr-2" /> Copy Link
