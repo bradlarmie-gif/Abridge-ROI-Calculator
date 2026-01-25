@@ -1783,28 +1783,28 @@ const NarrativeAnalysisPage = ({
       <View style={styles.bottomLineBox} wrap={false}>
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
           <IconChart size={10} color={colors.primary} />
-          <Text style={[styles.sectionBoxTitle, { marginLeft: 4, marginBottom: 0 }]}>THE BOTTOM LINE</Text>
+          <Text style={[styles.sectionBoxTitle, { marginLeft: 4, marginBottom: 0 }]}>PUTTING IT TOGETHER</Text>
         </View>
         <View style={{ flexDirection: "row", gap: 6, marginBottom: 4 }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 6, marginBottom: 2 }}>• {formatCurrency(data.tier1Value)} in annual value</Text>
-            {data.tier2Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Efficiency gains captured</Text>}
+            <Text style={{ fontSize: 6, marginBottom: 2 }}>• {formatCurrency(data.tier1Value)} documented value annually</Text>
+            {data.tier2Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Efficiency patterns emerging</Text>}
           </View>
           <View style={{ flex: 1 }}>
-            {data.tier3Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Positive leading indicators</Text>}
-            <Text style={{ fontSize: 6 }}>• +{formatCurrency(data.expansion.expansionValue)} at full scale</Text>
+            {data.tier3Items.length > 0 && <Text style={{ fontSize: 6, marginBottom: 2 }}>• Leading indicators trending positive</Text>}
+            <Text style={{ fontSize: 6 }}>• Expansion potential: +{formatCurrency(data.expansion.expansionValue)}</Text>
           </View>
         </View>
         <Text style={{ fontSize: 6, lineHeight: 1.3, fontStyle: "italic", color: colors.darkGray }}>
           {data.utilizationRate < 70 
-            ? `At ${data.utilizationRate}% utilization, you're capturing less than half the potential. Push to 80%+ to multiply value.`
-            : `With ${data.utilizationRate}% utilization, focus on maintaining gains and expanding coverage.`
+            ? `Here's what's interesting: at ${data.utilizationRate}% utilization, you're seeing this value with less than half your potential activated. That's not a criticism—it's actually good news. It means the math for scaling is compelling.`
+            : `At ${data.utilizationRate}% utilization, you're in the optimization phase. The question now is: how do you protect these gains while expanding thoughtfully?`
           }
         </Text>
       </View>
 
       <KeyTakeaway 
-        text={`Focus on these ${data.optimizationOpportunities.length} optimization opportunities to unlock an additional ${formatCurrency(data.optimizationOpportunities.reduce((sum, o) => sum + o.potentialValue, 0))} annually.`}
+        text={`The patterns here suggest ${data.optimizationOpportunities.length} areas worth exploring. If you pursue all of them, the math points to an additional ${formatCurrency(data.optimizationOpportunities.reduce((sum, o) => sum + o.potentialValue, 0))} annually—but start with the one that feels most actionable for your organization.`}
       />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
@@ -1941,12 +1941,12 @@ const ExpansionOpportunityPage = ({
 
       <View style={styles.closingBox} wrap={false}>
         <Text style={styles.closingText}>
-          The value you're capturing today isn't a ceiling—it's a proof point. At {expansion.currentProviders} providers and {expansion.currentUtilization}% utilization, you've demonstrated {formatCurrency(data.tier1Value)} in annual value. Scaling to {expansion.targetProviders} providers at {expansion.targetUtilization}% utilization projects to {formatCurrency(expansion.projectedValue)}.
+          Here's how we think about this: What you're seeing today at {expansion.currentProviders} providers and {expansion.currentUtilization}% utilization isn't just a number—it's a proof point. The {formatCurrency(data.tier1Value)} in annual value demonstrates the model works in your environment. The expansion math follows naturally: scale to {expansion.targetProviders} providers at {expansion.targetUtilization}% utilization, and you're looking at {formatCurrency(expansion.projectedValue)} annually. The pattern is proven. Now it's about execution.
         </Text>
       </View>
 
       <KeyTakeaway 
-        text={`Every additional provider at target utilization adds approximately ${formatCurrency(expansion.projectedValue / expansion.targetProviders)} in annual value. The math is proven—now it's about execution.`}
+        text={`Here's the math to keep in mind: every additional provider at target utilization adds roughly ${formatCurrency(expansion.projectedValue / expansion.targetProviders)} annually. You've proven the model works in your environment—the expansion opportunity is about replicating what's already working.`}
       />
 
       <Footer pageNum={pageNum} totalPages={totalPages} />
@@ -1975,7 +1975,7 @@ const MethodologyPage = ({
 
       <View style={styles.narrativeBox} wrap={false}>
         <Text style={styles.narrativeText}>
-          Every number traces back to your data or industry-standard benchmarks. We've used conservative assumptions throughout—actual value is likely higher. Here's exactly how we calculated each component.
+          Let's walk through how we arrived at these numbers. Every calculation traces back to either your data or industry-standard benchmarks—we don't use optimistic assumptions. In fact, we lean conservative throughout, which means actual value is often higher than what we show here. Here's the methodology behind each component, so you can validate the logic yourself.
         </Text>
       </View>
 

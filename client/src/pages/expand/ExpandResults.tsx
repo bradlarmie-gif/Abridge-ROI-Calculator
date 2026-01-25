@@ -177,7 +177,7 @@ export default function ExpandResults({
         value: roiResult.tier1Breakdown.wrvuValue,
         formula: `+${wrvuLift.toFixed(2)} wRVU/enc × ${documentedEncounters.toLocaleString()} encounters × $${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU × 50% attribution`,
         formulaExplanation: `We use Medicare's $33 conversion factor and 50% attribution to Abridge. If your payer mix is commercial-heavy (where conversion factors run $45-65), actual revenue impact may be 30-50% higher.`,
-        whatThisMeans: `wRVU improvement indicates that documentation is capturing more of the clinical complexity that was always present in your encounters. This isn't about changing how providers practice—it's about making sure the note reflects what actually happened in the room.${isAboveTypical ? ` The ${wrvuLiftPercent.toFixed(0)}% lift you're seeing is substantial. If confirmed, it suggests there was significant under-documentation in your baseline state.` : ''}`,
+        whatThisMeans: `Here's what we're seeing: A ${wrvuLiftPercent.toFixed(1)}% lift in wRVU typically means your documentation is now capturing clinical complexity that was always there—providers aren't doing more, the notes are just reflecting reality better. ${isAboveTypical ? `Your ${wrvuLiftPercent.toFixed(0)}% lift is above our typical 3-7% range, which is interesting. This could mean several things: your baseline documentation may have been particularly sparse, or you have complex patient populations that benefit more from thorough capture. It's worth exploring—if you can validate the baseline methodology, this becomes a powerful proof point.` : `This is a pattern we see across deployments: when AI handles the documentation mechanics, providers naturally capture more detail because the friction is gone.`}`,
         benchmark: {
           typicalRange: '3-7% lift',
           typicalMin: 3,
@@ -213,7 +213,7 @@ export default function ExpandResults({
         formula: roiResult.tier1Breakdown.timeConversionValue > 0 
           ? `${timeSaved.toFixed(0)} min saved × ${documentedEncounters.toLocaleString()} enc ÷ 60 × $150/hr × ${valueConfig.conversionPercent}%`
           : undefined,
-        whatThisMeans: `Each minute saved per encounter translates to ${Math.round(timeSaved * documentedEncounters / 60).toLocaleString()} hours annually. This time can go toward patient care, work-life balance, or additional encounters—depending on your organizational priorities.`,
+        whatThisMeans: `Let's think about what ${timeSaved.toFixed(0)} minutes saved really means: That's ${Math.round(timeSaved * documentedEncounters / 60).toLocaleString()} hours annually—time that was previously locked up in documentation. The interesting question is: where does that time actually go? We've seen organizations channel it three ways: back to patients (more access, longer visits), back to providers (better work-life balance), or to operations (overtime reduction). Which path makes sense for you depends on your current priorities. ${timeSaved >= 4 ? `The ${timeSaved.toFixed(0)}-minute reduction you're seeing is meaningful—it's the kind of lift that providers notice in their daily rhythm.` : `You're in the early stages of time recapture. As providers build fluency with the tool, we typically see these numbers grow.`}`,
         benchmark: {
           typicalRange: '3-5 min reduction',
           typicalMin: 3,
@@ -244,7 +244,7 @@ export default function ExpandResults({
         changePercent: reductionPercent,
         unit: 'hrs/week',
         isPositiveGood: false, // Lower is better
-        whatThisMeans: `Reducing after-hours documentation by ${hoursReduced.toFixed(1)} hours per week per provider directly improves work-life balance. This is often the most emotionally resonant metric for clinicians—it represents time reclaimed for family, rest, and personal pursuits.`,
+        whatThisMeans: `This one matters more than the numbers suggest. ${hoursReduced.toFixed(1)} hours per week might not sound like much, but talk to any clinician and they'll tell you—those evening hours aren't just time, they're the difference between seeing your kids before bedtime and catching up on charts at 10pm. We've found this metric often predicts retention outcomes 6-12 months down the road. ${hoursReduced >= 3 ? `The reduction you're seeing is substantial—in our experience, providers really feel this difference in their daily lives.` : `You're starting to see movement here. As adoption deepens, this number often grows because providers start trusting the AI to handle more of the documentation load.`}`,
         benchmark: {
           typicalRange: '2-4 hr/week reduction',
           typicalMin: 2,
@@ -273,7 +273,7 @@ export default function ExpandResults({
         changePercent: closureImprovement, // Already in percentage points
         unit: '%',
         isPositiveGood: true,
-        whatThisMeans: `Same-day chart closure improves billing cycle times, reduces compliance risk, and indicates providers are completing documentation in real-time rather than batching. A ${closureImprovement > 0 ? `+${closureImprovement}%` : `${closureImprovement}%`} improvement suggests AI-assisted documentation is enabling more efficient workflows.`,
+        whatThisMeans: `Chart closure is one of those metrics that tells a bigger story. When charts close same-day, it usually means providers are documenting in real-time rather than batching at the end of the day (or week). ${closureImprovement > 0 ? `Your ${closureImprovement} percentage point improvement suggests the workflow is clicking—providers are trusting the AI draft enough to finalize notes between patients.` : `We're not seeing significant movement here yet.`} Beyond the workflow signal, there's a downstream revenue impact: faster closure means faster billing cycles and reduced compliance exposure. Worth watching as your deployment matures.`,
         benchmark: {
           typicalRange: '10-20 percentage point improvement',
           typicalMin: 10,
@@ -302,7 +302,7 @@ export default function ExpandResults({
         changePercent: satBefore > 0 ? (satImprovement / satBefore) * 100 : 0,
         unit: 'points',
         isPositiveGood: true,
-        whatThisMeans: `Clinician satisfaction is a leading indicator of retention. Organizations typically see satisfaction improvements 3-6 months before measurable retention benefits. A ${satImprovement > 0 ? `+${satImprovement}` : satImprovement} point improvement indicates meaningful positive impact on provider experience.`,
+        whatThisMeans: `Here's what's interesting about satisfaction scores: they're often a leading indicator. We've seen organizations where satisfaction improvements precede retention benefits by 6-12 months—it's like an early warning system in reverse. ${satImprovement >= 10 ? `A ${satImprovement}-point improvement is notable. Providers are telling you something is working. The question worth exploring: what specifically is driving this? Is it time savings, reduced after-hours work, or something else?` : satImprovement > 0 ? `You're seeing early movement here. As adoption deepens and providers experience the full benefit, these scores often continue climbing.` : `Satisfaction takes time to shift. Keep monitoring as providers build familiarity with the workflow.`}`,
         benchmark: {
           typicalRange: '5-15 point improvement',
           typicalMin: 5,
@@ -349,60 +349,60 @@ export default function ExpandResults({
       });
     }
     
-    // Generate "What's Working Well" based on metrics
+    // Generate "What's Working Well" based on metrics - educational, coaching tone
     const workingWell: string[] = [];
     const wrvuMetric = metrics.find(m => m.id === 'wrvu');
     if (wrvuMetric && wrvuMetric.changePercent > 0) {
-      workingWell.push(`wRVU capture showing ${wrvuMetric.benchmark?.status === 'above' ? 'strong' : 'solid'} improvement (${wrvuMetric.changePercent.toFixed(0)}% lift)`);
+      workingWell.push(`Revenue capture is responding—${wrvuMetric.changePercent.toFixed(0)}% wRVU lift suggests documentation is better reflecting clinical complexity`);
     }
     const timeMetric = metrics.find(m => m.id === 'timeSavings');
     if (timeMetric && timeMetric.change > 0) {
-      workingWell.push(`Time in notes reduced by ${timeMetric.change.toFixed(0)} minutes per encounter`);
+      workingWell.push(`Providers are reclaiming time—${timeMetric.change.toFixed(0)} min/encounter freed up, which compounds across your volume`);
     }
     const wowMetric = metrics.find(m => m.id === 'workOutsideWork');
     if (wowMetric && wowMetric.change > 0) {
-      workingWell.push(`After-hours work reduced by ${wowMetric.change.toFixed(1)} hours per week`);
+      workingWell.push(`Evening documentation dropping—${wowMetric.change.toFixed(1)} hrs/week back, a leading indicator for retention`);
     }
     const chartMetric = metrics.find(m => m.id === 'chartClosure');
     if (chartMetric && chartMetric.change > 0) {
-      workingWell.push(`Same-day chart closure up ${chartMetric.change.toFixed(0)} percentage points`);
+      workingWell.push(`Real-time documentation emerging—${chartMetric.change.toFixed(0)}pt closure improvement suggests workflow is clicking`);
     }
     const satMetric = metrics.find(m => m.id === 'clinicianSatisfaction');
     if (satMetric && satMetric.change > 0) {
-      workingWell.push(`Clinician satisfaction improved ${satMetric.change.toFixed(0)} points`);
+      workingWell.push(`Provider experience trending positive—+${satMetric.change.toFixed(0)} pts often precedes broader culture benefits`);
     }
     // Add default message if nothing is working well yet
     if (workingWell.length === 0) {
-      workingWell.push('Data collection in progress—continue monitoring as deployment matures');
+      workingWell.push('Still gathering signal—early deployments often show clearer patterns after 2-3 months of consistent use');
     }
     
-    // Generate "Areas to Watch"
+    // Generate "Areas to Watch" - exploratory, hypothesis-driven language
     const areasToWatch: string[] = [];
     if (utilizationRate < 80) {
-      areasToWatch.push(`Utilization at ${utilizationRate}%—room to grow toward 80-85% at maturity`);
+      areasToWatch.push(`Utilization at ${utilizationRate}%—worth exploring what's keeping remaining providers from adopting. Training gaps? Specialty-specific barriers?`);
     }
     if (wrvuMetric?.benchmark?.status === 'above') {
-      areasToWatch.push(`wRVU lift above typical range—recommend validating baseline`);
+      areasToWatch.push(`wRVU lift above typical—exciting if validated. Consider auditing baseline methodology to confirm this is real lift vs. measurement change`);
     }
     if (valueConfig.timeConversionMethod === 'none' || !roiResult.tier1Breakdown.timeConversionValue) {
-      areasToWatch.push(`Time savings not yet converting to patient access or overtime reduction`);
+      areasToWatch.push(`Time savings currently unrealized—the hours are there, but haven't yet converted to patient access or reduced overtime. Worth a conversation with ops.`);
     }
     if (areasToWatch.length === 0) {
-      areasToWatch.push(`Continue monitoring metrics as deployment matures`);
+      areasToWatch.push(`No red flags—keep gathering data and watch for emerging patterns as deployment matures`);
     }
     
-    // Generate optimization opportunities
+    // Generate optimization opportunities - action-oriented coaching language
     const optimizationOpportunities: ExpandPDFData['optimizationOpportunities'] = [];
     
     if (utilizationRate < 80) {
       const utilizationGap = 85 - utilizationRate;
       const potentialValue = Math.round(currentValue * (utilizationGap / utilizationRate) * 0.7);
       optimizationOpportunities.push({
-        title: 'Utilization Focus',
-        current: `${utilizationRate}%`,
-        target: '80-85%',
+        title: 'Deepen Adoption',
+        current: `${utilizationRate}% of providers using consistently`,
+        target: '80-85% (where value compounds)',
         potentialValue,
-        action: 'Identify providers below 60% and address barriers to adoption',
+        action: 'Look for patterns: Which specialties or sites are lagging? Often there are 2-3 common barriers that, once addressed, unlock the next wave of adoption.',
       });
     }
     
@@ -410,21 +410,21 @@ export default function ExpandResults({
       const hoursSaved = roiResult.tier2EfficiencyMetrics.hoursSaved;
       const potentialValue = Math.round(hoursSaved * 150 * 0.15);
       optimizationOpportunities.push({
-        title: 'Time Conversion',
-        current: `${hoursSaved.toLocaleString()} hrs/year saved, 0% converted`,
-        target: '15-20% conversion to patient access',
+        title: 'Convert Time to Value',
+        current: `${hoursSaved.toLocaleString()} hrs/year reclaimed but not monetized`,
+        target: '15-20% converting to patient access or OT reduction',
         potentialValue,
-        action: 'Review scheduling capacity with operations to convert saved time to visits',
+        action: 'This is a collaboration opportunity with scheduling/ops. The time savings are real—the question is how to redirect that capacity intentionally rather than letting it dissipate.',
       });
     }
     
     if (wrvuMetric?.benchmark?.status === 'above') {
       optimizationOpportunities.push({
-        title: 'Validate High Performers',
-        current: `${wrvuMetric.changePercent.toFixed(0)}% wRVU lift`,
-        target: 'Confirmed methodology',
+        title: 'Validate Your Standout Results',
+        current: `${wrvuMetric.changePercent.toFixed(0)}% wRVU lift (above typical)`,
+        target: 'Confirmed, defensible methodology',
         potentialValue: 0,
-        action: 'Audit baseline methodology, confirm no other initiatives contributing to lift',
+        action: 'High-lift results are great news if they hold up to scrutiny. Quick audit: Was baseline measured consistently? Any other coding initiatives running in parallel? If you can answer "yes" to both, this becomes a compelling proof point.',
       });
     }
     
