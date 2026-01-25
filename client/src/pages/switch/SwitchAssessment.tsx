@@ -433,13 +433,36 @@ function DimensionCard({
 }: DimensionCardProps) {
   const [localValue, setLocalValue] = useState(String(value));
   const [isFocused, setIsFocused] = useState(false);
+  const [isSliding, setIsSliding] = useState(false);
+  const [lastScore, setLastScore] = useState(score);
+  const [isPulsing, setIsPulsing] = useState(false);
   
   const fillWidth = Math.min(100, (value / maxValue) * 100);
   const benchmarkPosition = (benchmark / maxValue) * 100;
+  
+  // Calculate progress toward benchmark (0-100, can exceed 100)
+  const progressToBenchmark = Math.min(100, (value / benchmark) * 100);
+  
+  // Dynamic color based on progress to benchmark
+  const getProgressColor = () => {
+    if (progressToBenchmark >= 95) return { bg: 'bg-emerald-500', text: 'text-emerald-600', ring: 'ring-emerald-200' };
+    if (progressToBenchmark >= 70) return { bg: 'bg-amber-500', text: 'text-amber-600', ring: 'ring-amber-200' };
+    if (progressToBenchmark >= 40) return { bg: 'bg-orange-500', text: 'text-orange-600', ring: 'ring-orange-200' };
+    return { bg: 'bg-red-500', text: 'text-red-600', ring: 'ring-red-200' };
+  };
+  
+  const colors = getProgressColor();
 
   // Sync local value when external value changes (e.g., from slider)
   if (!isFocused && localValue !== String(value)) {
     setLocalValue(String(value));
+  }
+  
+  // Trigger pulse animation when score changes
+  if (score !== lastScore) {
+    setLastScore(score);
+    setIsPulsing(true);
+    setTimeout(() => setIsPulsing(false), 300);
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -468,10 +491,14 @@ function DimensionCard({
   };
 
   return (
-    <div className="bg-slate-50 rounded-xl p-5">
+    <div className={`bg-slate-50 rounded-xl p-5 transition-all duration-200 ${
+      isSliding ? `ring-2 ${colors.ring} shadow-sm` : ''
+    }`}>
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-start gap-3">
-          <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+          <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0 transition-transform duration-200 ${
+            isSliding ? 'scale-110' : ''
+          }`}>
             {icon}
           </div>
           <div>
@@ -491,7 +518,11 @@ function DimensionCard({
             autoComplete="off"
             data-lpignore="true"
             data-form-type="other"
-            className="w-16 px-2 py-1.5 text-center text-base font-semibold border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
+            className={`w-16 px-2 py-1.5 text-center text-base font-semibold border rounded-lg outline-none transition-all duration-200 ${
+              isPulsing 
+                ? `border-${colors.text.replace('text-', '')} ring-2 ${colors.ring} scale-105` 
+                : 'border-slate-200'
+            } focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00]`}
             data-testid={`${testId}-input`}
           />
           <span className="text-xs text-[#6B7280]">{unit.trim()}</span>
@@ -499,14 +530,16 @@ function DimensionCard({
       </div>
 
       <div className="relative h-8 bg-slate-200 rounded-lg overflow-hidden mb-2">
+        {/* Dynamic gradient fill bar */}
         <div 
-          className="absolute top-0 left-0 h-full bg-slate-500 transition-all flex items-center px-2"
+          className={`absolute top-0 left-0 h-full ${colors.bg} transition-all duration-150 flex items-center px-2`}
           style={{ width: `${fillWidth}%` }}
         >
           <span className="text-sm font-semibold text-white truncate">
             {prefix}{value}{unit}
           </span>
         </div>
+        {/* Benchmark marker */}
         <div 
           className="absolute top-0 bottom-0 w-0.5 bg-[#EA2C00]"
           style={{ left: `${benchmarkPosition}%` }}
@@ -517,6 +550,12 @@ function DimensionCard({
         >
           {prefix}{benchmark}{unit}
         </div>
+        {/* At-benchmark indicator */}
+        {progressToBenchmark >= 95 && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-white bg-emerald-600 px-1.5 py-0.5 rounded-full animate-pulse">
+            Target
+          </div>
+        )}
       </div>
 
       <input
@@ -526,13 +565,31 @@ function DimensionCard({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
+        onMouseDown={() => setIsSliding(true)}
+        onMouseUp={() => setIsSliding(false)}
+        onMouseLeave={() => setIsSliding(false)}
+        onTouchStart={() => setIsSliding(true)}
+        onTouchEnd={() => setIsSliding(false)}
         className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
         data-testid={testId}
       />
 
       <div className="mt-3 flex items-center gap-2">
-        <span className="text-lg font-bold text-[#111827]">{score}%</span>
+        <span className={`text-lg font-bold transition-all duration-200 ${
+          isPulsing ? `${colors.text} scale-110` : 'text-[#111827]'
+        }`}>
+          {score}%
+        </span>
         <span className="text-xs text-[#6B7280]">of Abridge benchmark</span>
+        {/* Mini progress indicator */}
+        <div className="ml-auto flex items-center gap-1">
+          <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div 
+              className={`h-full ${colors.bg} transition-all duration-300 rounded-full`}
+              style={{ width: `${progressToBenchmark}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
