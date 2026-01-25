@@ -1195,7 +1195,7 @@ const TrendChart = ({
 
   const chartColors = {
     line: colors.green,
-    area: "#10B98118",
+    area: "#9CA3AF20",
     baseline: colors.primary,
     current: colors.green,
     currentRing: colors.white,
