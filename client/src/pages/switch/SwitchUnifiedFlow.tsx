@@ -5,6 +5,7 @@ import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import { type SwitchInputs, type SolutionType } from "@/lib/switchGapCalculator";
 import { type ScribeInputs } from "@/lib/scribeGapCalculator";
+import { PageTransition } from "@/components/PageTransition";
 
 interface SwitchUnifiedFlowProps {
   onBack: () => void;
@@ -60,46 +61,57 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     }
   };
 
-  if (solutionType === "human-scribes") {
-    if (currentStep === 2) {
+  // Determine which component to render
+  const getPageContent = () => {
+    if (solutionType === "human-scribes") {
+      if (currentStep === 2) {
+        return (
+          <ScribeFullAnalysis
+            inputs={scribeInputs}
+            onBack={goBack}
+            onBackToJourney={onBackToJourney}
+            onExploreAmbientAI={onExploreAmbientAI}
+          />
+        );
+      }
       return (
-        <ScribeFullAnalysis
+        <ScribeAssessment
           inputs={scribeInputs}
+          setInputs={setScribeInputs}
+          onNext={goNext}
           onBack={goBack}
           onBackToJourney={onBackToJourney}
-          onExploreAmbientAI={onExploreAmbientAI}
+        />
+      );
+    }
+
+    if (currentStep === 2) {
+      return (
+        <SwitchFullAnalysis
+          inputs={ambientInputs}
+          onBack={goBack}
+          onBackToJourney={onBackToJourney}
         />
       );
     }
 
     return (
-      <ScribeAssessment
-        inputs={scribeInputs}
-        setInputs={setScribeInputs}
+      <SwitchAssessment
+        inputs={ambientInputs}
+        setInputs={handleAmbientInputsChange}
         onNext={goNext}
         onBack={goBack}
         onBackToJourney={onBackToJourney}
       />
     );
-  }
+  };
 
-  if (currentStep === 2) {
-    return (
-      <SwitchFullAnalysis
-        inputs={ambientInputs}
-        onBack={goBack}
-        onBackToJourney={onBackToJourney}
-      />
-    );
-  }
+  // Create a unique key for page transitions
+  const pageKey = `switch-${solutionType}-step-${currentStep}`;
 
   return (
-    <SwitchAssessment
-      inputs={ambientInputs}
-      setInputs={handleAmbientInputsChange}
-      onNext={goNext}
-      onBack={goBack}
-      onBackToJourney={onBackToJourney}
-    />
+    <PageTransition pageKey={pageKey}>
+      {getPageContent()}
+    </PageTransition>
   );
 }
