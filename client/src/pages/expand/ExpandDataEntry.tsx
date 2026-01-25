@@ -14,7 +14,10 @@ import {
   TrendingDown,
   ChevronDown,
   ChevronUp,
-  Info
+  Info,
+  Sparkles,
+  Check,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -24,7 +27,9 @@ import type {
   MetricsData, 
   TimelineData, 
   TimelineDataPoint,
-  MetricEntryMode 
+  MetricEntryMode,
+  MetricTrendData,
+  MetricEntryModeState
 } from "./ExpandFlow";
 import {
   LineChart,
@@ -42,6 +47,10 @@ interface ExpandDataEntryProps {
   setMetricsData: (data: MetricsData) => void;
   timelineData: TimelineData;
   setTimelineData: (data: TimelineData) => void;
+  metricTrendData: MetricTrendData;
+  setMetricTrendData: (data: MetricTrendData) => void;
+  metricEntryModes: MetricEntryModeState;
+  setMetricEntryModes: (modes: MetricEntryModeState) => void;
   onNext: () => void;
   onBack: () => void;
   onBackToJourney?: () => void;
@@ -126,7 +135,7 @@ const LEVEL_OF_SERVICE = [
   { id: "level1", label: "Level 1", weight: 1 },
 ];
 
-// Quick vs Trend Mode Toggle
+// Premium Mode Toggle - Quick is default, Trend is advanced
 function ModeToggle({ 
   mode, 
   onChange,
@@ -137,39 +146,49 @@ function ModeToggle({
   metricId: string;
 }) {
   return (
-    <div className="flex rounded-lg border border-neutral-200 overflow-hidden mb-4">
-      <button
-        type="button"
-        onClick={() => onChange("quick")}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-all ${
-          mode === "quick" 
-            ? "bg-[#EA2C00] text-white" 
-            : "bg-white text-neutral-600 hover:bg-neutral-50"
-        }`}
-        data-testid={`button-mode-quick-${metricId}`}
-      >
-        <BarChart3 className="w-4 h-4" />
-        Quick
-        <span className={`text-xs ${mode === "quick" ? "text-white/80" : "text-neutral-400"}`}>
-          Before &amp; after only
-        </span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("trend")}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-all ${
-          mode === "trend" 
-            ? "bg-[#EA2C00] text-white" 
-            : "bg-white text-neutral-600 hover:bg-neutral-50"
-        }`}
-        data-testid={`button-mode-trend-${metricId}`}
-      >
-        <TrendingUp className="w-4 h-4" />
-        Trend
-        <span className={`text-xs ${mode === "trend" ? "text-white/80" : "text-neutral-400"}`}>
-          Monthly data points
-        </span>
-      </button>
+    <div className="mb-4">
+      {/* Quick mode is always visible */}
+      {mode === "quick" && (
+        <button
+          type="button"
+          onClick={() => onChange("trend")}
+          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-[#EA2C00] transition-colors group"
+          data-testid={`button-mode-trend-${metricId}`}
+        >
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-dashed border-neutral-300 group-hover:border-[#EA2C00]/50 group-hover:bg-[#FEF0EC]/30 transition-all">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="font-medium">Have monthly data?</span>
+            <span className="text-neutral-400 group-hover:text-[#EA2C00]">Enter trend data</span>
+          </div>
+        </button>
+      )}
+      
+      {/* Trend mode header with back option */}
+      {mode === "trend" && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between p-3 bg-gradient-to-r from-[#FEF0EC] to-white border border-[#EA2C00]/20 rounded-xl mb-4"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#EA2C00] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-[#111827]">Advanced: Trend Entry</span>
+              <p className="text-xs text-neutral-500">Monthly data unlocks richer analysis in your report</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange("quick")}
+            className="text-xs text-neutral-500 hover:text-[#EA2C00] transition-colors px-3 py-1.5 rounded-lg hover:bg-white"
+            data-testid={`button-mode-quick-${metricId}`}
+          >
+            Switch to Quick
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }
@@ -266,7 +285,7 @@ function QuickEntry({
   );
 }
 
-// Trend Entry Component with paste support
+// Premium Trend Entry Component with live chart and visual feedback
 function TrendEntry({
   baseline,
   monthlyData,
@@ -289,19 +308,29 @@ function TrendEntry({
   testIdPrefix: string;
 }) {
   const [pasteText, setPasteText] = useState("");
+  const [showPaste, setShowPaste] = useState(false);
+  const [recentlyFilled, setRecentlyFilled] = useState<string | null>(null);
   
   const handlePaste = () => {
     if (pasteText.trim()) {
       onPaste(pasteText);
       setPasteText("");
+      setShowPaste(false);
     }
   };
 
+  // Calculate progress
+  const totalCells = months + 1; // baseline + months
+  const filledCells = [baseline, ...monthlyData.slice(0, months)].filter(v => v !== null).length;
+  const progress = Math.round((filledCells / totalCells) * 100);
+  const isComplete = filledCells === totalCells;
+
   // Calculate summary stats
-  const allValues = [baseline, ...monthlyData].filter((v): v is number => v !== null);
+  const allValues = [baseline, ...monthlyData.slice(0, months)].filter((v): v is number => v !== null);
   const hasData = allValues.length >= 2;
-  const first = hasData ? allValues[0] : null;
-  const last = hasData ? allValues[allValues.length - 1] : null;
+  const first = baseline;
+  const filledMonthlyValues = monthlyData.slice(0, months).filter((v): v is number => v !== null);
+  const last = filledMonthlyValues.length > 0 ? filledMonthlyValues[filledMonthlyValues.length - 1] : null;
   const change = first !== null && last !== null
     ? isPositiveGood ? last - first : first - last
     : null;
@@ -310,152 +339,321 @@ function TrendEntry({
     : null;
   const isGood = change !== null && change > 0;
 
-  // Chart data
-  const chartData = hasData ? [
-    { month: "Base", value: baseline },
+  // Chart data - only show filled values
+  const chartData = [
+    { month: "Base", value: baseline, index: -1 },
     ...monthlyData.slice(0, months).map((val, i) => ({
       month: `M${i + 1}`,
       value: val,
+      index: i,
     }))
-  ].filter(d => d.value !== null) : [];
+  ].filter(d => d.value !== null);
+
+  const handleCellChange = (key: string, value: number | null) => {
+    if (value !== null) {
+      setRecentlyFilled(key);
+      setTimeout(() => setRecentlyFilled(null), 600);
+    }
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Paste Area */}
-      <div className="p-4 bg-neutral-50 rounded-xl border border-dashed border-neutral-300">
-        <label className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block mb-2">
-          PASTE YOUR MONTHLY DATA
-        </label>
-        <textarea
-          placeholder={`Format: Month, Value (one per line)\nExample:\nJul 2024, 1.42\nAug 2024, 1.48\n...`}
-          value={pasteText}
-          onChange={(e) => setPasteText(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] resize-none h-20"
-          data-testid={`textarea-${testIdPrefix}-paste`}
-        />
-        {pasteText.trim() && (
-          <Button 
-            size="sm" 
-            onClick={handlePaste}
-            className="mt-2"
-            data-testid={`button-${testIdPrefix}-parse`}
-          >
-            Parse Data
-          </Button>
-        )}
-      </div>
-
-      <div className="text-center text-xs text-neutral-400">or enter manually</div>
-
-      {/* Manual Entry Table */}
-      <div className="p-4 bg-neutral-50 rounded-xl">
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">MONTH</span>
-          <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">VALUE</span>
+    <motion.div 
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="space-y-4"
+    >
+      {/* Progress Bar */}
+      <div className="p-4 bg-gradient-to-r from-neutral-50 to-white border border-neutral-200 rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-neutral-600 tracking-wider uppercase">
+              Data Entry Progress
+            </span>
+            {isComplete && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold"
+              >
+                <Check className="w-3 h-3" />
+                Complete
+              </motion.div>
+            )}
+          </div>
+          <span className="text-sm font-bold text-[#111827]">{filledCells} / {totalCells}</span>
         </div>
-        
-        {/* Baseline */}
-        <div className="grid grid-cols-2 gap-2 items-center mb-2">
-          <span className="text-sm font-medium text-[#111827]">
-            Baseline
-            <span className="text-xs text-neutral-400 ml-2">Before Abridge</span>
-          </span>
-          <input
-            type="number"
-            step="0.01"
-            placeholder="—"
-            value={baseline ?? ""}
-            onChange={(e) => onBaselineChange(e.target.value ? Number(e.target.value) : null)}
-            className="px-3 py-2 text-sm font-semibold border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
-            data-testid={`input-${testIdPrefix}-baseline`}
+        <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
+          <motion.div 
+            className={`h-full rounded-full ${isComplete ? "bg-emerald-500" : "bg-[#EA2C00]"}`}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           />
         </div>
-
-        {/* Monthly entries */}
-        {Array.from({ length: months }, (_, i) => (
-          <div key={i} className="grid grid-cols-2 gap-2 items-center mb-2">
-            <span className={`text-sm font-medium ${i === months - 1 ? "text-[#EA2C00]" : "text-[#111827]"}`}>
-              Month {i + 1}
-              {i === months - 1 && <span className="text-xs ml-2">Current</span>}
-            </span>
-            <input
-              type="number"
-              step="0.01"
-              placeholder="—"
-              value={monthlyData[i] ?? ""}
-              onChange={(e) => onMonthChange(i, e.target.value ? Number(e.target.value) : null)}
-              className={`px-3 py-2 text-sm font-semibold border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] ${
-                i === months - 1 ? "border-[#EA2C00]" : "border-neutral-200"
-              }`}
-              data-testid={`input-${testIdPrefix}-m${i + 1}`}
-            />
-          </div>
-        ))}
       </div>
 
-      {/* Mini Trend Chart + Summary */}
-      {hasData && chartData.length >= 2 && (
-        <div className="p-4 bg-white border border-neutral-200 rounded-xl">
-          <div className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-3">YOUR TREND</div>
-          
-          <div className="h-32">
+      {/* Live Chart Preview - Always visible, updates in real-time */}
+      <div className="p-4 bg-white border border-neutral-200 rounded-xl">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-[#EA2C00]" />
+            <span className="text-xs font-semibold text-neutral-600 tracking-wider uppercase">
+              Live Preview
+            </span>
+          </div>
+          {hasData && (
+            <motion.div 
+              key={`${first}-${last}`}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ${
+                isGood ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+              }`}
+            >
+              {isGood ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+              {change !== null && change > 0 ? "+" : ""}{change?.toFixed(2)} {unit}
+              {percentChange !== null && ` (${percentChange}%)`}
+            </motion.div>
+          )}
+        </div>
+        
+        <div className="h-36">
+          {chartData.length >= 1 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+              <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
                 <XAxis 
                   dataKey="month" 
-                  tick={{ fontSize: 10, fill: "#6B7280" }}
-                  axisLine={false}
+                  tick={{ fontSize: 11, fill: "#6B7280" }}
+                  axisLine={{ stroke: "#E5E7EB" }}
                   tickLine={false}
                 />
-                <YAxis hide domain={["auto", "auto"]} />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: "#9CA3AF" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={40}
+                  domain={["auto", "auto"]}
+                />
                 <Line 
                   type="monotone" 
                   dataKey="value" 
-                  stroke={isGood ? "#10B981" : "#EF4444"}
-                  strokeWidth={2}
-                  dot={{ fill: isGood ? "#10B981" : "#EF4444", strokeWidth: 0, r: 4 }}
+                  stroke={chartData.length >= 2 ? (isGood ? "#10B981" : "#F59E0B") : "#EA2C00"}
+                  strokeWidth={3}
+                  dot={{ fill: "#fff", stroke: chartData.length >= 2 ? (isGood ? "#10B981" : "#F59E0B") : "#EA2C00", strokeWidth: 2, r: 5 }}
+                  activeDot={{ r: 7, fill: "#EA2C00" }}
+                  animationDuration={300}
                 />
-                {chartData[chartData.length - 1]?.value !== null && (
+                {chartData.length > 0 && (
                   <ReferenceDot
                     x={chartData[chartData.length - 1]?.month}
                     y={chartData[chartData.length - 1]?.value ?? 0}
-                    r={6}
+                    r={8}
                     fill="#EA2C00"
                     stroke="#fff"
-                    strokeWidth={2}
+                    strokeWidth={3}
                   />
                 )}
               </LineChart>
             </ResponsiveContainer>
-          </div>
-
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100">
-            <span className="text-sm text-[#6B7280]">
-              Baseline: <strong className="text-[#111827]">{first?.toFixed(2)}</strong>
-            </span>
-            <span className="text-neutral-300">→</span>
-            <span className="text-sm text-[#6B7280]">
-              Current: <strong className="text-[#111827]">{last?.toFixed(2)}</strong>
-            </span>
-            <span className="text-neutral-300">=</span>
-            <span className={`text-sm font-semibold ${isGood ? "text-emerald-600" : "text-red-600"}`}>
-              {change !== null && change > 0 ? "+" : ""}{change?.toFixed(2)} ({percentChange}%)
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 mt-2">
-            {isGood ? (
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-red-500" />
-            )}
-            <span className={`text-xs ${isGood ? "text-emerald-600" : "text-red-500"}`}>
-              {isGood ? "Consistent improvement" : "Needs attention"}
-            </span>
-          </div>
+          ) : (
+            <div className="h-full flex items-center justify-center text-neutral-400 text-sm">
+              Enter data below to see your trend
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {hasData && (
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100 text-sm">
+            <div className="text-neutral-500">
+              Started at <strong className="text-[#111827]">{first?.toFixed(2)} {unit}</strong>
+            </div>
+            <div className="text-neutral-300">→</div>
+            <div className="text-neutral-500">
+              Now at <strong className="text-[#111827]">{last?.toFixed(2)} {unit}</strong>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Data Entry Grid - Premium styling */}
+      <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs font-semibold text-neutral-600 tracking-wider uppercase">
+            Monthly Values
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowPaste(!showPaste)}
+            className="text-xs text-[#EA2C00] hover:underline flex items-center gap-1"
+          >
+            {showPaste ? "Hide paste" : "Paste from spreadsheet"}
+          </button>
+        </div>
+
+        {/* Paste Area - Collapsed by default */}
+        <AnimatePresence>
+          {showPaste && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4 overflow-hidden"
+            >
+              <div className="p-3 bg-white border border-dashed border-neutral-300 rounded-lg">
+                <textarea
+                  placeholder={`Paste values (one per line):\n1.42\n1.48\n1.51\n...`}
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[#EA2C00] resize-none h-20"
+                  data-testid={`textarea-${testIdPrefix}-paste`}
+                />
+                {pasteText.trim() && (
+                  <Button 
+                    size="sm" 
+                    onClick={handlePaste}
+                    className="mt-2"
+                    data-testid={`button-${testIdPrefix}-parse`}
+                  >
+                    Apply Data
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Baseline Row */}
+        <motion.div 
+          className={`flex items-center gap-3 p-3 rounded-lg mb-2 transition-all duration-300 ${
+            recentlyFilled === "baseline" 
+              ? "bg-emerald-50 border border-emerald-200" 
+              : baseline !== null 
+                ? "bg-white border border-neutral-200" 
+                : "bg-white border border-dashed border-neutral-300"
+          }`}
+          animate={recentlyFilled === "baseline" ? { scale: [1, 1.01, 1] } : {}}
+        >
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-[#111827]">Baseline</span>
+              <span className="text-xs text-neutral-400 px-2 py-0.5 bg-neutral-100 rounded">Before Abridge</span>
+            </div>
+          </div>
+          <div className="relative">
+            <input
+              type="number"
+              step="0.01"
+              placeholder="—"
+              value={baseline ?? ""}
+              onChange={(e) => {
+                const val = e.target.value ? Number(e.target.value) : null;
+                onBaselineChange(val);
+                handleCellChange("baseline", val);
+              }}
+              className="w-24 px-3 py-2 text-sm font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+              data-testid={`input-${testIdPrefix}-baseline`}
+            />
+            {baseline !== null && (
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -right-1 -top-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center"
+              >
+                <Check className="w-2.5 h-2.5 text-white" />
+              </motion.div>
+            )}
+          </div>
+          <span className="text-xs text-neutral-400 w-12">{unit}</span>
+        </motion.div>
+
+        {/* Monthly Entries */}
+        <div className="space-y-2">
+          {Array.from({ length: months }, (_, i) => {
+            const isCurrent = i === months - 1;
+            const isFilled = monthlyData[i] !== null;
+            const isRecentlyFilled = recentlyFilled === `m${i}`;
+            
+            return (
+              <motion.div 
+                key={i}
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
+                  isRecentlyFilled
+                    ? "bg-emerald-50 border border-emerald-200"
+                    : isFilled 
+                      ? "bg-white border border-neutral-200" 
+                      : "bg-white border border-dashed border-neutral-300"
+                } ${isCurrent ? "ring-2 ring-[#EA2C00]/20" : ""}`}
+                animate={isRecentlyFilled ? { scale: [1, 1.01, 1] } : {}}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-semibold ${isCurrent ? "text-[#EA2C00]" : "text-[#111827]"}`}>
+                      Month {i + 1}
+                    </span>
+                    {isCurrent && (
+                      <span className="text-xs text-white px-2 py-0.5 bg-[#EA2C00] rounded font-medium">
+                        Current
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="—"
+                    value={monthlyData[i] ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value ? Number(e.target.value) : null;
+                      onMonthChange(i, val);
+                      handleCellChange(`m${i}`, val);
+                    }}
+                    className={`w-24 px-3 py-2 text-sm font-bold text-center border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent ${
+                      isCurrent ? "border-[#EA2C00]" : "border-neutral-200"
+                    }`}
+                    data-testid={`input-${testIdPrefix}-m${i + 1}`}
+                  />
+                  {isFilled && (
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -right-1 -top-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center"
+                    >
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </motion.div>
+                  )}
+                </div>
+                <span className="text-xs text-neutral-400 w-12">{unit}</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Completion Message */}
+      <AnimatePresence>
+        {isComplete && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-xl"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-emerald-800">Trend data complete!</span>
+                <p className="text-xs text-emerald-600">This will appear in your results and PDF report</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -495,31 +693,15 @@ export default function ExpandDataEntry({
   setMetricsData,
   timelineData,
   setTimelineData,
+  metricTrendData,
+  setMetricTrendData,
+  metricEntryModes,
+  setMetricEntryModes,
   onNext,
   onBack,
   onBackToJourney,
 }: ExpandDataEntryProps) {
   
-  // Per-metric entry modes (default to "quick")
-  const [metricModes, setMetricModes] = useState<Record<MetricType, MetricEntryMode>>({
-    wrvuCapture: "quick",
-    timeSavings: "quick",
-    chartClosure: "quick",
-    levelOfService: "quick",
-    workOutsideWork: "quick",
-    clinicianSatisfaction: "quick",
-  });
-
-  // Trend data state for each metric
-  const [trendData, setTrendData] = useState<Record<string, { baseline: number | null; monthlyData: (number | null)[] }>>({
-    wrvuCapture: { baseline: null, monthlyData: Array(12).fill(null) },
-    timeSavings: { baseline: null, monthlyData: Array(12).fill(null) },
-    chartClosure: { baseline: null, monthlyData: Array(12).fill(null) },
-    levelOfService: { baseline: null, monthlyData: Array(12).fill(null) },
-    workOutsideWork: { baseline: null, monthlyData: Array(12).fill(null) },
-    clinicianSatisfaction: { baseline: null, monthlyData: Array(12).fill(null) },
-  });
-
   // Expanded state for Level of Service detailed entry
   const [losShowDetailed, setLosShowDetailed] = useState(false);
   const [closureShowDetailed, setClosureShowDetailed] = useState(false);
@@ -527,7 +709,7 @@ export default function ExpandDataEntry({
   const months = deploymentData.monthsOnAbridge || 6;
 
   const setMetricMode = (metric: MetricType, mode: MetricEntryMode) => {
-    setMetricModes(prev => ({ ...prev, [metric]: mode }));
+    setMetricEntryModes({ ...metricEntryModes, [metric]: mode });
   };
 
   const updateMetric = <T extends keyof MetricsData>(
@@ -537,17 +719,17 @@ export default function ExpandDataEntry({
     setMetricsData({ ...metricsData, [metricKey]: value });
   };
 
-  const updateTrendData = (metric: string, field: "baseline" | "monthlyData", value: number | null | (number | null)[]) => {
-    setTrendData(prev => ({
-      ...prev,
+  const updateTrendData = (metric: keyof MetricTrendData, field: "baseline" | "monthlyData", value: number | null | (number | null)[]) => {
+    setMetricTrendData({
+      ...metricTrendData,
       [metric]: {
-        ...prev[metric],
+        ...metricTrendData[metric],
         [field]: value,
       }
-    }));
+    });
   };
 
-  const parsePastedData = (metric: string, pasteText: string) => {
+  const parsePastedData = (metric: keyof MetricTrendData, pasteText: string) => {
     const lines = pasteText.trim().split("\n");
     const values: number[] = [];
     
@@ -562,17 +744,17 @@ export default function ExpandDataEntry({
 
     if (values.length > 0) {
       const baseline = values[0];
-      const monthlyData = [...trendData[metric].monthlyData];
+      const monthlyData = [...metricTrendData[metric].monthlyData];
       values.slice(1).forEach((val, i) => {
         if (i < monthlyData.length) {
           monthlyData[i] = val;
         }
       });
       
-      setTrendData(prev => ({
-        ...prev,
+      setMetricTrendData({
+        ...metricTrendData,
         [metric]: { baseline, monthlyData }
-      }));
+      } as MetricTrendData);
 
       // Also update metricsData for compatibility
       if (metric === "wrvuCapture" || metric === "timeSavings" || metric === "workOutsideWork" || metric === "clinicianSatisfaction") {
@@ -611,7 +793,7 @@ export default function ExpandDataEntry({
   const renderMetricSection = (metricId: MetricType) => {
     const config = METRIC_CONFIG[metricId];
     const Icon = config.icon;
-    const mode = metricModes[metricId];
+    const mode = metricEntryModes[metricId];
 
     // Special handling for Level of Service
     if (metricId === "levelOfService") {
@@ -726,15 +908,15 @@ export default function ExpandDataEntry({
             </div>
           ) : (
             <TrendEntry
-              baseline={trendData.levelOfService.baseline}
-              monthlyData={trendData.levelOfService.monthlyData}
+              baseline={metricTrendData.levelOfService.baseline}
+              monthlyData={metricTrendData.levelOfService.monthlyData}
               months={months}
               onBaselineChange={(val) => {
                 updateTrendData("levelOfService", "baseline", val);
                 updateMetric("levelOfService", { ...losData, averageBefore: val });
               }}
               onMonthChange={(i, val) => {
-                const newData = [...trendData.levelOfService.monthlyData];
+                const newData = [...metricTrendData.levelOfService.monthlyData];
                 newData[i] = val;
                 updateTrendData("levelOfService", "monthlyData", newData);
                 if (i === months - 1) {
@@ -865,15 +1047,15 @@ export default function ExpandDataEntry({
             </div>
           ) : (
             <TrendEntry
-              baseline={trendData.chartClosure.baseline}
-              monthlyData={trendData.chartClosure.monthlyData}
+              baseline={metricTrendData.chartClosure.baseline}
+              monthlyData={metricTrendData.chartClosure.monthlyData}
               months={months}
               onBaselineChange={(val) => {
                 updateTrendData("chartClosure", "baseline", val);
                 updateMetric("chartClosure", { ...closureData, sameDayBefore: val });
               }}
               onMonthChange={(i, val) => {
-                const newData = [...trendData.chartClosure.monthlyData];
+                const newData = [...metricTrendData.chartClosure.monthlyData];
                 newData[i] = val;
                 updateTrendData("chartClosure", "monthlyData", newData);
                 if (i === months - 1) {
@@ -939,15 +1121,15 @@ export default function ExpandDataEntry({
           </div>
         ) : (
           <TrendEntry
-            baseline={trendData[metricId].baseline}
-            monthlyData={trendData[metricId].monthlyData}
+            baseline={metricTrendData[metricId].baseline}
+            monthlyData={metricTrendData[metricId].monthlyData}
             months={months}
             onBaselineChange={(val) => {
               updateTrendData(metricId, "baseline", val);
               updateMetric(metricId, { ...metricData, before: val });
             }}
             onMonthChange={(i, val) => {
-              const newData = [...trendData[metricId].monthlyData];
+              const newData = [...metricTrendData[metricId].monthlyData];
               newData[i] = val;
               updateTrendData(metricId, "monthlyData", newData);
               if (i === months - 1) {

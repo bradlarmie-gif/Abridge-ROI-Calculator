@@ -39,6 +39,26 @@ export interface TrendDataEntry {
   monthlyData: (number | null)[];
 }
 
+// Trend data for all metrics
+export interface MetricTrendData {
+  wrvuCapture: TrendDataEntry;
+  timeSavings: TrendDataEntry;
+  chartClosure: TrendDataEntry;
+  levelOfService: TrendDataEntry;
+  workOutsideWork: TrendDataEntry;
+  clinicianSatisfaction: TrendDataEntry;
+}
+
+// Track which metrics have trend data enabled
+export interface MetricEntryModeState {
+  wrvuCapture: "quick" | "trend";
+  timeSavings: "quick" | "trend";
+  chartClosure: "quick" | "trend";
+  levelOfService: "quick" | "trend";
+  workOutsideWork: "quick" | "trend";
+  clinicianSatisfaction: "quick" | "trend";
+}
+
 export interface TimelineDataPoint {
   month: number;
   value: number | null;
@@ -179,6 +199,26 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     },
     clinicianSatisfaction: { before: null, after: null, recommendRate: null },
   });
+  
+  // Trend data for each metric (monthly values)
+  const [metricTrendData, setMetricTrendData] = useState<MetricTrendData>({
+    wrvuCapture: { baseline: null, monthlyData: Array(12).fill(null) },
+    timeSavings: { baseline: null, monthlyData: Array(12).fill(null) },
+    chartClosure: { baseline: null, monthlyData: Array(12).fill(null) },
+    levelOfService: { baseline: null, monthlyData: Array(12).fill(null) },
+    workOutsideWork: { baseline: null, monthlyData: Array(12).fill(null) },
+    clinicianSatisfaction: { baseline: null, monthlyData: Array(12).fill(null) },
+  });
+  
+  // Track which metrics are using trend entry mode
+  const [metricEntryModes, setMetricEntryModes] = useState<MetricEntryModeState>({
+    wrvuCapture: "quick",
+    timeSavings: "quick",
+    chartClosure: "quick",
+    levelOfService: "quick",
+    workOutsideWork: "quick",
+    clinicianSatisfaction: "quick",
+  });
 
   const goNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, 5));
@@ -223,6 +263,10 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             setMetricsData={setMetricsData}
             timelineData={timelineData}
             setTimelineData={setTimelineData}
+            metricTrendData={metricTrendData}
+            setMetricTrendData={setMetricTrendData}
+            metricEntryModes={metricEntryModes}
+            setMetricEntryModes={setMetricEntryModes}
             onNext={goNext}
             onBack={goBack}
             onBackToJourney={goBackToJourney}
@@ -248,6 +292,8 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             selectedMetrics={selectedMetrics}
             metricsData={metricsData}
             timelineData={timelineData}
+            metricTrendData={metricTrendData}
+            metricEntryModes={metricEntryModes}
             valueConfig={valueConfig}
             onBack={goBack}
             onBackToJourney={goBackToJourney}

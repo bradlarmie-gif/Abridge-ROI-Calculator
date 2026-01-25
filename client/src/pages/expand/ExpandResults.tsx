@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight, Share2, Loader2, Download, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area } from "recharts";
+import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area, LineChart, CartesianGrid } from "recharts";
 import { useToast } from "@/hooks/use-toast";
-import type { DeploymentData, MetricType, MetricsData, TimelineData } from "./ExpandFlow";
+import type { DeploymentData, MetricType, MetricsData, TimelineData, MetricTrendData, MetricEntryModeState } from "./ExpandFlow";
 import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS, formatCurrency } from "@/lib/expandRoiCalculator";
 import { generateExpandROIPDFBlob, generateExpandROIPDF, type ExpandPDFData } from "@/lib/expand-pdf-generator";
 
@@ -14,6 +14,8 @@ interface ExpandResultsProps {
   selectedMetrics: MetricType[];
   metricsData: MetricsData;
   timelineData: TimelineData;
+  metricTrendData: MetricTrendData;
+  metricEntryModes: MetricEntryModeState;
   valueConfig: ValueConfigData;
   onBack: () => void;
   onBackToJourney?: () => void;
@@ -26,6 +28,8 @@ export default function ExpandResults({
   selectedMetrics,
   metricsData,
   timelineData,
+  metricTrendData,
+  metricEntryModes,
   valueConfig,
   onBack,
   onBackToJourney,
@@ -150,8 +154,26 @@ export default function ExpandResults({
     
     const metrics: ExpandPDFData['metrics'] = [];
     
-    // Helper to convert timeline data to trend array (MetricTrendPoint expects month as string)
-    const getTrend = (timelinePoints: typeof timelineData.timeSavings) => {
+    // Helper to convert timeline data OR metricTrendData to trend array
+    const getTrend = (timelinePoints: typeof timelineData.timeSavings, metricKey?: keyof MetricTrendData) => {
+      // Check if user entered trend data in Advanced mode first
+      if (metricKey && metricEntryModes[metricKey as keyof MetricEntryModeState] === 'trend') {
+        const trendData = metricTrendData[metricKey];
+        if (trendData && (trendData.baseline !== null || trendData.monthlyData.some((v: number | null) => v !== null))) {
+          const points: { month: string; value: number }[] = [];
+          if (trendData.baseline !== null) {
+            points.push({ month: 'Baseline', value: trendData.baseline });
+          }
+          trendData.monthlyData.forEach((val: number | null, i: number) => {
+            if (val !== null) {
+              points.push({ month: `Month ${i + 1}`, value: val });
+            }
+          });
+          if (points.length >= 2) return points;
+        }
+      }
+      
+      // Fall back to timeline data
       const validPoints = timelinePoints.filter(p => p.value !== null);
       if (validPoints.length < 2) return undefined;
       return validPoints.map(p => ({ month: p.label || `Month ${p.month}`, value: p.value as number }));
@@ -163,7 +185,7 @@ export default function ExpandResults({
       const wrvuLiftPercent = metricsData.wrvuCapture.before ? (wrvuLift / metricsData.wrvuCapture.before) * 100 : 0;
       const isAboveTypical = wrvuLiftPercent > 7;
       const isBelowTypical = wrvuLiftPercent < 3 && wrvuLiftPercent > 0;
-      const wrvuTrend = getTrend(timelineData.wrvuCapture);
+      const wrvuTrend = getTrend(timelineData.wrvuCapture, 'wrvuCapture');
       
       metrics.push({
         id: 'wrvu',
@@ -198,7 +220,7 @@ export default function ExpandResults({
       const afterTime = metricsData.timeSavings.after || 0;
       const timeSaved = beforeTime - afterTime; // Positive = improvement
       const timeSavedPercent = beforeTime > 0 ? (timeSaved / beforeTime) * 100 : 0;
-      const timeTrend = getTrend(timelineData.timeSavings);
+      const timeTrend = getTrend(timelineData.timeSavings, 'timeSavings');
       
       metrics.push({
         id: 'timeSavings',
@@ -233,7 +255,7 @@ export default function ExpandResults({
       const afterHrs = metricsData.workOutsideWork.after || 0;
       const hoursReduced = beforeHrs - afterHrs;
       const reductionPercent = beforeHrs > 0 ? (hoursReduced / beforeHrs) * 100 : 0;
-      const wowTrend = getTrend(timelineData.workOutsideWork);
+      const wowTrend = getTrend(timelineData.workOutsideWork, 'workOutsideWork');
       
       metrics.push({
         id: 'workOutsideWork',
@@ -291,7 +313,7 @@ export default function ExpandResults({
       const satBefore = metricsData.clinicianSatisfaction.before || 0;
       const satAfter = metricsData.clinicianSatisfaction.after || 0;
       const satImprovement = satAfter - satBefore;
-      const satTrend = getTrend(timelineData.clinicianSatisfaction);
+      const satTrend = getTrend(timelineData.clinicianSatisfaction, 'clinicianSatisfaction');
       
       metrics.push({
         id: 'clinicianSatisfaction',
@@ -465,7 +487,7 @@ export default function ExpandResults({
         severity: w.severity,
       })),
     };
-  }, [providers, encounters, utilizationRate, months, metricsData, timelineData, valueConfig, roiResult, currentValue, expansionCalc]);
+  }, [providers, encounters, utilizationRate, months, metricsData, timelineData, metricTrendData, metricEntryModes, valueConfig, roiResult, currentValue, expansionCalc]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -788,6 +810,136 @@ export default function ExpandResults({
             )}
           </div>
         </div>
+        
+        {/* Trend Analysis Section - shown when user has entered trend data */}
+        {(() => {
+          const metricsWithTrendData = (Object.keys(metricEntryModes) as (keyof typeof metricEntryModes)[])
+            .filter(metric => {
+              if (metricEntryModes[metric] !== 'trend') return false;
+              const trendData = metricTrendData[metric];
+              return trendData && (trendData.baseline !== null || trendData.monthlyData.some((v: number | null) => v !== null));
+            });
+          
+          if (metricsWithTrendData.length === 0) return null;
+          
+          const METRIC_DISPLAY: Record<string, { label: string; color: string; unit: string }> = {
+            wrvuCapture: { label: 'wRVU Capture', color: '#059669', unit: 'wRVUs' },
+            timeSavings: { label: 'Time Savings', color: '#2563eb', unit: 'min' },
+            chartClosure: { label: 'Chart Closure', color: '#7c3aed', unit: '%' },
+            workOutsideWork: { label: 'Pajama Time', color: '#dc2626', unit: 'min' },
+            clinicianSatisfaction: { label: 'Satisfaction', color: '#ea580c', unit: '/10' },
+            levelOfService: { label: 'Level of Service', color: '#0d9488', unit: 'avg' },
+          };
+          
+          return (
+            <motion.div 
+              className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-violet-600" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-[#1F2937]">Your Journey</h2>
+                  <p className="text-xs text-[#6B7280]">Monthly progression from your trend data</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {metricsWithTrendData.map((metric) => {
+                  const trendData = metricTrendData[metric];
+                  const display = METRIC_DISPLAY[metric] || { label: metric, color: '#6B7280', unit: '' };
+                  
+                  const chartData = [
+                    { month: 'Baseline', value: trendData.baseline },
+                    ...trendData.monthlyData.map((val: number | null, i: number) => ({
+                      month: `M${i + 1}`,
+                      value: val,
+                    })),
+                  ].filter(d => d.value !== null);
+                  
+                  if (chartData.length < 2) return null;
+                  
+                  const values = chartData.map(d => d.value as number);
+                  const minVal = Math.min(...values);
+                  const maxVal = Math.max(...values);
+                  const range = maxVal - minVal;
+                  const yMin = Math.floor(minVal - range * 0.1);
+                  const yMax = Math.ceil(maxVal + range * 0.1);
+                  
+                  const change = values[values.length - 1] - values[0];
+                  const changePercent = values[0] !== 0 ? ((change / values[0]) * 100) : 0;
+                  const isPositive = metric === 'workOutsideWork' ? change < 0 : change > 0;
+                  
+                  return (
+                    <motion.div 
+                      key={metric}
+                      className="bg-neutral-50 rounded-lg p-4"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-[#1F2937]">{display.label}</span>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {isPositive ? '+' : ''}{changePercent.toFixed(1)}%
+                        </span>
+                      </div>
+                      
+                      <div className="h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                            <XAxis 
+                              dataKey="month" 
+                              tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis 
+                              domain={[yMin, yMax]}
+                              tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                              axisLine={false}
+                              tickLine={false}
+                              width={40}
+                            />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'white', 
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                              }}
+                              formatter={(value: number) => [`${value.toFixed(2)} ${display.unit}`, display.label]}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke={display.color} 
+                              strokeWidth={2}
+                              dot={{ r: 3, fill: display.color, strokeWidth: 0 }}
+                              activeDot={{ r: 5, fill: display.color, strokeWidth: 2, stroke: 'white' }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-2 text-xs text-[#6B7280]">
+                        <span>Start: {values[0].toFixed(2)}</span>
+                        <span>Current: {values[values.length - 1].toFixed(2)}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })()}
         
         <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-8">
           <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-2 md:mb-4">
