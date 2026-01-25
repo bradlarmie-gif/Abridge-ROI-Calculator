@@ -80,6 +80,7 @@ export default function ExpandROIStory({
         totalSteps={7}
         stepName="ROI Story"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

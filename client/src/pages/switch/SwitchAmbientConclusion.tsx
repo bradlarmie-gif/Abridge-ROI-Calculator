@@ -73,6 +73,7 @@ export default function SwitchAmbientConclusion({
         totalSteps={totalSteps}
         stepName="Summary"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

@@ -46,6 +46,7 @@ export default function SwitchScribesHiddenCosts({
         totalSteps={totalSteps}
         stepName="Hidden Costs"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

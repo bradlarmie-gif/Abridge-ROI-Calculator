@@ -57,6 +57,7 @@ export default function SwitchAssessment({
         totalSteps={2}
         stepName="Value Assessment"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

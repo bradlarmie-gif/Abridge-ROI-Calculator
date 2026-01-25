@@ -959,6 +959,7 @@ export default function ExpandDataEntry({
         totalSteps={5}
         stepName="Enter Data"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

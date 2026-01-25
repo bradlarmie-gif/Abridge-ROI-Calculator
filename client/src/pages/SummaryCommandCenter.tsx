@@ -747,6 +747,7 @@ export default function SummaryCommandCenter({
         totalSteps={6}
         stepName="Your ROI Model"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

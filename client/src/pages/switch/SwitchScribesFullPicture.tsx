@@ -43,6 +43,7 @@ export default function SwitchScribesFullPicture({
         totalSteps={totalSteps}
         stepName="Full Picture"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

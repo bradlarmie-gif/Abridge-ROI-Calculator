@@ -343,6 +343,7 @@ export default function ExpandJourneyExpansion({
         totalSteps={7}
         stepName="Growth Trajectory"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

@@ -78,6 +78,7 @@ export default function SwitchFullAnalysis({
         totalSteps={2}
         stepName="Gap Analysis"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

@@ -36,6 +36,7 @@ interface UnifiedHeaderProps {
   stepName?: string;
   onBack?: () => void;
   showBack?: boolean;
+  onHome?: () => void;
 }
 
 const PATH_LABELS: Record<PathType, string> = {
@@ -51,12 +52,17 @@ export function UnifiedHeader({
   stepName,
   onBack,
   showBack = true,
+  onHome,
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setLocation("/");
+    if (onHome) {
+      onHome();
+    } else {
+      setLocation("/");
+    }
   };
 
   const handleBack = () => {

@@ -38,6 +38,7 @@ export default function SwitchScribesCoverage({
         totalSteps={totalSteps}
         stepName="Coverage"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

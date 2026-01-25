@@ -73,6 +73,7 @@ export default function SwitchScribesSetup({
         totalSteps={totalSteps}
         stepName="Program Setup"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

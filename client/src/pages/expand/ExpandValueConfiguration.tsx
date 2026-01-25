@@ -95,6 +95,7 @@ export default function ExpandValueConfiguration({
         totalSteps={5}
         stepName="Value Config"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

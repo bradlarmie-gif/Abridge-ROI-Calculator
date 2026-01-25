@@ -48,6 +48,7 @@ export default function SwitchScribesComparison({
         totalSteps={totalSteps}
         stepName="Comparison"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

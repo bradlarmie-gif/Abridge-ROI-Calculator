@@ -431,6 +431,7 @@ export default function ExpandPerformanceDashboard({
         totalSteps={7}
         stepName="Your Journey"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

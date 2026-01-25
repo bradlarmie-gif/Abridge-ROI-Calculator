@@ -2444,6 +2444,7 @@ export default function ObjectiveSelectionScreen({
         stepName={stepName}
         onBack={currentPage === "setting" ? onBackToJourney : currentPage === "priorities" ? () => setCurrentPage("setting") : onBackToJourney}
         showBack={true}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

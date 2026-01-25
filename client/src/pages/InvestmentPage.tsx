@@ -263,6 +263,7 @@ export default function InvestmentPage({
         totalSteps={6}
         stepName="Your Investment"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

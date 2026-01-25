@@ -144,6 +144,7 @@ export default function BaselineSetup({
         totalSteps={6}
         stepName="Your Organization"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

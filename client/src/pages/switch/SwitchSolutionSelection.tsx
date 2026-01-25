@@ -57,6 +57,7 @@ export default function SwitchSolutionSelection({
         totalSteps={2}
         stepName="Select Solution"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

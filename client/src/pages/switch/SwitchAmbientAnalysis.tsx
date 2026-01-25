@@ -138,6 +138,7 @@ export default function SwitchAmbientAnalysis({
         totalSteps={totalSteps}
         stepName="Analysis"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

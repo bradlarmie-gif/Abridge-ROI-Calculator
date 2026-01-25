@@ -144,6 +144,7 @@ export default function SwitchAdvancedComparison({
         totalSteps={totalSteps}
         stepName="Comparison"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

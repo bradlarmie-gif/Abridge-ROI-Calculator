@@ -169,6 +169,7 @@ export default function ExpandResults({
         totalSteps={5}
         stepName="Your Results"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

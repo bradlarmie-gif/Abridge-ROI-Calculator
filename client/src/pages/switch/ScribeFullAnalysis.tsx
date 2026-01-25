@@ -59,6 +59,7 @@ export default function ScribeFullAnalysis({
         totalSteps={2}
         stepName="Full Analysis"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

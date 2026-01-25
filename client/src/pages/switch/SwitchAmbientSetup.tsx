@@ -185,6 +185,7 @@ export default function SwitchAmbientSetup({
         totalSteps={totalSteps}
         stepName="Setup"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

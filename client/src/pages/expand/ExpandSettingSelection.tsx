@@ -18,6 +18,7 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
         stepName="Care Setting"
         onBack={onBack}
         showBack={!!onBack}
+        onHome={onBack}
       />
       <UnifiedHeaderSpacer />
 

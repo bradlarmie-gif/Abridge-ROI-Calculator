@@ -108,6 +108,7 @@ interface RoiCalculatorProps {
   selectedLevers: SelectedLever[];
   seedInputs?: Partial<RoiInputs>;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
 type TabId = "summary" | "detailed" | "scenarios" | "export";
@@ -182,6 +183,7 @@ export default function RoiCalculator({
   selectedLevers,
   seedInputs,
   onBack,
+  onBackToJourney,
 }: RoiCalculatorProps) {
   const [activeTab, setActiveTab] = useState<TabId>("summary");
   const [addDriverModalOpen, setAddDriverModalOpen] = useState(false);
@@ -1518,6 +1520,7 @@ export default function RoiCalculator({
         totalSteps={6}
         stepName="Calculator"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

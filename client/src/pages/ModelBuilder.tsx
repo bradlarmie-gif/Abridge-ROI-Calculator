@@ -6422,6 +6422,7 @@ export default function ModelBuilder({
         totalSteps={6}
         stepName="Value Drivers"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
       

@@ -108,6 +108,7 @@ export default function ExpandDeploymentSetup({
         totalSteps={5}
         stepName="Deployment Setup"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 

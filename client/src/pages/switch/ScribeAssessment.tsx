@@ -38,6 +38,7 @@ export default function ScribeAssessment({
         totalSteps={2}
         stepName="Scribe Analysis"
         onBack={onBack}
+        onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 
