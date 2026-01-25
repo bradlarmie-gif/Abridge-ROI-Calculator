@@ -92,29 +92,93 @@ export default function SwitchFullAnalysis({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-10">
-          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center" data-testid="card-annual-gap">
-            <div className="text-[10px] md:text-xs font-semibold text-[#6B7280] mb-1 md:mb-2">ANNUAL GAP</div>
-            <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.annualGap)}</div>
-            <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">unrealized value</div>
+        {/* Hero Card: Annual Gap - The Primary Metric */}
+        <div className="mb-4 md:mb-6" data-testid="card-annual-gap">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 md:p-8 text-center text-white relative overflow-hidden">
+            {/* Subtle background pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
+            </div>
+            
+            <div className="relative">
+              <div className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">
+                Your Annual Gap
+              </div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 tracking-tight">
+                {formatCurrency(calculations.annualGap)}
+              </div>
+              <div className="text-sm md:text-base text-slate-400">
+                in unrealized value each year
+              </div>
+              
+              {/* Monthly breakdown */}
+              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-center gap-2">
+                <Clock className="w-4 h-4 text-slate-500" />
+                <span className="text-sm text-slate-400">
+                  That's <span className="text-white font-semibold">{formatCurrency(calculations.monthlyGap)}/month</span> left on the table
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="bg-[#EA2C00] rounded-xl p-4 md:p-6 text-center text-white" data-testid="card-realization-score">
-            <div className="text-[10px] md:text-xs font-semibold text-white/80 mb-1 md:mb-2">REALIZATION SCORE</div>
-            <div className="text-2xl md:text-3xl font-bold">{calculations.realizationScore}%</div>
-            <div className="text-[10px] md:text-xs text-white/80 mt-1">of potential</div>
-            <div className="w-full h-1.5 md:h-2 bg-white/30 rounded-full mt-2 md:mt-3">
-              <div 
-                className="h-full bg-white rounded-full transition-all"
-                style={{ width: `${calculations.realizationScore}%` }}
-              />
+        {/* Secondary Cards Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-8 md:mb-10">
+          {/* Realization Score */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5" data-testid="card-realization-score">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+                  Realization Score
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-[#111827]">{calculations.realizationScore}%</div>
+                <div className="text-xs text-[#6B7280] mt-0.5">of potential captured</div>
+              </div>
+              <div className="w-16 h-16 md:w-20 md:h-20 relative">
+                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" strokeWidth="8" />
+                  <circle 
+                    cx="50" cy="50" r="40" fill="none" 
+                    stroke={calculations.realizationScore >= 70 ? "#10B981" : calculations.realizationScore >= 40 ? "#F59E0B" : "#EF4444"}
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${calculations.realizationScore * 2.51} 251`}
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#111827]">{calculations.realizationScore}%</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 text-center" data-testid="card-3year-gap">
-            <div className="text-[10px] md:text-xs font-semibold text-[#6B7280] mb-1 md:mb-2">3-YEAR GAP</div>
-            <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
-            <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">cumulative</div>
+          {/* 3-Year Gap */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5" data-testid="card-3year-gap">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+                  3-Year Cumulative
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
+                <div className="text-xs text-[#6B7280] mt-0.5">total unrealized value</div>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-slate-300" />
+                  <span className="text-[10px] text-[#6B7280]">Year 1</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span className="text-[10px] text-[#6B7280]">Year 2</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-slate-600" />
+                  <span className="text-[10px] text-[#6B7280]">Year 3</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
