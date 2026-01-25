@@ -100,31 +100,31 @@ export default function ExpandValueConfiguration({
       <UnifiedHeaderSpacer />
       
       <div className="py-6 md:py-8 px-6 pb-8 max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-semibold text-[#1F2937] mb-2">
+        <div className="text-center mb-6 lg:mb-8">
+          <h1 className="text-2xl lg:text-3xl font-semibold text-[#1F2937] mb-2">
             How Are You Capturing Value?
           </h1>
-          <p className="text-[#6B7280] text-lg">
+          <p className="text-[#6B7280] text-sm lg:text-lg px-2">
             Different organizations realize value in different ways. Tell us how yours works.
           </p>
         </div>
         
-        <div className="flex gap-8">
-          <div className="flex-1 space-y-6">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <div className="flex-1 space-y-4 lg:space-y-6 order-2 lg:order-1">
             
-            <div className="bg-white rounded-xl border border-neutral-200 p-6">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 lg:p-6">
+              <div className="flex items-start gap-3 lg:gap-4 mb-4">
+                <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-600" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-[#1F2937]">Revenue Capture</h3>
-                    <span className="px-2 py-1 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Revenue Capture</h3>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
                       Always Valued
                     </span>
                   </div>
-                  <p className="text-sm text-[#6B7280] mt-1">
+                  <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
                     Better documentation = more accurate coding = more revenue
                   </p>
                 </div>
@@ -154,25 +154,25 @@ export default function ExpandValueConfiguration({
               )}
             </div>
             
-            <div className="bg-white rounded-xl border border-neutral-200 p-6">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5 text-blue-600" />
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 lg:p-6">
+              <div className="flex items-start gap-3 lg:gap-4 mb-4">
+                <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-[#1F2937]">Time Efficiency</h3>
-                  <p className="text-sm text-[#6B7280] mt-1">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Time Efficiency</h3>
+                  <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
                     {totalHoursSaved > 0 
-                      ? `You're saving ${totalHoursSaved.toLocaleString()} hours annually. How is this being used?`
+                      ? `Saving ${totalHoursSaved.toLocaleString()} hrs/year. How is this being used?`
                       : "Add time savings data to configure value conversion"
                     }
                   </p>
                 </div>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2 lg:space-y-3">
                 <label 
-                  className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3 lg:p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     valueConfig.timeConversionMethod === "none"
                       ? "border-[#EA2C00] bg-red-50"
                       : "border-neutral-200 hover:border-neutral-300"
@@ -187,15 +187,15 @@ export default function ExpandValueConfiguration({
                     className="mt-1 accent-[#EA2C00]"
                   />
                   <div>
-                    <span className="font-medium text-[#1F2937]">Not converting to dollars yet</span>
-                    <span className="text-sm text-[#6B7280] block mt-0.5">
-                      Show as hours saved, not $. This is the most conservative approach.
+                    <span className="font-medium text-sm lg:text-base text-[#1F2937]">Not converting to dollars yet</span>
+                    <span className="text-xs lg:text-sm text-[#6B7280] block mt-0.5">
+                      Show as hours saved, not $. Most conservative approach.
                     </span>
                   </div>
                 </label>
                 
                 <label 
-                  className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3 lg:p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     valueConfig.timeConversionMethod === "patientAccess"
                       ? "border-[#EA2C00] bg-red-50"
                       : "border-neutral-200 hover:border-neutral-300"
@@ -210,8 +210,8 @@ export default function ExpandValueConfiguration({
                     className="mt-1 accent-[#EA2C00]"
                   />
                   <div className="flex-1">
-                    <span className="font-medium text-[#1F2937]">Some converting to additional patient visits</span>
-                    <span className="text-sm text-[#6B7280] block mt-0.5">
+                    <span className="font-medium text-sm lg:text-base text-[#1F2937]">Converting to additional patient visits</span>
+                    <span className="text-xs lg:text-sm text-[#6B7280] block mt-0.5">
                       If providers are using saved time to see more patients
                     </span>
                     
@@ -265,7 +265,7 @@ export default function ExpandValueConfiguration({
                 </label>
                 
                 <label 
-                  className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3 lg:p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     valueConfig.timeConversionMethod === "overtime"
                       ? "border-[#EA2C00] bg-red-50"
                       : "border-neutral-200 hover:border-neutral-300"
@@ -280,14 +280,14 @@ export default function ExpandValueConfiguration({
                     className="mt-1 accent-[#EA2C00]"
                   />
                   <div className="flex-1">
-                    <span className="font-medium text-[#1F2937]">Reducing overtime/locum costs</span>
-                    <span className="text-sm text-[#6B7280] block mt-0.5">
+                    <span className="font-medium text-sm lg:text-base text-[#1F2937]">Reducing overtime/locum costs</span>
+                    <span className="text-xs lg:text-sm text-[#6B7280] block mt-0.5">
                       If you're seeing reduced OT or locum spend
                     </span>
                     
                     {valueConfig.timeConversionMethod === "overtime" && (
-                      <div className="mt-4">
-                        <label className="text-sm text-[#6B7280] block mb-2">
+                      <div className="mt-3 lg:mt-4">
+                        <label className="text-xs lg:text-sm text-[#6B7280] block mb-2">
                           Estimated annual OT/locum reduction
                         </label>
                         <div className="flex items-center gap-2">
@@ -300,13 +300,13 @@ export default function ExpandValueConfiguration({
                               ...valueConfig, 
                               overtimeReduction: e.target.value ? parseInt(e.target.value) : null 
                             })}
-                            className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent text-sm"
                             data-testid="input-overtime-reduction"
                           />
                         </div>
-                        <div className="flex items-center gap-2 text-blue-600 text-sm mt-2">
-                          <Info className="w-4 h-4" />
-                          <span>Enter only if you have actual data showing reduced spend</span>
+                        <div className="flex items-center gap-2 text-blue-600 text-xs lg:text-sm mt-2">
+                          <Info className="w-4 h-4 flex-shrink-0" />
+                          <span>Enter only if you have actual data</span>
                         </div>
                       </div>
                     )}
@@ -315,19 +315,19 @@ export default function ExpandValueConfiguration({
               </div>
             </div>
             
-            <div className="bg-white rounded-xl border border-neutral-200 p-6">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <Heart className="w-5 h-5 text-purple-600" />
+            <div className="bg-white rounded-xl border border-neutral-200 p-4 lg:p-6">
+              <div className="flex items-start gap-3 lg:gap-4 mb-4">
+                <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-4 h-4 lg:w-5 lg:h-5 text-purple-600" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-[#1F2937]">Quality of Life & Retention</h3>
-                    <span className="px-2 py-1 text-xs font-medium bg-neutral-100 text-[#6B7280] rounded-full">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Quality of Life & Retention</h3>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-neutral-100 text-[#6B7280] rounded-full">
                       Qualitative
                     </span>
                   </div>
-                  <p className="text-sm text-[#6B7280] mt-1">
+                  <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
                     These improvements support retention but are harder to quantify
                   </p>
                 </div>
@@ -392,9 +392,9 @@ export default function ExpandValueConfiguration({
             </div>
           </div>
           
-          <div className="w-80 flex-shrink-0">
-            <div className="sticky top-24 bg-white rounded-xl border border-neutral-200 p-6">
-              <h3 className="font-semibold text-[#1F2937] mb-4">Your Value Summary</h3>
+          <div className="w-full lg:w-80 flex-shrink-0 order-1 lg:order-2">
+            <div className="lg:sticky lg:top-24 bg-white rounded-xl border border-neutral-200 p-4 lg:p-6">
+              <h3 className="font-semibold text-[#1F2937] mb-3 lg:mb-4">Your Value Summary</h3>
               
               <div className="space-y-3 mb-4">
                 {wrvuValue > 0 && (
