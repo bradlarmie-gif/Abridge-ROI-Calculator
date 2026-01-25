@@ -1470,8 +1470,8 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <StatusDot status="good" />
             <View>
-              <Text style={styles.cardTitle}>Tier 1: Hard Value</Text>
-              <Text style={styles.cardSubtitle}>Directly measurable financial impact</Text>
+              <Text style={styles.cardTitle}>Core Financial Value</Text>
+              <Text style={styles.cardSubtitle}>Directly measurable revenue impact</Text>
             </View>
           </View>
           <Text style={styles.cardValue}>{formatCurrency(data.tier1Value)}</Text>
@@ -1500,8 +1500,8 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <StatusDot status="warning" />
               <View>
-                <Text style={styles.cardTitle}>Tier 2: Efficiency Gains</Text>
-                <Text style={styles.cardSubtitle}>Measured improvements—not yet converted to dollars</Text>
+                <Text style={styles.cardTitle}>Operational Efficiency</Text>
+                <Text style={styles.cardSubtitle}>Time and workflow improvements</Text>
               </View>
             </View>
           </View>
@@ -1520,8 +1520,8 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
         <View style={styles.card} wrap={false}>
           <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.cardTitle}>Tier 3: Leading Indicators</Text>
-              <Text style={styles.cardSubtitle}>Directional signals that predict future value</Text>
+              <Text style={styles.cardTitle}>Strategic Indicators</Text>
+              <Text style={styles.cardSubtitle}>Quality-of-life and satisfaction metrics</Text>
             </View>
           </View>
           <View style={styles.cardContent}>

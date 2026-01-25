@@ -1,7 +1,9 @@
-import { useMemo } from "react";
-import { ArrowLeft, ArrowRight, DollarSign, Clock, Heart, AlertTriangle, Info, CheckCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, DollarSign, Clock, Heart, AlertTriangle, Info, CheckCircle, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { Slider } from "@/components/ui/slider";
+import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import {
   type DeploymentData,
   type MetricsData,
@@ -119,13 +121,15 @@ export default function ExpandValueConfiguration({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Revenue Capture</h3>
+                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Core Financial Value</h3>
                     <span className="px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-full">
-                      Always Valued
+                      Direct Revenue
                     </span>
                   </div>
                   <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
-                    Better documentation = more accurate coding = more revenue
+                    Better documentation = more accurate coding = measurable{" "}
+                    <TermTooltip {...TERMS.wRVU} />{" "}
+                    improvement
                   </p>
                 </div>
               </div>
@@ -141,7 +145,8 @@ export default function ExpandValueConfiguration({
                     <span className="font-bold text-lg text-emerald-600">{formatCurrency(wrvuValue)}</span>
                   </div>
                   <div className="text-xs font-mono text-[#6B7280] bg-neutral-100 p-2 rounded">
-                    +{wrvuLift.toFixed(2)} wRVU x {encounters.toLocaleString()} enc x {utilizationRate}% util x ${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU x 50% attribution
+                    +{wrvuLift.toFixed(2)} wRVU × {encounters.toLocaleString()} enc × {utilizationRate}% util × ${EXPAND_ROI_DEFAULTS.dollarPerWRVU}/wRVU ×{" "}
+                    <TermTooltip term="50% attribution" short="How much credit Abridge gets" full="We conservatively attribute 50% of the improvement to Abridge, accounting for other workflow changes that may contribute." />
                   </div>
                 </div>
               ) : (
@@ -160,10 +165,15 @@ export default function ExpandValueConfiguration({
                   <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Time Efficiency</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Operational Efficiency</h3>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                      Time Savings
+                    </span>
+                  </div>
                   <p className="text-xs lg:text-sm text-[#6B7280] mt-1">
                     {totalHoursSaved > 0 
-                      ? `Saving ${totalHoursSaved.toLocaleString()} hrs/year. How is this being used?`
+                      ? <>Saving {totalHoursSaved.toLocaleString()} hrs/year. How do you <TermTooltip {...TERMS.conversionRate} /> this?</>
                       : "Add time savings data to configure value conversion"
                     }
                   </p>
@@ -294,6 +304,7 @@ export default function ExpandValueConfiguration({
                           <span className="text-[#6B7280]">$</span>
                           <input
                             type="number"
+                            inputMode="numeric"
                             placeholder="e.g., 150000"
                             value={valueConfig.overtimeReduction || ""}
                             onChange={(e) => setValueConfig({ 
@@ -322,7 +333,7 @@ export default function ExpandValueConfiguration({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Quality of Life & Retention</h3>
+                    <h3 className="text-base lg:text-lg font-semibold text-[#1F2937]">Strategic Indicators</h3>
                     <span className="px-2 py-0.5 text-xs font-medium bg-neutral-100 text-[#6B7280] rounded-full">
                       Qualitative
                     </span>
@@ -366,6 +377,7 @@ export default function ExpandValueConfiguration({
                   <div className="flex items-center gap-3">
                     <input
                       type="number"
+                      inputMode="numeric"
                       min="0"
                       max="5"
                       value={valueConfig.departuresPrevented}

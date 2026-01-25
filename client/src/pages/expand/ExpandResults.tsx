@@ -106,7 +106,48 @@ export default function ExpandResults({
   const journeyData = useMemo((): JourneyDataPoint[] => {
     const todayValue = currentValue;
     const fullScaleValue = expansionCalc?.projectedValue || todayValue * 3;
+    const dollarPerWRVU = EXPAND_ROI_DEFAULTS.dollarPerWRVU;
+    const attribution = EXPAND_ROI_DEFAULTS.wrvuAttribution;
+    const eligibleEnc = encounters * (utilizationRate / 100);
     
+    // Check if we have real trend data from wRVU (primary value driver)
+    const wrvuTrend = metricTrendData.wrvuCapture;
+    const filledData = wrvuTrend.monthlyData.map((v, i) => v !== null ? { value: v, index: i } : null).filter((x): x is { value: number; index: number } => x !== null);
+    const hasRealTrendData = wrvuTrend.baseline !== null && filledData.length > 0;
+    
+    if (hasRealTrendData && wrvuTrend.baseline !== null) {
+      const baseline = wrvuTrend.baseline;
+      const lastFilledIndex = filledData.length - 1;
+      const dataPoints: JourneyDataPoint[] = [
+        { id: 'baseline', time: 'Before', label: 'Baseline', value: 0, isActual: true },
+      ];
+      
+      // Add actual monthly data points (O(n) - precomputed lastFilledIndex)
+      filledData.forEach((item, idx) => {
+        const wrvuLift = Math.max(0, item.value - baseline);
+        const monthValue = Math.round(wrvuLift * eligibleEnc * dollarPerWRVU * attribution);
+        const isCurrent = idx === lastFilledIndex;
+        dataPoints.push({
+          id: `m${item.index + 1}`,
+          time: `Mo ${item.index + 1}`,
+          label: isCurrent ? 'Today' : `Month ${item.index + 1}`,
+          value: monthValue,
+          isActual: true,
+          isToday: isCurrent,
+        });
+      });
+      
+      // Add projection points
+      const maturityValue = Math.round(todayValue * 1.25);
+      dataPoints.push(
+        { id: 'maturity', time: 'Mo 12', label: 'Maturity', value: maturityValue, isActual: false },
+        { id: 'fullScale', time: 'Full Scale', label: 'Full Adoption', value: fullScaleValue, isActual: false, isFullScale: true },
+      );
+      
+      return dataPoints;
+    }
+    
+    // Fallback to synthetic journey based on before/after
     const rampValue = Math.round(todayValue * 0.45);
     const maturityValue = Math.round(todayValue * 1.25);
     const expansionValue = Math.round(todayValue * 2);
@@ -119,7 +160,7 @@ export default function ExpandResults({
       { id: 'expansion', time: 'Mo 24', label: 'Expansion', value: expansionValue, isActual: false },
       { id: 'fullScale', time: 'Full Scale', label: 'Full Adoption', value: fullScaleValue, isActual: false, isFullScale: true },
     ];
-  }, [currentValue, months, expansionCalc]);
+  }, [currentValue, months, expansionCalc, metricTrendData, encounters, utilizationRate]);
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: JourneyDataPoint }> }) => {
     if (!active || !payload || !payload.length) return null;
@@ -724,7 +765,7 @@ export default function ExpandResults({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-emerald-600" />
-                  <span className="font-semibold text-[#1F2937]">Tier 1: Hard Value</span>
+                  <span className="font-semibold text-[#1F2937]">Core Financial Value</span>
                 </div>
                 <span className="text-lg font-bold text-emerald-600">{formatCurrency(roiResult.tier1HardValue)}</span>
               </div>
@@ -760,7 +801,7 @@ export default function ExpandResults({
             <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold text-[#1F2937]">Tier 2: Efficiency Gains</span>
+                <span className="font-semibold text-[#1F2937]">Operational Efficiency</span>
                 <span className="text-xs text-[#6B7280] ml-auto">(not dollarized)</span>
               </div>
               
@@ -794,7 +835,7 @@ export default function ExpandResults({
               <div className="p-4 bg-purple-50 border border-purple-100 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Smile className="w-4 h-4 text-purple-600" />
-                  <span className="font-semibold text-[#1F2937]">Tier 3: Leading Indicators</span>
+                  <span className="font-semibold text-[#1F2937]">Strategic Indicators</span>
                   <span className="text-xs text-[#6B7280] ml-auto">(qualitative)</span>
                 </div>
                 
@@ -946,12 +987,18 @@ export default function ExpandResults({
           );
         })()}
         
-        <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-8">
-          <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-2 md:mb-4">
-            Model Your Expansion
+        <div className="bg-gradient-to-br from-blue-50 via-white to-emerald-50 border-2 border-blue-200 rounded-xl p-4 md:p-6 mb-8 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide">
+              Expansion Opportunity
+            </span>
+          </div>
+          <h2 className="text-lg md:text-xl font-semibold text-[#1F2937] mb-2">
+            Model Your Growth Potential
           </h2>
           <p className="text-sm text-[#6B7280] mb-4 md:mb-6">
-            Based on your proven results, here's what full-scale could look like
+            Based on your proven results, here's what full-scale adoption could unlock. 
+            <span className="text-blue-700 font-medium"> Adjust the sliders to see the impact.</span>
           </p>
           
           <div className="flex flex-col md:flex-row md:items-stretch gap-4 md:gap-6">
@@ -984,6 +1031,7 @@ export default function ExpandResults({
                   <label className="text-sm text-[#6B7280] block mb-1">Total providers</label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     value={targetProviders}
                     onChange={(e) => setTargetProviders(e.target.value ? parseInt(e.target.value) : "")}
                     placeholder="e.g., 150"
@@ -1015,29 +1063,48 @@ export default function ExpandResults({
           </div>
           
           {expansionCalc && (
-            <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                <div className="text-center">
-                  <span className="block text-2xl font-bold text-blue-600">{formatCurrency(expansionCalc.projectedValue)}</span>
-                  <span className="text-xs text-[#6B7280] uppercase">Projected Annual Value</span>
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-6"
+            >
+              <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-xl p-5 text-white shadow-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="text-center bg-white/10 rounded-lg p-3">
+                    <span className="block text-3xl font-bold">{formatCurrency(expansionCalc.projectedValue)}</span>
+                    <span className="text-sm text-white/80">Projected Annual Value</span>
+                  </div>
+                  <div className="text-center bg-white/10 rounded-lg p-3">
+                    <span className="block text-3xl font-bold text-emerald-200">+{formatCurrency(expansionCalc.expansionValue)}</span>
+                    <span className="text-sm text-white/80">Additional Value</span>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-bold text-emerald-600">+{formatCurrency(expansionCalc.expansionValue)}</span>
-                  <span className="text-xs text-[#6B7280] uppercase">Additional Value from Expansion</span>
+                
+                <div className="flex items-center gap-2 text-sm text-white/90 justify-center">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>
+                    {((expansionCalc.projectedValue / currentValue - 1) * 100).toFixed(0)}% increase from current state
+                  </span>
                 </div>
               </div>
               
-              <div className="bg-white/70 rounded-lg p-4 text-sm text-[#6B7280]">
-                <strong className="text-[#1F2937]">How we calculated this:</strong>
+              <div className="bg-white border border-neutral-200 rounded-lg p-4 mt-4 text-sm text-[#6B7280]">
+                <button 
+                  type="button"
+                  className="flex items-center gap-2 text-[#1F2937] font-medium cursor-default"
+                >
+                  How we calculated this:
+                </button>
                 <ul className="mt-2 space-y-1 ml-4 list-disc">
                   <li>Your value per provider: {formatCurrency(valuePerProvider)}</li>
                   <li>× {expansionCalc.targetProviders} providers = {formatCurrency(valuePerProvider * expansionCalc.targetProviders)}</li>
                   <li>× {expansionCalc.utilizationMultiplier.toFixed(2)}x utilization boost ({utilizationRate}% → {expansionCalc.targetUtilization}%)</li>
-                  <li>× 1.15x maturity effects</li>
+                  <li>× 1.15x maturity effects (organizations typically see improvement with tenure)</li>
                   <li>= <strong className="text-blue-600">{formatCurrency(expansionCalc.projectedValue)}</strong></li>
                 </ul>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
         

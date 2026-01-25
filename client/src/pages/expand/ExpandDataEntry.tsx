@@ -66,6 +66,7 @@ const METRIC_CONFIG = {
     iconColor: "text-emerald-600",
     unit: "wRVU/enc",
     benchmarkText: "Abridge customers typically see 3-9% lift",
+    benchmarkWhisper: "Typical range: 1.8-2.8 wRVU/encounter",
     isPositiveGood: true,
     step: 0.01,
   },
@@ -77,6 +78,7 @@ const METRIC_CONFIG = {
     iconColor: "text-blue-600",
     unit: "min",
     benchmarkText: "Average reduction: 3-5 min per encounter",
+    benchmarkWhisper: "Typical: 2-12 min/encounter baseline",
     isPositiveGood: false,
     step: 0.1,
   },
@@ -88,6 +90,7 @@ const METRIC_CONFIG = {
     iconColor: "text-amber-600",
     unit: "%",
     benchmarkText: "Typical improvement: 5-15 percentage points",
+    benchmarkWhisper: "Typical: 40-95% same-day closure",
     isPositiveGood: true,
     step: 1,
   },
@@ -99,6 +102,7 @@ const METRIC_CONFIG = {
     iconColor: "text-purple-600",
     unit: "avg level",
     benchmarkText: "Typical increase: 0.2-0.5 levels",
+    benchmarkWhisper: "Typical average: 3.0-4.5",
     isPositiveGood: true,
     step: 0.01,
   },
@@ -110,6 +114,7 @@ const METRIC_CONFIG = {
     iconColor: "text-indigo-600",
     unit: "hrs/week",
     benchmarkText: "Typical reduction: 2-5 hours per week",
+    benchmarkWhisper: "Typical: 5-15 hrs/week before Abridge",
     isPositiveGood: false,
     step: 0.1,
   },
@@ -121,6 +126,7 @@ const METRIC_CONFIG = {
     iconColor: "text-pink-600",
     unit: "pts",
     benchmarkText: "Average improvement: 10-20 points",
+    benchmarkWhisper: "Typical: 50-100 point scale",
     isPositiveGood: true,
     step: 1,
   },
@@ -203,6 +209,7 @@ function QuickEntry({
   isPositiveGood,
   step = 1,
   testIdPrefix,
+  benchmarkWhisper,
 }: {
   before: number | null;
   after: number | null;
@@ -212,6 +219,7 @@ function QuickEntry({
   isPositiveGood: boolean;
   step?: number;
   testIdPrefix: string;
+  benchmarkWhisper?: string;
 }) {
   const change = before !== null && after !== null
     ? isPositiveGood ? after - before : before - after
@@ -231,6 +239,7 @@ function QuickEntry({
           </span>
           <input
             type="number"
+            inputMode="decimal"
             step={step}
             placeholder="—"
             value={before ?? ""}
@@ -249,6 +258,7 @@ function QuickEntry({
           </span>
           <input
             type="number"
+            inputMode="decimal"
             step={step}
             placeholder="—"
             value={after ?? ""}
@@ -284,6 +294,14 @@ function QuickEntry({
           </div>
         )}
       </div>
+
+      {/* Benchmark Whisper */}
+      {benchmarkWhisper && (
+        <div className="w-full mt-2 flex items-center gap-1.5 text-xs text-neutral-500">
+          <Info className="w-3 h-3 flex-shrink-0" />
+          <span>{benchmarkWhisper}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -547,6 +565,7 @@ function TrendEntry({
           <div className="relative">
             <input
               type="number"
+              inputMode="decimal"
               step="0.01"
               placeholder="—"
               value={baseline ?? ""}
@@ -605,6 +624,7 @@ function TrendEntry({
                 <div className="relative">
                   <input
                     type="number"
+                    inputMode="decimal"
                     step="0.01"
                     placeholder="—"
                     value={monthlyData[i] ?? ""}
@@ -838,6 +858,7 @@ export default function ExpandDataEntry({
                 isPositiveGood={true}
                 step={0.01}
                 testIdPrefix="los-avg"
+                benchmarkWhisper="Typical average: 3.0-4.5 across specialties"
               />
 
               <button
@@ -870,6 +891,7 @@ export default function ExpandDataEntry({
                           <span className="text-sm text-[#111827]">{level.label}</span>
                           <input
                             type="number"
+                            inputMode="numeric"
                             step="1"
                             placeholder="0"
                             value={losData.before[level.id] || ""}
@@ -883,6 +905,7 @@ export default function ExpandDataEntry({
                           />
                           <input
                             type="number"
+                            inputMode="numeric"
                             step="1"
                             placeholder="0"
                             value={losData.after[level.id] || ""}
@@ -976,6 +999,7 @@ export default function ExpandDataEntry({
                 isPositiveGood={true}
                 step={1}
                 testIdPrefix="closure"
+                benchmarkWhisper="Typical: 40-95% same-day closure"
               />
 
               <button
@@ -1013,6 +1037,7 @@ export default function ExpandDataEntry({
                           <span className="text-sm text-[#111827]">{bucket.label}</span>
                           <input
                             type="number"
+                            inputMode="numeric"
                             step="1"
                             placeholder="0"
                             value={closureData.before[bucket.id as keyof typeof closureData.before] || ""}
@@ -1024,6 +1049,7 @@ export default function ExpandDataEntry({
                           />
                           <input
                             type="number"
+                            inputMode="numeric"
                             step="1"
                             placeholder="0"
                             value={closureData.after[bucket.id as keyof typeof closureData.after] || ""}
@@ -1112,6 +1138,7 @@ export default function ExpandDataEntry({
               isPositiveGood={config.isPositiveGood}
               step={config.step}
               testIdPrefix={metricId}
+              benchmarkWhisper={config.benchmarkWhisper}
             />
 
             {hasData && (

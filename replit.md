@@ -70,10 +70,11 @@ The application guides users through multi-step processes:
        - Live preview sidebar showing "Annual Value Created" (no investment/ROI display)
     5. Your Results (ExpandResults.tsx) - Consolidated results page with:
        - Headline metrics: Current Value, Value/Provider, Expansion Potential (no ROI)
-       - Enhanced journey chart with "YOU ARE HERE" marker, Y-axis labels, legend
-       - Tiered value breakdown (Tier 1: Hard Value, Tier 2: Efficiency, Tier 3: Leading Indicators)
-       - Inline expansion modeling with editable providers and utilization (max 85%)
+       - Data-driven journey chart using real wRVU trend data when available, with "YOU ARE HERE" marker
+       - Tiered value breakdown (Core Financial Value, Operational Efficiency, Strategic Indicators)
+       - Elevated expansion modeling section with gradient styling and animated projections
        - Export/Share functionality (PDF, email, copy link)
+       - TermTooltip integration for complex healthcare terms (wRVU, attribution, conversion)
     - **PDF Export**: Comprehensive 6-page coaching document with:
        - Executive Summary: Annual Value Created, Value/Provider, Expansion Potential
        - Metric Deep Dives: Trend charts, benchmarks, value calculations, warnings

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Sparkles, TrendingUp, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -113,6 +113,37 @@ export default function ExpandDeploymentSetup({
       <UnifiedHeaderSpacer />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
+        {/* Why This Matters - Hero Card */}
+        <div className="mb-6 md:mb-8 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 md:p-6">
+          <div className="flex items-start gap-3 md:gap-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-base md:text-lg font-semibold text-emerald-900 mb-1">Why This Matters</h2>
+              <p className="text-xs md:text-sm text-emerald-700 leading-relaxed">
+                You're about to discover the real value your Abridge deployment is creating. 
+                This analysis will give you concrete numbers to share with leadership, justify 
+                expansion, and celebrate wins with your team.
+              </p>
+              <div className="flex flex-wrap gap-3 md:gap-4 mt-3">
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>Track real outcomes</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  <span>Quantify your value</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                  <Target className="w-3.5 h-3.5" />
+                  <span>Plan your expansion</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Title */}
         <div className="mb-8 md:mb-10">
           <h1 className="text-xl md:text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
@@ -167,6 +198,7 @@ export default function ExpandDeploymentSetup({
               <div className="relative">
                 <input
                   type="number"
+                  inputMode="decimal"
                   placeholder="e.g., 72"
                   value={deploymentData.utilizationRate ?? ""}
                   onChange={(e) =>
@@ -187,6 +219,7 @@ export default function ExpandDeploymentSetup({
               <label className="text-xs font-medium text-[#6B7280]">Months on Abridge</label>
               <input
                 type="number"
+                inputMode="numeric"
                 placeholder="e.g., 6"
                 value={deploymentData.monthsOnAbridge ?? ""}
                 onChange={(e) =>
