@@ -72,8 +72,6 @@ export interface ExpansionData {
   targetProviders: number;
   targetUtilization: number;
   projectedValue: number;
-  investmentPerProvider: number;
-  projectedROI: number;
   expansionValue: number;
 }
 
@@ -98,9 +96,6 @@ export interface ExpandPDFData {
   tier1Value: number;
   tier2Items: { label: string; value: string; formula?: string; explanation?: string }[];
   tier3Items: { label: string; value: string; explanation?: string }[];
-  
-  investment: number;
-  roi: number;
   
   metrics: ExpandMetricData[];
   
@@ -910,13 +905,13 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       <View style={styles.heroRow}>
         <View style={styles.heroBoxHighlight}>
           <Text style={styles.heroValueGreen}>{formatCurrency(data.tier1Value)}</Text>
-          <Text style={styles.heroLabel}>PROVEN VALUE</Text>
-          <Text style={styles.heroSublabel}>Hard dollars captured</Text>
+          <Text style={styles.heroLabel}>ANNUAL VALUE CREATED</Text>
+          <Text style={styles.heroSublabel}>Defensible hard dollars</Text>
         </View>
         <View style={styles.heroBox}>
-          <Text style={styles.heroValue}>{data.roi.toFixed(1)}x</Text>
-          <Text style={styles.heroLabel}>ROI</Text>
-          <Text style={styles.heroSublabel}>On {formatCurrency(data.investment)}/yr invested</Text>
+          <Text style={styles.heroValue}>{formatCurrency(data.providers > 0 ? data.tier1Value / data.providers : 0)}</Text>
+          <Text style={styles.heroLabel}>VALUE / PROVIDER</Text>
+          <Text style={styles.heroSublabel}>Based on {data.providers} providers</Text>
         </View>
         <View style={styles.heroBox}>
           <Text style={styles.heroValueGreen}>+{formatCurrency(data.expansion.expansionValue)}</Text>
@@ -1251,15 +1246,15 @@ const ExpansionOpportunityPage = ({
           <Text style={styles.heroLabel}>PROJECTED ANNUAL VALUE</Text>
           <Text style={styles.heroSublabel}>At full scale</Text>
         </View>
-        <View style={styles.heroBox}>
-          <Text style={styles.heroValue}>{expansion.projectedROI.toFixed(1)}x</Text>
-          <Text style={styles.heroLabel}>PROJECTED ROI</Text>
-          <Text style={styles.heroSublabel}>At scale investment</Text>
-        </View>
         <View style={styles.heroBoxHighlight}>
           <Text style={styles.heroValueGreen}>+{formatCurrency(expansion.expansionValue)}</Text>
           <Text style={styles.heroLabel}>ADDITIONAL VALUE</Text>
           <Text style={styles.heroSublabel}>Beyond current</Text>
+        </View>
+        <View style={styles.heroBox}>
+          <Text style={styles.heroValue}>{expansion.targetProviders}</Text>
+          <Text style={styles.heroLabel}>TARGET PROVIDERS</Text>
+          <Text style={styles.heroSublabel}>{expansion.targetUtilization}% utilization</Text>
         </View>
       </View>
 
@@ -1286,7 +1281,7 @@ const ExpansionOpportunityPage = ({
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>INVESTMENT ANALYSIS</Text>
+      <Text style={styles.sectionTitle}>CURRENT VS. PROJECTED</Text>
 
       <View style={styles.twoColumn}>
         <View style={styles.column}>
@@ -1305,12 +1300,8 @@ const ExpansionOpportunityPage = ({
               <Text style={[styles.opportunityValue, { color: colors.green }]}>{formatCurrency(expansion.currentValue)}</Text>
             </View>
             <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Investment:</Text>
-              <Text style={styles.opportunityValue}>{formatCurrency(data.investment)}/yr</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>ROI:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green }]}>{data.roi.toFixed(1)}x</Text>
+              <Text style={styles.opportunityLabel}>Value/provider:</Text>
+              <Text style={styles.opportunityValue}>{formatCurrency(expansion.currentProviders > 0 ? expansion.currentValue / expansion.currentProviders : 0)}</Text>
             </View>
           </View>
         </View>
@@ -1330,12 +1321,8 @@ const ExpansionOpportunityPage = ({
               <Text style={[styles.opportunityValue, { color: colors.green }]}>{formatCurrency(expansion.projectedValue)}</Text>
             </View>
             <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>Investment:</Text>
-              <Text style={styles.opportunityValue}>{formatCurrency(expansion.targetProviders * expansion.investmentPerProvider)}/yr</Text>
-            </View>
-            <View style={styles.opportunityRow}>
-              <Text style={styles.opportunityLabel}>ROI:</Text>
-              <Text style={[styles.opportunityValue, { color: colors.green }]}>{expansion.projectedROI.toFixed(1)}x</Text>
+              <Text style={styles.opportunityLabel}>Added value:</Text>
+              <Text style={[styles.opportunityValue, { color: colors.green }]}>+{formatCurrency(expansion.expansionValue)}</Text>
             </View>
           </View>
         </View>

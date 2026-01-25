@@ -38,7 +38,6 @@ export default function ExpandResults({
 
   const [targetProviders, setTargetProviders] = useState<number | "">(providers * 3);
   const [targetUtilization, setTargetUtilization] = useState(Math.min(utilizationRate + 15, MAX_UTILIZATION));
-  const [investmentPerProvider, setInvestmentPerProvider] = useState(EXPAND_ROI_DEFAULTS.investmentPerProvider);
 
   const calcInputs: CalculationInputs = useMemo(() => ({
     providers,
@@ -61,9 +60,6 @@ export default function ExpandResults({
   const roiResult = useMemo(() => calculateTieredROI(calcInputs), [calcInputs]);
 
   const currentValue = roiResult.tier1HardValue;
-  const currentInvestment = providers * investmentPerProvider * 12;
-  const currentROI = currentInvestment > 0 ? currentValue / currentInvestment : 0;
-
   const valuePerProvider = providers > 0 ? currentValue / providers : 0;
 
   const expansionCalc = useMemo(() => {
@@ -79,14 +75,10 @@ export default function ExpandResults({
     const maturityMultiplier = 1.15;
     
     const projectedValue = Math.round(currentValue * providerMultiplier * utilizationMultiplier * maturityMultiplier);
-    const projectedInvestment = targetProvidersNum * investmentPerProvider * 12;
-    const projectedROI = projectedInvestment > 0 ? projectedValue / projectedInvestment : 0;
     const expansionValue = projectedValue - currentValue;
     
     return {
       projectedValue,
-      projectedInvestment,
-      projectedROI,
       expansionValue,
       providerMultiplier,
       utilizationMultiplier,
@@ -94,7 +86,7 @@ export default function ExpandResults({
       targetProviders: targetProvidersNum,
       targetUtilization: targetUtil,
     };
-  }, [targetProviders, targetUtilization, providers, utilizationRate, currentValue, investmentPerProvider]);
+  }, [targetProviders, targetUtilization, providers, utilizationRate, currentValue]);
 
   interface JourneyDataPoint {
     id: string;
@@ -157,11 +149,11 @@ export default function ExpandResults({
     
     const metrics: ExpandPDFData['metrics'] = [];
     
-    // Helper to convert timeline data to trend array
+    // Helper to convert timeline data to trend array (MetricTrendPoint expects month as string)
     const getTrend = (timelinePoints: typeof timelineData.timeSavings) => {
       const validPoints = timelinePoints.filter(p => p.value !== null);
       if (validPoints.length < 2) return undefined;
-      return validPoints.map(p => ({ month: p.month, value: p.value as number, label: p.label }));
+      return validPoints.map(p => ({ month: p.label || `Month ${p.month}`, value: p.value as number }));
     };
     
     // wRVU metric with full details
@@ -447,8 +439,6 @@ export default function ExpandResults({
       tier1Value: roiResult.tier1HardValue,
       tier2Items,
       tier3Items,
-      investment: currentInvestment,
-      roi: currentROI,
       metrics,
       expansion: {
         currentProviders: providers,
@@ -457,8 +447,6 @@ export default function ExpandResults({
         targetProviders: expansionCalc?.targetProviders || providers * 3,
         targetUtilization: expansionCalc?.targetUtilization || Math.min(utilizationRate + 15, MAX_UTILIZATION),
         projectedValue: expansionCalc?.projectedValue || currentValue * 3,
-        investmentPerProvider,
-        projectedROI: expansionCalc?.projectedROI || currentROI,
         expansionValue: expansionCalc?.expansionValue || currentValue * 2,
       },
       valueConfig: {
@@ -476,7 +464,7 @@ export default function ExpandResults({
         severity: w.severity,
       })),
     };
-  }, [providers, encounters, utilizationRate, months, metricsData, timelineData, valueConfig, roiResult, currentValue, currentInvestment, currentROI, expansionCalc, investmentPerProvider]);
+  }, [providers, encounters, utilizationRate, months, metricsData, timelineData, valueConfig, roiResult, currentValue, expansionCalc]);
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -590,13 +578,13 @@ export default function ExpandResults({
             <span className="text-xs text-[#9CA3AF]">Proven results</span>
           </div>
           
-          <div className="bg-[#1e293b] rounded-xl p-6 text-center" data-testid="card-roi">
+          <div className="bg-[#1e293b] rounded-xl p-6 text-center" data-testid="card-value-per-provider">
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mx-auto mb-3">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <span className="text-3xl font-bold text-white">{currentROI.toFixed(1)}x</span>
-            <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wide mt-1">ROI</span>
-            <span className="text-xs text-neutral-500">${(investmentPerProvider * providers * 12).toLocaleString()}/yr investment</span>
+            <span className="text-3xl font-bold text-white">{formatCurrency(valuePerProvider)}</span>
+            <span className="block text-xs font-medium text-neutral-400 uppercase tracking-wide mt-1">Value/Provider</span>
+            <span className="text-xs text-neutral-500">Based on {providers} providers</span>
           </div>
           
           <div className={`rounded-xl p-6 text-center ${expansionCalc ? 'bg-blue-50 border border-blue-200' : 'bg-neutral-50 border border-neutral-200'}`} data-testid="card-expansion">
@@ -855,39 +843,20 @@ export default function ExpandResults({
                   <span className="text-xs text-[#9CA3AF]">Most organizations reach 75-85% at maturity</span>
                 </div>
                 
-                <div>
-                  <label className="text-sm text-[#6B7280] block mb-1">Investment ($/provider/month)</label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#6B7280]">$</span>
-                    <input
-                      type="number"
-                      value={investmentPerProvider}
-                      onChange={(e) => setInvestmentPerProvider(e.target.value ? parseInt(e.target.value) : EXPAND_ROI_DEFAULTS.investmentPerProvider)}
-                      placeholder="250"
-                      min={1}
-                      className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
-                      data-testid="input-investment"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           
           {expansionCalc && (
             <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 rounded-lg">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div className="text-center">
                   <span className="block text-2xl font-bold text-blue-600">{formatCurrency(expansionCalc.projectedValue)}</span>
                   <span className="text-xs text-[#6B7280] uppercase">Projected Annual Value</span>
                 </div>
                 <div className="text-center">
                   <span className="block text-2xl font-bold text-emerald-600">+{formatCurrency(expansionCalc.expansionValue)}</span>
-                  <span className="text-xs text-[#6B7280] uppercase">Expansion Value</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-bold text-[#EA2C00]">{expansionCalc.projectedROI.toFixed(1)}x</span>
-                  <span className="text-xs text-[#6B7280] uppercase">Projected ROI</span>
+                  <span className="text-xs text-[#6B7280] uppercase">Additional Value from Expansion</span>
                 </div>
               </div>
               
@@ -910,13 +879,9 @@ export default function ExpandResults({
             <Info className="w-4 h-4 text-[#6B7280]" />
             <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Methodology</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm text-[#6B7280]">
-            <div>wRVU at ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} (Medicare blended)</div>
-            <div>{Math.round(EXPAND_ROI_DEFAULTS.wrvuAttribution * 100)}% attribution to Abridge</div>
-            <div className="flex items-center gap-2">
-              Investment: ${investmentPerProvider}/provider/month
-              <span className="text-xs text-blue-600">(editable above)</span>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-[#6B7280]">
+            <div>wRVU valued at ${EXPAND_ROI_DEFAULTS.dollarPerWRVU} (Medicare blended conversion factor)</div>
+            <div>{Math.round(EXPAND_ROI_DEFAULTS.wrvuAttribution * 100)}% attribution to Abridge (conservative)</div>
           </div>
         </div>
         

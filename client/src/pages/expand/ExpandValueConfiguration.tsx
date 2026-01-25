@@ -426,28 +426,14 @@ export default function ExpandValueConfiguration({
                 )}
               </div>
               
-              <div className="border-t border-neutral-200 pt-4 space-y-3">
+              <div className="border-t border-neutral-200 pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-[#1F2937]">Total Hard Value</span>
-                  <span className="font-bold text-lg text-emerald-600">{formatCurrency(roiResult.tier1HardValue)}</span>
+                  <span className="font-semibold text-[#1F2937]">Annual Value Created</span>
+                  <span className="font-bold text-2xl text-emerald-600">{formatCurrency(roiResult.tier1HardValue)}</span>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#6B7280]">Investment</span>
-                  <span className="text-sm text-[#6B7280]">-{formatCurrency(roiResult.investment)}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-[#1F2937]">Net Value</span>
-                  <span className={`font-bold ${roiResult.netValue >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                    {formatCurrency(roiResult.netValue)}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-200">
-                  <span className="font-semibold text-[#1F2937]">ROI</span>
-                  <span className="font-bold text-2xl text-[#EA2C00]">{roiResult.roi.toFixed(1)}x</span>
-                </div>
+                <p className="text-xs text-[#9CA3AF] mt-2">
+                  This is the defensible annual value based on your metrics and how you're converting that value.
+                </p>
               </div>
               
               {roiResult.warnings.length > 0 && (
@@ -484,7 +470,7 @@ export default function ExpandValueConfiguration({
             className="bg-[#EA2C00] hover:bg-[#d12700] text-white px-8 py-3 text-lg rounded-lg"
             data-testid="button-continue"
           >
-            See Your Full ROI Story
+            See Your Results
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         </div>

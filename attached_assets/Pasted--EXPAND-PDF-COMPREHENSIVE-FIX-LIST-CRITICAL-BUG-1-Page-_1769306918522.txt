@@ -1,0 +1,156 @@
+## EXPAND PDF - COMPREHENSIVE FIX LIST
+
+### CRITICAL BUG 1: Page 2 is completely blank
+The PDF has a completely blank Page 2. This is a page break issue - content from Page 1 is overflowing and creating an empty page. Fix the page break logic so content flows properly without blank pages.
+
+### CRITICAL BUG 2: Investment calculation is wrong on Expansion page
+Current State shows Investment: $150K/yr (correct for 50 providers × $250/mo × 12)
+Full Scale shows Investment: $38K/yr (WRONG - should be $450K/yr for 150 providers)
+
+The formula should be: targetProviders × costPerProvider × 12
+Fix: 150 providers × $250/mo × 12 = $450,000/yr
+
+### CRITICAL BUG 3: No trend charts anywhere
+The user enters monthly data (Baseline, M1, M2, M3, M4, M5...) but NO trend charts are being rendered in the PDF.
+
+For EACH metric that has trend data, add a line chart showing:
+- X-axis: Baseline, M1, M2, M3, M4, M5 (or however many months)
+- Y-axis: The metric value
+- Line connecting all data points
+- Baseline point in orange/red
+- Current (latest) point larger and highlighted in green
+- Below the chart: "Baseline: X.XX → Current: Y.YY = +Z.ZZ (N%)"
+- Trend indicator: "↗ Consistent improvement" or "→ Stable" or "↘ Declining"
+
+The chart should be ~80px tall and span the full width of the metric card.
+
+Example for wRVU:
+YOUR TREND (5 months)
+2.50 ┤                                    ●────
+│                          ●─────────
+2.40 ┤                ●─────────
+│      ●─────────
+2.30 ●──────
+└───BL───M1───M2───M3───M4───M5
+Baseline: 2.30 → Month 5: 2.50 = +0.20 (9% lift)
+↗ Consistent improvement
+Copy
+### CRITICAL BUG 4: Journey chart is too simple
+Current chart just shows three dots (Before, Today, Full Scale) with barely visible lines.
+
+Rebuild the journey chart to show:
+1. More data points along the actual timeline:
+   - Before (baseline, $0 value)
+   - Month 2-3 (early adoption)
+   - TODAY (current position) - RED/ORANGE DOT, prominent, labeled "You are here"
+   - Month 12 projection
+   - Month 24 projection
+   - Full Scale
+
+2. Two lines:
+   - SOLID GREEN line for actual/measured results (Before → Today)
+   - DASHED BLUE line for projected growth (Today → Full Scale)
+
+3. Fill the area under the green line with light green shading
+
+4. Labels at key points:
+   - "Before" with "Baseline" below
+   - "TODAY" with value and provider count below, RED color
+   - "Full Scale" with value and provider count below, GREEN color
+
+5. Y-axis labels showing dollar values
+6. X-axis labels showing time progression
+
+### FIX 5: Add ROI context when below 1.0x
+When ROI is less than 1.0x, add a contextual note:
+0.8x ROI - EARLY STAGE
+At 5 months and 55% utilization, you haven't yet reached break-even. This is common for early deployments. Here's the path forward:
+
+Increase utilization from 55% → 70%: ROI improves to ~1.0x
+Increase utilization from 55% → 80%: ROI improves to ~1.2x
+Add time conversion (patient access): Could add $50-100K annually
+
+The foundation is solid. The efficiency gains and quality improvements are real. The ROI math improves as utilization scales.
+Copy
+### FIX 6: Make page density consistent
+Every page should be dense and filled with useful content. No half-empty pages.
+
+Page 1 (Executive Summary): Good density, keep as is
+Page 2: Should NOT be blank - fix page break
+Pages 3-4 (Metric Deep Dives): Add trend charts to fill space, ensure 2-3 metrics per page
+Page 5 (What We're Seeing): Expand the optimization opportunities with more detail
+Page 6 (Expansion): Add more context about the scaling assumptions
+Page 7 (Methodology): Good, keep as is
+
+### FIX 7: Improve "What We're Seeing" section
+Current optimization opportunities are too sparse. Expand each one:
+
+UTILIZATION FOCUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current: 55%          Target: 80-85%          Gap: 25-30 pp
+POTENTIAL VALUE: +$45K annually
+WHY THIS MATTERS:
+Utilization is the highest-leverage optimization available. Every encounter
+documented with Abridge generates value; those documented without it don't.
+At 55%, nearly half your potential value is unrealized.
+WHAT TO DO:
+
+Identify providers below 50% - what are their specific barriers?
+Check for workflow friction: mobile app issues, specific visit types,
+template problems
+Consider a focused 30-day utilization push with weekly check-ins
+Target: 5 percentage points per month improvement
+
+Copy
+### FIX 8: Metric cards should show value contribution
+For metrics that contribute to hard value (like wRVU), show the dollar amount prominently in the card header:
+┌─ wRVU PER ENCOUNTER ─────────────────────────────────────── $118K ─┐
+Copy
+For efficiency metrics (time, pajama time, chart closure), show the efficiency gain:
+┌─ TIME IN NOTES ────────────────────────────────── 4,171 hrs/year ─┐
+Copy
+### FIX 9: Add "Bottom Line" summary on What We're Seeing page
+After the optimization opportunities, add a summary:
+THE BOTTOM LINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Five months in, you're building a foundation:
+
+$118K in hard value from wRVU improvement
+4,171 hours of documentation time returned annually
+Providers getting 6 fewer hours of homework per week
+Chart closure up 13 percentage points
+
+ROI is currently 0.8x - below break-even. But at 55% utilization, you're
+capturing barely half the potential. The path to 1.5x+ ROI is clear:
+
+Push utilization to 75% (+$50K value, gets you to 1.1x ROI)
+Validate and maintain wRVU gains (currently your biggest driver)
+Consider converting some time savings to patient access
+
+The metrics are moving in the right direction. Now it's about optimizing.
+Copy
+### FIX 10: Fix page numbering
+The PDF shows "Page 1 of 6" on Page 2, and the numbering is inconsistent throughout. Make sure:
+- Page 1 = Executive Summary (shows "Page 1 of X")
+- Each subsequent page increments correctly
+- Total page count is accurate
+
+### FIX 11: Ensure all data actually flows through
+Several values appear to be hardcoded or not pulling from the actual user inputs:
+- Time saved shows "7 min/encounter" on one page and "4,171 hours/year" - these should be consistent and derived from the same calculation
+- Make sure Before/After values match what the user actually entered
+- Make sure encounter counts, utilization %, etc. all flow through correctly
+
+### SUMMARY OF REQUIRED CHANGES:
+1. ✗ Fix blank Page 2
+2. ✗ Fix investment calculation on expansion page
+3. ✗ Add trend charts to every metric (when trend data exists)
+4. ✗ Rebuild journey chart with more detail
+5. ✗ Add ROI context when below 1.0x
+6. ✗ Fill all pages densely - no half-empty pages
+7. ✗ Expand optimization opportunities section
+8. ✗ Show value/efficiency prominently in metric headers
+9. ✗ Add "Bottom Line" summary
+10. ✗ Fix page numbering
+11. ✗ Verify all data flows through correctly
