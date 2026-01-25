@@ -77,26 +77,6 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
             </div>
           </div>
 
-          {/* Inpatient - Coming Soon */}
-          <div className="relative bg-white rounded-2xl border border-neutral-200 p-5 md:p-8 opacity-70">
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-3 md:mb-4">
-              <Users className="w-6 h-6 md:w-7 md:h-7 text-neutral-400" />
-            </div>
-            <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-2">Inpatient</h3>
-            <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-full mb-3 tracking-wide">
-              COMING SOON
-            </span>
-            <p className="text-sm text-[#6B7280] mb-6 blur-[3px]">
-              Analyze your inpatient deployment results.
-            </p>
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-white/60 rounded-2xl flex items-center justify-center">
-              <span className="bg-neutral-100 px-4 py-2 rounded-full text-xs font-semibold text-neutral-600">
-                Coming Q4 2025
-              </span>
-            </div>
-          </div>
-
           {/* Nursing - Coming Soon */}
           <div className="relative bg-white rounded-2xl border border-neutral-200 p-5 md:p-8 opacity-70">
             <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-3 md:mb-4">
@@ -113,6 +93,26 @@ export default function ExpandSettingSelection({ onNext, onExplore, onBack }: Ex
             <div className="absolute inset-0 bg-white/60 rounded-2xl flex items-center justify-center">
               <span className="bg-neutral-100 px-4 py-2 rounded-full text-xs font-semibold text-neutral-600">
                 Coming Q2 2025
+              </span>
+            </div>
+          </div>
+
+          {/* Inpatient - Coming Soon */}
+          <div className="relative bg-white rounded-2xl border border-neutral-200 p-5 md:p-8 opacity-70">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-neutral-100 flex items-center justify-center mb-3 md:mb-4">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-neutral-400" />
+            </div>
+            <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-2">Inpatient</h3>
+            <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-500 text-xs font-semibold rounded-full mb-3 tracking-wide">
+              COMING SOON
+            </span>
+            <p className="text-sm text-[#6B7280] mb-6 blur-[3px]">
+              Analyze your inpatient deployment results.
+            </p>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-white/60 rounded-2xl flex items-center justify-center">
+              <span className="bg-neutral-100 px-4 py-2 rounded-full text-xs font-semibold text-neutral-600">
+                Coming Q4 2025
               </span>
             </div>
           </div>
