@@ -694,7 +694,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
       {/* Value breakdown */}
       <SectionHeader title="Value Breakdown" color={c.green} />
       
-      <View style={s.card}>
+      <View style={s.card} wrap={false}>
         <View style={s.cardHeaderGreen}>
           <View>
             <Text style={s.cardTitle}>Core Financial Value</Text>
@@ -716,7 +716,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
       </View>
       
       {data.tier2Items.length > 0 && (
-        <View style={s.card}>
+        <View style={s.card} wrap={false}>
           <View style={s.cardHeader}>
             <View>
               <Text style={s.cardTitle}>Operational Efficiency</Text>
@@ -734,7 +734,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
         </View>
       )}
       
-      <View style={s.takeaway}>
+      <View style={s.takeaway} wrap={false}>
         <Text style={s.takeawayLabel}>Key Takeaway</Text>
         <Text style={s.takeawayText}>
           This report reflects your current deployment state. As providers become more familiar with the tool and utilization increases, you'll have more data to refine these measurements and track progress over time.
@@ -919,7 +919,7 @@ const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFD
     
     <SectionHeader title="Early Indicators" color={c.blue} />
     
-    <View style={s.twoCol}>
+    <View style={s.twoCol} wrap={false}>
       <View style={s.col}>
         <View style={[s.card, { marginBottom: 0 }]}>
           <View style={[s.cardHeader, { backgroundColor: c.greenLight, borderBottomColor: c.green }]}>
@@ -979,7 +979,7 @@ const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFD
     ))}
     
     {data.utilizationRate < 70 && (
-      <View style={[s.callout, { backgroundColor: c.amberLight, borderLeftColor: c.amber }]}>
+      <View style={[s.callout, { backgroundColor: c.amberLight, borderLeftColor: c.amber }]} wrap={false}>
         <Text style={[s.calloutTitle, { color: c.amber }]}>Context Note</Text>
         <Text style={[s.calloutText, { fontSize: 7 }]}>
           At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months into deployment, your organization is still building adoption patterns. These early metrics will become more stable as usage matures.
@@ -987,7 +987,7 @@ const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFD
       </View>
     )}
     
-    <View style={s.takeaway}>
+    <View style={s.takeaway} wrap={false}>
       <Text style={s.takeawayLabel}>Where You Are</Text>
       <Text style={s.takeawayText}>
         {data.utilizationRate < 70 
@@ -1015,14 +1015,14 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
     <Page size="A4" style={s.page}>
       <Header title="Expansion Opportunity" />
       
-      <View style={s.callout}>
+      <View style={s.callout} wrap={false}>
         <Text style={s.calloutTitle}>Understanding Scale</Text>
         <Text style={s.calloutText}>
           Based on your current per-provider metrics, expanding to additional providers would proportionally increase measured value. At target utilization, each provider would contribute approximately {fmt(valuePerProvider)} annually.
         </Text>
       </View>
       
-      <View style={s.heroRow}>
+      <View style={s.heroRow} wrap={false}>
         <View style={s.heroCardPrimary}>
           <Text style={s.heroValueGreen}>{fmt(expansion.projectedValue)}</Text>
           <Text style={s.heroLabel}>Projected Annual Value</Text>
@@ -1042,7 +1042,7 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
       
       <SectionHeader title="Expansion Calculation" color={c.green} />
       
-      <View style={s.card}>
+      <View style={s.card} wrap={false}>
         <View style={s.cardBody}>
           <View style={s.row}>
             <Text style={s.rowLabel}>Current annual value</Text>
@@ -1071,7 +1071,7 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
       
       <SectionHeader title="Current vs. Full Scale" color={c.blue} />
       
-      <View style={s.twoCol}>
+      <View style={s.twoCol} wrap={false}>
         <View style={s.col}>
           <View style={s.card}>
             <View style={s.cardHeader}>
@@ -1100,7 +1100,7 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
         </View>
       </View>
       
-      <View style={s.takeaway}>
+      <View style={s.takeaway} wrap={false}>
         <Text style={s.takeawayLabel}>Key Insight</Text>
         <Text style={s.takeawayText}>
           These projections are based on your current per-provider performance. Actual results at scale will depend on factors like specialty mix, patient volume, and workflow adoption across different departments.
@@ -1120,13 +1120,13 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; p
   <Page size="A4" style={s.page}>
     <Header title="Methodology" />
     
-    <View style={[s.callout, { marginBottom: 8 }]}>
+    <View style={[s.callout, { marginBottom: 8 }]} wrap={false}>
       <Text style={s.calloutText}>
         This section explains how each calculation was derived. All figures are based on either your input data or established industry benchmarks. The methodology is documented here so you can review and adjust assumptions as needed.
       </Text>
     </View>
     
-    <View style={s.twoCol}>
+    <View style={s.twoCol} wrap={false}>
       <View style={s.col}>
         <View style={s.card}>
           <View style={s.cardHeader}><Text style={s.cardTitle}>Your Inputs</Text></View>
@@ -1155,7 +1155,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; p
     
     <SectionHeader title="Reference Benchmarks" color={c.blue} />
     
-    <View style={s.twoCol}>
+    <View style={s.twoCol} wrap={false}>
       <View style={s.col}>
         <View style={[s.card, { backgroundColor: c.blueLight }]}>
           <View style={s.cardBody}>
@@ -1180,7 +1180,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; p
     
     <SectionHeader title="What We Don't Include" color={c.medium} />
     
-    <View style={s.card}>
+    <View style={s.card} wrap={false}>
       <View style={s.cardBody}>
         <View style={{ flexDirection: "row", gap: 8 }}>
           <View style={{ flex: 1 }}>
@@ -1195,7 +1195,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; p
       </View>
     </View>
     
-    <View style={s.takeaway}>
+    <View style={s.takeaway} wrap={false}>
       <Text style={s.takeawayLabel}>About These Estimates</Text>
       <Text style={s.takeawayText}>
         These calculations use Medicare conversion factors and conservative attribution percentages. Organizations with a higher proportion of commercial payers or different specialty mixes may see different results. We recommend validating these assumptions against your specific payer mix.
