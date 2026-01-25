@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ArrowLeft, ArrowRight, DollarSign, Clock, Heart, AlertTriangle, Info, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type DeploymentData,
   type MetricsData,
@@ -89,23 +89,16 @@ export default function ExpandValueConfiguration({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]" data-testid="expand-value-configuration">
-      <GlobalHeader 
-        pageName="Value Configuration" 
-        currentStep={4} 
-        totalSteps={5} 
-        onLogoClick={onBackToJourney} 
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={4}
+        totalSteps={5}
+        stepName="Value Config"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
       
-      <div className="pt-20 px-6 pb-8 max-w-4xl mx-auto">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-[#6B7280] hover:text-[#1F2937] mb-6 transition-colors"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Data Entry
-        </button>
-        
+      <div className="py-6 md:py-8 px-6 pb-8 max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold text-[#1F2937] mb-2">
             How Are You Capturing Value?

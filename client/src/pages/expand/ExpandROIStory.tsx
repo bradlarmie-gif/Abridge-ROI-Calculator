@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight, ArrowLeft, AlertTriangle, Clock, DollarSign, Moon, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
 import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS, formatCurrency } from "@/lib/expandRoiCalculator";
 
@@ -74,19 +74,16 @@ export default function ExpandROIStory({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="ROI Story" currentStep={6} totalSteps={7} onLogoClick={onBackToJourney} />
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={6}
+        totalSteps={7}
+        stepName="ROI Story"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-10">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
+      <main className="max-w-4xl mx-auto px-6 py-6 md:py-8 pb-10">
         {/* Title */}
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">

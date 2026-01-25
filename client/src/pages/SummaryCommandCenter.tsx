@@ -23,7 +23,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type CareSettingType, CARE_SETTING_LABELS, QUALITATIVE_CONFIG, SETTING_CONFIG } from "@/lib/SETTING_CONFIG";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import { type ModelResults } from "@/pages/ModelBuilder";
@@ -741,40 +741,43 @@ export default function SummaryCommandCenter({
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <GlobalHeader pageName="Your ROI Model" currentStep={6} totalSteps={6} onLogoClick={onBackToJourney} />
+      <UnifiedHeader
+        pathType="explore"
+        currentStep={6}
+        totalSteps={6}
+        stepName="Your ROI Model"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      {/* Sticky Header Bar */}
-      <div className="fixed top-[72px] left-0 right-0 z-40 bg-white border-b border-[#E5E7EB] shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#6B7280] hover:text-[#EA2C00] transition-colors"
-              data-testid="button-back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-            
-            <div className="hidden md:flex items-center gap-2 text-[14px] ml-4">
-              <span className="px-2.5 py-1 bg-[#F3F4F6] rounded-md text-[#111827] font-medium">
-                {CARE_SETTING_LABELS[activeSetting]}
-              </span>
-              <span className="text-[#D1D5DB]">•</span>
-              <span className="text-[#6B7280]">{pilotUnits} {config.unitNamePlural}</span>
-              <span className="text-[#D1D5DB]">•</span>
-              <span className="font-semibold text-emerald-600">{formatCurrency(netValue)} net value</span>
-              <span className="text-[#D1D5DB]">•</span>
-              <span className="font-semibold text-emerald-600">{roiMultiple.toFixed(1)}x ROI</span>
-            </div>
+      {/* Sticky Context Bar */}
+      <div className="sticky top-14 sm:top-16 left-0 right-0 z-40 bg-white border-b border-[#E5E7EB] shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2">
+          <div className="hidden md:flex items-center gap-2 text-[14px] min-w-0 flex-1">
+            <span className="px-2.5 py-1 bg-[#F3F4F6] rounded-md text-[#111827] font-medium flex-shrink-0">
+              {CARE_SETTING_LABELS[activeSetting]}
+            </span>
+            <span className="text-[#D1D5DB]">•</span>
+            <span className="text-[#6B7280] flex-shrink-0">{pilotUnits} {config.unitNamePlural}</span>
+            <span className="text-[#D1D5DB]">•</span>
+            <span className="font-semibold text-emerald-600 flex-shrink-0">{formatCurrency(netValue)} net value</span>
+            <span className="text-[#D1D5DB]">•</span>
+            <span className="font-semibold text-emerald-600 flex-shrink-0">{roiMultiple.toFixed(1)}x ROI</span>
           </div>
           
-          <div className="flex items-center gap-3">
+          {/* Mobile summary */}
+          <div className="flex md:hidden items-center gap-2 text-[13px] min-w-0 flex-1">
+            <span className="font-semibold text-emerald-600">{formatCurrency(netValue)}</span>
+            <span className="text-[#D1D5DB]">•</span>
+            <span className="font-semibold text-emerald-600">{roiMultiple.toFixed(1)}x</span>
+          </div>
+          
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setManageModelSheetOpen(true)}
-              className="gap-2 border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
+              className="gap-1.5 border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
               data-testid="button-manage-model"
             >
               <Pencil className="w-4 h-4" />
@@ -784,7 +787,7 @@ export default function SummaryCommandCenter({
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 pt-[144px] pb-12 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-12 space-y-6 sm:space-y-8">
         
         {/* ============ HERO ROI SECTION ============ */}
         <section className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-2xl p-8 md:p-10 text-white">

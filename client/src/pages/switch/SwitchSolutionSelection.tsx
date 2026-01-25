@@ -1,6 +1,6 @@
-import { ArrowLeft, ArrowRight, Mic, Users, Check } from "lucide-react";
+import { ArrowRight, Mic, Users, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import type { SwitchState } from "./SwitchFlow";
 
 type SolutionType = "ambient-ai" | "human-scribes";
@@ -51,19 +51,16 @@ export default function SwitchSolutionSelection({
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <GlobalHeader pageName="Switch" onLogoClick={onBackToJourney} />
+      <UnifiedHeader 
+        pathType="switch"
+        currentStep={1}
+        totalSteps={2}
+        stepName="Select Solution"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <main className="max-w-2xl mx-auto px-6 pt-[96px] pb-12">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
+      <main className="max-w-2xl mx-auto px-6 py-6 md:py-8 pb-12">
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
             What solution are you using today?

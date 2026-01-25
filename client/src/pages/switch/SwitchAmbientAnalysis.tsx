@@ -1,7 +1,7 @@
 import { useState, ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp, BarChart3, Clock, DollarSign, Moon, FileCheck, Heart, Lightbulb, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Users, ClipboardList, Shield, ChevronDown, ChevronUp, BarChart3, Clock, DollarSign, Moon, FileCheck, Heart, Lightbulb, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GlobalHeader } from '@/components/GlobalHeader';
+import { UnifiedHeader, UnifiedHeaderSpacer } from '@/components/UnifiedHeader';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, MetricTier } from './SwitchAmbientFlow';
 
 interface DriverItem {
@@ -132,19 +132,16 @@ export default function SwitchAmbientAnalysis({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <GlobalHeader pageName="Switch Analysis" currentStep={currentStep} totalSteps={totalSteps} onLogoClick={onBackToJourney} />
+      <UnifiedHeader 
+        pathType="switch"
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        stepName="Analysis"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
       
-      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 pt-[96px] pb-12">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
+      <main className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-10 py-6 md:py-8 pb-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             The gap analysis

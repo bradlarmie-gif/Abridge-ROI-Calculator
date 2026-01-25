@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { LiveReceipt } from "@/components/LiveReceipt";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { Button } from "@/components/ui/button";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import {
@@ -2436,34 +2436,25 @@ export default function ObjectiveSelectionScreen({
   };
   const currentStep = stepMap[currentPage] || 1;
   
+  const stepNames = ["Care Setting", "Strategic Priorities"];
+  const stepName = stepNames[currentStep - 1] || "";
+  
   return (
     <div className="min-h-screen flex flex-col relative font-sans bg-neutral-50">
-      <GlobalHeader 
-        pageName="Explore" 
-        currentStep={currentPage !== "orientation" ? currentStep : undefined} 
-        totalSteps={currentPage !== "orientation" ? 4 : undefined}
-        onLogoClick={onBackToJourney}
+      <UnifiedHeader 
+        pathType="explore"
+        currentStep={currentStep}
+        totalSteps={6}
+        stepName={stepName}
+        onBack={currentPage === "orientation" ? onBackToJourney : currentPage === "setting" ? () => setCurrentPage("orientation") : currentPage === "priorities" ? () => setCurrentPage("setting") : onBackToJourney}
+        showBack={true}
       />
+      <UnifiedHeaderSpacer />
 
       {/* Content */}
       <div
-        className={`relative z-10 flex-1 overflow-y-auto pt-[96px] ${currentPage === "orientation" ? "" : "pb-32 lg:pb-28"}`}
+        className={`relative z-10 flex-1 overflow-y-auto ${currentPage === "orientation" ? "" : "pb-32 lg:pb-28"}`}
       >
-        {/* Back button in content - only show on orientation and setting pages */}
-        {onBackToJourney && (currentPage === "orientation" || currentPage === "setting") && (
-          <div className="max-w-[1200px] mx-auto px-6 md:px-10 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBackToJourney}
-              className="text-slate-500 flex items-center gap-1 -ml-2"
-              data-testid="button-back-to-journey"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-          </div>
-        )}
         {/* PAGE 0 — ORIENTATION */}
         {currentPage === "orientation" && (
           <div className="relative min-h-full">

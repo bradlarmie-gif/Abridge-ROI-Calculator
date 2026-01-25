@@ -1,6 +1,6 @@
-import { ArrowLeft, ArrowRight, Users, Settings, Clock, MapPin, AlertTriangle, Check } from 'lucide-react';
+import { ArrowRight, Users, Settings, Clock, MapPin, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GlobalHeader } from '@/components/GlobalHeader';
+import { UnifiedHeader, UnifiedHeaderSpacer } from '@/components/UnifiedHeader';
 import { ScribeData, ScribeCalculations } from './SwitchScribesFlow';
 
 interface SwitchScribesHiddenCostsProps {
@@ -40,27 +40,16 @@ export default function SwitchScribesHiddenCosts({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <GlobalHeader 
-        pageName="Switch" 
-        currentStep={currentStep} 
+      <UnifiedHeader 
+        pathType="switch"
+        currentStep={currentStep}
         totalSteps={totalSteps}
-        onLogoClick={onBackToJourney}
+        stepName="Hidden Costs"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
       
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10 pt-[90px]">
-        <div className="mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="text-slate-500 flex items-center gap-1 -ml-2"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        </div>
-        
+      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-6 md:py-8">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             The costs beyond payroll

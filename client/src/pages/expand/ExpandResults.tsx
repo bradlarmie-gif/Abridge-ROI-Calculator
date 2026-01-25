@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import type { DeploymentData, MetricType, MetricsData, TimelineData } from "./ExpandFlow";
@@ -163,35 +163,26 @@ export default function ExpandResults({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]" data-testid="expand-results">
-      <GlobalHeader 
-        pageName="Your Results" 
-        currentStep={5} 
-        totalSteps={5} 
-        onLogoClick={onBackToJourney} 
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={5}
+        totalSteps={5}
+        stepName="Your Results"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
       
-      <div className="pt-20 px-6 pb-8 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-[#6B7280] hover:text-[#1F2937] transition-colors"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExportPDF} data-testid="button-export-pdf">
-              <FileText className="w-4 h-4 mr-1" /> Export PDF
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleShareEmail} data-testid="button-share-email">
-              <Mail className="w-4 h-4 mr-1" /> Share
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleCopyLink} data-testid="button-copy-link">
-              <Link className="w-4 h-4 mr-1" /> Copy Link
-            </Button>
-          </div>
+      <div className="py-6 md:py-8 px-6 pb-8 max-w-5xl mx-auto">
+        <div className="flex items-center justify-end mb-6 gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={handleExportPDF} data-testid="button-export-pdf">
+            <FileText className="w-4 h-4 mr-1" /> Export PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleShareEmail} data-testid="button-share-email">
+            <Mail className="w-4 h-4 mr-1" /> Share
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleCopyLink} data-testid="button-copy-link">
+            <Link className="w-4 h-4 mr-1" /> Copy Link
+          </Button>
         </div>
         
         <div className="text-center mb-8">

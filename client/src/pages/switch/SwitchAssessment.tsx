@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
   calculateSwitchGap, 
@@ -51,25 +51,16 @@ export default function SwitchAssessment({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader 
-        pageName="Value Assessment" 
+      <UnifiedHeader 
+        pathType="switch"
         currentStep={1} 
-        totalSteps={2} 
-        onLogoClick={onBackToJourney} 
+        totalSteps={2}
+        stepName="Value Assessment"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
 
-      <main className="max-w-5xl mx-auto px-4 md:px-6 pt-[88px] pb-12 md:pb-16">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-
+      <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 md:mb-3" data-testid="text-page-title">
             Value Realization Assessment

@@ -16,7 +16,7 @@ import {
   Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import type { 
   DeploymentData, 
   MetricType, 
@@ -953,22 +953,16 @@ export default function ExpandDataEntry({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Enter Your Data" currentStep={3} totalSteps={5} onLogoClick={onBackToJourney} />
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={3}
+        totalSteps={5}
+        stepName="Enter Data"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <div className="max-w-5xl mx-auto px-6 pt-[96px]">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-6 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-      </div>
-
-      <main className="max-w-3xl mx-auto px-6 pb-10">
+      <main className="max-w-3xl mx-auto px-6 py-6 md:py-8 pb-10">
         {/* Title */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">

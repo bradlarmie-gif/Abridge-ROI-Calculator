@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -72,25 +72,16 @@ export default function SwitchFullAnalysis({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader 
-        pageName="Gap Analysis" 
+      <UnifiedHeader 
+        pathType="switch"
         currentStep={2} 
-        totalSteps={2} 
-        onLogoClick={onBackToJourney} 
+        totalSteps={2}
+        stepName="Gap Analysis"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
 
-      <main className="max-w-5xl mx-auto px-4 md:px-6 pt-[88px] pb-12 md:pb-16">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-4 md:mb-6 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to assessment
-        </Button>
-
+      <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
             Your Gap Analysis

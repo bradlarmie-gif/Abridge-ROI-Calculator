@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import {
   type CareSettingType,
@@ -138,28 +138,18 @@ export default function BaselineSetup({
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <GlobalHeader
-        pageName="Your Organization"
+      <UnifiedHeader
+        pathType="explore"
         currentStep={3}
         totalSteps={6}
-        onLogoClick={onBackToJourney}
+        stepName="Your Organization"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
 
-      <div className="pt-[96px] pb-16">
-        {/* Back Button */}
-        <div className="max-w-[900px] mx-auto px-6 md:px-12 mb-8">
-          <button
-            onClick={onBack}
-            className="inline-flex items-center gap-2 text-[15px] font-medium text-[#6B7280] transition-colors hover:text-[#EA2C00]"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
-        </div>
-
+      <div className="py-8 sm:py-12">
         {/* Centered Page Header */}
-        <div className="text-center max-w-[700px] mx-auto px-6 mb-16">
+        <div className="text-center max-w-[700px] mx-auto px-6 mb-12 sm:mb-16">
           <div className="inline-block text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-3 py-1.5 rounded-md mb-6">
             Step 3 of 6
           </div>

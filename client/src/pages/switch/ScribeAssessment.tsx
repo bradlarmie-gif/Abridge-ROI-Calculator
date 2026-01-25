@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type ScribeInputs,
   calculateScribeGap,
@@ -32,21 +32,16 @@ export default function ScribeAssessment({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <GlobalHeader pageName="Scribe Program Analysis" currentStep={1} totalSteps={2} />
+      <UnifiedHeader 
+        pathType="switch"
+        currentStep={1} 
+        totalSteps={2}
+        stepName="Scribe Analysis"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <main className="pt-[88px] pb-8 px-4 md:px-6 lg:px-8 max-w-5xl mx-auto">
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="-ml-2"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
-          </Button>
-        </div>
-
+      <main className="py-6 md:py-8 pb-8 px-4 md:px-6 lg:px-8 max-w-5xl mx-auto">
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-2">
             Scribe Program Analysis

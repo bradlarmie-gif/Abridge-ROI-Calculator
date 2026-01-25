@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import {
@@ -257,21 +257,16 @@ export default function InvestmentPage({
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <GlobalHeader pageName="Your Investment" currentStep={5} totalSteps={6} onLogoClick={onBackToJourney} />
+      <UnifiedHeader
+        pathType="explore"
+        currentStep={5}
+        totalSteps={6}
+        stepName="Your Investment"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <div className="pt-[96px] pb-16">
-        {/* Back Button */}
-        <div className="max-w-6xl mx-auto px-6 mb-6">
-          <button
-            onClick={onBack}
-            className="inline-flex items-center gap-2 text-[15px] font-medium text-[#6B7280] transition-colors hover:text-[#EA2C00]"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Value Drivers
-          </button>
-        </div>
-
+      <div className="py-8 sm:py-12 pb-16">
         {/* Centered Page Header */}
         <div className="text-center max-w-[700px] mx-auto px-6 mb-12">
           <div className="inline-block text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-3 py-1.5 rounded-md mb-6">

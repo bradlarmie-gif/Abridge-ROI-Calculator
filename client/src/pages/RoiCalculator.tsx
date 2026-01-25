@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import abridgeLogo from "@assets/abridge-logo-wordmark-black-onwhite_1767885563802.jpg";
 import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import { Badge } from "@/components/ui/badge";
@@ -1512,7 +1512,14 @@ export default function RoiCalculator({
         className="fixed bottom-[-5%] left-[-5%] w-[600px] md:w-[900px] lg:w-[1000px] pointer-events-none opacity-[0.01] rotate-180"
         style={{ zIndex: 0 }}
       />
-      <GlobalHeader pageName="Explore Calculator" />
+      <UnifiedHeader 
+        pathType="explore"
+        currentStep={6}
+        totalSteps={6}
+        stepName="Calculator"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
       {/* Tab Navigation */}
       <nav className="fixed top-[72px] left-0 right-0 z-40 bg-white border-b border-neutral-200">

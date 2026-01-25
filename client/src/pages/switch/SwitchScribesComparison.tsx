@@ -1,6 +1,6 @@
-import { ArrowLeft, Phone, Link2, Edit3, Check, X, Users, Clock, TrendingUp, DollarSign } from 'lucide-react';
+import { Phone, Link2, Edit3, Check, X, Users, Clock, TrendingUp, DollarSign, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GlobalHeader } from '@/components/GlobalHeader';
+import { UnifiedHeader, UnifiedHeaderSpacer } from '@/components/UnifiedHeader';
 import { ScribeData, ScribeCalculations } from './SwitchScribesFlow';
 
 interface SwitchScribesComparisonProps {
@@ -42,14 +42,16 @@ export default function SwitchScribesComparison({
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <GlobalHeader 
-        pageName="Switch" 
-        currentStep={currentStep} 
+      <UnifiedHeader 
+        pathType="switch"
+        currentStep={currentStep}
         totalSteps={totalSteps}
-        onLogoClick={onBackToJourney}
+        stepName="Comparison"
+        onBack={onBack}
       />
+      <UnifiedHeaderSpacer />
       
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-6 md:py-8">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-semibold text-slate-900 tracking-tight mb-3">
             The comparison

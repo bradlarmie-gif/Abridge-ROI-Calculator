@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, CheckCircle, TrendingUp, Rocket, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area, ComposedChart } from "recharts";
 import type { DeploymentData, MetricType, MetricsData, TimelineData } from "./ExpandFlow";
 import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS } from "@/lib/expandRoiCalculator";
@@ -425,22 +425,16 @@ export default function ExpandPerformanceDashboard({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Your Journey" currentStep={5} totalSteps={7} onLogoClick={onBackToJourney} />
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={5}
+        totalSteps={7}
+        stepName="Your Journey"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <div className="max-w-5xl mx-auto px-6 pt-[96px]">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-      </div>
-
-      <main className="max-w-5xl mx-auto px-6 pb-10">
+      <main className="max-w-5xl mx-auto px-6 py-6 md:py-8 pb-10">
         {/* Journey Overview Title */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">

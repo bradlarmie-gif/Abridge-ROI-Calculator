@@ -1,6 +1,6 @@
 import { ArrowRight, ArrowLeft, Stethoscope, Building2, Users, Heart, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
 interface ExpandSettingSelectionProps {
   onNext: () => void;
@@ -11,21 +11,17 @@ interface ExpandSettingSelectionProps {
 export default function ExpandSettingSelection({ onNext, onExplore, onBack }: ExpandSettingSelectionProps) {
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand" onLogoClick={onBack} />
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={1}
+        totalSteps={5}
+        stepName="Care Setting"
+        onBack={onBack}
+        showBack={!!onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <main className="max-w-4xl mx-auto px-6 pt-[96px] pb-16">
-        {onBack && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="text-slate-500 flex items-center gap-1 mb-8 -ml-2"
-            data-testid="button-back-to-journey"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        )}
+      <main className="max-w-4xl mx-auto px-6 py-6 md:py-8 pb-16">
         {/* Title */}
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">

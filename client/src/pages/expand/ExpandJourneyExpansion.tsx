@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { ArrowLeft, Share2, FileText, Mail, Link, Target, Lightbulb, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobalHeader } from "@/components/GlobalHeader";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceDot } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import type { DeploymentData, MetricType, MetricsData } from "./ExpandFlow";
@@ -337,20 +337,17 @@ export default function ExpandJourneyExpansion({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <GlobalHeader pageName="Expand Journey" currentStep={7} totalSteps={7} onLogoClick={onBackToJourney} />
+      <UnifiedHeader 
+        pathType="expand"
+        currentStep={7}
+        totalSteps={7}
+        stepName="Growth Trajectory"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <main className="max-w-5xl mx-auto px-6 pt-[96px] pb-10">
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="text-slate-500 flex items-center gap-1 -ml-2"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
+      <main className="max-w-5xl mx-auto px-6 py-6 md:py-8 pb-10">
+        <div className="flex items-center justify-end mb-8">
           <Button
             size="sm"
             variant="outline"
