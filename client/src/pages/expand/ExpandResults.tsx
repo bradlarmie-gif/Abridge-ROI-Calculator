@@ -961,19 +961,9 @@ export default function ExpandResults({
                 {isSharing ? (
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 ) : (
-                  <Send className="w-5 h-5 mr-2" />
+                  <Share2 className="w-5 h-5 mr-2" />
                 )}
-                {isSharing ? 'Sharing...' : 'Email Report'}
-              </Button>
-              
-              <Button 
-                variant="ghost"
-                onClick={handleCopyLink}
-                className="w-full sm:w-auto text-neutral-400"
-                data-testid="button-copy-link-bottom"
-              >
-                <Link className="w-4 h-4 mr-2" />
-                Copy Link
+                {isSharing ? 'Sharing...' : 'Share'}
               </Button>
             </div>
           </div>
