@@ -67,6 +67,8 @@ const METRIC_CONFIG = {
     unit: "wRVU/enc",
     benchmarkText: "Abridge customers typically see 3-9% lift",
     benchmarkWhisper: "Typical range: 1.8-2.8 wRVU/encounter",
+    benchmarkMin: 3,
+    benchmarkMax: 9,
     isPositiveGood: true,
     step: 0.01,
   },
@@ -79,6 +81,8 @@ const METRIC_CONFIG = {
     unit: "min",
     benchmarkText: "Average reduction: 3-5 min per encounter",
     benchmarkWhisper: "Typical: 2-12 min/encounter baseline",
+    benchmarkMin: 3,
+    benchmarkMax: 5,
     isPositiveGood: false,
     step: 0.1,
   },
@@ -91,6 +95,8 @@ const METRIC_CONFIG = {
     unit: "%",
     benchmarkText: "Typical improvement: 5-15 percentage points",
     benchmarkWhisper: "Typical: 40-95% same-day closure",
+    benchmarkMin: 5,
+    benchmarkMax: 15,
     isPositiveGood: true,
     step: 1,
   },
@@ -103,6 +109,8 @@ const METRIC_CONFIG = {
     unit: "avg level",
     benchmarkText: "Typical increase: 0.2-0.5 levels",
     benchmarkWhisper: "Typical average: 3.0-4.5",
+    benchmarkMin: 0.2,
+    benchmarkMax: 0.5,
     isPositiveGood: true,
     step: 0.01,
   },
@@ -115,6 +123,8 @@ const METRIC_CONFIG = {
     unit: "hrs/week",
     benchmarkText: "Typical reduction: 2-5 hours per week",
     benchmarkWhisper: "Typical: 5-15 hrs/week before Abridge",
+    benchmarkMin: 2,
+    benchmarkMax: 5,
     isPositiveGood: false,
     step: 0.1,
   },
@@ -127,6 +137,8 @@ const METRIC_CONFIG = {
     unit: "pts",
     benchmarkText: "Average improvement: 10-20 points",
     benchmarkWhisper: "Typical: 50-100 point scale",
+    benchmarkMin: 10,
+    benchmarkMax: 20,
     isPositiveGood: true,
     step: 1,
   },
@@ -680,16 +692,43 @@ function TrendEntry({
   );
 }
 
+// Benchmark status helper
+type BenchmarkStatus = "below" | "within" | "above";
+
+function getBenchmarkStatus(value: number | null, min: number, max: number): BenchmarkStatus {
+  if (value === null) return "below";
+  if (value < min) return "below";
+  if (value > max) return "above";
+  return "within";
+}
+
 // Benchmark display
 function BenchmarkCard({ 
   text, 
   current, 
-  isGood 
+  status 
 }: { 
   text: string; 
   current: string; 
-  isGood: boolean;
+  status: BenchmarkStatus;
 }) {
+  const statusConfig = {
+    below: {
+      label: "Building momentum",
+      color: "text-amber-700",
+    },
+    within: {
+      label: "Within expected range",
+      color: "text-emerald-700",
+    },
+    above: {
+      label: "Above typical range",
+      color: "text-blue-700",
+    },
+  };
+  
+  const config = statusConfig[status];
+  
   return (
     <div className="flex items-start gap-3 mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg">
       <BarChart3 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -698,11 +737,7 @@ function BenchmarkCard({
         <p className="text-sm text-blue-800 mt-1">{text}</p>
         <p className="text-sm text-blue-700 mt-1">
           You're at: <strong>{current}</strong> — 
-          {isGood ? (
-            <span className="text-emerald-700 ml-1">Within expected range</span>
-          ) : (
-            <span className="text-amber-700 ml-1">Building momentum</span>
-          )}
+          <span className={`${config.color} ml-1`}>{config.label}</span>
         </p>
       </div>
     </div>
@@ -928,7 +963,7 @@ export default function ExpandDataEntry({
                 <BenchmarkCard
                   text={config.benchmarkText}
                   current={`+${change?.toFixed(2)} levels`}
-                  isGood={change !== null && change >= 0.2}
+                  status={getBenchmarkStatus(change, config.benchmarkMin, config.benchmarkMax)}
                 />
               )}
             </div>
@@ -1070,7 +1105,7 @@ export default function ExpandDataEntry({
                 <BenchmarkCard
                   text={config.benchmarkText}
                   current={`+${change}pp same-day closure`}
-                  isGood={change !== null && change >= 5}
+                  status={getBenchmarkStatus(change, config.benchmarkMin, config.benchmarkMax)}
                 />
               )}
             </div>
@@ -1145,7 +1180,7 @@ export default function ExpandDataEntry({
               <BenchmarkCard
                 text={config.benchmarkText}
                 current={`${percentChange}% ${config.isPositiveGood ? "lift" : "reduction"}`}
-                isGood={percentChange !== null && percentChange >= 3}
+                status={getBenchmarkStatus(percentChange, config.benchmarkMin, config.benchmarkMax)}
               />
             )}
           </div>
