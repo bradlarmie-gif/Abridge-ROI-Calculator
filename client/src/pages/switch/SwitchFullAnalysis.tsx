@@ -127,6 +127,12 @@ export default function SwitchFullAnalysis({
           <div className="h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6B7280" }} />
                 <YAxis 
@@ -134,43 +140,72 @@ export default function SwitchFullAnalysis({
                   tick={{ fontSize: 12, fill: "#6B7280" }}
                 />
                 <Tooltip 
-                  formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb" }}
+                  formatter={(value: number, name: string) => [
+                    formatCurrency(value), 
+                    name === "abridge" ? "Abridge potential" : "Current trajectory"
+                  ]}
+                  contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff" }}
+                  labelStyle={{ fontWeight: 600, marginBottom: 4 }}
                 />
-                <Legend />
+                {/* Layer 1: Fill under Abridge line with soft gradient */}
                 <Area 
                   type="monotone" 
                   dataKey="abridge" 
                   stroke="none"
-                  fill="#f1f5f9"
+                  fill="url(#gapGradient)"
                   fillOpacity={1}
-                  name="Gap (unrealized value)"
+                  legendType="none"
                 />
+                {/* Layer 2: Fill under Current line with white to "cut out" the bottom */}
+                <Area 
+                  type="monotone" 
+                  dataKey="current" 
+                  stroke="none"
+                  fill="#ffffff"
+                  fillOpacity={1}
+                  legendType="none"
+                />
+                {/* Abridge benchmark line (top) */}
                 <Line 
                   type="monotone" 
                   dataKey="abridge" 
                   stroke="#10B981" 
                   strokeWidth={3}
-                  dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
-                  name="Reach Abridge benchmarks"
+                  dot={{ fill: "#10B981", strokeWidth: 2, r: 5 }}
+                  name="Abridge potential"
+                  activeDot={{ r: 7, stroke: "#10B981", strokeWidth: 2, fill: "#fff" }}
                 />
+                {/* Current trajectory line (bottom) */}
                 <Line 
                   type="monotone" 
                   dataKey="current" 
-                  stroke="#6B7280" 
+                  stroke="#94a3b8" 
                   strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: "#6B7280", strokeWidth: 2, r: 4 }}
-                  name="Stay at current performance"
+                  strokeDasharray="6 4"
+                  dot={{ fill: "#94a3b8", strokeWidth: 2, r: 4 }}
+                  name="Current trajectory"
+                  activeDot={{ r: 6, stroke: "#94a3b8", strokeWidth: 2, fill: "#fff" }}
+                />
+                <Legend 
+                  verticalAlign="bottom"
+                  iconType="line"
+                  wrapperStyle={{ paddingTop: 16 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-
-          <div className="flex items-center justify-center gap-2 md:gap-3 p-3 md:p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <ArrowUpDown className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
-            <span className="text-xl md:text-2xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</span>
-            <span className="text-sm md:text-base text-[#6B7280]">3-year gap</span>
+          
+          {/* Gap callout - visual key + 3-year total */}
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 p-3 md:p-4 bg-gradient-to-r from-emerald-50 to-slate-50 rounded-lg border border-emerald-100">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-3 md:w-8 md:h-4 rounded bg-gradient-to-b from-emerald-500/20 to-emerald-500/5 border border-emerald-200" />
+              <span className="text-xs md:text-sm text-[#6B7280]">Shaded area = unrealized value</span>
+            </div>
+            <span className="hidden md:block text-slate-300">|</span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg md:text-2xl font-bold text-emerald-700">{formatCurrency(calculations.threeYearGap)}</span>
+              <span className="text-xs md:text-sm text-[#6B7280]">over 3 years</span>
+            </div>
           </div>
         </section>
 
