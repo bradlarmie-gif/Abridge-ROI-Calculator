@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 6,
     marginBottom: 4,
-    minHeight: 65,
+    minHeight: 55,
   },
 
   methodologyGrid: {
@@ -1420,43 +1420,43 @@ const ExecutiveSummaryPage = ({ data, totalPages }: { data: ExpandPDFData; total
       
       <View style={styles.journeyChart} wrap={false}>
         <View style={{ flexDirection: "row" }}>
-          <View style={{ width: 40, justifyContent: "space-between", height: 50, paddingRight: 4 }}>
+          <View style={{ width: 35, justifyContent: "space-between", height: 40, paddingRight: 4 }}>
             <Text style={{ fontSize: 5, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
             <Text style={{ fontSize: 5, color: colors.green, fontWeight: "bold", textAlign: "right" }}>{formatCurrency(data.tier1Value)}</Text>
             <Text style={{ fontSize: 5, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
           </View>
           
-          <Svg width="430" height="55" viewBox="0 0 430 55">
-            <Rect x="0" y="0" width="430" height="55" fill={colors.white} />
-            <Line x1="0" y1="50" x2="430" y2="50" stroke={colors.borderGray} strokeWidth="1" />
-            <Line x1="0" y1="27" x2="430" y2="27" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
-            <Line x1="0" y1="5" x2="430" y2="5" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+          <Svg width="100%" height="45" viewBox="0 0 350 45" preserveAspectRatio="xMidYMid meet">
+            <Rect x="0" y="0" width="350" height="45" fill={colors.white} />
+            <Line x1="0" y1="42" x2="350" y2="42" stroke={colors.borderGray} strokeWidth="1" />
+            <Line x1="0" y1="22" x2="350" y2="22" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+            <Line x1="0" y1="4" x2="350" y2="4" stroke={colors.borderGray} strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
             
-            <Path d="M 15 50 L 15 45 Q 60 40 110 34 T 170 28 T 220 25 L 220 50 Z" fill={colors.green} opacity="0.12" />
-            <Path d="M 15 45 Q 60 40 110 34 T 170 28 T 220 25" fill="none" stroke={colors.green} strokeWidth="2" />
-            <Path d="M 220 25 Q 280 16 340 10 T 420 5" fill="none" stroke={colors.blue} strokeWidth="1.5" strokeDasharray="4,3" />
+            <Path d="M 10 42 L 10 38 Q 50 33 90 28 T 140 22 T 175 19 L 175 42 Z" fill={colors.green} opacity="0.12" />
+            <Path d="M 10 38 Q 50 33 90 28 T 140 22 T 175 19" fill="none" stroke={colors.green} strokeWidth="2" />
+            <Path d="M 175 19 Q 230 12 280 7 T 340 4" fill="none" stroke={colors.blue} strokeWidth="1.5" strokeDasharray="4,3" />
             
-            <Circle cx="15" cy="45" r="3" fill={colors.lightGray} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="110" cy="34" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="170" cy="29" r="2.5" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="10" cy="38" r="2.5" fill={colors.lightGray} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="90" cy="28" r="2" fill={colors.green} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="140" cy="23" r="2" fill={colors.green} stroke={colors.white} strokeWidth="1" />
             
-            <Circle cx="220" cy="25" r="7" fill={colors.primaryLight} opacity="0.5" />
-            <Circle cx="220" cy="25" r="5" fill={colors.primary} stroke={colors.white} strokeWidth="1.5" />
+            <Circle cx="175" cy="19" r="6" fill={colors.primaryLight} opacity="0.5" />
+            <Circle cx="175" cy="19" r="4" fill={colors.primary} stroke={colors.white} strokeWidth="1.5" />
             
-            <Circle cx="320" cy="13" r="2.5" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
-            <Circle cx="420" cy="5" r="4" fill={colors.green} stroke={colors.white} strokeWidth="1.5" />
+            <Circle cx="260" cy="10" r="2" fill={colors.blue} stroke={colors.white} strokeWidth="1" />
+            <Circle cx="340" cy="4" r="3" fill={colors.green} stroke={colors.white} strokeWidth="1.5" />
           </Svg>
         </View>
         
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4, paddingLeft: 40 }}>
-          <View style={{ alignItems: "flex-start", width: 55 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 3, paddingLeft: 35 }}>
+          <View style={{ alignItems: "flex-start", width: 50 }}>
             <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.mediumGray }}>Before</Text>
           </View>
           <View style={{ alignItems: "center", flex: 1 }}>
-            <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.primary }}>● YOU ARE HERE</Text>
+            <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.primary }}>YOU ARE HERE</Text>
             <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.tier1Value)}</Text>
           </View>
-          <View style={{ alignItems: "flex-end", width: 60 }}>
+          <View style={{ alignItems: "flex-end", width: 55 }}>
             <Text style={{ fontSize: 5, fontWeight: "bold", color: colors.green }}>Full Scale</Text>
             <Text style={{ fontSize: 6, fontWeight: "bold", color: colors.green, fontFamily: "Helvetica-Bold" }}>{formatCurrency(data.expansion.projectedValue)}</Text>
           </View>
