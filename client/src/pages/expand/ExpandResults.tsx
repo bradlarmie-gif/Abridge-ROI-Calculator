@@ -760,6 +760,130 @@ export default function ExpandResults({
           </div>
         </div>
         
+        <div 
+          id="expansion-section"
+          className="bg-gradient-to-br from-blue-50 via-white to-emerald-50 border-2 border-blue-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8 shadow-sm scroll-mt-20"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide animate-pulse">
+              Expansion Opportunity
+            </span>
+          </div>
+          <h2 className="text-lg md:text-xl font-semibold text-[#1F2937] mb-2">
+            Model Your Growth Potential
+          </h2>
+          <p className="text-sm text-[#6B7280] mb-4 md:mb-6">
+            Based on your proven results, here's what full-scale adoption could unlock. 
+            <span className="text-blue-700 font-medium"> Adjust the sliders to see the impact.</span>
+          </p>
+          
+          <div className="flex flex-col md:flex-row md:items-stretch gap-4 md:gap-6">
+            <div className="bg-neutral-50 rounded-lg p-4 md:p-5 flex-1">
+              <h4 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3 md:mb-4">Current State</h4>
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#6B7280]">Providers</span>
+                  <span className="font-medium text-[#1F2937]">{providers}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#6B7280]">Utilization</span>
+                  <span className="font-medium text-[#1F2937]">{utilizationRate}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#6B7280]">Annual Value</span>
+                  <span className="font-semibold text-emerald-600">{formatCurrency(currentValue)}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="hidden md:flex items-center justify-center">
+              <ChevronRight className="w-8 h-8 text-neutral-300" />
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-5 flex-1">
+              <h4 className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 md:mb-4">Expansion Target</h4>
+              <div className="space-y-3 md:space-y-4">
+                <div>
+                  <label className="text-sm text-[#6B7280] block mb-1">Total providers</label>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    value={targetProviders}
+                    onChange={(e) => setTargetProviders(e.target.value ? parseInt(e.target.value) : "")}
+                    placeholder="e.g., 150"
+                    min={providers + 1}
+                    className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
+                    data-testid="input-target-providers"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm text-[#6B7280] block mb-1">Target utilization</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={utilizationRate}
+                      max={MAX_UTILIZATION}
+                      value={targetUtilization}
+                      onChange={(e) => setTargetUtilization(parseInt(e.target.value))}
+                      className="flex-1 accent-[#EA2C00]"
+                      data-testid="slider-target-utilization"
+                    />
+                    <span className="font-medium text-[#1F2937] w-12 text-right">{targetUtilization}%</span>
+                  </div>
+                  <span className="text-xs text-[#9CA3AF]">Most organizations reach 75-85% at maturity</span>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+          
+          {expansionCalc && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-6"
+            >
+              <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-xl p-5 text-white shadow-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="text-center bg-white/10 rounded-lg p-3">
+                    <span className="block text-3xl font-bold">{formatCurrency(expansionCalc.projectedValue)}</span>
+                    <span className="text-sm text-white/80">Projected Annual Value</span>
+                  </div>
+                  <div className="text-center bg-white/10 rounded-lg p-3">
+                    <span className="block text-3xl font-bold text-emerald-200">+{formatCurrency(expansionCalc.expansionValue)}</span>
+                    <span className="text-sm text-white/80">Additional Value</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm text-white/90 justify-center">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>
+                    {((expansionCalc.projectedValue / currentValue - 1) * 100).toFixed(0)}% increase from current state
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-white border border-neutral-200 rounded-lg p-4 mt-4 text-sm text-[#6B7280]">
+                <button 
+                  type="button"
+                  className="flex items-center gap-2 text-[#1F2937] font-medium cursor-default"
+                >
+                  How we calculated this:
+                </button>
+                <ul className="mt-2 space-y-1 ml-4 list-disc">
+                  <li>Your value per provider: {formatCurrency(valuePerProvider)}</li>
+                  <li>× {expansionCalc.targetProviders} providers = {formatCurrency(valuePerProvider * expansionCalc.targetProviders)}</li>
+                  <li>× {expansionCalc.utilizationMultiplier.toFixed(2)}x utilization boost ({utilizationRate}% → {expansionCalc.targetUtilization}%)</li>
+                  <li>× 1.15x maturity effects (organizations typically see improvement with tenure)</li>
+                  <li>= <strong className="text-blue-600">{formatCurrency(expansionCalc.projectedValue)}</strong></li>
+                </ul>
+              </div>
+            </motion.div>
+          )}
+        </div>
+        
         <div className="bg-white border border-neutral-200 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[#1F2937]">
@@ -1031,130 +1155,6 @@ export default function ExpandResults({
             </motion.div>
           );
         })()}
-        
-        <div 
-          id="expansion-section"
-          className="bg-gradient-to-br from-blue-50 via-white to-emerald-50 border-2 border-blue-200 rounded-xl p-4 md:p-6 mb-8 shadow-sm scroll-mt-20"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-600 text-white rounded uppercase tracking-wide animate-pulse">
-              Expansion Opportunity
-            </span>
-          </div>
-          <h2 className="text-lg md:text-xl font-semibold text-[#1F2937] mb-2">
-            Model Your Growth Potential
-          </h2>
-          <p className="text-sm text-[#6B7280] mb-4 md:mb-6">
-            Based on your proven results, here's what full-scale adoption could unlock. 
-            <span className="text-blue-700 font-medium"> Adjust the sliders to see the impact.</span>
-          </p>
-          
-          <div className="flex flex-col md:flex-row md:items-stretch gap-4 md:gap-6">
-            <div className="bg-neutral-50 rounded-lg p-4 md:p-5 flex-1">
-              <h4 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3 md:mb-4">Current State</h4>
-              <div className="space-y-2 md:space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#6B7280]">Providers</span>
-                  <span className="font-medium text-[#1F2937]">{providers}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#6B7280]">Utilization</span>
-                  <span className="font-medium text-[#1F2937]">{utilizationRate}%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#6B7280]">Annual Value</span>
-                  <span className="font-semibold text-emerald-600">{formatCurrency(currentValue)}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="hidden md:flex items-center justify-center">
-              <ChevronRight className="w-8 h-8 text-neutral-300" />
-            </div>
-            
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-5 flex-1">
-              <h4 className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 md:mb-4">Expansion Target</h4>
-              <div className="space-y-3 md:space-y-4">
-                <div>
-                  <label className="text-sm text-[#6B7280] block mb-1">Total providers</label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    value={targetProviders}
-                    onChange={(e) => setTargetProviders(e.target.value ? parseInt(e.target.value) : "")}
-                    placeholder="e.g., 150"
-                    min={providers + 1}
-                    className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
-                    data-testid="input-target-providers"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-sm text-[#6B7280] block mb-1">Target utilization</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="range"
-                      min={utilizationRate}
-                      max={MAX_UTILIZATION}
-                      value={targetUtilization}
-                      onChange={(e) => setTargetUtilization(parseInt(e.target.value))}
-                      className="flex-1 accent-[#EA2C00]"
-                      data-testid="slider-target-utilization"
-                    />
-                    <span className="font-medium text-[#1F2937] w-12 text-right">{targetUtilization}%</span>
-                  </div>
-                  <span className="text-xs text-[#9CA3AF]">Most organizations reach 75-85% at maturity</span>
-                </div>
-                
-              </div>
-            </div>
-          </div>
-          
-          {expansionCalc && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-6"
-            >
-              <div className="bg-gradient-to-r from-blue-600 to-emerald-600 rounded-xl p-5 text-white shadow-lg">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                  <div className="text-center bg-white/10 rounded-lg p-3">
-                    <span className="block text-3xl font-bold">{formatCurrency(expansionCalc.projectedValue)}</span>
-                    <span className="text-sm text-white/80">Projected Annual Value</span>
-                  </div>
-                  <div className="text-center bg-white/10 rounded-lg p-3">
-                    <span className="block text-3xl font-bold text-emerald-200">+{formatCurrency(expansionCalc.expansionValue)}</span>
-                    <span className="text-sm text-white/80">Additional Value</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2 text-sm text-white/90 justify-center">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>
-                    {((expansionCalc.projectedValue / currentValue - 1) * 100).toFixed(0)}% increase from current state
-                  </span>
-                </div>
-              </div>
-              
-              <div className="bg-white border border-neutral-200 rounded-lg p-4 mt-4 text-sm text-[#6B7280]">
-                <button 
-                  type="button"
-                  className="flex items-center gap-2 text-[#1F2937] font-medium cursor-default"
-                >
-                  How we calculated this:
-                </button>
-                <ul className="mt-2 space-y-1 ml-4 list-disc">
-                  <li>Your value per provider: {formatCurrency(valuePerProvider)}</li>
-                  <li>× {expansionCalc.targetProviders} providers = {formatCurrency(valuePerProvider * expansionCalc.targetProviders)}</li>
-                  <li>× {expansionCalc.utilizationMultiplier.toFixed(2)}x utilization boost ({utilizationRate}% → {expansionCalc.targetUtilization}%)</li>
-                  <li>× 1.15x maturity effects (organizations typically see improvement with tenure)</li>
-                  <li>= <strong className="text-blue-600">{formatCurrency(expansionCalc.projectedValue)}</strong></li>
-                </ul>
-              </div>
-            </motion.div>
-          )}
-        </div>
         
         <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-5 mb-8">
           <div className="flex items-center gap-2 mb-3">
