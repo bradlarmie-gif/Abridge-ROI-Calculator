@@ -223,7 +223,7 @@ const ALL_SETTINGS: AllSettingType[] = [
   "inpatient",
 ];
 
-type Page = "orientation" | "setting" | "priorities" | "value-blueprint" | "model-setup";
+type Page = "setting" | "priorities" | "value-blueprint" | "model-setup";
 
 // Value posture presets for Step 2 (moved outside component to avoid recreation each render)
 type ValuePosture = "conservative" | "typical" | "aggressive" | "custom";
@@ -2158,10 +2158,6 @@ export default function ObjectiveSelectionScreen({
     }
   };
 
-  const handleContinueToPage1 = () => {
-    setCurrentPage("setting");
-  };
-
   const handleContinueToPage2 = () => {
     if (!selectedSetting) return;
     // All care settings use the same flow now
@@ -2446,55 +2442,15 @@ export default function ObjectiveSelectionScreen({
         currentStep={currentStep}
         totalSteps={6}
         stepName={stepName}
-        onBack={currentPage === "orientation" ? onBackToJourney : currentPage === "setting" ? () => setCurrentPage("orientation") : currentPage === "priorities" ? () => setCurrentPage("setting") : onBackToJourney}
+        onBack={currentPage === "setting" ? onBackToJourney : currentPage === "priorities" ? () => setCurrentPage("setting") : onBackToJourney}
         showBack={true}
       />
       <UnifiedHeaderSpacer />
 
       {/* Content */}
       <div
-        className={`relative z-10 flex-1 overflow-y-auto ${currentPage === "orientation" ? "" : "pb-32 lg:pb-28"}`}
+        className="relative z-10 flex-1 overflow-y-auto pb-32 lg:pb-28"
       >
-        {/* PAGE 0 — ORIENTATION */}
-        {currentPage === "orientation" && (
-          <div className="relative min-h-full">
-            <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-full flex items-center justify-center py-20 md:py-28 relative z-10">
-              <div className="w-full max-w-3xl text-center">
-                <div className="landing-animate-card w-full bg-white border border-neutral-200/60 rounded-2xl md:rounded-3xl px-8 py-12 md:px-16 md:py-16 shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)]">
-                  <h2 className="landing-animate-headline text-[32px] md:text-[40px] lg:text-[48px] font-bold text-[#111827] tracking-[-0.02em]">
-                    <span className="block leading-[1.2]">
-                      Model the impact of
-                    </span>
-                    <span className="block mt-1 leading-[1.2]">
-                      ambient documentation
-                    </span>
-                  </h2>
-                  
-                  <p className="landing-animate-subtitle-1 mt-6 text-base md:text-lg text-[#6B7280] leading-relaxed max-w-[540px] mx-auto">
-                    Understand where the value actually comes from.
-                  </p>
-
-                  <div className="landing-animate-button mt-6 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={handleContinueToPage1}
-                      className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-base border-2 border-[#EA2C00] text-[#EA2C00] bg-transparent hover:bg-[#EA2C00] hover:text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,83,47,0.25)] active:translate-y-0 active:shadow-[0_2px_8px_rgba(232,83,47,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
-                      data-testid="button-start"
-                    >
-                      Build ROI Model
-                      <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
-                    </button>
-                  </div>
-                  
-                  <p className="landing-animate-trust mt-5 text-[13px] text-[#9CA3AF] tracking-[0.02em]">
-                    Used by 200+ health system partners
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* PAGE 1 — CARE SETTING */}
         {currentPage === "setting" && (
           <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-12 md:py-16">
