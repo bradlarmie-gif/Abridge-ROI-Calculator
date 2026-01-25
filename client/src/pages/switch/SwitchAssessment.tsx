@@ -39,15 +39,30 @@ export default function SwitchAssessment({
     });
   }, [inputs]);
 
+  // Check if user has entered any dimension values
+  const hasAnyDimensionValue = 
+    inputs.utilization > 0 || 
+    inputs.timeSavedPerEncounter > 0 || 
+    inputs.wrvuLift > 0 || 
+    inputs.satisfaction > 0;
+  
+  // Check if we have enough data to show meaningful results
+  const hasMinimumData = 
+    inputs.providers > 0 && 
+    inputs.annualEncounters > 0 && 
+    hasAnyDimensionValue;
+
   const canProceed = 
     inputs.solution && 
     inputs.providers && inputs.providers > 0 && 
     inputs.annualEncounters && inputs.annualEncounters > 0 &&
-    inputs.utilization > 0;
+    hasAnyDimensionValue;
 
   // Circular gauge calculations
   const circumference = 2 * Math.PI * 45;
-  const scoreOffset = circumference - (calculations.realizationScore / 100) * circumference;
+  const scoreOffset = hasMinimumData 
+    ? circumference - (calculations.realizationScore / 100) * circumference 
+    : circumference;
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -123,26 +138,30 @@ export default function SwitchAssessment({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#374151] mb-2">
-                    Providers using this solution
+                    Providers using this solution <span className="text-[#EA2C00]">*</span>
                   </label>
                   <FormattedNumberInput
                     value={inputs.providers}
                     onChange={(v) => updateInput("providers", v || 0)}
-                    placeholder="75"
-                    className="w-full h-11 px-4 border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
+                    placeholder="e.g. 75"
+                    className={`w-full h-11 px-4 border rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none transition-colors ${
+                      inputs.providers > 0 ? 'border-slate-200 bg-white' : 'border-slate-300 bg-slate-50'
+                    }`}
                     data-testid="input-providers"
                   />
                   <span className="text-xs text-[#6B7280] mt-1">providers</span>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#374151] mb-2">
-                    Annual encounters
+                    Annual encounters <span className="text-[#EA2C00]">*</span>
                   </label>
                   <FormattedNumberInput
                     value={inputs.annualEncounters}
                     onChange={(v) => updateInput("annualEncounters", v || 0)}
-                    placeholder="150,000"
-                    className="w-full h-11 px-4 border border-slate-200 rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none"
+                    placeholder="e.g. 150,000"
+                    className={`w-full h-11 px-4 border rounded-lg focus:border-[#EA2C00] focus:ring-1 focus:ring-[#EA2C00] outline-none transition-colors ${
+                      inputs.annualEncounters > 0 ? 'border-slate-200 bg-white' : 'border-slate-300 bg-slate-50'
+                    }`}
                     data-testid="input-encounters"
                   />
                   <span className="text-xs text-[#6B7280] mt-1">encounters/year</span>
@@ -256,34 +275,46 @@ export default function SwitchAssessment({
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-bold text-[#111827]" data-testid="text-realization-score">
-                    {calculations.realizationScore}%
+                  <span className={`text-4xl font-bold ${hasMinimumData ? 'text-[#111827]' : 'text-slate-400'}`} data-testid="text-realization-score">
+                    {hasMinimumData ? `${calculations.realizationScore}%` : '--'}
                   </span>
-                  <span className="text-sm text-[#6B7280]">realized</span>
+                  <span className="text-sm text-[#6B7280]">{hasMinimumData ? 'realized' : 'enter data above'}</span>
                 </div>
               </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Utilization</span>
-                  <span className="text-lg font-bold text-[#111827]">{calculations.utilizationScore}%</span>
+                  <span className={`text-lg font-bold ${inputs.utilization > 0 ? 'text-[#111827]' : 'text-slate-400'}`}>
+                    {inputs.utilization > 0 ? `${calculations.utilizationScore}%` : '--'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Efficiency</span>
-                  <span className="text-lg font-bold text-[#111827]">{calculations.efficiencyScore}%</span>
+                  <span className={`text-lg font-bold ${inputs.timeSavedPerEncounter > 0 ? 'text-[#111827]' : 'text-slate-400'}`}>
+                    {inputs.timeSavedPerEncounter > 0 ? `${calculations.efficiencyScore}%` : '--'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Quality</span>
-                  <span className="text-lg font-bold text-[#111827]">{calculations.qualityScore}%</span>
+                  <span className={`text-lg font-bold ${inputs.wrvuLift > 0 ? 'text-[#111827]' : 'text-slate-400'}`}>
+                    {inputs.wrvuLift > 0 ? `${calculations.qualityScore}%` : '--'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
                   <span className="text-[#6B7280]">Satisfaction</span>
-                  <span className="text-lg font-bold text-[#111827]">{calculations.satisfactionScore}%</span>
+                  <span className={`text-lg font-bold ${inputs.satisfaction > 0 ? 'text-[#111827]' : 'text-slate-400'}`}>
+                    {inputs.satisfaction > 0 ? `${calculations.satisfactionScore}%` : '--'}
+                  </span>
                 </div>
                 <div className="border-t border-slate-200 my-2"></div>
-                <div className="flex items-center justify-between gap-4 px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className={`flex items-center justify-between gap-4 px-3 py-2 rounded-lg border ${
+                  hasMinimumData ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
+                }`}>
                   <span className="font-semibold text-[#111827]">Average Score</span>
-                  <span className="font-bold text-emerald-600 text-lg whitespace-nowrap">{calculations.realizationScore}%</span>
+                  <span className={`font-bold text-lg whitespace-nowrap ${hasMinimumData ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {hasMinimumData ? `${calculations.realizationScore}%` : '--'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -308,39 +339,70 @@ export default function SwitchAssessment({
                     <span className="text-[9px] text-slate-500">Transformed</span>
                   </div>
                 </div>
-                <div 
-                  className="absolute top-0 bottom-0 w-1 bg-[#111827] rounded-full shadow-md transition-all duration-500"
-                  style={{ left: `${Math.min(99, calculations.realizationScore)}%` }}
-                >
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#111827] text-white text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
-                    You: {calculations.realizationScore}%
+                {hasMinimumData && (
+                  <div 
+                    className="absolute top-0 bottom-0 w-1 bg-[#111827] rounded-full shadow-md transition-all duration-500"
+                    style={{ left: `${Math.min(99, calculations.realizationScore)}%` }}
+                  >
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#111827] text-white text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                      You: {calculations.realizationScore}%
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
             <p className="text-center text-[#6B7280]">
-              At <strong className="text-[#111827]">{calculations.realizationScore}%</strong> realization, you're in the <strong className="text-[#111827]">{calculations.maturityLevel}</strong> stage.
-              {calculations.realizationScore < 40 && " Most organizations plateau here without focused optimization."}
-              {calculations.realizationScore >= 40 && calculations.realizationScore < 80 && " You're making progress but there's significant room to grow."}
-              {calculations.realizationScore >= 80 && " You're among top performers in ambient AI value realization."}
+              {hasMinimumData ? (
+                <>
+                  At <strong className="text-[#111827]">{calculations.realizationScore}%</strong> realization, you're in the <strong className="text-[#111827]">{calculations.maturityLevel}</strong> stage.
+                  {calculations.realizationScore < 40 && " Most organizations plateau here without focused optimization."}
+                  {calculations.realizationScore >= 40 && calculations.realizationScore < 80 && " You're making progress but there's significant room to grow."}
+                  {calculations.realizationScore >= 80 && " You're among top performers in ambient AI value realization."}
+                </>
+              ) : (
+                <span className="text-slate-400 italic">Enter your metrics above to see your realization score and maturity stage.</span>
+              )}
             </p>
           </section>
 
-          <section className="bg-white rounded-xl border-2 border-slate-200 p-8">
+          <section className={`rounded-xl border-2 p-8 transition-all duration-300 ${
+            hasMinimumData ? 'bg-white border-slate-200' : 'bg-slate-50 border-dashed border-slate-300'
+          }`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#111827]">Your Annual Gap</h3>
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-semibold text-emerald-700">LIVE</span>
-              </div>
+              {hasMinimumData ? (
+                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-semibold text-emerald-700">LIVE</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span className="text-xs font-medium text-slate-500">AWAITING DATA</span>
+                </div>
+              )}
             </div>
 
             <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-[#111827]" data-testid="text-annual-gap">
-                {formatCurrency(calculations.annualGap)}
-                <span className="text-xl text-[#6B7280] font-normal">/year in unrealized value</span>
-              </div>
+              {hasMinimumData ? (
+                <div className="text-5xl font-bold text-[#111827]" data-testid="text-annual-gap">
+                  {formatCurrency(calculations.annualGap)}
+                  <span className="text-xl text-[#6B7280] font-normal">/year in unrealized value</span>
+                </div>
+              ) : (
+                <div className="py-4" data-testid="text-annual-gap">
+                  <div className="text-5xl font-bold text-slate-300 mb-2">--</div>
+                  <p className="text-sm text-slate-500">
+                    {inputs.providers > 0 && inputs.annualEncounters > 0 
+                      ? "Adjust the metrics above to calculate your gap"
+                      : hasAnyDimensionValue
+                        ? "Enter your provider count and annual encounters above"
+                        : "Enter providers, encounters, and at least one metric to calculate your gap"
+                    }
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3 mb-6">
@@ -431,20 +493,23 @@ function DimensionCard({
   onChange,
   testId,
 }: DimensionCardProps) {
-  const [localValue, setLocalValue] = useState(String(value));
+  // Track if user has entered a value (0 is our "empty" state)
+  const hasValue = value > 0;
+  const [localValue, setLocalValue] = useState(hasValue ? String(value) : "");
   const [isFocused, setIsFocused] = useState(false);
   const [isSliding, setIsSliding] = useState(false);
   const [lastScore, setLastScore] = useState(score);
   const [isPulsing, setIsPulsing] = useState(false);
   
-  const fillWidth = Math.min(100, (value / maxValue) * 100);
+  const fillWidth = hasValue ? Math.min(100, (value / maxValue) * 100) : 0;
   const benchmarkPosition = (benchmark / maxValue) * 100;
   
   // Calculate progress toward benchmark (0-100, can exceed 100)
-  const progressToBenchmark = Math.min(100, (value / benchmark) * 100);
+  const progressToBenchmark = hasValue ? Math.min(100, (value / benchmark) * 100) : 0;
   
   // Dynamic color based on progress to benchmark
   const getProgressColor = () => {
+    if (!hasValue) return { bg: 'bg-slate-300', text: 'text-slate-400', ring: 'ring-slate-200' };
     if (progressToBenchmark >= 95) return { bg: 'bg-emerald-500', text: 'text-emerald-600', ring: 'ring-emerald-200' };
     if (progressToBenchmark >= 70) return { bg: 'bg-amber-500', text: 'text-amber-600', ring: 'ring-amber-200' };
     if (progressToBenchmark >= 40) return { bg: 'bg-orange-500', text: 'text-orange-600', ring: 'ring-orange-200' };
@@ -454,8 +519,9 @@ function DimensionCard({
   const colors = getProgressColor();
 
   // Sync local value when external value changes (e.g., from slider)
-  if (!isFocused && localValue !== String(value)) {
-    setLocalValue(String(value));
+  const expectedLocalValue = hasValue ? String(value) : "";
+  if (!isFocused && localValue !== expectedLocalValue && (hasValue || localValue === "")) {
+    setLocalValue(expectedLocalValue);
   }
   
   // Trigger pulse animation when score changes
@@ -530,14 +596,22 @@ function DimensionCard({
       </div>
 
       <div className="relative h-8 bg-slate-200 rounded-lg overflow-hidden mb-2">
+        {/* Empty state placeholder */}
+        {!hasValue && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-sm text-slate-400 italic">Enter your rate above</span>
+          </div>
+        )}
         {/* Dynamic gradient fill bar */}
         <div 
-          className={`absolute top-0 left-0 h-full ${colors.bg} transition-all duration-150 flex items-center px-2`}
+          className={`absolute top-0 left-0 h-full ${colors.bg} transition-all duration-300 ease-out flex items-center px-2`}
           style={{ width: `${fillWidth}%` }}
         >
-          <span className="text-sm font-semibold text-white truncate">
-            {prefix}{value}{unit}
-          </span>
+          {hasValue && (
+            <span className="text-sm font-semibold text-white truncate">
+              {prefix}{value}{unit}
+            </span>
+          )}
         </div>
         {/* Benchmark marker */}
         <div 
@@ -551,7 +625,7 @@ function DimensionCard({
           {prefix}{benchmark}{unit}
         </div>
         {/* At-benchmark indicator */}
-        {progressToBenchmark >= 95 && (
+        {hasValue && progressToBenchmark >= 95 && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-white bg-emerald-600 px-1.5 py-0.5 rounded-full animate-pulse">
             Target
           </div>
@@ -563,7 +637,7 @@ function DimensionCard({
         min={minValue}
         max={maxValue}
         step={step}
-        value={value}
+        value={hasValue ? value : minValue}
         onChange={(e) => onChange(parseFloat(e.target.value))}
         onMouseDown={() => setIsSliding(true)}
         onMouseUp={() => setIsSliding(false)}
@@ -576,9 +650,9 @@ function DimensionCard({
 
       <div className="mt-3 flex items-center gap-2">
         <span className={`text-lg font-bold transition-all duration-200 ${
-          isPulsing ? `${colors.text} scale-110` : 'text-[#111827]'
+          !hasValue ? 'text-slate-400' : isPulsing ? `${colors.text} scale-110` : 'text-[#111827]'
         }`}>
-          {score}%
+          {hasValue ? `${score}%` : '--'}
         </span>
         <span className="text-xs text-[#6B7280]">of Abridge benchmark</span>
         {/* Mini progress indicator */}

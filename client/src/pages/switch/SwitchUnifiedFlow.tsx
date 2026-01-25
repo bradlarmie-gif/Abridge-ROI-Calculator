@@ -17,15 +17,16 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
   const [currentStep, setCurrentStep] = useState(1);
   const [solutionType, setSolutionType] = useState<SolutionType>("ambient-ai");
   
+  // Start with empty dimension values - customer fills in their actual numbers
   const [ambientInputs, setAmbientInputs] = useState<SwitchInputs>({
     solution: "ambient-ai" as SolutionType,
-    providers: 75,
-    annualEncounters: 150000,
+    providers: 0,
+    annualEncounters: 0,
     currentCostPerProvider: 200,
-    utilization: 45,
-    timeSavedPerEncounter: 2,
-    wrvuLift: 2,
-    satisfaction: 65,
+    utilization: 0,  // Empty start - will show placeholder
+    timeSavedPerEncounter: 0,  // Empty start
+    wrvuLift: 0,  // Empty start
+    satisfaction: 0,  // Empty start
   });
 
   const [scribeInputs, setScribeInputs] = useState<ScribeInputs>({
