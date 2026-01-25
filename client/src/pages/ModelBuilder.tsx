@@ -6442,8 +6442,8 @@ export default function ModelBuilder({
 
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            {/* Live Model Sidebar - appears first in DOM for mobile accessibility */}
-            <div className="w-full lg:w-[380px] lg:order-2 lg:flex-shrink-0">
+            {/* Live Model Sidebar - hidden on mobile, shown on desktop right column */}
+            <div className="hidden lg:block w-full lg:w-[380px] lg:order-2 lg:flex-shrink-0">
               <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -6716,6 +6716,70 @@ export default function ModelBuilder({
               )}
             </section>
               
+            </div>
+            
+            {/* Live Model Sidebar - Mobile/Tablet version at bottom of page */}
+            <div className="lg:hidden w-full">
+              <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Calculator className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#111827]">Live Model</h3>
+                    <p className="text-xs text-[#6B7280]">Updates as you customize</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-1 mb-4">
+                  {activeDrivers.map((driverId, idx) => {
+                    const isReviewed = expandedDriver === driverId || reviewedDrivers.has(driverId);
+                    return (
+                      <div 
+                        key={driverId} 
+                        className={`flex justify-between items-center py-2.5 px-3 rounded-lg transition-colors ${
+                          expandedDriver === driverId ? 'bg-[rgba(234,44,0,0.05)]' : 'hover:bg-neutral-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isReviewed && (
+                            <Check className="w-4 h-4 text-emerald-500" />
+                          )}
+                          <span className={`text-sm ${isReviewed ? 'text-[#111827]' : 'text-[#6B7280]'}`}>
+                            {DRIVER_NAMES[driverId]}
+                          </span>
+                        </div>
+                        <span className="font-mono text-sm font-semibold text-emerald-600">
+                          {formatCurrency(driverResults[driverId]?.value || 0)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div className="border-t border-neutral-200 pt-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base font-semibold text-[#111827]">Total Annual Value</span>
+                    <span className="font-mono font-bold text-xl text-emerald-600">{formatCurrency(totalBenefit)}</span>
+                  </div>
+                  <p className="text-xs text-[#6B7280] mt-1">per year</p>
+                </div>
+                
+                <div className="bg-neutral-50 rounded-lg p-3 mb-6">
+                  <p className="text-xs text-[#6B7280] text-center">
+                    Investment calculated in next step
+                  </p>
+                </div>
+                
+                <button
+                  onClick={handleComplete}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-[15px] bg-[#EA2C00] text-white hover:bg-[#d12700] transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                  data-testid="button-continue-investment-mobile"
+                >
+                  Continue to Investment
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
