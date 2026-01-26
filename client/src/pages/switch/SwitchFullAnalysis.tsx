@@ -507,7 +507,6 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
             width: `${Math.max(0, 100 - (utilization / benchmark) * 100)}%`
           }}
         >
-          <span className="text-sm font-semibold text-slate-600">Gap</span>
         </div>
         <div className="absolute top-0 right-0 h-full flex items-center px-2">
           <span className="text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark}%</span>
@@ -600,7 +599,6 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
             width: `${Math.max(0, 100 - (efficiency / benchmark) * 100)}%`
           }}
         >
-          <span className="text-sm font-semibold text-slate-600">Gap</span>
         </div>
         <div className="absolute top-0 right-0 h-full flex items-center px-2">
           <span className="text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark} min</span>
@@ -691,7 +689,6 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
             width: `${Math.max(0, 100 - (wrvuLift / benchmark) * 100)}%`
           }}
         >
-          <span className="text-sm font-semibold text-slate-600">Gap</span>
         </div>
         <div className="absolute top-0 right-0 h-full flex items-center px-2">
           <span className="text-sm font-semibold text-[#EA2C00]">Abridge: +{benchmark}%</span>
