@@ -87,7 +87,6 @@ export default function SwitchAssessment({
       <BrandedLoadingOverlay 
         isVisible={showExploreRedirect} 
         onComplete={handleExploreRedirectComplete}
-        subtitle="Taking you to ROI Explorer"
       />
 
       <UnifiedHeader 

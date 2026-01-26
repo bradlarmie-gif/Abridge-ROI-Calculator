@@ -11,14 +11,12 @@ interface BrandedLoadingOverlayProps {
   isVisible: boolean;
   onComplete: () => void;
   duration?: number;
-  subtitle?: string;
 }
 
 export function BrandedLoadingOverlay({ 
   isVisible, 
   onComplete, 
-  duration = 3200,
-  subtitle = "Preparing your results"
+  duration = 3200
 }: BrandedLoadingOverlayProps) {
   const [progress, setProgress] = useState(0);
 
@@ -136,7 +134,7 @@ export function BrandedLoadingOverlay({
           Building Your Bridge to Value
         </h2>
 
-        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
+        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-100 ease-out"
             style={{ 
@@ -144,11 +142,6 @@ export function BrandedLoadingOverlay({
               background: 'linear-gradient(90deg, #EA2C00, #ff4d1a, #EA2C00)'
             }}
           />
-        </div>
-
-        <div className="flex items-center justify-center gap-2 text-slate-400 text-sm">
-          <div className="w-2 h-2 bg-[#EA2C00] rounded-full animate-pulse" />
-          <span>{subtitle}</span>
         </div>
       </div>
 

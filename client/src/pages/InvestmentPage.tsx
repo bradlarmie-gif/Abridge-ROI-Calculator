@@ -283,7 +283,6 @@ export default function InvestmentPage({
       <BrandedLoadingOverlay 
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
-        subtitle="Building your ROI summary"
       />
       
       <UnifiedHeader
