@@ -352,6 +352,146 @@ const styles = StyleSheet.create({
     color: colors.darkGray,
   },
 
+  // TRAJECTORY CHART STYLES
+  trajectoryChart: {
+    marginTop: 14,
+    backgroundColor: colors.white,
+    borderRadius: 4,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  trajectoryTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 2,
+  },
+  trajectorySubtitle: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginBottom: 10,
+  },
+  trajectoryContainer: {
+    flexDirection: "row",
+    height: 100,
+  },
+  trajectoryYAxis: {
+    width: 45,
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingRight: 6,
+  },
+  trajectoryYLabel: {
+    fontSize: 6,
+    color: colors.mediumGray,
+  },
+  trajectoryChartArea: {
+    flex: 1,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 3,
+    position: "relative",
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  trajectoryGapArea: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: "76%",
+    backgroundColor: "rgba(16, 185, 129, 0.15)",
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+  },
+  trajectoryLinePotential: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  trajectoryLineCurrent: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  trajectoryDot: {
+    position: "absolute",
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginLeft: -3,
+    marginTop: -3,
+  },
+  trajectoryXAxis: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingLeft: 45,
+    marginTop: 4,
+  },
+  trajectoryXLabel: {
+    fontSize: 6,
+    color: colors.mediumGray,
+    textAlign: "center",
+  },
+  trajectoryLegend: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 8,
+    gap: 16,
+  },
+  trajectoryLegendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  trajectoryLegendLine: {
+    width: 16,
+    height: 2,
+    marginRight: 4,
+    borderRadius: 1,
+  },
+  trajectoryLegendText: {
+    fontSize: 7,
+    color: colors.darkGray,
+  },
+  trajectorySummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  trajectorySummaryIcon: {
+    width: 12,
+    height: 12,
+    backgroundColor: "rgba(16, 185, 129, 0.3)",
+    borderRadius: 2,
+    marginRight: 6,
+  },
+  trajectorySummaryLabel: {
+    fontSize: 8,
+    color: colors.darkGray,
+    marginRight: 8,
+  },
+  trajectorySummaryValue: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.green,
+    marginRight: 4,
+  },
+  trajectorySummaryPeriod: {
+    fontSize: 8,
+    color: colors.darkGray,
+  },
+
   pageTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -1849,6 +1989,75 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <Text style={styles.totalGapBreakdown}>
             Utilization ({formatCurrency(calculations.utilizationGapValue)}) + Efficiency ({formatCurrency(calculations.efficiencyGapValue)}) + Quality ({formatCurrency(calculations.wrvuGapValue)})
           </Text>
+        </View>
+
+        {/* Trajectory Chart - Cost of Gap Over Time */}
+        <View style={styles.trajectoryChart}>
+          <Text style={styles.trajectoryTitle}>THE COST OF THE GAP OVER TIME</Text>
+          <Text style={styles.trajectorySubtitle}>Cumulative unrealized value if current performance continues vs. reaching Abridge benchmarks</Text>
+          
+          <View style={styles.trajectoryContainer}>
+            {/* Y-axis labels */}
+            <View style={styles.trajectoryYAxis}>
+              <Text style={styles.trajectoryYLabel}>{formatCurrency(calculations.annualGap * 3)}</Text>
+              <Text style={styles.trajectoryYLabel}>{formatCurrency(calculations.annualGap * 2)}</Text>
+              <Text style={styles.trajectoryYLabel}>{formatCurrency(calculations.annualGap)}</Text>
+              <Text style={styles.trajectoryYLabel}>$0</Text>
+            </View>
+            
+            {/* Chart area */}
+            <View style={styles.trajectoryChartArea}>
+              {/* Shaded gap area */}
+              <View style={styles.trajectoryGapArea} />
+              
+              {/* Abridge potential line (top) */}
+              <View style={styles.trajectoryLinePotential}>
+                <View style={[styles.trajectoryDot, { left: "0%", top: "100%", backgroundColor: colors.green }]} />
+                <View style={[styles.trajectoryDot, { left: "16%", top: "83%", backgroundColor: colors.green }]} />
+                <View style={[styles.trajectoryDot, { left: "33%", top: "66%", backgroundColor: colors.green }]} />
+                <View style={[styles.trajectoryDot, { left: "66%", top: "33%", backgroundColor: colors.green }]} />
+                <View style={[styles.trajectoryDot, { left: "100%", top: "0%", backgroundColor: colors.green }]} />
+              </View>
+              
+              {/* Current trajectory line (bottom) */}
+              <View style={styles.trajectoryLineCurrent}>
+                <View style={[styles.trajectoryDot, { left: "0%", top: "100%", backgroundColor: colors.mediumGray }]} />
+                <View style={[styles.trajectoryDot, { left: "16%", top: "94%", backgroundColor: colors.mediumGray }]} />
+                <View style={[styles.trajectoryDot, { left: "33%", top: "88%", backgroundColor: colors.mediumGray }]} />
+                <View style={[styles.trajectoryDot, { left: "66%", top: "82%", backgroundColor: colors.mediumGray }]} />
+                <View style={[styles.trajectoryDot, { left: "100%", top: "76%", backgroundColor: colors.mediumGray }]} />
+              </View>
+            </View>
+          </View>
+          
+          {/* X-axis labels */}
+          <View style={styles.trajectoryXAxis}>
+            <Text style={styles.trajectoryXLabel}>Today</Text>
+            <Text style={styles.trajectoryXLabel}>6 mo</Text>
+            <Text style={styles.trajectoryXLabel}>Year 1</Text>
+            <Text style={styles.trajectoryXLabel}>Year 2</Text>
+            <Text style={styles.trajectoryXLabel}>Year 3</Text>
+          </View>
+          
+          {/* Legend */}
+          <View style={styles.trajectoryLegend}>
+            <View style={styles.trajectoryLegendItem}>
+              <View style={[styles.trajectoryLegendLine, { backgroundColor: colors.green }]} />
+              <Text style={styles.trajectoryLegendText}>Abridge potential</Text>
+            </View>
+            <View style={styles.trajectoryLegendItem}>
+              <View style={[styles.trajectoryLegendLine, { backgroundColor: colors.mediumGray, borderStyle: "dashed" }]} />
+              <Text style={styles.trajectoryLegendText}>Current trajectory</Text>
+            </View>
+          </View>
+          
+          {/* Summary callout */}
+          <View style={styles.trajectorySummary}>
+            <View style={styles.trajectorySummaryIcon} />
+            <Text style={styles.trajectorySummaryLabel}>Shaded area = unrealized value</Text>
+            <Text style={styles.trajectorySummaryValue}>{formatCurrency(calculations.threeYearGap)}</Text>
+            <Text style={styles.trajectorySummaryPeriod}>over 3 years</Text>
+          </View>
         </View>
 
         <View style={styles.confidentialFooter}>
