@@ -2175,7 +2175,7 @@ export default function ObjectiveSelectionScreen({
   };
   
   const handleBuildYourModel = () => {
-    if (!selectedSetting || selectedLeverIds.size < 2) return;
+    if (!selectedSetting || selectedLeverIds.size < 1) return;
     const selectedLevers: SelectedLever[] = Array.from(selectedLeverIds).map(id => ({
       settingId: selectedSetting,
       leverId: id,
@@ -2642,19 +2642,19 @@ export default function ObjectiveSelectionScreen({
                     What outcomes matter most right now?
                   </h3>
                   <p className="text-[17px] leading-relaxed text-[#6B7280] max-w-[600px]">
-                    Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6} strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
+                    Select 1-{SETTING_CONFIG[selectedSetting]?.length || 6} strategic priorities. These will shape your ROI model and determine which value drivers we analyze in detail.
                   </p>
                 </div>
                 
                 {/* Selection Counter */}
                 <div className="flex-shrink-0 flex items-center gap-4 md:gap-6">
                   <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 border-[#E5E7EB] bg-white">
-                    <span className={`text-2xl font-bold ${selectedLeverIds.size >= 2 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
+                    <span className={`text-2xl font-bold ${selectedLeverIds.size >= 1 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
                       {selectedLeverIds.size}
                     </span>
                     <span className="text-[11px] text-[#9CA3AF] uppercase tracking-wide">selected</span>
                   </div>
-                  <p className="text-sm text-[#6B7280]">Select 2-{SETTING_CONFIG[selectedSetting]?.length || 6}<br/>priorities</p>
+                  <p className="text-sm text-[#6B7280]">Select 1-{SETTING_CONFIG[selectedSetting]?.length || 6}<br/>priorities</p>
                 </div>
               </div>
             </div>
@@ -2742,10 +2742,10 @@ export default function ObjectiveSelectionScreen({
                         Strategic Priorities
                       </p>
                       <div className="flex items-baseline gap-1 mb-1">
-                        <span className={`text-xl font-bold ${selectedLeverIds.size >= 2 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
+                        <span className={`text-xl font-bold ${selectedLeverIds.size >= 1 ? 'text-[#10B981]' : 'text-[#111827]'}`}>
                           {selectedLeverIds.size}
                         </span>
-                        <span className="text-[15px] text-[#6B7280]">of 2-{SETTING_CONFIG[selectedSetting]?.length || 6} selected</span>
+                        <span className="text-[15px] text-[#6B7280]">of 1-{SETTING_CONFIG[selectedSetting]?.length || 6} selected</span>
                       </div>
                       <p className="text-[13px] text-[#9CA3AF] mb-5">Most organizations select 3-5</p>
                       
@@ -2798,7 +2798,7 @@ export default function ObjectiveSelectionScreen({
                   {selectedLeverIds.size > 0 ? (
                     <span className="text-[#111827] font-medium">{selectedLeverIds.size} driver{selectedLeverIds.size !== 1 ? 's' : ''} selected</span>
                   ) : (
-                    "Select at least 2 drivers"
+                    "Select at least 1 driver"
                   )}
                 </span>
                 <button
@@ -5608,10 +5608,10 @@ export default function ObjectiveSelectionScreen({
           <div className="px-6 py-4">
             <button
               type="button"
-              disabled={selectedLeverIds.size < 2}
+              disabled={selectedLeverIds.size < 1}
               onClick={handleBuildYourModel}
               className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
-                selectedLeverIds.size >= 2
+                selectedLeverIds.size >= 1
                   ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-md"
                   : "opacity-40 bg-neutral-900 text-white cursor-not-allowed"
               }`}
