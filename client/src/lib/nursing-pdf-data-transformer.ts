@@ -172,7 +172,9 @@ function calculateIntermediateValues(
 export function transformToNursingPDFData(
   modelResults: ModelResults,
   journeyInputs: JourneyInputs,
-  organizationName?: string
+  organizationName?: string,
+  clientName?: string,
+  preparedBy?: string
 ): NursingPDFData {
   const staffedBeds = modelResults.staffedBeds;
   const nurseFTEs = modelResults.nurseFTEs || Math.round(staffedBeds * 1.5); // Default: 1.5 FTE per bed
@@ -283,6 +285,8 @@ export function transformToNursingPDFData(
   };
   
   return {
+    clientName,
+    preparedBy,
     organizationName,
     careSetting: "Nursing",
     unitName: "staffed bed",

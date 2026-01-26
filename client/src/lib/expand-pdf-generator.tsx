@@ -85,6 +85,8 @@ export interface OptimizationOpportunity {
 }
 
 export interface ExpandPDFData {
+  clientName?: string;
+  preparedBy?: string;
   organizationName?: string;
   careSetting: string;
   
@@ -494,9 +496,14 @@ const statusColor = (status: "good" | "warning" | "alert"): string => {
 // COMPONENTS
 // ============================================================================
 
-const Header = ({ title }: { title: string }) => (
+const Header = ({ title, clientName }: { title: string; clientName?: string }) => (
   <View style={s.header} fixed>
-    <Image src={abridgeLogoPath} style={s.logo} />
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Image src={abridgeLogoPath} style={s.logo} />
+      {clientName && (
+        <Text style={{ fontSize: 8, color: c.medium, marginLeft: 8, fontWeight: "bold" }}>{clientName}</Text>
+      )}
+    </View>
     <View style={s.headerRight}>
       <Text style={s.headerTitle}>{title}</Text>
       <Text style={s.headerDate}>{today()}</Text>
@@ -504,9 +511,11 @@ const Header = ({ title }: { title: string }) => (
   </View>
 );
 
-const Footer = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => (
+const Footer = ({ pageNum, totalPages, preparedBy }: { pageNum: number; totalPages: number; preparedBy?: string }) => (
   <View style={s.footer} fixed>
-    <Text style={s.footerText}>Abridge Value Realization Report</Text>
+    <Text style={s.footerText}>
+      Abridge Value Realization Report{preparedBy ? ` | Prepared by ${preparedBy}` : ''}
+    </Text>
     <Text style={s.footerText}>Page {pageNum} of {totalPages}</Text>
   </View>
 );
@@ -605,7 +614,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
   
   return (
     <Page size="A4" style={s.page}>
-      <Header title="Value Realization Report" />
+      <Header title="Value Realization Report" clientName={data.clientName} />
       
       {/* Context bar */}
       <View style={s.contextBar} wrap={false}>
@@ -741,7 +750,7 @@ const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages:
         </Text>
       </View>
       
-      <Footer pageNum={1} totalPages={totalPages} />
+      <Footer pageNum={1} totalPages={totalPages} preparedBy={data.preparedBy} />
     </Page>
   );
 };
@@ -901,11 +910,11 @@ const CompactTrendChart = ({ metric, baseline }: { metric: ExpandMetricData; bas
   );
 };
 
-const MetricDeepDivePage = ({ metrics, pageNum, totalPages }: { metrics: ExpandMetricData[]; pageNum: number; totalPages: number }) => (
+const MetricDeepDivePage = ({ metrics, pageNum, totalPages, clientName, preparedBy }: { metrics: ExpandMetricData[]; pageNum: number; totalPages: number; clientName?: string; preparedBy?: string }) => (
   <Page size="A4" style={s.page}>
-    <Header title="Metric Deep Dives" />
+    <Header title="Metric Deep Dives" clientName={clientName} />
     {metrics.map(m => <MetricSection key={m.id} metric={m} />)}
-    <Footer pageNum={pageNum} totalPages={totalPages} />
+    <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={preparedBy} />
   </Page>
 );
 
@@ -915,7 +924,7 @@ const MetricDeepDivePage = ({ metrics, pageNum, totalPages }: { metrics: ExpandM
 
 const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => (
   <Page size="A4" style={s.page}>
-    <Header title="Strategic Analysis" />
+    <Header title="Strategic Analysis" clientName={data.clientName} />
     
     <SectionHeader title="Early Indicators" color={c.blue} />
     
@@ -997,7 +1006,7 @@ const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFD
       </Text>
     </View>
     
-    <Footer pageNum={pageNum} totalPages={totalPages} />
+    <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={data.preparedBy} />
   </Page>
 );
 
@@ -1013,7 +1022,7 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
   
   return (
     <Page size="A4" style={s.page}>
-      <Header title="Expansion Opportunity" />
+      <Header title="Expansion Opportunity" clientName={data.clientName} />
       
       <View style={s.callout} wrap={false}>
         <Text style={s.calloutTitle}>Understanding Scale</Text>
@@ -1107,7 +1116,7 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
         </Text>
       </View>
       
-      <Footer pageNum={pageNum} totalPages={totalPages} />
+      <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={data.preparedBy} />
     </Page>
   );
 };
@@ -1118,7 +1127,7 @@ const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pag
 
 const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => (
   <Page size="A4" style={s.page}>
-    <Header title="Methodology" />
+    <Header title="Methodology" clientName={data.clientName} />
     
     <View style={[s.callout, { marginBottom: 8 }]} wrap={false}>
       <Text style={s.calloutText}>
@@ -1202,7 +1211,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; p
       </Text>
     </View>
     
-    <Footer pageNum={pageNum} totalPages={totalPages} />
+    <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={data.preparedBy} />
   </Page>
 );
 
@@ -1226,7 +1235,7 @@ const ExpandROIDocument = ({ data }: { data: ExpandPDFData }) => {
       <Page1Dashboard data={data} totalPages={totalPages} />
       
       {metricPages.map((metrics, idx) => (
-        <MetricDeepDivePage key={idx} metrics={metrics} pageNum={2 + idx} totalPages={totalPages} />
+        <MetricDeepDivePage key={idx} metrics={metrics} pageNum={2 + idx} totalPages={totalPages} clientName={data.clientName} preparedBy={data.preparedBy} />
       ))}
       
       <StrategicAnalysisPage data={data} pageNum={2 + metricPages.length} totalPages={totalPages} />

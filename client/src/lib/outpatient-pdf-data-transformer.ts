@@ -52,7 +52,9 @@ export function transformToOutpatientPDFData(
   modelResults: ModelResults,
   journeyInputs: JourneyInputs,
   careSetting: string = "Outpatient",
-  organizationName?: string
+  organizationName?: string,
+  clientName?: string,
+  preparedBy?: string
 ): OutpatientPDFData {
   const timeSavedPerEncounter = modelResults.timeSavedPerEncounter || 2.5;
   const eligibleEncounters = Math.round(modelResults.encounters * (modelResults.utilizationRate / 100));
@@ -102,6 +104,8 @@ export function transformToOutpatientPDFData(
   const unitNamePlural = careSetting === "Nursing" ? "beds" : "providers";
 
   return {
+    clientName,
+    preparedBy,
     organizationName,
     careSetting,
     unitName,

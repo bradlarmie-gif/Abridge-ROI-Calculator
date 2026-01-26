@@ -157,7 +157,9 @@ function calculateIntermediateValues(
 export function transformToInpatientPDFData(
   modelResults: ModelResults,
   journeyInputs: JourneyInputs,
-  organizationName?: string
+  organizationName?: string,
+  clientName?: string,
+  preparedBy?: string
 ): InpatientPDFData {
   const timeSavedPerEncounter = modelResults.timeSavedPerEncounter || 2.5;
   const eligibleEncounters = Math.round(modelResults.encounters * (modelResults.utilizationRate / 100));
@@ -215,6 +217,8 @@ export function transformToInpatientPDFData(
   };
 
   return {
+    clientName,
+    preparedBy,
     organizationName,
     careSetting: "Inpatient",
     unitName: "hospitalist",

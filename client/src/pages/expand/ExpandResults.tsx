@@ -9,6 +9,7 @@ import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import type { DeploymentData, MetricType, MetricsData, TimelineData, MetricTrendData, MetricEntryModeState } from "./ExpandFlow";
 import { type ValueConfigData, calculateTieredROI, type CalculationInputs, EXPAND_ROI_DEFAULTS, formatCurrency } from "@/lib/expandRoiCalculator";
 import { generateExpandROIPDFBlob, generateExpandROIPDF, type ExpandPDFData } from "@/lib/expand-pdf-generator";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
 
 interface ExpandResultsProps {
   deploymentData: DeploymentData;
@@ -190,8 +191,11 @@ export default function ExpandResults({
 
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [preparedBy, setPreparedBy] = useState("");
 
-  const buildPDFData = useCallback((): ExpandPDFData => {
+  const buildPDFData = useCallback((clientNameOverride?: string, preparedByOverride?: string): ExpandPDFData => {
     const documentedEncounters = Math.round(encounters * utilizationRate / 100);
     
     const metrics: ExpandPDFData['metrics'] = [];
@@ -494,6 +498,8 @@ export default function ExpandResults({
     }
     
     return {
+      clientName: clientNameOverride,
+      preparedBy: preparedByOverride,
       organizationName: undefined,
       careSetting: 'Outpatient',
       providers,
@@ -531,11 +537,18 @@ export default function ExpandResults({
     };
   }, [providers, encounters, utilizationRate, months, metricsData, timelineData, metricTrendData, metricEntryModes, valueConfig, roiResult, currentValue, expansionCalc]);
 
-  const handleExportPDF = async () => {
+  const handleOpenExportModal = () => {
+    setShowExportModal(true);
+  };
+
+  const handleExportPDF = async (exportClientName: string, exportPreparedBy: string) => {
+    setClientName(exportClientName);
+    setPreparedBy(exportPreparedBy);
     setIsExporting(true);
     try {
-      const pdfData = buildPDFData();
+      const pdfData = buildPDFData(exportClientName, exportPreparedBy);
       await generateExpandROIPDF(pdfData);
+      setShowExportModal(false);
       toast({ 
         title: "PDF exported", 
         description: "Your value realization report has been downloaded" 
@@ -555,7 +568,7 @@ export default function ExpandResults({
   const handleShareEmail = async () => {
     setIsSharing(true);
     try {
-      const pdfData = buildPDFData();
+      const pdfData = buildPDFData(clientName, preparedBy);
       const { blob, filename } = await generateExpandROIPDFBlob(pdfData);
       
       if (navigator.share && navigator.canShare) {
@@ -1210,7 +1223,7 @@ export default function ExpandResults({
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button 
-                onClick={handleExportPDF} 
+                onClick={handleOpenExportModal} 
                 disabled={isExporting}
                 className="w-full sm:w-auto bg-[#EA2C00] text-white"
                 size="lg"
@@ -1243,6 +1256,13 @@ export default function ExpandResults({
           </div>
         </motion.div>
       </div>
+
+      <PDFExportModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        onExport={handleExportPDF}
+        isGenerating={isExporting}
+      />
     </div>
   );
 }

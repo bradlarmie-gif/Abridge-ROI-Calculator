@@ -37,6 +37,7 @@ import { generateInpatientROIPDF, generateInpatientROIPDFBlob } from "@/lib/inpa
 import { transformToInpatientPDFData } from "@/lib/inpatient-pdf-data-transformer";
 import { generateNursingROIPDF, generateNursingROIPDFBlob } from "@/lib/nursing-pdf-generator";
 import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { saveAs } from "file-saver";
 import { ManageModelSheet } from "@/components/ManageModelSheet";
@@ -206,6 +207,9 @@ export default function SummaryCommandCenter({
   const [isExporting, setIsExporting] = useState(false);
   const [manageModelSheetOpen, setManageModelSheetOpen] = useState(false);
   const [addedDrivers, setAddedDrivers] = useState<Record<string, { name: string; value: number; inputs: Record<string, any> }>>({});
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [preparedBy, setPreparedBy] = useState("");
   const { toast } = useToast();
   
   // Check if Web Share API is available (typically mobile devices)
@@ -475,7 +479,9 @@ export default function SummaryCommandCenter({
   const threeYearNet = threeYearValue - threeYearCost;
   
 
-  const handleExportPdf = useCallback(async () => {
+  const handleExportPdf = useCallback(async (exportClientName?: string, exportPreparedBy?: string) => {
+    const effectiveClientName = exportClientName ?? clientName;
+    const effectivePreparedBy = exportPreparedBy ?? preparedBy;
     const driverIdMap: Record<string, string> = {
       patient_access: 'patientAccess',
       patientAccess: 'patientAccess',
@@ -535,10 +541,10 @@ export default function SummaryCommandCenter({
     };
 
     if (activeSetting === "ed") {
-      const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs);
+      const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
       await generateEDROIPDF(pdfData);
     } else if (activeSetting === "inpatient") {
-      const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs);
+      const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
       await generateInpatientROIPDF(pdfData);
     } else if (activeSetting === "nursing") {
       const nursingJourneyInputs = {
@@ -563,13 +569,15 @@ export default function SummaryCommandCenter({
         timeSavedPerEvent: 5,
         driverResults,
       };
-      const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs);
+      const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs, undefined, effectiveClientName, effectivePreparedBy);
       await generateNursingROIPDF(pdfData);
     } else {
       const pdfData = transformToOutpatientPDFData(
         modelResultsForPDF,
         journeyInputs,
-        CARE_SETTING_LABELS[activeSetting]
+        CARE_SETTING_LABELS[activeSetting],
+        effectiveClientName,
+        effectivePreparedBy
       );
       await generateOutpatientROIPDF(pdfData);
     }
@@ -587,10 +595,14 @@ export default function SummaryCommandCenter({
     fullScale,
     selectedPace,
     networkEffect,
+    clientName,
+    preparedBy,
   ]);
 
   // Helper to generate PDF blob for sharing
-  const generatePdfBlob = useCallback(async (): Promise<{ blob: Blob; filename: string }> => {
+  const generatePdfBlob = useCallback(async (exportClientName?: string, exportPreparedBy?: string): Promise<{ blob: Blob; filename: string }> => {
+    const effectiveClientName = exportClientName ?? clientName;
+    const effectivePreparedBy = exportPreparedBy ?? preparedBy;
     const driverIdMap: Record<string, string> = {
       patient_access: 'patientAccess',
       patientAccess: 'patientAccess',
@@ -650,10 +662,10 @@ export default function SummaryCommandCenter({
     };
 
     if (activeSetting === "ed") {
-      const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs);
+      const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
       return generateEDROIPDFBlob(pdfData);
     } else if (activeSetting === "inpatient") {
-      const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs);
+      const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
       return generateInpatientROIPDFBlob(pdfData);
     } else if (activeSetting === "nursing") {
       const nursingJourneyInputs = {
@@ -678,13 +690,15 @@ export default function SummaryCommandCenter({
         timeSavedPerEvent: 5,
         driverResults,
       };
-      const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs);
+      const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs, undefined, effectiveClientName, effectivePreparedBy);
       return generateNursingROIPDFBlob(pdfData);
     } else {
       const pdfData = transformToOutpatientPDFData(
         modelResultsForPDF,
         journeyInputs,
-        CARE_SETTING_LABELS[activeSetting]
+        CARE_SETTING_LABELS[activeSetting],
+        effectiveClientName,
+        effectivePreparedBy
       );
       return generateOutpatientROIPDFBlob(pdfData);
     }
@@ -702,6 +716,8 @@ export default function SummaryCommandCenter({
     fullScale,
     selectedPace,
     networkEffect,
+    clientName,
+    preparedBy,
   ]);
 
   // Share PDF using native Web Share API (mobile)
@@ -810,7 +826,7 @@ export default function SummaryCommandCenter({
               variant="outline" 
               size="sm"
               className="gap-1.5 border-[#E5E7EB]" 
-              onClick={handleExportPdf}
+              onClick={() => setShowExportModal(true)}
               disabled={isExporting}
               data-testid="button-export-pdf-top"
             >
@@ -1694,7 +1710,7 @@ export default function SummaryCommandCenter({
             <Button 
               variant="outline" 
               className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
-              onClick={handleExportPdf}
+              onClick={() => setShowExportModal(true)}
               disabled={isExporting}
               data-testid="button-export-pdf"
             >
@@ -1719,6 +1735,24 @@ export default function SummaryCommandCenter({
         onAddDriver={handleAddDriver}
         onUpdateDriver={handleUpdateDriver}
         onRemoveDriver={handleRemoveDriver}
+      />
+
+      {/* PDF Export Modal */}
+      <PDFExportModal
+        open={showExportModal}
+        onOpenChange={(open) => setShowExportModal(open)}
+        onExport={async (name, preparer) => {
+          setClientName(name);
+          setPreparedBy(preparer);
+          setIsExporting(true);
+          setShowExportModal(false);
+          try {
+            await handleExportPdf(name, preparer);
+          } finally {
+            setIsExporting(false);
+          }
+        }}
+        isGenerating={isExporting}
       />
     </div>
   );

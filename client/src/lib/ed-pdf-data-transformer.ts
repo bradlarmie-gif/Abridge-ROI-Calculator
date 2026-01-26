@@ -186,7 +186,9 @@ function calculateIntermediateValues(
 export function transformToEDPDFData(
   modelResults: ModelResults,
   journeyInputs: JourneyInputs,
-  organizationName?: string
+  organizationName?: string,
+  clientName?: string,
+  preparedBy?: string
 ): EDPDFData {
   const timeSavedPerEncounter = modelResults.timeSavedPerEncounter || 2.5;
   const eligibleEncounters = Math.round(modelResults.encounters * (modelResults.utilizationRate / 100));
@@ -244,6 +246,8 @@ export function transformToEDPDFData(
   };
 
   return {
+    clientName,
+    preparedBy,
     organizationName,
     careSetting: "Emergency Department",
     unitName: "ED provider",
