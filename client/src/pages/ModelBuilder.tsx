@@ -477,7 +477,7 @@ export default function ModelBuilder({
     edLevelOfService: {
       annualEdVisits: 45000,
       avgWrvuPerEncounter: 2.5,
-      wrvuImprovementRate: 5,
+      wrvuImprovementRate: 3,
       conversionFactor: 33,
     },
     edDenials: {
@@ -3824,7 +3824,7 @@ export default function ModelBuilder({
           </div>
 
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            On average, Abridge improves wRVU capture by 5% through more complete documentation of clinical 
+            On average, Abridge improves wRVU capture by 3% through more complete documentation of clinical 
             complexity—especially during high-volume periods when documentation typically suffers.
           </p>
         </div>
