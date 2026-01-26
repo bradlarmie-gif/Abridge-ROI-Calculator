@@ -1005,6 +1005,8 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
     satisfaction: calculations.satisfactionScore,
   });
 
+  const nextSteps = getStrategicNextSteps(lowestDimension);
+
   return (
     <Document>
       {/* PAGE 1: THE STORY */}
@@ -1493,21 +1495,21 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
         <View style={styles.nextStepsBox}>
           <View style={styles.nextStepsHeader}>
             <Text style={styles.nextStepsTitle}>RECOMMENDED NEXT STEPS</Text>
-            <Text style={styles.nextStepsFocus}>Focus: {getStrategicNextSteps(lowestDimension).focusArea}</Text>
+            <Text style={styles.nextStepsFocus}>Focus: {nextSteps.focusArea}</Text>
           </View>
           <Text style={styles.nextStepsIntro}>
-            {getStrategicNextSteps(lowestDimension).whyThis}
+            {nextSteps.whyThis}
           </Text>
           <View style={styles.nextStepsGrid}>
             <View style={styles.nextStepsColumn}>
               <Text style={styles.nextStepsColumnTitle}>Quick Wins (This Week)</Text>
-              {getStrategicNextSteps(lowestDimension).quickWins.map((item, i) => (
+              {nextSteps.quickWins.map((item, i) => (
                 <Text key={i} style={styles.nextStepsItem}>{item}</Text>
               ))}
             </View>
             <View style={styles.nextStepsColumn}>
               <Text style={styles.nextStepsColumnTitle}>Deeper Dives (This Month)</Text>
-              {getStrategicNextSteps(lowestDimension).deeperDives.map((item, i) => (
+              {nextSteps.deeperDives.map((item, i) => (
                 <Text key={i} style={styles.nextStepsItem}>{item}</Text>
               ))}
             </View>
