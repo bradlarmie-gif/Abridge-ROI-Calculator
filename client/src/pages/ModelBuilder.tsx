@@ -4025,10 +4025,10 @@ export default function ModelBuilder({
 
         <StepDivider />
 
-        {/* Step 3: Written Off */}
+        {/* Step 3: Preventable */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Written Off</p>
-          <p className="text-xs text-[#6B7280]">How many are lost without appeal?</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Preventable</p>
+          <p className="text-xs text-[#6B7280]">What % are preventable with better documentation?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -4050,27 +4050,27 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {writtenOffDenials.toLocaleString()} written off
+                {writtenOffDenials.toLocaleString()} preventable/year
               </div>
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            These claims are abandoned—either the documentation can't support an appeal, or the rework cost 
-            exceeds the claim value. This is revenue lost forever.
+            These denials could be avoided entirely with complete documentation at the point of care—capturing 
+            the clinical reasoning before it's lost.
           </p>
         </div>
 
         <StepDivider />
 
-        {/* Step 4: Abridge Capture */}
+        {/* Step 4: Abridge Prevention */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Recovery</p>
-          <p className="text-xs text-[#6B7280]">How many can Abridge save?</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Prevention</p>
+          <p className="text-xs text-[#6B7280]">What % can Abridge prevent?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                {writtenOffDenials.toLocaleString()} written off
+                {writtenOffDenials.toLocaleString()} preventable
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
@@ -4087,13 +4087,13 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {Math.round(claimsRecovered).toLocaleString()} recovered
+                {Math.round(claimsRecovered).toLocaleString()} prevented
               </div>
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
             Abridge captures the MDM, medical necessity, and clinical reasoning that ED physicians think 
-            but don't document—especially during high-volume surges.
+            but don't document—preventing denials before they happen.
           </p>
         </div>
 
@@ -4101,13 +4101,13 @@ export default function ModelBuilder({
 
         {/* Step 5: Value */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 5: Value Recovered</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 5: Value Preserved</p>
           <p className="text-xs text-[#6B7280]">What's the revenue impact?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                {Math.round(claimsRecovered).toLocaleString()} recovered
+                {Math.round(claimsRecovered).toLocaleString()} prevented
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
