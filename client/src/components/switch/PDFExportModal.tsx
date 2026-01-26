@@ -58,7 +58,7 @@ export function PDFExportModal({ open, onOpenChange, onExport, isGenerating }: P
             </Label>
             <Input
               id="preparedBy"
-              placeholder="e.g., Sarah Johnson, Account Executive"
+              placeholder="e.g., Sarah Johnson, Sales Director"
               value={preparedBy}
               onChange={(e) => setPreparedBy(e.target.value)}
               autoComplete="off"
