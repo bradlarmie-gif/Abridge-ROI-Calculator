@@ -200,18 +200,9 @@ export default function SwitchAssessment({
               />
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-10">
               Building Your Bridge to Value
             </h2>
-            
-            <p className="text-lg text-slate-300 mb-3">
-              Since you're not using any documentation assistance today, 
-              we'll show you what AI documentation could unlock for your organization.
-            </p>
-            
-            <p className="text-[#EA2C00] font-medium mb-8">
-              Calculating your potential value...
-            </p>
 
             {/* Animated progress bar in Cadmium Red */}
             <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
