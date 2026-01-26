@@ -157,7 +157,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <Button 
           onClick={onEnter}
           size="lg"
-          className="bg-[#EA2C00] hover:bg-[#d12700] text-white px-8 py-6 text-lg rounded-lg group"
+          className="bg-[#EA2C00] hover:bg-[#d12700] text-white px-8 py-3 text-lg rounded-lg group"
           data-testid="button-enter-app"
         >
           Get Started
