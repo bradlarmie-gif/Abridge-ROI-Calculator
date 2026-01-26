@@ -460,11 +460,11 @@ export default function ModelBuilder({
     edThroughput: {
       annualEdVisits: 45000,
       lwbsRate: 3.5,
-      improvementRate: 20,
+      improvementRate: 10,
       abridgeAttributionPercent: 33,
       avgEdVisitRevenue: 600,
       includeAdmissions: true,
-      admissionPercent: 10,
+      admissionPercent: 12,
       avgAdmissionRevenue: 15000,
     },
     edRetention: {
@@ -3153,7 +3153,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Faster documentation = faster throughput = shorter waits. 20% LWBS reduction is conservative for high-LWBS EDs.
+            Faster documentation = faster throughput = shorter waits. 10% LWBS reduction is conservative for high-LWBS EDs.
           </p>
         </div>
 
@@ -3282,7 +3282,7 @@ export default function ModelBuilder({
                   </div>
                 </div>
                 <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded">
-                  LWBS patients skew lower acuity, so admission rate (10%) is below typical ED average (15-20%). Adjust if needed.
+                  LWBS patients skew lower acuity, so admission rate (12%) is below typical ED average (15-20%). Adjust if needed.
                 </p>
                 <div className="p-2 bg-amber-50 rounded border border-amber-200">
                   <p className="text-xs text-amber-700 flex items-center gap-2">
