@@ -492,6 +492,59 @@ const styles = StyleSheet.create({
     color: colors.darkGray,
   },
 
+  // Timeline bar chart styles
+  timelineBarChart: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "flex-end",
+    height: 90,
+    marginVertical: 10,
+    paddingHorizontal: 20,
+  },
+  timelineBarGroup: {
+    alignItems: "center",
+    flex: 1,
+  },
+  timelineBarWrapper: {
+    width: 50,
+    height: 70,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    position: "relative",
+  },
+  timelineBarFillPotential: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.green,
+    borderRadius: 2,
+  },
+  timelineBarFillCurrent: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.mediumGray,
+    borderRadius: 2,
+    opacity: 0.6,
+  },
+  timelineBarLabel: {
+    fontSize: 7,
+    color: colors.darkGray,
+    marginTop: 4,
+    fontWeight: "bold",
+  },
+  timelineBarValue: {
+    fontSize: 7,
+    color: colors.primary,
+    fontWeight: "bold",
+  },
+
   pageTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -1991,70 +2044,60 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </Text>
         </View>
 
-        {/* Trajectory Chart - Cost of Gap Over Time */}
+        {/* Trajectory Chart - Cost of Gap Over Time (Bar-based) */}
         <View style={styles.trajectoryChart}>
           <Text style={styles.trajectoryTitle}>THE COST OF THE GAP OVER TIME</Text>
-          <Text style={styles.trajectorySubtitle}>Cumulative unrealized value if current performance continues vs. reaching Abridge benchmarks</Text>
+          <Text style={styles.trajectorySubtitle}>Cumulative unrealized value grows each year if the gap persists</Text>
           
-          <View style={styles.trajectoryContainer}>
-            {/* Y-axis labels */}
-            <View style={styles.trajectoryYAxis}>
-              <Text style={styles.trajectoryYLabel}>{formatCurrency(calculations.annualGap * 3)}</Text>
-              <Text style={styles.trajectoryYLabel}>{formatCurrency(calculations.annualGap * 2)}</Text>
-              <Text style={styles.trajectoryYLabel}>{formatCurrency(calculations.annualGap)}</Text>
-              <Text style={styles.trajectoryYLabel}>$0</Text>
+          {/* Bar chart showing cumulative gap */}
+          <View style={styles.timelineBarChart}>
+            {/* Year 1 */}
+            <View style={styles.timelineBarGroup}>
+              <View style={styles.timelineBarWrapper}>
+                <View style={[styles.timelineBarFillPotential, { height: "33%" }]} />
+                <View style={[styles.timelineBarFillCurrent, { height: `${Math.round(33 * calculations.realizationScore / 100)}%` }]} />
+              </View>
+              <Text style={styles.timelineBarLabel}>Year 1</Text>
+              <Text style={styles.timelineBarValue}>{formatCurrency(calculations.annualGap)}</Text>
             </View>
             
-            {/* Chart area */}
-            <View style={styles.trajectoryChartArea}>
-              {/* Shaded gap area */}
-              <View style={styles.trajectoryGapArea} />
-              
-              {/* Abridge potential line (top) */}
-              <View style={styles.trajectoryLinePotential}>
-                <View style={[styles.trajectoryDot, { left: "0%", top: "100%", backgroundColor: colors.green }]} />
-                <View style={[styles.trajectoryDot, { left: "16%", top: "83%", backgroundColor: colors.green }]} />
-                <View style={[styles.trajectoryDot, { left: "33%", top: "66%", backgroundColor: colors.green }]} />
-                <View style={[styles.trajectoryDot, { left: "66%", top: "33%", backgroundColor: colors.green }]} />
-                <View style={[styles.trajectoryDot, { left: "100%", top: "0%", backgroundColor: colors.green }]} />
+            {/* Year 2 */}
+            <View style={styles.timelineBarGroup}>
+              <View style={styles.timelineBarWrapper}>
+                <View style={[styles.timelineBarFillPotential, { height: "66%" }]} />
+                <View style={[styles.timelineBarFillCurrent, { height: `${Math.round(66 * calculations.realizationScore / 100)}%` }]} />
               </View>
-              
-              {/* Current trajectory line (bottom) */}
-              <View style={styles.trajectoryLineCurrent}>
-                <View style={[styles.trajectoryDot, { left: "0%", top: "100%", backgroundColor: colors.mediumGray }]} />
-                <View style={[styles.trajectoryDot, { left: "16%", top: "94%", backgroundColor: colors.mediumGray }]} />
-                <View style={[styles.trajectoryDot, { left: "33%", top: "88%", backgroundColor: colors.mediumGray }]} />
-                <View style={[styles.trajectoryDot, { left: "66%", top: "82%", backgroundColor: colors.mediumGray }]} />
-                <View style={[styles.trajectoryDot, { left: "100%", top: "76%", backgroundColor: colors.mediumGray }]} />
-              </View>
+              <Text style={styles.timelineBarLabel}>Year 2</Text>
+              <Text style={styles.timelineBarValue}>{formatCurrency(calculations.annualGap * 2)}</Text>
             </View>
-          </View>
-          
-          {/* X-axis labels */}
-          <View style={styles.trajectoryXAxis}>
-            <Text style={styles.trajectoryXLabel}>Today</Text>
-            <Text style={styles.trajectoryXLabel}>6 mo</Text>
-            <Text style={styles.trajectoryXLabel}>Year 1</Text>
-            <Text style={styles.trajectoryXLabel}>Year 2</Text>
-            <Text style={styles.trajectoryXLabel}>Year 3</Text>
+            
+            {/* Year 3 */}
+            <View style={styles.timelineBarGroup}>
+              <View style={styles.timelineBarWrapper}>
+                <View style={[styles.timelineBarFillPotential, { height: "100%" }]} />
+                <View style={[styles.timelineBarFillCurrent, { height: `${Math.round(100 * calculations.realizationScore / 100)}%` }]} />
+              </View>
+              <Text style={styles.timelineBarLabel}>Year 3</Text>
+              <Text style={styles.timelineBarValue}>{formatCurrency(calculations.annualGap * 3)}</Text>
+            </View>
           </View>
           
           {/* Legend */}
           <View style={styles.trajectoryLegend}>
             <View style={styles.trajectoryLegendItem}>
-              <View style={[styles.trajectoryLegendLine, { backgroundColor: colors.green }]} />
-              <Text style={styles.trajectoryLegendText}>Abridge potential</Text>
+              <View style={[styles.legendDot, { backgroundColor: colors.green }]} />
+              <Text style={styles.trajectoryLegendText}>Abridge benchmark value</Text>
             </View>
             <View style={styles.trajectoryLegendItem}>
-              <View style={[styles.trajectoryLegendLine, { backgroundColor: colors.mediumGray, borderStyle: "dashed" }]} />
-              <Text style={styles.trajectoryLegendText}>Current trajectory</Text>
+              <View style={[styles.legendDot, { backgroundColor: colors.mediumGray }]} />
+              <Text style={styles.trajectoryLegendText}>Your current capture</Text>
             </View>
           </View>
           
           {/* Summary callout */}
           <View style={styles.trajectorySummary}>
             <View style={styles.trajectorySummaryIcon} />
-            <Text style={styles.trajectorySummaryLabel}>Shaded area = unrealized value</Text>
+            <Text style={styles.trajectorySummaryLabel}>Total unrealized value:</Text>
             <Text style={styles.trajectorySummaryValue}>{formatCurrency(calculations.threeYearGap)}</Text>
             <Text style={styles.trajectorySummaryPeriod}>over 3 years</Text>
           </View>
