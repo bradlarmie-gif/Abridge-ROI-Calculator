@@ -64,7 +64,7 @@ function Shape({ top, left, size, rotation, opacity, type }: ShapeProps) {
       }}
     >
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        <path d={getPath()} fill="#D4C4B0" />
+        <path d={getPath()} fill="#E5E7EB" />
       </svg>
     </div>
   );
