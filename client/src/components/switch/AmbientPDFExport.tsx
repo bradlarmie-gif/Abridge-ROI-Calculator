@@ -1268,7 +1268,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.utilizationScore)}%`, backgroundColor: getScoreColor(calculations.utilizationScore) }]} />
           </View>
           <Text style={styles.dimensionDescCompact}>
-            {DimensionEducationContent.utilization.whyMatters}
+            Every encounter not using ambient AI is an encounter where providers still carry the full documentation burden. Low utilization means you're paying for a solution that isn't being used consistently. Key drivers include workflow integration, provider habits, technical friction (login issues, connectivity), and whether using the tool feels natural in clinical workflows. Improving utilization is often the fastest path to ROI.
           </Text>
         </View>
 
@@ -1288,7 +1288,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.efficiencyScore)}%`, backgroundColor: getScoreColor(calculations.efficiencyScore) }]} />
           </View>
           <Text style={styles.dimensionDescCompact}>
-            {DimensionEducationContent.efficiency.whyMatters}
+            Time savings per encounter is the core promise of ambient AI: giving time back to providers. Less time saved means the documentation burden persists, even when the tool is being used. Key drivers include note quality out of the box, how much providers edit generated notes, specialty-specific templates, and EHR integration smoothness. Providers spending significant time editing notes often indicates template issues or trust issues with AI output.
           </Text>
         </View>
 
@@ -1308,7 +1308,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.qualityScore)}%`, backgroundColor: getScoreColor(calculations.qualityScore) }]} />
           </View>
           <Text style={styles.dimensionDescCompact}>
-            {DimensionEducationContent.quality.whyMatters}
+            Better documentation leads to better coding, which leads to better reimbursement — often the largest dollar opportunity in ambient AI. Small improvements in coding accuracy compound across thousands of encounters. Key drivers include how completely the AI captures clinical details, coder feedback loops, and whether documentation supports the complexity of care actually delivered. Review whether notes are capturing clinical complexity that supports accurate coding.
           </Text>
         </View>
 
@@ -1328,7 +1328,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
             <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.satisfactionScore)}%`, backgroundColor: getScoreColor(calculations.satisfactionScore) }]} />
           </View>
           <Text style={styles.dimensionDescCompact}>
-            {DimensionEducationContent.satisfaction.whyMatters}
+            Satisfaction is a leading indicator of long-term success. Dissatisfied providers use solutions less over time, creating a downward spiral, while happy providers become champions who drive adoption among peers. Key drivers include accuracy of generated notes, time actually saved, reliability, and whether the solution makes their day genuinely better. Understanding why providers are dissatisfied is critical — low satisfaction often predicts declining utilization.
           </Text>
         </View>
 
