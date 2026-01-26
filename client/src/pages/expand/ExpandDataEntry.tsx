@@ -20,6 +20,7 @@ import {
   Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EditableNumberInput } from "@/components/ui/editable-number-input";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import type { 
@@ -954,30 +955,24 @@ export default function ExpandDataEntry({
                       {LEVEL_OF_SERVICE.map(level => (
                         <Fragment key={level.id}>
                           <span className="text-sm text-[#111827]">{level.label}</span>
-                          <input
-                            type="number"
-                            inputMode="numeric"
+                          <EditableNumberInput
                             step="1"
-                            placeholder="0"
-                            value={losData.before[level.id] || ""}
-                            onChange={(e) => updateMetric("levelOfService", {
+                            value={losData.before[level.id] || 0}
+                            onChange={(val) => updateMetric("levelOfService", {
                               ...losData,
-                              before: { ...losData.before, [level.id]: Number(e.target.value) || 0 },
-                              averageBefore: calculateLosAverage({ ...losData.before, [level.id]: Number(e.target.value) || 0 }),
+                              before: { ...losData.before, [level.id]: val },
+                              averageBefore: calculateLosAverage({ ...losData.before, [level.id]: val }),
                             })}
                             className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
                             data-testid={`input-los-${level.id}-before`}
                           />
-                          <input
-                            type="number"
-                            inputMode="numeric"
+                          <EditableNumberInput
                             step="1"
-                            placeholder="0"
-                            value={losData.after[level.id] || ""}
-                            onChange={(e) => updateMetric("levelOfService", {
+                            value={losData.after[level.id] || 0}
+                            onChange={(val) => updateMetric("levelOfService", {
                               ...losData,
-                              after: { ...losData.after, [level.id]: Number(e.target.value) || 0 },
-                              averageAfter: calculateLosAverage({ ...losData.after, [level.id]: Number(e.target.value) || 0 }),
+                              after: { ...losData.after, [level.id]: val },
+                              averageAfter: calculateLosAverage({ ...losData.after, [level.id]: val }),
                             })}
                             className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
                             data-testid={`input-los-${level.id}-after`}
@@ -1100,27 +1095,21 @@ export default function ExpandDataEntry({
                       ].map(bucket => (
                         <Fragment key={bucket.id}>
                           <span className="text-sm text-[#111827]">{bucket.label}</span>
-                          <input
-                            type="number"
-                            inputMode="numeric"
+                          <EditableNumberInput
                             step="1"
-                            placeholder="0"
-                            value={closureData.before[bucket.id as keyof typeof closureData.before] || ""}
-                            onChange={(e) => updateMetric("chartClosure", {
+                            value={closureData.before[bucket.id as keyof typeof closureData.before] || 0}
+                            onChange={(val) => updateMetric("chartClosure", {
                               ...closureData,
-                              before: { ...closureData.before, [bucket.id]: Number(e.target.value) || 0 },
+                              before: { ...closureData.before, [bucket.id]: val },
                             })}
                             className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
                           />
-                          <input
-                            type="number"
-                            inputMode="numeric"
+                          <EditableNumberInput
                             step="1"
-                            placeholder="0"
-                            value={closureData.after[bucket.id as keyof typeof closureData.after] || ""}
-                            onChange={(e) => updateMetric("chartClosure", {
+                            value={closureData.after[bucket.id as keyof typeof closureData.after] || 0}
+                            onChange={(val) => updateMetric("chartClosure", {
                               ...closureData,
-                              after: { ...closureData.after, [bucket.id]: Number(e.target.value) || 0 },
+                              after: { ...closureData.after, [bucket.id]: val },
                             })}
                             className="px-2 py-1 text-sm text-center border border-neutral-200 rounded bg-white"
                           />
