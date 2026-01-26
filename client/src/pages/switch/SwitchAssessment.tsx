@@ -59,7 +59,7 @@ export default function SwitchAssessment({
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 1.5;
+        return prev + 1.2;
       });
     }, 35);
 
@@ -67,7 +67,7 @@ export default function SwitchAssessment({
       if (onNavigateToExplore) {
         onNavigateToExplore(inputs.providers || 75, inputs.annualEncounters || 150000);
       }
-    }, 2600);
+    }, 3200);
 
     return () => {
       clearInterval(progressInterval);
