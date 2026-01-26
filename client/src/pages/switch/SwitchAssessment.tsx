@@ -438,44 +438,46 @@ export default function SwitchAssessment({
               )}
             </div>
 
-            <div className="space-y-3 mb-6">
-              {calculations.utilizationGapValue > 0 && (
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <span className="font-medium text-[#111827] text-sm">Utilization gap</span>
-                      <span className="text-xs text-[#6B7280] ml-2">+{calculations.encounterGap.toLocaleString()} encounters</span>
+            {hasMinimumData && (
+              <div className="space-y-3 mb-6">
+                {calculations.utilizationGapValue > 0 && (
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <span className="font-medium text-[#111827] text-sm">Utilization gap</span>
+                        <span className="text-xs text-[#6B7280] ml-2">+{calculations.encounterGap.toLocaleString()} encounters</span>
+                      </div>
                     </div>
+                    <div className="font-semibold text-[#111827]">{formatCurrency(calculations.utilizationGapValue)}</div>
                   </div>
-                  <div className="font-semibold text-[#111827]">{formatCurrency(calculations.utilizationGapValue)}</div>
-                </div>
-              )}
-              {calculations.efficiencyGapValue > 0 && (
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <span className="font-medium text-[#111827] text-sm">Efficiency gap</span>
-                      <span className="text-xs text-[#6B7280] ml-2">+{calculations.efficiencyGapHours.toLocaleString()} hours</span>
+                )}
+                {calculations.efficiencyGapValue > 0 && (
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <span className="font-medium text-[#111827] text-sm">Efficiency gap</span>
+                        <span className="text-xs text-[#6B7280] ml-2">+{calculations.efficiencyGapHours.toLocaleString()} hours</span>
+                      </div>
                     </div>
+                    <div className="font-semibold text-[#111827]">{formatCurrency(calculations.efficiencyGapValue)}</div>
                   </div>
-                  <div className="font-semibold text-[#111827]">{formatCurrency(calculations.efficiencyGapValue)}</div>
-                </div>
-              )}
-              {calculations.wrvuGapValue > 0 && (
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
-                    <div>
-                      <span className="font-medium text-[#111827] text-sm">Quality gap</span>
-                      <span className="text-xs text-[#6B7280] ml-2">+{(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% wRVU</span>
+                )}
+                {calculations.wrvuGapValue > 0 && (
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
+                      <div>
+                        <span className="font-medium text-[#111827] text-sm">Quality gap</span>
+                        <span className="text-xs text-[#6B7280] ml-2">+{(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% wRVU</span>
+                      </div>
                     </div>
+                    <div className="font-semibold text-[#111827]">{formatCurrency(calculations.wrvuGapValue)}</div>
                   </div>
-                  <div className="font-semibold text-[#111827]">{formatCurrency(calculations.wrvuGapValue)}</div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             <Button
               onClick={onNext}
