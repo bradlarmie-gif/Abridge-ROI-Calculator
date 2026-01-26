@@ -1258,7 +1258,7 @@ export default function SummaryCommandCenter({
           <div className="h-64 sm:h-80 md:h-96 relative overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <div className="min-w-[320px] h-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 20, right: 15, left: 10, bottom: 50 }}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 50, left: 10, bottom: 50 }}>
                   <defs>
                     <linearGradient id="actualValueGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#10B981" stopOpacity={0.30} />
@@ -1296,7 +1296,7 @@ export default function SummaryCommandCenter({
                             fill="#64748B"
                             fontSize={9}
                           >
-                            {point.providers.toLocaleString()} {config.unitNamePlural.toLowerCase()}
+                            {point.providers.toLocaleString()} {config.unitNamePlural}
                           </text>
                         </g>
                       );
