@@ -296,46 +296,37 @@ const styles = StyleSheet.create({
     fontSize: 7,
     color: colors.darkGray,
   },
-  comparisonBars: {
+  gapBarContainer: {
     flex: 1,
-    height: 16,
-    backgroundColor: colors.white,
+    height: 14,
+    backgroundColor: colors.backgroundGray,
     borderRadius: 2,
     position: "relative",
     borderWidth: 1,
     borderColor: colors.borderGray,
+    overflow: "hidden",
   },
-  comparisonBarYou: {
+  gapBarFill: {
     position: "absolute",
     top: 0,
     left: 0,
-    height: 7,
-    backgroundColor: colors.primary,
+    height: "100%",
     borderRadius: 1,
-    justifyContent: "center",
-    paddingLeft: 4,
-    minWidth: 30,
   },
-  comparisonBarBenchmark: {
+  gapBarTarget: {
     position: "absolute",
-    bottom: 0,
-    left: 0,
-    width: "100%",
-    height: 7,
-    backgroundColor: colors.green,
-    borderRadius: 1,
-    justifyContent: "center",
-    paddingLeft: 4,
+    right: 0,
+    top: 0,
+    width: 2,
+    height: "100%",
+    backgroundColor: colors.black,
   },
-  comparisonBarText: {
-    fontSize: 6,
-    color: colors.white,
+  gapBarValue: {
+    width: 35,
+    fontSize: 8,
     fontWeight: "bold",
-  },
-  comparisonBarTextBenchmark: {
-    fontSize: 6,
-    color: colors.white,
-    fontWeight: "bold",
+    color: colors.black,
+    textAlign: "right",
   },
   comparisonLegend: {
     flexDirection: "row",
@@ -1664,61 +1655,63 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </Text>
         </View>
 
-        {/* Visual Comparison Chart */}
+        {/* Visual Comparison Chart - Gap Visualization */}
         <View style={styles.comparisonChart}>
-          <Text style={styles.comparisonChartTitle}>AT A GLANCE: YOUR PERFORMANCE VS. BENCHMARK</Text>
+          <Text style={styles.comparisonChartTitle}>AT A GLANCE: YOUR GAP TO BENCHMARK</Text>
+          <Text style={{ fontSize: 7, color: colors.mediumGray, marginBottom: 8 }}>Each bar shows your performance as a percentage of the Abridge benchmark (100% = fully optimized)</Text>
+          
+          {/* Utilization */}
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Utilization</Text>
-            <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100)}%` }]}>
-                <Text style={styles.comparisonBarText}>{inputs.utilization}%</Text>
-              </View>
-              <View style={styles.comparisonBarBenchmark}>
-                <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
-              </View>
+            <View style={styles.gapBarContainer}>
+              <View style={[styles.gapBarFill, { width: `${calculations.utilizationScore}%`, backgroundColor: calculations.utilizationScore >= 80 ? colors.green : calculations.utilizationScore >= 60 ? "#f59e0b" : colors.primary }]} />
+              <View style={styles.gapBarTarget} />
             </View>
+            <Text style={styles.gapBarValue}>{calculations.utilizationScore}%</Text>
           </View>
+          
+          {/* Efficiency */}
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Efficiency</Text>
-            <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100)}%` }]}>
-                <Text style={styles.comparisonBarText}>{inputs.timeSavedPerEncounter} min</Text>
-              </View>
-              <View style={styles.comparisonBarBenchmark}>
-                <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
-              </View>
+            <View style={styles.gapBarContainer}>
+              <View style={[styles.gapBarFill, { width: `${calculations.efficiencyScore}%`, backgroundColor: calculations.efficiencyScore >= 80 ? colors.green : calculations.efficiencyScore >= 60 ? "#f59e0b" : colors.primary }]} />
+              <View style={styles.gapBarTarget} />
             </View>
+            <Text style={styles.gapBarValue}>{calculations.efficiencyScore}%</Text>
           </View>
+          
+          {/* Quality */}
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Quality</Text>
-            <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100)}%` }]}>
-                <Text style={styles.comparisonBarText}>+{inputs.wrvuLift}%</Text>
-              </View>
-              <View style={styles.comparisonBarBenchmark}>
-                <Text style={styles.comparisonBarTextBenchmark}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
-              </View>
+            <View style={styles.gapBarContainer}>
+              <View style={[styles.gapBarFill, { width: `${calculations.qualityScore}%`, backgroundColor: calculations.qualityScore >= 80 ? colors.green : calculations.qualityScore >= 60 ? "#f59e0b" : colors.primary }]} />
+              <View style={styles.gapBarTarget} />
             </View>
+            <Text style={styles.gapBarValue}>{calculations.qualityScore}%</Text>
           </View>
+          
+          {/* Satisfaction */}
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Satisfaction</Text>
-            <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100)}%` }]}>
-                <Text style={styles.comparisonBarText}>{inputs.satisfaction}%</Text>
-              </View>
-              <View style={styles.comparisonBarBenchmark}>
-                <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
-              </View>
+            <View style={styles.gapBarContainer}>
+              <View style={[styles.gapBarFill, { width: `${calculations.satisfactionScore}%`, backgroundColor: calculations.satisfactionScore >= 80 ? colors.green : calculations.satisfactionScore >= 60 ? "#f59e0b" : colors.primary }]} />
+              <View style={styles.gapBarTarget} />
             </View>
+            <Text style={styles.gapBarValue}>{calculations.satisfactionScore}%</Text>
           </View>
+          
           <View style={styles.comparisonLegend}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={styles.legendText}>Your Performance</Text>
+              <Text style={styles.legendText}>Needs Focus (&lt;60%)</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: "#f59e0b" }]} />
+              <Text style={styles.legendText}>Developing (60-80%)</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.green }]} />
-              <Text style={styles.legendText}>Abridge Benchmark</Text>
+              <Text style={styles.legendText}>Strong (80%+)</Text>
             </View>
           </View>
         </View>
