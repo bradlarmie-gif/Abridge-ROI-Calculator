@@ -194,8 +194,8 @@ export default function SwitchFullAnalysis({
                 <ComposedChart data={graphData} margin={{ top: 15, right: 15, left: 10, bottom: 5 }}>
                   <defs>
                     <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.08} />
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.03} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
