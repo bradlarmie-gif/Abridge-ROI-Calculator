@@ -101,34 +101,35 @@ export default function SwitchAmbientConclusion({
                 </div>
               </div>
               
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                    <defs>
-                      <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#059669" stopOpacity={0.2} />
-                        <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
-                      </linearGradient>
-                      <linearGradient id="currentGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.1} />
-                        <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    
-                    <XAxis 
-                      dataKey="period" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#64748b', fontSize: 12 }}
-                      dy={10}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#64748b', fontSize: 12 }}
-                      tickFormatter={(v) => formatCurrency(v)}
-                      width={65}
-                    />
+              <div className="h-64 sm:h-80 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="min-w-[300px] h-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData} margin={{ top: 15, right: 15, left: 10, bottom: 15 }}>
+                      <defs>
+                        <linearGradient id="abridgeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#059669" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
+                        </linearGradient>
+                        <linearGradient id="currentGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.1} />
+                          <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      
+                      <XAxis 
+                        dataKey="period" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748b', fontSize: 10 }}
+                        dy={8}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748b', fontSize: 10 }}
+                        tickFormatter={(v) => formatCurrency(v)}
+                        width={55}
+                      />
                     
                     <Tooltip 
                       formatter={(value: number, name: string) => [
@@ -154,10 +155,11 @@ export default function SwitchAmbientConclusion({
                       stroke="#059669" 
                       strokeWidth={3}
                       fill="url(#abridgeGradient)"
-                      dot={{ fill: '#059669', strokeWidth: 0, r: 5 }}
+                      dot={{ fill: '#059669', strokeWidth: 0, r: 4 }}
                     />
-                  </ComposedChart>
-                </ResponsiveContainer>
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
               
               <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-slate-100">

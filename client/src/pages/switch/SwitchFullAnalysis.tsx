@@ -188,21 +188,23 @@ export default function SwitchFullAnalysis({
             Cumulative value if you stay at current performance vs. reach Abridge benchmarks
           </p>
 
-          <div className="h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#6B7280" }} />
-                <YAxis 
-                  tickFormatter={(value) => formatCurrency(value)} 
-                  tick={{ fontSize: 12, fill: "#6B7280" }}
-                />
+          <div className="h-56 sm:h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="min-w-[300px] h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={graphData} margin={{ top: 15, right: 15, left: 10, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#6B7280" }} />
+                  <YAxis 
+                    tickFormatter={(value) => formatCurrency(value)} 
+                    tick={{ fontSize: 10, fill: "#6B7280" }}
+                    width={60}
+                  />
                 <Tooltip 
                   formatter={(value: number, name: string) => [
                     formatCurrency(value), 
@@ -253,10 +255,11 @@ export default function SwitchFullAnalysis({
                 <Legend 
                   verticalAlign="bottom"
                   iconType="line"
-                  wrapperStyle={{ paddingTop: 16 }}
+                  wrapperStyle={{ paddingTop: 12, fontSize: 10 }}
                 />
-              </LineChart>
-            </ResponsiveContainer>
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
           
           {/* Gap callout - visual key + 3-year total */}

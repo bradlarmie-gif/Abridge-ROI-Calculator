@@ -1239,61 +1239,62 @@ export default function SummaryCommandCenter({
           </div>
           
           {/* Journey Chart */}
-          <div className="h-80 md:h-96 relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                <defs>
-                  <linearGradient id="actualValueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.30} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                
-                <XAxis 
-                  dataKey="month"
-                  type="number"
-                  domain={[0, currentPace.months]}
-                  axisLine={{ stroke: '#E2E8F0', strokeWidth: 1 }}
-                  tickLine={false}
-                  tick={(props: { x: number; y: number; payload: { value: number } }) => {
-                    const { x, y, payload } = props;
-                    const point = chartData.find(d => d.month === payload.value);
-                    if (!point) return <g />;
-                    const isEndpoint = point.isPilot || point.isFullScale;
-                    return (
-                      <g transform={`translate(${x},${y})`}>
-                        <text 
-                          x={0} 
-                          y={12} 
-                          textAnchor="middle" 
-                          fill={isEndpoint ? "#EA2C00" : "#1E293B"}
-                          fontSize={11}
-                          fontWeight={isEndpoint ? 700 : 500}
-                        >
-                          {point.milestoneLabel}
-                        </text>
-                        <text 
-                          x={0} 
-                          y={26} 
-                          textAnchor="middle" 
-                          fill="#64748B"
-                          fontSize={10}
-                        >
-                          {point.providers.toLocaleString()} {config.unitNamePlural.toLowerCase()}
-                        </text>
-                      </g>
-                    );
-                  }}
-                  ticks={chartData.map(d => d.month)}
-                  height={55}
-                />
+          <div className="h-64 sm:h-80 md:h-96 relative overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="min-w-[320px] h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 20, right: 15, left: 10, bottom: 50 }}>
+                  <defs>
+                    <linearGradient id="actualValueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.30} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  
+                  <XAxis 
+                    dataKey="month"
+                    type="number"
+                    domain={[0, currentPace.months]}
+                    axisLine={{ stroke: '#E2E8F0', strokeWidth: 1 }}
+                    tickLine={false}
+                    tick={(props: { x: number; y: number; payload: { value: number } }) => {
+                      const { x, y, payload } = props;
+                      const point = chartData.find(d => d.month === payload.value);
+                      if (!point) return <g />;
+                      const isEndpoint = point.isPilot || point.isFullScale;
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text 
+                            x={0} 
+                            y={12} 
+                            textAnchor="middle" 
+                            fill={isEndpoint ? "#EA2C00" : "#1E293B"}
+                            fontSize={10}
+                            fontWeight={isEndpoint ? 700 : 500}
+                          >
+                            {point.milestoneLabel}
+                          </text>
+                          <text 
+                            x={0} 
+                            y={24} 
+                            textAnchor="middle" 
+                            fill="#64748B"
+                            fontSize={9}
+                          >
+                            {point.providers.toLocaleString()} {config.unitNamePlural.toLowerCase()}
+                          </text>
+                        </g>
+                      );
+                    }}
+                    ticks={chartData.map(d => d.month)}
+                    height={45}
+                  />
                 
                 <YAxis 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#64748B", fontSize: 12 }}
+                  tick={{ fill: "#64748B", fontSize: 10 }}
                   tickFormatter={(v) => formatCompactCurrency(v)}
-                  width={75}
+                  width={55}
                 />
                 
                 <Tooltip content={<CustomTooltip unitName={config.unitNamePlural} encountersPerUnit={encountersPerUnit} volumeUnit={config.encounterName} />} />
@@ -1340,22 +1341,23 @@ export default function SummaryCommandCenter({
                   strokeWidth={3}
                 />
               </ComposedChart>
-            </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
           </div>
           
           {/* Chart Legend */}
-          <div className="flex flex-wrap justify-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />
-              <span className="text-sm text-[#64748B]">Pilot (Today)</span>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#EA2C00]" />
+              <span className="text-xs sm:text-sm text-[#64748B]">Pilot (Today)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-0.5 bg-[#10B981]" />
-              <span className="text-sm text-[#64748B]">Actual value (with compounding)</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-5 sm:w-6 h-0.5 bg-[#10B981]" />
+              <span className="text-xs sm:text-sm text-[#64748B]">Actual value</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-0.5 border-t-2 border-dashed border-[#64748B]" />
-              <span className="text-sm text-[#64748B]">Linear projection</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-5 sm:w-6 h-0.5 border-t-2 border-dashed border-[#64748B]" />
+              <span className="text-xs sm:text-sm text-[#64748B]">Linear projection</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#10B981]" />

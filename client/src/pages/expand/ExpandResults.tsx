@@ -684,28 +684,29 @@ export default function ExpandResults({
             Your Value Journey
           </h2>
           
-          <div className="h-52 md:h-64 -mx-2 md:mx-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={journeyData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-                <defs>
-                  <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <XAxis 
-                  dataKey="time" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#6B7280', fontSize: 12 }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#6B7280', fontSize: 12 }}
-                  tickFormatter={(v) => formatCurrency(v)}
-                  width={80}
-                />
+          <div className="h-48 sm:h-52 md:h-64 overflow-x-auto -mx-2 md:mx-0">
+            <div className="min-w-[280px] h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={journeyData} margin={{ top: 15, right: 15, left: 10, bottom: 8 }}>
+                  <defs>
+                    <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="time" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#6B7280', fontSize: 10 }}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#6B7280', fontSize: 10 }}
+                    tickFormatter={(v) => formatCurrency(v)}
+                    width={55}
+                  />
                 <Tooltip content={<CustomTooltip />} />
                 <Area 
                   type="monotone" 
@@ -739,12 +740,13 @@ export default function ExpandResults({
                       />
                     );
                   }}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
           </div>
           
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-3 md:mt-4 text-xs md:text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-6 mt-3 md:mt-4 text-xs md:text-sm">
             <div className="flex items-center gap-1.5 md:gap-2">
               <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-emerald-500"></div>
               <span className="text-[#6B7280]">Actual</span>

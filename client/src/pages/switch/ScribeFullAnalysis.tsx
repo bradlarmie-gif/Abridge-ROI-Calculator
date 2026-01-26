@@ -336,23 +336,24 @@ export default function ScribeFullAnalysis({
             </p>
           </div>
 
-          <div className="h-64 md:h-80 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-6">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={scalingData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis
-                  dataKey="coverage"
-                  tickFormatter={(v) => `${v}%`}
-                  stroke="#6B7280"
-                  fontSize={12}
-                  label={{ value: "Coverage", position: "bottom", offset: 0 }}
-                />
-                <YAxis
-                  tickFormatter={(v) => formatCurrency(v)}
-                  stroke="#6B7280"
-                  fontSize={12}
-                  width={80}
-                />
+          <div className="h-56 sm:h-64 md:h-80 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-6">
+            <div className="min-w-[300px] h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={scalingData} margin={{ top: 15, right: 15, left: 10, bottom: 15 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis
+                    dataKey="coverage"
+                    tickFormatter={(v) => `${v}%`}
+                    stroke="#6B7280"
+                    fontSize={10}
+                    label={{ value: "Coverage", position: "bottom", offset: -5, fontSize: 10 }}
+                  />
+                  <YAxis
+                    tickFormatter={(v) => formatCurrency(v)}
+                    stroke="#6B7280"
+                    fontSize={10}
+                    width={60}
+                  />
                 <Tooltip
                   formatter={(value: number, name: string) => [formatCurrency(value), name]}
                   labelFormatter={(v) => `${v}% coverage`}
@@ -384,19 +385,20 @@ export default function ScribeFullAnalysis({
                     }
                     return <circle r={0} />;
                   }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 text-xs sm:text-sm mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 border-t-2 border-dashed border-[#6B7280]"></div>
-              <span className="text-[#6B7280]">Scribe program cost (linear scaling)</span>
+              <div className="w-6 sm:w-8 border-t-2 border-dashed border-[#6B7280]"></div>
+              <span className="text-[#6B7280]">Scribe program cost</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#EA2C00]"></div>
-              <span className="text-[#6B7280]">Your current position: {calculations.coveragePercent}%</span>
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-[#EA2C00]"></div>
+              <span className="text-[#6B7280]">Current: {calculations.coveragePercent}%</span>
             </div>
           </div>
 
