@@ -344,37 +344,37 @@ export default function SwitchFullAnalysis({
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
           <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of Waiting</h2>
-          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">Every month at current performance = unrealized value</p>
+          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">What you leave on the table by delaying</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
-            <div className="border-2 border-emerald-500 rounded-xl p-4 md:p-6 text-center relative">
+            <div className="border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-4 md:p-6 text-center relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500 text-white text-[10px] md:text-xs font-semibold rounded-full">
                 RECOMMENDED
               </div>
-              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Close the gap now</div>
-              <div className="text-xl md:text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearGap)}</div>
-              <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">3-year value captured</div>
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Act now</div>
+              <div className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearGap)}</div>
+              <div className="text-xs md:text-sm text-emerald-700 font-medium mt-1">full 3-year value</div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-4 md:p-6 text-center">
+            <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-4 md:p-6 text-center">
               <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Wait 6 months</div>
-              <div className="text-xl md:text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait6MonthsValue)}</div>
-              <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">3-year value</div>
-              <div className="text-[10px] md:text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait6MonthsLoss)}</div>
+              <div className="text-2xl md:text-3xl font-bold text-amber-600">-{formatCurrency(calculations.wait6MonthsLoss)}</div>
+              <div className="text-xs md:text-sm text-amber-700 font-medium mt-1">lost forever</div>
+              <div className="text-[10px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait6MonthsValue)} remaining</div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-4 md:p-6 text-center">
+            <div className="border border-red-200 bg-red-50/50 rounded-xl p-4 md:p-6 text-center">
               <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Wait 12 months</div>
-              <div className="text-xl md:text-2xl font-bold text-[#111827]">{formatCurrency(calculations.wait12MonthsValue)}</div>
-              <div className="text-[10px] md:text-xs text-[#6B7280] mt-1">3-year value</div>
-              <div className="text-[10px] md:text-xs text-slate-500 font-medium mt-2">Lost: {formatCurrency(calculations.wait12MonthsLoss)}</div>
+              <div className="text-2xl md:text-3xl font-bold text-red-500">-{formatCurrency(calculations.wait12MonthsLoss)}</div>
+              <div className="text-xs md:text-sm text-red-600 font-medium mt-1">lost forever</div>
+              <div className="text-[10px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait12MonthsValue)} remaining</div>
             </div>
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-slate-50 rounded-lg border border-slate-200">
             <Clock className="w-5 h-5 md:w-6 md:h-6 text-slate-500 flex-shrink-0" />
             <span className="text-sm md:text-base text-[#111827]">
-              Every month at current state = <strong>{formatCurrency(calculations.monthlyGap)}</strong> in unrealized value
+              Every month you wait = <strong className="text-amber-600">{formatCurrency(calculations.monthlyGap)}</strong> gone
             </span>
           </div>
         </section>
