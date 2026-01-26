@@ -65,6 +65,302 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+  // PREMIUM HEADER STYLES
+  premiumHeader: {
+    marginBottom: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+  },
+  premiumHeaderTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  premiumHeaderRight: {
+    textAlign: "right",
+  },
+  premiumDocType: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.primary,
+    letterSpacing: 1,
+  },
+  premiumDate: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  premiumHeaderClient: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: colors.backgroundGray,
+    padding: 10,
+    borderRadius: 4,
+  },
+  premiumPreparedLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  premiumClientName: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  premiumPreparedBy: {
+    fontSize: 10,
+    color: colors.darkGray,
+  },
+
+  // EXECUTIVE SUMMARY STYLES
+  execSummary: {
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    backgroundColor: colors.white,
+  },
+  execSummaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.backgroundGray,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  execSummaryAccent: {
+    width: 3,
+    height: 14,
+    backgroundColor: colors.primary,
+    marginRight: 8,
+    borderRadius: 1,
+  },
+  execSummaryTitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 0.5,
+  },
+  execSummaryContent: {
+    padding: 10,
+  },
+  execBullet: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 4,
+  },
+  execBulletBold: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+
+  // STYLED SECTION HEADERS
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    marginTop: 10,
+  },
+  sectionAccent: {
+    width: 3,
+    height: 12,
+    backgroundColor: colors.primary,
+    marginRight: 8,
+    borderRadius: 1,
+  },
+  sectionTitleStyled: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 0.5,
+  },
+  contextText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 8,
+  },
+
+  // CONFIDENTIAL FOOTER
+  confidentialFooter: {
+    position: "absolute",
+    bottom: 20,
+    left: 36,
+    right: 36,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  confidentialText: {
+    fontSize: 6,
+    color: colors.mediumGray,
+    fontStyle: "italic",
+  },
+  pageNumber: {
+    fontSize: 7,
+    color: colors.mediumGray,
+  },
+
+  // PAGE HEADER (for pages 2-4)
+  pageHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  pageHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  pageHeaderClient: {
+    fontSize: 9,
+    color: colors.darkGray,
+    marginLeft: 12,
+    paddingLeft: 12,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.borderGray,
+  },
+  pageHeaderTitle: {
+    fontSize: 9,
+    color: colors.mediumGray,
+  },
+
+  // CONTACT CTA
+  contactCTA: {
+    marginTop: 12,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    overflow: "hidden",
+  },
+  contactCTAHeader: {
+    backgroundColor: colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  contactCTATitle: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.white,
+    letterSpacing: 0.5,
+  },
+  contactCTAText: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    padding: 10,
+    paddingBottom: 4,
+  },
+  contactCTAPrepared: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+  },
+
+  // COMPARISON CHART STYLES
+  comparisonChart: {
+    marginTop: 12,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 4,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  comparisonChartTitle: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 8,
+    letterSpacing: 0.3,
+  },
+  comparisonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  comparisonLabel: {
+    width: 70,
+    fontSize: 7,
+    color: colors.darkGray,
+  },
+  comparisonBars: {
+    flex: 1,
+    height: 16,
+    backgroundColor: colors.white,
+    borderRadius: 2,
+    position: "relative",
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+  },
+  comparisonBarYou: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    height: 7,
+    backgroundColor: colors.primary,
+    borderRadius: 1,
+    justifyContent: "center",
+    paddingLeft: 4,
+    minWidth: 30,
+  },
+  comparisonBarBenchmark: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    height: 7,
+    backgroundColor: colors.green,
+    borderRadius: 1,
+    justifyContent: "center",
+    paddingLeft: 4,
+  },
+  comparisonBarText: {
+    fontSize: 6,
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  comparisonBarTextBenchmark: {
+    fontSize: 6,
+    color: colors.white,
+    fontWeight: "bold",
+  },
+  comparisonLegend: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 12,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  legendText: {
+    fontSize: 7,
+    color: colors.darkGray,
+  },
+
   pageTitle: {
     fontSize: 18,
     fontWeight: "bold",
@@ -776,6 +1072,8 @@ const styles = StyleSheet.create({
 interface AmbientPDFData {
   inputs: SwitchInputs;
   calculations: SwitchCalculations;
+  clientName: string;
+  preparedBy: string;
 }
 
 const formatCurrency = (num: number): string => {
@@ -1013,7 +1311,7 @@ const DimensionEducationContent = {
   },
 };
 
-const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
+const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: AmbientPDFData) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -1061,25 +1359,55 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
     <Document>
       {/* PAGE 1: THE STORY */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
-          <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
-            <Text style={styles.headerDate}>{today}</Text>
+        {/* Premium Header with Client Info */}
+        <View style={styles.premiumHeader}>
+          <View style={styles.premiumHeaderTop}>
+            <Image src={abridgeLogoPath} style={{ width: 100, height: 20 }} />
+            <View style={styles.premiumHeaderRight}>
+              <Text style={styles.premiumDocType}>VALUE REALIZATION ASSESSMENT</Text>
+              <Text style={styles.premiumDate}>{today}</Text>
+            </View>
+          </View>
+          <View style={styles.premiumHeaderClient}>
+            <View>
+              <Text style={styles.premiumPreparedLabel}>PREPARED FOR</Text>
+              <Text style={styles.premiumClientName}>{clientName}</Text>
+            </View>
+            <View style={{ textAlign: "right" }}>
+              <Text style={styles.premiumPreparedLabel}>PREPARED BY</Text>
+              <Text style={styles.premiumPreparedBy}>{preparedBy}</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.introBox}>
-          <Text style={styles.introTitle}>UNDERSTANDING VALUE REALIZATION</Text>
-          <Text style={styles.introText}>
-            Ambient AI creates value through four dimensions: how many encounters use it (utilization), how much time it saves (efficiency), how it improves documentation quality (wRVU lift), and whether providers will keep using it (satisfaction).
-          </Text>
-          <Text style={styles.introText}>
-            Most organizations capture only 30-60% of the potential value. The gap isn't because ambient AI doesn't work — it's because value realization requires optimization across all four dimensions. Small gaps in each area compound into significant unrealized value.
-          </Text>
+        {/* Executive Summary - The C-Suite 10-Second Read */}
+        <View style={styles.execSummary}>
+          <View style={styles.execSummaryHeader}>
+            <View style={styles.execSummaryAccent} />
+            <Text style={styles.execSummaryTitle}>EXECUTIVE SUMMARY</Text>
+          </View>
+          <View style={styles.execSummaryContent}>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.annualGap)} annual gap</Text> — value that exists in your ambient AI investment but isn't being captured</Text>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{calculations.realizationScore}% value realization</Text> — you're capturing {calculations.realizationScore} cents of every dollar of potential value</Text>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{lowestDimension.name} is your primary opportunity</Text> — at {lowestDimension.score}% of benchmark, this is where focused effort will yield the greatest returns</Text>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.threeYearGap)} at risk over 3 years</Text> — if current performance continues without optimization</Text>
+          </View>
         </View>
 
-        <Text style={styles.sectionTitle}>YOUR RESULTS AT A GLANCE</Text>
+        {/* Section: Context */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionAccent} />
+          <Text style={styles.sectionTitleStyled}>CONTEXT: UNDERSTANDING VALUE REALIZATION</Text>
+        </View>
+        <Text style={styles.contextText}>
+          Ambient AI creates value through four dimensions: utilization (encounter coverage), efficiency (time savings), quality (wRVU lift), and satisfaction (provider adoption). Most organizations capture 30-60% of potential value because optimization requires all four dimensions working together. Small gaps compound into significant unrealized value.
+        </Text>
+
+        {/* Section: Results */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionAccent} />
+          <Text style={styles.sectionTitleStyled}>YOUR RESULTS AT A GLANCE</Text>
+        </View>
 
         <View style={styles.metricsGrid}>
           <View style={styles.metricCard}>
@@ -1232,23 +1560,27 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </Text>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 1/4</Text>
+        <View style={styles.confidentialFooter}>
+          <Text style={styles.confidentialText}>CONFIDENTIAL — Prepared exclusively for {clientName}</Text>
+          <Text style={styles.pageNumber}>Page 1 of 4</Text>
         </View>
       </Page>
 
       {/* PAGE 2: ALL FOUR DIMENSIONS ON ONE PAGE */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
-          <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
+        <View style={styles.pageHeader}>
+          <View style={styles.pageHeaderLeft}>
+            <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
+            <Text style={styles.pageHeaderClient}>{clientName}</Text>
           </View>
+          <Text style={styles.pageHeaderTitle}>Value Realization Assessment</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 12, lineHeight: 1.4 }}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionAccent} />
+          <Text style={styles.sectionTitleStyled}>EXHIBIT 1: YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
+        </View>
+        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10, lineHeight: 1.4 }}>
           Value realization depends on performance in four areas. Here's where you stand compared to Abridge benchmarks:
         </Text>
 
@@ -1332,8 +1664,67 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </Text>
         </View>
 
+        {/* Visual Comparison Chart */}
+        <View style={styles.comparisonChart}>
+          <Text style={styles.comparisonChartTitle}>AT A GLANCE: YOUR PERFORMANCE VS. BENCHMARK</Text>
+          <View style={styles.comparisonRow}>
+            <Text style={styles.comparisonLabel}>Utilization</Text>
+            <View style={styles.comparisonBars}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100)}%` }]}>
+                <Text style={styles.comparisonBarText}>{inputs.utilization}%</Text>
+              </View>
+              <View style={styles.comparisonBarBenchmark}>
+                <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.comparisonRow}>
+            <Text style={styles.comparisonLabel}>Efficiency</Text>
+            <View style={styles.comparisonBars}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100)}%` }]}>
+                <Text style={styles.comparisonBarText}>{inputs.timeSavedPerEncounter} min</Text>
+              </View>
+              <View style={styles.comparisonBarBenchmark}>
+                <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.comparisonRow}>
+            <Text style={styles.comparisonLabel}>Quality</Text>
+            <View style={styles.comparisonBars}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100)}%` }]}>
+                <Text style={styles.comparisonBarText}>+{inputs.wrvuLift}%</Text>
+              </View>
+              <View style={styles.comparisonBarBenchmark}>
+                <Text style={styles.comparisonBarTextBenchmark}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.comparisonRow}>
+            <Text style={styles.comparisonLabel}>Satisfaction</Text>
+            <View style={styles.comparisonBars}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100)}%` }]}>
+                <Text style={styles.comparisonBarText}>{inputs.satisfaction}%</Text>
+              </View>
+              <View style={styles.comparisonBarBenchmark}>
+                <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.comparisonLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+              <Text style={styles.legendText}>Your Performance</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.green }]} />
+              <Text style={styles.legendText}>Abridge Benchmark</Text>
+            </View>
+          </View>
+        </View>
+
         {/* Score Summary */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
           <Text style={{ fontSize: 8, color: colors.darkGray }}>
             Average: ({calculations.utilizationScore}% + {calculations.efficiencyScore}% + {calculations.qualityScore}% + {calculations.satisfactionScore}%) ÷ 4 = <Text style={{ fontWeight: "bold", color: colors.black }}>{calculations.realizationScore}%</Text>
           </Text>
@@ -1343,22 +1734,26 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 2/4</Text>
+        <View style={styles.confidentialFooter}>
+          <Text style={styles.confidentialText}>CONFIDENTIAL — Prepared exclusively for {clientName}</Text>
+          <Text style={styles.pageNumber}>Page 2 of 4</Text>
         </View>
       </Page>
 
       {/* PAGE 3: COST ANALYSIS + CALCULATIONS */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
-          <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
+        <View style={styles.pageHeader}>
+          <View style={styles.pageHeaderLeft}>
+            <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
+            <Text style={styles.pageHeaderClient}>{clientName}</Text>
           </View>
+          <Text style={styles.pageHeaderTitle}>Value Realization Assessment</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>THE COST OF THE GAP OVER TIME</Text>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionAccent} />
+          <Text style={styles.sectionTitleStyled}>EXHIBIT 2: THE COST OF THE GAP OVER TIME</Text>
+        </View>
         <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
           If the gap persists, unrealized value accumulates:
         </Text>
@@ -1395,7 +1790,10 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, { marginTop: 12 }]}>HOW EACH GAP IS CALCULATED</Text>
+        <View style={[styles.sectionHeader, { marginTop: 10 }]}>
+          <View style={styles.sectionAccent} />
+          <Text style={styles.sectionTitleStyled}>EXHIBIT 3: HOW EACH GAP IS CALCULATED</Text>
+        </View>
         <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 8 }}>
           Every number can be traced back to your inputs and transparent assumptions:
         </Text>
@@ -1460,19 +1858,20 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </Text>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 3/4</Text>
+        <View style={styles.confidentialFooter}>
+          <Text style={styles.confidentialText}>CONFIDENTIAL — Prepared exclusively for {clientName}</Text>
+          <Text style={styles.pageNumber}>Page 3 of 4</Text>
         </View>
       </Page>
 
       {/* PAGE 4: TAKEAWAYS & NEXT STEPS */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
-          <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
+        <View style={styles.pageHeader}>
+          <View style={styles.pageHeaderLeft}>
+            <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
+            <Text style={styles.pageHeaderClient}>{clientName}</Text>
           </View>
+          <Text style={styles.pageHeaderTitle}>Value Realization Assessment</Text>
         </View>
 
         <View style={styles.takeawaysBox}>
@@ -1538,17 +1937,38 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </Text>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 4/4</Text>
+        {/* Contact CTA */}
+        <View style={styles.contactCTA}>
+          <View style={styles.contactCTAHeader}>
+            <Text style={styles.contactCTATitle}>NEXT STEPS</Text>
+          </View>
+          <Text style={styles.contactCTAText}>
+            To discuss these findings and explore how Abridge can help close your value gap, contact your Abridge representative.
+          </Text>
+          <Text style={styles.contactCTAPrepared}>
+            This assessment was prepared by: <Text style={{ fontWeight: "bold" }}>{preparedBy}</Text>
+          </Text>
+        </View>
+
+        <View style={styles.confidentialFooter}>
+          <Text style={styles.confidentialText}>CONFIDENTIAL — Prepared exclusively for {clientName}</Text>
+          <Text style={styles.pageNumber}>Page 4 of 4</Text>
         </View>
       </Page>
     </Document>
   );
 };
 
-export async function generateAmbientPDF(inputs: SwitchInputs, calculations: SwitchCalculations) {
-  const blob = await pdf(<AmbientPDFDocument inputs={inputs} calculations={calculations} />).toBlob();
+export async function generateAmbientPDF(inputs: SwitchInputs, calculations: SwitchCalculations, clientName?: string, preparedBy?: string) {
+  const blob = await pdf(
+    <AmbientPDFDocument 
+      inputs={inputs} 
+      calculations={calculations} 
+      clientName={clientName || "Your Organization"}
+      preparedBy={preparedBy || "Abridge"}
+    />
+  ).toBlob();
   const today = new Date().toISOString().split("T")[0];
-  saveAs(blob, `ambient-value-assessment-${today}.pdf`);
+  const sanitizedClientName = (clientName || "organization").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 30);
+  saveAs(blob, `value-assessment-${sanitizedClientName}-${today}.pdf`);
 }

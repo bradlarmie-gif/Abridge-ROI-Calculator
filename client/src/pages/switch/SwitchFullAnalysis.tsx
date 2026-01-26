@@ -12,6 +12,7 @@ import {
   type SwitchInputs 
 } from "@/lib/switchGapCalculator";
 import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
 
 interface SwitchFullAnalysisProps {
   inputs: SwitchInputs;
@@ -35,12 +36,14 @@ export default function SwitchFullAnalysis({
 
   const solutionLabel = inputs.solution === "ambient-ai" ? "Ambient AI" : "Human Scribes";
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      await generateAmbientPDF(inputs, calculations);
+      await generateAmbientPDF(inputs, calculations, clientName, preparedBy);
+      setShowExportModal(false);
       toast({
         title: "PDF Generated",
         description: "Your Value Realization Assessment has been downloaded.",
@@ -427,11 +430,10 @@ export default function SwitchFullAnalysis({
               variant="outline" 
               className="h-11 md:h-12 px-4 md:px-6" 
               data-testid="button-export-pdf"
-              onClick={handleExportPDF}
-              disabled={isExporting}
+              onClick={() => setShowExportModal(true)}
             >
               <Download className="w-4 h-4 mr-2" />
-              {isExporting ? "Generating..." : "Export as PDF"}
+              Export as PDF
             </Button>
             <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
               <Share2 className="w-4 h-4 mr-2" />
@@ -440,6 +442,13 @@ export default function SwitchFullAnalysis({
           </div>
         </section>
       </main>
+
+      <PDFExportModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        onExport={handleExportPDF}
+        isGenerating={isExporting}
+      />
     </div>
   );
 }
