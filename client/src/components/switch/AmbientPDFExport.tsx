@@ -270,38 +270,37 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
 
-  // COMPARISON CHART STYLES - Compact version
+  // COMPARISON CHART STYLES
   comparisonChart: {
-    marginTop: 8,
+    marginTop: 12,
     backgroundColor: colors.backgroundGray,
-    borderRadius: 3,
-    padding: 6,
-    paddingBottom: 4,
+    borderRadius: 4,
+    padding: 10,
     borderWidth: 1,
     borderColor: colors.borderGray,
   },
   comparisonChartTitle: {
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 4,
+    marginBottom: 8,
     letterSpacing: 0.3,
   },
   comparisonRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 3,
+    marginBottom: 6,
   },
   comparisonLabel: {
-    width: 55,
-    fontSize: 6,
+    width: 70,
+    fontSize: 7,
     color: colors.darkGray,
   },
   comparisonBars: {
     flex: 1,
-    height: 12,
+    height: 16,
     backgroundColor: colors.white,
-    borderRadius: 1,
+    borderRadius: 2,
     position: "relative",
     borderWidth: 1,
     borderColor: colors.borderGray,
@@ -310,107 +309,56 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    height: 5,
+    height: 7,
     backgroundColor: colors.primary,
     borderRadius: 1,
     justifyContent: "center",
-    paddingLeft: 3,
-    minWidth: 24,
+    paddingLeft: 4,
+    minWidth: 30,
   },
   comparisonBarBenchmark: {
     position: "absolute",
     bottom: 0,
     left: 0,
-    height: 5,
-    backgroundColor: colors.black,
+    width: "100%",
+    height: 7,
+    backgroundColor: colors.green,
     borderRadius: 1,
     justifyContent: "center",
-    paddingLeft: 3,
+    paddingLeft: 4,
   },
   comparisonBarText: {
-    fontSize: 5,
+    fontSize: 6,
     color: colors.white,
     fontWeight: "bold",
   },
   comparisonBarTextBenchmark: {
-    fontSize: 5,
+    fontSize: 6,
     color: colors.white,
     fontWeight: "bold",
   },
   comparisonLegend: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 3,
-    paddingTop: 3,
+    marginTop: 6,
+    paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 10,
+    marginHorizontal: 12,
   },
   legendDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 4,
   },
   legendText: {
-    fontSize: 6,
-    color: colors.darkGray,
-  },
-
-  // WATERFALL CHART STYLES
-  gapWaterfall: {
-    marginTop: 8,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 3,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-  },
-  gapWaterfallTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-    letterSpacing: 0.3,
-  },
-  waterfallContainer: {
-  },
-  waterfallRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  waterfallLabel: {
-    width: 85,
-    fontSize: 6,
-    color: colors.darkGray,
-  },
-  waterfallBarContainer: {
-    flex: 1,
-    height: 10,
-    backgroundColor: colors.white,
-    borderRadius: 2,
-    marginRight: 8,
-  },
-  waterfallBar: {
-    height: 10,
-    borderRadius: 2,
-  },
-  waterfallValue: {
-    width: 60,
     fontSize: 7,
     color: colors.darkGray,
-    textAlign: "right",
-  },
-  waterfallTotal: {
-    marginTop: 4,
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
   },
 
   pageTitle: {
@@ -1484,53 +1432,6 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </View>
         </View>
 
-        {/* Gap Breakdown Waterfall Chart */}
-        <View style={styles.gapWaterfall}>
-          <Text style={styles.gapWaterfallTitle}>HOW THE GAP BREAKS DOWN</Text>
-          <View style={styles.waterfallContainer}>
-            {/* Calculate percentages for bar widths */}
-            {(() => {
-              const totalGap = calculations.annualGap || 1;
-              const utilizationPct = Math.round((calculations.utilizationGapValue / totalGap) * 100);
-              const efficiencyPct = Math.round((calculations.efficiencyGapValue / totalGap) * 100);
-              const qualityPct = Math.round((calculations.wrvuGapValue / totalGap) * 100);
-              const maxPct = Math.max(utilizationPct, efficiencyPct, qualityPct, 5);
-              return (
-                <>
-                  <View style={styles.waterfallRow}>
-                    <Text style={styles.waterfallLabel}>Utilization Gap</Text>
-                    <View style={styles.waterfallBarContainer}>
-                      <View style={[styles.waterfallBar, { width: `${Math.max(15, (utilizationPct / maxPct) * 70)}%`, backgroundColor: "#EA580C" }]} />
-                    </View>
-                    <Text style={styles.waterfallValue}>{formatCurrency(calculations.utilizationGapValue)}</Text>
-                  </View>
-                  <View style={styles.waterfallRow}>
-                    <Text style={styles.waterfallLabel}>Efficiency Gap</Text>
-                    <View style={styles.waterfallBarContainer}>
-                      <View style={[styles.waterfallBar, { width: `${Math.max(15, (efficiencyPct / maxPct) * 70)}%`, backgroundColor: "#F59E0B" }]} />
-                    </View>
-                    <Text style={styles.waterfallValue}>{formatCurrency(calculations.efficiencyGapValue)}</Text>
-                  </View>
-                  <View style={styles.waterfallRow}>
-                    <Text style={styles.waterfallLabel}>Quality Gap (wRVU)</Text>
-                    <View style={styles.waterfallBarContainer}>
-                      <View style={[styles.waterfallBar, { width: `${Math.max(15, (qualityPct / maxPct) * 70)}%`, backgroundColor: "#22C55E" }]} />
-                    </View>
-                    <Text style={styles.waterfallValue}>{formatCurrency(calculations.wrvuGapValue)}</Text>
-                  </View>
-                  <View style={[styles.waterfallRow, styles.waterfallTotal]}>
-                    <Text style={[styles.waterfallLabel, { fontWeight: "bold" }]}>Total Annual Gap</Text>
-                    <View style={styles.waterfallBarContainer}>
-                      <View style={[styles.waterfallBar, { width: "70%", backgroundColor: colors.green }]} />
-                    </View>
-                    <Text style={[styles.waterfallValue, { fontWeight: "bold", color: colors.green }]}>{formatCurrency(calculations.annualGap)}</Text>
-                  </View>
-                </>
-              );
-            })()}
-          </View>
-        </View>
-
         <View style={styles.findingsSection}>
           <Text style={styles.findingsTitle}>OUR FINDINGS</Text>
           <Text style={styles.findingsNarrative}>
@@ -1769,10 +1670,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Utilization</Text>
             <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(75, (inputs.utilization / 100) * 75)}%` }]}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100)}%` }]}>
                 <Text style={styles.comparisonBarText}>{inputs.utilization}%</Text>
               </View>
-              <View style={[styles.comparisonBarBenchmark, { width: "75%" }]}>
+              <View style={styles.comparisonBarBenchmark}>
                 <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
               </View>
             </View>
@@ -1780,10 +1681,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Efficiency</Text>
             <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(75, (inputs.timeSavedPerEncounter / 6) * 75)}%` }]}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100)}%` }]}>
                 <Text style={styles.comparisonBarText}>{inputs.timeSavedPerEncounter} min</Text>
               </View>
-              <View style={[styles.comparisonBarBenchmark, { width: `${(ABRIDGE_BENCHMARKS.timeSavedAvg / 6) * 75}%` }]}>
+              <View style={styles.comparisonBarBenchmark}>
                 <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
               </View>
             </View>
@@ -1791,10 +1692,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Quality</Text>
             <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(75, (inputs.wrvuLift / 8) * 75)}%` }]}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100)}%` }]}>
                 <Text style={styles.comparisonBarText}>+{inputs.wrvuLift}%</Text>
               </View>
-              <View style={[styles.comparisonBarBenchmark, { width: `${(ABRIDGE_BENCHMARKS.wrvuLift / 8) * 75}%` }]}>
+              <View style={styles.comparisonBarBenchmark}>
                 <Text style={styles.comparisonBarTextBenchmark}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
               </View>
             </View>
@@ -1802,10 +1703,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <View style={styles.comparisonRow}>
             <Text style={styles.comparisonLabel}>Satisfaction</Text>
             <View style={styles.comparisonBars}>
-              <View style={[styles.comparisonBarYou, { width: `${Math.min(75, (inputs.satisfaction / 100) * 75)}%` }]}>
+              <View style={[styles.comparisonBarYou, { width: `${Math.min(100, (inputs.satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100)}%` }]}>
                 <Text style={styles.comparisonBarText}>{inputs.satisfaction}%</Text>
               </View>
-              <View style={[styles.comparisonBarBenchmark, { width: `${(ABRIDGE_BENCHMARKS.satisfaction / 100) * 75}%` }]}>
+              <View style={styles.comparisonBarBenchmark}>
                 <Text style={styles.comparisonBarTextBenchmark}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
               </View>
             </View>
@@ -1816,7 +1717,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
               <Text style={styles.legendText}>Your Performance</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.black }]} />
+              <View style={[styles.legendDot, { backgroundColor: colors.green }]} />
               <Text style={styles.legendText}>Abridge Benchmark</Text>
             </View>
           </View>
