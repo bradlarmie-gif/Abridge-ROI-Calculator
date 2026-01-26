@@ -170,7 +170,7 @@ function CustomTooltip({ active, payload, unitName = "beds", encountersPerUnit =
           <div className="flex items-center justify-between gap-4">
             <span className="text-emerald-400 text-xs flex items-center gap-2">
               <span className="w-4 h-0.5 bg-emerald-500 rounded-full"></span>
-              Actual Value
+              Projected Value
             </span>
             <span className="text-emerald-400 font-semibold text-sm font-mono">{formatCurrency(data.actualValue)}</span>
           </div>
@@ -1369,7 +1369,7 @@ export default function SummaryCommandCenter({
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <div className="w-5 sm:w-6 h-0.5 bg-[#10B981]" />
-              <span className="text-xs sm:text-sm text-[#64748B]">Actual value</span>
+              <span className="text-xs sm:text-sm text-[#64748B]">Projected value</span>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
               <div className="w-5 sm:w-6 h-0.5 border-t-2 border-dashed border-[#64748B]" />

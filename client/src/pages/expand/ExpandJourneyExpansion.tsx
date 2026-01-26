@@ -516,7 +516,7 @@ export default function ExpandJourneyExpansion({
               <>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-0.5 bg-emerald-600" />
-                  <span className="text-sm text-[#6B7280]">Actual value (with compounding)</span>
+                  <span className="text-sm text-[#6B7280]">Projected value (with compounding)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-0.5 border-t-2 border-dashed border-[#9CA3AF]" />
