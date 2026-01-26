@@ -278,7 +278,16 @@ export default function SwitchAssessment({
                   <span className={`text-4xl font-bold ${hasMinimumData ? 'text-[#111827]' : 'text-slate-400'}`} data-testid="text-realization-score">
                     {hasMinimumData ? `${calculations.realizationScore}%` : '--'}
                   </span>
-                  <span className="text-sm text-[#6B7280]">{hasMinimumData ? 'realized' : 'enter data above'}</span>
+                  <span className="text-sm text-[#6B7280]">
+                    {hasMinimumData 
+                      ? 'realized' 
+                      : (inputs.providers > 0 && inputs.annualEncounters > 0)
+                        ? 'enter metrics'
+                        : hasAnyDimensionValue
+                          ? 'enter org data'
+                          : 'enter data above'
+                    }
+                  </span>
                 </div>
               </div>
 
@@ -361,7 +370,14 @@ export default function SwitchAssessment({
                   {calculations.realizationScore >= 80 && " You're among top performers in ambient AI value realization."}
                 </>
               ) : (
-                <span className="text-slate-400 italic">Enter your metrics above to see your realization score and maturity stage.</span>
+                <span className="text-slate-400 italic">
+                  {inputs.providers > 0 && inputs.annualEncounters > 0 
+                    ? "Adjust the metrics above to see your realization score."
+                    : hasAnyDimensionValue
+                      ? "Enter your provider count and annual encounters to calculate your score."
+                      : "Enter your organization data and metrics above to see your realization score."
+                  }
+                </span>
               )}
             </p>
           </section>
