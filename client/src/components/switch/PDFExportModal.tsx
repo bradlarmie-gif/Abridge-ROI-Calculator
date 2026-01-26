@@ -41,7 +41,7 @@ export function PDFExportModal({ open, onOpenChange, onExport, isGenerating }: P
             </Label>
             <Input
               id="clientName"
-              placeholder="e.g., Mount Sinai Health System"
+              placeholder="e.g., ABC Hospital"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               autoComplete="off"
