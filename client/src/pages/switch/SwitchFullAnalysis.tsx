@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
+import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import { 
   calculateSwitchGap, 
@@ -191,11 +191,11 @@ export default function SwitchFullAnalysis({
           <div className="h-56 sm:h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
             <div className="min-w-[300px] h-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={graphData} margin={{ top: 15, right: 15, left: 10, bottom: 5 }}>
+                <ComposedChart data={graphData} margin={{ top: 15, right: 15, left: 10, bottom: 5 }}>
                   <defs>
                     <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.15} />
-                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.08} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -205,59 +205,59 @@ export default function SwitchFullAnalysis({
                     tick={{ fontSize: 10, fill: "#6B7280" }}
                     width={60}
                   />
-                <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    formatCurrency(value), 
-                    name === "abridge" ? "Abridge potential" : "Current trajectory"
-                  ]}
-                  contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff" }}
-                  labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-                />
-                {/* Layer 1: Fill under Abridge line with soft gradient */}
-                <Area 
-                  type="monotone" 
-                  dataKey="abridge" 
-                  stroke="none"
-                  fill="url(#gapGradient)"
-                  fillOpacity={1}
-                  legendType="none"
-                />
-                {/* Layer 2: Fill under Current line with white to "cut out" the bottom */}
-                <Area 
-                  type="monotone" 
-                  dataKey="current" 
-                  stroke="none"
-                  fill="#ffffff"
-                  fillOpacity={1}
-                  legendType="none"
-                />
-                {/* Abridge benchmark line (top) */}
-                <Line 
-                  type="monotone" 
-                  dataKey="abridge" 
-                  stroke="#10B981" 
-                  strokeWidth={3}
-                  dot={{ fill: "#10B981", strokeWidth: 2, r: 5 }}
-                  name="Abridge potential"
-                  activeDot={{ r: 7, stroke: "#10B981", strokeWidth: 2, fill: "#fff" }}
-                />
-                {/* Current trajectory line (bottom) */}
-                <Line 
-                  type="monotone" 
-                  dataKey="current" 
-                  stroke="#94a3b8" 
-                  strokeWidth={2}
-                  strokeDasharray="6 4"
-                  dot={{ fill: "#94a3b8", strokeWidth: 2, r: 4 }}
-                  name="Current trajectory"
-                  activeDot={{ r: 6, stroke: "#94a3b8", strokeWidth: 2, fill: "#fff" }}
-                />
-                <Legend 
-                  verticalAlign="bottom"
-                  iconType="line"
-                  wrapperStyle={{ paddingTop: 12, fontSize: 10 }}
-                />
-                </LineChart>
+                  <Tooltip 
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value), 
+                      name === "abridge" ? "Abridge potential" : "Current trajectory"
+                    ]}
+                    contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "#fff" }}
+                    labelStyle={{ fontWeight: 600, marginBottom: 4 }}
+                  />
+                  {/* Layer 1: Fill under Abridge line with soft gradient */}
+                  <Area 
+                    type="monotone" 
+                    dataKey="abridge" 
+                    stroke="none"
+                    fill="url(#gapGradient)"
+                    fillOpacity={1}
+                    legendType="none"
+                  />
+                  {/* Layer 2: Fill under Current line with white to "cut out" the bottom */}
+                  <Area 
+                    type="monotone" 
+                    dataKey="current" 
+                    stroke="none"
+                    fill="#ffffff"
+                    fillOpacity={1}
+                    legendType="none"
+                  />
+                  {/* Abridge benchmark line (top) */}
+                  <Line 
+                    type="monotone" 
+                    dataKey="abridge" 
+                    stroke="#10B981" 
+                    strokeWidth={3}
+                    dot={{ fill: "#10B981", strokeWidth: 2, r: 5 }}
+                    name="Abridge potential"
+                    activeDot={{ r: 7, stroke: "#10B981", strokeWidth: 2, fill: "#fff" }}
+                  />
+                  {/* Current trajectory line (bottom) */}
+                  <Line 
+                    type="monotone" 
+                    dataKey="current" 
+                    stroke="#94a3b8" 
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    dot={{ fill: "#94a3b8", strokeWidth: 2, r: 4 }}
+                    name="Current trajectory"
+                    activeDot={{ r: 6, stroke: "#94a3b8", strokeWidth: 2, fill: "#fff" }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom"
+                    iconType="line"
+                    wrapperStyle={{ paddingTop: 12, fontSize: 10 }}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </div>
