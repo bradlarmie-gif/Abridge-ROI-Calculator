@@ -491,23 +491,23 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
   const potentialHours = Math.round(potentialTimeSavedMinutes / 60);
 
   return (
-    <div className="border border-slate-200 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
-          <span className="font-semibold text-[#111827]">Utilization Gap</span>
+    <div className="border border-slate-200 rounded-lg p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" />
+          <span className="font-semibold text-[#111827] text-sm md:text-base">Utilization Gap</span>
         </div>
-        <span className="text-xl font-bold text-emerald-600">
+        <span className="text-lg md:text-xl font-bold text-emerald-600">
           {formatCurrency(gapValue)}
         </span>
       </div>
       
-      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+      <div className="relative h-7 md:h-8 bg-slate-100 rounded-lg overflow-hidden mb-2 md:mb-3">
         <div 
-          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-1.5 md:px-2"
           style={{ width: `${(utilization / benchmark) * 100}%` }}
         >
-          <span className="text-sm font-semibold text-white truncate">You: {utilization}%</span>
+          <span className="text-xs md:text-sm font-semibold text-white truncate">You: {utilization}%</span>
         </div>
         <div 
           className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
@@ -517,12 +517,12 @@ function UtilizationGapCard({ utilization, encounters, gapEncounters, gapValue }
           }}
         >
         </div>
-        <div className="absolute top-0 right-0 h-full flex items-center px-2">
-          <span className="text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark}%</span>
+        <div className="absolute top-0 right-0 h-full flex items-center px-1.5 md:px-2">
+          <span className="text-xs md:text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark}%</span>
         </div>
       </div>
       
-      <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
+      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapEncounters.toLocaleString()} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min/enc = {potentialHours.toLocaleString()} hrs → ${gapValue.toLocaleString()}
       </div>
 
@@ -583,23 +583,23 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
   const gapMin = benchmark - efficiency;
 
   return (
-    <div className="border border-slate-200 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Clock className="w-5 h-5 text-purple-600" />
-          <span className="font-semibold text-[#111827]">Efficiency Gap</span>
+    <div className="border border-slate-200 rounded-lg p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Clock className="w-4 h-4 md:w-5 md:h-5 text-purple-600 flex-shrink-0" />
+          <span className="font-semibold text-[#111827] text-sm md:text-base">Efficiency Gap</span>
         </div>
-        <span className="text-xl font-bold text-emerald-600">
+        <span className="text-lg md:text-xl font-bold text-emerald-600">
           {formatCurrency(gapValue)}
         </span>
       </div>
       
-      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+      <div className="relative h-7 md:h-8 bg-slate-100 rounded-lg overflow-hidden mb-2 md:mb-3">
         <div 
-          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-1.5 md:px-2"
           style={{ width: `${(efficiency / benchmark) * 100}%` }}
         >
-          <span className="text-sm font-semibold text-white truncate">You: {efficiency} min</span>
+          <span className="text-xs md:text-sm font-semibold text-white truncate">You: {efficiency} min</span>
         </div>
         <div 
           className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
@@ -609,12 +609,12 @@ function EfficiencyGapCard({ efficiency, encountersAtBenchmark, gapHours, gapVal
           }}
         >
         </div>
-        <div className="absolute top-0 right-0 h-full flex items-center px-2">
-          <span className="text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark} min</span>
+        <div className="absolute top-0 right-0 h-full flex items-center px-1.5 md:px-2">
+          <span className="text-xs md:text-sm font-semibold text-[#EA2C00]">Abridge: {benchmark} min</span>
         </div>
       </div>
       
-      <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
+      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
         +{gapMin.toFixed(1)} min × {encountersAtBenchmark.toLocaleString()} enc ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%
       </div>
 
@@ -673,23 +673,23 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
   const gapPercent = benchmark - wrvuLift;
 
   return (
-    <div className="border border-slate-200 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <DollarSign className="w-5 h-5 text-emerald-600" />
-          <span className="font-semibold text-[#111827]">Quality Gap</span>
+    <div className="border border-slate-200 rounded-lg p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-emerald-600 flex-shrink-0" />
+          <span className="font-semibold text-[#111827] text-sm md:text-base">Quality Gap</span>
         </div>
-        <span className="text-xl font-bold text-emerald-600">
+        <span className="text-lg md:text-xl font-bold text-emerald-600">
           {formatCurrency(gapValue)}
         </span>
       </div>
       
-      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden mb-3">
+      <div className="relative h-7 md:h-8 bg-slate-100 rounded-lg overflow-hidden mb-2 md:mb-3">
         <div 
-          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-2"
+          className="absolute top-0 left-0 h-full bg-slate-500 flex items-center px-1.5 md:px-2"
           style={{ width: `${(wrvuLift / benchmark) * 100}%` }}
         >
-          <span className="text-sm font-semibold text-white truncate">You: +{wrvuLift}%</span>
+          <span className="text-xs md:text-sm font-semibold text-white truncate">You: +{wrvuLift}%</span>
         </div>
         <div 
           className="absolute top-0 h-full bg-slate-300/50 flex items-center justify-center"
@@ -699,12 +699,12 @@ function QualityGapCard({ wrvuLift, encountersAtBenchmark, gapValue }: {
           }}
         >
         </div>
-        <div className="absolute top-0 right-0 h-full flex items-center px-2">
-          <span className="text-sm font-semibold text-[#EA2C00]">Abridge: +{benchmark}%</span>
+        <div className="absolute top-0 right-0 h-full flex items-center px-1.5 md:px-2">
+          <span className="text-xs md:text-sm font-semibold text-[#EA2C00]">Abridge: +{benchmark}%</span>
         </div>
       </div>
       
-      <div className="text-xs text-[#6B7280] font-mono bg-slate-50 p-2 rounded mb-2">
+      <div className="text-[10px] md:text-xs text-[#6B7280] font-mono bg-slate-50 p-1.5 md:p-2 rounded mb-2 break-words">
         +{wrvuLift}% → +{benchmark}% = +{gapPercent.toFixed(1)}% gap × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {encountersAtBenchmark.toLocaleString()} enc × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%
       </div>
 
