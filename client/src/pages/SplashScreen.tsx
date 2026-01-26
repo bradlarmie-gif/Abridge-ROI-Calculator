@@ -12,6 +12,8 @@ interface SplashScreenProps {
   onEnter: () => void;
 }
 
+const greyFilter = 'grayscale(100%) brightness(0.6)';
+
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
@@ -19,103 +21,111 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternV} 
           alt="" 
-          className="absolute w-20 md:w-28 opacity-40"
+          className="absolute w-20 md:w-28 opacity-50"
           style={{ 
             top: '8%', 
             left: '5%',
-            animation: 'splashFloat1 8s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat1 11s ease-in-out infinite'
           }}
         />
         <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-24 md:w-36 opacity-30"
+          className="absolute w-24 md:w-36 opacity-40"
           style={{ 
             top: '5%', 
             right: '8%',
-            transform: 'rotate(180deg)',
-            animation: 'splashFloat2 9s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat2 14s ease-in-out infinite'
           }}
         />
         <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-28 md:w-44 opacity-35"
+          className="absolute w-28 md:w-44 opacity-45"
           style={{ 
             bottom: '8%', 
             left: '8%',
-            animation: 'splashFloat3 7s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat3 9s ease-in-out infinite'
           }}
         />
         <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-24 md:w-36 opacity-30"
+          className="absolute w-24 md:w-36 opacity-40"
           style={{ 
             bottom: '12%', 
             right: '12%',
-            animation: 'splashFloat4 10s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat4 13s ease-in-out infinite'
           }}
         />
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-36 md:w-52 opacity-25"
+          className="absolute w-36 md:w-52 opacity-35"
           style={{ 
             top: '35%', 
             left: '3%',
-            animation: 'splashFloat5 11s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat5 16s ease-in-out infinite'
           }}
         />
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-36 md:w-52 opacity-25"
+          className="absolute w-36 md:w-52 opacity-35"
           style={{ 
             top: '35%', 
             right: '3%',
-            transform: 'scaleX(-1)',
-            animation: 'splashFloat6 12s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat6 15s ease-in-out infinite'
           }}
         />
         <img 
           src={patternV} 
           alt="" 
-          className="absolute w-14 md:w-24 opacity-20"
+          className="absolute w-14 md:w-24 opacity-30"
           style={{ 
             top: '60%', 
             left: '25%',
-            animation: 'splashFloat7 9s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat7 12s ease-in-out infinite'
           }}
         />
         <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-20 md:w-28 opacity-20"
+          className="absolute w-20 md:w-28 opacity-30"
           style={{ 
             top: '70%', 
             right: '20%',
-            animation: 'splashFloat8 8s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat8 10s ease-in-out infinite'
           }}
         />
         <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-16 md:w-24 opacity-15"
+          className="absolute w-16 md:w-24 opacity-25"
           style={{ 
             top: '20%', 
             left: '40%',
-            animation: 'splashFloat9 13s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat9 17s ease-in-out infinite'
           }}
         />
         <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-20 md:w-32 opacity-20"
+          className="absolute w-20 md:w-32 opacity-30"
           style={{ 
             top: '15%', 
             right: '30%',
-            animation: 'splashFloat10 10s ease-in-out infinite'
+            filter: greyFilter,
+            animation: 'splashFloat10 13s ease-in-out infinite'
           }}
         />
       </div>
@@ -157,44 +167,62 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
 
       <style>{`
         @keyframes splashFloat1 {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-35px) rotate(8deg); }
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(15px, -25px) rotate(3deg); }
+          50% { transform: translate(-10px, -45px) rotate(-2deg); }
+          75% { transform: translate(20px, -20px) rotate(4deg); }
         }
         @keyframes splashFloat2 {
-          0%, 100% { transform: translateY(0) rotate(180deg); }
-          50% { transform: translateY(-28px) rotate(172deg); }
+          0%, 100% { transform: translate(0, 0) rotate(180deg); }
+          33% { transform: translate(-20px, -35px) rotate(175deg); }
+          66% { transform: translate(15px, -50px) rotate(185deg); }
         }
         @keyframes splashFloat3 {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-40px) rotate(-5deg); }
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          20% { transform: translate(25px, -30px) rotate(-3deg); }
+          40% { transform: translate(10px, -55px) rotate(2deg); }
+          60% { transform: translate(-15px, -40px) rotate(-4deg); }
+          80% { transform: translate(-5px, -20px) rotate(1deg); }
         }
         @keyframes splashFloat4 {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-32px); }
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(-25px, -20px); }
+          50% { transform: translate(-15px, -45px); }
+          75% { transform: translate(10px, -30px); }
         }
         @keyframes splashFloat5 {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(25px); }
+          0%, 100% { transform: translate(0, 0); }
+          33% { transform: translate(30px, -15px); }
+          66% { transform: translate(20px, 20px); }
         }
         @keyframes splashFloat6 {
-          0%, 100% { transform: translateX(0) scaleX(-1); }
-          50% { transform: translateX(-25px) scaleX(-1); }
+          0%, 100% { transform: translate(0, 0) scaleX(-1); }
+          33% { transform: translate(-30px, 15px) scaleX(-1); }
+          66% { transform: translate(-20px, -25px) scaleX(-1); }
         }
         @keyframes splashFloat7 {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-22px) rotate(12deg); }
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(-20px, -15px) rotate(8deg); }
+          50% { transform: translate(10px, -35px) rotate(-5deg); }
+          75% { transform: translate(25px, -20px) rotate(10deg); }
         }
         @keyframes splashFloat8 {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-35px) rotate(-8deg); }
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(15px, -40px) rotate(-6deg); }
+          66% { transform: translate(-20px, -25px) rotate(8deg); }
         }
         @keyframes splashFloat9 {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-18px); }
+          0%, 100% { transform: translate(0, 0); }
+          20% { transform: translate(-15px, -20px); }
+          40% { transform: translate(10px, -35px); }
+          60% { transform: translate(25px, -25px); }
+          80% { transform: translate(5px, -10px); }
         }
         @keyframes splashFloat10 {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-38px) rotate(6deg); }
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(-25px, -30px) rotate(5deg); }
+          50% { transform: translate(5px, -50px) rotate(-3deg); }
+          75% { transform: translate(20px, -35px) rotate(7deg); }
         }
         @keyframes splashPulse {
           0%, 100% { 
