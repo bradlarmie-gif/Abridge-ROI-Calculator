@@ -251,6 +251,60 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
     marginTop: 1,
   },
+  
+  summaryTable: {
+    marginTop: 10,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+  },
+  summaryTableHeader: {
+    flexDirection: "row",
+    backgroundColor: colors.backgroundGray,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  summaryTableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+  },
+  summaryTableRowLast: {
+    flexDirection: "row",
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+  },
+  summaryTableColDimension: {
+    flex: 2.5,
+  },
+  summaryTableColValue: {
+    flex: 1,
+    textAlign: "center",
+  },
+  summaryTableColStatus: {
+    flex: 1.5,
+    textAlign: "right",
+  },
+  summaryTableHeaderText: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+  },
+  summaryTableText: {
+    fontSize: 8,
+    color: colors.black,
+  },
+  summaryTableTextBold: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.black,
+  },
 
   dimensionCard: {
     backgroundColor: colors.white,
@@ -666,6 +720,13 @@ interface DimensionInsight {
   insight: string;
 }
 
+const getScoreColor = (score: number): string => {
+  if (score >= 80) return colors.green;
+  if (score >= 60) return colors.black;
+  if (score >= 40) return "#D97706"; // amber
+  return colors.primary; // red for low scores
+};
+
 const getDimensionInsights = (scores: { utilization: number; efficiency: number; quality: number; satisfaction: number }): DimensionInsight[] => {
   const insights: DimensionInsight[] = [];
   
@@ -869,17 +930,86 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
               {getRiskStatement(calculations.maturityLevel, calculations.annualGap)}
             </Text>
           </View>
-          {dimensionInsights.length > 0 && (
-            <View style={styles.dimensionInsightsContainer}>
-              <Text style={styles.findingsSubtitle}>Dimension-Specific Observations</Text>
-              {dimensionInsights.map((insight, i) => (
-                <View key={i} style={styles.insightItem}>
-                  <Text style={styles.insightDimension}>{insight.dimension}:</Text>
-                  <Text style={styles.insightText}>{insight.insight}</Text>
-                </View>
-              ))}
+          <View style={styles.summaryTable}>
+            <View style={styles.summaryTableHeader}>
+              <View style={styles.summaryTableColDimension}>
+                <Text style={styles.summaryTableHeaderText}>Dimension</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableHeaderText}>You</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableHeaderText}>Benchmark</Text>
+              </View>
+              <View style={styles.summaryTableColStatus}>
+                <Text style={styles.summaryTableHeaderText}>% of Benchmark</Text>
+              </View>
             </View>
-          )}
+            <View style={styles.summaryTableRow}>
+              <View style={styles.summaryTableColDimension}>
+                <Text style={styles.summaryTableTextBold}>Utilization</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>{inputs.utilization}%</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
+              </View>
+              <View style={styles.summaryTableColStatus}>
+                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.utilizationScore) }]}>
+                  {calculations.utilizationScore}%
+                </Text>
+              </View>
+            </View>
+            <View style={styles.summaryTableRow}>
+              <View style={styles.summaryTableColDimension}>
+                <Text style={styles.summaryTableTextBold}>Efficiency</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>{inputs.timeSavedPerEncounter} min</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+              </View>
+              <View style={styles.summaryTableColStatus}>
+                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.efficiencyScore) }]}>
+                  {calculations.efficiencyScore}%
+                </Text>
+              </View>
+            </View>
+            <View style={styles.summaryTableRow}>
+              <View style={styles.summaryTableColDimension}>
+                <Text style={styles.summaryTableTextBold}>Quality (wRVU)</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>+{inputs.wrvuLift}%</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+              </View>
+              <View style={styles.summaryTableColStatus}>
+                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.qualityScore) }]}>
+                  {calculations.qualityScore}%
+                </Text>
+              </View>
+            </View>
+            <View style={styles.summaryTableRowLast}>
+              <View style={styles.summaryTableColDimension}>
+                <Text style={styles.summaryTableTextBold}>Satisfaction</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>{inputs.satisfaction}%</Text>
+              </View>
+              <View style={styles.summaryTableColValue}>
+                <Text style={styles.summaryTableText}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
+              </View>
+              <View style={styles.summaryTableColStatus}>
+                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.satisfactionScore) }]}>
+                  {calculations.satisfactionScore}%
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
 
         <Text style={styles.sectionTitle}>THE VALUE REALIZATION SPECTRUM</Text>
