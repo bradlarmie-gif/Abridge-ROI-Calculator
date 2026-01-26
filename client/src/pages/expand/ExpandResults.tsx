@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight, Share2, Loader2, Download, Send } from "lucide-react";
+import { ArrowLeft, DollarSign, TrendingUp, Rocket, Clock, Moon, Smile, FileText, Mail, Link, AlertTriangle, Info, ChevronRight, Loader2, Download, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot, Area, LineChart, CartesianGrid } from "recharts";
@@ -190,8 +190,7 @@ export default function ExpandResults({
   };
 
   const [isExporting, setIsExporting] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
   const [clientName, setClientName] = useState("");
   const [preparedBy, setPreparedBy] = useState("");
 
@@ -565,46 +564,6 @@ export default function ExpandResults({
     }
   };
   
-  const handleShareEmail = async () => {
-    setIsSharing(true);
-    try {
-      const pdfData = buildPDFData(clientName, preparedBy);
-      const { blob, filename } = await generateExpandROIPDFBlob(pdfData);
-      
-      if (navigator.share && navigator.canShare) {
-        const file = new File([blob], filename, { type: 'application/pdf' });
-        
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Abridge Value Realization Report',
-            text: `Value realization report for ${providers} providers over ${months} months on Abridge`,
-          });
-          toast({ title: "Shared successfully" });
-        } else {
-          const url = URL.createObjectURL(blob);
-          window.open(`mailto:?subject=Abridge Value Realization Report&body=Please find the attached value realization report. Download: ${window.location.href}`);
-          URL.revokeObjectURL(url);
-          toast({ title: "Email client opened", description: "Attach the downloaded PDF to share" });
-        }
-      } else {
-        window.open(`mailto:?subject=Abridge Value Realization Report&body=View the value realization report at: ${window.location.href}`);
-        toast({ title: "Email client opened" });
-      }
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        console.error('Share error:', error);
-        toast({ 
-          title: "Share failed", 
-          description: "There was an error sharing. Please try again.",
-          variant: "destructive"
-        });
-      }
-    } finally {
-      setIsSharing(false);
-    }
-  };
-  
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     toast({ title: "Link copied", description: "Link copied to clipboard" });
@@ -624,17 +583,32 @@ export default function ExpandResults({
       
       <div className="py-6 md:py-8 px-4 md:px-6 pb-8 max-w-5xl mx-auto">
         <motion.div 
-          className="text-center mb-6 md:mb-8"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <h1 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-2">
-            Your Abridge Results
-          </h1>
-          <p className="text-sm md:text-base text-[#6B7280]">
-            {providers} providers · {months} mo · {utilizationRate}% utilization
-          </p>
+          <div className="text-center sm:text-left mb-4 sm:mb-0">
+            <h1 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-2">
+              Your Abridge Results
+            </h1>
+            <p className="text-sm md:text-base text-[#6B7280]">
+              {providers} providers · {months} mo · {utilizationRate}% utilization
+            </p>
+          </div>
+          <Button 
+            onClick={handleOpenExportModal}
+            disabled={isExporting}
+            className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
+            data-testid="button-export-pdf"
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {isExporting ? 'Generating...' : 'Export PDF'}
+          </Button>
         </motion.div>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8">
@@ -1207,55 +1181,7 @@ export default function ExpandResults({
           </div>
         )}
         
-        <motion.div 
-          className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl p-6 md:p-8 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="max-w-lg mx-auto">
-            <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">
-              Share Your Results
-            </h2>
-            <p className="text-sm md:text-base text-neutral-300 mb-6">
-              Export a detailed coaching document or share with your team
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button 
-                onClick={handleOpenExportModal} 
-                disabled={isExporting}
-                className="w-full sm:w-auto bg-[#EA2C00] text-white"
-                size="lg"
-                data-testid="button-export-pdf-bottom"
-              >
-                {isExporting ? (
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                ) : (
-                  <Download className="w-5 h-5 mr-2" />
-                )}
-                {isExporting ? 'Generating PDF...' : 'Download PDF Report'}
-              </Button>
-              
-              <Button 
-                variant="outline"
-                onClick={handleShareEmail} 
-                disabled={isSharing}
-                className="w-full sm:w-auto border-white/20 text-white"
-                size="lg"
-                data-testid="button-share-email-bottom"
-              >
-                {isSharing ? (
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                ) : (
-                  <Share2 className="w-5 h-5 mr-2" />
-                )}
-                {isSharing ? 'Sharing...' : 'Share'}
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+        </div>
 
       <PDFExportModal
         open={showExportModal}

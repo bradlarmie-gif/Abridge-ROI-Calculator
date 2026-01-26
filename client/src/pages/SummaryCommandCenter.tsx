@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from "react";
 import {
   ArrowLeft,
   Pencil,
-  Share2,
   Clock,
   TrendingUp,
   Check,
@@ -212,11 +211,6 @@ export default function SummaryCommandCenter({
   const [clientName, setClientName] = useState("");
   const [preparedBy, setPreparedBy] = useState("");
   const { toast } = useToast();
-  
-  // Check if Web Share API is available (typically mobile devices)
-  const canShare = typeof navigator !== 'undefined' && 
-                   typeof navigator.share === 'function' &&
-                   typeof navigator.canShare === 'function';
   
   const activeSetting = selectedSettings[0] || "outpatient";
   const config = settingConfig[activeSetting] || settingConfig.outpatient;
@@ -742,43 +736,6 @@ export default function SummaryCommandCenter({
     preparedBy,
   ]);
 
-  // Share PDF using native Web Share API (mobile)
-  const handleSharePdf = useCallback(async () => {
-    setIsExporting(true);
-    
-    try {
-      const { blob, filename } = await generatePdfBlob();
-      const file = new File([blob], filename, { type: 'application/pdf' });
-      
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: `${CARE_SETTING_LABELS[activeSetting]} ROI Assessment`,
-          text: 'Abridge ROI Assessment - see attached PDF',
-          files: [file],
-        });
-      } else {
-        saveAs(blob, filename);
-      }
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        console.error('Share failed:', err);
-        toast({
-          title: "Share failed",
-          description: "Falling back to download...",
-          variant: "destructive",
-        });
-        try {
-          const { blob, filename } = await generatePdfBlob();
-          saveAs(blob, filename);
-        } catch (downloadErr) {
-          console.error('Download also failed:', downloadErr);
-        }
-      }
-    } finally {
-      setIsExporting(false);
-    }
-  }, [generatePdfBlob, activeSetting, toast]);
-
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       <UnifiedHeader
@@ -830,27 +787,13 @@ export default function SummaryCommandCenter({
               <span className="hidden sm:inline">Manage Model</span>
             </Button>
             
-            {canShare && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="gap-1.5 border-[#E5E7EB]" 
-                onClick={handleSharePdf}
-                disabled={isExporting}
-                data-testid="button-share-pdf-top"
-              >
-                <Share2 className="w-4 h-4" />
-                <span className="hidden sm:inline">{isExporting ? "..." : "Share"}</span>
-              </Button>
-            )}
-            
             <Button 
               variant="outline" 
               size="sm"
               className="gap-1.5 border-[#E5E7EB]" 
               onClick={() => setShowExportModal(true)}
               disabled={isExporting}
-              data-testid="button-export-pdf-top"
+              data-testid="button-export-pdf"
             >
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">{isExporting ? "..." : "Export PDF"}</span>
@@ -1704,43 +1647,6 @@ export default function SummaryCommandCenter({
           )}
         </section>
 
-        {/* ============ ACTIONS ============ */}
-        <section className="flex flex-col sm:flex-row gap-4 justify-between items-center pt-4">
-          <Button
-            variant="outline"
-            className="gap-2 w-full sm:w-auto border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
-            onClick={() => setManageModelSheetOpen(true)}
-            data-testid="button-add-driver"
-          >
-            <Plus className="w-4 h-4" />
-            Manage Drivers
-          </Button>
-          
-          <div className="flex flex-wrap gap-3 w-full sm:w-auto">
-            {canShare && (
-              <Button 
-                variant="outline" 
-                className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
-                onClick={handleSharePdf}
-                disabled={isExporting}
-                data-testid="button-share-pdf"
-              >
-                <Share2 className="w-4 h-4" />
-                {isExporting ? "Generating..." : "Share"}
-              </Button>
-            )}
-            <Button 
-              variant="outline" 
-              className="gap-2 flex-1 sm:flex-none border-[#E5E7EB]" 
-              onClick={() => setShowExportModal(true)}
-              disabled={isExporting}
-              data-testid="button-export-pdf"
-            >
-              <FileText className="w-4 h-4" />
-              {isExporting ? "Generating..." : "Export PDF"}
-            </Button>
-          </div>
-        </section>
       </div>
       
       {/* Manage Model Sheet - Edit existing drivers and add new ones */}
@@ -1770,6 +1676,16 @@ export default function SummaryCommandCenter({
           setShowExportModal(false);
           try {
             await handleExportPdf(name, preparer);
+            toast({
+              title: "PDF Downloaded",
+              description: "Your ROI assessment has been saved.",
+            });
+          } catch (error) {
+            toast({
+              title: "Export Failed",
+              description: "Unable to generate PDF. Please try again.",
+              variant: "destructive",
+            });
           } finally {
             setIsExporting(false);
           }

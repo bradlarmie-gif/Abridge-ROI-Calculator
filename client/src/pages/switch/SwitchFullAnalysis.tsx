@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Download, Share2, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, Download, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
@@ -45,8 +45,8 @@ export default function SwitchFullAnalysis({
       await generateAmbientPDF(inputs, calculations, clientName, preparedBy);
       setShowExportModal(false);
       toast({
-        title: "PDF Generated",
-        description: "Your Value Realization Assessment has been downloaded.",
+        title: "PDF Downloaded",
+        description: "Your Value Realization Assessment has been saved.",
       });
     } catch (error) {
       console.error("PDF generation error:", error);
@@ -86,13 +86,28 @@ export default function SwitchFullAnalysis({
       <UnifiedHeaderSpacer />
 
       <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
-            Your Gap Analysis
-          </h1>
-          <p className="text-sm md:text-base text-[#6B7280]">
-            {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · {solutionLabel}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
+          <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
+              Your Gap Analysis
+            </h1>
+            <p className="text-sm md:text-base text-[#6B7280]">
+              {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · {solutionLabel}
+            </p>
+          </div>
+          <Button 
+            onClick={() => setShowExportModal(true)}
+            disabled={isExporting}
+            className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
+            data-testid="button-export-pdf"
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {isExporting ? 'Generating...' : 'Export PDF'}
+          </Button>
         </div>
 
         {/* Hero Card: Annual Gap - The Primary Metric */}
@@ -424,24 +439,7 @@ export default function SwitchFullAnalysis({
           </p>
         </section>
 
-        <section className="bg-white rounded-xl border-2 border-[#EA2C00] p-4 md:p-6 lg:p-8">
-          <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center">
-            <Button 
-              variant="outline" 
-              className="h-11 md:h-12 px-4 md:px-6" 
-              data-testid="button-export-pdf"
-              onClick={() => setShowExportModal(true)}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export as PDF
-            </Button>
-            <Button variant="outline" className="h-11 md:h-12 px-4 md:px-6" data-testid="button-share">
-              <Share2 className="w-4 h-4 mr-2" />
-              Share with Team
-            </Button>
-          </div>
-        </section>
-      </main>
+              </main>
 
       <PDFExportModal
         open={showExportModal}

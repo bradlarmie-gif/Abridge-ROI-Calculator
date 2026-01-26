@@ -696,6 +696,8 @@ const styles = StyleSheet.create({
 interface ScribePDFData {
   inputs: ScribeInputs;
   calculations: ScribeCalculations;
+  clientName?: string;
+  preparedBy?: string;
 }
 
 const formatCurrency = (num: number): string => {
@@ -788,12 +790,14 @@ const CoverageBar = ({ coveragePercent }: { coveragePercent: number }) => {
   );
 };
 
-const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
+const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: ScribePDFData) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+  const displayClientName = clientName || "Your Organization";
+  const displayPreparedBy = preparedBy || "Abridge";
 
   const scaleMultiplier =
     calculations.totalScribeCost > 0
@@ -832,8 +836,8 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
         <View style={styles.header}>
           <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
           <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Scribe Program Analysis</Text>
-            <Text style={styles.headerDate}>{today}</Text>
+            <Text style={styles.headerTitle}>{displayClientName}</Text>
+            <Text style={styles.headerDate}>Prepared by {displayPreparedBy} · {today}</Text>
           </View>
         </View>
 
@@ -1177,10 +1181,12 @@ const ScribePDFDocument = ({ inputs, calculations }: ScribePDFData) => {
 
 export const generateScribePDF = async (
   inputs: ScribeInputs,
-  calculations: ScribeCalculations
+  calculations: ScribeCalculations,
+  clientName?: string,
+  preparedBy?: string
 ): Promise<void> => {
   const blob = await pdf(
-    <ScribePDFDocument inputs={inputs} calculations={calculations} />
+    <ScribePDFDocument inputs={inputs} calculations={calculations} clientName={clientName} preparedBy={preparedBy} />
   ).toBlob();
   saveAs(blob, `scribe-program-analysis-${new Date().toISOString().split("T")[0]}.pdf`);
 };

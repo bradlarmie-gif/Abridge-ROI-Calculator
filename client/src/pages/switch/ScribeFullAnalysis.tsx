@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Download, Share2, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight, Loader2, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Timer, Moon, BarChart3, Info, Sparkles, Check, ChevronRight, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceDot, Legend } from "recharts";
@@ -11,6 +11,7 @@ import {
   SCRIBE_ASSUMPTIONS,
 } from "@/lib/scribeGapCalculator";
 import { generateScribePDF } from "@/components/switch/ScribePDFExport";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 
 interface ScribeFullAnalysisProps {
@@ -29,15 +30,17 @@ export default function ScribeFullAnalysis({
   const calculations = useMemo(() => calculateScribeGap(inputs), [inputs]);
   const scalingData = useMemo(() => getScalingDataPoints(inputs, calculations), [inputs, calculations]);
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      await generateScribePDF(inputs, calculations);
+      await generateScribePDF(inputs, calculations, clientName, preparedBy);
+      setShowExportModal(false);
       toast({
-        title: "PDF Generated",
-        description: "Your Scribe Program Analysis has been downloaded.",
+        title: "PDF Downloaded",
+        description: "Your Scribe Program Analysis has been saved.",
       });
     } catch (error) {
       console.error("Failed to generate PDF:", error);
@@ -64,13 +67,28 @@ export default function ScribeFullAnalysis({
       <UnifiedHeaderSpacer />
 
       <main className="py-6 md:py-8 pb-8 px-4 md:px-8 max-w-5xl mx-auto">
-        <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-2">
-            Your Scribe Program Analysis
-          </h1>
-          <p className="text-xs md:text-sm text-[#6B7280]">
-            Understand your scribe program economics
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
+          <div className="text-center sm:text-left mb-4 sm:mb-0">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-2">
+              Your Scribe Program Analysis
+            </h1>
+            <p className="text-xs md:text-sm text-[#6B7280]">
+              Understand your scribe program economics
+            </p>
+          </div>
+          <Button 
+            onClick={() => setShowExportModal(true)}
+            disabled={isExporting}
+            className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
+            data-testid="button-export-pdf"
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {isExporting ? 'Generating...' : 'Export PDF'}
+          </Button>
         </div>
 
         {/* Section 1: Your Program at a Glance */}
@@ -516,7 +534,7 @@ export default function ScribeFullAnalysis({
                   <Button 
                     variant="outline" 
                     className="w-full h-11"
-                    onClick={handleExportPDF}
+                    onClick={() => setShowExportModal(true)}
                     disabled={isExporting}
                     data-testid="button-download-analysis"
                   >
@@ -573,15 +591,14 @@ export default function ScribeFullAnalysis({
           </div>
         </section>
 
-        {/* Section 9: Share */}
-        <section className="bg-slate-50 rounded-xl border border-slate-200 p-4 md:p-6 text-center">
-          <p className="text-sm text-[#6B7280] mb-3">Want to share this analysis with your team?</p>
-          <Button variant="outline" className="h-10 px-5" data-testid="button-share">
-            <Share2 className="w-4 h-4 mr-2" />
-            Share with Team
-          </Button>
-        </section>
-      </main>
+        </main>
+
+      <PDFExportModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        onExport={handleExportPDF}
+        isGenerating={isExporting}
+      />
     </div>
   );
 }
