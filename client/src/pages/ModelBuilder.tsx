@@ -1602,33 +1602,30 @@ export default function ModelBuilder({
                 <div className="grid grid-cols-5 gap-2 items-center text-center">
                   <div>
                     <label className="text-xs text-[#6B7280] block mb-1">Locum Providers</label>
-                    <Input
-                      type="number"
+                    <EditableNumberInput
                       value={locumProviders}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumProviders: Number(e.target.value) || 0 } }))}
-                      className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumProviders: val } }))}
+                      className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-providers-input"
                     />
                   </div>
                   <div className="text-neutral-400">×</div>
                   <div>
                     <label className="text-xs text-[#6B7280] block mb-1">Hrs/Week</label>
-                    <Input
-                      type="number"
+                    <EditableNumberInput
                       value={locumHoursPerWeek}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHoursPerWeek: Number(e.target.value) || 0 } }))}
-                      className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHoursPerWeek: val } }))}
+                      className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-hours-per-week-input"
                     />
                   </div>
                   <div className="text-neutral-400">×</div>
                   <div>
                     <label className="text-xs text-[#6B7280] block mb-1">Weeks/Yr</label>
-                    <Input
-                      type="number"
+                    <EditableNumberInput
                       value={locumWeeksPerYear}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumWeeksPerYear: Number(e.target.value) || 0 } }))}
-                      className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumWeeksPerYear: val } }))}
+                      className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-weeks-per-year-input"
                     />
                   </div>
@@ -1656,11 +1653,10 @@ export default function ModelBuilder({
                       {Math.round(annualLocumHours).toLocaleString()} hrs
                     </div>
                     <span className="text-neutral-400">×</span>
-                    <Input
-                      type="number"
+                    <EditableNumberInput
                       value={locumConversionRate}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumConversionRate: Number(e.target.value) || 0 } }))}
-                      className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumConversionRate: val } }))}
+                      className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-conversion-rate-input"
                     />
                     <span className="text-xs text-[#6B7280]">%</span>
@@ -1691,11 +1687,10 @@ export default function ModelBuilder({
                     </div>
                     <span className="text-neutral-400">×</span>
                     <span className="text-sm text-[#6B7280]">$</span>
-                    <Input
-                      type="number"
+                    <EditableNumberInput
                       value={locumHourlyRate}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHourlyRate: Number(e.target.value) || 0 } }))}
-                      className="w-20 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHourlyRate: val } }))}
+                      className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="locum-hourly-rate-input"
                     />
                     <span className="text-xs text-[#6B7280]">/hr</span>
@@ -2496,11 +2491,10 @@ export default function ModelBuilder({
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">Risk Contract %</label>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={riskContractPercent}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, riskContractPercent: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, riskContractPercent: val } }))}
+                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                     data-testid="hcc-risk-contract-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -2558,11 +2552,10 @@ export default function ModelBuilder({
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs text-slate-600">Conditions discussed per visit:</span>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={conditionsPerVisit}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, conditionsPerVisit: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-7"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, conditionsPerVisit: val } }))}
+                  className="w-16 text-center text-sm h-7"
                   step="0.5"
                   data-testid="hcc-conditions-input"
                 />
@@ -2570,11 +2563,10 @@ export default function ModelBuilder({
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs text-slate-600">× Documentation gap:</span>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={documentationGap}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, documentationGap: Number(e.target.value) || 0 } }))}
-                    className="w-14 text-center font-mono text-sm h-7"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, documentationGap: val } }))}
+                    className="w-14 text-center text-sm h-7"
                     data-testid="hcc-doc-gap-input"
                   />
                   <span className="text-xs text-slate-500">%</span>
@@ -2583,11 +2575,10 @@ export default function ModelBuilder({
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs text-slate-600">× HCC-eligible portion:</span>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={hccEligiblePercent}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, hccEligiblePercent: Number(e.target.value) || 0 } }))}
-                    className="w-14 text-center font-mono text-sm h-7"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, hccEligiblePercent: val } }))}
+                    className="w-14 text-center text-sm h-7"
                     data-testid="hcc-eligible-input"
                   />
                   <span className="text-xs text-slate-500">%</span>
@@ -2618,11 +2609,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeCaptureRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, abridgeCaptureRate: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="hcc-capture-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2665,11 +2655,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={auditFactor}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, auditFactor: Number(e.target.value) || 0 } }))}
-                  className="w-14 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, hcc: { ...prev.hcc, auditFactor: val } }))}
+                  className="w-14 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="hcc-audit-factor-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2809,11 +2798,10 @@ export default function ModelBuilder({
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">Denial Rate</label>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={denialRate}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, denialRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, denialRate: val } }))}
+                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                     data-testid="denials-rate-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -2846,11 +2834,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={docRelatedPercent}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, docRelatedPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, docRelatedPercent: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="denials-doc-related-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2882,11 +2869,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={writtenOffPercent}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, writtenOffPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, writtenOffPercent: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="denials-written-off-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -2918,11 +2904,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeCaptureRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, denials: { ...prev.denials, abridgeCaptureRate: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="denials-capture-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3084,11 +3069,10 @@ export default function ModelBuilder({
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">LWBS Rate</label>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={lwbsRate}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, lwbsRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, lwbsRate: val } }))}
+                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                     step="0.5"
                     data-testid="ed-lwbs-rate-input"
                   />
@@ -3122,11 +3106,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={improvementRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, improvementRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, improvementRate: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-improvement-rate-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3158,11 +3141,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeAttributionPercent}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, abridgeAttributionPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, abridgeAttributionPercent: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   min={20}
                   max={50}
                   data-testid="ed-abridge-attribution-input"
@@ -3244,11 +3226,10 @@ export default function ModelBuilder({
                 <p className="text-xs text-[#6B7280]">Include admission revenue for attributed patients</p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
+                    <EditableNumberInput
                       value={admissionPercent}
-                      onChange={(e) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, admissionPercent: Number(e.target.value) || 0 } }))}
-                      className="w-14 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                      onChange={(val) => setDriverInputs(prev => ({ ...prev, edThroughput: { ...prev.edThroughput, admissionPercent: val } }))}
+                      className="w-14 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                       data-testid="ed-admission-percent-input"
                     />
                     <span className="text-xs text-[#6B7280]">%</span>
@@ -3460,11 +3441,10 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2 flex-wrap">
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">ED Physicians</label>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={edPhysicians}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, edPhysicians: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, edPhysicians: val } }))}
+                  className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-physicians-input"
                 />
               </div>
@@ -3472,11 +3452,10 @@ export default function ModelBuilder({
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">Turnover Rate</label>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={turnoverRate}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, turnoverRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, turnoverRate: val } }))}
+                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                     data-testid="ed-ret-turnover-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -3509,11 +3488,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={burnoutAttribution}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, burnoutAttribution: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-burnout-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3545,11 +3523,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeImpact}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edRetention: { ...prev.edRetention, abridgeImpact: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-ret-abridge-impact-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3729,12 +3706,11 @@ export default function ModelBuilder({
               <span className="text-neutral-400 pt-5">×</span>
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">Avg wRVU/Encounter</label>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   step="0.1"
                   value={avgWrvuPerEncounter}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, avgWrvuPerEncounter: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, avgWrvuPerEncounter: val } }))}
+                  className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-wrvu-per-enc-input"
                 />
               </div>
@@ -3792,11 +3768,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={wrvuImprovementRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, wrvuImprovementRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, wrvuImprovementRate: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-improvement-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -3831,11 +3806,10 @@ export default function ModelBuilder({
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-[#6B7280]">$</span>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={conversionFactor}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, conversionFactor: Number(e.target.value) || 0 } }))}
-                  className="w-20 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edLevelOfService: { ...prev.edLevelOfService, conversionFactor: val } }))}
+                  className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-los-conversion-input"
                 />
               </div>
@@ -3950,11 +3924,10 @@ export default function ModelBuilder({
               <div>
                 <label className="text-xs text-[#6B7280] block mb-1">Denial Rate</label>
                 <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
+                  <EditableNumberInput
                     value={denialRate}
-                    onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, denialRate: Number(e.target.value) || 0 } }))}
-                    className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                    onChange={(val) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, denialRate: val } }))}
+                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                     data-testid="ed-denials-rate-input"
                   />
                   <span className="text-xs text-[#6B7280]">%</span>
@@ -3987,11 +3960,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={docRelatedPercent}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, docRelatedPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, docRelatedPercent: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-doc-related-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -4024,11 +3996,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={writtenOffPercent}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, writtenOffPercent: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, writtenOffPercent: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-writeoff-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -4061,11 +4032,10 @@ export default function ModelBuilder({
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeCaptureRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, abridgeCaptureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, abridgeCaptureRate: val } }))}
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="ed-denials-capture-input"
                 />
                 <span className="text-xs text-[#6B7280]">%</span>
@@ -4210,11 +4180,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Turnover Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={turnoverRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, turnoverRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, turnoverRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-retention-turnover-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4249,11 +4218,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Burnout Attribution</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={burnoutAttribution}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, burnoutAttribution: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-retention-burnout-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4288,11 +4256,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Abridge Impact</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeImpact}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientRetention: { ...prev.inpatientRetention, abridgeImpact: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-retention-impact-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4443,11 +4410,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Gap Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={gapRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, gapRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, gapRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-ccmcc-gap-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4482,11 +4448,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Improvement Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={improvementRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, improvementRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, improvementRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-ccmcc-improvement-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4521,11 +4486,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">DRG Weight Increase</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={drgWeightIncrease}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, drgWeightIncrease: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, drgWeightIncrease: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   step="0.1"
                   data-testid="inpatient-ccmcc-drg-weight-input"
                 />
@@ -4536,11 +4500,10 @@ export default function ModelBuilder({
               <span className="text-xs text-[#6B7280] mb-1">Base DRG Payment</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
                 <span className="text-sm text-[#6B7280]">$</span>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={baseDrgPayment}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, baseDrgPayment: Number(e.target.value) || 0 } }))}
-                  className="w-20 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, baseDrgPayment: val } }))}
+                  className="w-20 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-ccmcc-base-drg-input"
                 />
               </div>
@@ -4588,11 +4551,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Realization Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={realizationRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, realizationRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, realizationRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-ccmcc-realization-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4674,11 +4636,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Query Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={queryRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, queryRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, queryRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-cdi-query-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4713,11 +4674,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Reduction Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={reductionRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, reductionRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, reductionRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-cdi-reduction-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4753,11 +4713,10 @@ export default function ModelBuilder({
               <span className="text-xs text-[#6B7280] mb-1">Cost per Query</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
                 <span className="text-sm text-[#6B7280]">$</span>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={costPerQuery}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, costPerQuery: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCDI: { ...prev.inpatientCDI, costPerQuery: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-cdi-cost-input"
                 />
               </div>
@@ -4853,11 +4812,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Denial Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={denialRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, denialRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, denialRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-denials-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4892,11 +4850,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Doc-Related %</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={docRelatedPct}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, docRelatedPct: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, docRelatedPct: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-denials-doc-related-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4931,11 +4888,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Write-Off %</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={writeOffPct}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, writeOffPct: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, writeOffPct: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-denials-writeoff-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4970,11 +4926,10 @@ export default function ModelBuilder({
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Capture Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={captureRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, captureRate: Number(e.target.value) || 0 } }))}
-                  className="w-16 font-mono text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientDenials: { ...prev.inpatientDenials, captureRate: val } }))}
+                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
                   data-testid="inpatient-denials-capture-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -5109,22 +5064,20 @@ export default function ModelBuilder({
             <div className="text-neutral-400">×</div>
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">OT Hrs/Week</label>
-              <Input
-                type="number"
+              <EditableNumberInput
                 value={otHoursPerWeek}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, otHoursPerWeek: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, otHoursPerWeek: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 data-testid="nursing-ot-hours-week-input"
               />
             </div>
             <div className="text-neutral-400">×</div>
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Weeks/Year</label>
-              <Input
-                type="number"
+              <EditableNumberInput
                 value={weeksPerYear}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, weeksPerYear: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, weeksPerYear: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 data-testid="nursing-ot-weeks-year-input"
               />
             </div>
@@ -5155,11 +5108,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Doc-Related %</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={docRelatedPct}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, docRelatedPct: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, docRelatedPct: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-ot-doc-pct-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5192,11 +5144,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Reduction %</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={reductionRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, reductionRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-ot-reduction-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5235,11 +5186,10 @@ export default function ModelBuilder({
               <label className="text-xs text-[#6B7280] block mb-1">OT Rate</label>
               <div className="flex items-center">
                 <span className="mr-1 text-[#6B7280]">$</span>
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={baseHourlyRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, baseHourlyRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingOvertime: { ...prev.nursingOvertime, baseHourlyRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-ot-hourly-input"
                 />
               </div>
@@ -5343,11 +5293,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">HAPI Rate</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={hapiRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, hapiRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, hapiRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   step="0.1"
                   data-testid="nursing-hapi-rate-input"
                 />
@@ -5381,11 +5330,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Prevention Rate</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={preventionRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, preventionRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingHAPI: { ...prev.nursingHAPI, preventionRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-hapi-prevention-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5548,11 +5496,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Falls Rate</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={fallsRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, fallsRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, fallsRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   step="0.1"
                   data-testid="nursing-falls-rate-input"
                 />
@@ -5588,11 +5535,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Prevention Rate</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={preventionRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, preventionRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingFalls: { ...prev.nursingFalls, preventionRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-falls-prevention-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5749,11 +5695,10 @@ export default function ModelBuilder({
             <div className="text-neutral-400">×</div>
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs/Bed</label>
-              <Input
-                type="number"
+              <EditableNumberInput
                 value={agencyFTEsPerBed}
-                onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyFTEsPerBed: Number(e.target.value) || 0 } }))}
-                className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, agencyFTEsPerBed: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                 step="0.01"
                 data-testid="nursing-agency-ftes-per-bed-input"
               />
@@ -5829,11 +5774,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Retention Impact</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={retentionImpact}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, retentionImpact: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingAgency: { ...prev.nursingAgency, retentionImpact: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-agency-retention-impact-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5962,11 +5906,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Turnover Rate</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={turnoverRate}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, turnoverRate: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, turnoverRate: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-turnover-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -5999,11 +5942,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Burnout %</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={burnoutAttribution}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, burnoutAttribution: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, burnoutAttribution: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-burnout-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
@@ -6036,11 +5978,10 @@ export default function ModelBuilder({
             <div>
               <label className="text-xs text-[#6B7280] block mb-1">Abridge Impact</label>
               <div className="flex items-center">
-                <Input
-                  type="number"
+                <EditableNumberInput
                   value={abridgeImpact}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, abridgeImpact: Number(e.target.value) || 0 } }))}
-                  className="w-full text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                  onChange={(val) => setDriverInputs(prev => ({ ...prev, nursingRetention: { ...prev.nursingRetention, abridgeImpact: val } }))}
+                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="nursing-retention-impact-input"
                 />
                 <span className="ml-1 text-[#6B7280]">%</span>
