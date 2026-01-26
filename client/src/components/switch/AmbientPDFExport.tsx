@@ -20,6 +20,8 @@ const colors = {
   primaryDark: "#C42400",
   green: "#059669",
   greenLight: "#ECFDF5",
+  amber: "#D97706",
+  amberLight: "#FFFBEB",
   black: "#111827",
   darkGray: "#374151",
   mediumGray: "#6B7280",
@@ -310,15 +312,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 10,
+    borderRadius: 4,
+    padding: 8,
+    marginBottom: 6,
   },
   dimensionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 3,
   },
   dimensionName: {
     fontSize: 10,
@@ -331,16 +333,16 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   dimensionDefinition: {
-    fontSize: 8,
+    fontSize: 7,
     color: colors.mediumGray,
     fontStyle: "italic",
-    marginBottom: 8,
-    lineHeight: 1.4,
+    marginBottom: 5,
+    lineHeight: 1.3,
   },
   dimensionMetrics: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   dimensionYou: {
     fontSize: 8,
@@ -352,41 +354,41 @@ const styles = StyleSheet.create({
     color: colors.mediumGray,
   },
   dimensionBar: {
-    height: 8,
+    height: 5,
     backgroundColor: colors.borderGray,
-    borderRadius: 4,
-    marginBottom: 8,
+    borderRadius: 3,
+    marginBottom: 5,
   },
   dimensionBarFill: {
-    height: 8,
+    height: 5,
     backgroundColor: colors.primary,
-    borderRadius: 4,
+    borderRadius: 3,
   },
   dimensionEducation: {
     backgroundColor: colors.backgroundGray,
-    padding: 8,
-    borderRadius: 4,
+    padding: 6,
+    borderRadius: 3,
   },
   dimensionWhyMatters: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
+    lineHeight: 1.4,
+    marginBottom: 2,
   },
   dimensionWhatDrives: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
+    lineHeight: 1.4,
+    marginBottom: 2,
   },
   dimensionInsight: {
-    fontSize: 7,
+    fontSize: 6,
     color: colors.redDark,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
     backgroundColor: colors.redLight,
-    padding: 6,
-    borderRadius: 4,
-    marginTop: 4,
+    padding: 5,
+    borderRadius: 3,
+    marginTop: 3,
   },
   bold: {
     fontWeight: "bold",
@@ -409,89 +411,90 @@ const styles = StyleSheet.create({
   },
 
   compoundBox: {
-    backgroundColor: colors.primaryLight,
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 10,
+    flexDirection: "row",
+    backgroundColor: colors.backgroundGray,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+    padding: 6,
+    marginBottom: 8,
   },
   compoundTitle: {
-    fontSize: 9,
+    fontSize: 7,
     fontWeight: "bold",
     color: colors.primary,
-    marginBottom: 4,
+    marginRight: 4,
   },
   compoundText: {
     fontSize: 7,
     color: colors.darkGray,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
+    flex: 1,
   },
 
   timelineSection: {
-    marginBottom: 10,
+    marginBottom: 8,
   },
   timelineRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   timelineBox: {
     flex: 1,
     backgroundColor: colors.backgroundGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 8,
+    borderRadius: 3,
+    padding: 6,
     alignItems: "center",
-    marginRight: 4,
+    marginRight: 3,
   },
   timelineBoxHighlight: {
     flex: 1,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.greenLight,
     borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 4,
-    padding: 8,
+    borderColor: colors.green,
+    borderRadius: 3,
+    padding: 6,
     alignItems: "center",
   },
   timelineLabel: {
-    fontSize: 7,
+    fontSize: 6,
     fontWeight: "bold",
     color: colors.mediumGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   timelineValue: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
   },
   timelineValueLarge: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.primary,
+    color: colors.green,
   },
   timelineSubtext: {
-    fontSize: 6,
+    fontSize: 5,
     color: colors.mediumGray,
-    marginTop: 2,
+    marginTop: 1,
   },
   timelineArrow: {
-    fontSize: 12,
+    fontSize: 10,
     color: colors.mediumGray,
-    paddingHorizontal: 2,
+    paddingHorizontal: 1,
   },
 
   monthlyCallout: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    padding: 8,
-    borderRadius: 4,
+    backgroundColor: colors.backgroundGray,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.amber,
+    padding: 6,
   },
   monthlyText: {
-    fontSize: 8,
-    color: colors.primary,
-    textAlign: "center",
+    fontSize: 7,
+    color: colors.darkGray,
     fontWeight: "bold",
   },
 
@@ -605,6 +608,63 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     marginBottom: 2,
     paddingLeft: 8,
+  },
+
+  nextStepsBox: {
+    backgroundColor: colors.backgroundGray,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
+  },
+  nextStepsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  nextStepsTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  nextStepsFocus: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginLeft: 8,
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  nextStepsIntro: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginBottom: 6,
+    lineHeight: 1.4,
+  },
+  nextStepsGrid: {
+    flexDirection: "row",
+  },
+  nextStepsColumn: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  nextStepsColumnTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.darkGray,
+    marginBottom: 3,
+  },
+  nextStepsItem: {
+    fontSize: 7,
+    color: colors.darkGray,
+    lineHeight: 1.4,
+    marginBottom: 2,
+    paddingLeft: 6,
   },
 
   methodologySection: {
@@ -774,6 +834,85 @@ const getDimensionRankings = (scores: { utilization: number; efficiency: number;
     lowest: sorted[0],
     highest: sorted[sorted.length - 1],
   };
+};
+
+interface NextStepsContent {
+  focusArea: string;
+  whyThis: string;
+  quickWins: string[];
+  deeperDives: string[];
+}
+
+const getStrategicNextSteps = (lowestDimension: DimensionInfo): NextStepsContent => {
+  switch(lowestDimension.name) {
+    case 'Utilization':
+      return {
+        focusArea: 'Adoption & Habits',
+        whyThis: `At ${lowestDimension.score}% of benchmark, many encounters aren't capturing ambient AI value. Building consistent usage habits is the foundation for all other value.`,
+        quickWins: [
+          '• Identify top 10 non-users and understand their specific barriers',
+          '• Review workflow friction points — login steps, device issues, room setup',
+          '• Create specialty-specific "first 5 minutes" guides for new users',
+        ],
+        deeperDives: [
+          '• Analyze utilization by department/specialty to find patterns',
+          '• Consider peer champion programs in high-adoption areas',
+          '• Review training program effectiveness and refresh content',
+        ],
+      };
+    case 'Efficiency':
+      return {
+        focusArea: 'Time Savings',
+        whyThis: `At ${lowestDimension.score}% of benchmark, providers aren't experiencing the full time-saving promise. This often creates skepticism about the solution's value.`,
+        quickWins: [
+          '• Survey providers on what they\'re editing most in generated notes',
+          '• Review EHR integration points for unnecessary clicks or steps',
+          '• Check template configurations against specialty best practices',
+        ],
+        deeperDives: [
+          '• Analyze note editing patterns to identify systematic issues',
+          '• Work with EHR team on reducing post-generation workflow friction',
+          '• Consider specialty-specific optimization sessions',
+        ],
+      };
+    case 'Quality':
+      return {
+        focusArea: 'Documentation & Revenue',
+        whyThis: `At ${lowestDimension.score}% of benchmark, documentation improvements aren't translating to coding accuracy. This is often the largest dollar opportunity.`,
+        quickWins: [
+          '• Connect with coding team to get feedback on AI-generated notes',
+          '• Review HCC capture rates before vs. after ambient AI',
+          '• Identify specialties with largest documentation complexity gaps',
+        ],
+        deeperDives: [
+          '• Establish coder feedback loop to AI-generated documentation',
+          '• Analyze wRVU patterns by provider to identify coaching opportunities',
+          '• Review whether notes capture clinical complexity that supports billing',
+        ],
+      };
+    case 'Satisfaction':
+      return {
+        focusArea: 'Provider Experience',
+        whyThis: `At ${lowestDimension.score}% of benchmark, provider sentiment is a leading indicator of future adoption. Understanding dissatisfaction now prevents utilization decline later.`,
+        quickWins: [
+          '• Conduct 5-minute interviews with dissatisfied providers',
+          '• Review recent support tickets for recurring themes',
+          '• Check if dissatisfaction correlates with specific specialties or sites',
+        ],
+        deeperDives: [
+          '• Map satisfaction to efficiency — are low-satisfaction providers seeing time savings?',
+          '• Review onboarding experience for recently started providers',
+          '• Consider whether expectations were set accurately at implementation',
+        ],
+      };
+    default:
+      return {
+        focusArea: 'Optimization',
+        whyThis: 'Targeted intervention on your weakest dimension typically yields the highest ROI.',
+        quickWins: ['• Gather data on specific pain points', '• Identify quick fixes with minimal disruption'],
+        deeperDives: ['• Develop comprehensive optimization roadmap', '• Engage vendor partnership for support'],
+      };
+  }
 };
 
 const SpectrumBar = ({ score }: { score: number }) => {
@@ -1219,9 +1358,9 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
         </View>
 
         <View style={styles.compoundBox}>
-          <Text style={styles.compoundTitle}>WHY GAPS COMPOUND</Text>
+          <Text style={styles.compoundTitle}>Why gaps compound:</Text>
           <Text style={styles.compoundText}>
-            The four dimensions don't add — they multiply. A 60% score in one dimension limits the value you can capture from improvements in others. This is why small gaps across multiple dimensions create large overall gaps.
+            The four dimensions don't add — they multiply. A 60% score in one dimension limits the value you can capture from improvements in others.
           </Text>
         </View>
 
@@ -1348,6 +1487,31 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           <Text style={styles.takeawayItem}>• The largest opportunity is in {lowestDimension.name} ({lowestDimension.score}% of benchmark)</Text>
           <Text style={styles.takeawayItem}>• Closing the gap could recover {formatCurrency(calculations.annualGap)} annually / {formatCurrency(calculations.threeYearGap)} over 3 years</Text>
           <Text style={styles.takeawayItem}>• All calculations use conservative assumptions — actual value may be higher</Text>
+        </View>
+
+        {/* Strategic Next Steps */}
+        <View style={styles.nextStepsBox}>
+          <View style={styles.nextStepsHeader}>
+            <Text style={styles.nextStepsTitle}>RECOMMENDED NEXT STEPS</Text>
+            <Text style={styles.nextStepsFocus}>Focus: {getStrategicNextSteps(lowestDimension).focusArea}</Text>
+          </View>
+          <Text style={styles.nextStepsIntro}>
+            {getStrategicNextSteps(lowestDimension).whyThis}
+          </Text>
+          <View style={styles.nextStepsGrid}>
+            <View style={styles.nextStepsColumn}>
+              <Text style={styles.nextStepsColumnTitle}>Quick Wins (This Week)</Text>
+              {getStrategicNextSteps(lowestDimension).quickWins.map((item, i) => (
+                <Text key={i} style={styles.nextStepsItem}>{item}</Text>
+              ))}
+            </View>
+            <View style={styles.nextStepsColumn}>
+              <Text style={styles.nextStepsColumnTitle}>Deeper Dives (This Month)</Text>
+              {getStrategicNextSteps(lowestDimension).deeperDives.map((item, i) => (
+                <Text key={i} style={styles.nextStepsItem}>{item}</Text>
+              ))}
+            </View>
+          </View>
         </View>
 
         <View style={styles.methodologySection}>
