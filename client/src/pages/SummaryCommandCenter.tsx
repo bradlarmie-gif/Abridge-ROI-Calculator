@@ -207,6 +207,7 @@ export default function SummaryCommandCenter({
   const [isExporting, setIsExporting] = useState(false);
   const [manageModelSheetOpen, setManageModelSheetOpen] = useState(false);
   const [addedDrivers, setAddedDrivers] = useState<Record<string, { name: string; value: number; inputs: Record<string, any> }>>({});
+  const [removedDriverIds, setRemovedDriverIds] = useState<Set<string>>(new Set());
   const [showExportModal, setShowExportModal] = useState(false);
   const [clientName, setClientName] = useState("");
   const [preparedBy, setPreparedBy] = useState("");
@@ -238,26 +239,44 @@ export default function SummaryCommandCenter({
   const safeFullScaleUnits = fullScaleUnits === "" ? pilotUnits + 1 : fullScaleUnits;
   const [selectedPace, setSelectedPace] = useState<"measured" | "steady" | "aggressive">("steady");
   
-  // Merge original driver results with any drivers added via the sheet
+  // Merge original driver results with any drivers added via the sheet, excluding removed drivers
   const mergedDriverResults = useMemo(() => {
-    const merged = { ...modelResults.driverResults };
+    const merged: Record<string, any> = {};
+    // Add original drivers, excluding removed ones
+    Object.entries(modelResults.driverResults).forEach(([id, driver]) => {
+      if (!removedDriverIds.has(id)) {
+        merged[id] = driver;
+      }
+    });
+    // Add newly added drivers (these can also be removed)
     Object.entries(addedDrivers).forEach(([id, driver]) => {
-      merged[id] = {
-        id,
-        name: driver.name,
-        value: driver.value,
-        inputs: driver.inputs,
-      };
+      if (!removedDriverIds.has(id)) {
+        merged[id] = {
+          id,
+          name: driver.name,
+          value: driver.value,
+          inputs: driver.inputs,
+        };
+      }
     });
     return merged;
-  }, [modelResults.driverResults, addedDrivers]);
+  }, [modelResults.driverResults, addedDrivers, removedDriverIds]);
   
-  // Calculate additional value from newly added drivers
+  // Calculate additional value from newly added drivers (excluding removed ones)
   const addedDriversValue = useMemo(() => {
-    return Object.values(addedDrivers).reduce((sum, d) => sum + d.value, 0);
-  }, [addedDrivers]);
+    return Object.entries(addedDrivers)
+      .filter(([id]) => !removedDriverIds.has(id))
+      .reduce((sum, [, d]) => sum + d.value, 0);
+  }, [addedDrivers, removedDriverIds]);
   
-  const totalAnnualValue = modelResults.totalBenefit + addedDriversValue;
+  // Calculate value of removed original drivers
+  const removedOriginalDriversValue = useMemo(() => {
+    return Object.entries(modelResults.driverResults || {})
+      .filter(([id]) => removedDriverIds.has(id))
+      .reduce((sum, [, d]) => sum + (d.value || 0), 0);
+  }, [modelResults.driverResults, removedDriverIds]);
+  
+  const totalAnnualValue = modelResults.totalBenefit + addedDriversValue - removedOriginalDriversValue;
   const annualInvestment = modelResults.investment || 0;
   const implementationFee = modelResults.implementationFee || 0;
   const netValue = totalAnnualValue - annualInvestment;
@@ -304,10 +323,13 @@ export default function SummaryCommandCenter({
   }, [toast]);
 
   const handleRemoveDriver = useCallback((driverId: string) => {
+    // Remove from addedDrivers if it was added via the sheet
     setAddedDrivers(prev => {
       const { [driverId]: removed, ...rest } = prev;
       return rest;
     });
+    // Also track in removedDriverIds to exclude original drivers
+    setRemovedDriverIds(prev => new Set([...Array.from(prev), driverId]));
     toast({
       title: "Driver Removed",
       description: "Driver has been removed from your model",
