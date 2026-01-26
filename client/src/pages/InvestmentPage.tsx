@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
+import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import {
@@ -294,6 +295,11 @@ export default function InvestmentPage({
         onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
+
+      {/* Progress Bar */}
+      <div className="bg-white border-b border-slate-100 py-3 px-4">
+        <ExploreProgressBar currentStep={5} />
+      </div>
 
       <div className="py-8 sm:py-12 pb-16">
         {/* Centered Page Header */}

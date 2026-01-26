@@ -925,6 +925,231 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
           }
         ],
         caveat: "This is harder to quantify but real from a risk management and regulatory perspective."
+      },
+      {
+        id: "hapi-prevention",
+        name: "HAPI Prevention",
+        description: "Better documentation supports skin integrity protocols",
+        whyItMatters: "CMS penalties can exceed $100K per preventable injury",
+        referenceValue: 75000,
+        icon: ShieldCheck,
+        lane: "quality",
+        order: 2,
+        theory: "Hospital-acquired pressure injuries (HAPIs) are largely preventable with proper turning protocols and documentation. Real-time documentation ensures skin assessments and repositioning are captured when they happen, supporting protocol compliance.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT HAPI RATE",
+            question: "What's the baseline situation?",
+            inputs: [
+              { label: "Patient days/year", value: "~100,000" },
+              { label: "HAPI rate", value: "2.5%" }
+            ],
+            output: { label: "Annual HAPIs", value: "~25 events" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "DOCUMENTATION IMPACT",
+            question: "How many could better documentation help prevent?",
+            inputs: [
+              { label: "Current HAPIs", value: "25" },
+              { label: "Doc-driven improvement", value: "15%" }
+            ],
+            output: { label: "Events prevented", value: "3-4" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "COST AVOIDANCE",
+            question: "What's the value of prevention?",
+            inputs: [
+              { label: "Events prevented", value: "3.75" },
+              { label: "Cost per HAPI", value: "$20,000" }
+            ],
+            output: { label: "Annual savings", value: "$75,000" }
+          }
+        ],
+        caveat: "The causal link between documentation and prevention is indirect but supported by quality improvement data. CMS penalties add additional financial exposure."
+      },
+      {
+        id: "falls-prevention",
+        name: "Falls Prevention",
+        description: "Documentation supports fall risk protocols",
+        whyItMatters: "Falls are the most common patient safety event in hospitals",
+        referenceValue: 50000,
+        icon: AlertTriangle,
+        lane: "quality",
+        order: 3,
+        theory: "Fall prevention requires timely risk assessments and intervention documentation. When nurses document in real-time, fall risk status is current and visible to the care team, enabling proactive interventions.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT FALL RATE",
+            question: "What's the baseline situation?",
+            inputs: [
+              { label: "Patient days/year", value: "~100,000" },
+              { label: "Falls per 1,000 days", value: "3.5" }
+            ],
+            output: { label: "Annual falls", value: "~350 events" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "DOCUMENTATION IMPACT",
+            question: "How many could timely documentation help prevent?",
+            inputs: [
+              { label: "Current falls", value: "350" },
+              { label: "With injury", value: "~30%" },
+              { label: "Doc improvement", value: "8%" }
+            ],
+            output: { label: "Injuries prevented", value: "~8" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "COST AVOIDANCE",
+            question: "What's the value of prevention?",
+            inputs: [
+              { label: "Injuries prevented", value: "8" },
+              { label: "Avg cost per injury", value: "$6,250" }
+            ],
+            output: { label: "Annual savings", value: "$50,000" }
+          }
+        ],
+        caveat: "Falls prevention is multi-factorial. Documentation is one supporting element alongside physical interventions, staffing, and environment."
+      },
+      {
+        id: "survey-compliance",
+        name: "Survey & Compliance Readiness",
+        description: "Always ready for regulatory inspections",
+        whyItMatters: "CMS citations can result in payment suspensions",
+        referenceValue: 40000,
+        icon: ClipboardCheck,
+        lane: "quality",
+        order: 4,
+        theory: "Regulatory surveys examine documentation completeness and timeliness. Real-time charting ensures documentation is always survey-ready, reducing the scramble before inspections and the risk of citations.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "SURVEY PREP EFFORT",
+            question: "How much effort goes into survey prep?",
+            inputs: [
+              { label: "Chart reviews/year", value: "200 hrs" },
+              { label: "Remediation work", value: "150 hrs" }
+            ],
+            output: { label: "Annual prep hours", value: "350 hrs" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "EFFORT REDUCTION",
+            question: "How much can real-time documentation help?",
+            inputs: [
+              { label: "Prep hours", value: "350" },
+              { label: "Reduction", value: "40%" }
+            ],
+            output: { label: "Hours saved", value: "140 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "VALUE",
+            question: "What's this worth operationally?",
+            inputs: [
+              { label: "Staff hours saved", value: "140" },
+              { label: "Hourly rate", value: "$50" },
+              { label: "Risk reduction", value: "+ $33K" }
+            ],
+            output: { label: "Annual value", value: "$40,000" }
+          }
+        ],
+        caveat: "The risk reduction component is harder to quantify but represents real financial exposure for non-compliance."
+      },
+      {
+        id: "care-coordination",
+        name: "Care Coordination",
+        description: "Improved handoffs and care continuity",
+        whyItMatters: "80% of serious medical errors involve miscommunication during handoffs",
+        referenceValue: 30000,
+        icon: Users,
+        lane: "quality",
+        order: 5,
+        theory: "Real-time documentation ensures current patient status is visible to all care team members. This reduces communication gaps during shift changes and improves care coordination across the hospital.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "HANDOFF FREQUENCY",
+            question: "How many handoffs happen?",
+            inputs: [
+              { label: "Nurses", value: "300" },
+              { label: "Handoffs/week", value: "3" },
+              { label: "Weeks/year", value: "50" }
+            ],
+            output: { label: "Annual handoffs", value: "45,000" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "TIME SAVINGS",
+            question: "How much time can real-time docs save?",
+            inputs: [
+              { label: "Handoffs", value: "45,000" },
+              { label: "Minutes saved", value: "2 min" }
+            ],
+            output: { label: "Hours saved", value: "1,500 hrs" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "VALUE",
+            question: "What's this worth?",
+            inputs: [
+              { label: "Hours saved", value: "1,500" },
+              { label: "Avg rate", value: "$45/hr" },
+              { label: "Realization", value: "45%" }
+            ],
+            output: { label: "Annual value", value: "$30,375" }
+          }
+        ],
+        caveat: "Care coordination improvements also reduce errors, but that value is harder to quantify and track."
+      },
+      {
+        id: "patient-experience",
+        name: "Patient Experience (HCAHPS)",
+        description: "More time at bedside = better patient satisfaction",
+        whyItMatters: "HCAHPS scores affect VBP reimbursement",
+        referenceValue: 25000,
+        icon: Activity,
+        lane: "quality",
+        order: 6,
+        theory: "When nurses spend less time at computer stations and more time with patients, satisfaction improves. HCAHPS scores in nursing communication and responsiveness correlate with documentation burden reduction.",
+        calculationSteps: [
+          {
+            stepNumber: 1,
+            stepLabel: "CURRENT HCAHPS",
+            question: "What's the baseline situation?",
+            inputs: [
+              { label: "Nursing communication", value: "78th percentile" },
+              { label: "Target", value: "85th percentile" }
+            ],
+            output: { label: "Gap", value: "7 percentile points" }
+          },
+          {
+            stepNumber: 2,
+            stepLabel: "IMPROVEMENT PATHWAY",
+            question: "How does more bedside time help?",
+            inputs: [
+              { label: "Time returned to bedside", value: "+35 min/shift" },
+              { label: "Patient interactions", value: "+2/shift" }
+            ],
+            output: { label: "Expected impact", value: "+2-3 percentile" }
+          },
+          {
+            stepNumber: 3,
+            stepLabel: "VALUE",
+            question: "What's the VBP impact?",
+            inputs: [
+              { label: "HCAHPS improvement", value: "2.5 percentile" },
+              { label: "VBP exposure", value: "$1M" },
+              { label: "HCAHPS weight", value: "25%" }
+            ],
+            output: { label: "Potential value", value: "$25,000" }
+          }
+        ],
+        caveat: "HCAHPS is influenced by many factors. Documentation burden is one contributor to nursing satisfaction and bedside time."
       }
     ]
   },
@@ -1221,18 +1446,26 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
   }
 };
 
-function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: boolean }) {
+function CalculationStepCard({ step, isLast, index = 0 }: { step: CalculationStep; isLast: boolean; index?: number }) {
   return (
-    <div className="relative">
-      <div className="bg-[#F8F9FA] rounded-lg p-5 animate-in fade-in duration-300">
+    <div 
+      className="relative animate-in fade-in slide-in-from-bottom-2 duration-300"
+      style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
+    >
+      <div className="bg-gradient-to-br from-[#F8F9FA] to-white rounded-lg p-5 border border-neutral-100 shadow-sm hover:shadow-md transition-shadow duration-200">
         <div className="mb-4">
-          <div className="text-xs font-bold text-[#6B7280] tracking-wide mb-1">
-            STEP {step.stepNumber}: {step.stepLabel}
+          <div className="inline-flex items-center gap-2 mb-2">
+            <span className="w-6 h-6 rounded-full bg-[#EA2C00] text-white text-xs font-bold flex items-center justify-center">
+              {step.stepNumber}
+            </span>
+            <span className="text-xs font-bold text-[#EA2C00] tracking-wide uppercase">
+              {step.stepLabel}
+            </span>
           </div>
-          <div className="text-sm text-[#6B7280] italic">{step.question}</div>
+          <div className="text-sm text-[#6B7280] italic pl-8">{step.question}</div>
         </div>
         
-        <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div className="flex items-end justify-between gap-4 flex-wrap pl-8">
           <div className="flex items-end gap-3 flex-wrap flex-1">
             {step.inputs.map((input, idx) => (
               <div key={idx} className="flex items-end gap-3">
@@ -1241,7 +1474,7 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
                 )}
                 <div className="text-center">
                   <div className="text-xs text-[#6B7280] mb-1">{input.label}</div>
-                  <div className="font-mono text-[#111827] font-medium text-base border-b-2 border-[#E5E7EB] pb-1.5 px-3 min-w-[70px]">
+                  <div className="font-mono text-[#111827] font-medium text-base bg-white border border-neutral-200 rounded-md pb-1.5 pt-1 px-3 min-w-[70px] shadow-sm">
                     {input.value}
                   </div>
                 </div>
@@ -1252,7 +1485,7 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
           
           <div className="text-right">
             <div className="text-xs text-[#6B7280] mb-1">{step.output.label}</div>
-            <div className="font-mono text-emerald-600 font-bold text-lg border-b-2 border-emerald-600 pb-1.5 px-3 min-w-[90px]">
+            <div className="font-mono text-white bg-emerald-600 font-bold text-lg rounded-md pb-1.5 pt-1 px-4 min-w-[90px] shadow-sm">
               {step.output.value}
             </div>
           </div>
@@ -1260,8 +1493,11 @@ function CalculationStepCard({ step, isLast }: { step: CalculationStep; isLast: 
       </div>
       
       {!isLast && (
-        <div className="flex justify-center py-2">
-          <div className="w-0.5 h-4 bg-[#E5E7EB]"></div>
+        <div className="flex justify-center py-1.5">
+          <div className="flex flex-col items-center">
+            <div className="w-0.5 h-2 bg-gradient-to-b from-emerald-400 to-emerald-200"></div>
+            <ChevronDown className="w-4 h-4 text-emerald-400 -mt-1" />
+          </div>
         </div>
       )}
     </div>
@@ -1272,12 +1508,14 @@ function DriverAccordion({
   driver, 
   isExpanded, 
   onToggle,
-  onViewed 
+  onViewed,
+  onTryInExplore
 }: { 
   driver: Driver; 
   isExpanded: boolean; 
   onToggle: () => void;
   onViewed: () => void;
+  onTryInExplore: () => void;
 }) {
   const Icon = driver.icon;
   
@@ -1339,6 +1577,7 @@ function DriverAccordion({
                   key={idx} 
                   step={step} 
                   isLast={idx === driver.calculationSteps.length - 1}
+                  index={idx}
                 />
               ))}
             </div>
@@ -1351,6 +1590,25 @@ function DriverAccordion({
               <span>{driver.caveat}</span>
             </div>
           )}
+          
+          {/* Try This in Explore CTA */}
+          <div className="pt-4 border-t border-neutral-100">
+            <div className="bg-gradient-to-r from-[#FEF0EC] to-[#FFF7ED] rounded-xl p-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-[#111827]">Ready to model your own scenario?</p>
+                <p className="text-xs text-[#6B7280]">Use your actual data in the full calculator</p>
+              </div>
+              <Button
+                onClick={onTryInExplore}
+                size="sm"
+                className="bg-[#EA2C00] text-white flex items-center gap-1.5 flex-shrink-0"
+                data-testid={`button-try-explore-${driver.id}`}
+              >
+                Try in Explore
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1627,6 +1885,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                 isExpanded={expandedDrivers.has(driver.id)}
                 onToggle={() => toggleDriver(driver.id)}
                 onViewed={() => markDriverViewed(driver.id)}
+                onTryInExplore={handleStartCalculator}
               />
             ))}
           </div>
@@ -1648,6 +1907,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
                 isExpanded={expandedDrivers.has(driver.id)}
                 onToggle={() => toggleDriver(driver.id)}
                 onViewed={() => markDriverViewed(driver.id)}
+                onTryInExplore={handleStartCalculator}
               />
             ))}
           </div>
@@ -1655,27 +1915,29 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
 
         {/* Nursing-only: What we're NOT claiming callout */}
         {selectedSetting === "nursing" && (
-          <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-5 mb-10" data-testid="nursing-disclaimer">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 mb-10" data-testid="nursing-disclaimer">
             <div className="flex items-start gap-3">
-              <ClipboardCheck className="w-5 h-5 text-[#6B7280] mt-0.5 flex-shrink-0" />
+              <Lightbulb className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-semibold text-[#111827] mb-2">A NOTE ON NURSING ROI</h4>
-                <p className="text-sm text-[#6B7280] mb-3">We intentionally DON'T claim:</p>
-                <ul className="text-sm text-[#6B7280] space-y-1 mb-3">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
-                    Reduced falls or pressure injuries (too indirect)
+                <h4 className="text-sm font-semibold text-[#111827] mb-2">A NOTE ON NURSING VALUE DRIVERS</h4>
+                <p className="text-sm text-[#6B7280] mb-3">
+                  Nursing ROI is different from physician settings. There's no wRVU capture or E/M coding. Instead, value flows through:
+                </p>
+                <ul className="text-sm text-[#6B7280] space-y-1.5 mb-3">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Direct cost savings</strong> — overtime reduction and agency avoidance are measurable in payroll data</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
-                    Revenue support via CDI (nursing notes rarely drive DRG)
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Retention value</strong> — preventing turnover avoids $40-60K replacement costs per nurse</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
-                    Improved patient satisfaction (hard to attribute)
+                  <li className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Quality indicators</strong> — HAPI, falls, HCAHPS shown with clear caveats about indirect attribution</span>
                   </li>
                 </ul>
-                <p className="text-sm text-[#111827] font-medium">We focus on what's measurable and defensible: workforce costs.</p>
+                <p className="text-sm text-[#111827] font-medium">We show the theory and math—you decide what's defensible for your organization.</p>
               </div>
             </div>
           </div>

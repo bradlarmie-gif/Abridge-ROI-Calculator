@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { type SelectedLever } from "@/pages/ObjectiveSelectionScreen";
 import {
   type CareSettingType,
@@ -154,6 +155,11 @@ export default function BaselineSetup({
         onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
+
+      {/* Progress Bar */}
+      <div className="bg-white border-b border-slate-100 py-3 px-4">
+        <ExploreProgressBar currentStep={3} />
+      </div>
 
       <div className="py-6 sm:py-8 md:py-12">
         {/* Centered Page Header */}

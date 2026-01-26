@@ -21,7 +21,9 @@ import {
   Globe,
   ChevronDown,
   ChevronUp,
+  AlertCircle,
 } from "lucide-react";
+import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type CareSettingType, CARE_SETTING_LABELS, QUALITATIVE_CONFIG, SETTING_CONFIG } from "@/lib/SETTING_CONFIG";
@@ -751,6 +753,11 @@ export default function SummaryCommandCenter({
       />
       <UnifiedHeaderSpacer />
 
+      {/* Progress Bar */}
+      <div className="bg-white border-b border-slate-100 py-3 px-4">
+        <ExploreProgressBar currentStep={6} />
+      </div>
+
       {/* Sticky Context Bar */}
       <div className="sticky top-14 sm:top-16 left-0 right-0 z-40 bg-white border-b border-[#E5E7EB] shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2">
@@ -790,7 +797,31 @@ export default function SummaryCommandCenter({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-12 space-y-6 sm:space-y-8">
         
+        {/* Empty State - No Value Drivers Configured */}
+        {totalAnnualValue === 0 && (
+          <section className="bg-white rounded-2xl border border-[#E5E7EB] p-8 md:p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-8 h-8 text-slate-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-[#111827] mb-3">No Value Drivers Configured</h2>
+              <p className="text-[#6B7280] mb-6">
+                Return to the Value Drivers step to select and configure drivers that apply to your organization.
+              </p>
+              <button
+                onClick={onBack}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-white bg-[#EA2C00] hover:bg-[#d12700] transition-colors"
+                data-testid="button-return-drivers"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Return to Value Drivers
+              </button>
+            </div>
+          </section>
+        )}
+        
         {/* ============ HERO ROI SECTION ============ */}
+        {totalAnnualValue > 0 && (
         <section className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-2xl p-8 md:p-10 text-white">
           <div className="text-center mb-8">
             <span className="text-[13px] font-semibold text-white/60 uppercase tracking-[0.15em]">Your ROI at a Glance</span>
@@ -854,8 +885,10 @@ export default function SummaryCommandCenter({
             </div>
           </div>
         </section>
+        )}
 
         {/* ============ VALUE BREAKDOWN ============ */}
+        {totalAnnualValue > 0 && (
         <section className="bg-white rounded-2xl border border-[#E5E7EB] p-8">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-2 bg-[#F3F4F6] rounded-lg">
@@ -940,6 +973,7 @@ export default function SummaryCommandCenter({
             )}
           </div>
         </section>
+        )}
 
         {/* ============ QUALITATIVE BENEFITS SECTION ============ */}
         {qualitativeDrivers.length > 0 && QUALITATIVE_CONFIG[activeSetting].hasQualitativeSection && (
