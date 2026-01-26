@@ -1928,6 +1928,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
         <GlobalHeader 
           pageName="Learn the Methodology" 
           onBack={onBack}
+          onLogoClick={onBack}
         />
         <div className="h-[72px]" />
 
@@ -2025,6 +2026,7 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
       <GlobalHeader 
         pageName={config?.name || "Methodology"} 
         onBack={handleBackToSelection}
+        onLogoClick={onBack}
       />
       <div className="h-[72px]" />
 

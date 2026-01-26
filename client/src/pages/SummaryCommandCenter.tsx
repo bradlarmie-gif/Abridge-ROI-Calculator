@@ -791,6 +791,32 @@ export default function SummaryCommandCenter({
               <Pencil className="w-4 h-4" />
               <span className="hidden sm:inline">Manage Model</span>
             </Button>
+            
+            {canShare && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="gap-1.5 border-[#E5E7EB]" 
+                onClick={handleSharePdf}
+                disabled={isExporting}
+                data-testid="button-share-pdf-top"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">{isExporting ? "..." : "Share"}</span>
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="gap-1.5 border-[#E5E7EB]" 
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              data-testid="button-export-pdf-top"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">{isExporting ? "..." : "Export PDF"}</span>
+            </Button>
           </div>
         </div>
       </div>
