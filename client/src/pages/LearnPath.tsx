@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { 
   ArrowLeft,
   ArrowRight, 
@@ -23,8 +23,14 @@ import {
   Lightbulb,
   Calculator,
   AlertTriangle,
-  BarChart2
+  BarChart2,
+  Target,
+  Search,
+  Shield,
+  Sparkles,
+  Layers
 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 
@@ -50,6 +56,17 @@ interface CalculationStep {
   };
 }
 
+interface InteractiveInput {
+  id: string;
+  label: string;
+  defaultValue: number;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  format?: "currency" | "percent" | "number" | "minutes";
+}
+
 interface Driver {
   id: string;
   name: string;
@@ -62,6 +79,12 @@ interface Driver {
   theory: string;
   calculationSteps: CalculationStep[];
   caveat?: string;
+  // Rich content sections
+  theProblem?: string;
+  whyDefensible?: string[];
+  theSignal?: string[];
+  interactiveInputs?: InteractiveInput[];
+  calculateValue?: (inputs: Record<string, number>) => number;
 }
 
 interface SettingConfig {
@@ -118,7 +141,33 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         icon: DollarSign,
         lane: "time",
         order: 1,
+        theProblem: "Physicians routinely stay 1-2 hours past their scheduled day to finish documentation. This isn't just a morale issue—it's a direct cost. Overtime triggers premium pay (1.5x), and when physicians burn out or leave, locum coverage costs $275-400/hour. The documentation burden creates a compounding financial drain that most organizations accept as 'the cost of doing business.'",
+        whyDefensible: [
+          "Payroll data shows overtime hours before and after implementation",
+          "Time-tracking systems capture documentation time directly",
+          "Locum invoices provide clear cost benchmarks",
+          "Industry data: 60% of physicians report staying late for documentation (MGMA)"
+        ],
+        theSignal: [
+          "Your organization regularly uses locum tenens to maintain access",
+          "Payroll shows consistent overtime among clinical staff",
+          "Physicians report 'pajama time' completing notes at home",
+          "Exit interviews cite documentation burden as a factor"
+        ],
         theory: "Documentation often extends past scheduled hours, triggering overtime pay. By returning time to clinicians, organizations reduce the need for after-hours work and expensive locum coverage to maintain access.",
+        interactiveInputs: [
+          { id: "providers", label: "Providers", defaultValue: 40, min: 10, max: 200, step: 5, unit: "", format: "number" },
+          { id: "otPercent", label: "% with overtime", defaultValue: 60, min: 20, max: 100, step: 5, unit: "%", format: "percent" },
+          { id: "hoursPerWeek", label: "OT hours/week", defaultValue: 4, min: 1, max: 10, step: 1, unit: "hrs", format: "number" },
+          { id: "reductionRate", label: "Reduction rate", defaultValue: 70, min: 30, max: 90, step: 5, unit: "%", format: "percent" }
+        ],
+        calculateValue: (inputs: Record<string, number>) => {
+          const providersWithOT = inputs.providers * (inputs.otPercent / 100);
+          const annualOTHours = providersWithOT * inputs.hoursPerWeek * 50;
+          const hoursSaved = annualOTHours * (inputs.reductionRate / 100);
+          const premiumHours = hoursSaved * 0.3;
+          return Math.round(premiumHours * 150);
+        },
         calculationSteps: [
           {
             stepNumber: 1,
@@ -172,7 +221,32 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         icon: Users,
         lane: "time",
         order: 2,
+        theProblem: "Most healthcare organizations face the same paradox: patients can't get appointments, but providers feel overworked. The bottleneck isn't clinical skill—it's the invisible tax of documentation. Every minute spent on notes is a minute not spent with patients. When you return that time, you create capacity that didn't exist before.",
+        whyDefensible: [
+          "Visit volume is tracked in your practice management system",
+          "Wait times for new patient appointments are measurable",
+          "Revenue per visit is known from billing data",
+          "Time savings are measurable through EHR timestamps"
+        ],
+        theSignal: [
+          "New patient wait times exceed 2-3 weeks",
+          "Referrals are being sent elsewhere due to capacity",
+          "Physicians are turning away same-day requests",
+          "Revenue targets are limited by visit volume, not payer mix"
+        ],
         theory: "When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and other factors limit realization—but even a modest portion creates meaningful revenue.",
+        interactiveInputs: [
+          { id: "timeSaved", label: "Time saved/encounter", defaultValue: 2.5, min: 1, max: 5, step: 0.5, unit: "min", format: "minutes" },
+          { id: "encounters", label: "Annual encounters", defaultValue: 52000, min: 10000, max: 150000, step: 5000, unit: "", format: "number" },
+          { id: "realization", label: "Realization rate", defaultValue: 20, min: 10, max: 40, step: 5, unit: "%", format: "percent" },
+          { id: "revenuePerVisit", label: "Revenue per visit", defaultValue: 200, min: 100, max: 400, step: 25, unit: "$", format: "currency" }
+        ],
+        calculateValue: (inputs: Record<string, number>) => {
+          const hoursReturned = (inputs.timeSaved * inputs.encounters) / 60;
+          const usableHours = hoursReturned * (inputs.realization / 100);
+          const additionalVisits = usableHours * 2; // 30 min per visit
+          return Math.round(additionalVisits * inputs.revenuePerVisit);
+        },
         calculationSteps: [
           {
             stepNumber: 1,
@@ -225,7 +299,32 @@ const SETTING_CONFIGS: Record<CareSettingType, SettingConfig> = {
         icon: UserCheck,
         lane: "time",
         order: 3,
+        theProblem: "Physician turnover is one of the most expensive problems in healthcare. When a physician leaves, you lose 3-6 months of productivity during recruitment, pay signing bonuses, and endure months of ramp-up. Meanwhile, the remaining physicians absorb extra workload, accelerating their own burnout. It's a spiral—and documentation burden is at the center of it.",
+        whyDefensible: [
+          "HR tracks turnover rates and replacement costs",
+          "Exit interviews frequently cite administrative burden",
+          "Industry benchmarks: physician replacement costs $500K-$1M (MGMA, AAFP)",
+          "Burnout surveys show documentation as top driver (Medscape)"
+        ],
+        theSignal: [
+          "Turnover rates exceed 5-6% annually",
+          "Exit interviews mention documentation or work-life balance",
+          "Engagement surveys show declining satisfaction",
+          "Physicians are requesting reduced schedules"
+        ],
         theory: "Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $500K-1M when you factor in recruiting, onboarding, and lost revenue.",
+        interactiveInputs: [
+          { id: "providers", label: "Providers", defaultValue: 40, min: 10, max: 200, step: 5, unit: "", format: "number" },
+          { id: "turnoverRate", label: "Turnover rate", defaultValue: 6, min: 2, max: 15, step: 1, unit: "%", format: "percent" },
+          { id: "burnoutAttribution", label: "Burnout attribution", defaultValue: 45, min: 20, max: 70, step: 5, unit: "%", format: "percent" },
+          { id: "replacementCost", label: "Replacement cost", defaultValue: 500000, min: 300000, max: 1000000, step: 50000, unit: "$", format: "currency" }
+        ],
+        calculateValue: (inputs: Record<string, number>) => {
+          const departures = inputs.providers * (inputs.turnoverRate / 100);
+          const burnoutRelated = departures * (inputs.burnoutAttribution / 100);
+          const prevented = burnoutRelated * 0.30; // 30% Abridge attribution
+          return Math.round(prevented * inputs.replacementCost);
+        },
         calculationSteps: [
           {
             stepNumber: 1,
@@ -1504,6 +1603,93 @@ function CalculationStepCard({ step, isLast, index = 0 }: { step: CalculationSte
   );
 }
 
+function InteractiveMiniCalculator({ 
+  driver, 
+  onCalculatedValue 
+}: { 
+  driver: Driver; 
+  onCalculatedValue: (value: number) => void;
+}) {
+  const [inputs, setInputs] = useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    driver.interactiveInputs?.forEach(input => {
+      initial[input.id] = input.defaultValue;
+    });
+    return initial;
+  });
+
+  const calculatedValue = useMemo(() => {
+    if (driver.calculateValue) {
+      return driver.calculateValue(inputs);
+    }
+    return driver.referenceValue;
+  }, [inputs, driver]);
+
+  // Notify parent of value changes - use useEffect to avoid side effects during render
+  React.useEffect(() => {
+    onCalculatedValue(calculatedValue);
+  }, [calculatedValue, onCalculatedValue]);
+
+  const formatValue = (value: number, format?: string) => {
+    switch (format) {
+      case "currency": return `$${value.toLocaleString()}`;
+      case "percent": return `${value}%`;
+      case "minutes": return `${value} min`;
+      default: return value.toString();
+    }
+  };
+
+  if (!driver.interactiveInputs || driver.interactiveInputs.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-5 border border-slate-200">
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+        <span className="text-sm font-semibold text-[#111827]">Try It Yourself</span>
+        <span className="text-xs text-[#6B7280] ml-1">— adjust the inputs</span>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        {driver.interactiveInputs.map((input) => (
+          <div key={input.id} className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-medium text-[#6B7280]">{input.label}</label>
+              <span className="text-sm font-semibold text-[#111827] font-mono">
+                {formatValue(inputs[input.id], input.format)}
+              </span>
+            </div>
+            <Slider
+              value={[inputs[input.id]]}
+              onValueChange={([value]) => setInputs(prev => ({ ...prev, [input.id]: value }))}
+              min={input.min}
+              max={input.max}
+              step={input.step}
+              className="w-full"
+              data-testid={`slider-${driver.id}-${input.id}`}
+            />
+            <div className="flex justify-between text-[10px] text-[#9CA3AF]">
+              <span>{formatValue(input.min, input.format)}</span>
+              <span>{formatValue(input.max, input.format)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex items-center justify-between bg-white rounded-lg p-4 border border-slate-200">
+        <div>
+          <div className="text-xs text-[#6B7280] mb-0.5">Estimated Annual Value</div>
+          <div className="text-xs text-[#9CA3AF]">Based on your inputs</div>
+        </div>
+        <div className="text-2xl font-bold text-emerald-600 font-mono">
+          ${calculatedValue.toLocaleString()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DriverAccordion({ 
   driver, 
   isExpanded, 
@@ -1518,6 +1704,14 @@ function DriverAccordion({
   onTryInExplore: () => void;
 }) {
   const Icon = driver.icon;
+  const [calculatedValue, setCalculatedValue] = useState(driver.referenceValue);
+  const hasRichContent = driver.theProblem || driver.whyDefensible || driver.theSignal;
+  const hasInteractive = driver.interactiveInputs && driver.interactiveInputs.length > 0;
+  
+  // Stable callback to avoid re-render loops
+  const handleCalculatedValue = useCallback((value: number) => {
+    setCalculatedValue(value);
+  }, []);
   
   const handleToggle = () => {
     if (!isExpanded) {
@@ -1527,7 +1721,7 @@ function DriverAccordion({
   };
 
   return (
-    <div className="border border-neutral-200 rounded-xl overflow-visible bg-white">
+    <div className="border border-neutral-200 rounded-xl overflow-visible bg-white shadow-sm">
       <button
         onClick={handleToggle}
         className="w-full px-5 py-4 flex items-center justify-between hover-elevate rounded-xl"
@@ -1544,7 +1738,7 @@ function DriverAccordion({
         </div>
         <div className="flex items-center gap-4">
           <span className="text-emerald-600 font-semibold">
-            ${driver.referenceValue.toLocaleString()}
+            ${(hasInteractive ? calculatedValue : driver.referenceValue).toLocaleString()}
           </span>
           {isExpanded ? (
             <ChevronUp className="w-5 h-5 text-[#6B7280]" />
@@ -1556,11 +1750,75 @@ function DriverAccordion({
       
       {isExpanded && (
         <div className="px-5 pb-6 pt-3 border-t border-neutral-100 space-y-6 animate-in slide-in-from-top-2 duration-300">
-          {/* The Theory */}
+          
+          {/* The Problem - Rich Content */}
+          {driver.theProblem && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-sm font-semibold text-[#111827]">The Problem</span>
+              </div>
+              <p className="text-sm text-[#4B5563] leading-relaxed">{driver.theProblem}</p>
+            </div>
+          )}
+          
+          {/* Why It's Defensible */}
+          {driver.whyDefensible && driver.whyDefensible.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-sm font-semibold text-[#111827]">Why It's Defensible</span>
+              </div>
+              <ul className="space-y-2">
+                {driver.whyDefensible.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-[#4B5563]">
+                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {/* The Signal */}
+          {driver.theSignal && driver.theSignal.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Search className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-sm font-semibold text-[#111827]">The Signal</span>
+                <span className="text-xs text-[#6B7280]">— how to know if this applies</span>
+              </div>
+              <ul className="space-y-2">
+                {driver.theSignal.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-[#4B5563]">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] mt-2 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {/* Divider if rich content exists */}
+          {hasRichContent && (
+            <div className="border-t border-neutral-100 pt-2" />
+          )}
+          
+          {/* Interactive Mini Calculator */}
+          {hasInteractive && (
+            <InteractiveMiniCalculator 
+              driver={driver} 
+              onCalculatedValue={handleCalculatedValue}
+            />
+          )}
+          
+          {/* The Theory - Simplified if rich content exists */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Lightbulb className="w-4 h-4 text-[#EA2C00]" />
-              <span className="text-sm font-semibold text-[#111827]">The Theory</span>
+              <span className="text-sm font-semibold text-[#111827]">
+                {hasRichContent ? "The Math in Plain English" : "The Theory"}
+              </span>
             </div>
             <p className="text-sm text-[#6B7280] leading-relaxed">{driver.theory}</p>
           </div>
@@ -1569,7 +1827,7 @@ function DriverAccordion({
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Calculator className="w-4 h-4 text-[#EA2C00]" />
-              <span className="text-sm font-semibold text-[#111827]">How We Calculate It</span>
+              <span className="text-sm font-semibold text-[#111827]">Step-by-Step Calculation</span>
             </div>
             <div className="space-y-0">
               {driver.calculationSteps.map((step, idx) => (
@@ -1585,8 +1843,8 @@ function DriverAccordion({
           
           {/* Caveat Note */}
           {driver.caveat && (
-            <div className="flex items-start gap-2 text-sm text-[#6B7280]">
-              <AlertTriangle className="w-4 h-4 text-[#9CA3AF] mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 text-sm text-[#6B7280] bg-amber-50 border border-amber-100 rounded-lg p-3">
+              <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
               <span>{driver.caveat}</span>
             </div>
           )}
@@ -1778,62 +2036,103 @@ export default function LearnPath({ onBack, onStartCalculator }: LearnPathProps)
           <p className="text-[#6B7280]">Understanding where value actually comes from</p>
         </div>
 
-        {/* THE INSIGHT - Framing Statement */}
-        <div className="bg-[#F8F9FA] border-l-4 border-[#EA2C00] rounded-r-lg p-5 mb-8" data-testid="insight-callout">
-          <div className="flex items-center gap-2 mb-2">
-            <Lightbulb className="w-4 h-4 text-[#EA2C00]" />
-            <span className="text-xs font-bold text-[#111827] tracking-wide">THE INSIGHT</span>
+        {/* Value Framework Visualization */}
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 md:p-8 mb-10 text-white" data-testid="value-framework">
+          <div className="flex items-center gap-2 mb-6">
+            <Layers className="w-5 h-5 text-[#EA2C00]" />
+            <h3 className="text-sm font-bold tracking-wide">THE VALUE FRAMEWORK</h3>
           </div>
-          <p className="text-[#111827] mb-3">
-            {config?.insightText.main} <span className="font-semibold">{config?.insightText.highlight}</span> {config?.insightText.followup}
-          </p>
-          <p className="text-[#6B7280] text-sm">
-            Two value streams. One technology. Here's how the math works.
-          </p>
-        </div>
-
-        {/* Visual Framework - Now ABOVE Reference Scenario */}
-        {/* Nursing uses 65/35 visual weighting to emphasize Time Saved as primary value */}
-        <div className={`grid grid-cols-1 gap-6 mb-8 ${selectedSetting === "nursing" ? "md:grid-cols-[2fr_1fr]" : "md:grid-cols-2"}`}>
-          <button
-            onClick={() => document.getElementById('time-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className={`p-6 bg-white border rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "border-[#EA2C00] border-2" : "border-[#E5E7EB]"}`}
-            data-testid="framework-time-card"
-          >
-            <Clock className="w-8 h-8 text-[#EA2C00] mb-3" />
-            <h3 className="font-bold text-[#111827] text-lg mb-2">Time Saved {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#EA2C00] ml-2">PRIMARY</span>}</h3>
-            <p className="text-sm text-[#6B7280] mb-4">
-              {config?.timeSavedSubtitle}
-            </p>
-            <ul className="text-sm text-[#6B7280] space-y-1">
-              {timeDrivers.map(d => (
-                <li key={d.id} className="flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-[#6B7280]"></span>
-                  {d.name}
-                </li>
-              ))}
-            </ul>
-          </button>
           
-          <button
-            onClick={() => document.getElementById('quality-section')?.scrollIntoView({ behavior: 'smooth' })}
-            className={`p-6 bg-white border border-[#E5E7EB] rounded-xl text-left hover-elevate ${selectedSetting === "nursing" ? "opacity-75" : ""}`}
-            data-testid="framework-quality-card"
-          >
-            <FileText className="w-8 h-8 text-[#EA2C00] mb-3" />
-            <h3 className="font-bold text-[#111827] text-lg mb-2">Doc Quality {selectedSetting === "nursing" && <span className="text-xs font-normal text-[#6B7280] ml-2">SUPPORTING</span>}</h3>
-            <p className="text-sm text-[#6B7280] mb-4">
-              {config?.docQualitySubtitle}
-            </p>
-            <ul className="text-sm text-[#6B7280] space-y-1">
-              {qualityDrivers.map(d => (
-                <li key={d.id} className="flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-[#6B7280]"></span>
-                  {d.name}
-                </li>
-              ))}
-            </ul>
-          </button>
+          <p className="text-slate-300 mb-8 max-w-2xl">
+            {config?.insightText.main} <span className="text-white font-semibold">{config?.insightText.highlight}</span> {config?.insightText.followup}
+          </p>
+          
+          {/* Visual Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Time Saved Pillar */}
+            <button
+              onClick={() => document.getElementById('time-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className={`relative p-5 rounded-xl text-left transition-all duration-200 ${
+                selectedSetting === "nursing" 
+                  ? "bg-gradient-to-br from-[#EA2C00] to-[#d12700] ring-2 ring-white/20 hover:ring-white/40" 
+                  : "bg-white/10 hover:bg-white/20"
+              }`}
+              data-testid="framework-time-card"
+            >
+              {selectedSetting === "nursing" && (
+                <span className="absolute top-3 right-3 text-[10px] font-bold tracking-wider bg-white/20 px-2 py-0.5 rounded">PRIMARY</span>
+              )}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white">Time Saved</h4>
+                  <p className="text-xs text-white/70">{config?.timeSavedSubtitle}</p>
+                </div>
+              </div>
+              <div className="space-y-1.5 pl-1">
+                {timeDrivers.slice(0, 3).map(d => (
+                  <div key={d.id} className="flex items-center justify-between text-sm">
+                    <span className="text-white/80">{d.name}</span>
+                    <span className="font-mono text-emerald-400 text-xs">${(d.referenceValue / 1000).toFixed(0)}K</span>
+                  </div>
+                ))}
+                {timeDrivers.length > 3 && (
+                  <div className="text-xs text-white/50 pt-1">+{timeDrivers.length - 3} more drivers</div>
+                )}
+              </div>
+            </button>
+            
+            {/* Quality Pillar */}
+            <button
+              onClick={() => document.getElementById('quality-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className={`relative p-5 rounded-xl text-left transition-all duration-200 ${
+                selectedSetting === "nursing"
+                  ? "bg-white/5 opacity-80 hover:opacity-90"
+                  : "bg-white/10 hover:bg-white/20"
+              }`}
+              data-testid="framework-quality-card"
+            >
+              {selectedSetting === "nursing" && (
+                <span className="absolute top-3 right-3 text-[10px] font-bold tracking-wider bg-white/10 px-2 py-0.5 rounded text-white/60">SUPPORTING</span>
+              )}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-white">Documentation Quality</h4>
+                  <p className="text-xs text-white/70">{config?.docQualitySubtitle}</p>
+                </div>
+              </div>
+              <div className="space-y-1.5 pl-1">
+                {qualityDrivers.slice(0, 3).map(d => (
+                  <div key={d.id} className="flex items-center justify-between text-sm">
+                    <span className="text-white/80">{d.name}</span>
+                    <span className="font-mono text-emerald-400 text-xs">${(d.referenceValue / 1000).toFixed(0)}K</span>
+                  </div>
+                ))}
+                {qualityDrivers.length > 3 && (
+                  <div className="text-xs text-white/50 pt-1">+{qualityDrivers.length - 3} more drivers</div>
+                )}
+              </div>
+            </button>
+          </div>
+          
+          {/* Combined Value */}
+          <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 border border-white/10">
+            <div>
+              <div className="text-xs text-white/60 mb-0.5">Combined Reference Value</div>
+              <div className="text-sm text-white/80">Based on {config?.referenceScenario.providers} {config?.referenceScenario.providerLabel} scenario</div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-emerald-400 font-mono">
+                ${[...timeDrivers, ...qualityDrivers].reduce((sum, d) => sum + d.referenceValue, 0).toLocaleString()}
+              </div>
+              <div className="text-xs text-white/60">per year</div>
+            </div>
+          </div>
         </div>
 
         {/* Reference Scenario Card */}
