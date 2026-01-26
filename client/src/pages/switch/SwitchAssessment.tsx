@@ -275,18 +275,11 @@ export default function SwitchAssessment({
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className={`text-4xl font-bold ${hasMinimumData ? 'text-[#111827]' : 'text-slate-400'}`} data-testid="text-realization-score">
-                    {hasMinimumData ? `${calculations.realizationScore}%` : '--'}
+                  <span className={`text-4xl font-bold ${hasAnyDimensionValue ? 'text-[#111827]' : 'text-slate-400'}`} data-testid="text-realization-score">
+                    {hasAnyDimensionValue ? `${calculations.realizationScore}%` : '--'}
                   </span>
                   <span className="text-sm text-[#6B7280]">
-                    {hasMinimumData 
-                      ? 'realized' 
-                      : (inputs.providers > 0 && inputs.annualEncounters > 0)
-                        ? 'enter metrics'
-                        : hasAnyDimensionValue
-                          ? 'enter org data'
-                          : 'enter data above'
-                    }
+                    {hasAnyDimensionValue ? 'realized' : 'enter metrics above'}
                   </span>
                 </div>
               </div>
@@ -318,11 +311,11 @@ export default function SwitchAssessment({
                 </div>
                 <div className="border-t border-slate-200 my-2"></div>
                 <div className={`flex items-center justify-between gap-4 px-3 py-2 rounded-lg border ${
-                  hasMinimumData ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
+                  hasAnyDimensionValue ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <span className="font-semibold text-[#111827]">Average Score</span>
-                  <span className={`font-bold text-lg whitespace-nowrap ${hasMinimumData ? 'text-emerald-600' : 'text-slate-400'}`}>
-                    {hasMinimumData ? `${calculations.realizationScore}%` : '--'}
+                  <span className={`font-bold text-lg whitespace-nowrap ${hasAnyDimensionValue ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {hasAnyDimensionValue ? `${calculations.realizationScore}%` : '--'}
                   </span>
                 </div>
               </div>
@@ -348,7 +341,7 @@ export default function SwitchAssessment({
                     <span className="text-[9px] text-slate-500">Transformed</span>
                   </div>
                 </div>
-                {hasMinimumData && (
+                {hasAnyDimensionValue && (
                   <div 
                     className="absolute top-0 bottom-0 w-1 bg-[#111827] rounded-full shadow-md transition-all duration-500"
                     style={{ left: `${Math.min(99, calculations.realizationScore)}%` }}
@@ -362,7 +355,7 @@ export default function SwitchAssessment({
             </div>
 
             <p className="text-center text-[#6B7280]">
-              {hasMinimumData ? (
+              {hasAnyDimensionValue ? (
                 <>
                   At <strong className="text-[#111827]">{calculations.realizationScore}%</strong> realization, you're in the <strong className="text-[#111827]">{calculations.maturityLevel}</strong> stage.
                   {calculations.realizationScore < 40 && " Most organizations plateau here without focused optimization."}
@@ -371,12 +364,7 @@ export default function SwitchAssessment({
                 </>
               ) : (
                 <span className="text-slate-400 italic">
-                  {inputs.providers > 0 && inputs.annualEncounters > 0 
-                    ? "Adjust the metrics above to see your realization score."
-                    : hasAnyDimensionValue
-                      ? "Enter your provider count and annual encounters to calculate your score."
-                      : "Enter your organization data and metrics above to see your realization score."
-                  }
+                  Enter your metrics above to see your realization score and maturity stage.
                 </span>
               )}
             </p>
