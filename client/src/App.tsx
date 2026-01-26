@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 
 import { queryClient } from "./lib/queryClient";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
 import { PageTransition } from "@/components/PageTransition";
 
@@ -110,12 +111,13 @@ export default function App() {
   const hasSelection = selectionState.selectedSettings.length > 0;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionSecurityProvider onSessionClear={handleSessionClear}>
-        <TooltipProvider>
-          <Toaster />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <SessionSecurityProvider onSessionClear={handleSessionClear}>
+          <TooltipProvider>
+            <Toaster />
 
-          <PageTransition pageKey={currentView}>
+            <PageTransition pageKey={currentView}>
             {currentView === "splash" && (
               <SplashScreen onEnter={() => navigateTo("journey")} />
             )}
@@ -220,9 +222,10 @@ export default function App() {
                 }}
               />
             )}
-          </PageTransition>
-        </TooltipProvider>
-      </SessionSecurityProvider>
-    </QueryClientProvider>
+            </PageTransition>
+          </TooltipProvider>
+        </SessionSecurityProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
