@@ -469,9 +469,9 @@ export default function ModelBuilder({
     },
     edRetention: {
       edPhysicians: 25,
-      turnoverRate: 8,
+      turnoverRate: 12,
       burnoutAttribution: 50,
-      abridgeImpact: 15,
+      abridgeImpact: 10,
       replacementCost: 800000,
     },
     edLevelOfService: {
@@ -3504,7 +3504,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            ED turnover averages 8-12%. High-stress EDs see higher.
+            ED turnover averages 10-15%. High-stress EDs see higher.
           </p>
         </div>
 
@@ -3576,15 +3576,15 @@ export default function ModelBuilder({
             </div>
           </div>
 
-          {/* Why 30%? Explanation Box */}
+          {/* Why 10%? Explanation Box */}
           <div className="p-3 bg-slate-100 rounded-lg border border-slate-200 mt-3 space-y-2">
             <p className="text-xs font-semibold text-slate-700 flex items-center gap-1">
               <Calculator className="w-3 h-3" />
-              Why 30%?
+              Why 10%?
             </p>
             <p className="text-xs text-slate-600">
               ED burnout has multiple drivers—pace, acuity, shifts, high-stakes decisions. Documentation is ONE major factor. 
-              We conservatively estimate Abridge impacts 30% of burnout-related turnover by eliminating after-shift charting 
+              We conservatively estimate Abridge impacts 10% of burnout-related turnover by eliminating after-shift charting 
               and reducing documentation burden during surges.
             </p>
           </div>
