@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.green,
+    backgroundColor: colors.primary,
     borderRadius: 2,
   },
   timelineBarFillCurrent: {
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   },
   timelineBarValue: {
     fontSize: 7,
-    color: colors.primary,
+    color: colors.black,
     fontWeight: "bold",
   },
 
@@ -1927,7 +1927,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
       </Page>
 
       {/* PAGE 3: COST ANALYSIS + CALCULATIONS */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap={false}>
         <View style={styles.pageHeader}>
           <View style={styles.pageHeaderLeft}>
             <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
@@ -2085,7 +2085,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           {/* Legend */}
           <View style={styles.trajectoryLegend}>
             <View style={styles.trajectoryLegendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.green }]} />
+              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
               <Text style={styles.trajectoryLegendText}>Abridge benchmark value</Text>
             </View>
             <View style={styles.trajectoryLegendItem}>
