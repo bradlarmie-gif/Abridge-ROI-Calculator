@@ -59,15 +59,15 @@ export default function SwitchAssessment({
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 2;
+        return prev + 1.5;
       });
-    }, 30);
+    }, 35);
 
     const redirectTimeout = setTimeout(() => {
       if (onNavigateToExplore) {
         onNavigateToExplore(inputs.providers || 75, inputs.annualEncounters || 150000);
       }
-    }, 1800);
+    }, 2600);
 
     return () => {
       clearInterval(progressInterval);
