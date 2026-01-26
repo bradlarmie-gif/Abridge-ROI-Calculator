@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -17,6 +17,7 @@ interface SwitchAssessmentProps {
   onNext: () => void;
   onBack: () => void;
   onBackToJourney?: () => void;
+  onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
 export default function SwitchAssessment({
@@ -25,10 +26,47 @@ export default function SwitchAssessment({
   onNext,
   onBack,
   onBackToJourney,
+  onNavigateToExplore,
 }: SwitchAssessmentProps) {
+  const [showExploreRedirect, setShowExploreRedirect] = useState(false);
+  const [redirectProgress, setRedirectProgress] = useState(0);
+
   const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
     setInputs({ ...inputs, [key]: value });
   };
+
+  // Handle self-documentation selection - show overlay then redirect
+  const handleSelfDocumentation = () => {
+    if (!onNavigateToExplore) return;
+    setShowExploreRedirect(true);
+    setRedirectProgress(0);
+  };
+
+  // Animate progress bar and redirect after animation
+  useEffect(() => {
+    if (!showExploreRedirect) return;
+    
+    const progressInterval = setInterval(() => {
+      setRedirectProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 30);
+
+    const redirectTimeout = setTimeout(() => {
+      if (onNavigateToExplore) {
+        onNavigateToExplore(inputs.providers || 75, inputs.annualEncounters || 150000);
+      }
+    }, 1800);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearTimeout(redirectTimeout);
+    };
+  }, [showExploreRedirect, onNavigateToExplore, inputs.providers, inputs.annualEncounters]);
 
   const calculations = useMemo(() => {
     return calculateSwitchGap({
@@ -66,6 +104,52 @@ export default function SwitchAssessment({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
+      {/* Beautiful redirect overlay for self-documentation */}
+      {showExploreRedirect && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-emerald-900/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="max-w-lg mx-4 text-center animate-in slide-in-from-bottom-4 duration-500">
+            {/* Animated icon cluster */}
+            <div className="relative mb-8">
+              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-500/30 animate-pulse">
+                <Sparkles className="w-12 h-12 text-white" />
+              </div>
+              <div className="absolute -top-2 -right-8 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '0.2s' }}>
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div className="absolute -bottom-2 -left-6 w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg animate-bounce" style={{ animationDelay: '0.4s' }}>
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+            </div>
+
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Let's Explore Your Potential
+            </h2>
+            
+            <p className="text-lg text-slate-300 mb-3">
+              Since you're not using any documentation assistance today, 
+              we'll show you what AI documentation could unlock for your organization.
+            </p>
+            
+            <p className="text-emerald-400 font-medium mb-8">
+              Calculating your potential value...
+            </p>
+
+            {/* Animated progress bar */}
+            <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden mb-4">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 rounded-full transition-all duration-100 ease-out"
+                style={{ width: `${redirectProgress}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-slate-400 text-sm">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span>Taking you to ROI Explorer</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <UnifiedHeader 
         pathType="switch"
         currentStep={1} 
@@ -125,11 +209,17 @@ export default function SwitchAssessment({
                   </button>
 
                   <button
-                    className="p-4 rounded-lg border-2 border-slate-200 bg-white transition-all text-left opacity-50 cursor-not-allowed"
-                    disabled
+                    onClick={handleSelfDocumentation}
+                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                      onNavigateToExplore 
+                        ? "border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50 cursor-pointer group" 
+                        : "border-slate-200 bg-white opacity-50 cursor-not-allowed"
+                    }`}
+                    disabled={!onNavigateToExplore}
+                    data-testid="button-solution-self-doc"
                   >
-                    <FileText className="w-6 h-6 mb-2 text-slate-400" />
-                    <div className="font-semibold text-[#111827] text-sm">Self-documentation</div>
+                    <FileText className={`w-6 h-6 mb-2 text-slate-400 ${onNavigateToExplore ? 'group-hover:text-emerald-600' : ''}`} />
+                    <div className={`font-semibold text-[#111827] text-sm ${onNavigateToExplore ? 'group-hover:text-emerald-700' : ''}`}>Self-documentation</div>
                     <div className="text-xs text-[#6B7280] mt-0.5">No assistance</div>
                   </button>
                 </div>

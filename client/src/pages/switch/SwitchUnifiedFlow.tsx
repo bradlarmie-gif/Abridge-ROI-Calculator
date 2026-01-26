@@ -103,6 +103,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
         onNext={goNext}
         onBack={goBack}
         onBackToJourney={onBackToJourney}
+        onNavigateToExplore={onExploreAmbientAI}
       />
     );
   };
