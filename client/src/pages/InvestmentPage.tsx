@@ -88,15 +88,11 @@ export default function InvestmentPage({
   const [pricingModel, setPricingModel] = useState<"per_unit_monthly" | "enterprise_annual" | null>(null);
   const [costPerUnit, setCostPerUnit] = useState<number | "">(""); 
   const [enterpriseAnnual, setEnterpriseAnnual] = useState<number | "">(""); 
-  const [contractTerm, setContractTerm] = useState<number>(1);
-  const [isCustomTerm, setIsCustomTerm] = useState(false);
-  const [customTermValue, setCustomTermValue] = useState<number | "">(1);
+  const [contractTerm, setContractTerm] = useState<number>(2);
   const [includeImplementation, setIncludeImplementation] = useState(false);
   
-  // Effective contract term (use custom if enabled, otherwise selected)
-  const effectiveContractTerm = isCustomTerm 
-    ? (typeof customTermValue === "number" ? Math.min(Math.max(customTermValue, 1), 4) : 1)
-    : contractTerm;
+  // Effective contract term
+  const effectiveContractTerm = contractTerm;
   const [implementationFee, setImplementationFee] = useState(25000);
   
   // Loading overlay state
@@ -518,31 +514,12 @@ export default function InvestmentPage({
               {/* Contract Term */}
               <div className="mb-8">
                 <label className="text-[15px] font-semibold text-[#111827] block mb-4">Contract Term</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Custom */}
-                  <button
-                    onClick={() => {
-                      setIsCustomTerm(true);
-                      setContractTerm(1);
-                    }}
-                    className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                      isCustomTerm
-                        ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
-                        : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
-                    }`}
-                    data-testid="contract-term-custom"
-                  >
-                    <div className="text-lg font-bold text-[#111827]">Custom</div>
-                  </button>
-                  
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* 2 years */}
                   <button
-                    onClick={() => {
-                      setIsCustomTerm(false);
-                      setContractTerm(2);
-                    }}
+                    onClick={() => setContractTerm(2)}
                     className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                      !isCustomTerm && contractTerm === 2
+                      contractTerm === 2
                         ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
                         : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
                     }`}
@@ -553,12 +530,9 @@ export default function InvestmentPage({
                   
                   {/* 3 years */}
                   <button
-                    onClick={() => {
-                      setIsCustomTerm(false);
-                      setContractTerm(3);
-                    }}
+                    onClick={() => setContractTerm(3)}
                     className={`p-4 rounded-xl border-2 text-center transition-all duration-200 ${
-                      !isCustomTerm && contractTerm === 3
+                      contractTerm === 3
                         ? "border-[#EA2C00] bg-[rgba(234,44,0,0.02)]"
                         : "border-[#E5E7EB] bg-white hover:border-[#D1D5DB]"
                     }`}
