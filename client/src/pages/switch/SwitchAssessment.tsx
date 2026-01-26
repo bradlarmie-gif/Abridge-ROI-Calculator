@@ -1,7 +1,6 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
@@ -29,24 +28,16 @@ export default function SwitchAssessment({
   onBackToJourney,
   onNavigateToExplore,
 }: SwitchAssessmentProps) {
-  const [showExploreRedirect, setShowExploreRedirect] = useState(false);
-
   const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
     setInputs({ ...inputs, [key]: value });
   };
 
-  // Handle self-documentation selection - show overlay then redirect
+  // Handle self-documentation selection - navigate directly to Explore
   const handleSelfDocumentation = () => {
-    if (!onNavigateToExplore) return;
-    setShowExploreRedirect(true);
-  };
-
-  const handleExploreRedirectComplete = useCallback(() => {
-    setShowExploreRedirect(false);
     if (onNavigateToExplore) {
       onNavigateToExplore(inputs.providers || 75, inputs.annualEncounters || 150000);
     }
-  }, [onNavigateToExplore, inputs.providers, inputs.annualEncounters]);
+  };
 
   const calculations = useMemo(() => {
     return calculateSwitchGap({
@@ -84,11 +75,6 @@ export default function SwitchAssessment({
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <BrandedLoadingOverlay 
-        isVisible={showExploreRedirect} 
-        onComplete={handleExploreRedirectComplete}
-      />
-
       <UnifiedHeader 
         pathType="switch"
         currentStep={1} 
