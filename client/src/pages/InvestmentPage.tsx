@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import {
@@ -96,6 +97,10 @@ export default function InvestmentPage({
     ? (typeof customTermValue === "number" ? Math.min(Math.max(customTermValue, 1), 4) : 1)
     : contractTerm;
   const [implementationFee, setImplementationFee] = useState(25000);
+  
+  // Loading overlay state
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  const [pendingResults, setPendingResults] = useState<ModelResults | null>(null);
   
   // Animation states
   const [showReturnCard, setShowReturnCard] = useState(false);
@@ -239,7 +244,7 @@ export default function InvestmentPage({
   }, [hasPricingEntered, annualInvestment, roiMultiple, netGainAnnual, animateNumber]);
 
   const handleComplete = () => {
-    onComplete({
+    const results: ModelResults = {
       ...valueResults,
       investment: annualInvestment,
       implementationFee: includeImplementation ? implementationFee : 0,
@@ -251,8 +256,17 @@ export default function InvestmentPage({
       pricingModel: pricingModel === "per_unit_monthly" ? "per_clinician" : "enterprise",
       nursingCostPerBedPerMonth: isNursingSetting ? (costPerUnit === "" ? 0 : costPerUnit) : undefined,
       contractYears: effectiveContractTerm,
-    });
+    };
+    setPendingResults(results);
+    setShowLoadingOverlay(true);
   };
+
+  const handleLoadingComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
+    if (pendingResults) {
+      onComplete(pendingResults);
+    }
+  }, [pendingResults, onComplete]);
 
   const canComplete = hasPricingEntered;
 
@@ -266,6 +280,12 @@ export default function InvestmentPage({
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
+      <BrandedLoadingOverlay 
+        isVisible={showLoadingOverlay} 
+        onComplete={handleLoadingComplete}
+        subtitle="Building your ROI summary"
+      />
+      
       <UnifiedHeader
         pathType="explore"
         currentStep={5}
