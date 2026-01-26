@@ -1358,7 +1358,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
   return (
     <Document>
       {/* PAGE 1: THE STORY */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap={false}>
         {/* Premium Header with Client Info */}
         <View style={styles.premiumHeader}>
           <View style={styles.premiumHeaderTop}>
