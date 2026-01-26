@@ -371,7 +371,9 @@ export function ManageModelSheet({
   };
 
   const calculateDriverValue = useCallback((driverId: string, inputsToUse?: Record<string, any>): number => {
-    const inputs = inputsToUse || driverInputs[driverId] || getDefaultInputs(driverId);
+    const defaults = getDefaultInputs(driverId);
+    const stored = driverInputs[driverId] || {};
+    const inputs = { ...defaults, ...stored, ...(inputsToUse || {}) };
     const normalized = normalizeDriverId(driverId);
 
     switch (normalized) {
