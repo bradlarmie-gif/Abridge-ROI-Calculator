@@ -172,9 +172,23 @@ export default function SwitchAssessment({
 
           <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
             <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Your Results</h2>
-            <p className="text-[#6B7280] mb-6 md:mb-8 text-sm md:text-base">
+            <p className="text-[#6B7280] mb-4 text-sm md:text-base">
               How do your metrics compare to Abridge benchmarks?
             </p>
+
+            {!hasAnyDimensionValue && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+                <div className="w-5 h-5 mt-0.5 text-blue-600 flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-blue-800">Adjust the sliders or enter values to see how you compare</p>
+                  <p className="text-xs text-blue-600 mt-1">Each metric shows your current performance vs. what Abridge customers typically achieve.</p>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <DimensionCard
@@ -601,11 +615,6 @@ function DimensionCard({
 
       <div className="relative h-8 bg-slate-200 rounded-lg overflow-hidden mb-2">
         {/* Empty state placeholder */}
-        {!hasValue && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm text-slate-400 italic">Enter your rate above</span>
-          </div>
-        )}
         {/* Dynamic gradient fill bar */}
         <div 
           className={`absolute top-0 left-0 h-full ${colors.bg} transition-all duration-300 ease-out flex items-center px-2`}
