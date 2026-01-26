@@ -1859,7 +1859,7 @@ function DriverAccordion({
               <Button
                 onClick={onTryInExplore}
                 size="sm"
-                className="bg-[#EA2C00] text-white flex items-center gap-1.5 flex-shrink-0"
+                className="bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-1.5 flex-shrink-0"
                 data-testid={`button-try-explore-${driver.id}`}
               >
                 Try in Explore
