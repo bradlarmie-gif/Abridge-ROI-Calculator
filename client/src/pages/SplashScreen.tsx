@@ -19,7 +19,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternV} 
           alt="" 
-          className="absolute w-20 md:w-28 opacity-25"
+          className="absolute w-20 md:w-28 opacity-40"
           style={{ 
             top: '8%', 
             left: '5%',
@@ -29,7 +29,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-24 md:w-36 opacity-20"
+          className="absolute w-24 md:w-36 opacity-30"
           style={{ 
             top: '5%', 
             right: '8%',
@@ -40,7 +40,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-28 md:w-44 opacity-20"
+          className="absolute w-28 md:w-44 opacity-35"
           style={{ 
             bottom: '8%', 
             left: '8%',
@@ -50,7 +50,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-24 md:w-36 opacity-18"
+          className="absolute w-24 md:w-36 opacity-30"
           style={{ 
             bottom: '12%', 
             right: '12%',
@@ -60,7 +60,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-36 md:w-52 opacity-15"
+          className="absolute w-36 md:w-52 opacity-25"
           style={{ 
             top: '35%', 
             left: '3%',
@@ -70,7 +70,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-36 md:w-52 opacity-15"
+          className="absolute w-36 md:w-52 opacity-25"
           style={{ 
             top: '35%', 
             right: '3%',
@@ -81,7 +81,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternV} 
           alt="" 
-          className="absolute w-14 md:w-24 opacity-12"
+          className="absolute w-14 md:w-24 opacity-20"
           style={{ 
             top: '60%', 
             left: '25%',
@@ -91,7 +91,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-20 md:w-28 opacity-12"
+          className="absolute w-20 md:w-28 opacity-20"
           style={{ 
             top: '70%', 
             right: '20%',
@@ -101,7 +101,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-16 md:w-24 opacity-10"
+          className="absolute w-16 md:w-24 opacity-15"
           style={{ 
             top: '20%', 
             left: '40%',
@@ -111,7 +111,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-20 md:w-32 opacity-12"
+          className="absolute w-20 md:w-32 opacity-20"
           style={{ 
             top: '15%', 
             right: '30%',
