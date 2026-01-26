@@ -7,6 +7,7 @@ import { queryClient } from "./lib/queryClient";
 import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
 import { PageTransition } from "@/components/PageTransition";
 
+import SplashScreen from "@/pages/SplashScreen";
 import JourneySelector from "@/pages/JourneySelector";
 import ObjectiveSelectionScreen, {
   type SelectedLever,
@@ -23,7 +24,7 @@ import LearnPath from "@/pages/LearnPath";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -31,7 +32,7 @@ interface SelectionState {
 }
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<AppView>("journey");
+  const [currentView, setCurrentView] = useState<AppView>("splash");
 
   const navigateTo = (view: AppView) => {
     setCurrentView(view);
@@ -54,7 +55,7 @@ export default function App() {
     setBaselineInfo(null);
     setValueResults(null);
     setModelResults(null);
-    setCurrentView("journey");
+    setCurrentView("splash");
   }, []);
 
   const handleSelectionComplete = (
@@ -115,14 +116,18 @@ export default function App() {
           <Toaster />
 
           <PageTransition pageKey={currentView}>
-              {currentView === "journey" && (
-                <JourneySelector
-                  onSelectExplore={() => navigateTo("explore")}
-                  onSelectExpand={() => navigateTo("expand")}
-                  onSelectSwitch={() => navigateTo("switch")}
-                  onSelectLearn={() => navigateTo("learn")}
-                />
-              )}
+            {currentView === "splash" && (
+              <SplashScreen onEnter={() => navigateTo("journey")} />
+            )}
+
+            {currentView === "journey" && (
+              <JourneySelector
+                onSelectExplore={() => navigateTo("explore")}
+                onSelectExpand={() => navigateTo("expand")}
+                onSelectSwitch={() => navigateTo("switch")}
+                onSelectLearn={() => navigateTo("learn")}
+              />
+            )}
 
             {currentView === "explore" && (
               <ObjectiveSelectionScreen
