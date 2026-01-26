@@ -122,7 +122,15 @@ export default function App() {
 
             {currentView === "journey" && (
               <JourneySelector
-                onSelectExplore={() => navigateTo("explore")}
+                onSelectExplore={() => {
+                  // Reset explore state to start fresh
+                  setSelectionState({ selectedSettings: [], selectedLevers: [] });
+                  setSeedInputs({});
+                  setBaselineInfo(null);
+                  setValueResults(null);
+                  setModelResults(null);
+                  navigateTo("explore");
+                }}
                 onSelectExpand={() => navigateTo("expand")}
                 onSelectSwitch={() => navigateTo("switch")}
                 onSelectLearn={() => navigateTo("learn")}
