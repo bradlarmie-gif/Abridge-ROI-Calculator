@@ -25,7 +25,7 @@ interface JourneyInputs {
 }
 
 const ED_DRIVER_CATEGORIES: Record<string, "labor" | "revenue"> = {
-  edThroughput: "revenue",
+  edThroughput: "labor",
   edRetention: "labor",
   edLevelOfService: "revenue",
   edDenials: "revenue",
