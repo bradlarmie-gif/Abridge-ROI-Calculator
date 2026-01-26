@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { PageTransition } from "@/components/PageTransition";
+import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
 import ExpandSettingSelection from "./ExpandSettingSelection";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
 import ExpandDataEntry from "./ExpandDataEntry";
@@ -142,6 +143,7 @@ export interface ExpandFlowProps {
 
 export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlowProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   
   // Deployment configuration - starts BLANK
   const [deploymentData, setDeploymentData] = useState<DeploymentData>({
@@ -222,9 +224,20 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
   });
 
   const goNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 5));
-    window.scrollTo(0, 0);
+    if (currentStep === 4) {
+      setShowLoadingOverlay(true);
+    } else {
+      setCurrentStep((prev) => Math.min(prev + 1, 5));
+      window.scrollTo(0, 0);
+    }
   };
+
+  const handleLoadingComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
+    setCurrentStep(5);
+    window.scrollTo(0, 0);
+  }, []);
+
   const goBack = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
     window.scrollTo(0, 0);
@@ -307,6 +320,10 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
+      <BrandedLoadingOverlay 
+        isVisible={showLoadingOverlay} 
+        onComplete={handleLoadingComplete}
+      />
       <PageTransition pageKey={`expand-step-${currentStep}`}>
         {renderStep()}
       </PageTransition>

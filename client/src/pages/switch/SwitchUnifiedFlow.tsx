@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import SwitchAssessment from "./SwitchAssessment";
 import SwitchFullAnalysis from "./SwitchFullAnalysis";
 import ScribeAssessment from "./ScribeAssessment";
@@ -6,6 +6,7 @@ import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import { type SwitchInputs, type SolutionType } from "@/lib/switchGapCalculator";
 import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 import { PageTransition } from "@/components/PageTransition";
+import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
 
 interface SwitchUnifiedFlowProps {
   onBack: () => void;
@@ -16,6 +17,7 @@ interface SwitchUnifiedFlowProps {
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [solutionType, setSolutionType] = useState<SolutionType>("ambient-ai");
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   
   // Start with empty dimension values - customer fills in their actual numbers
   const [ambientInputs, setAmbientInputs] = useState<SwitchInputs>({
@@ -49,9 +51,14 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
   };
 
   const goNext = () => {
+    setShowLoadingOverlay(true);
+  };
+
+  const handleLoadingComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
     setCurrentStep(2);
     window.scrollTo(0, 0);
-  };
+  }, []);
 
   const goBack = () => {
     if (currentStep === 1) {
@@ -112,8 +119,14 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
   const pageKey = `switch-${solutionType}-step-${currentStep}`;
 
   return (
-    <PageTransition pageKey={pageKey}>
-      {getPageContent()}
-    </PageTransition>
+    <>
+      <BrandedLoadingOverlay 
+        isVisible={showLoadingOverlay} 
+        onComplete={handleLoadingComplete}
+      />
+      <PageTransition pageKey={pageKey}>
+        {getPageContent()}
+      </PageTransition>
+    </>
   );
 }
