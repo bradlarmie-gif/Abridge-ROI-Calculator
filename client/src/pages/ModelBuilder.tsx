@@ -1239,7 +1239,8 @@ export default function ModelBuilder({
     
     return (
       <div 
-        key={driverId} 
+        key={driverId}
+        id={`driver-accordion-${driverId}`}
         className={`border rounded-xl overflow-visible bg-white transition-all duration-200 cursor-pointer group ${
           isExpanded 
             ? 'border-[#EA2C00] shadow-md' 
@@ -1250,10 +1251,20 @@ export default function ModelBuilder({
         } : undefined}
       >
         <button
-          onClick={() => {
+          onClick={(e) => {
+            const wasExpanded = isExpanded;
             setExpandedDriver(isExpanded ? null : driverId);
             if (!isReviewed) {
               setReviewedDrivers(prev => new Set(Array.from(prev).concat(driverId)));
+            }
+            // Scroll to top of card when expanding
+            if (!wasExpanded) {
+              setTimeout(() => {
+                const element = document.getElementById(`driver-accordion-${driverId}`);
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 50);
             }
           }}
           className="w-full flex items-center justify-between p-4 transition-colors"
