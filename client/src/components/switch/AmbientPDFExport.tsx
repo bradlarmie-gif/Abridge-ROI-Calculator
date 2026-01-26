@@ -394,6 +394,56 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  // COMPACT DIMENSION STYLES - All 4 on one page
+  dimensionCardCompact: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: colors.white,
+  },
+  dimensionHeaderCompact: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  dimensionNameCompact: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    letterSpacing: 0.5,
+  },
+  dimensionScoreCompact: {
+    fontSize: 12,
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
+  dimensionValuesCompact: {
+    flexDirection: "row",
+  },
+  dimensionValueText: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginLeft: 12,
+  },
+  dimensionBarCompact: {
+    height: 6,
+    backgroundColor: colors.borderGray,
+    borderRadius: 3,
+    marginBottom: 6,
+  },
+  dimensionBarFillCompact: {
+    height: 6,
+    borderRadius: 3,
+  },
+  dimensionDescCompact: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.4,
+  },
+
   scoreCalculation: {
     backgroundColor: colors.backgroundGray,
     padding: 8,
@@ -1188,7 +1238,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
         </View>
       </Page>
 
-      {/* PAGE 2: THE FOUR DIMENSIONS */}
+      {/* PAGE 2: ALL FOUR DIMENSIONS ON ONE PAGE */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
@@ -1198,75 +1248,98 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
         </View>
 
         <Text style={styles.sectionTitle}>YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
-        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 8 }}>
+        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 12, lineHeight: 1.4 }}>
           Value realization depends on performance in four areas. Here's where you stand compared to Abridge benchmarks:
         </Text>
 
-        {/* UTILIZATION */}
-        <View style={styles.dimensionCard}>
-          <View style={styles.dimensionHeader}>
-            <Text style={styles.dimensionName}>UTILIZATION</Text>
-            <Text style={styles.dimensionScore}>{calculations.utilizationScore}% of benchmark</Text>
+        {/* UTILIZATION - Compact */}
+        <View style={styles.dimensionCardCompact}>
+          <View style={styles.dimensionHeaderCompact}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.dimensionNameCompact}>UTILIZATION</Text>
+              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.utilizationScore) }]}>{calculations.utilizationScore}%</Text>
+            </View>
+            <View style={styles.dimensionValuesCompact}>
+              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>{inputs.utilization}%</Text></Text>
+              <Text style={styles.dimensionValueText}>Benchmark: {ABRIDGE_BENCHMARKS.utilization}%</Text>
+            </View>
           </View>
-          <Text style={styles.dimensionDefinition}>
-            What it measures: {DimensionEducationContent.utilization.definition}
+          <View style={styles.dimensionBarCompact}>
+            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.utilizationScore)}%`, backgroundColor: getScoreColor(calculations.utilizationScore) }]} />
+          </View>
+          <Text style={styles.dimensionDescCompact}>
+            {DimensionEducationContent.utilization.whyMatters}
           </Text>
-          <View style={styles.dimensionMetrics}>
-            <Text style={styles.dimensionYou}>You: {inputs.utilization}%</Text>
-            <Text style={styles.dimensionBenchmark}>Benchmark: {ABRIDGE_BENCHMARKS.utilization}%</Text>
-          </View>
-          <View style={styles.dimensionBar}>
-            <View style={[styles.dimensionBarFill, { width: `${Math.min(100, calculations.utilizationScore)}%` }]} />
-          </View>
-          <View style={styles.dimensionEducation}>
-            <Text style={styles.dimensionWhyMatters}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              {DimensionEducationContent.utilization.whyMatters}
-            </Text>
-            <Text style={styles.dimensionWhatDrives}>
-              <Text style={styles.bold}>What drives it: </Text>
-              {DimensionEducationContent.utilization.whatDrives}
-            </Text>
-            {calculations.utilizationScore < DimensionEducationContent.utilization.insightThreshold && (
-              <Text style={styles.dimensionInsight}>
-                <Text style={styles.bold}>Your situation: </Text>
-                {DimensionEducationContent.utilization.getInsight(calculations.utilizationScore)}
-              </Text>
-            )}
-          </View>
         </View>
 
-        {/* EFFICIENCY */}
-        <View style={styles.dimensionCard}>
-          <View style={styles.dimensionHeader}>
-            <Text style={styles.dimensionName}>EFFICIENCY</Text>
-            <Text style={styles.dimensionScore}>{calculations.efficiencyScore}% of benchmark</Text>
+        {/* EFFICIENCY - Compact */}
+        <View style={styles.dimensionCardCompact}>
+          <View style={styles.dimensionHeaderCompact}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.dimensionNameCompact}>EFFICIENCY</Text>
+              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.efficiencyScore) }]}>{calculations.efficiencyScore}%</Text>
+            </View>
+            <View style={styles.dimensionValuesCompact}>
+              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>{inputs.timeSavedPerEncounter} min</Text></Text>
+              <Text style={styles.dimensionValueText}>Benchmark: {ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+            </View>
           </View>
-          <Text style={styles.dimensionDefinition}>
-            What it measures: {DimensionEducationContent.efficiency.definition}
+          <View style={styles.dimensionBarCompact}>
+            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.efficiencyScore)}%`, backgroundColor: getScoreColor(calculations.efficiencyScore) }]} />
+          </View>
+          <Text style={styles.dimensionDescCompact}>
+            {DimensionEducationContent.efficiency.whyMatters}
           </Text>
-          <View style={styles.dimensionMetrics}>
-            <Text style={styles.dimensionYou}>You: {inputs.timeSavedPerEncounter} min</Text>
-            <Text style={styles.dimensionBenchmark}>Benchmark: {ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+        </View>
+
+        {/* QUALITY - Compact */}
+        <View style={styles.dimensionCardCompact}>
+          <View style={styles.dimensionHeaderCompact}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.dimensionNameCompact}>QUALITY (wRVU)</Text>
+              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.qualityScore) }]}>{calculations.qualityScore}%</Text>
+            </View>
+            <View style={styles.dimensionValuesCompact}>
+              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>+{inputs.wrvuLift}%</Text></Text>
+              <Text style={styles.dimensionValueText}>Benchmark: +{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+            </View>
           </View>
-          <View style={styles.dimensionBar}>
-            <View style={[styles.dimensionBarFill, { width: `${Math.min(100, calculations.efficiencyScore)}%` }]} />
+          <View style={styles.dimensionBarCompact}>
+            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.qualityScore)}%`, backgroundColor: getScoreColor(calculations.qualityScore) }]} />
           </View>
-          <View style={styles.dimensionEducation}>
-            <Text style={styles.dimensionWhyMatters}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              {DimensionEducationContent.efficiency.whyMatters}
-            </Text>
-            <Text style={styles.dimensionWhatDrives}>
-              <Text style={styles.bold}>What drives it: </Text>
-              {DimensionEducationContent.efficiency.whatDrives}
-            </Text>
-            {calculations.efficiencyScore < DimensionEducationContent.efficiency.insightThreshold && (
-              <Text style={styles.dimensionInsight}>
-                <Text style={styles.bold}>Your situation: </Text>
-                {DimensionEducationContent.efficiency.getInsight(calculations.efficiencyScore)}
-              </Text>
-            )}
+          <Text style={styles.dimensionDescCompact}>
+            {DimensionEducationContent.quality.whyMatters}
+          </Text>
+        </View>
+
+        {/* SATISFACTION - Compact */}
+        <View style={styles.dimensionCardCompact}>
+          <View style={styles.dimensionHeaderCompact}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.dimensionNameCompact}>SATISFACTION</Text>
+              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.satisfactionScore) }]}>{calculations.satisfactionScore}%</Text>
+            </View>
+            <View style={styles.dimensionValuesCompact}>
+              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>{inputs.satisfaction}%</Text></Text>
+              <Text style={styles.dimensionValueText}>Benchmark: {ABRIDGE_BENCHMARKS.satisfaction}%</Text>
+            </View>
+          </View>
+          <View style={styles.dimensionBarCompact}>
+            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.satisfactionScore)}%`, backgroundColor: getScoreColor(calculations.satisfactionScore) }]} />
+          </View>
+          <Text style={styles.dimensionDescCompact}>
+            {DimensionEducationContent.satisfaction.whyMatters}
+          </Text>
+        </View>
+
+        {/* Score Summary */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
+          <Text style={{ fontSize: 8, color: colors.darkGray }}>
+            Average: ({calculations.utilizationScore}% + {calculations.efficiencyScore}% + {calculations.qualityScore}% + {calculations.satisfactionScore}%) ÷ 4 = <Text style={{ fontWeight: "bold", color: colors.black }}>{calculations.realizationScore}%</Text>
+          </Text>
+          <View style={{ flexDirection: "row", backgroundColor: colors.backgroundGray, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3 }}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray }}>Gaps multiply:</Text>
+            <Text style={{ fontSize: 7, color: colors.darkGray, marginLeft: 3 }}>60% in one dimension limits all others</Text>
           </View>
         </View>
 
@@ -1276,7 +1349,7 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
         </View>
       </Page>
 
-      {/* PAGE 3: DIMENSIONS CONTINUED + TIMELINE */}
+      {/* PAGE 3: COST ANALYSIS + CALCULATIONS */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
@@ -1285,89 +1358,8 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </View>
         </View>
 
-        {/* QUALITY */}
-        <View style={styles.dimensionCard}>
-          <View style={styles.dimensionHeader}>
-            <Text style={styles.dimensionName}>QUALITY (wRVU LIFT)</Text>
-            <Text style={styles.dimensionScore}>{calculations.qualityScore}% of benchmark</Text>
-          </View>
-          <Text style={styles.dimensionDefinition}>
-            What it measures: {DimensionEducationContent.quality.definition}
-          </Text>
-          <View style={styles.dimensionMetrics}>
-            <Text style={styles.dimensionYou}>You: +{inputs.wrvuLift}%</Text>
-            <Text style={styles.dimensionBenchmark}>Benchmark: +{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
-          </View>
-          <View style={styles.dimensionBar}>
-            <View style={[styles.dimensionBarFill, { width: `${Math.min(100, calculations.qualityScore)}%` }]} />
-          </View>
-          <View style={styles.dimensionEducation}>
-            <Text style={styles.dimensionWhyMatters}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              {DimensionEducationContent.quality.whyMatters}
-            </Text>
-            <Text style={styles.dimensionWhatDrives}>
-              <Text style={styles.bold}>What drives it: </Text>
-              {DimensionEducationContent.quality.whatDrives}
-            </Text>
-            {calculations.qualityScore < DimensionEducationContent.quality.insightThreshold && (
-              <Text style={styles.dimensionInsight}>
-                <Text style={styles.bold}>Your situation: </Text>
-                {DimensionEducationContent.quality.getInsight(calculations.qualityScore)}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        {/* SATISFACTION */}
-        <View style={styles.dimensionCard}>
-          <View style={styles.dimensionHeader}>
-            <Text style={styles.dimensionName}>SATISFACTION</Text>
-            <Text style={styles.dimensionScore}>{calculations.satisfactionScore}% of benchmark</Text>
-          </View>
-          <Text style={styles.dimensionDefinition}>
-            What it measures: {DimensionEducationContent.satisfaction.definition}
-          </Text>
-          <View style={styles.dimensionMetrics}>
-            <Text style={styles.dimensionYou}>You: {inputs.satisfaction}%</Text>
-            <Text style={styles.dimensionBenchmark}>Benchmark: {ABRIDGE_BENCHMARKS.satisfaction}%</Text>
-          </View>
-          <View style={styles.dimensionBar}>
-            <View style={[styles.dimensionBarFill, { width: `${Math.min(100, calculations.satisfactionScore)}%` }]} />
-          </View>
-          <View style={styles.dimensionEducation}>
-            <Text style={styles.dimensionWhyMatters}>
-              <Text style={styles.bold}>Why it matters: </Text>
-              {DimensionEducationContent.satisfaction.whyMatters}
-            </Text>
-            <Text style={styles.dimensionWhatDrives}>
-              <Text style={styles.bold}>What drives it: </Text>
-              {DimensionEducationContent.satisfaction.whatDrives}
-            </Text>
-            {calculations.satisfactionScore < DimensionEducationContent.satisfaction.insightThreshold && (
-              <Text style={styles.dimensionInsight}>
-                <Text style={styles.bold}>Your situation: </Text>
-                {DimensionEducationContent.satisfaction.getInsight(calculations.satisfactionScore)}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.scoreCalculation}>
-          <Text style={styles.scoreText}>
-            Your average score: ({calculations.utilizationScore}% + {calculations.efficiencyScore}% + {calculations.qualityScore}% + {calculations.satisfactionScore}%) ÷ 4 = <Text style={styles.scoreBold}>{calculations.realizationScore}%</Text>
-          </Text>
-        </View>
-
-        <View style={styles.compoundBox}>
-          <Text style={styles.compoundTitle}>Why gaps compound:</Text>
-          <Text style={styles.compoundText}>
-            The four dimensions don't add — they multiply. A 60% score in one dimension limits the value you can capture from improvements in others.
-          </Text>
-        </View>
-
         <Text style={styles.sectionTitle}>THE COST OF THE GAP OVER TIME</Text>
-        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 8 }}>
+        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
           If the gap persists, unrealized value accumulates:
         </Text>
 
@@ -1403,24 +1395,9 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
-          <Text style={styles.footerText}>Page 3/4</Text>
-        </View>
-      </Page>
-
-      {/* PAGE 4: THE DETAILS */}
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
-          <View style={styles.headerRight}>
-            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
-          </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>HOW EACH GAP IS CALCULATED</Text>
-        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 8 }}>
-          Every number in this assessment can be traced back to your inputs and transparent assumptions. Here's the math:
+        <Text style={[styles.sectionTitle, { marginTop: 12 }]}>HOW EACH GAP IS CALCULATED</Text>
+        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 8 }}>
+          Every number can be traced back to your inputs and transparent assumptions:
         </Text>
 
         <View style={styles.gapCard}>
@@ -1481,6 +1458,21 @@ const AmbientPDFDocument = ({ inputs, calculations }: AmbientPDFData) => {
           <Text style={styles.totalGapBreakdown}>
             Utilization ({formatCurrency(calculations.utilizationGapValue)}) + Efficiency ({formatCurrency(calculations.efficiencyGapValue)}) + Quality ({formatCurrency(calculations.wrvuGapValue)})
           </Text>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Generated by Abridge ROI Calculator</Text>
+          <Text style={styles.footerText}>Page 3/4</Text>
+        </View>
+      </Page>
+
+      {/* PAGE 4: TAKEAWAYS & NEXT STEPS */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Image src={abridgeLogoPath} style={{ width: 90, height: 18 }} />
+          <View style={styles.headerRight}>
+            <Text style={styles.headerTitle}>Value Realization Assessment</Text>
+          </View>
         </View>
 
         <View style={styles.takeawaysBox}>
