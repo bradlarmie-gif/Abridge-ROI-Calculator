@@ -60,27 +60,58 @@ function calculateIntermediateValues(
   
   switch (driverId) {
     case "edThroughput": {
+      // Match field names from ModelBuilder: annualEdVisits, lwbsRate, improvementRate, abridgeAttributionPercent, avgEdVisitRevenue
+      const annualEdVisits = (inputs.annualEdVisits as number) || eligibleEncounters;
       const lwbsRate = (inputs.lwbsRate as number) || 4;
-      const docAttributablePct = (inputs.docAttributablePct as number) || 40;
-      const abridgeReductionPct = (inputs.abridgeReductionPct as number) || 50;
-      const avgEdRevenue = (inputs.avgEdRevenue as number) || (inputs.revenuePerVisit as number) || 350;
+      const improvementRate = (inputs.improvementRate as number) || 50;
+      const abridgeAttributionPercent = (inputs.abridgeAttributionPercent as number) || 100;
+      const avgEdVisitRevenue = (inputs.avgEdVisitRevenue as number) || (inputs.avgEdRevenue as number) || 350;
+      const includeAdmissions = inputs.includeAdmissions as boolean || false;
+      const admissionPercent = (inputs.admissionPercent as number) || 15;
+      const avgAdmissionRevenue = (inputs.avgAdmissionRevenue as number) || 8500;
       
-      const lwbsPatients = Math.round(eligibleEncounters * (lwbsRate / 100));
-      const docAttributableLwbs = Math.round(lwbsPatients * (docAttributablePct / 100));
-      const patientsRecovered = Math.round(docAttributableLwbs * (abridgeReductionPct / 100));
+      // Step 1: Current LWBS patients
+      const patientsLeaving = Math.round(annualEdVisits * (lwbsRate / 100));
+      // Step 2: Patients retained (improvement rate)
+      const patientsRetained = Math.round(patientsLeaving * (improvementRate / 100));
+      // Step 3: Attributed to Abridge
+      const patientsAttributedToAbridge = Math.round(patientsRetained * (abridgeAttributionPercent / 100));
+      
+      // Calculate revenue
+      let edVisitPatients, admissionPatients, edVisitRevenue, admissionRevenue;
+      if (includeAdmissions) {
+        edVisitPatients = Math.round(patientsAttributedToAbridge * (1 - admissionPercent / 100));
+        admissionPatients = Math.round(patientsAttributedToAbridge * (admissionPercent / 100));
+        edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+        admissionRevenue = admissionPatients * avgAdmissionRevenue;
+      } else {
+        edVisitPatients = patientsAttributedToAbridge;
+        admissionPatients = 0;
+        edVisitRevenue = edVisitPatients * avgEdVisitRevenue;
+        admissionRevenue = 0;
+      }
       
       return {
         ...inputs,
         eligibleEncounters,
+        annualEdVisits,
         lwbsRate,
-        lwbsPatients,
-        docAttributablePct,
-        docAttributableLwbs,
-        abridgeReductionPct,
-        patientsRecovered,
-        recovered: patientsRecovered,
-        avgEdRevenue,
-        revenuePerVisit: avgEdRevenue,
+        lwbsPatients: patientsLeaving,
+        improvementRate,
+        patientsRetained,
+        abridgeAttributionPercent,
+        patientsRecovered: patientsAttributedToAbridge,
+        recovered: patientsAttributedToAbridge,
+        includeAdmissions,
+        admissionPercent,
+        edVisitPatients,
+        admissionPatients,
+        avgEdVisitRevenue,
+        avgAdmissionRevenue,
+        edVisitRevenue: Math.round(edVisitRevenue),
+        admissionRevenue: Math.round(admissionRevenue),
+        avgEdRevenue: avgEdVisitRevenue,
+        revenuePerVisit: avgEdVisitRevenue,
       };
     }
     
