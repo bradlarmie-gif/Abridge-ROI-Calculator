@@ -398,27 +398,6 @@ export default function ModelBuilder({
   const [reviewedDrivers, setReviewedDrivers] = useState<Set<string>>(new Set());
   const [showFirstDriverGlow, setShowFirstDriverGlow] = useState(true);
   
-  // Auto-save indicator
-  const [showSaved, setShowSaved] = useState(false);
-  const lastInputChange = useRef<number>(0);
-  
-  // Show "Saved" indicator when driver inputs change
-  useEffect(() => {
-    const now = Date.now();
-    if (lastInputChange.current > 0 && now - lastInputChange.current < 100) {
-      // Debounce - only show after activity stops
-      return;
-    }
-    lastInputChange.current = now;
-    
-    const timer = setTimeout(() => {
-      setShowSaved(true);
-      setTimeout(() => setShowSaved(false), 1500);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [driverInputs]);
-  
   // Stop the glow animation after 2 seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowFirstDriverGlow(false), 2500);
@@ -6459,16 +6438,10 @@ export default function ModelBuilder({
       />
       <UnifiedHeaderSpacer />
       
-      {/* Progress Bar with Auto-save indicator */}
+      {/* Progress Bar */}
       <div className="bg-white border-b border-slate-100 py-3 px-4">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex-1">
-            <ExploreProgressBar currentStep={4} />
-          </div>
-          <div className={`ml-4 flex items-center gap-1.5 text-xs font-medium transition-all duration-300 ${showSaved ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'}`}>
-            <Check className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-emerald-600">Saved</span>
-          </div>
+        <div className="max-w-md mx-auto">
+          <ExploreProgressBar currentStep={4} />
         </div>
       </div>
       
