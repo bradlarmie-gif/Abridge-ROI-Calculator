@@ -878,14 +878,32 @@ const DimensionEducation = {
 // ============================================================================
 
 const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: AmbientPDFData) => {
+  // Defensive checks for required data
+  if (!inputs || !calculations) {
+    console.error("PDF Export Error: Missing required data", { inputs: !!inputs, calculations: !!calculations });
+    throw new Error("Missing required inputs or calculations for PDF generation");
+  }
+
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 
-  const encountersAtBenchmark = Math.round((inputs.annualEncounters || 150000) * (ABRIDGE_BENCHMARKS.utilization / 100));
-  const monthlyGap = Math.round(calculations.annualGap / 12);
+  // Safe access with defaults
+  const safeInputs = {
+    annualEncounters: inputs.annualEncounters || 150000,
+    providers: inputs.providers || 50,
+    utilization: inputs.utilization || 75,
+    timeSavedPerEncounter: inputs.timeSavedPerEncounter || 4,
+    wrvuLift: inputs.wrvuLift || 5,
+    satisfaction: inputs.satisfaction || 85,
+    solution: inputs.solution || "ambient-ai",
+    currentCostPerProvider: inputs.currentCostPerProvider || 0,
+  };
+
+  const encountersAtBenchmark = Math.round(safeInputs.annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
+  const monthlyGap = Math.round((calculations.annualGap || 0) / 12);
   
   const dimensionRankings = getDimensionRankings({
     utilization: calculations.utilizationScore,

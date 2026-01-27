@@ -48,7 +48,7 @@ export default function SwitchFullAnalysis({
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      await generateAmbientPDF(inputs, calculations, clientName, preparedBy);
+      await generateAmbientPDF({ inputs, calculations, clientName, preparedBy });
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
