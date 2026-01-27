@@ -174,8 +174,8 @@ export default function ScribeAssessment({
           <div className="flex items-center gap-3 mb-1">
             <h2 className="text-base md:text-lg font-bold text-[#111827]">The Coverage Gap</h2>
             {calculations.providersWithoutSupport > 0 && (
-              <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                {calculations.providersWithoutSupport} providers unsupported
+              <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">
+                {calculations.providersWithoutSupport} providers without support
               </span>
             )}
           </div>
@@ -183,30 +183,30 @@ export default function ScribeAssessment({
 
           {/* Coverage Gap Visualization */}
           <div className="mb-6">
-            <div className="relative h-16 bg-[#F3F4F6] rounded-xl overflow-hidden">
+            <div className="relative h-14 bg-[#F1F5F9] rounded-xl overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.max(calculations.coveragePercent, 2)}%` }}
                 transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="absolute top-0 left-0 h-full bg-emerald-500 flex items-center"
               />
-              {calculations.coveragePercent >= 20 && (
-                <span className="absolute top-1/2 -translate-y-1/2 left-4 text-sm font-bold text-white drop-shadow-sm z-10">
-                  {inputs.providersWithScribes} supported
+              {calculations.coveragePercent >= 15 && (
+                <span className="absolute top-1/2 -translate-y-1/2 left-4 text-sm font-semibold text-white z-10">
+                  {inputs.providersWithScribes} with scribes
                 </span>
               )}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, delay: 0.8 }}
-                className="absolute top-0 h-full bg-orange-100 flex items-center justify-center"
+                className="absolute top-0 h-full bg-slate-200 flex items-center justify-center"
                 style={{
                   left: `${calculations.coveragePercent}%`,
                   width: `${100 - calculations.coveragePercent}%`,
                 }}
               >
-                <span className="text-sm font-bold text-orange-700">
-                  {calculations.providersWithoutSupport} on their own
+                <span className="text-sm font-semibold text-slate-600">
+                  {calculations.providersWithoutSupport} without support
                 </span>
               </motion.div>
             </div>
@@ -217,42 +217,44 @@ export default function ScribeAssessment({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.5 }}
-            className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-5"
+            className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5"
           >
             <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-slate-500" />
+              </div>
               <div>
-                <div className="font-semibold text-[#111827] mb-1">The burden on unsupported providers</div>
+                <div className="font-semibold text-[#111827] mb-1">The documentation burden</div>
                 <p className="text-sm text-[#6B7280]">
-                  Your {calculations.providersWithoutSupport} providers without scribes are handling documentation alone
+                  {calculations.providersWithoutSupport} providers handling all documentation themselves
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white/70 rounded-lg p-4 text-center">
+              <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
                 <div className="flex justify-center mb-2">
-                  <Timer className="w-5 h-5 text-orange-600" />
+                  <Timer className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div className="text-2xl font-bold text-[#111827]">
                   {calculations.unsupportedDocTimeHours.toLocaleString()}
                 </div>
-                <div className="text-xs text-[#6B7280]">hours/year on documentation</div>
+                <div className="text-xs text-[#6B7280]">hours/year documenting</div>
               </div>
 
-              <div className="bg-white/70 rounded-lg p-4 text-center">
+              <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
                 <div className="flex justify-center mb-2">
-                  <Moon className="w-5 h-5 text-orange-600" />
+                  <Moon className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div className="text-2xl font-bold text-[#111827]">
                   {calculations.pajamaTimeHours.toLocaleString()}
                 </div>
-                <div className="text-xs text-[#6B7280]">hours/year after clinic</div>
+                <div className="text-xs text-[#6B7280]">hours/year after hours</div>
               </div>
 
-              <div className="bg-white/70 rounded-lg p-4 text-center">
+              <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
                 <div className="flex justify-center mb-2">
-                  <TrendingUp className="w-5 h-5 text-orange-600" />
+                  <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div className="text-2xl font-bold text-[#111827]">
                   {calculations.docTimePerUnsupportedProvider}
@@ -277,8 +279,8 @@ export default function ScribeAssessment({
             {/* Current State */}
             <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-[#6B7280]" />
-                <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Today</span>
+                <div className="w-2 h-2 rounded-full bg-slate-400" />
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Today</span>
               </div>
               
               <div className="mb-4">
@@ -303,13 +305,13 @@ export default function ScribeAssessment({
             </div>
 
             {/* Full Coverage */}
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-100 rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
+            <div className="bg-[#FEF7F5] border border-[#FECDC4] rounded-xl p-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#FEE4DE] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
               
               <div className="relative">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-orange-500" />
-                  <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Full Coverage</span>
+                  <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                  <span className="text-xs font-semibold text-[#EA2C00] uppercase tracking-wide">Full Coverage</span>
                 </div>
                 
                 <div className="mb-4">
@@ -317,7 +319,7 @@ export default function ScribeAssessment({
                   <div className="text-sm text-[#6B7280]">annual investment required</div>
                 </div>
 
-                <div className="space-y-2 text-sm border-t border-orange-200 pt-4">
+                <div className="space-y-2 text-sm border-t border-[#FECDC4] pt-4">
                   <div className="flex justify-between">
                     <span className="text-[#6B7280]">Scribes needed</span>
                     <span className="font-semibold text-[#111827]">{calculations.scribesNeededForFullCoverage}</span>
@@ -328,7 +330,7 @@ export default function ScribeAssessment({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#6B7280]">Additional cost</span>
-                    <span className="font-semibold text-orange-600">+{formatCurrency(calculations.costToScale)}</span>
+                    <span className="font-semibold text-[#EA2C00]">+{formatCurrency(calculations.costToScale)}</span>
                   </div>
                 </div>
               </div>
