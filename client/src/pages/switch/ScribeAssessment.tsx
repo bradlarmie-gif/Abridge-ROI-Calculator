@@ -88,8 +88,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<Clock className="w-4 h-4 text-blue-600" />}
-              iconBg="bg-blue-50"
+              icon={<Clock className="w-4 h-4 text-sky-600" />}
+              iconBg="bg-sky-50"
               label="Hours per week (per scribe)"
               value={inputs.scribeHoursPerWeek}
               onChange={(v) => updateInput("scribeHoursPerWeek", v)}
@@ -98,8 +98,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<UserCheck className="w-4 h-4 text-violet-600" />}
-              iconBg="bg-violet-50"
+              icon={<UserCheck className="w-4 h-4 text-amber-600" />}
+              iconBg="bg-amber-50"
               label="Providers supported by scribes"
               value={inputs.providersWithScribes}
               onChange={(v) => updateInput("providersWithScribes", v)}
@@ -109,8 +109,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<Building2 className="w-4 h-4 text-slate-600" />}
-              iconBg="bg-slate-100"
+              icon={<Building2 className="w-4 h-4 text-rose-600" />}
+              iconBg="bg-rose-50"
               label="Total providers in your organization"
               value={inputs.totalProviders}
               onChange={(v) => updateInput("totalProviders", v)}
@@ -119,8 +119,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<Calendar className="w-4 h-4 text-blue-600" />}
-              iconBg="bg-blue-50"
+              icon={<Calendar className="w-4 h-4 text-indigo-600" />}
+              iconBg="bg-indigo-50"
               label="Annual encounters (all providers)"
               value={inputs.annualEncounters}
               onChange={(v) => updateInput("annualEncounters", v)}
