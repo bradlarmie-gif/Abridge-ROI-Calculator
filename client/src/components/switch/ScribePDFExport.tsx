@@ -506,9 +506,13 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
             And that's before hidden costs. When you factor in <Text style={styles.storyTextBold}>~40% annual turnover</Text> and <Text style={styles.storyTextBold}>management overhead</Text>, your true program cost is closer to <Text style={styles.storyTextBold}>{formatCurrency(trueTotalCost)}/year</Text>.
           </Text>
 
+          <Text style={[styles.storyText, { fontWeight: "bold", marginTop: 8 }]}>
+            The bottom line: your scribe program works—but it can only grow one way: linearly.
+          </Text>
+
           <View style={styles.acknowledgmentBox}>
             <Text style={styles.acknowledgmentText}>
-              "Scribes bring real value—they're human, they build relationships with providers, they learn institutional nuances. This isn't about what scribes lack. It's about what scaling them requires."
+              "Scribes bring real value—they're human, they build relationships with providers, they learn institutional nuances. This isn't about replacing what works. It's about asking whether there's a better path to scale."
             </Text>
           </View>
         </View>
@@ -532,7 +536,10 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
 
         <View style={styles.contentSection}>
           <Text style={styles.chapterLabel}>The Math You're Facing</Text>
-          <Text style={styles.sectionTitle}>Your Numbers at a Glance</Text>
+          <Text style={styles.sectionTitle}>Three Numbers Worth Knowing</Text>
+          <Text style={styles.sectionSubtitle}>
+            These are the numbers that tell the story of where your program stands—and what it would take to go further.
+          </Text>
 
           <View style={styles.insightCard}>
             <View style={styles.insightRow}>
@@ -556,9 +563,10 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
           </View>
 
           <View style={styles.opportunityBox}>
-            <Text style={styles.opportunityTitle}>The Opportunity</Text>
+            <Text style={styles.opportunityTitle}>There's Another Way</Text>
             <Text style={styles.opportunityText}>
-              AI-powered ambient documentation can support every provider—without the linear cost curve. No turnover. No training gaps. No coverage limits. The technology exists to provide 100% coverage at a fraction of scaling costs.
+              AI-powered ambient documentation can support every provider—without the linear cost curve. No turnover. No training gaps. No coverage limits.{"\n"}{"\n"}
+              Imagine giving all {inputs.totalProviders} providers documentation support tomorrow—without hiring a single additional scribe.
             </Text>
           </View>
 
@@ -585,7 +593,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
 
           <View style={styles.ctaSection}>
             <Text style={styles.ctaText}>Ready to explore how AI can scale your documentation support?</Text>
-            <Text style={styles.ctaLink}>Visit abridge.com</Text>
+            <Text style={styles.ctaLink}>Contact your Abridge partner to learn more</Text>
           </View>
 
           <View style={styles.methodologySection}>
