@@ -1444,14 +1444,33 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; 
   const displayClientName = data.clientName || data.organizationName || "Your Organization";
   const displayPreparedBy = data.preparedBy || "Abridge";
 
-  // Personalized opening narrative based on their context
+  // Personalized opening narrative based on their context - ED-specific
   const getOpeningNarrative = () => {
     if (data.drivers.length >= 4) {
-      return `With ${data.drivers.length} value drivers selected, this model explores multiple pathways where Abridge could create value for your ED. Each driver page walks through the math step-by-step—so you can see exactly where each number comes from.`;
+      return `Emergency departments face unique pressures—high acuity, unpredictable volume, time-sensitive decisions, and documentation that follows providers home. With ${data.drivers.length} value drivers selected, this model explores multiple pathways where better documentation could create value. Each page walks through the math step-by-step.`;
     } else if (data.drivers.length >= 2) {
-      return `This assessment explores ${data.drivers.length} key areas where we see potential value: ${data.drivers.map(d => d.name).join(" and ")}. Each driver page breaks down the calculation so you can stress-test and adjust the assumptions.`;
+      return `In the ED, every minute counts—for patients waiting, for providers charting, for throughput metrics. This assessment explores ${data.drivers.length} key areas: ${data.drivers.map(d => d.name).join(" and ")}. Each driver page breaks down the calculation so you can stress-test the assumptions.`;
     }
-    return `This focused assessment explores ${data.drivers[0]?.name || "your selected driver"} in depth. The following pages show exactly how we arrived at each number—and where your situation might differ.`;
+    return `ED workflows are unforgiving—high volume, rapid decisions, and notes that need to capture complexity in real time. This focused assessment explores ${data.drivers[0]?.name || "your selected driver"} in depth, showing exactly how we arrived at each number.`;
+  };
+
+  // ED-specific personalized tagline based on ROI and drivers
+  const getHeroTagline = () => {
+    const hasLWBS = data.drivers.some(d => d.id === "edThroughput");
+    const hasRetention = data.drivers.some(d => d.id === "edRetention");
+    
+    if (data.roi >= 5 && hasLWBS) {
+      return "Strong potential to reduce walkouts and capture lost revenue";
+    } else if (data.roi >= 5 && hasRetention) {
+      return "Addressing the documentation burden that drives ED burnout";
+    } else if (data.roi >= 5) {
+      return "Significant opportunity across your ED value drivers";
+    } else if (data.roi >= 3) {
+      return "Meaningful pathways to efficiency and revenue recovery";
+    } else if (data.roi >= 2) {
+      return "A solid foundation worth exploring for your ED";
+    }
+    return "Understanding your ED documentation value landscape";
   };
 
   return (
@@ -1465,8 +1484,10 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; 
         <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
         <Text style={styles.heroClientName}>{displayClientName}</Text>
         <Text style={styles.heroTagline}>
-          Emergency Department ROI Assessment{"\n"}
-          An exploration of potential value. Here's what the numbers suggest.
+          {getHeroTagline()}
+        </Text>
+        <Text style={{ fontSize: 9, color: colors.lightGray, marginTop: 8, lineHeight: 1.5 }}>
+          Emergency Department ROI Assessment — An exploratory model built from your inputs and industry benchmarks.
         </Text>
       </View>
 
@@ -1709,23 +1730,24 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
       {/* Compact Hero */}
       <View style={styles.heroCompact}>
         <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
-        <Text style={styles.heroCompactTitle}>Looking Ahead</Text>
-        <Text style={styles.heroCompactSubtitle}>Exploring what scaling could look like for your ED</Text>
+        <Text style={styles.heroCompactTitle}>Scaling in the ED Environment</Text>
+        <Text style={styles.heroCompactSubtitle}>How value could compound as adoption grows across shifts and providers</Text>
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>The Scaling Model</Text>
+        <Text style={styles.chapterLabel}>The ED Scaling Model</Text>
         <Text style={styles.sectionTitle}>From Pilot to Full Deployment</Text>
 
         <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
           <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
-            The projections below explore what value might look like as you scale from {journey.pilotProviders} to {journey.fullScaleProviders} {data.unitNamePlural}. 
-            These estimates assume utilization grows from {journey.pilotUtilization}% to {journey.fullScaleUtilization}% over time—actual trajectory depends on 
-            adoption patterns, change management, and operational factors specific to your ED.
+            ED scaling has unique dynamics: shift-based coverage, variable volume patterns, and the critical mass needed for workflow consistency. 
+            Starting with {journey.pilotProviders} {data.unitNamePlural} at {journey.pilotUtilization}% utilization, value could grow as adoption 
+            spreads across shifts and throughput improvements compound.
           </Text>
           <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginTop: 6 }}>
-            At modeled full scale, annual value could reach approximately <Text style={{ fontWeight: "bold", color: colors.green }}>{formatCurrency(journey.fullScaleValue)}</Text>—roughly{" "}
-            <Text style={{ fontWeight: "bold" }}>{valueMultiple}x</Text> the pilot projection.
+            At full scale with {journey.fullScaleProviders} {data.unitNamePlural}, projected annual value reaches approximately{" "}
+            <Text style={{ fontWeight: "bold", color: colors.green }}>{formatCurrency(journey.fullScaleValue)}</Text>—roughly{" "}
+            <Text style={{ fontWeight: "bold" }}>{valueMultiple}x</Text> the pilot projection. Actual results depend on adoption consistency across all shifts.
           </Text>
         </View>
 
@@ -1868,11 +1890,12 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
       </View>
 
       <View style={styles.compoundingBox}>
-        <Text style={styles.compoundingTitle}>Why Value Could Compound</Text>
+        <Text style={styles.compoundingTitle}>Why ED Value Could Compound</Text>
         <Text style={styles.compoundingValue}>{valueMultiple}x</Text>
         <Text style={styles.compoundingSubtext}>
-          Value typically doesn't scale linearly. As utilization improves ({journey.pilotUtilization}% to {journey.fullScaleUtilization}%), 
-          workflows optimize, and network effects emerge. Each {data.unitName} may generate more value at maturity than at pilot—though actual results depend on your implementation.
+          In the ED, network effects may be particularly strong. When all shifts use Abridge, throughput improvements become consistent. 
+          Door-to-doc times stabilize. LWBS patterns shift across the board—not just during peak hours. As utilization grows from{" "}
+          {journey.pilotUtilization}% to {journey.fullScaleUtilization}%, each provider could generate more value at maturity than at pilot.
         </Text>
       </View>
       </View>
@@ -1904,13 +1927,13 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
       {/* Compact Hero */}
       <View style={styles.heroCompact}>
         <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
-        <Text style={styles.heroCompactTitle}>Summary & Methodology</Text>
-        <Text style={styles.heroCompactSubtitle}>The inputs, assumptions, and benchmarks behind these projections</Text>
+        <Text style={styles.heroCompactTitle}>ED Model Summary</Text>
+        <Text style={styles.heroCompactSubtitle}>How we built this assessment—and what's worth discussing further</Text>
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>What We Explored</Text>
-        <Text style={styles.sectionTitle}>Your Assessment at a Glance</Text>
+        <Text style={styles.chapterLabel}>Your ED Assessment</Text>
+        <Text style={styles.sectionTitle}>Summary at a Glance</Text>
 
         {/* Summary metrics */}
         <View style={{ flexDirection: "row", marginBottom: 16 }}>
@@ -1958,14 +1981,37 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
         </View>
 
         <Text style={{ fontSize: 7, color: colors.lightGray, fontStyle: "italic", marginTop: 8, marginBottom: 12 }}>
-          Benchmarks based on aggregate data across healthcare partners. Individual results vary based on acuity mix, payer mix, and operational factors.
+          ED benchmarks reflect aggregate data from emergency departments nationwide. Your results may vary based on acuity mix, boarding patterns, payer mix, and shift coverage.
         </Text>
+
+        {/* ED-Specific Strategic Considerations */}
+        <View style={{ backgroundColor: colors.blueLight, padding: 12, borderRadius: 4, marginBottom: 12 }}>
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>ED-Specific Considerations</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+            <View style={{ width: "48%", marginRight: "2%", marginBottom: 6 }}>
+              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Shift Coverage</Text>
+              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Value compounds when all shifts adopt—not just days.</Text>
+            </View>
+            <View style={{ width: "48%", marginBottom: 6 }}>
+              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Volume Variability</Text>
+              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Peak hours benefit most from documentation speed.</Text>
+            </View>
+            <View style={{ width: "48%", marginRight: "2%" }}>
+              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Boarding Impact</Text>
+              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Faster disposition could reduce boarding pressure.</Text>
+            </View>
+            <View style={{ width: "48%" }}>
+              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Inpatient Connection</Text>
+              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Quality ED notes could strengthen admission documentation.</Text>
+            </View>
+          </View>
+        </View>
 
         {/* Closing message */}
         <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
           <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Next</Text>
           <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
-            {getClosingMessage()} This document is meant to start a conversation—not end one. We're here to help you stress-test these numbers and understand what makes sense for {displayClientName}.
+            {getClosingMessage()} This document is meant to start a conversation—not end one. We're here to help you stress-test these numbers and understand what makes sense for {displayClientName}'s emergency department.
           </Text>
         </View>
       </View>
