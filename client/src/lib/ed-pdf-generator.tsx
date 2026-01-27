@@ -90,6 +90,9 @@ const colors = {
   green: "#059669",
   greenLight: "#ECFDF5",
   greenDark: "#047857",
+  emerald: "#10b981",
+  emeraldLight: "#d1fae5",
+  emeraldDark: "#065f46",
   black: "#111827",
   darkGray: "#374151",
   mediumGray: "#6B7280",
@@ -102,20 +105,104 @@ const colors = {
   amberDark: "#92400E",
   blue: "#3B82F6",
   blueLight: "#EFF6FF",
+  slate: "#1e293b",
+  slateLight: "#334155",
 };
 
 // ============================================================================
-// STYLES - Dense, professional, McKinsey-inspired
+// STYLES - God Tier Premium Storytelling Format
 // ============================================================================
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 0,
     paddingBottom: 50,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: colors.black,
     backgroundColor: colors.white,
+  },
+
+  // Dark Hero Section (Page 1)
+  heroSection: {
+    backgroundColor: colors.slate,
+    padding: 40,
+    paddingTop: 30,
+    paddingBottom: 35,
+    marginBottom: 0,
+  },
+  heroMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  heroMetaText: {
+    fontSize: 8,
+    color: colors.lightGray,
+  },
+  heroClientName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  heroTagline: {
+    fontSize: 12,
+    color: colors.lightGray,
+    lineHeight: 1.6,
+  },
+
+  // Compact Hero for driver pages
+  heroCompact: {
+    backgroundColor: colors.slate,
+    padding: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  heroCompactTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 4,
+  },
+  heroCompactSubtitle: {
+    fontSize: 10,
+    color: colors.lightGray,
+  },
+  heroCompactValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginTop: 8,
+  },
+
+  // Content section below hero
+  contentSection: {
+    padding: 40,
+    paddingTop: 24,
+    paddingBottom: 20,
+  },
+
+  // Chapter labels
+  chapterLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginBottom: 16,
   },
 
   header: {
@@ -162,7 +249,7 @@ const styles = StyleSheet.create({
     color: colors.lightGray,
   },
 
-  sectionTitle: {
+  sectionTitleOld: {
     fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
@@ -972,28 +1059,27 @@ We model a 75% reduction in scribe hours. This assumes some organizations will m
 
 const driverImplications: Record<string, (value: number, data: EDPDFData) => string> = {
   edThroughput: (value, data) => {
-    const lwbsRate = (data.drivers.find(d => d.id === "edThroughput")?.inputs?.lwbsRate as number) || 4;
     const patientsRetained = Math.round(value / 350);
-    return `At ${formatCurrency(value)}, throughput improvements contribute to your total value. This represents approximately ${patientsRetained} patients who would have left but now complete their visit. Beyond the revenue, there's a quality dimension: patients who leave without being seen may delay necessary care or present later with worse outcomes. Reducing LWBS is both a financial and clinical win.`;
+    return `Based on these inputs, the model suggests potential value of ${formatCurrency(value)} annually. This would represent approximately ${patientsRetained} patients retained who might otherwise leave. Of course, actual results depend on your specific patient population, acuity mix, and operational factors. The clinical benefit—ensuring patients receive care—may be as significant as the financial impact.`;
   },
   
   edRetention: (value, data) => {
     const departures = value / 500000;
     const yearsPerDeparture = departures > 0 ? (1 / departures).toFixed(1) : "N/A";
-    return `At ${formatCurrency(value)}, retention contributes to your total value. This represents ${departures.toFixed(2)} avoided departures annually—or roughly one retained physician every ${yearsPerDeparture} years. Note: this is a long-term metric—benefits materialize over 12+ months as burnout reduction translates to retention.`;
+    return `The calculation suggests potential value of ${formatCurrency(value)} annually, representing approximately ${departures.toFixed(2)} avoided departures per year—or roughly one retained physician every ${yearsPerDeparture} years. This is a long-term metric; benefits would materialize over 12+ months as burnout patterns shift. Your actual experience may vary based on existing culture, workload, and other retention factors.`;
   },
   
   edLevelOfService: (value, data) => {
-    return `At ${formatCurrency(value)}, level-of-service accuracy contributes to your total value. This represents getting appropriate credit for the complexity of care you're already delivering. The improvement comes from capturing the full clinical narrative—not upcoding, just accurate documentation of what you're already doing.`;
+    return `Based on these assumptions, the model suggests ${formatCurrency(value)} in potential annual value from more accurate documentation. This reflects the hypothesis that comprehensive notes capture complexity that might otherwise be under-documented. Results depend significantly on your current documentation quality—if notes are already thorough, improvement may be less.`;
   },
   
   edDenials: (value, data) => {
     const claimsRecovered = Math.round(value / 350);
-    return `At ${formatCurrency(value)}, denial prevention contributes to your total value. This represents approximately ${claimsRecovered} claims that would otherwise be written off. Abridge captures the clinical reasoning that either prevents denials or makes them winnable on appeal.`;
+    return `The calculation suggests potential value of ${formatCurrency(value)} annually, representing approximately ${claimsRecovered} claims that might otherwise be lost. This assumes Abridge captures clinical reasoning that strengthens documentation. Actual denial rates and recovery success depend on payer mix, claim complexity, and current documentation practices.`;
   },
 
   edScribe: (value, data) => {
-    return `At ${formatCurrency(value)}, scribe reduction is likely your largest single driver. This is direct cost displacement—every dollar saved here flows straight to the bottom line. Implementation note: scribe reduction should be managed thoughtfully. Many organizations phase out over 3-6 months rather than eliminating immediately, allowing time for provider adjustment and workflow refinement.`;
+    return `At ${formatCurrency(value)}, scribe cost reduction could be a significant driver if applicable to your situation. This represents direct cost displacement. Implementation note: many organizations transition gradually over 3-6 months, allowing time for workflow adjustment. Your timeline and approach would depend on current scribe coverage and provider preferences.`;
   },
 };
 
@@ -1355,186 +1441,139 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; 
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
   const valuePerProvider = Math.round(data.netGain / data.providers);
+  const displayClientName = data.clientName || data.organizationName || "Your Organization";
+  const displayPreparedBy = data.preparedBy || "Abridge";
+
+  // Personalized opening narrative based on their context
+  const getOpeningNarrative = () => {
+    if (data.drivers.length >= 4) {
+      return `With ${data.drivers.length} value drivers selected, this model explores multiple pathways where Abridge could create value for your ED. Each driver page walks through the math step-by-step—so you can see exactly where each number comes from.`;
+    } else if (data.drivers.length >= 2) {
+      return `This assessment explores ${data.drivers.length} key areas where we see potential value: ${data.drivers.map(d => d.name).join(" and ")}. Each driver page breaks down the calculation so you can stress-test and adjust the assumptions.`;
+    }
+    return `This focused assessment explores ${data.drivers[0]?.name || "your selected driver"} in depth. The following pages show exactly how we arrived at each number—and where your situation might differ.`;
+  };
 
   return (
     <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
+      {/* Dark Hero Section */}
+      <View style={styles.heroSection}>
+        <View style={styles.heroMeta}>
+          <Text style={styles.heroMetaText}>{today}</Text>
+          <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
-          <Text style={styles.headerSubtitle}>{today}</Text>
-        </View>
+        <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
+        <Text style={styles.heroClientName}>{displayClientName}</Text>
+        <Text style={styles.heroTagline}>
+          Emergency Department ROI Assessment{"\n"}
+          An exploration of potential value. Here's what the numbers suggest.
+        </Text>
       </View>
 
-      {data.organizationName && (
-        <View style={{ marginBottom: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black }}>{data.organizationName}</Text>
-          <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>
-            {data.providers} {data.unitNamePlural} | {formatNumber(data.encounters)} patient visits | {data.utilization}% utilization
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>The Overview</Text>
+        <Text style={styles.sectionTitle}>What We're Exploring Together</Text>
+        
+        <Text style={{ fontSize: 9, color: colors.darkGray, lineHeight: 1.6, marginBottom: 16 }}>
+          {getOpeningNarrative()}
+        </Text>
+
+        {/* Key Metrics Grid */}
+        <View style={styles.metricsRow}>
+          <View style={styles.metricBoxHighlight}>
+            <Text style={styles.metricValueGreen}>+{formatCurrency(data.netGain)}</Text>
+            <Text style={styles.metricLabel}>Potential Net Gain</Text>
+            <Text style={styles.metricSublabel}>{formatCurrency(data.totalValue)} value - {formatCurrency(data.investment)} cost</Text>
+          </View>
+          <View style={styles.metricBox}>
+            <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
+            <Text style={styles.metricLabel}>Projected ROI</Text>
+            <Text style={styles.metricSublabel}>Based on selected drivers</Text>
+          </View>
+          <View style={styles.metricBox}>
+            <Text style={styles.metricValue}>{formatCurrency(valuePerProvider)}</Text>
+            <Text style={styles.metricLabel}>Per {data.unitName}</Text>
+            <Text style={styles.metricSublabel}>Annual value estimate</Text>
+          </View>
+          <View style={[styles.metricBox, styles.metricBoxLast]}>
+            <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
+            <Text style={styles.metricLabel}>Hours Returned</Text>
+            <Text style={styles.metricSublabel}>Documentation time</Text>
+          </View>
+        </View>
+
+        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.black, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10, marginTop: 12 }}>Where Value Could Come From</Text>
+        
+        <View style={styles.twoColumn}>
+          <View style={[styles.valueBreakdownCard, styles.laborCard]}>
+            <Text style={styles.valueBreakdownTitle}>Labor & Efficiency</Text>
+            <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
+            <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
+            {laborDrivers.map((driver, i) => (
+              <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
+                <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
+                <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
+              </View>
+            ))}
+            {laborDrivers.length === 0 && (
+              <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No labor drivers selected</Text>
+            )}
+          </View>
+
+          <View style={[styles.valueBreakdownCard, styles.revenueCard, styles.valueBreakdownCardLast]}>
+            <Text style={styles.valueBreakdownTitle}>Revenue & Quality</Text>
+            <Text style={styles.valueBreakdownPct}>{data.revenuePct}% of total value</Text>
+            <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.revenueTotal)}</Text>
+            {revenueDrivers.map((driver, i) => (
+              <View key={driver.id} style={[styles.valueBreakdownDriver, i === revenueDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
+                <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
+                <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
+              </View>
+            ))}
+            {revenueDrivers.length === 0 && (
+              <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No revenue drivers selected</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.progressBar}>
+          {data.laborPct > 0 && (
+            <View style={[styles.progressSegment, { flex: data.laborPct, backgroundColor: colors.blue }]}>
+              {data.laborPct > 20 && <Text style={styles.progressLabel}>Labor {data.laborPct}%</Text>}
+            </View>
+          )}
+          {data.revenuePct > 0 && (
+            <View style={[styles.progressSegment, { flex: data.revenuePct, backgroundColor: colors.green }]}>
+              {data.revenuePct > 20 && <Text style={styles.progressLabel}>Revenue {data.revenuePct}%</Text>}
+            </View>
+          )}
+        </View>
+
+        {/* What's Inside This Report */}
+        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginTop: 12, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Inside This Report</Text>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            Each of the following pages explores one driver in depth—showing the theory, the step-by-step calculation, industry benchmarks, and what the numbers might suggest for your ED. Review, adjust assumptions, and see what resonates.
           </Text>
         </View>
-      )}
-
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>ROI models can feel like black boxes</Text>—numbers that sound good but don't explain themselves. This assessment is different.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          You selected <Text style={styles.narrativeBold}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
-        </Text>
-      </View>
-
-      <View style={styles.metricsRow}>
-        <View style={styles.metricBoxHighlight}>
-          <Text style={styles.metricValueGreen}>+{formatCurrency(data.netGain)}</Text>
-          <Text style={styles.metricLabel}>Net Annual Gain</Text>
-          <Text style={styles.metricSublabel}>{formatCurrency(data.totalValue)} value - {formatCurrency(data.investment)} cost</Text>
-        </View>
-        <View style={styles.metricBox}>
-          <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
-          <Text style={styles.metricLabel}>Return on Investment</Text>
-          <Text style={styles.metricSublabel}>Every $1 returns ${data.roi.toFixed(2)}</Text>
-        </View>
-        <View style={styles.metricBox}>
-          <Text style={styles.metricValue}>{formatCurrency(valuePerProvider)}</Text>
-          <Text style={styles.metricLabel}>Per {data.unitName}</Text>
-          <Text style={styles.metricSublabel}>Net annual benefit each</Text>
-        </View>
-        <View style={[styles.metricBox, styles.metricBoxLast]}>
-          <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
-          <Text style={styles.metricLabel}>Hours Returned</Text>
-          <Text style={styles.metricSublabel}>Documentation time saved</Text>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>Where the Value Comes From</Text>
-      
-      <View style={styles.twoColumn}>
-        <View style={[styles.valueBreakdownCard, styles.laborCard]}>
-          <Text style={styles.valueBreakdownTitle}>Labor & Efficiency</Text>
-          <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
-          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
-          {laborDrivers.map((driver, i) => (
-            <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
-              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
-              <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
-            </View>
-          ))}
-          {laborDrivers.length === 0 && (
-            <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No labor drivers selected</Text>
-          )}
-        </View>
-
-        <View style={[styles.valueBreakdownCard, styles.revenueCard, styles.valueBreakdownCardLast]}>
-          <Text style={styles.valueBreakdownTitle}>Revenue & Quality</Text>
-          <Text style={styles.valueBreakdownPct}>{data.revenuePct}% of total value</Text>
-          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.revenueTotal)}</Text>
-          {revenueDrivers.map((driver, i) => (
-            <View key={driver.id} style={[styles.valueBreakdownDriver, i === revenueDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
-              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
-              <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
-            </View>
-          ))}
-          {revenueDrivers.length === 0 && (
-            <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No revenue drivers selected</Text>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.progressBar}>
-        {data.laborPct > 0 && (
-          <View style={[styles.progressSegment, { flex: data.laborPct, backgroundColor: colors.blue }]}>
-            {data.laborPct > 20 && <Text style={styles.progressLabel}>Labor {data.laborPct}%</Text>}
-          </View>
-        )}
-        {data.revenuePct > 0 && (
-          <View style={[styles.progressSegment, { flex: data.revenuePct, backgroundColor: colors.green }]}>
-            {data.revenuePct > 20 && <Text style={styles.progressLabel}>Revenue {data.revenuePct}%</Text>}
-          </View>
-        )}
-      </View>
-
-      <Text style={styles.sectionTitle}>Investment Details</Text>
-      
-      <View style={styles.twoColumn}>
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>Your Configuration</Text>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Setting</Text>
-            <Text style={styles.cardValue}>{data.careSetting}</Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>{data.unitNamePlural}</Text>
-            <Text style={styles.cardValue}>{data.providers}</Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Price</Text>
-            <Text style={styles.cardValue}>${data.costPerProvider}/{data.unitName}/month</Text>
-          </View>
-          <View style={styles.cardTotal}>
-            <Text style={styles.cardTotalLabel}>Annual Investment</Text>
-            <Text style={styles.cardTotalValue}>{formatCurrency(data.investment)}</Text>
-          </View>
-        </View>
-
-        <View style={[styles.card, styles.columnLast]}>
-          <Text style={styles.cardTitle}>Multi-Year Projection</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}></Text>
-              <Text style={styles.tableHeaderCell}>Year 1</Text>
-              <Text style={styles.tableHeaderCell}>Year 2</Text>
-              <Text style={styles.tableHeaderCell}>Year 3</Text>
-              <Text style={[styles.tableHeaderCell, { fontWeight: "bold" }]}>3-Yr Total</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Value</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year1Value)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year2Value)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year3Value)}</Text>
-              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearValue)}</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Cost</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year1Cost)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year2Cost)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year3Cost)}</Text>
-              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearCost)}</Text>
-            </View>
-            <View style={[styles.tableRow, styles.tableRowLast]}>
-              <Text style={[styles.tableCellBold, { flex: 0.8, textAlign: "left" }]}>Net</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.threeYearNet)}</Text>
-            </View>
-          </View>
-          <Text style={{ fontSize: 6, color: colors.lightGray, marginTop: 4, fontStyle: "italic" }}>
-            Assumes 10% annual value growth with increased adoption
-          </Text>
-        </View>
-      </View>
-
-      <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
-        <Text style={styles.narrativeText}>
-          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in net annual value, scaling from {data.providers} to {Math.round(data.providers * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
-        </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
+};
+
+// Driver-specific hero taglines (exploratory tone)
+const driverHeroTaglines: Record<string, string> = {
+  edThroughput: "Exploring how faster throughput could reduce patient walkouts",
+  edRetention: "Understanding the connection between documentation burden and retention",
+  edLevelOfService: "Examining patterns in documentation complexity capture",
+  edDenials: "Exploring how complete documentation could reduce denial rates",
+  edScribe: "Analyzing potential shifts in your scribe cost structure",
 };
 
 const DriverDetailPage = ({ 
@@ -1548,38 +1587,36 @@ const DriverDetailPage = ({
   pageNum: number; 
   totalPages: number;
 }) => {
-  const theory = driverTheories[driver.id] || "This driver creates measurable value through improved documentation workflows.";
+  const theory = driverTheories[driver.id] || "This driver explores potential value through improved documentation workflows.";
   const implicationFn = driverImplications[driver.id];
-  const implication = implicationFn ? implicationFn(driver.value, data) : `This driver contributes ${formatCurrency(driver.value)} annually to your ROI.`;
+  const implication = implicationFn ? implicationFn(driver.value, data) : `Based on the inputs above, this driver suggests potential annual value of ${formatCurrency(driver.value)}.`;
 
   const steps = getDriverSteps(driver, data);
   const benchmarks = getDriverBenchmarks(driver.id);
   const warnings = getDriverWarnings(driver, data);
+  const heroTagline = driverHeroTaglines[driver.id] || "Exploring potential value pathways";
 
   return (
     <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
-        </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
+      {/* Compact Dark Hero */}
+      <View style={styles.heroCompact}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <View style={{ flex: 1 }}>
+            <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
+            <Text style={styles.heroCompactTitle}>{driver.name}</Text>
+            <Text style={styles.heroCompactSubtitle}>{heroTagline}</Text>
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={{ fontSize: 8, color: colors.lightGray, marginBottom: 4 }}>Potential Value</Text>
+            <Text style={styles.heroCompactValue}>{formatCurrency(driver.value)}</Text>
+          </View>
         </View>
       </View>
 
-      <View wrap={false}>
-        <View style={styles.driverHeader}>
-          <Text style={styles.driverName}>{driver.name}</Text>
-          <Text style={styles.driverValue}>{formatCurrency(driver.value)}</Text>
-        </View>
-
-        <View style={styles.theoryBox}>
-          <Text style={styles.theoryLabel}>The Theory</Text>
-          <Text style={styles.theoryText}>{theory}</Text>
-        </View>
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>The Opportunity</Text>
+        <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginBottom: 14 }}>{theory}</Text>
 
         {warnings && (
           <View style={styles.calloutBox}>
@@ -1638,20 +1675,20 @@ const DriverDetailPage = ({
 
         <View style={styles.finalValueBox} wrap={false}>
           <View>
-            <Text style={styles.finalValueLabel}>Annual {driver.name} Value</Text>
+            <Text style={styles.finalValueLabel}>Estimated Annual Value</Text>
             <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
           </View>
           <Text style={styles.finalValueAmount}>{formatCurrency(driver.value)}</Text>
         </View>
 
         <View style={styles.implicationBox} wrap={false}>
-          <Text style={styles.implicationTitle}>What This Means</Text>
+          <Text style={styles.implicationTitle}>What This Suggests</Text>
           <Text style={styles.implicationText}>{implication}</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1669,33 +1706,28 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
 
   return (
     <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
-        </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
-        </View>
+      {/* Compact Hero */}
+      <View style={styles.heroCompact}>
+        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
+        <Text style={styles.heroCompactTitle}>Looking Ahead</Text>
+        <Text style={styles.heroCompactSubtitle}>Exploring what scaling could look like for your ED</Text>
       </View>
 
-      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>Your Journey with Abridge</Text>
-      <Text style={{ fontSize: 9, color: colors.mediumGray, marginBottom: 14 }}>Start with a pilot. Prove the value. Scale across your organization.</Text>
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>The Scaling Model</Text>
+        <Text style={styles.sectionTitle}>From Pilot to Full Deployment</Text>
 
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          The ROI you see today reflects a pilot deployment of {journey.pilotProviders} {data.unitNamePlural} at {journey.pilotUtilization}% utilization. 
-          As you scale, value compounds—not just linearly with {data.unitName} count, but exponentially as utilization matures, 
-          workflows optimize, and network effects emerge.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 6 }]}>
-          At full scale ({journey.fullScaleProviders} {data.unitNamePlural}, {journey.fullScaleUtilization}% utilization), 
-          annual value reaches <Text style={styles.narrativeHighlight}>{formatCurrency(journey.fullScaleValue)}</Text>—a{" "}
-          <Text style={styles.narrativeBold}>{valueMultiple}x increase</Text> from pilot.
-        </Text>
-      </View>
+        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            The projections below explore what value might look like as you scale from {journey.pilotProviders} to {journey.fullScaleProviders} {data.unitNamePlural}. 
+            These estimates assume utilization grows from {journey.pilotUtilization}% to {journey.fullScaleUtilization}% over time—actual trajectory depends on 
+            adoption patterns, change management, and operational factors specific to your ED.
+          </Text>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginTop: 6 }}>
+            At modeled full scale, annual value could reach approximately <Text style={{ fontWeight: "bold", color: colors.green }}>{formatCurrency(journey.fullScaleValue)}</Text>—roughly{" "}
+            <Text style={{ fontWeight: "bold" }}>{valueMultiple}x</Text> the pilot projection.
+          </Text>
+        </View>
 
       <View style={styles.journeyChart}>
         <View style={{ flexDirection: "row", marginBottom: 8 }}>
@@ -1836,16 +1868,17 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
       </View>
 
       <View style={styles.compoundingBox}>
-        <Text style={styles.compoundingTitle}>Why Value Compounds</Text>
+        <Text style={styles.compoundingTitle}>Why Value Could Compound</Text>
         <Text style={styles.compoundingValue}>{valueMultiple}x</Text>
         <Text style={styles.compoundingSubtext}>
-          Value doesn't just scale linearly with {data.unitName} count. As utilization improves ({journey.pilotUtilization}% to {journey.fullScaleUtilization}%), 
-          workflows optimize, and network effects emerge, each {data.unitName} generates more value at maturity than at pilot.
+          Value typically doesn't scale linearly. As utilization improves ({journey.pilotUtilization}% to {journey.fullScaleUtilization}%), 
+          workflows optimize, and network effects emerge. Each {data.unitName} may generate more value at maturity than at pilot—though actual results depend on your implementation.
         </Text>
+      </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1853,114 +1886,92 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
 };
 
 const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  const displayClientName = data.clientName || data.organizationName || "Your Organization";
+  const valuePerProvider = Math.round(data.netGain / data.providers);
+
+  // Personalized closing based on their numbers
+  const getClosingMessage = () => {
+    if (data.roi > 5) {
+      return "The model suggests strong potential ROI. As always, actual results will depend on implementation, adoption patterns, and operational factors specific to your ED.";
+    } else if (data.roi > 2) {
+      return "The projections indicate solid potential value. We're happy to discuss which drivers resonate most with your situation and where assumptions might need adjustment.";
+    }
+    return "Every ED is different. These projections give us a starting point for discussion—we can refine assumptions based on your specific context and priorities.";
+  };
+
   return (
     <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
-        </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
-        </View>
+      {/* Compact Hero */}
+      <View style={styles.heroCompact}>
+        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
+        <Text style={styles.heroCompactTitle}>Summary & Methodology</Text>
+        <Text style={styles.heroCompactSubtitle}>The inputs, assumptions, and benchmarks behind these projections</Text>
       </View>
 
-      <View style={styles.downstreamSection}>
-        <Text style={styles.downstreamTitle}>DOWNSTREAM VALUE</Text>
-        <Text style={styles.downstreamSubtitle}>The ED admission note is just the beginning</Text>
-        
-        <Text style={styles.downstreamIntro}>
-          When an ED physician decides to admit a patient, their documentation becomes the foundation for inpatient revenue. The conditions they capture, the medical necessity they establish, and the clinical reasoning they document all determine what happens downstream.
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>What We Explored</Text>
+        <Text style={styles.sectionTitle}>Your Assessment at a Glance</Text>
+
+        {/* Summary metrics */}
+        <View style={{ flexDirection: "row", marginBottom: 16 }}>
+          <View style={{ flex: 1, backgroundColor: colors.greenLight, padding: 12, borderRadius: 4, marginRight: 8, borderWidth: 1, borderColor: colors.green }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.green }}>{formatCurrency(data.netGain)}</Text>
+            <Text style={{ fontSize: 7, color: colors.greenDark, textTransform: "uppercase" }}>Potential Net Gain</Text>
+          </View>
+          <View style={{ flex: 1, backgroundColor: colors.paleGray, padding: 12, borderRadius: 4, marginRight: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.black }}>{data.roi.toFixed(1)}x</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase" }}>Projected ROI</Text>
+          </View>
+          <View style={{ flex: 1, backgroundColor: colors.paleGray, padding: 12, borderRadius: 4 }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.black }}>{formatCurrency(valuePerProvider)}</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase" }}>Per Provider</Text>
+          </View>
+        </View>
+
+        <Text style={styles.chapterLabel}>Methodology</Text>
+        <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black, marginBottom: 10 }}>How We Built This Model</Text>
+
+        <View style={styles.methodologyGrid}>
+          <View style={styles.methodologyColumn}>
+            <Text style={styles.methodologyTitle}>Your Inputs</Text>
+            <Text style={styles.methodologyItem}>{data.providers} {data.unitNamePlural}</Text>
+            <Text style={styles.methodologyItem}>{formatNumber(data.encounters)} annual visits</Text>
+            <Text style={styles.methodologyItem}>{data.utilization}% utilization</Text>
+            <Text style={styles.methodologyItem}>${data.costPerProvider}/{data.unitName}/mo</Text>
+          </View>
+          
+          <View style={styles.methodologyColumn}>
+            <Text style={styles.methodologyTitle}>ED Benchmarks</Text>
+            <Text style={styles.methodologyItem}>wRVU/encounter: 2.0-2.5</Text>
+            <Text style={styles.methodologyItem}>Replacement: $500K+</Text>
+            <Text style={styles.methodologyItem}>Claim value: ~$350</Text>
+            <Text style={styles.methodologyItem}>Turnover: 8-12%</Text>
+          </View>
+          
+          <View style={[styles.methodologyColumn, styles.methodologyColumnLast]}>
+            <Text style={styles.methodologyTitle}>Our Approach</Text>
+            <Text style={styles.methodologyItem}>Conservative estimates</Text>
+            <Text style={styles.methodologyItem}>Medicare rates used</Text>
+            <Text style={styles.methodologyItem}>Transparent logic</Text>
+            <Text style={styles.methodologyItem}>Adjustable inputs</Text>
+          </View>
+        </View>
+
+        <Text style={{ fontSize: 7, color: colors.lightGray, fontStyle: "italic", marginTop: 8, marginBottom: 12 }}>
+          Benchmarks based on aggregate data across healthcare partners. Individual results vary based on acuity mix, payer mix, and operational factors.
         </Text>
-        
-        <Text style={styles.downstreamSubheader}>Better ED documentation directly impacts:</Text>
-        
-        <View style={styles.downstreamGrid}>
-          <View style={styles.downstreamItem}>
-            <Text style={styles.downstreamItemTitle}>DRG & CMI Capture</Text>
-            <Text style={styles.downstreamItemText}>
-              CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.
-            </Text>
-          </View>
-          
-          <View style={styles.downstreamItem}>
-            <Text style={styles.downstreamItemTitle}>Medical Necessity</Text>
-            <Text style={styles.downstreamItemText}>
-              The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.
-            </Text>
-          </View>
-          
-          <View style={styles.downstreamItem}>
-            <Text style={styles.downstreamItemTitle}>CDI Efficiency</Text>
-            <Text style={styles.downstreamItemText}>
-              When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.
-            </Text>
-          </View>
-          
-          <View style={styles.downstreamItem}>
-            <Text style={styles.downstreamItemTitle}>Denial Prevention</Text>
-            <Text style={styles.downstreamItemText}>
-              Payer audits start with the admission note. Complete documentation from day one means stronger appeals.
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.downstreamCallout}>
-          <Text style={styles.downstreamCalloutText}>
-            These benefits are quantified in the <Text style={styles.downstreamCalloutBold}>Inpatient Setting</Text>.
-          </Text>
-          <Text style={styles.downstreamCalloutText}>
-            If your organization admits patients from the ED, the value compounds when both settings use Abridge.
+
+        {/* Closing message */}
+        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Next</Text>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            {getClosingMessage()} This document is meant to start a conversation—not end one. We're here to help you stress-test these numbers and understand what makes sense for {displayClientName}.
           </Text>
         </View>
-      </View>
-
-      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 14 }}>Methodology & Assumptions</Text>
-
-      <View style={styles.methodologyGrid}>
-        <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>Your Inputs</Text>
-          <Text style={styles.methodologyItem}>{data.providers} {data.unitNamePlural}</Text>
-          <Text style={styles.methodologyItem}>{formatNumber(data.encounters)} annual patient visits</Text>
-          <Text style={styles.methodologyItem}>{data.utilization}% utilization rate</Text>
-          <Text style={styles.methodologyItem}>{data.timeSavedPerEncounter} min saved per encounter</Text>
-          <Text style={styles.methodologyItem}>${data.costPerProvider}/{data.unitName}/month</Text>
-        </View>
-        
-        <View style={styles.methodologyColumn}>
-          <Text style={styles.methodologyTitle}>ED-Specific Benchmarks</Text>
-          <Text style={styles.methodologyItem}>wRVU per encounter: 2.0-2.5</Text>
-          <Text style={styles.methodologyItem}>ED physician replacement: $500K+</Text>
-          <Text style={styles.methodologyItem}>Average claim value: $350</Text>
-          <Text style={styles.methodologyItem}>ED turnover rate: 8-12%</Text>
-          <Text style={styles.methodologyItem}>ED denial rate: 8-12%</Text>
-        </View>
-        
-        <View style={[styles.methodologyColumn, styles.methodologyColumnLast]}>
-          <Text style={styles.methodologyTitle}>Calculation Principles</Text>
-          <Text style={styles.methodologyItem}>Conservative estimates throughout</Text>
-          <Text style={styles.methodologyItem}>Medicare rates (not commercial)</Text>
-          <Text style={styles.methodologyItem}>Transparent, auditable logic</Text>
-          <Text style={styles.methodologyItem}>No compounding in Year 1</Text>
-          <Text style={styles.methodologyItem}>10% annual growth for Y2-Y3</Text>
-        </View>
-      </View>
-
-      <Text style={styles.methodologyNote}>
-        All benchmarks based on aggregate data from 200+ health system partners. Individual results vary based on patient acuity mix, 
-        payer mix, operational factors, and implementation quality. We use conservative assumptions throughout—actual value may be higher.
-      </Text>
-
-      <View style={styles.closingBox}>
-        <Text style={styles.closingText}>
-          "Emergency departments face unique documentation pressures—high volume, high acuity, time pressure. The difference between a 2x ROI and a 5x ROI usually isn't the technology. It's utilization, change management, and knowing which drivers matter most for your ED's situation."
-        </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
