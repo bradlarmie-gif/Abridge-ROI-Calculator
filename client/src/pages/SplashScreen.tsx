@@ -26,7 +26,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '8%', 
             left: '5%',
             filter: greyFilter,
-            animation: 'splashFloat1 11s ease-in-out infinite'
+            animation: 'splashFloat1 13s ease-in-out infinite'
           }}
         />
         <img 
@@ -37,7 +37,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '5%', 
             right: '8%',
             filter: greyFilter,
-            animation: 'splashFloat2 14s ease-in-out infinite'
+            animation: 'splashFloat2 16s ease-in-out infinite'
           }}
         />
         <img 
@@ -48,7 +48,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             bottom: '8%', 
             left: '8%',
             filter: greyFilter,
-            animation: 'splashFloat3 9s ease-in-out infinite'
+            animation: 'splashFloat3 10s ease-in-out infinite'
           }}
         />
         <img 
@@ -59,7 +59,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             bottom: '12%', 
             right: '12%',
             filter: greyFilter,
-            animation: 'splashFloat4 13s ease-in-out infinite'
+            animation: 'splashFloat4 15s ease-in-out infinite'
           }}
         />
         <img 
@@ -70,7 +70,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '35%', 
             left: '3%',
             filter: greyFilter,
-            animation: 'splashFloat5 16s ease-in-out infinite'
+            animation: 'splashFloat5 18s ease-in-out infinite'
           }}
         />
         <img 
@@ -81,7 +81,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '35%', 
             right: '3%',
             filter: greyFilter,
-            animation: 'splashFloat6 15s ease-in-out infinite'
+            animation: 'splashFloat6 17s ease-in-out infinite'
           }}
         />
         <img 
@@ -92,7 +92,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '60%', 
             left: '25%',
             filter: greyFilter,
-            animation: 'splashFloat7 12s ease-in-out infinite'
+            animation: 'splashFloat7 14s ease-in-out infinite'
           }}
         />
         <img 
@@ -103,7 +103,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '70%', 
             right: '20%',
             filter: greyFilter,
-            animation: 'splashFloat8 10s ease-in-out infinite'
+            animation: 'splashFloat8 12s ease-in-out infinite'
           }}
         />
         <img 
@@ -114,7 +114,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '20%', 
             left: '40%',
             filter: greyFilter,
-            animation: 'splashFloat9 17s ease-in-out infinite'
+            animation: 'splashFloat9 20s ease-in-out infinite'
           }}
         />
         <img 
@@ -125,7 +125,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '15%', 
             right: '30%',
             filter: greyFilter,
-            animation: 'splashFloat10 13s ease-in-out infinite'
+            animation: 'splashFloat10 15s ease-in-out infinite'
           }}
         />
         <img 
@@ -136,7 +136,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '45%', 
             right: '25%',
             filter: greyFilter,
-            animation: 'splashFloat11 14s ease-in-out infinite'
+            animation: 'splashFloat11 16s ease-in-out infinite'
           }}
         />
         <img 
@@ -147,7 +147,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             bottom: '30%', 
             left: '18%',
             filter: greyFilter,
-            animation: 'splashFloat12 11s ease-in-out infinite'
+            animation: 'splashFloat12 13s ease-in-out infinite'
           }}
         />
         <img 
@@ -158,7 +158,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             top: '75%', 
             left: '45%',
             filter: greyFilter,
-            animation: 'splashFloat13 15s ease-in-out infinite'
+            animation: 'splashFloat13 17s ease-in-out infinite'
           }}
         />
       </div>
