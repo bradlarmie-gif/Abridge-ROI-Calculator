@@ -52,7 +52,7 @@ export default function SwitchAssessment({
     });
   }, [inputs]);
 
-  // Human impact calculations
+  // Human impact calculations - Uses pajama time input when provided
   const humanImpact = useMemo(() => {
     const providers = inputs.providers || 0;
     const encounters = inputs.annualEncounters || 0;
@@ -60,35 +60,39 @@ export default function SwitchAssessment({
     const utilizationRate = inputs.utilization || 0;
     const wrvuLift = inputs.wrvuLift || 0;
 
-    // Current documentation time per encounter (industry avg is ~16 min, Abridge saves 4 min on top of whatever they save)
-    const baseDocTimeMinutes = 16; // Industry average documentation time
-    const currentTimeSaved = efficiency; // What their current solution saves
     const abridgeTimeSaved = ABRIDGE_BENCHMARKS.timeSavedAvg;
-    const additionalSavingsPerEncounter = Math.max(0, abridgeTimeSaved - currentTimeSaved);
     
-    // Calculate encounters documented
+    // Calculate encounters documented at current vs benchmark utilization
     const documentsAtCurrent = Math.round(encounters * (utilizationRate / 100));
     const documentsAtBenchmark = Math.round(encounters * (ABRIDGE_BENCHMARKS.utilization / 100));
     
-    // Hours calculations
-    const currentHoursSavedPerYear = Math.round((documentsAtCurrent * currentTimeSaved) / 60);
+    // Hours calculation: Compare current time savings to benchmark potential
+    // Current: encounters at current utilization * current efficiency
+    // Benchmark: encounters at 75% utilization * 4 min efficiency
+    const currentHoursSavedPerYear = Math.round((documentsAtCurrent * efficiency) / 60);
     const potentialHoursSavedPerYear = Math.round((documentsAtBenchmark * abridgeTimeSaved) / 60);
     const additionalHoursPerYear = Math.max(0, potentialHoursSavedPerYear - currentHoursSavedPerYear);
     const additionalHoursPerWeek = Math.round((additionalHoursPerYear / 52) * 10) / 10;
     const additionalHoursPerProvider = providers > 0 ? Math.round(additionalHoursPerYear / providers) : 0;
     
-    // Pajama time estimation (if efficiency is below benchmark, excess time likely goes to after-hours)
-    const estimatedPajamaReduction = Math.round(additionalHoursPerWeek * 0.6 * 10) / 10; // ~60% of extra doc time is after-hours
-    const pajamaWeeksReclaimed = Math.round(estimatedPajamaReduction * 52 / 40); // Convert to work weeks
-    
-    // Work weeks reclaimed per year
+    // Work weeks reclaimed per year (based on 40-hour work week)
     const workWeeksReclaimed = Math.round(additionalHoursPerYear / 40);
     
-    // Evening equivalents (assuming 2-hour evening sessions)
-    const eveningsReclaimedPerYear = Math.round(additionalHoursPerYear / 2);
-    const eveningsReclaimedPerWeek = Math.round((eveningsReclaimedPerYear / 52) * 10) / 10;
+    // Pajama time reduction: Use actual input if provided, otherwise estimate
+    // If user reports pajama time, we estimate ~60% of time savings could reduce after-hours work
+    const estimatedPajamaReduction = pajamaTimeHours > 0 
+      ? Math.min(pajamaTimeHours, Math.round(additionalHoursPerWeek * 0.6 * 10) / 10)
+      : Math.round(additionalHoursPerWeek * 0.6 * 10) / 10;
     
-    // wRVU to dollars
+    // Evenings reclaimed: Use pajama time if available, otherwise estimate from additional hours
+    // If user reports 10 hrs/week pajama time, and we can reduce ~60% of additional savings, that's X evenings
+    const pajamaHoursReduced = pajamaTimeHours > 0 
+      ? Math.min(pajamaTimeHours, estimatedPajamaReduction)
+      : estimatedPajamaReduction;
+    const eveningsReclaimedPerWeek = Math.round(pajamaHoursReduced / 2 * 10) / 10; // Assuming 2-hour evening sessions
+    const eveningsReclaimedPerYear = Math.round(eveningsReclaimedPerWeek * 52);
+    
+    // wRVU to dollars calculation
     const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
     const additionalWRVU = Math.round(documentsAtBenchmark * VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100));
     const additionalRevenue = Math.round(additionalWRVU * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuAttribution);
@@ -101,13 +105,14 @@ export default function SwitchAssessment({
       eveningsReclaimedPerYear,
       eveningsReclaimedPerWeek,
       estimatedPajamaReduction,
-      pajamaWeeksReclaimed,
+      pajamaHoursReduced,
       additionalRevenue,
       wrvuGapPercent,
       additionalWRVU,
       hasData: providers > 0 && encounters > 0 && (efficiency > 0 || utilizationRate > 0),
+      usedPajamaInput: pajamaTimeHours > 0,
     };
-  }, [inputs]);
+  }, [inputs, pajamaTimeHours]);
 
   // Check if user has entered any dimension values
   const hasAnyDimensionValue = 
@@ -385,8 +390,13 @@ export default function SwitchAssessment({
                   <Sparkles className="w-5 h-5 text-emerald-600" />
                   <h2 className="text-lg md:text-xl font-bold text-[#111827]">What This Could Mean For Your Providers</h2>
                 </div>
-                <p className="text-sm text-[#6B7280] mb-6">
+                <p className="text-sm text-[#6B7280] mb-4">
                   Based on your current metrics, here's what reaching Abridge benchmarks could look like:
+                </p>
+                <p className="text-xs text-[#9CA3AF] mb-6 flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  Modeled from your inputs vs. Abridge benchmarks (75% utilization, 4 min/encounter, 5% wRVU lift)
+                  {humanImpact.usedPajamaInput && <span className="text-indigo-500 font-medium ml-1">• Using your reported pajama time</span>}
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -424,7 +434,9 @@ export default function SwitchAssessment({
                       ~{humanImpact.eveningsReclaimedPerWeek} fewer late nights/week
                     </p>
                     <p className="text-xs text-[#6B7280] mt-1">
-                      Notes done before leaving clinic
+                      {humanImpact.usedPajamaInput 
+                        ? `Based on your ${pajamaTimeHours} hrs/week reported` 
+                        : 'Notes done before leaving clinic'}
                     </p>
                   </div>
 
