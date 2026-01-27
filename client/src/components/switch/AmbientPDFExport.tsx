@@ -7,6 +7,7 @@ import {
   Image,
   Svg,
   Rect,
+  Line,
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
@@ -14,14 +15,34 @@ import type { SwitchInputs, SwitchCalculations } from "@/lib/switchGapCalculator
 import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
+// ============================================================================
+// GOD TIER COLOR PALETTE
+// ============================================================================
+
 const colors = {
+  // Brand
   primary: "#EA2C00",
   primaryLight: "#FEF2F0",
   primaryDark: "#C42400",
-  green: "#059669",
-  greenLight: "#ECFDF5",
+  
+  // Success/Money
+  emerald: "#059669",
+  emeraldLight: "#ECFDF5",
+  emeraldDark: "#047857",
+  
+  // Accent
   amber: "#D97706",
   amberLight: "#FFFBEB",
+  
+  // Blues for utilization
+  blue: "#2563EB",
+  blueLight: "#EFF6FF",
+  
+  // Purple for efficiency
+  purple: "#7C3AED",
+  purpleLight: "#F5F3FF",
+  
+  // Neutral
   black: "#111827",
   darkGray: "#374151",
   mediumGray: "#6B7280",
@@ -29,193 +50,87 @@ const colors = {
   backgroundGray: "#F9FAFB",
   borderGray: "#E5E7EB",
   white: "#FFFFFF",
+  
+  // Status
   redLight: "#FEF2F2",
   redDark: "#991B1B",
 };
 
+// ============================================================================
+// GOD TIER STYLES
+// ============================================================================
+
 const styles = StyleSheet.create({
   page: {
-    padding: 36,
+    padding: 40,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: colors.black,
     backgroundColor: colors.white,
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
-  headerRight: {
-    textAlign: "right",
-  },
-  headerTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  headerDate: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-
-  // PREMIUM HEADER STYLES
+  // ========================================
+  // PREMIUM HEADER
+  // ========================================
   premiumHeader: {
-    marginBottom: 14,
-    paddingBottom: 12,
-    borderBottomWidth: 2,
+    marginBottom: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 3,
     borderBottomColor: colors.primary,
   },
   premiumHeaderTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   premiumHeaderRight: {
     textAlign: "right",
   },
   premiumDocType: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.primary,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   premiumDate: {
     fontSize: 8,
     color: colors.mediumGray,
-    marginTop: 2,
+    marginTop: 3,
   },
   premiumHeaderClient: {
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: colors.backgroundGray,
-    padding: 10,
-    borderRadius: 4,
+    padding: 12,
+    borderRadius: 6,
   },
   premiumPreparedLabel: {
     fontSize: 7,
     color: colors.mediumGray,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     marginBottom: 2,
+    textTransform: "uppercase",
   },
   premiumClientName: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.black,
   },
   premiumPreparedBy: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.darkGray,
   },
 
-  // EXECUTIVE SUMMARY STYLES
-  execSummary: {
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    backgroundColor: colors.white,
-  },
-  execSummaryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.backgroundGray,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  execSummaryAccent: {
-    width: 3,
-    height: 14,
-    backgroundColor: colors.primary,
-    marginRight: 8,
-    borderRadius: 1,
-  },
-  execSummaryTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    letterSpacing: 0.5,
-  },
-  execSummaryContent: {
-    padding: 10,
-  },
-  execBullet: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 4,
-  },
-  execBulletBold: {
-    fontWeight: "bold",
-    color: colors.black,
-  },
-
-  // STYLED SECTION HEADERS
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-    marginTop: 10,
-  },
-  sectionAccent: {
-    width: 3,
-    height: 12,
-    backgroundColor: colors.primary,
-    marginRight: 8,
-    borderRadius: 1,
-  },
-  sectionTitleStyled: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    letterSpacing: 0.5,
-  },
-  contextText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 8,
-  },
-
-  // CONFIDENTIAL FOOTER
-  confidentialFooter: {
-    position: "absolute",
-    bottom: 20,
-    left: 36,
-    right: 36,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-  },
-  confidentialText: {
-    fontSize: 6,
-    color: colors.mediumGray,
-    fontStyle: "italic",
-  },
-  pageNumber: {
-    fontSize: 7,
-    color: colors.mediumGray,
-  },
-
-  // PAGE HEADER (for pages 2-4)
+  // ========================================
+  // PAGE HEADER (subsequent pages)
+  // ========================================
   pageHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14,
-    paddingBottom: 8,
+    marginBottom: 16,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
@@ -224,1034 +139,882 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pageHeaderClient: {
-    fontSize: 9,
+    fontSize: 10,
     color: colors.darkGray,
-    marginLeft: 12,
-    paddingLeft: 12,
+    marginLeft: 14,
+    paddingLeft: 14,
     borderLeftWidth: 1,
     borderLeftColor: colors.borderGray,
   },
   pageHeaderTitle: {
     fontSize: 9,
     color: colors.mediumGray,
+    fontStyle: "italic",
   },
 
-  // CONTACT CTA
-  contactCTA: {
-    marginTop: 12,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    overflow: "hidden",
-  },
-  contactCTAHeader: {
-    backgroundColor: colors.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  contactCTATitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.white,
-    letterSpacing: 0.5,
-  },
-  contactCTAText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    padding: 10,
-    paddingBottom: 4,
-  },
-  contactCTAPrepared: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    paddingHorizontal: 10,
-    paddingBottom: 10,
-  },
-
-  // COMPARISON CHART STYLES
-  comparisonChart: {
-    marginTop: 12,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 4,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-  },
-  comparisonChartTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 8,
-    letterSpacing: 0.3,
-  },
-  comparisonRow: {
+  // ========================================
+  // SECTION HEADERS
+  // ========================================
+  sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
-  },
-  comparisonLabel: {
-    width: 70,
-    fontSize: 7,
-    color: colors.darkGray,
-  },
-  gapBarContainer: {
-    flex: 1,
-    height: 14,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 2,
-    position: "relative",
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    overflow: "hidden",
-  },
-  gapBarFill: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    height: "100%",
-    borderRadius: 1,
-  },
-  gapBarTarget: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    width: 2,
-    height: "100%",
-    backgroundColor: colors.black,
-  },
-  gapBarValue: {
-    width: 35,
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textAlign: "right",
-  },
-  comparisonLegend: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 6,
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 12,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 4,
-  },
-  legendText: {
-    fontSize: 7,
-    color: colors.darkGray,
-  },
-
-  // TRAJECTORY CHART STYLES
-  trajectoryChart: {
-    marginTop: 14,
-    backgroundColor: colors.white,
-    borderRadius: 4,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-  },
-  trajectoryTitle: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 2,
-  },
-  trajectorySubtitle: {
-    fontSize: 7,
-    color: colors.mediumGray,
     marginBottom: 10,
+    marginTop: 14,
   },
-  trajectoryContainer: {
-    flexDirection: "row",
-    height: 100,
-  },
-  trajectoryYAxis: {
-    width: 45,
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingRight: 6,
-  },
-  trajectoryYLabel: {
-    fontSize: 6,
-    color: colors.mediumGray,
-  },
-  trajectoryChartArea: {
-    flex: 1,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 3,
-    position: "relative",
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-  },
-  trajectoryGapArea: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: "76%",
-    backgroundColor: "rgba(16, 185, 129, 0.15)",
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
-  },
-  trajectoryLinePotential: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  trajectoryLineCurrent: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  trajectoryDot: {
-    position: "absolute",
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginLeft: -3,
-    marginTop: -3,
-  },
-  trajectoryXAxis: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingLeft: 45,
-    marginTop: 4,
-  },
-  trajectoryXLabel: {
-    fontSize: 6,
-    color: colors.mediumGray,
-    textAlign: "center",
-  },
-  trajectoryLegend: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 8,
-    gap: 16,
-  },
-  trajectoryLegendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  trajectoryLegendLine: {
-    width: 16,
-    height: 2,
-    marginRight: 4,
-    borderRadius: 1,
-  },
-  trajectoryLegendText: {
-    fontSize: 7,
-    color: colors.darkGray,
-  },
-  trajectorySummary: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-  },
-  trajectorySummaryIcon: {
-    width: 12,
-    height: 12,
-    backgroundColor: "rgba(16, 185, 129, 0.3)",
-    borderRadius: 2,
-    marginRight: 6,
-  },
-  trajectorySummaryLabel: {
-    fontSize: 8,
-    color: colors.darkGray,
-    marginRight: 8,
-  },
-  trajectorySummaryValue: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: colors.green,
-    marginRight: 4,
-  },
-  trajectorySummaryPeriod: {
-    fontSize: 8,
-    color: colors.darkGray,
-  },
-
-  // Timeline bar chart styles
-  timelineBarChart: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "flex-end",
-    height: 90,
-    marginVertical: 10,
-    paddingHorizontal: 20,
-  },
-  timelineBarGroup: {
-    alignItems: "center",
-    flex: 1,
-  },
-  timelineBarWrapper: {
-    width: 50,
-    height: 70,
-    backgroundColor: colors.backgroundGray,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    justifyContent: "flex-end",
-    overflow: "hidden",
-    position: "relative",
-  },
-  timelineBarFillPotential: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+  sectionAccent: {
+    width: 4,
+    height: 14,
     backgroundColor: colors.primary,
+    marginRight: 10,
     borderRadius: 2,
   },
-  timelineBarFillCurrent: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.mediumGray,
-    borderRadius: 2,
-    opacity: 0.6,
-  },
-  timelineBarLabel: {
-    fontSize: 7,
-    color: colors.darkGray,
-    marginTop: 4,
-    fontWeight: "bold",
-  },
-  timelineBarValue: {
-    fontSize: 7,
-    color: colors.black,
-    fontWeight: "bold",
-  },
-
-  pageTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
-  },
-
   sectionTitle: {
     fontSize: 11,
     fontWeight: "bold",
     color: colors.black,
-    textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 8,
-    marginTop: 10,
   },
-
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-    marginVertical: 8,
-  },
-
-  introBox: {
-    backgroundColor: colors.backgroundGray,
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  introTitle: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-  },
-  introText: {
+  sectionSubtitle: {
     fontSize: 8,
     color: colors.darkGray,
+    marginBottom: 12,
     lineHeight: 1.5,
-    marginBottom: 4,
   },
 
-  metricsGrid: {
-    flexDirection: "row",
-    marginBottom: 10,
+  // ========================================
+  // EXECUTIVE SUMMARY BOX
+  // ========================================
+  execSummary: {
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    backgroundColor: colors.white,
+    overflow: "hidden",
   },
-  metricCard: {
+  execSummaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.black,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  execSummaryTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.white,
+    letterSpacing: 1,
+  },
+  execSummaryContent: {
+    padding: 14,
+  },
+  execBullet: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    marginBottom: 6,
+  },
+  execBulletBold: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  execHighlight: {
+    color: colors.emerald,
+    fontWeight: "bold",
+  },
+
+  // ========================================
+  // HERO METRICS GRID
+  // ========================================
+  heroMetricsGrid: {
+    flexDirection: "row",
+    marginBottom: 14,
+  },
+  heroMetricCard: {
     flex: 1,
     backgroundColor: colors.backgroundGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 8,
-    marginRight: 6,
+    borderRadius: 6,
+    padding: 12,
+    marginRight: 8,
     alignItems: "center",
   },
-  metricCardLast: {
+  heroMetricCardPrimary: {
+    flex: 1,
+    backgroundColor: colors.emeraldLight,
+    borderWidth: 2,
+    borderColor: colors.emerald,
+    borderRadius: 6,
+    padding: 12,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  heroMetricCardLast: {
     marginRight: 0,
   },
-  metricValue: {
-    fontSize: 16,
+  heroMetricValue: {
+    fontSize: 20,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 2,
-  },
-  metricValueGreen: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.green,
-    marginBottom: 2,
-  },
-  metricLabel: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textAlign: "center",
-    marginBottom: 2,
-  },
-  metricDescription: {
-    fontSize: 6,
-    color: colors.lightGray,
-    textAlign: "center",
-    lineHeight: 1.3,
-  },
-
-  spectrumContainer: {
-    marginBottom: 10,
-  },
-  spectrumBox: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 10,
-  },
-  spectrumLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     marginBottom: 4,
   },
-  spectrumLabel: {
-    fontSize: 6,
+  heroMetricValueGreen: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginBottom: 4,
+  },
+  heroMetricLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
     color: colors.mediumGray,
     textAlign: "center",
-    width: "24%",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
-  spectrumLabelBold: {
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  spectrumRanges: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  spectrumRange: {
-    fontSize: 6,
+  heroMetricDescription: {
+    fontSize: 7,
     color: colors.lightGray,
     textAlign: "center",
-    width: "24%",
-  },
-  spectrumBarContainer: {
-    height: 16,
-    position: "relative",
-    marginBottom: 6,
-  },
-  spectrumExplanation: {
-    fontSize: 7,
-    color: colors.darkGray,
     lineHeight: 1.4,
-    marginTop: 6,
   },
 
-  findingsSection: {
+  // ========================================
+  // FINDINGS NARRATIVE BOX
+  // ========================================
+  findingsBox: {
     backgroundColor: colors.backgroundGray,
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 10,
-    borderLeftWidth: 4,
+    borderLeftWidth: 5,
     borderLeftColor: colors.primary,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 14,
   },
   findingsTitle: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: "bold",
     color: colors.primary,
-    marginBottom: 8,
-    textTransform: "uppercase",
+    marginBottom: 10,
     letterSpacing: 0.5,
   },
   findingsNarrative: {
-    fontSize: 8,
+    fontSize: 9,
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 10,
+    lineHeight: 1.6,
+    marginBottom: 12,
   },
   findingsSubsection: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   findingsSubtitle: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
-    marginBottom: 3,
+    marginBottom: 4,
   },
   findingsText: {
-    fontSize: 7,
+    fontSize: 8,
     color: colors.darkGray,
     lineHeight: 1.5,
   },
-  dimensionInsightsContainer: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-  },
-  insightItem: {
-    marginBottom: 4,
-  },
-  insightDimension: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  insightText: {
-    fontSize: 6,
-    color: colors.mediumGray,
-    lineHeight: 1.4,
-    marginTop: 1,
-  },
-  
-  summaryTable: {
-    marginTop: 10,
-    marginBottom: 6,
+
+  // ========================================
+  // DIMENSION TABLE
+  // ========================================
+  dimensionTable: {
+    marginTop: 12,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
+    borderRadius: 6,
+    overflow: "hidden",
   },
-  summaryTableHeader: {
+  dimensionTableHeader: {
     flexDirection: "row",
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.black,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  dimensionTableRow: {
+    flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
-  summaryTableRow: {
+  dimensionTableRowLast: {
     flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
-  summaryTableRowLast: {
-    flexDirection: "row",
-    paddingVertical: 5,
-    paddingHorizontal: 8,
+  dimensionTableCol1: {
+    flex: 2,
   },
-  summaryTableColDimension: {
-    flex: 2.5,
-  },
-  summaryTableColValue: {
+  dimensionTableCol2: {
     flex: 1,
     textAlign: "center",
   },
-  summaryTableColStatus: {
-    flex: 1.5,
+  dimensionTableCol3: {
+    flex: 1,
+    textAlign: "center",
+  },
+  dimensionTableCol4: {
+    flex: 1.2,
     textAlign: "right",
   },
-  summaryTableHeaderText: {
+  tableHeaderText: {
     fontSize: 7,
     fontWeight: "bold",
-    color: colors.mediumGray,
+    color: colors.white,
     textTransform: "uppercase",
-  },
-  summaryTableText: {
-    fontSize: 8,
-    color: colors.black,
-  },
-  summaryTableTextBold: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-
-  dimensionCard: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 6,
-  },
-  dimensionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 3,
-  },
-  dimensionName: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  dimensionScore: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.primary,
-  },
-  dimensionDefinition: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    fontStyle: "italic",
-    marginBottom: 5,
-    lineHeight: 1.3,
-  },
-  dimensionMetrics: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 3,
-  },
-  dimensionYou: {
-    fontSize: 8,
-    color: colors.black,
-    fontWeight: "bold",
-  },
-  dimensionBenchmark: {
-    fontSize: 8,
-    color: colors.mediumGray,
-  },
-  dimensionBar: {
-    height: 5,
-    backgroundColor: colors.borderGray,
-    borderRadius: 3,
-    marginBottom: 5,
-  },
-  dimensionBarFill: {
-    height: 5,
-    backgroundColor: colors.primary,
-    borderRadius: 3,
-  },
-  dimensionEducation: {
-    backgroundColor: colors.backgroundGray,
-    padding: 6,
-    borderRadius: 3,
-  },
-  dimensionWhyMatters: {
-    fontSize: 6,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 2,
-  },
-  dimensionWhatDrives: {
-    fontSize: 6,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 2,
-  },
-  dimensionInsight: {
-    fontSize: 6,
-    color: colors.redDark,
-    lineHeight: 1.4,
-    backgroundColor: colors.redLight,
-    padding: 5,
-    borderRadius: 3,
-    marginTop: 3,
-  },
-  bold: {
-    fontWeight: "bold",
-  },
-
-  // COMPACT DIMENSION STYLES - All 4 on one page
-  dimensionCardCompact: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: colors.white,
-  },
-  dimensionHeaderCompact: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  dimensionNameCompact: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
     letterSpacing: 0.5,
   },
-  dimensionScoreCompact: {
-    fontSize: 12,
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
-  dimensionValuesCompact: {
-    flexDirection: "row",
-  },
-  dimensionValueText: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginLeft: 12,
-  },
-  dimensionBarCompact: {
-    height: 6,
-    backgroundColor: colors.borderGray,
-    borderRadius: 3,
-    marginBottom: 6,
-  },
-  dimensionBarFillCompact: {
-    height: 6,
-    borderRadius: 3,
-  },
-  dimensionDescCompact: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-  },
-
-  scoreCalculation: {
-    backgroundColor: colors.backgroundGray,
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  scoreText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    textAlign: "center",
-  },
-  scoreBold: {
-    fontWeight: "bold",
+  tableBodyText: {
+    fontSize: 9,
     color: colors.black,
   },
-
-  compoundBox: {
-    flexDirection: "row",
-    backgroundColor: colors.backgroundGray,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    padding: 6,
-    marginBottom: 8,
-  },
-  compoundTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginRight: 4,
-  },
-  compoundText: {
-    fontSize: 7,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-    flex: 1,
-  },
-
-  timelineSection: {
-    marginBottom: 8,
-  },
-  timelineRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  timelineBox: {
-    flex: 1,
-    backgroundColor: colors.backgroundGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 3,
-    padding: 6,
-    alignItems: "center",
-    marginRight: 3,
-  },
-  timelineBoxHighlight: {
-    flex: 1,
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 3,
-    padding: 6,
-    alignItems: "center",
-  },
-  timelineLabel: {
-    fontSize: 6,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    marginBottom: 1,
-  },
-  timelineValue: {
+  tableBodyTextBold: {
     fontSize: 9,
     fontWeight: "bold",
     color: colors.black,
   },
-  timelineValueLarge: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.green,
-  },
-  timelineSubtext: {
-    fontSize: 5,
-    color: colors.mediumGray,
-    marginTop: 1,
-  },
-  timelineArrow: {
-    fontSize: 10,
-    color: colors.mediumGray,
-    paddingHorizontal: 1,
-  },
 
-  monthlyCallout: {
-    backgroundColor: colors.backgroundGray,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.amber,
-    padding: 6,
-  },
-  monthlyText: {
-    fontSize: 7,
-    color: colors.darkGray,
-    fontWeight: "bold",
-  },
-
-  gapCard: {
+  // ========================================
+  // SPECTRUM BAR
+  // ========================================
+  spectrumContainer: {
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
+    borderRadius: 6,
+    padding: 14,
+  },
+  spectrumTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
     marginBottom: 8,
+  },
+  spectrumStages: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  spectrumStage: {
+    flex: 1,
+    alignItems: "center",
+  },
+  spectrumStageLabel: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    textAlign: "center",
+  },
+  spectrumStageRange: {
+    fontSize: 6,
+    color: colors.lightGray,
+    textAlign: "center",
+    marginTop: 1,
+  },
+  spectrumBarWrapper: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  spectrumYouMarker: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.primary,
+    textAlign: "center",
+    marginTop: 4,
+  },
+  spectrumExplanation: {
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginTop: 8,
+  },
+
+  // ========================================
+  // DIMENSION DEEP-DIVE CARDS
+  // ========================================
+  dimensionCard: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    marginBottom: 12,
     overflow: "hidden",
   },
-  gapCardHeader: {
+  dimensionCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colors.backgroundGray,
-    padding: 6,
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderGray,
   },
-  gapCardTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
+  dimensionCardHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  gapCardValue: {
+  dimensionCardIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    marginRight: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dimensionCardName: {
     fontSize: 11,
     fontWeight: "bold",
-    color: colors.green,
+    color: colors.black,
   },
-  gapCardValues: {
+  dimensionCardScore: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  dimensionCardMetrics: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 6,
-    paddingBottom: 4,
+    backgroundColor: colors.backgroundGray,
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
   },
-  gapValueItem: {
-    fontSize: 7,
-    color: colors.darkGray,
+  dimensionCardMetric: {
+    flex: 1,
+    alignItems: "center",
   },
-  gapValueBold: {
+  dimensionCardMetricValue: {
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.black,
   },
-  gapCardSteps: {
-    padding: 6,
-    paddingTop: 4,
-    backgroundColor: colors.backgroundGray,
+  dimensionCardMetricLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 1,
   },
-  gapStep: {
-    fontSize: 6,
+  dimensionCardBar: {
+    height: 8,
+    backgroundColor: colors.borderGray,
+    marginHorizontal: 8,
+    marginTop: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  dimensionCardBarFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  dimensionCardBody: {
+    padding: 10,
+  },
+  dimensionCardEducation: {
+    fontSize: 8,
     color: colors.darkGray,
     lineHeight: 1.5,
-    marginBottom: 1,
   },
-  gapStepLabel: {
+  dimensionCardInsight: {
+    backgroundColor: colors.primaryLight,
+    padding: 8,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  dimensionCardInsightText: {
+    fontSize: 7,
+    color: colors.primaryDark,
+    lineHeight: 1.5,
     fontWeight: "bold",
-    color: colors.mediumGray,
-  },
-  gapNote: {
-    fontSize: 6,
-    color: colors.lightGray,
-    fontStyle: "italic",
-    marginTop: 3,
-    lineHeight: 1.4,
   },
 
-  totalGapBox: {
-    backgroundColor: colors.greenLight,
+  // ========================================
+  // OPPORTUNITY CALCULATION CARDS
+  // ========================================
+  opportunityCard: {
     borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 10,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    marginBottom: 12,
+    overflow: "hidden",
   },
-  totalGapRow: {
+  opportunityCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: colors.backgroundGray,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
   },
-  totalGapLabel: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  totalGapValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.green,
-  },
-  totalGapBreakdown: {
-    fontSize: 7,
-    color: colors.darkGray,
-    marginTop: 4,
-  },
-
-  takeawaysBox: {
-    marginBottom: 10,
-  },
-  takeawaysTitle: {
+  opportunityCardTitle: {
     fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 6,
   },
-  takeawayItem: {
+  opportunityCardValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  opportunityCardInputs: {
+    flexDirection: "row",
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  opportunityCardInput: {
+    flex: 1,
+    alignItems: "center",
+  },
+  opportunityCardInputValue: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  opportunityCardInputLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  opportunityCardSteps: {
+    padding: 10,
+    backgroundColor: colors.white,
+  },
+  stepRow: {
+    flexDirection: "row",
+    marginBottom: 6,
+    alignItems: "flex-start",
+  },
+  stepNumber: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.borderGray,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+  stepNumberText: {
     fontSize: 8,
+    fontWeight: "bold",
     color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 2,
-    paddingLeft: 8,
+  },
+  stepContent: {
+    flex: 1,
+  },
+  stepLabel: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginBottom: 1,
+  },
+  stepMath: {
+    fontSize: 9,
+    color: colors.black,
+    fontFamily: "Courier",
+  },
+  stepResult: {
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  resultRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
+  },
+  resultCheck: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.emeraldLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+  resultCheckText: {
+    fontSize: 10,
+    color: colors.emerald,
+    fontWeight: "bold",
+  },
+  resultLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: colors.emerald,
   },
 
-  nextStepsBox: {
+  // ========================================
+  // TOTAL OPPORTUNITY BOX
+  // ========================================
+  totalOpportunityBox: {
+    backgroundColor: colors.emeraldLight,
+    borderWidth: 2,
+    borderColor: colors.emerald,
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  totalOpportunityLabel: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  totalOpportunityValue: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  totalOpportunityBreakdown: {
+    fontSize: 8,
+    color: colors.darkGray,
+    marginTop: 4,
+  },
+
+  // ========================================
+  // TIMELINE CHART
+  // ========================================
+  timelineContainer: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 14,
+  },
+  timelineTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  timelineSubtitle: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginBottom: 12,
+  },
+  timelineChart: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 80,
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  timelineBar: {
+    alignItems: "center",
+    width: 80,
+  },
+  timelineBarFill: {
+    width: 50,
+    backgroundColor: colors.emerald,
+    borderRadius: 4,
+    marginBottom: 6,
+  },
+  timelineBarValue: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginBottom: 2,
+  },
+  timelineBarLabel: {
+    fontSize: 8,
+    color: colors.darkGray,
+    fontWeight: "bold",
+  },
+  timelineTotalBox: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.backgroundGray,
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  timelineTotalLabel: {
+    fontSize: 9,
+    color: colors.darkGray,
+    marginRight: 8,
+  },
+  timelineTotalValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginRight: 4,
+  },
+  timelineTotalPeriod: {
+    fontSize: 9,
+    color: colors.darkGray,
+  },
+
+  // ========================================
+  // COST OF WAITING
+  // ========================================
+  waitingContainer: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 14,
+  },
+  waitingTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  waitingSubtitle: {
+    fontSize: 8,
+    color: colors.mediumGray,
+    marginBottom: 12,
+  },
+  waitingGrid: {
+    flexDirection: "row",
+  },
+  waitingCard: {
+    flex: 1,
     backgroundColor: colors.backgroundGray,
     borderWidth: 1,
     borderColor: colors.borderGray,
-    borderRadius: 4,
+    borderRadius: 6,
     padding: 10,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  waitingCardHighlight: {
+    flex: 1,
+    backgroundColor: colors.emeraldLight,
+    borderWidth: 2,
+    borderColor: colors.emerald,
+    borderRadius: 6,
+    padding: 10,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  waitingCardLast: {
+    marginRight: 0,
+  },
+  waitingCardLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.mediumGray,
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
+  waitingCardValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 2,
+  },
+  waitingCardValueGreen: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginBottom: 2,
+  },
+  waitingCardNote: {
+    fontSize: 7,
+    color: colors.lightGray,
+    textAlign: "center",
+  },
+
+  // ========================================
+  // KEY TAKEAWAYS
+  // ========================================
+  takeawaysBox: {
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 14,
+  },
+  takeawaysTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.black,
     marginBottom: 10,
+    letterSpacing: 0.5,
+  },
+  takeawaysItem: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    marginBottom: 4,
+    paddingLeft: 12,
+  },
+
+  // ========================================
+  // NEXT STEPS
+  // ========================================
+  nextStepsBox: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    borderRadius: 6,
+    marginBottom: 14,
+    overflow: "hidden",
   },
   nextStepsHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
+    justifyContent: "space-between",
+    backgroundColor: colors.black,
+    padding: 10,
   },
   nextStepsTitle: {
     fontSize: 10,
     fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
+    color: colors.white,
     letterSpacing: 0.5,
   },
   nextStepsFocus: {
     fontSize: 8,
     fontWeight: "bold",
     color: colors.primary,
-    marginLeft: 8,
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
+    backgroundColor: colors.white,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  nextStepsContent: {
+    padding: 12,
   },
   nextStepsIntro: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    marginBottom: 6,
-    lineHeight: 1.4,
+    fontSize: 8,
+    color: colors.darkGray,
+    lineHeight: 1.5,
+    marginBottom: 10,
   },
   nextStepsGrid: {
     flexDirection: "row",
   },
   nextStepsColumn: {
     flex: 1,
-    paddingRight: 8,
+    paddingRight: 10,
   },
   nextStepsColumnTitle: {
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: "bold",
-    color: colors.darkGray,
-    marginBottom: 3,
+    color: colors.black,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
   nextStepsItem: {
-    fontSize: 7,
+    fontSize: 8,
     color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 2,
-    paddingLeft: 6,
+    lineHeight: 1.5,
+    marginBottom: 4,
+    paddingLeft: 8,
   },
 
+  // ========================================
+  // METHODOLOGY
+  // ========================================
   methodologySection: {
-    marginTop: 8,
-    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
+    paddingTop: 12,
+    marginTop: 8,
   },
   methodologyTitle: {
     fontSize: 10,
     fontWeight: "bold",
     color: colors.black,
-    textTransform: "uppercase",
+    marginBottom: 10,
     letterSpacing: 0.5,
-    marginBottom: 8,
   },
   methodologyGrid: {
     flexDirection: "row",
   },
   methodologyColumn: {
     flex: 1,
-    paddingRight: 10,
+    paddingRight: 12,
   },
   methodologyColumnTitle: {
     fontSize: 8,
     fontWeight: "bold",
     color: colors.mediumGray,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: 0.3,
   },
   methodologyItem: {
-    fontSize: 7,
+    fontSize: 8,
     color: colors.darkGray,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
     marginBottom: 2,
   },
   methodologyNote: {
-    fontSize: 6,
+    fontSize: 7,
     color: colors.lightGray,
     lineHeight: 1.4,
-    marginTop: 6,
+    marginTop: 10,
     fontStyle: "italic",
   },
 
-  footer: {
+  // ========================================
+  // CONTACT CTA
+  // ========================================
+  contactCTA: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 6,
+    padding: 12,
+    marginTop: 12,
+  },
+  contactCTAText: {
+    fontSize: 9,
+    color: colors.primaryDark,
+    textAlign: "center",
+    lineHeight: 1.5,
+  },
+  contactCTAPrepared: {
+    fontSize: 8,
+    color: colors.primaryDark,
+    textAlign: "center",
+    marginTop: 6,
+  },
+
+  // ========================================
+  // CONFIDENTIAL FOOTER
+  // ========================================
+  confidentialFooter: {
+    position: "absolute",
+    bottom: 24,
+    left: 40,
+    right: 40,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: "auto",
-    paddingTop: 8,
+    alignItems: "center",
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
   },
-  footerText: {
+  confidentialText: {
     fontSize: 7,
     color: colors.lightGray,
+    fontStyle: "italic",
+  },
+  pageNumber: {
+    fontSize: 8,
+    color: colors.mediumGray,
+  },
+
+  // Utility
+  bold: {
+    fontWeight: "bold",
   },
 });
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface AmbientPDFData {
   inputs: SwitchInputs;
@@ -1259,6 +1022,10 @@ interface AmbientPDFData {
   clientName: string;
   preparedBy: string;
 }
+
+// ============================================================================
+// HELPERS
+// ============================================================================
 
 const formatCurrency = (num: number): string => {
   if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
@@ -1268,89 +1035,49 @@ const formatCurrency = (num: number): string => {
 
 const formatNumber = (num: number): string => num.toLocaleString();
 
+const getScoreColor = (score: number): string => {
+  if (score >= 80) return colors.emerald;
+  if (score >= 60) return colors.amber;
+  return colors.primary;
+};
+
+const getScoreStatus = (score: number): string => {
+  if (score >= 80) return "Strong";
+  if (score >= 60) return "Developing";
+  return "Needs Focus";
+};
+
+// ============================================================================
+// NARRATIVE GENERATORS
+// ============================================================================
+
 interface DimensionInfo {
   name: string;
   score: number;
+  value?: number;
 }
 
 const getStageNarrative = (stage: string, score: number, gap: number): string => {
   switch(stage) {
     case 'Early Stage':
-      return `At ${score}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments — we're seeing similar patterns across organizations at this stage. Based on what we're observing, there's approximately ${formatCurrency(gap)} in additional annual value that could be captured with focused optimization.`;
+      return `At ${score}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments — we're seeing similar patterns across organizations at this stage. The ${formatCurrency(gap)} annual opportunity represents value that could be captured with focused optimization.`;
     case 'Developing':
-      return `At ${score}% value realization, your organization has made meaningful progress. We're seeing this as a common inflection point — organizations at this stage have proven the solution works, and the opportunity now is determining how much of the remaining potential to pursue.`;
+      return `At ${score}% value realization, your organization has made meaningful progress. This is a common inflection point — you've proven the solution works, and the question now is how much of the remaining potential to pursue. The ${formatCurrency(gap)} opportunity is real and achievable.`;
     case 'Optimized':
-      return `At ${score}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI. Based on what we're seeing, there may be additional opportunity of approximately ${formatCurrency(gap)} annually worth exploring.`;
+      return `At ${score}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI. The remaining ${formatCurrency(gap)} represents optimization opportunity that could compound your already-strong results.`;
     case 'Transformed':
-      return `At ${score}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining ${formatCurrency(gap)} represents incremental optimization opportunity.`;
+      return `At ${score}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining ${formatCurrency(gap)} represents fine-tuning opportunity.`;
     default:
-      return `At ${score}% value realization, your organization has room to optimize ambient AI performance.`;
+      return `At ${score}% value realization, your organization has room to optimize ambient AI performance. The ${formatCurrency(gap)} annual opportunity awaits.`;
   }
 };
 
 const getPrimaryRecommendation = (lowest: DimensionInfo, highest: DimensionInfo): string => {
-  return `Your data shows ${lowest.name} as your biggest opportunity area (${lowest.score}% of benchmark), while ${highest.name} is your relative strength (${highest.score}%). This suggests focused attention on ${lowest.name} could yield meaningful returns without disrupting what's already working.`;
+  return `Your data shows ${lowest.name} as your biggest opportunity area (${lowest.score}% of benchmark), while ${highest.name} is your relative strength (${highest.score}%). Focused attention on ${lowest.name} could yield meaningful returns without disrupting what's already working.`;
 };
 
-const getRiskStatement = (stage: string, gap: number): string => {
-  switch(stage) {
-    case 'Early Stage':
-      return `What we're seeing at this stage: provider confidence often depends on consistent value realization. Building momentum now could help prevent the gradual utilization decline that sometimes occurs without focused attention.`;
-    case 'Developing':
-      return `Organizations at the "Developing" stage sometimes see gradual changes over time — small shifts in utilization, evolving satisfaction levels. The ${formatCurrency(gap)} annual opportunity represents value that could be captured with focused optimization efforts.`;
-    case 'Optimized':
-      return `At this stage, there's an interesting opportunity. Organizations that move from Optimized to Transformed often see strong returns on their optimization efforts because the foundation is already solid.`;
-    case 'Transformed':
-      return `Even top performers benefit from ongoing attention. Technology evolves, staff turns over, workflows change. Maintaining performance at this level requires continued focus.`;
-    default:
-      return `Based on what we're seeing, each year represents approximately ${formatCurrency(gap)} in potential additional value.`;
-  }
-};
-
-interface DimensionInsight {
-  dimension: string;
-  insight: string;
-}
-
-const getScoreColor = (score: number): string => {
-  if (score >= 80) return colors.green;
-  if (score >= 60) return colors.black;
-  if (score >= 40) return "#D97706"; // amber
-  return colors.primary; // red for low scores
-};
-
-const getDimensionInsights = (scores: { utilization: number; efficiency: number; quality: number; satisfaction: number }): DimensionInsight[] => {
-  const insights: DimensionInsight[] = [];
-  
-  if (scores.utilization < 70) {
-    insights.push({
-      dimension: 'Utilization',
-      insight: `At ${scores.utilization}% of benchmark, many encounters aren't using ambient documentation at all. This is often a change management issue — providers may not have formed the habit, or friction in the workflow is preventing consistent adoption.`
-    });
-  }
-  
-  if (scores.efficiency < 60) {
-    insights.push({
-      dimension: 'Efficiency',
-      insight: `At ${scores.efficiency}% of benchmark, time savings per encounter is below expectations. This could indicate workflow issues, suboptimal configuration, or that providers are editing notes extensively after generation.`
-    });
-  }
-  
-  if (scores.quality < 50) {
-    insights.push({
-      dimension: 'Quality',
-      insight: `At ${scores.quality}% of benchmark, documentation quality improvement is lagging. This is often the largest dollar opportunity — better documentation drives better coding and reimbursement.`
-    });
-  }
-  
-  if (scores.satisfaction < 75) {
-    insights.push({
-      dimension: 'Satisfaction',
-      insight: `At ${scores.satisfaction}% of benchmark, provider satisfaction is a concern. Dissatisfied providers use solutions less over time. Understanding WHY satisfaction is low is critical before it affects utilization.`
-    });
-  }
-  
-  return insights;
+const getRiskStatement = (stage: string, gap: number, monthlyGap: number): string => {
+  return `Each month represents approximately ${formatCurrency(monthlyGap)} in additional potential value. Organizations at the "${stage}" stage sometimes see gradual changes over time — the key is intentional optimization rather than hoping for organic improvement.`;
 };
 
 const getDimensionRankings = (scores: { utilization: number; efficiency: number; quality: number; satisfaction: number }): { lowest: DimensionInfo; highest: DimensionInfo } => {
@@ -1380,30 +1107,30 @@ const getStrategicNextSteps = (lowestDimension: DimensionInfo): NextStepsContent
     case 'Utilization':
       return {
         focusArea: 'Adoption & Habits',
-        whyThis: `At ${lowestDimension.score}% of benchmark, many encounters aren't capturing ambient AI value. Building consistent usage habits is the foundation for all other value.`,
+        whyThis: `At ${lowestDimension.score}% of benchmark, many encounters aren't capturing ambient AI value. Building consistent usage is the foundation for all other value.`,
         quickWins: [
-          '• Identify top 10 non-users and understand their specific barriers',
-          '• Review workflow friction points — login steps, device issues, room setup',
-          '• Create specialty-specific "first 5 minutes" guides for new users',
+          '• Identify top 10 non-users and understand their barriers',
+          '• Review workflow friction points — login, devices, room setup',
+          '• Create specialty-specific quick-start guides',
         ],
         deeperDives: [
-          '• Analyze utilization by department/specialty to find patterns',
+          '• Analyze utilization by department to find patterns',
           '• Consider peer champion programs in high-adoption areas',
-          '• Review training program effectiveness and refresh content',
+          '• Review training effectiveness and refresh content',
         ],
       };
     case 'Efficiency':
       return {
         focusArea: 'Time Savings',
-        whyThis: `At ${lowestDimension.score}% of benchmark, providers aren't experiencing the full time-saving promise. This often creates skepticism about the solution's value.`,
+        whyThis: `At ${lowestDimension.score}% of benchmark, providers aren't experiencing the full time-saving promise. This often creates skepticism about value.`,
         quickWins: [
-          '• Survey providers on what they\'re editing most in generated notes',
-          '• Review EHR integration points for unnecessary clicks or steps',
-          '• Check template configurations against specialty best practices',
+          '• Survey providers on what they\'re editing most',
+          '• Review EHR integration for unnecessary steps',
+          '• Check template configurations against best practices',
         ],
         deeperDives: [
-          '• Analyze note editing patterns to identify systematic issues',
-          '• Work with EHR team on reducing post-generation workflow friction',
+          '• Analyze note editing patterns to identify issues',
+          '• Work with EHR team on reducing workflow friction',
           '• Consider specialty-specific optimization sessions',
         ],
       };
@@ -1412,29 +1139,29 @@ const getStrategicNextSteps = (lowestDimension: DimensionInfo): NextStepsContent
         focusArea: 'Documentation & Revenue',
         whyThis: `At ${lowestDimension.score}% of benchmark, documentation improvements aren't translating to coding accuracy. This is often the largest dollar opportunity.`,
         quickWins: [
-          '• Connect with coding team to get feedback on AI-generated notes',
-          '• Review HCC capture rates before vs. after ambient AI',
-          '• Identify specialties with largest documentation complexity gaps',
+          '• Connect with coding team for AI note feedback',
+          '• Review HCC capture rates before vs. after',
+          '• Identify specialties with documentation gaps',
         ],
         deeperDives: [
-          '• Establish coder feedback loop to AI-generated documentation',
-          '• Analyze wRVU patterns by provider to identify coaching opportunities',
-          '• Review whether notes capture clinical complexity that supports billing',
+          '• Establish coder feedback loop for AI documentation',
+          '• Analyze wRVU patterns to identify coaching needs',
+          '• Review note complexity vs. billing support',
         ],
       };
     case 'Satisfaction':
       return {
         focusArea: 'Provider Experience',
-        whyThis: `At ${lowestDimension.score}% of benchmark, provider sentiment is a leading indicator of future adoption. Understanding dissatisfaction now prevents utilization decline later.`,
+        whyThis: `At ${lowestDimension.score}% of benchmark, provider sentiment predicts future adoption. Understanding dissatisfaction now prevents decline later.`,
         quickWins: [
-          '• Conduct 5-minute interviews with dissatisfied providers',
-          '• Review recent support tickets for recurring themes',
-          '• Check if dissatisfaction correlates with specific specialties or sites',
+          '• Conduct quick interviews with dissatisfied providers',
+          '• Review support tickets for recurring themes',
+          '• Check if dissatisfaction correlates with specialties',
         ],
         deeperDives: [
-          '• Map satisfaction to efficiency — are low-satisfaction providers seeing time savings?',
-          '• Review onboarding experience for recently started providers',
-          '• Consider whether expectations were set accurately at implementation',
+          '• Map satisfaction to efficiency — are unhappy providers saving time?',
+          '• Review onboarding for recently started providers',
+          '• Consider whether expectations were set accurately',
         ],
       };
     default:
@@ -1447,53 +1174,62 @@ const getStrategicNextSteps = (lowestDimension: DimensionInfo): NextStepsContent
   }
 };
 
+// ============================================================================
+// SVG COMPONENTS
+// ============================================================================
+
 const SpectrumBar = ({ score }: { score: number }) => {
   const barWidth = 460;
-  const markerPosition = (score / 100) * barWidth;
+  const markerPosition = Math.min(barWidth - 2, Math.max(2, (score / 100) * barWidth));
   
   return (
-    <Svg width={barWidth} height={16}>
-      <Rect x={0} y={4} width={barWidth * 0.4} height={8} fill="#FEE2E2" rx={0} />
-      <Rect x={barWidth * 0.4} y={4} width={barWidth * 0.2} height={8} fill="#FEF3C7" rx={0} />
-      <Rect x={barWidth * 0.6} y={4} width={barWidth * 0.2} height={8} fill="#D1FAE5" rx={0} />
-      <Rect x={barWidth * 0.8} y={4} width={barWidth * 0.2} height={8} fill="#A7F3D0" rx={4} />
-      <Rect x={0} y={4} width={4} height={8} fill="#FEE2E2" rx={4} />
+    <Svg width={barWidth} height={20}>
+      {/* Background segments */}
+      <Rect x={0} y={6} width={barWidth * 0.4} height={8} fill="#FEE2E2" rx={0} />
+      <Rect x={barWidth * 0.4} y={6} width={barWidth * 0.2} height={8} fill="#FEF3C7" rx={0} />
+      <Rect x={barWidth * 0.6} y={6} width={barWidth * 0.2} height={8} fill="#D1FAE5" rx={0} />
+      <Rect x={barWidth * 0.8} y={6} width={barWidth * 0.2} height={8} fill="#A7F3D0" rx={0} />
       
-      <Rect x={markerPosition - 1} y={0} width={3} height={16} fill={colors.primary} rx={1} />
+      {/* Rounded edges */}
+      <Rect x={0} y={6} width={6} height={8} fill="#FEE2E2" rx={4} />
+      <Rect x={barWidth - 6} y={6} width={6} height={8} fill="#A7F3D0" rx={4} />
+      
+      {/* Marker */}
+      <Rect x={markerPosition - 2} y={0} width={4} height={20} fill={colors.primary} rx={2} />
     </Svg>
   );
 };
 
-const DimensionEducationContent = {
+// ============================================================================
+// DIMENSION EDUCATION CONTENT
+// ============================================================================
+
+const DimensionEducation = {
   utilization: {
-    definition: "The percentage of patient encounters where ambient AI is actually used to generate documentation.",
-    whyMatters: "Every encounter not using ambient AI is an encounter where providers still carry the full documentation burden. Low utilization means you're paying for a solution that isn't being used consistently.",
-    whatDrives: "Workflow integration, provider habits, technical friction (login issues, connectivity), specialty fit, and whether using the tool feels natural in the clinical environment.",
-    insightThreshold: 70,
-    getInsight: (score: number) => `At ${score}% of benchmark, there's significant room to increase adoption. Common causes include inconsistent habits, workflow friction, or providers who tried it early and didn't return.`,
+    definition: "The percentage of encounters where ambient AI is used for documentation.",
+    whyMatters: "Every encounter not using ambient AI is an encounter where providers still carry the full documentation burden. Low utilization means you're paying for capacity that isn't being used.",
+    whatDrives: "Workflow integration, provider habits, technical friction, and whether the tool feels natural in clinical environments.",
   },
   efficiency: {
-    definition: "The average time saved per encounter when ambient AI is used — typically measured as reduction in documentation time.",
-    whyMatters: "This is the core promise of ambient AI: giving time back to providers. Less time saved per encounter means the documentation burden persists, even when the tool is being used.",
-    whatDrives: "Note quality out of the box, how much providers edit generated notes, specialty-specific templates, EHR integration smoothness, and whether the AI captures the encounter accurately the first time.",
-    insightThreshold: 60,
-    getInsight: (score: number) => `At ${score}% of benchmark, providers may be spending significant time editing notes after generation. This often indicates template issues, trust issues with the AI output, or workflow problems.`,
+    definition: "Average time saved per encounter when ambient AI is used.",
+    whyMatters: "This is the core promise: giving time back to providers. Less time saved means the documentation burden persists, even when the tool is being used.",
+    whatDrives: "Note quality out of the box, editing frequency, template optimization, and EHR integration smoothness.",
   },
   quality: {
-    definition: "The improvement in documentation completeness and coding accuracy, measured through wRVU capture — a proxy for whether documentation supports appropriate reimbursement.",
-    whyMatters: "Better documentation leads to better coding, which leads to better reimbursement. This is often the largest dollar opportunity in ambient AI — small improvements in coding accuracy compound across thousands of encounters.",
-    whatDrives: "How completely the AI captures clinical details, whether it prompts for missing elements, coder feedback loops, and whether documentation supports the complexity of care actually delivered.",
-    insightThreshold: 50,
-    getInsight: (score: number) => `At ${score}% of benchmark, documentation quality improvement is lagging. This could be the largest dollar opportunity — review whether notes are capturing clinical complexity that supports accurate coding.`,
+    definition: "Documentation improvement measured through wRVU capture — a proxy for whether notes support appropriate reimbursement.",
+    whyMatters: "Better documentation leads to better coding, which leads to better reimbursement. Often the largest dollar opportunity because improvements compound across thousands of encounters.",
+    whatDrives: "Clinical detail capture, coder feedback loops, and whether notes reflect the complexity of care actually delivered.",
   },
   satisfaction: {
-    definition: "Provider satisfaction with the ambient AI solution — typically measured through surveys asking whether they would recommend it to colleagues.",
-    whyMatters: "Satisfaction is a leading indicator. Dissatisfied providers use solutions less over time, creating a downward spiral. Happy providers become champions who drive adoption among peers.",
-    whatDrives: "Accuracy of generated notes, time actually saved, reliability, ease of use, and whether it makes their day genuinely better vs. adding another thing to manage.",
-    insightThreshold: 75,
-    getInsight: (score: number) => `At ${score}% of benchmark, satisfaction is a concern. Understanding WHY providers are dissatisfied is critical — is it accuracy? Reliability? Workflow friction? Low satisfaction often predicts declining utilization.`,
+    definition: "Provider satisfaction — typically measured through NPS or likelihood to recommend.",
+    whyMatters: "Satisfaction is a leading indicator. Dissatisfied providers use solutions less over time, creating a downward spiral. Happy providers become champions.",
+    whatDrives: "Note accuracy, time actually saved, reliability, and whether it genuinely makes their day better.",
   },
 };
+
+// ============================================================================
+// PDF DOCUMENT COMPONENT
+// ============================================================================
 
 const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: AmbientPDFData) => {
   const today = new Date().toLocaleDateString("en-US", {
@@ -1502,27 +1238,11 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
     day: "numeric",
   });
 
+  // Core calculations
   const encountersAtBenchmark = Math.round((inputs.annualEncounters || 150000) * (ABRIDGE_BENCHMARKS.utilization / 100));
-  const encountersAtCurrent = Math.round((inputs.annualEncounters || 150000) * (inputs.utilization / 100));
-  const encounterGap = encountersAtBenchmark - encountersAtCurrent;
+  const monthlyGap = Math.round(calculations.annualGap / 12);
   
-  const utilizationHoursGap = Math.round(encounterGap * (ABRIDGE_BENCHMARKS.timeSavedAvg / 60));
-  
-  const efficiencyTimeDiff = ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter;
-  const efficiencyHoursGap = Math.round((efficiencyTimeDiff / 60) * encountersAtBenchmark);
-  
-  const wrvuGapPercent = ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift;
-  const additionalWrvu = Math.round(encountersAtBenchmark * 1.5 * (wrvuGapPercent / 100));
-
-  const gapDimensions = [
-    { name: "Utilization", score: calculations.utilizationScore, value: calculations.utilizationGapValue },
-    { name: "Efficiency", score: calculations.efficiencyScore, value: calculations.efficiencyGapValue },
-    { name: "Quality", score: calculations.qualityScore, value: calculations.wrvuGapValue },
-  ];
-  
-  const lowestDimension = gapDimensions.reduce((min, dim) => 
-    dim.score < min.score ? dim : min, gapDimensions[0]);
-
+  // Dimension rankings
   const dimensionRankings = getDimensionRankings({
     utilization: calculations.utilizationScore,
     efficiency: calculations.efficiencyScore,
@@ -1530,20 +1250,33 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
     satisfaction: calculations.satisfactionScore,
   });
 
-  const dimensionInsights = getDimensionInsights({
-    utilization: calculations.utilizationScore,
-    efficiency: calculations.efficiencyScore,
-    quality: calculations.qualityScore,
-    satisfaction: calculations.satisfactionScore,
-  });
+  const lowestDimension = {
+    name: dimensionRankings.lowest.name,
+    score: dimensionRankings.lowest.score,
+  };
 
   const nextSteps = getStrategicNextSteps(lowestDimension);
 
+  // Gap breakdown
+  const utilizationGapValue = calculations.utilizationGapValue;
+  const efficiencyGapValue = calculations.efficiencyGapValue;
+  const qualityGapValue = calculations.wrvuGapValue;
+
+  // Efficiency calc details
+  const efficiencyTimeDiff = ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter;
+  const efficiencyHoursGap = Math.round((efficiencyTimeDiff / 60) * encountersAtBenchmark);
+
+  // Quality calc details
+  const wrvuGapPercent = ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift;
+  const additionalWrvu = Math.round(encountersAtBenchmark * 1.5 * (wrvuGapPercent / 100));
+
   return (
     <Document>
-      {/* PAGE 1: THE STORY */}
+      {/* ================================================================ */}
+      {/* PAGE 1: THE EXECUTIVE STORY */}
+      {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
-        {/* Premium Header with Client Info */}
+        {/* Premium Header */}
         <View style={styles.premiumHeader}>
           <View style={styles.premiumHeaderTop}>
             <Image src={abridgeLogoPath} style={{ width: 100, height: 20 }} />
@@ -1564,59 +1297,62 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </View>
         </View>
 
-        {/* Executive Summary - The C-Suite 10-Second Read */}
+        {/* Executive Summary */}
         <View style={styles.execSummary}>
           <View style={styles.execSummaryHeader}>
-            <View style={styles.execSummaryAccent} />
             <Text style={styles.execSummaryTitle}>EXECUTIVE SUMMARY</Text>
           </View>
           <View style={styles.execSummaryContent}>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.annualGap)} annual opportunity</Text> — additional value that could be captured from your ambient AI investment</Text>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{calculations.realizationScore}% value realization</Text> — you're capturing {calculations.realizationScore} cents of every dollar of potential value</Text>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{lowestDimension.name} is your primary opportunity</Text> — at {lowestDimension.score}% of benchmark, this is where focused effort may yield the greatest returns</Text>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.threeYearGap)} potential over 3 years</Text> — based on Abridge customer benchmarks</Text>
+            <Text style={styles.execBullet}>
+              • <Text style={styles.execHighlight}>{formatCurrency(calculations.annualGap)} annual opportunity</Text> — additional value that could be captured from your ambient AI investment
+            </Text>
+            <Text style={styles.execBullet}>
+              • <Text style={styles.execBulletBold}>{calculations.realizationScore}% value realization</Text> — you're capturing {calculations.realizationScore} cents of every dollar of potential value
+            </Text>
+            <Text style={styles.execBullet}>
+              • <Text style={styles.execBulletBold}>{lowestDimension.name} is your primary opportunity</Text> — at {lowestDimension.score}% of benchmark, this is where focused effort may yield the greatest returns
+            </Text>
+            <Text style={styles.execBullet}>
+              • <Text style={styles.execBulletBold}>{formatCurrency(calculations.threeYearGap)} potential over 3 years</Text> — based on Abridge customer benchmarks
+            </Text>
           </View>
         </View>
 
-        {/* Section: Context */}
+        {/* Context */}
         <View style={styles.sectionHeader}>
           <View style={styles.sectionAccent} />
-          <Text style={styles.sectionTitleStyled}>CONTEXT: UNDERSTANDING VALUE REALIZATION</Text>
+          <Text style={styles.sectionTitle}>UNDERSTANDING VALUE REALIZATION</Text>
         </View>
-        <Text style={styles.contextText}>
-          Ambient AI creates value through four dimensions: utilization (encounter coverage), efficiency (time savings), quality (wRVU lift), and satisfaction (provider adoption). Most organizations capture 30-60% of potential value because optimization requires all four dimensions working together. Small differences can add up to meaningful opportunity over time.
+        <Text style={styles.sectionSubtitle}>
+          Ambient AI creates value through four dimensions: utilization (encounter coverage), efficiency (time savings), quality (wRVU lift), and satisfaction (provider adoption). Most organizations capture 30-60% of potential value because optimization requires all four dimensions working together.
         </Text>
 
-        {/* Section: Results */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionAccent} />
-          <Text style={styles.sectionTitleStyled}>YOUR RESULTS AT A GLANCE</Text>
-        </View>
-
-        <View style={styles.metricsGrid}>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricValueGreen}>{formatCurrency(calculations.annualGap)}</Text>
-            <Text style={styles.metricLabel}>Annual Opportunity</Text>
-            <Text style={styles.metricDescription}>Additional value based on benchmarks</Text>
+        {/* Hero Metrics */}
+        <View style={styles.heroMetricsGrid}>
+          <View style={styles.heroMetricCardPrimary}>
+            <Text style={styles.heroMetricValueGreen}>{formatCurrency(calculations.annualGap)}</Text>
+            <Text style={styles.heroMetricLabel}>Annual Opportunity</Text>
+            <Text style={styles.heroMetricDescription}>Additional value based on benchmarks</Text>
           </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricValue}>{calculations.realizationScore}%</Text>
-            <Text style={styles.metricLabel}>Realized</Text>
-            <Text style={styles.metricDescription}>Of potential value being captured today</Text>
+          <View style={styles.heroMetricCard}>
+            <Text style={styles.heroMetricValue}>{calculations.realizationScore}%</Text>
+            <Text style={styles.heroMetricLabel}>Value Realized</Text>
+            <Text style={styles.heroMetricDescription}>Of potential being captured today</Text>
           </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricValue}>{formatCurrency(calculations.threeYearGap)}</Text>
-            <Text style={styles.metricLabel}>3-Year Potential</Text>
-            <Text style={styles.metricDescription}>Cumulative opportunity over three years</Text>
+          <View style={styles.heroMetricCard}>
+            <Text style={styles.heroMetricValue}>{formatCurrency(calculations.threeYearGap)}</Text>
+            <Text style={styles.heroMetricLabel}>3-Year Potential</Text>
+            <Text style={styles.heroMetricDescription}>Cumulative opportunity</Text>
           </View>
-          <View style={[styles.metricCard, styles.metricCardLast]}>
-            <Text style={styles.metricValue}>{calculations.maturityLevel}</Text>
-            <Text style={styles.metricLabel}>Stage</Text>
-            <Text style={styles.metricDescription}>Where you are on the maturity spectrum</Text>
+          <View style={[styles.heroMetricCard, styles.heroMetricCardLast]}>
+            <Text style={styles.heroMetricValue}>{calculations.maturityLevel}</Text>
+            <Text style={styles.heroMetricLabel}>Maturity Stage</Text>
+            <Text style={styles.heroMetricDescription}>On the optimization spectrum</Text>
           </View>
         </View>
 
-        <View style={styles.findingsSection}>
+        {/* Findings Narrative */}
+        <View style={styles.findingsBox}>
           <Text style={styles.findingsTitle}>OUR FINDINGS</Text>
           <Text style={styles.findingsNarrative}>
             {getStageNarrative(calculations.maturityLevel, calculations.realizationScore, calculations.annualGap)}
@@ -1628,86 +1364,88 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
             </Text>
           </View>
           <View style={styles.findingsSubsection}>
-            <Text style={styles.findingsSubtitle}>What We're Seeing</Text>
+            <Text style={styles.findingsSubtitle}>What This Means</Text>
             <Text style={styles.findingsText}>
-              {getRiskStatement(calculations.maturityLevel, calculations.annualGap)}
+              {getRiskStatement(calculations.maturityLevel, calculations.annualGap, monthlyGap)}
             </Text>
           </View>
-          <View style={styles.summaryTable}>
-            <View style={styles.summaryTableHeader}>
-              <View style={styles.summaryTableColDimension}>
-                <Text style={styles.summaryTableHeaderText}>Dimension</Text>
+
+          {/* Dimension Summary Table */}
+          <View style={styles.dimensionTable}>
+            <View style={styles.dimensionTableHeader}>
+              <View style={styles.dimensionTableCol1}>
+                <Text style={styles.tableHeaderText}>Dimension</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableHeaderText}>You</Text>
+              <View style={styles.dimensionTableCol2}>
+                <Text style={styles.tableHeaderText}>You</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableHeaderText}>Benchmark</Text>
+              <View style={styles.dimensionTableCol3}>
+                <Text style={styles.tableHeaderText}>Benchmark</Text>
               </View>
-              <View style={styles.summaryTableColStatus}>
-                <Text style={styles.summaryTableHeaderText}>% of Benchmark</Text>
+              <View style={styles.dimensionTableCol4}>
+                <Text style={styles.tableHeaderText}>% of Benchmark</Text>
               </View>
             </View>
-            <View style={styles.summaryTableRow}>
-              <View style={styles.summaryTableColDimension}>
-                <Text style={styles.summaryTableTextBold}>Utilization</Text>
+            <View style={styles.dimensionTableRow}>
+              <View style={styles.dimensionTableCol1}>
+                <Text style={styles.tableBodyTextBold}>Utilization</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>{inputs.utilization}%</Text>
+              <View style={styles.dimensionTableCol2}>
+                <Text style={styles.tableBodyText}>{inputs.utilization}%</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
+              <View style={styles.dimensionTableCol3}>
+                <Text style={styles.tableBodyText}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
               </View>
-              <View style={styles.summaryTableColStatus}>
-                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.utilizationScore) }]}>
+              <View style={styles.dimensionTableCol4}>
+                <Text style={[styles.tableBodyTextBold, { color: getScoreColor(calculations.utilizationScore) }]}>
                   {calculations.utilizationScore}%
                 </Text>
               </View>
             </View>
-            <View style={styles.summaryTableRow}>
-              <View style={styles.summaryTableColDimension}>
-                <Text style={styles.summaryTableTextBold}>Efficiency</Text>
+            <View style={styles.dimensionTableRow}>
+              <View style={styles.dimensionTableCol1}>
+                <Text style={styles.tableBodyTextBold}>Efficiency</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>{inputs.timeSavedPerEncounter} min</Text>
+              <View style={styles.dimensionTableCol2}>
+                <Text style={styles.tableBodyText}>{inputs.timeSavedPerEncounter} min</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+              <View style={styles.dimensionTableCol3}>
+                <Text style={styles.tableBodyText}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
               </View>
-              <View style={styles.summaryTableColStatus}>
-                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.efficiencyScore) }]}>
+              <View style={styles.dimensionTableCol4}>
+                <Text style={[styles.tableBodyTextBold, { color: getScoreColor(calculations.efficiencyScore) }]}>
                   {calculations.efficiencyScore}%
                 </Text>
               </View>
             </View>
-            <View style={styles.summaryTableRow}>
-              <View style={styles.summaryTableColDimension}>
-                <Text style={styles.summaryTableTextBold}>Quality (wRVU)</Text>
+            <View style={styles.dimensionTableRow}>
+              <View style={styles.dimensionTableCol1}>
+                <Text style={styles.tableBodyTextBold}>Quality (wRVU)</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>+{inputs.wrvuLift}%</Text>
+              <View style={styles.dimensionTableCol2}>
+                <Text style={styles.tableBodyText}>+{inputs.wrvuLift}%</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+              <View style={styles.dimensionTableCol3}>
+                <Text style={styles.tableBodyText}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
               </View>
-              <View style={styles.summaryTableColStatus}>
-                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.qualityScore) }]}>
+              <View style={styles.dimensionTableCol4}>
+                <Text style={[styles.tableBodyTextBold, { color: getScoreColor(calculations.qualityScore) }]}>
                   {calculations.qualityScore}%
                 </Text>
               </View>
             </View>
-            <View style={styles.summaryTableRowLast}>
-              <View style={styles.summaryTableColDimension}>
-                <Text style={styles.summaryTableTextBold}>Satisfaction</Text>
+            <View style={styles.dimensionTableRowLast}>
+              <View style={styles.dimensionTableCol1}>
+                <Text style={styles.tableBodyTextBold}>Satisfaction</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>{inputs.satisfaction}%</Text>
+              <View style={styles.dimensionTableCol2}>
+                <Text style={styles.tableBodyText}>{inputs.satisfaction}%</Text>
               </View>
-              <View style={styles.summaryTableColValue}>
-                <Text style={styles.summaryTableText}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
+              <View style={styles.dimensionTableCol3}>
+                <Text style={styles.tableBodyText}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
               </View>
-              <View style={styles.summaryTableColStatus}>
-                <Text style={[styles.summaryTableText, { color: getScoreColor(calculations.satisfactionScore) }]}>
+              <View style={styles.dimensionTableCol4}>
+                <Text style={[styles.tableBodyTextBold, { color: getScoreColor(calculations.satisfactionScore) }]}>
                   {calculations.satisfactionScore}%
                 </Text>
               </View>
@@ -1715,32 +1453,33 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>THE VALUE REALIZATION SPECTRUM</Text>
-        <Text style={{ fontSize: 7, color: colors.darkGray, marginBottom: 8 }}>
-          Organizations move through four stages as they optimize ambient AI:
-        </Text>
-
-        <View style={styles.spectrumBox}>
-          <View style={styles.spectrumLabels}>
-            <Text style={styles.spectrumLabel}><Text style={styles.spectrumLabelBold}>EARLY STAGE</Text></Text>
-            <Text style={styles.spectrumLabel}><Text style={styles.spectrumLabelBold}>DEVELOPING</Text></Text>
-            <Text style={styles.spectrumLabel}><Text style={styles.spectrumLabelBold}>OPTIMIZED</Text></Text>
-            <Text style={styles.spectrumLabel}><Text style={styles.spectrumLabelBold}>TRANSFORMED</Text></Text>
+        {/* Spectrum */}
+        <View style={styles.spectrumContainer}>
+          <Text style={styles.spectrumTitle}>THE VALUE REALIZATION SPECTRUM</Text>
+          <View style={styles.spectrumStages}>
+            <View style={styles.spectrumStage}>
+              <Text style={styles.spectrumStageLabel}>EARLY STAGE</Text>
+              <Text style={styles.spectrumStageRange}>Under 40%</Text>
+            </View>
+            <View style={styles.spectrumStage}>
+              <Text style={styles.spectrumStageLabel}>DEVELOPING</Text>
+              <Text style={styles.spectrumStageRange}>40-60%</Text>
+            </View>
+            <View style={styles.spectrumStage}>
+              <Text style={styles.spectrumStageLabel}>OPTIMIZED</Text>
+              <Text style={styles.spectrumStageRange}>60-80%</Text>
+            </View>
+            <View style={styles.spectrumStage}>
+              <Text style={styles.spectrumStageLabel}>TRANSFORMED</Text>
+              <Text style={styles.spectrumStageRange}>80%+</Text>
+            </View>
           </View>
-          <View style={styles.spectrumRanges}>
-            <Text style={styles.spectrumRange}>Under 40%</Text>
-            <Text style={styles.spectrumRange}>40-60%</Text>
-            <Text style={styles.spectrumRange}>60-80%</Text>
-            <Text style={styles.spectrumRange}>80%+</Text>
-          </View>
-          <View style={styles.spectrumBarContainer}>
+          <View style={styles.spectrumBarWrapper}>
             <SpectrumBar score={calculations.realizationScore} />
           </View>
-          <Text style={{ fontSize: 8, color: colors.primary, textAlign: "center", fontWeight: "bold", marginTop: 2 }}>
-            YOU: {calculations.realizationScore}%
-          </Text>
+          <Text style={styles.spectrumYouMarker}>YOU: {calculations.realizationScore}%</Text>
           <Text style={styles.spectrumExplanation}>
-            At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. Based on what we're seeing, the opportunity between where you are and where you could be represents approximately {formatCurrency(calculations.annualGap)} annually.
+            At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. The gap between where you are and where you could be represents approximately {formatCurrency(calculations.annualGap)} annually.
           </Text>
         </View>
 
@@ -1750,7 +1489,9 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
         </View>
       </Page>
 
-      {/* PAGE 2: ALL FOUR DIMENSIONS ON ONE PAGE */}
+      {/* ================================================================ */}
+      {/* PAGE 2: THE FOUR DIMENSIONS DEEP-DIVE */}
+      {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.pageHeader}>
           <View style={styles.pageHeaderLeft}>
@@ -1762,161 +1503,205 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
         <View style={styles.sectionHeader}>
           <View style={styles.sectionAccent} />
-          <Text style={styles.sectionTitleStyled}>EXHIBIT 1: YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
+          <Text style={styles.sectionTitle}>EXHIBIT 1: YOUR PERFORMANCE ACROSS FOUR DIMENSIONS</Text>
         </View>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10, lineHeight: 1.4 }}>
-          Value realization depends on performance in four areas. Here's where you stand compared to Abridge benchmarks:
+        <Text style={styles.sectionSubtitle}>
+          Value realization depends on performance in four interconnected areas. Weakness in one dimension limits the others — gaps multiply, they don't just add up.
         </Text>
 
-        {/* UTILIZATION - Compact */}
-        <View style={styles.dimensionCardCompact}>
-          <View style={styles.dimensionHeaderCompact}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.dimensionNameCompact}>UTILIZATION</Text>
-              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.utilizationScore) }]}>{calculations.utilizationScore}%</Text>
+        {/* Utilization Card */}
+        <View style={styles.dimensionCard}>
+          <View style={[styles.dimensionCardHeader, { backgroundColor: colors.blueLight }]}>
+            <View style={styles.dimensionCardHeaderLeft}>
+              <View style={[styles.dimensionCardIcon, { backgroundColor: colors.blue }]}>
+                <Text style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}>U</Text>
+              </View>
+              <Text style={styles.dimensionCardName}>UTILIZATION</Text>
             </View>
-            <View style={styles.dimensionValuesCompact}>
-              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>{inputs.utilization}%</Text></Text>
-              <Text style={styles.dimensionValueText}>Benchmark: {ABRIDGE_BENCHMARKS.utilization}%</Text>
+            <Text style={[styles.dimensionCardScore, { color: getScoreColor(calculations.utilizationScore) }]}>
+              {calculations.utilizationScore}%
+            </Text>
+          </View>
+          <View style={styles.dimensionCardMetrics}>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>{inputs.utilization}%</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Your Rate</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Benchmark</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={[styles.dimensionCardMetricValue, { color: getScoreColor(calculations.utilizationScore) }]}>
+                {getScoreStatus(calculations.utilizationScore)}
+              </Text>
+              <Text style={styles.dimensionCardMetricLabel}>Status</Text>
             </View>
           </View>
-          <View style={styles.dimensionBarCompact}>
-            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.utilizationScore)}%`, backgroundColor: getScoreColor(calculations.utilizationScore) }]} />
+          <View style={styles.dimensionCardBar}>
+            <View style={[styles.dimensionCardBarFill, { 
+              width: `${Math.min(100, calculations.utilizationScore)}%`,
+              backgroundColor: getScoreColor(calculations.utilizationScore)
+            }]} />
           </View>
-          <Text style={styles.dimensionDescCompact}>
-            Every encounter not using ambient AI is an encounter where providers still carry the full documentation burden. Low utilization means you're paying for a solution that isn't being used consistently. Key drivers include workflow integration, provider habits, technical friction (login issues, connectivity), and whether using the tool feels natural in clinical workflows. Improving utilization is often the fastest path to ROI.
-          </Text>
-        </View>
-
-        {/* EFFICIENCY - Compact */}
-        <View style={styles.dimensionCardCompact}>
-          <View style={styles.dimensionHeaderCompact}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.dimensionNameCompact}>EFFICIENCY</Text>
-              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.efficiencyScore) }]}>{calculations.efficiencyScore}%</Text>
-            </View>
-            <View style={styles.dimensionValuesCompact}>
-              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>{inputs.timeSavedPerEncounter} min</Text></Text>
-              <Text style={styles.dimensionValueText}>Benchmark: {ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
-            </View>
-          </View>
-          <View style={styles.dimensionBarCompact}>
-            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.efficiencyScore)}%`, backgroundColor: getScoreColor(calculations.efficiencyScore) }]} />
-          </View>
-          <Text style={styles.dimensionDescCompact}>
-            Time savings per encounter is the core promise of ambient AI: giving time back to providers. Less time saved means the documentation burden persists, even when the tool is being used. Key drivers include note quality out of the box, how much providers edit generated notes, specialty-specific templates, and EHR integration smoothness. Providers spending significant time editing notes often indicates template issues or trust issues with AI output.
-          </Text>
-        </View>
-
-        {/* QUALITY - Compact */}
-        <View style={styles.dimensionCardCompact}>
-          <View style={styles.dimensionHeaderCompact}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.dimensionNameCompact}>QUALITY (wRVU)</Text>
-              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.qualityScore) }]}>{calculations.qualityScore}%</Text>
-            </View>
-            <View style={styles.dimensionValuesCompact}>
-              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>+{inputs.wrvuLift}%</Text></Text>
-              <Text style={styles.dimensionValueText}>Benchmark: +{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
-            </View>
-          </View>
-          <View style={styles.dimensionBarCompact}>
-            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.qualityScore)}%`, backgroundColor: getScoreColor(calculations.qualityScore) }]} />
-          </View>
-          <Text style={styles.dimensionDescCompact}>
-            Better documentation leads to better coding, which leads to better reimbursement — often the largest dollar opportunity in ambient AI. Small improvements in coding accuracy compound across thousands of encounters. Key drivers include how completely the AI captures clinical details, coder feedback loops, and whether documentation supports the complexity of care actually delivered. Review whether notes are capturing clinical complexity that supports accurate coding.
-          </Text>
-        </View>
-
-        {/* SATISFACTION - Compact */}
-        <View style={styles.dimensionCardCompact}>
-          <View style={styles.dimensionHeaderCompact}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={styles.dimensionNameCompact}>SATISFACTION</Text>
-              <Text style={[styles.dimensionScoreCompact, { color: getScoreColor(calculations.satisfactionScore) }]}>{calculations.satisfactionScore}%</Text>
-            </View>
-            <View style={styles.dimensionValuesCompact}>
-              <Text style={styles.dimensionValueText}>You: <Text style={styles.bold}>{inputs.satisfaction}%</Text></Text>
-              <Text style={styles.dimensionValueText}>Benchmark: {ABRIDGE_BENCHMARKS.satisfaction}%</Text>
-            </View>
-          </View>
-          <View style={styles.dimensionBarCompact}>
-            <View style={[styles.dimensionBarFillCompact, { width: `${Math.min(100, calculations.satisfactionScore)}%`, backgroundColor: getScoreColor(calculations.satisfactionScore) }]} />
-          </View>
-          <Text style={styles.dimensionDescCompact}>
-            Satisfaction is a leading indicator of long-term success. Dissatisfied providers use solutions less over time, creating a downward spiral, while happy providers become champions who drive adoption among peers. Key drivers include accuracy of generated notes, time actually saved, reliability, and whether the solution makes their day genuinely better. Understanding why providers are dissatisfied is critical — low satisfaction often predicts declining utilization.
-          </Text>
-        </View>
-
-        {/* Visual Comparison Chart - Gap Visualization */}
-        <View style={styles.comparisonChart}>
-          <Text style={styles.comparisonChartTitle}>AT A GLANCE: YOUR GAP TO BENCHMARK</Text>
-          <Text style={{ fontSize: 7, color: colors.mediumGray, marginBottom: 8 }}>Each bar shows your performance as a percentage of the Abridge benchmark (100% = fully optimized)</Text>
-          
-          {/* Utilization */}
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>Utilization</Text>
-            <View style={styles.gapBarContainer}>
-              <View style={[styles.gapBarFill, { width: `${calculations.utilizationScore}%`, backgroundColor: calculations.utilizationScore >= 80 ? colors.green : calculations.utilizationScore >= 60 ? "#f59e0b" : colors.primary }]} />
-              <View style={styles.gapBarTarget} />
-            </View>
-            <Text style={styles.gapBarValue}>{calculations.utilizationScore}%</Text>
-          </View>
-          
-          {/* Efficiency */}
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>Efficiency</Text>
-            <View style={styles.gapBarContainer}>
-              <View style={[styles.gapBarFill, { width: `${calculations.efficiencyScore}%`, backgroundColor: calculations.efficiencyScore >= 80 ? colors.green : calculations.efficiencyScore >= 60 ? "#f59e0b" : colors.primary }]} />
-              <View style={styles.gapBarTarget} />
-            </View>
-            <Text style={styles.gapBarValue}>{calculations.efficiencyScore}%</Text>
-          </View>
-          
-          {/* Quality */}
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>Quality</Text>
-            <View style={styles.gapBarContainer}>
-              <View style={[styles.gapBarFill, { width: `${calculations.qualityScore}%`, backgroundColor: calculations.qualityScore >= 80 ? colors.green : calculations.qualityScore >= 60 ? "#f59e0b" : colors.primary }]} />
-              <View style={styles.gapBarTarget} />
-            </View>
-            <Text style={styles.gapBarValue}>{calculations.qualityScore}%</Text>
-          </View>
-          
-          {/* Satisfaction */}
-          <View style={styles.comparisonRow}>
-            <Text style={styles.comparisonLabel}>Satisfaction</Text>
-            <View style={styles.gapBarContainer}>
-              <View style={[styles.gapBarFill, { width: `${calculations.satisfactionScore}%`, backgroundColor: calculations.satisfactionScore >= 80 ? colors.green : calculations.satisfactionScore >= 60 ? "#f59e0b" : colors.primary }]} />
-              <View style={styles.gapBarTarget} />
-            </View>
-            <Text style={styles.gapBarValue}>{calculations.satisfactionScore}%</Text>
-          </View>
-          
-          <View style={styles.comparisonLegend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={styles.legendText}>Needs Focus (&lt;60%)</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#f59e0b" }]} />
-              <Text style={styles.legendText}>Developing (60-80%)</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.green }]} />
-              <Text style={styles.legendText}>Strong (80%+)</Text>
-            </View>
+          <View style={styles.dimensionCardBody}>
+            <Text style={styles.dimensionCardEducation}>
+              {DimensionEducation.utilization.whyMatters} {DimensionEducation.utilization.whatDrives}
+            </Text>
+            {calculations.utilizationScore < 70 && (
+              <View style={styles.dimensionCardInsight}>
+                <Text style={styles.dimensionCardInsightText}>
+                  At {calculations.utilizationScore}% of benchmark, there's significant room to increase adoption. Common causes include inconsistent habits, workflow friction, or providers who tried it early and didn't return.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Score Summary */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
-          <Text style={{ fontSize: 8, color: colors.darkGray }}>
-            Average: ({calculations.utilizationScore}% + {calculations.efficiencyScore}% + {calculations.qualityScore}% + {calculations.satisfactionScore}%) ÷ 4 = <Text style={{ fontWeight: "bold", color: colors.black }}>{calculations.realizationScore}%</Text>
-          </Text>
-          <View style={{ flexDirection: "row", backgroundColor: colors.backgroundGray, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 3 }}>
-            <Text style={{ fontSize: 7, color: colors.mediumGray }}>Gaps multiply:</Text>
-            <Text style={{ fontSize: 7, color: colors.darkGray, marginLeft: 3 }}>60% in one dimension limits all others</Text>
+        {/* Efficiency Card */}
+        <View style={styles.dimensionCard}>
+          <View style={[styles.dimensionCardHeader, { backgroundColor: colors.purpleLight }]}>
+            <View style={styles.dimensionCardHeaderLeft}>
+              <View style={[styles.dimensionCardIcon, { backgroundColor: colors.purple }]}>
+                <Text style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}>E</Text>
+              </View>
+              <Text style={styles.dimensionCardName}>EFFICIENCY</Text>
+            </View>
+            <Text style={[styles.dimensionCardScore, { color: getScoreColor(calculations.efficiencyScore) }]}>
+              {calculations.efficiencyScore}%
+            </Text>
+          </View>
+          <View style={styles.dimensionCardMetrics}>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>{inputs.timeSavedPerEncounter} min</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Your Savings</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Benchmark</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={[styles.dimensionCardMetricValue, { color: getScoreColor(calculations.efficiencyScore) }]}>
+                {getScoreStatus(calculations.efficiencyScore)}
+              </Text>
+              <Text style={styles.dimensionCardMetricLabel}>Status</Text>
+            </View>
+          </View>
+          <View style={styles.dimensionCardBar}>
+            <View style={[styles.dimensionCardBarFill, { 
+              width: `${Math.min(100, calculations.efficiencyScore)}%`,
+              backgroundColor: getScoreColor(calculations.efficiencyScore)
+            }]} />
+          </View>
+          <View style={styles.dimensionCardBody}>
+            <Text style={styles.dimensionCardEducation}>
+              {DimensionEducation.efficiency.whyMatters} {DimensionEducation.efficiency.whatDrives}
+            </Text>
+            {calculations.efficiencyScore < 70 && (
+              <View style={styles.dimensionCardInsight}>
+                <Text style={styles.dimensionCardInsightText}>
+                  At {calculations.efficiencyScore}% of benchmark, providers may be spending significant time editing notes after generation. This often indicates template issues, trust issues with the AI output, or workflow problems.
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Quality Card */}
+        <View style={styles.dimensionCard}>
+          <View style={[styles.dimensionCardHeader, { backgroundColor: colors.emeraldLight }]}>
+            <View style={styles.dimensionCardHeaderLeft}>
+              <View style={[styles.dimensionCardIcon, { backgroundColor: colors.emerald }]}>
+                <Text style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}>Q</Text>
+              </View>
+              <Text style={styles.dimensionCardName}>QUALITY (wRVU)</Text>
+            </View>
+            <Text style={[styles.dimensionCardScore, { color: getScoreColor(calculations.qualityScore) }]}>
+              {calculations.qualityScore}%
+            </Text>
+          </View>
+          <View style={styles.dimensionCardMetrics}>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>+{inputs.wrvuLift}%</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Your Lift</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Benchmark</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={[styles.dimensionCardMetricValue, { color: getScoreColor(calculations.qualityScore) }]}>
+                {getScoreStatus(calculations.qualityScore)}
+              </Text>
+              <Text style={styles.dimensionCardMetricLabel}>Status</Text>
+            </View>
+          </View>
+          <View style={styles.dimensionCardBar}>
+            <View style={[styles.dimensionCardBarFill, { 
+              width: `${Math.min(100, calculations.qualityScore)}%`,
+              backgroundColor: getScoreColor(calculations.qualityScore)
+            }]} />
+          </View>
+          <View style={styles.dimensionCardBody}>
+            <Text style={styles.dimensionCardEducation}>
+              {DimensionEducation.quality.whyMatters} {DimensionEducation.quality.whatDrives}
+            </Text>
+            {calculations.qualityScore < 70 && (
+              <View style={styles.dimensionCardInsight}>
+                <Text style={styles.dimensionCardInsightText}>
+                  At {calculations.qualityScore}% of benchmark, documentation quality improvement is lagging. This could be the largest dollar opportunity — review whether notes are capturing clinical complexity that supports accurate coding.
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Satisfaction Card */}
+        <View style={styles.dimensionCard}>
+          <View style={[styles.dimensionCardHeader, { backgroundColor: colors.amberLight }]}>
+            <View style={styles.dimensionCardHeaderLeft}>
+              <View style={[styles.dimensionCardIcon, { backgroundColor: colors.amber }]}>
+                <Text style={{ color: colors.white, fontSize: 10, fontWeight: "bold" }}>S</Text>
+              </View>
+              <Text style={styles.dimensionCardName}>SATISFACTION</Text>
+            </View>
+            <Text style={[styles.dimensionCardScore, { color: getScoreColor(calculations.satisfactionScore) }]}>
+              {calculations.satisfactionScore}%
+            </Text>
+          </View>
+          <View style={styles.dimensionCardMetrics}>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>{inputs.satisfaction}%</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Your Score</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={styles.dimensionCardMetricValue}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
+              <Text style={styles.dimensionCardMetricLabel}>Benchmark</Text>
+            </View>
+            <View style={styles.dimensionCardMetric}>
+              <Text style={[styles.dimensionCardMetricValue, { color: getScoreColor(calculations.satisfactionScore) }]}>
+                {getScoreStatus(calculations.satisfactionScore)}
+              </Text>
+              <Text style={styles.dimensionCardMetricLabel}>Status</Text>
+            </View>
+          </View>
+          <View style={styles.dimensionCardBar}>
+            <View style={[styles.dimensionCardBarFill, { 
+              width: `${Math.min(100, calculations.satisfactionScore)}%`,
+              backgroundColor: getScoreColor(calculations.satisfactionScore)
+            }]} />
+          </View>
+          <View style={styles.dimensionCardBody}>
+            <Text style={styles.dimensionCardEducation}>
+              {DimensionEducation.satisfaction.whyMatters} {DimensionEducation.satisfaction.whatDrives}
+            </Text>
+            {calculations.satisfactionScore < 75 && (
+              <View style={styles.dimensionCardInsight}>
+                <Text style={styles.dimensionCardInsightText}>
+                  At {calculations.satisfactionScore}% of benchmark, satisfaction is a concern. Understanding WHY providers are dissatisfied is critical — low satisfaction often predicts declining utilization.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -1926,8 +1711,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
         </View>
       </Page>
 
-      {/* PAGE 3: COST ANALYSIS + CALCULATIONS */}
-      <Page size="A4" style={styles.page} wrap={false}>
+      {/* ================================================================ */}
+      {/* PAGE 3: THE MATH - TRANSPARENT CALCULATIONS */}
+      {/* ================================================================ */}
+      <Page size="A4" style={styles.page}>
         <View style={styles.pageHeader}>
           <View style={styles.pageHeaderLeft}>
             <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
@@ -1938,168 +1725,200 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
         <View style={styles.sectionHeader}>
           <View style={styles.sectionAccent} />
-          <Text style={styles.sectionTitleStyled}>EXHIBIT 2: THE COST OF THE GAP OVER TIME</Text>
+          <Text style={styles.sectionTitle}>EXHIBIT 2: HOW EACH OPPORTUNITY IS CALCULATED</Text>
         </View>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 10 }}>
-          If the gap persists, unrealized value accumulates:
+        <Text style={styles.sectionSubtitle}>
+          Every number can be traced back to your inputs and transparent assumptions. No black boxes — you can verify each step.
         </Text>
 
-        <View style={styles.timelineSection}>
-          <View style={styles.timelineRow}>
-            <View style={styles.timelineBox}>
-              <Text style={styles.timelineLabel}>TODAY</Text>
-              <Text style={styles.timelineValue}>$0</Text>
-              <Text style={styles.timelineSubtext}>Starting point</Text>
+        {/* Utilization Opportunity */}
+        {utilizationGapValue > 0 && (
+          <View style={styles.opportunityCard}>
+            <View style={styles.opportunityCardHeader}>
+              <Text style={styles.opportunityCardTitle}>Utilization Opportunity</Text>
+              <Text style={styles.opportunityCardValue}>{formatCurrency(utilizationGapValue)}</Text>
             </View>
-            <Text style={styles.timelineArrow}>→</Text>
-            <View style={styles.timelineBox}>
-              <Text style={styles.timelineLabel}>YEAR 1</Text>
-              <Text style={styles.timelineValue}>{formatCurrency(calculations.annualGap)}</Text>
+            <View style={styles.opportunityCardInputs}>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>{inputs.utilization}%</Text>
+                <Text style={styles.opportunityCardInputLabel}>Your Rate</Text>
+              </View>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
+                <Text style={styles.opportunityCardInputLabel}>Benchmark</Text>
+              </View>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp</Text>
+                <Text style={styles.opportunityCardInputLabel}>Gap</Text>
+              </View>
             </View>
-            <Text style={styles.timelineArrow}>→</Text>
-            <View style={styles.timelineBox}>
-              <Text style={styles.timelineLabel}>YEAR 2</Text>
-              <Text style={styles.timelineValue}>{formatCurrency(calculations.annualGap * 2)}</Text>
-            </View>
-            <Text style={styles.timelineArrow}>→</Text>
-            <View style={styles.timelineBoxHighlight}>
-              <Text style={styles.timelineLabel}>YEAR 3</Text>
-              <Text style={styles.timelineValueLarge}>{formatCurrency(calculations.threeYearGap)}</Text>
-              <Text style={styles.timelineSubtext}>Cumulative</Text>
+            <View style={styles.opportunityCardSteps}>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Encounters at benchmark utilization</Text>
+                  <Text style={styles.stepMath}>{formatNumber(inputs.annualEncounters || 150000)} × {ABRIDGE_BENCHMARKS.utilization}% = <Text style={styles.stepResult}>{formatNumber(encountersAtBenchmark)} enc</Text></Text>
+                </View>
+              </View>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Gap encounters (not documented today)</Text>
+                  <Text style={styles.stepMath}>{formatNumber(encountersAtBenchmark)} - {formatNumber(Math.round((inputs.annualEncounters || 150000) * (inputs.utilization / 100)))} = <Text style={styles.stepResult}>{formatNumber(calculations.encounterGap)} enc</Text></Text>
+                </View>
+              </View>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Potential time savings if documented</Text>
+                  <Text style={styles.stepMath}>{formatNumber(calculations.encounterGap)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min ÷ 60 = <Text style={styles.stepResult}>{formatNumber(Math.round(calculations.encounterGap * ABRIDGE_BENCHMARKS.timeSavedAvg / 60))} hours</Text></Text>
+                </View>
+              </View>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>4</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Value conversion (conservative {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% rate)</Text>
+                  <Text style={styles.stepMath}>{formatNumber(Math.round(calculations.encounterGap * ABRIDGE_BENCHMARKS.timeSavedAvg / 60))} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% = <Text style={styles.stepResult}>{formatCurrency(utilizationGapValue)}</Text></Text>
+                </View>
+              </View>
+              <View style={styles.resultRow}>
+                <View style={styles.resultCheck}><Text style={styles.resultCheckText}>✓</Text></View>
+                <Text style={styles.resultLabel}>Annual utilization opportunity: {formatCurrency(utilizationGapValue)}</Text>
+              </View>
             </View>
           </View>
+        )}
 
-          <View style={styles.monthlyCallout}>
-            <Text style={styles.monthlyText}>
-              Each month represents approximately {formatCurrency(calculations.monthlyGap)} in additional potential value
+        {/* Efficiency Opportunity */}
+        {efficiencyGapValue > 0 && (
+          <View style={styles.opportunityCard}>
+            <View style={styles.opportunityCardHeader}>
+              <Text style={styles.opportunityCardTitle}>Efficiency Opportunity</Text>
+              <Text style={styles.opportunityCardValue}>{formatCurrency(efficiencyGapValue)}</Text>
+            </View>
+            <View style={styles.opportunityCardInputs}>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>{inputs.timeSavedPerEncounter} min</Text>
+                <Text style={styles.opportunityCardInputLabel}>Your Savings</Text>
+              </View>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+                <Text style={styles.opportunityCardInputLabel}>Benchmark</Text>
+              </View>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>{efficiencyTimeDiff.toFixed(1)} min</Text>
+                <Text style={styles.opportunityCardInputLabel}>Gap</Text>
+              </View>
+            </View>
+            <View style={styles.opportunityCardSteps}>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Additional time possible at benchmark efficiency</Text>
+                  <Text style={styles.stepMath}>{formatNumber(encountersAtBenchmark)} enc × {efficiencyTimeDiff.toFixed(1)} min ÷ 60 = <Text style={styles.stepResult}>{formatNumber(efficiencyHoursGap)} hours</Text></Text>
+                </View>
+              </View>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Value conversion ({VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% rate — not all time converts)</Text>
+                  <Text style={styles.stepMath}>{formatNumber(efficiencyHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% = <Text style={styles.stepResult}>{formatCurrency(efficiencyGapValue)}</Text></Text>
+                </View>
+              </View>
+              <View style={styles.resultRow}>
+                <View style={styles.resultCheck}><Text style={styles.resultCheckText}>✓</Text></View>
+                <Text style={styles.resultLabel}>Annual efficiency opportunity: {formatCurrency(efficiencyGapValue)}</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Quality Opportunity */}
+        {qualityGapValue > 0 && (
+          <View style={styles.opportunityCard}>
+            <View style={styles.opportunityCardHeader}>
+              <Text style={styles.opportunityCardTitle}>Quality Opportunity (wRVU)</Text>
+              <Text style={styles.opportunityCardValue}>{formatCurrency(qualityGapValue)}</Text>
+            </View>
+            <View style={styles.opportunityCardInputs}>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>+{inputs.wrvuLift}%</Text>
+                <Text style={styles.opportunityCardInputLabel}>Your Lift</Text>
+              </View>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+                <Text style={styles.opportunityCardInputLabel}>Benchmark</Text>
+              </View>
+              <View style={styles.opportunityCardInput}>
+                <Text style={styles.opportunityCardInputValue}>+{wrvuGapPercent.toFixed(1)}%</Text>
+                <Text style={styles.opportunityCardInputLabel}>Gap</Text>
+              </View>
+            </View>
+            <View style={styles.opportunityCardSteps}>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Additional wRVU at benchmark quality</Text>
+                  <Text style={styles.stepMath}>{formatNumber(encountersAtBenchmark)} enc × 1.5 avg wRVU × {wrvuGapPercent.toFixed(1)}% = <Text style={styles.stepResult}>{formatNumber(additionalWrvu)} wRVU</Text></Text>
+                </View>
+              </View>
+              <View style={styles.stepRow}>
+                <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepLabel}>Dollar value ({VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution — conservative)</Text>
+                  <Text style={styles.stepMath}>{formatNumber(additionalWrvu)} wRVU × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = <Text style={styles.stepResult}>{formatCurrency(qualityGapValue)}</Text></Text>
+                </View>
+              </View>
+              <View style={styles.resultRow}>
+                <View style={styles.resultCheck}><Text style={styles.resultCheckText}>✓</Text></View>
+                <Text style={styles.resultLabel}>Annual quality opportunity: {formatCurrency(qualityGapValue)}</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Total Opportunity Box */}
+        <View style={styles.totalOpportunityBox}>
+          <View>
+            <Text style={styles.totalOpportunityLabel}>TOTAL ANNUAL OPPORTUNITY</Text>
+            <Text style={styles.totalOpportunityBreakdown}>
+              {utilizationGapValue > 0 ? `Utilization (${formatCurrency(utilizationGapValue)})` : ''}
+              {utilizationGapValue > 0 && efficiencyGapValue > 0 ? ' + ' : ''}
+              {efficiencyGapValue > 0 ? `Efficiency (${formatCurrency(efficiencyGapValue)})` : ''}
+              {(utilizationGapValue > 0 || efficiencyGapValue > 0) && qualityGapValue > 0 ? ' + ' : ''}
+              {qualityGapValue > 0 ? `Quality (${formatCurrency(qualityGapValue)})` : ''}
             </Text>
           </View>
+          <Text style={styles.totalOpportunityValue}>{formatCurrency(calculations.annualGap)}</Text>
         </View>
 
-        <View style={[styles.sectionHeader, { marginTop: 10 }]}>
-          <View style={styles.sectionAccent} />
-          <Text style={styles.sectionTitleStyled}>EXHIBIT 3: HOW EACH OPPORTUNITY IS CALCULATED</Text>
-        </View>
-        <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 8 }}>
-          Every number can be traced back to your inputs and transparent assumptions:
-        </Text>
-
-        <View style={styles.gapCard}>
-          <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>UTILIZATION OPPORTUNITY</Text>
-            <Text style={styles.gapCardValue}>{formatCurrency(calculations.utilizationGapValue)}</Text>
-          </View>
-          <View style={styles.gapCardValues}>
-            <Text style={styles.gapValueItem}>Your utilization: <Text style={styles.gapValueBold}>{inputs.utilization}%</Text></Text>
-            <Text style={styles.gapValueItem}>Benchmark: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.utilization}%</Text></Text>
-            <Text style={styles.gapValueItem}>Difference: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp</Text></Text>
-          </View>
-          <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Encounters at benchmark: {formatNumber(inputs.annualEncounters || 150000)} × {ABRIDGE_BENCHMARKS.utilization}% = {formatNumber(encountersAtBenchmark)}</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Encounters at your rate: {formatNumber(inputs.annualEncounters || 150000)} × {inputs.utilization}% = {formatNumber(encountersAtCurrent)}</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Difference × time savings: {formatNumber(encounterGap)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(utilizationHoursGap)} hours</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Dollar value: {formatNumber(utilizationHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% = {formatCurrency(calculations.utilizationGapValue)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.gapCard}>
-          <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>EFFICIENCY OPPORTUNITY</Text>
-            <Text style={styles.gapCardValue}>{formatCurrency(calculations.efficiencyGapValue)}</Text>
-          </View>
-          <View style={styles.gapCardValues}>
-            <Text style={styles.gapValueItem}>Your efficiency: <Text style={styles.gapValueBold}>{inputs.timeSavedPerEncounter} min</Text></Text>
-            <Text style={styles.gapValueItem}>Benchmark: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text></Text>
-            <Text style={styles.gapValueItem}>Difference: <Text style={styles.gapValueBold}>{efficiencyTimeDiff} min</Text></Text>
-          </View>
-          <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Additional hours possible: {formatNumber(encountersAtBenchmark)} enc × {efficiencyTimeDiff} min ÷ 60 = {formatNumber(efficiencyHoursGap)} hours</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Dollar value: {formatNumber(efficiencyHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% = {formatCurrency(calculations.efficiencyGapValue)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.gapCard}>
-          <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>QUALITY OPPORTUNITY (wRVU)</Text>
-            <Text style={styles.gapCardValue}>{formatCurrency(calculations.wrvuGapValue)}</Text>
-          </View>
-          <View style={styles.gapCardValues}>
-            <Text style={styles.gapValueItem}>Your wRVU lift: <Text style={styles.gapValueBold}>+{inputs.wrvuLift}%</Text></Text>
-            <Text style={styles.gapValueItem}>Benchmark: <Text style={styles.gapValueBold}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text></Text>
-            <Text style={styles.gapValueItem}>Difference: <Text style={styles.gapValueBold}>{wrvuGapPercent}%</Text></Text>
-          </View>
-          <View style={styles.gapCardSteps}>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Additional wRVU: {formatNumber(encountersAtBenchmark)} enc × 1.5 avg wRVU × {wrvuGapPercent}% = {formatNumber(additionalWrvu)} wRVU</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Dollar value: {formatNumber(additionalWrvu)} wRVU × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% = {formatCurrency(calculations.wrvuGapValue)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.totalGapBox}>
-          <View style={styles.totalGapRow}>
-            <Text style={styles.totalGapLabel}>TOTAL ANNUAL OPPORTUNITY</Text>
-            <Text style={styles.totalGapValue}>{formatCurrency(calculations.annualGap)}</Text>
-          </View>
-          <Text style={styles.totalGapBreakdown}>
-            Utilization ({formatCurrency(calculations.utilizationGapValue)}) + Efficiency ({formatCurrency(calculations.efficiencyGapValue)}) + Quality ({formatCurrency(calculations.wrvuGapValue)})
-          </Text>
-        </View>
-
-        {/* Trajectory Chart - Opportunity Over Time (Bar-based) */}
-        <View style={styles.trajectoryChart}>
-          <Text style={styles.trajectoryTitle}>THE OPPORTUNITY OVER TIME</Text>
-          <Text style={styles.trajectorySubtitle}>Cumulative potential based on Abridge customer benchmarks</Text>
+        {/* Timeline Chart */}
+        <View style={styles.timelineContainer}>
+          <Text style={styles.timelineTitle}>THE OPPORTUNITY OVER TIME</Text>
+          <Text style={styles.timelineSubtitle}>Cumulative potential based on Abridge customer benchmarks</Text>
           
-          {/* Bar chart showing cumulative gap */}
-          <View style={styles.timelineBarChart}>
-            {/* Year 1 */}
-            <View style={styles.timelineBarGroup}>
-              <View style={styles.timelineBarWrapper}>
-                <View style={[styles.timelineBarFillPotential, { height: "33%" }]} />
-                <View style={[styles.timelineBarFillCurrent, { height: `${Math.round(33 * calculations.realizationScore / 100)}%` }]} />
-              </View>
-              <Text style={styles.timelineBarLabel}>Year 1</Text>
+          <View style={styles.timelineChart}>
+            <View style={styles.timelineBar}>
+              <View style={[styles.timelineBarFill, { height: 25 }]} />
               <Text style={styles.timelineBarValue}>{formatCurrency(calculations.annualGap)}</Text>
+              <Text style={styles.timelineBarLabel}>Year 1</Text>
             </View>
-            
-            {/* Year 2 */}
-            <View style={styles.timelineBarGroup}>
-              <View style={styles.timelineBarWrapper}>
-                <View style={[styles.timelineBarFillPotential, { height: "66%" }]} />
-                <View style={[styles.timelineBarFillCurrent, { height: `${Math.round(66 * calculations.realizationScore / 100)}%` }]} />
-              </View>
-              <Text style={styles.timelineBarLabel}>Year 2</Text>
+            <View style={styles.timelineBar}>
+              <View style={[styles.timelineBarFill, { height: 45 }]} />
               <Text style={styles.timelineBarValue}>{formatCurrency(calculations.annualGap * 2)}</Text>
+              <Text style={styles.timelineBarLabel}>Year 2</Text>
             </View>
-            
-            {/* Year 3 */}
-            <View style={styles.timelineBarGroup}>
-              <View style={styles.timelineBarWrapper}>
-                <View style={[styles.timelineBarFillPotential, { height: "100%" }]} />
-                <View style={[styles.timelineBarFillCurrent, { height: `${Math.round(100 * calculations.realizationScore / 100)}%` }]} />
-              </View>
+            <View style={styles.timelineBar}>
+              <View style={[styles.timelineBarFill, { height: 65 }]} />
+              <Text style={styles.timelineBarValue}>{formatCurrency(calculations.threeYearGap)}</Text>
               <Text style={styles.timelineBarLabel}>Year 3</Text>
-              <Text style={styles.timelineBarValue}>{formatCurrency(calculations.annualGap * 3)}</Text>
             </View>
           </View>
           
-          {/* Legend */}
-          <View style={styles.trajectoryLegend}>
-            <View style={styles.trajectoryLegendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={styles.trajectoryLegendText}>Abridge benchmark value</Text>
-            </View>
-            <View style={styles.trajectoryLegendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.mediumGray }]} />
-              <Text style={styles.trajectoryLegendText}>Your current capture</Text>
-            </View>
-          </View>
-          
-          {/* Summary callout */}
-          <View style={styles.trajectorySummary}>
-            <View style={styles.trajectorySummaryIcon} />
-            <Text style={styles.trajectorySummaryLabel}>Total opportunity:</Text>
-            <Text style={styles.trajectorySummaryValue}>{formatCurrency(calculations.threeYearGap)}</Text>
-            <Text style={styles.trajectorySummaryPeriod}>over 3 years</Text>
+          <View style={styles.timelineTotalBox}>
+            <Text style={styles.timelineTotalLabel}>Total opportunity:</Text>
+            <Text style={styles.timelineTotalValue}>{formatCurrency(calculations.threeYearGap)}</Text>
+            <Text style={styles.timelineTotalPeriod}>over 3 years</Text>
           </View>
         </View>
 
@@ -2109,7 +1928,9 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
         </View>
       </Page>
 
+      {/* ================================================================ */}
       {/* PAGE 4: TAKEAWAYS & NEXT STEPS */}
+      {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.pageHeader}>
           <View style={styles.pageHeaderLeft}>
@@ -2119,12 +1940,37 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <Text style={styles.pageHeaderTitle}>Value Realization Assessment</Text>
         </View>
 
+        {/* Cost of Waiting */}
+        <View style={styles.waitingContainer}>
+          <Text style={styles.waitingTitle}>THE COST OF WAITING</Text>
+          <Text style={styles.waitingSubtitle}>Every month of delay is value that could have been captured</Text>
+          <View style={styles.waitingGrid}>
+            <View style={[styles.waitingCardHighlight, styles.waitingCardLast, { marginRight: 8 }]}>
+              <Text style={styles.waitingCardLabel}>Close Now</Text>
+              <Text style={styles.waitingCardValueGreen}>{formatCurrency(calculations.annualGap)}</Text>
+              <Text style={styles.waitingCardNote}>Full Year 1 value</Text>
+            </View>
+            <View style={styles.waitingCard}>
+              <Text style={styles.waitingCardLabel}>Wait 6 Months</Text>
+              <Text style={styles.waitingCardValue}>{formatCurrency(calculations.annualGap / 2)}</Text>
+              <Text style={styles.waitingCardNote}>Half the first year lost</Text>
+            </View>
+            <View style={[styles.waitingCard, styles.waitingCardLast]}>
+              <Text style={styles.waitingCardLabel}>Wait 12 Months</Text>
+              <Text style={styles.waitingCardValue}>$0</Text>
+              <Text style={styles.waitingCardNote}>Full year of value lost</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Key Takeaways */}
         <View style={styles.takeawaysBox}>
           <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
-          <Text style={styles.takeawayItem}>• You're capturing {calculations.realizationScore}% of ambient AI's potential value</Text>
-          <Text style={styles.takeawayItem}>• The largest opportunity is in {lowestDimension.name} ({lowestDimension.score}% of benchmark)</Text>
-          <Text style={styles.takeawayItem}>• Capturing this opportunity could mean {formatCurrency(calculations.annualGap)} annually / {formatCurrency(calculations.threeYearGap)} over 3 years</Text>
-          <Text style={styles.takeawayItem}>• All calculations use conservative assumptions — actual value may be higher</Text>
+          <Text style={styles.takeawaysItem}>• You're capturing <Text style={styles.bold}>{calculations.realizationScore}%</Text> of ambient AI's potential value</Text>
+          <Text style={styles.takeawaysItem}>• The largest opportunity is in <Text style={styles.bold}>{lowestDimension.name}</Text> ({lowestDimension.score}% of benchmark)</Text>
+          <Text style={styles.takeawaysItem}>• Capturing this opportunity could mean <Text style={styles.bold}>{formatCurrency(calculations.annualGap)} annually</Text> / {formatCurrency(calculations.threeYearGap)} over 3 years</Text>
+          <Text style={styles.takeawaysItem}>• Each month represents approximately <Text style={styles.bold}>{formatCurrency(monthlyGap)}</Text> in potential value</Text>
+          <Text style={styles.takeawaysItem}>• All calculations use conservative assumptions — actual value may be higher</Text>
         </View>
 
         {/* Strategic Next Steps */}
@@ -2133,25 +1979,26 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
             <Text style={styles.nextStepsTitle}>RECOMMENDED NEXT STEPS</Text>
             <Text style={styles.nextStepsFocus}>Focus: {nextSteps.focusArea}</Text>
           </View>
-          <Text style={styles.nextStepsIntro}>
-            {nextSteps.whyThis}
-          </Text>
-          <View style={styles.nextStepsGrid}>
-            <View style={styles.nextStepsColumn}>
-              <Text style={styles.nextStepsColumnTitle}>Quick Wins (This Week)</Text>
-              {nextSteps.quickWins.map((item, i) => (
-                <Text key={i} style={styles.nextStepsItem}>{item}</Text>
-              ))}
-            </View>
-            <View style={styles.nextStepsColumn}>
-              <Text style={styles.nextStepsColumnTitle}>Deeper Dives (This Month)</Text>
-              {nextSteps.deeperDives.map((item, i) => (
-                <Text key={i} style={styles.nextStepsItem}>{item}</Text>
-              ))}
+          <View style={styles.nextStepsContent}>
+            <Text style={styles.nextStepsIntro}>{nextSteps.whyThis}</Text>
+            <View style={styles.nextStepsGrid}>
+              <View style={styles.nextStepsColumn}>
+                <Text style={styles.nextStepsColumnTitle}>Quick Wins (This Week)</Text>
+                {nextSteps.quickWins.map((item, i) => (
+                  <Text key={i} style={styles.nextStepsItem}>{item}</Text>
+                ))}
+              </View>
+              <View style={styles.nextStepsColumn}>
+                <Text style={styles.nextStepsColumnTitle}>Deeper Dives (This Month)</Text>
+                {nextSteps.deeperDives.map((item, i) => (
+                  <Text key={i} style={styles.nextStepsItem}>{item}</Text>
+                ))}
+              </View>
             </View>
           </View>
         </View>
 
+        {/* Methodology */}
         <View style={styles.methodologySection}>
           <Text style={styles.methodologyTitle}>METHODOLOGY & ASSUMPTIONS</Text>
           <View style={styles.methodologyGrid}>
@@ -2160,9 +2007,9 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
               <Text style={styles.methodologyItem}>• {inputs.providers} providers</Text>
               <Text style={styles.methodologyItem}>• {formatNumber(inputs.annualEncounters || 150000)} annual encounters</Text>
               <Text style={styles.methodologyItem}>• {inputs.utilization}% utilization</Text>
-              <Text style={styles.methodologyItem}>• {inputs.timeSavedPerEncounter} min time savings</Text>
+              <Text style={styles.methodologyItem}>• {inputs.timeSavedPerEncounter} min time savings/encounter</Text>
               <Text style={styles.methodologyItem}>• +{inputs.wrvuLift}% wRVU lift</Text>
-              <Text style={styles.methodologyItem}>• {inputs.satisfaction}% satisfaction</Text>
+              <Text style={styles.methodologyItem}>• {inputs.satisfaction}% provider satisfaction</Text>
             </View>
             <View style={styles.methodologyColumn}>
               <Text style={styles.methodologyColumnTitle}>Abridge Benchmarks</Text>
@@ -2170,23 +2017,20 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
               <Text style={styles.methodologyItem}>• {ABRIDGE_BENCHMARKS.timeSavedAvg} min saved per encounter</Text>
               <Text style={styles.methodologyItem}>• +{ABRIDGE_BENCHMARKS.wrvuLift}% wRVU lift</Text>
               <Text style={styles.methodologyItem}>• {ABRIDGE_BENCHMARKS.satisfaction}% satisfaction</Text>
-              <Text style={[styles.methodologyColumnTitle, { marginTop: 6 }]}>Valuation Assumptions</Text>
+              <Text style={[styles.methodologyColumnTitle, { marginTop: 8 }]}>Valuation Assumptions</Text>
               <Text style={styles.methodologyItem}>• Provider time: ${VALUE_ASSUMPTIONS.hourlyRate}/hr</Text>
               <Text style={styles.methodologyItem}>• Utilization conversion: {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}%</Text>
               <Text style={styles.methodologyItem}>• Efficiency conversion: {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%</Text>
-              <Text style={styles.methodologyItem}>• wRVU: ${VALUE_ASSUMPTIONS.wrvuDollarValue} (Medicare CF)</Text>
+              <Text style={styles.methodologyItem}>• wRVU: ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU (Medicare CF)</Text>
             </View>
           </View>
           <Text style={styles.methodologyNote}>
-            Benchmarks based on aggregate data from 200+ health system partners. Individual results vary based on specialty mix and operational factors.
+            Benchmarks based on aggregate data from 200+ health system partners. Individual results vary based on specialty mix, operational factors, and implementation maturity. Conservative conversion rates ensure defensible projections.
           </Text>
         </View>
 
         {/* Contact CTA */}
         <View style={styles.contactCTA}>
-          <View style={styles.contactCTAHeader}>
-            <Text style={styles.contactCTATitle}>NEXT STEPS</Text>
-          </View>
           <Text style={styles.contactCTAText}>
             To discuss these findings and explore how Abridge can help capture this opportunity, contact your Abridge representative.
           </Text>
@@ -2203,6 +2047,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
     </Document>
   );
 };
+
+// ============================================================================
+// EXPORT FUNCTION
+// ============================================================================
 
 export async function generateAmbientPDF(inputs: SwitchInputs, calculations: SwitchCalculations, clientName?: string, preparedBy?: string) {
   const blob = await pdf(
