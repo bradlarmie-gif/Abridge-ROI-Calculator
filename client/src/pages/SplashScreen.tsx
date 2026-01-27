@@ -200,80 +200,103 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
 
       <style>{`
         @keyframes splashFloat1 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(15px, -25px) rotate(3deg); }
-          50% { transform: translate(-10px, -45px) rotate(-2deg); }
-          75% { transform: translate(20px, -20px) rotate(4deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          15% { transform: translate(60px, -40px) rotate(8deg); }
+          35% { transform: translate(120px, 30px) rotate(-5deg); }
+          55% { transform: translate(80px, -80px) rotate(12deg); }
+          75% { transform: translate(-30px, -50px) rotate(-3deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
         }
         @keyframes splashFloat2 {
-          0%, 100% { transform: translate(0, 0) rotate(180deg); }
-          33% { transform: translate(-20px, -35px) rotate(175deg); }
-          66% { transform: translate(15px, -50px) rotate(185deg); }
+          0% { transform: translate(0, 0) rotate(180deg); }
+          20% { transform: translate(-80px, 50px) rotate(190deg); }
+          45% { transform: translate(-140px, -30px) rotate(170deg); }
+          70% { transform: translate(-60px, -90px) rotate(185deg); }
+          100% { transform: translate(0, 0) rotate(180deg); }
         }
         @keyframes splashFloat3 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          20% { transform: translate(25px, -30px) rotate(-3deg); }
-          40% { transform: translate(10px, -55px) rotate(2deg); }
-          60% { transform: translate(-15px, -40px) rotate(-4deg); }
-          80% { transform: translate(-5px, -20px) rotate(1deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          18% { transform: translate(90px, 60px) rotate(-8deg); }
+          36% { transform: translate(40px, -70px) rotate(6deg); }
+          54% { transform: translate(-50px, -120px) rotate(-12deg); }
+          72% { transform: translate(-100px, -40px) rotate(4deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
         }
         @keyframes splashFloat4 {
-          0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(-25px, -20px); }
-          50% { transform: translate(-15px, -45px); }
-          75% { transform: translate(10px, -30px); }
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(-100px, 70px); }
+          50% { transform: translate(-60px, -80px); }
+          75% { transform: translate(50px, -40px); }
+          100% { transform: translate(0, 0); }
         }
         @keyframes splashFloat5 {
-          0%, 100% { transform: translate(0, 0); }
-          33% { transform: translate(30px, -15px); }
-          66% { transform: translate(20px, 20px); }
+          0% { transform: translate(0, 0); }
+          20% { transform: translate(80px, -60px); }
+          40% { transform: translate(140px, 20px); }
+          60% { transform: translate(100px, 80px); }
+          80% { transform: translate(30px, 50px); }
+          100% { transform: translate(0, 0); }
         }
         @keyframes splashFloat6 {
-          0%, 100% { transform: translate(0, 0) scaleX(-1); }
-          33% { transform: translate(-30px, 15px) scaleX(-1); }
-          66% { transform: translate(-20px, -25px) scaleX(-1); }
+          0% { transform: translate(0, 0) scaleX(-1); }
+          30% { transform: translate(-90px, -70px) scaleX(-1); }
+          60% { transform: translate(-50px, 60px) scaleX(-1); }
+          100% { transform: translate(0, 0) scaleX(-1); }
         }
         @keyframes splashFloat7 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(-20px, -15px) rotate(8deg); }
-          50% { transform: translate(10px, -35px) rotate(-5deg); }
-          75% { transform: translate(25px, -20px) rotate(10deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          22% { transform: translate(-70px, 80px) rotate(15deg); }
+          44% { transform: translate(40px, 120px) rotate(-10deg); }
+          66% { transform: translate(100px, 50px) rotate(20deg); }
+          88% { transform: translate(60px, -30px) rotate(-5deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
         }
         @keyframes splashFloat8 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          33% { transform: translate(15px, -40px) rotate(-6deg); }
-          66% { transform: translate(-20px, -25px) rotate(8deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(70px, -100px) rotate(-12deg); }
+          50% { transform: translate(-40px, -140px) rotate(8deg); }
+          75% { transform: translate(-90px, -60px) rotate(-6deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
         }
         @keyframes splashFloat9 {
-          0%, 100% { transform: translate(0, 0); }
-          20% { transform: translate(-15px, -20px); }
-          40% { transform: translate(10px, -35px); }
-          60% { transform: translate(25px, -25px); }
-          80% { transform: translate(5px, -10px); }
+          0% { transform: translate(0, 0); }
+          17% { transform: translate(-60px, -50px); }
+          34% { transform: translate(30px, -110px); }
+          51% { transform: translate(100px, -70px); }
+          68% { transform: translate(80px, 20px); }
+          85% { transform: translate(20px, 40px); }
+          100% { transform: translate(0, 0); }
         }
         @keyframes splashFloat10 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(-25px, -30px) rotate(5deg); }
-          50% { transform: translate(5px, -50px) rotate(-3deg); }
-          75% { transform: translate(20px, -35px) rotate(7deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          20% { transform: translate(-80px, 40px) rotate(10deg); }
+          40% { transform: translate(-120px, -50px) rotate(-8deg); }
+          60% { transform: translate(-50px, -100px) rotate(15deg); }
+          80% { transform: translate(30px, -60px) rotate(-5deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
         }
         @keyframes splashFloat11 {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          33% { transform: translate(-20px, -25px) rotate(-4deg); }
-          66% { transform: translate(15px, -40px) rotate(6deg); }
+          0% { transform: translate(0, 0) rotate(0deg); }
+          28% { transform: translate(-90px, -80px) rotate(-15deg); }
+          56% { transform: translate(20px, -130px) rotate(10deg); }
+          84% { transform: translate(70px, -50px) rotate(-8deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
         }
         @keyframes splashFloat12 {
-          0%, 100% { transform: translate(0, 0) rotate(90deg); }
-          25% { transform: translate(20px, -20px) rotate(95deg); }
-          50% { transform: translate(-10px, -35px) rotate(85deg); }
-          75% { transform: translate(15px, -15px) rotate(92deg); }
+          0% { transform: translate(0, 0) rotate(90deg); }
+          25% { transform: translate(80px, 60px) rotate(105deg); }
+          50% { transform: translate(50px, -70px) rotate(75deg); }
+          75% { transform: translate(-40px, -40px) rotate(100deg); }
+          100% { transform: translate(0, 0) rotate(90deg); }
         }
         @keyframes splashFloat13 {
-          0%, 100% { transform: translate(0, 0); }
-          20% { transform: translate(-20px, -15px); }
-          40% { transform: translate(15px, -30px); }
-          60% { transform: translate(-10px, -45px); }
-          80% { transform: translate(10px, -20px); }
+          0% { transform: translate(0, 0); }
+          18% { transform: translate(-70px, 50px); }
+          36% { transform: translate(-110px, -40px); }
+          54% { transform: translate(-40px, -100px); }
+          72% { transform: translate(40px, -70px); }
+          90% { transform: translate(30px, -20px); }
+          100% { transform: translate(0, 0); }
         }
         @keyframes splashPulse {
           0%, 100% { 
