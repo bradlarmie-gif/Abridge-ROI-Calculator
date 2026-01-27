@@ -676,7 +676,16 @@ export const generateScribePDF = async (
   const blob = await pdf(
     <ScribePDFDocument inputs={inputs} calculations={calculations} clientName={clientName} preparedBy={preparedBy} />
   ).toBlob();
-  saveAs(blob, `scribe-program-analysis-${new Date().toISOString().split("T")[0]}.pdf`);
+  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  
+  if (isMobile) {
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  } else {
+    saveAs(blob, `scribe-program-analysis-${new Date().toISOString().split("T")[0]}.pdf`);
+  }
 };
 
 export default ScribePDFDocument;

@@ -2215,5 +2215,14 @@ export async function generateAmbientPDF(inputs: SwitchInputs, calculations: Swi
   ).toBlob();
   const today = new Date().toISOString().split("T")[0];
   const sanitizedClientName = (clientName || "organization").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 30);
-  saveAs(blob, `value-assessment-${sanitizedClientName}-${today}.pdf`);
+  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  
+  if (isMobile) {
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  } else {
+    saveAs(blob, `value-assessment-${sanitizedClientName}-${today}.pdf`);
+  }
 }
