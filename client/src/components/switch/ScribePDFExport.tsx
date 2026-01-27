@@ -44,18 +44,16 @@ const styles = StyleSheet.create({
     padding: 40,
     paddingBottom: 32,
   },
-  heroHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 32,
-  },
   heroMeta: {
+    position: "absolute",
+    top: 40,
+    right: 40,
     textAlign: "right",
   },
   heroMetaText: {
     fontSize: 8,
     color: colors.lightGray,
+    marginBottom: 2,
   },
   heroClientName: {
     fontSize: 28,
@@ -358,20 +356,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   
-  methodologySection: {
-    marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-  },
-  methodologyTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
   methodologyText: {
     fontSize: 7,
     color: colors.lightGray,
@@ -431,13 +415,11 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
       <Page size="A4" style={styles.page}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <View style={styles.heroHeader}>
-            <Image src={abridgeLogoPath} style={{ width: 85, height: 17 }} />
-            <View style={styles.heroMeta}>
-              <Text style={styles.heroMetaText}>Prepared for {displayPreparedBy}</Text>
-              <Text style={styles.heroMetaText}>{today}</Text>
-            </View>
+          <View style={styles.heroMeta}>
+            <Text style={styles.heroMetaText}>{today}</Text>
+            <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
           </View>
+          <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
           <Text style={styles.heroClientName}>{displayClientName}</Text>
           <Text style={styles.heroTagline}>
             Your scribe program represents a strategic investment in documentation support.{"\n"}
@@ -595,17 +577,15 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
             <Text style={styles.ctaText}>Ready to explore how AI can scale your documentation support?</Text>
             <Text style={styles.ctaLink}>Contact your Abridge partner to learn more</Text>
           </View>
-
-          <View style={styles.methodologySection}>
-            <Text style={styles.methodologyTitle}>Methodology</Text>
-            <Text style={styles.methodologyText}>
-              Based on {inputs.scribeCount} scribes at ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs/week, covering {inputs.providersWithScribes} of {inputs.totalProviders} providers. Hidden costs assume ~40% annual turnover at $5K/scribe training and ~15% management overhead. Scaling assumes consistent scribe-to-provider ratio of 1:{calculations.scribeRatio}.
-            </Text>
-          </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Abridge Scribe Program Analysis</Text>
+          <View>
+            <Text style={styles.footerText}>Abridge Scribe Program Analysis</Text>
+            <Text style={[styles.methodologyText, { marginTop: 4, maxWidth: 400 }]}>
+              Based on {inputs.scribeCount} scribes at ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs/week. Hidden costs: ~40% turnover + 15% overhead.
+            </Text>
+          </View>
           <Text style={styles.footerText}>Page 2 of 2</Text>
         </View>
       </Page>
