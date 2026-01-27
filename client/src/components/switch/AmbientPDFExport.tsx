@@ -1289,7 +1289,7 @@ const getStageNarrative = (stage: string, score: number, gap: number): string =>
 };
 
 const getPrimaryRecommendation = (lowest: DimensionInfo, highest: DimensionInfo): string => {
-  return `Your data shows ${lowest.name} as your biggest gap (${lowest.score}% of benchmark), while ${highest.name} is your relative strength (${highest.score}%). This suggests targeted intervention on ${lowest.name} could yield disproportionate returns without disrupting what's already working.`;
+  return `Your data shows ${lowest.name} as your biggest opportunity area (${lowest.score}% of benchmark), while ${highest.name} is your relative strength (${highest.score}%). This suggests focused attention on ${lowest.name} could yield meaningful returns without disrupting what's already working.`;
 };
 
 const getRiskStatement = (stage: string, gap: number): string => {
@@ -1584,7 +1584,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <Text style={styles.sectionTitleStyled}>CONTEXT: UNDERSTANDING VALUE REALIZATION</Text>
         </View>
         <Text style={styles.contextText}>
-          Ambient AI creates value through four dimensions: utilization (encounter coverage), efficiency (time savings), quality (wRVU lift), and satisfaction (provider adoption). Most organizations capture 30-60% of potential value because optimization requires all four dimensions working together. Small gaps compound into significant unrealized value.
+          Ambient AI creates value through four dimensions: utilization (encounter coverage), efficiency (time savings), quality (wRVU lift), and satisfaction (provider adoption). Most organizations capture 30-60% of potential value because optimization requires all four dimensions working together. Small differences can add up to meaningful opportunity over time.
         </Text>
 
         {/* Section: Results */}
@@ -1628,7 +1628,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
             </Text>
           </View>
           <View style={styles.findingsSubsection}>
-            <Text style={styles.findingsSubtitle}>What's at Stake</Text>
+            <Text style={styles.findingsSubtitle}>What We're Seeing</Text>
             <Text style={styles.findingsText}>
               {getRiskStatement(calculations.maturityLevel, calculations.annualGap)}
             </Text>
@@ -1978,7 +1978,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
         <View style={[styles.sectionHeader, { marginTop: 10 }]}>
           <View style={styles.sectionAccent} />
-          <Text style={styles.sectionTitleStyled}>EXHIBIT 3: HOW EACH GAP IS CALCULATED</Text>
+          <Text style={styles.sectionTitleStyled}>EXHIBIT 3: HOW EACH OPPORTUNITY IS CALCULATED</Text>
         </View>
         <Text style={{ fontSize: 8, color: colors.darkGray, marginBottom: 8 }}>
           Every number can be traced back to your inputs and transparent assumptions:
@@ -1986,31 +1986,31 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
         <View style={styles.gapCard}>
           <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>UTILIZATION GAP</Text>
+            <Text style={styles.gapCardTitle}>UTILIZATION OPPORTUNITY</Text>
             <Text style={styles.gapCardValue}>{formatCurrency(calculations.utilizationGapValue)}</Text>
           </View>
           <View style={styles.gapCardValues}>
             <Text style={styles.gapValueItem}>Your utilization: <Text style={styles.gapValueBold}>{inputs.utilization}%</Text></Text>
             <Text style={styles.gapValueItem}>Benchmark: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.utilization}%</Text></Text>
-            <Text style={styles.gapValueItem}>Gap: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp</Text></Text>
+            <Text style={styles.gapValueItem}>Difference: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.utilization - inputs.utilization}pp</Text></Text>
           </View>
           <View style={styles.gapCardSteps}>
             <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Encounters at benchmark: {formatNumber(inputs.annualEncounters || 150000)} × {ABRIDGE_BENCHMARKS.utilization}% = {formatNumber(encountersAtBenchmark)}</Text>
             <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 2:</Text> Encounters at your rate: {formatNumber(inputs.annualEncounters || 150000)} × {inputs.utilization}% = {formatNumber(encountersAtCurrent)}</Text>
-            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Gap × time savings: {formatNumber(encounterGap)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(utilizationHoursGap)} hours</Text>
+            <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 3:</Text> Difference × time savings: {formatNumber(encounterGap)} enc × {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {formatNumber(utilizationHoursGap)} hours</Text>
             <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 4:</Text> Dollar value: {formatNumber(utilizationHoursGap)} hrs × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% = {formatCurrency(calculations.utilizationGapValue)}</Text>
           </View>
         </View>
 
         <View style={styles.gapCard}>
           <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>EFFICIENCY GAP</Text>
+            <Text style={styles.gapCardTitle}>EFFICIENCY OPPORTUNITY</Text>
             <Text style={styles.gapCardValue}>{formatCurrency(calculations.efficiencyGapValue)}</Text>
           </View>
           <View style={styles.gapCardValues}>
             <Text style={styles.gapValueItem}>Your efficiency: <Text style={styles.gapValueBold}>{inputs.timeSavedPerEncounter} min</Text></Text>
             <Text style={styles.gapValueItem}>Benchmark: <Text style={styles.gapValueBold}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text></Text>
-            <Text style={styles.gapValueItem}>Gap: <Text style={styles.gapValueBold}>{efficiencyTimeDiff} min</Text></Text>
+            <Text style={styles.gapValueItem}>Difference: <Text style={styles.gapValueBold}>{efficiencyTimeDiff} min</Text></Text>
           </View>
           <View style={styles.gapCardSteps}>
             <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Additional hours possible: {formatNumber(encountersAtBenchmark)} enc × {efficiencyTimeDiff} min ÷ 60 = {formatNumber(efficiencyHoursGap)} hours</Text>
@@ -2020,13 +2020,13 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
         <View style={styles.gapCard}>
           <View style={styles.gapCardHeader}>
-            <Text style={styles.gapCardTitle}>QUALITY GAP (wRVU)</Text>
+            <Text style={styles.gapCardTitle}>QUALITY OPPORTUNITY (wRVU)</Text>
             <Text style={styles.gapCardValue}>{formatCurrency(calculations.wrvuGapValue)}</Text>
           </View>
           <View style={styles.gapCardValues}>
             <Text style={styles.gapValueItem}>Your wRVU lift: <Text style={styles.gapValueBold}>+{inputs.wrvuLift}%</Text></Text>
             <Text style={styles.gapValueItem}>Benchmark: <Text style={styles.gapValueBold}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text></Text>
-            <Text style={styles.gapValueItem}>Gap: <Text style={styles.gapValueBold}>{wrvuGapPercent}%</Text></Text>
+            <Text style={styles.gapValueItem}>Difference: <Text style={styles.gapValueBold}>{wrvuGapPercent}%</Text></Text>
           </View>
           <View style={styles.gapCardSteps}>
             <Text style={styles.gapStep}><Text style={styles.gapStepLabel}>Step 1:</Text> Additional wRVU: {formatNumber(encountersAtBenchmark)} enc × 1.5 avg wRVU × {wrvuGapPercent}% = {formatNumber(additionalWrvu)} wRVU</Text>
@@ -2123,7 +2123,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <Text style={styles.takeawaysTitle}>KEY TAKEAWAYS</Text>
           <Text style={styles.takeawayItem}>• You're capturing {calculations.realizationScore}% of ambient AI's potential value</Text>
           <Text style={styles.takeawayItem}>• The largest opportunity is in {lowestDimension.name} ({lowestDimension.score}% of benchmark)</Text>
-          <Text style={styles.takeawayItem}>• Closing the gap could recover {formatCurrency(calculations.annualGap)} annually / {formatCurrency(calculations.threeYearGap)} over 3 years</Text>
+          <Text style={styles.takeawayItem}>• Capturing this opportunity could mean {formatCurrency(calculations.annualGap)} annually / {formatCurrency(calculations.threeYearGap)} over 3 years</Text>
           <Text style={styles.takeawayItem}>• All calculations use conservative assumptions — actual value may be higher</Text>
         </View>
 
