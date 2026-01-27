@@ -98,6 +98,11 @@ const colors = {
   amberDark: "#92400E",
   blue: "#3B82F6",
   blueLight: "#EFF6FF",
+  // God tier dark hero colors
+  heroSlate: "#1e293b",
+  heroSlateLight: "#334155",
+  heroEmerald: "#10b981",
+  heroEmeraldLight: "#34d399",
 };
 
 const styles = StyleSheet.create({
@@ -137,16 +142,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  heroSection: {
+  // These are overridden by god tier styles below
+  oldHeroSection: {
     marginBottom: 20,
   },
-  heroTitle: {
+  oldHeroTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: colors.black,
     marginBottom: 4,
   },
-  heroSubtitle: {
+  oldHeroSubtitle: {
     fontSize: 11,
     color: colors.darkGray,
     lineHeight: 1.5,
@@ -282,6 +288,66 @@ const styles = StyleSheet.create({
   narrativeBold: {
     fontWeight: "bold",
     color: colors.black,
+  },
+  narrativeHighlight: {
+    fontWeight: "bold",
+    color: colors.heroEmerald,
+  },
+
+  // God tier dark hero styles
+  heroSection: {
+    backgroundColor: colors.heroSlate,
+    marginHorizontal: -40,
+    marginTop: -40,
+    paddingHorizontal: 40,
+    paddingTop: 30,
+    paddingBottom: 20,
+    marginBottom: 16,
+  },
+  heroMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 16,
+  },
+  heroTagline: {
+    fontSize: 9,
+    color: colors.heroEmeraldLight,
+    fontStyle: "italic",
+    marginBottom: 4,
+  },
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 6,
+  },
+  heroSubtitle: {
+    fontSize: 10,
+    color: colors.lightGray,
+    lineHeight: 1.4,
+  },
+  heroDate: {
+    fontSize: 8,
+    color: colors.lightGray,
+  },
+
+  // Content section styles
+  contentSection: {
+    paddingHorizontal: 0,
+  },
+  chapterLabel: {
+    fontSize: 7,
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 4,
+    fontWeight: "bold",
+  },
+  sectionSubtitle: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginBottom: 12,
   },
 
   footer: {
@@ -665,10 +731,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
   },
-  narrativeHighlight: {
-    fontWeight: "bold",
-    color: colors.green,
-  },
+  // narrativeHighlight is defined in god tier styles section above
 
   metricsRow: {
     flexDirection: "row",
@@ -1041,39 +1104,39 @@ const formatNumber = (value: number): string => {
 };
 
 const driverTheories: Record<string, string> = {
-  inpatientRetention: `Hospitalists spend 2+ hours per day on documentation—much of it after rounds or at home. This drives burnout and turnover. Replacing a hospitalist costs $400-600K when you factor in recruiting, lost revenue, and onboarding.
+  inpatientRetention: `The hypothesis: Hospitalists often spend 2+ hours per day on documentation—much of it after rounds or at home. This pattern could drive burnout and turnover. Replacing a hospitalist may cost $400-600K when factoring in recruiting, lost revenue, and onboarding.
 
-The documentation burden is consistently cited as the top complaint among hospitalists considering a change. When that burden lifts, satisfaction improves and turnover drops.`,
+If documentation burden is a significant factor in turnover decisions, reducing that burden could improve retention. The connection depends on your specific hospitalist population and their stated concerns.`,
 
-  inpatientCCMCC: `DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes mean missed CC/MCC assignments and lower DRG weights.
+  inpatientCCMCC: `The hypothesis: DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes could mean missed CC/MCC assignments and lower DRG weights.
 
-Abridge ensures what's discussed gets documented. When the clinical picture is complete, coders can assign appropriate complexity—and the DRG reflects the true acuity of care.`,
+If ambient documentation captures what's discussed, it may enable more complete coding. The actual impact depends on your current documentation quality, case mix, and CDI workflow.`,
 
-  inpatientCDI: `Many CDI queries are simply asking physicians to document what they already discussed with the patient. When Abridge captures these conversations automatically, the query becomes unnecessary.
+  inpatientCDI: `The hypothesis: Many CDI queries simply ask physicians to document what they already discussed with the patient. If Abridge captures these conversations automatically, some queries could become unnecessary.
 
-This frees CDI to focus on complex cases rather than chasing routine documentation gaps. The result: faster DRG finalization and less physician interruption.`,
+This could free CDI to focus on complex cases rather than routine documentation gaps. The actual reduction depends on your current query patterns and documentation practices.`,
 
-  inpatientDenials: `Most inpatient denials are appealed due to high stakes—but some are lost forever when documentation can't support the claim. Medical necessity wasn't captured. Status criteria weren't documented.
+  inpatientDenials: `The hypothesis: Some inpatient denials are lost when documentation can't support the claim—medical necessity wasn't captured, status criteria weren't documented.
 
-Abridge captures the clinical reasoning that makes the difference. When the thinking is documented, appeals have substance.`,
+If ambient documentation captures the clinical reasoning discussed with patients, it may strengthen initial documentation and support appeals. Results depend on your specific payer mix and denial patterns.`,
 };
 
 const driverImplications: Record<string, (value: number, data: InpatientPDFData) => string> = {
   inpatientRetention: (value, data) => {
     const departuresAvoided = (data.drivers.find(d => d.id === "inpatientRetention")?.inputs?.departuresAvoided as number) || 0;
     const years = departuresAvoided > 0 ? (1 / departuresAvoided).toFixed(1) : "~1";
-    return `Over ~${years} years, expect to retain 1 additional hospitalist you would have otherwise lost to burnout. That's ${formatCurrency(value)} in avoided replacement costs—not counting the continuity, culture, and quality impacts of physician turnover.`;
+    return `Based on these assumptions, over ~${years} years you might retain one additional hospitalist who would have otherwise left due to burnout. That suggests up to ${formatCurrency(value)} in potential avoided replacement costs—though the actual impact depends on your specific turnover patterns and contributing factors.`;
   },
   inpatientCCMCC: (value, data) => {
-    return `This represents ${formatCurrency(value)} in additional revenue through more accurate DRG assignment. Work with your CDI team to validate these capture rates for your specific case mix—the actual opportunity may be higher or lower depending on your current documentation quality.`;
+    return `This suggests up to ${formatCurrency(value)} in potential additional revenue through more accurate DRG assignment. Work with your CDI team to validate these capture rates for your specific case mix—the actual opportunity may vary significantly based on current documentation practices.`;
   },
   inpatientCDI: (value, data) => {
     const queriesAvoided = (data.drivers.find(d => d.id === "inpatientCDI")?.inputs?.queriesAvoided as number) || 0;
-    return `${formatNumber(queriesAvoided)} fewer queries means ${formatCurrency(value)} in operational savings. More importantly, it means less physician interruption and faster billing cycles. CDI can focus on complex cases instead of chasing routine documentation gaps.`;
+    return `If these assumptions hold, ${formatNumber(queriesAvoided)} fewer queries could mean up to ${formatCurrency(value)} in operational efficiency. This would also mean less physician interruption and potentially faster billing cycles—though results depend on your specific CDI workflow.`;
   },
   inpatientDenials: (value, data) => {
     const claimsRecovered = (data.drivers.find(d => d.id === "inpatientDenials")?.inputs?.claimsRecovered as number) || 0;
-    return `${formatNumber(claimsRecovered)} claims that would have been written off are now recoverable—${formatCurrency(value)} in revenue that stays with your organization. Better initial documentation means fewer denials and stronger appeals.`;
+    return `Based on these assumptions, ${formatNumber(claimsRecovered)} claims that might otherwise be written off could become recoverable—suggesting up to ${formatCurrency(value)} in potential retained revenue. Actual results depend on your payer mix and denial patterns.`;
   },
 };
 
@@ -1401,41 +1464,48 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPD
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
   const valuePerProvider = Math.round(data.netGain / data.providers);
 
+  // Generate personalized tagline based on ROI
+  const getHeroTagline = (): string => {
+    if (data.roi >= 5) return "Strong potential for value creation in your hospitalist program";
+    if (data.roi >= 3) return "Meaningful opportunities for efficiency and revenue recovery";
+    if (data.roi >= 2) return "A solid foundation worth exploring further";
+    return "Understanding your documentation value landscape";
+  };
+
   return (
     <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+      {/* Dark Hero Section */}
+      <View style={styles.heroSection}>
+        <View style={styles.heroMeta}>
           <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
+          <Text style={styles.heroDate}>{today}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
-          <Text style={styles.headerSubtitle}>{today}</Text>
-        </View>
+        <Text style={styles.heroTagline}>{getHeroTagline()}</Text>
+        <Text style={styles.heroTitle}>
+          {data.organizationName || "Your Organization"} — Inpatient ROI Model
+        </Text>
+        <Text style={styles.heroSubtitle}>
+          An exploratory model for understanding what ambient documentation could mean for your hospitalist program. 
+          Every projection traces back to your inputs and industry benchmarks.
+        </Text>
       </View>
 
-      {data.organizationName && (
-        <View style={{ marginBottom: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black }}>{data.organizationName}</Text>
-          <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>
-            {data.providers} {data.unitNamePlural} | {formatNumber(data.encounters)} admissions | {data.utilization}% utilization
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>What We're Exploring</Text>
+        <Text style={styles.sectionTitle}>Your Inpatient ROI Model</Text>
+        <Text style={styles.sectionSubtitle}>
+          {data.providers} {data.unitNamePlural} | {formatNumber(data.encounters)} admissions | {data.utilization}% utilization
+        </Text>
+
+        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            Inpatient documentation carries significant financial stakes—every note may impact DRG assignment, CDI workflows, denial defense, and physician retention. This assessment explores where value could come from and what might be recoverable with better documentation.
+          </Text>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginTop: 6 }}>
+            You selected <Text style={{ fontWeight: "bold" }}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step.
           </Text>
         </View>
-      )}
-
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Inpatient documentation carries the highest financial stakes in healthcare.</Text> Every note impacts DRG assignment, CDI workflows, denial defense, and physician retention. This assessment models where value actually comes from—and what's recoverable with better documentation.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          You selected <Text style={styles.narrativeBold}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
-        </Text>
-      </View>
 
       <View style={styles.metricsRow}>
         <View style={styles.metricBoxHighlight}>
@@ -1568,14 +1638,15 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPD
         </View>
       </View>
 
-      <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
-        <Text style={styles.narrativeText}>
-          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in net annual value, scaling from {data.providers} to {Math.round(data.providers * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
-        </Text>
+        <View style={{ backgroundColor: colors.paleGray, padding: 12, borderRadius: 4, marginTop: 8, borderLeftWidth: 3, borderLeftColor: colors.green }}>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            At <Text style={{ fontWeight: "bold" }}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in projected net annual value, scaling could increase benefits proportionally. The methodology section explains how these projections work—and where your situation might differ.
+          </Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Inpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1690,13 +1761,13 @@ const DriverDetailPage = ({
         </View>
 
         <View style={styles.implicationBox} wrap={false}>
-          <Text style={styles.implicationTitle}>What This Means</Text>
+          <Text style={styles.implicationTitle}>What This Suggests</Text>
           <Text style={styles.implicationText}>{implication}</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Inpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1729,19 +1800,22 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pa
 
       <View style={{ marginBottom: 8 }}>
         <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black, letterSpacing: 0.5, marginBottom: 4 }}>
-          YOUR SCALING JOURNEY
+          HOW SCALING COULD WORK
         </Text>
         <Text style={{ fontSize: 9, color: colors.darkGray }}>
-          From pilot to full deployment: {valueMultiple}x value growth over {timeline}
+          Exploring the path from pilot to full deployment—and where the math might differ.
         </Text>
       </View>
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Implementation follows a proven path.</Text> Starting with a pilot group of {journey.pilotProviders} {data.unitNamePlural.toLowerCase()}, you'll prove value quickly before expanding. This isn't just about adding more {data.unitNamePlural.toLowerCase()}—it's about building compounding returns as adoption increases.
+          This analysis starts with a pilot of {journey.pilotProviders} {data.unitNamePlural.toLowerCase()} at {journey.pilotUtilization}% utilization. 
+          If adoption follows typical patterns, value may compound—not just linearly with hospitalist count, but as utilization matures 
+          and workflows adapt to the new documentation approach.
         </Text>
         <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          At full scale with {journey.fullScaleProviders} {data.unitNamePlural.toLowerCase()} and {journey.fullScaleUtilization}% utilization, annual value reaches {formatCurrency(journey.fullScaleValue)}—a {valueMultiple}x increase from pilot. The journey matters as much as the destination.
+          At full scale ({journey.fullScaleProviders} {data.unitNamePlural.toLowerCase()}, {journey.fullScaleUtilization}% utilization), 
+          projected annual value could reach <Text style={styles.narrativeHighlight}>{formatCurrency(journey.fullScaleValue)}</Text>—approximately {valueMultiple}x the pilot projection. Individual results will vary.
         </Text>
       </View>
 
@@ -1863,22 +1937,24 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pa
       </View>
 
       <View style={styles.compoundingBox}>
-        <Text style={styles.compoundingTitle}>The Compounding Effect</Text>
+        <Text style={styles.compoundingTitle}>How Scaling May Affect Value</Text>
         <Text style={styles.compoundingValue}>+{formatCurrency(journey.networkEffect)}</Text>
-        <Text style={styles.compoundingSubtext}>Additional annual value from network effects at full scale</Text>
+        <Text style={styles.compoundingSubtext}>Projected additional value from network effects at full scale</Text>
       </View>
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Value doesn't grow linearly—it compounds.</Text> As more hospitalists adopt Abridge, documentation quality improves across the board. CDI teams query less frequently. Denial patterns shift. The value per {data.unitName.toLowerCase()} increases even as you add {data.unitNamePlural.toLowerCase()}.
+          In typical deployments, value may not grow linearly. As more hospitalists adopt ambient documentation, CDI teams could query less frequently 
+          and denial patterns may shift. These projections assume adoption patterns we've observed—your experience could differ.
         </Text>
         <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          This is why pilot success often understates full-scale potential. At {journey.fullScaleUtilization}% utilization with {journey.fullScaleProviders} {data.unitNamePlural.toLowerCase()}, network effects add {formatCurrency(journey.networkEffect)} to your annual value—bringing total potential to {formatCurrency(journey.fullScaleValue + journey.networkEffect)}.
+          At {journey.fullScaleUtilization}% utilization with {journey.fullScaleProviders} {data.unitNamePlural.toLowerCase()}, network effects could 
+          add approximately {formatCurrency(journey.networkEffect)} to your annual value—suggesting total potential near {formatCurrency(journey.fullScaleValue + journey.networkEffect)}.
         </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Inpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1901,44 +1977,45 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData
       </View>
 
       <View style={styles.connectedSection}>
-        <Text style={styles.connectedTitle}>CONNECTED VALUE</Text>
-        <Text style={styles.connectedSubtitle}>ED + Inpatient compounds your results</Text>
+        <Text style={styles.connectedTitle}>EXPLORING CONNECTED VALUE</Text>
+        <Text style={styles.connectedSubtitle}>How ED + Inpatient documentation could compound results</Text>
         
         <Text style={styles.connectedIntro}>
-          When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense.
+          When both ED and Inpatient use ambient documentation, value may compound. The admission documentation that starts in ED could flow directly into inpatient coding, CDI workflows, and denial defense.
         </Text>
         
         <View style={styles.connectedGrid}>
           <View style={styles.connectedItem}>
             <Text style={styles.connectedItemTitle}>DRG Capture</Text>
             <Text style={styles.connectedItemText}>
-              CCs/MCCs documented in ED carry forward—your case mix starts stronger from admission.
+              CCs/MCCs documented in ED may carry forward—potentially starting case mix stronger from admission.
             </Text>
           </View>
           
           <View style={styles.connectedItem}>
             <Text style={styles.connectedItemTitle}>CDI Efficiency</Text>
             <Text style={styles.connectedItemText}>
-              When the ED note is complete, CDI teams query less and focus on complex cases.
+              When the ED note is complete, CDI teams may query less and focus on complex cases.
             </Text>
           </View>
           
           <View style={styles.connectedItem}>
             <Text style={styles.connectedItemTitle}>Denial Prevention</Text>
             <Text style={styles.connectedItemText}>
-              Medical necessity documented at admission is your first line of defense against payer audits.
+              Medical necessity documented at admission could strengthen defense against payer audits.
             </Text>
           </View>
         </View>
         
         <View style={styles.connectedCallout}>
           <Text style={styles.connectedCalloutText}>
-            If you're also using Abridge in ED, the documentation quality benefits below are amplified—you're building on a stronger foundation.
+            If you're also using Abridge in ED, these documentation quality benefits may be amplified—though results depend on your specific workflows.
           </Text>
         </View>
       </View>
 
-      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 14 }}>Methodology & Assumptions</Text>
+      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>How We Built This Model</Text>
+      <Text style={{ fontSize: 9, color: colors.mediumGray, marginBottom: 14 }}>Understanding the inputs, benchmarks, and principles behind these projections.</Text>
 
       <View style={styles.methodologyGrid}>
         <View style={styles.methodologyColumn}>
@@ -1972,18 +2049,21 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData
       </View>
 
       <Text style={styles.methodologyNote}>
-        All benchmarks based on aggregate data from 200+ health system partners. Individual results vary based on patient acuity mix, 
-        payer mix, operational factors, and implementation quality. We use conservative assumptions throughout—actual value may be higher.
+        These benchmarks reflect aggregate patterns from health system deployments. Your results will depend on patient acuity mix, 
+        payer mix, operational factors, and implementation approach. We use conservative assumptions—actual value could be higher or lower 
+        depending on your specific circumstances.
       </Text>
 
       <View style={styles.closingBox}>
         <Text style={styles.closingText}>
-          "Inpatient documentation has the highest stakes—DRGs, CDI, denials, retention all trace back to the note. The difference between a 3x ROI and a 7x ROI usually isn't the technology. It's utilization, workflow integration, and knowing which drivers matter most for your hospitalist program."
+          This model is designed as a starting point for conversation, not a guarantee of results. The calculations are transparent 
+          and adjustable—feel free to stress-test the assumptions. The goal is to help you explore what ambient documentation 
+          might mean for your hospitalist program.
         </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Inpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
