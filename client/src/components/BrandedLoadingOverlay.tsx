@@ -52,89 +52,97 @@ export function BrandedLoadingOverlay({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden animate-in fade-in duration-300" style={{ backgroundColor: '#f8f9fa' }}>
       <div className="absolute inset-0 pointer-events-none">
         <img 
           src={patternV} 
           alt="" 
-          className="absolute w-16 md:w-24 opacity-40 animate-pulse"
+          className="absolute w-16 md:w-24"
           style={{ 
             top: '10%', 
             left: '-5%',
-            animation: 'floatRight 3s ease-in-out forwards'
+            animation: 'floatRight 3s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.15
           }}
         />
         <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-20 md:w-32 opacity-30"
+          className="absolute w-20 md:w-32"
           style={{ 
             top: '5%', 
             right: '-10%',
             animation: 'floatLeft 3.5s ease-in-out forwards',
-            transform: 'rotate(180deg)'
+            transform: 'rotate(180deg)',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.12
           }}
         />
         <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-24 md:w-40 opacity-35"
+          className="absolute w-24 md:w-40"
           style={{ 
             bottom: '5%', 
             left: '5%',
-            animation: 'floatUp 2.8s ease-in-out forwards'
+            animation: 'floatUp 2.8s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.15
           }}
         />
         <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-20 md:w-32 opacity-30"
+          className="absolute w-20 md:w-32"
           style={{ 
             bottom: '10%', 
             right: '10%',
-            animation: 'floatUp 3.2s ease-in-out forwards'
+            animation: 'floatUp 3.2s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.12
           }}
         />
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-32 md:w-48 opacity-25"
+          className="absolute w-32 md:w-48"
           style={{ 
             top: '40%', 
             left: '-20%',
-            animation: 'slideFromLeft 2s ease-out forwards'
+            animation: 'slideFromLeft 2s ease-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.1
           }}
         />
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-32 md:w-48 opacity-25"
+          className="absolute w-32 md:w-48"
           style={{ 
             top: '40%', 
             right: '-20%',
             transform: 'scaleX(-1)',
-            animation: 'slideFromRight 2s ease-out forwards'
+            animation: 'slideFromRight 2s ease-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.1
           }}
         />
       </div>
 
       <div className="relative max-w-lg mx-4 text-center animate-in slide-in-from-bottom-4 duration-500 z-10">
-        <div className="relative mb-8 flex justify-center">
+        <div className="relative mb-10 flex justify-center">
           <img 
             src={patternA} 
             alt="Abridge" 
             className="w-28 md:w-36 animate-pulse"
             style={{ 
-              filter: 'drop-shadow(0 0 40px rgba(234, 44, 0, 0.4))'
+              filter: 'drop-shadow(0 0 30px rgba(234, 44, 0, 0.3))'
             }}
           />
         </div>
 
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-10">
-          Building Your Bridge to Value
-        </h2>
-
-        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-100 ease-out"
             style={{ 
@@ -148,26 +156,26 @@ export function BrandedLoadingOverlay({
       <style>{`
         @keyframes floatRight {
           0% { transform: translateX(0) rotate(0deg); opacity: 0; }
-          20% { opacity: 0.4; }
-          100% { transform: translateX(120px) rotate(5deg); opacity: 0.5; }
+          20% { opacity: 0.15; }
+          100% { transform: translateX(120px) rotate(5deg); opacity: 0.2; }
         }
         @keyframes floatLeft {
           0% { transform: translateX(0) rotate(180deg); opacity: 0; }
-          20% { opacity: 0.3; }
-          100% { transform: translateX(-100px) rotate(175deg); opacity: 0.4; }
+          20% { opacity: 0.12; }
+          100% { transform: translateX(-100px) rotate(175deg); opacity: 0.15; }
         }
         @keyframes floatUp {
           0% { transform: translateY(0); opacity: 0; }
-          20% { opacity: 0.35; }
-          100% { transform: translateY(-60px); opacity: 0.45; }
+          20% { opacity: 0.15; }
+          100% { transform: translateY(-60px); opacity: 0.18; }
         }
         @keyframes slideFromLeft {
           0% { transform: translateX(-100%); opacity: 0; }
-          100% { transform: translateX(80px); opacity: 0.35; }
+          100% { transform: translateX(80px); opacity: 0.12; }
         }
         @keyframes slideFromRight {
           0% { transform: translateX(100%) scaleX(-1); opacity: 0; }
-          100% { transform: translateX(-80px) scaleX(-1); opacity: 0.35; }
+          100% { transform: translateX(-80px) scaleX(-1); opacity: 0.12; }
         }
       `}</style>
     </div>
