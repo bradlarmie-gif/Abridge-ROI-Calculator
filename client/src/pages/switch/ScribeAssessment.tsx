@@ -67,7 +67,8 @@ export default function ScribeAssessment({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
             <InputCard
-              icon={<Users className="w-4 h-4 text-[#6B7280]" />}
+              icon={<Users className="w-4 h-4 text-violet-600" />}
+              iconBg="bg-violet-50"
               label="How many scribes do you have?"
               value={inputs.scribeCount}
               onChange={(v) => updateInput("scribeCount", v)}
@@ -76,7 +77,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<DollarSign className="w-4 h-4 text-[#6B7280]" />}
+              icon={<DollarSign className="w-4 h-4 text-emerald-600" />}
+              iconBg="bg-emerald-50"
               label="Average cost per scribe"
               value={inputs.scribeCostPerHour}
               onChange={(v) => updateInput("scribeCostPerHour", v)}
@@ -86,7 +88,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<Clock className="w-4 h-4 text-[#6B7280]" />}
+              icon={<Clock className="w-4 h-4 text-blue-600" />}
+              iconBg="bg-blue-50"
               label="Hours per week (per scribe)"
               value={inputs.scribeHoursPerWeek}
               onChange={(v) => updateInput("scribeHoursPerWeek", v)}
@@ -95,7 +98,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<UserCheck className="w-4 h-4 text-[#6B7280]" />}
+              icon={<UserCheck className="w-4 h-4 text-violet-600" />}
+              iconBg="bg-violet-50"
               label="Providers supported by scribes"
               value={inputs.providersWithScribes}
               onChange={(v) => updateInput("providersWithScribes", v)}
@@ -105,7 +109,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<Building2 className="w-4 h-4 text-[#6B7280]" />}
+              icon={<Building2 className="w-4 h-4 text-slate-600" />}
+              iconBg="bg-slate-100"
               label="Total providers in your organization"
               value={inputs.totalProviders}
               onChange={(v) => updateInput("totalProviders", v)}
@@ -114,7 +119,8 @@ export default function ScribeAssessment({
             />
 
             <InputCard
-              icon={<Calendar className="w-4 h-4 text-[#6B7280]" />}
+              icon={<Calendar className="w-4 h-4 text-blue-600" />}
+              iconBg="bg-blue-50"
               label="Annual encounters (all providers)"
               value={inputs.annualEncounters}
               onChange={(v) => updateInput("annualEncounters", v)}
@@ -359,6 +365,7 @@ export default function ScribeAssessment({
 
 interface InputCardProps {
   icon: React.ReactNode;
+  iconBg?: string;
   label: string;
   value: number;
   onChange: (value: number) => void;
@@ -367,7 +374,7 @@ interface InputCardProps {
   testId: string;
 }
 
-function InputCard({ icon, label, value, onChange, unit, hint, testId }: InputCardProps) {
+function InputCard({ icon, iconBg = "bg-slate-100", label, value, onChange, unit, hint, testId }: InputCardProps) {
   const [localValue, setLocalValue] = useState(String(value));
   const [isFocused, setIsFocused] = useState(false);
 
@@ -401,7 +408,7 @@ function InputCard({ icon, label, value, onChange, unit, hint, testId }: InputCa
   return (
     <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-4 transition-all duration-200 hover:border-[#D1D5DB] hover:shadow-sm">
       <div className="flex items-center gap-2.5 mb-3">
-        <div className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shadow-sm">
+        <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center`}>
           {icon}
         </div>
         <label className="text-sm font-medium text-[#111827]">{label}</label>
