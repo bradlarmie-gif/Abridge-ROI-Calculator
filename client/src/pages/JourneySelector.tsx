@@ -1,4 +1,5 @@
 import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import { PrivacyNotice } from "@/components/PrivacyNotice";
@@ -19,16 +20,24 @@ interface PathCardProps {
   buttonText: string;
   onClick: () => void;
   testId: string;
+  delay: number;
 }
 
-function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClick, testId }: PathCardProps) {
+function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClick, testId, delay }: PathCardProps) {
   return (
-    <div 
-      className="bg-white border border-[#E5E7EB] rounded-xl p-5 md:p-8 flex flex-col cursor-pointer hover-elevate"
+    <motion.div 
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        duration: 0.5, 
+        delay: delay,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      className="group bg-white border border-[#E5E7EB] rounded-xl p-5 md:p-8 flex flex-col cursor-pointer transition-all duration-300 ease-out hover:shadow-lg hover:shadow-black/8 hover:-translate-y-1 hover:border-[#D1D5DB]"
       onClick={onClick}
       data-testid={testId}
     >
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-4 md:mb-6">
+      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-4 md:mb-6 transition-transform duration-300 ease-out group-hover:scale-105">
         <Icon className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
       </div>
       
@@ -38,13 +47,13 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       
       <Button
         variant="outline"
-        className="w-full border-[#EA2C00] text-[#EA2C00]"
+        className="w-full border-[#EA2C00] text-[#EA2C00] font-medium transition-all duration-200 group-hover:bg-[#EA2C00] group-hover:text-white group-hover:border-[#EA2C00]"
         data-testid={`${testId}-button`}
       >
         {buttonText}
-        <ChevronRight className="w-4 h-4 ml-1" />
+        <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
       </Button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -64,19 +73,29 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
         }}
       />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
-        <section className="text-center mb-10 md:mb-16">
+        <motion.section 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-center mb-10 md:mb-16"
+        >
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-[#111827] mb-3 md:mb-4 tracking-tight px-2">
             Model the impact of ambient documentation
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto px-2">
             Understand where the value actually comes from.
           </p>
-        </section>
+        </motion.section>
 
         <section className="mb-8 md:mb-12">
-          <p className="text-xs md:text-sm text-[#9CA3AF] uppercase tracking-wider font-medium text-center mb-6 md:mb-8">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="text-xs md:text-sm text-[#9CA3AF] uppercase tracking-wider font-medium text-center mb-6 md:mb-8"
+          >
             What brings you here today?
-          </p>
+          </motion.p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
             <PathCard
@@ -87,6 +106,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               buttonText="Get Started"
               onClick={onSelectExplore}
               testId="card-explore"
+              delay={0.15}
             />
             
             <PathCard
@@ -97,6 +117,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               buttonText="Load Your Results"
               onClick={onSelectExpand}
               testId="card-expand"
+              delay={0.25}
             />
             
             <PathCard
@@ -107,14 +128,20 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               buttonText="Compare Solutions"
               onClick={onSelectSwitch}
               testId="card-switch"
+              delay={0.35}
             />
           </div>
         </section>
 
-        <section className="max-w-5xl mx-auto mb-6 md:mb-8">
+        <motion.section 
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="max-w-5xl mx-auto mb-6 md:mb-8"
+        >
           <div 
             onClick={onSelectLearn}
-            className="flex flex-wrap items-center justify-center gap-2 md:gap-3 py-3 md:py-4 px-4 md:px-6 bg-[#F9FAFB] rounded-xl cursor-pointer hover-elevate"
+            className="flex flex-wrap items-center justify-center gap-2 md:gap-3 py-3 md:py-4 px-4 md:px-6 bg-[#F9FAFB] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[#F3F4F6]"
             data-testid="link-learn"
           >
             <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-[#6B7280]" />
@@ -124,17 +151,27 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               <ChevronRight className="w-4 h-4" />
             </span>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="max-w-2xl mx-auto mb-8 md:mb-12">
+        <motion.section 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+          className="max-w-2xl mx-auto mb-8 md:mb-12"
+        >
           <PrivacyNotice />
-        </section>
+        </motion.section>
 
-        <footer className="border-t border-[#F3F4F6] pt-6 md:pt-8 text-center">
+        <motion.footer 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.7 }}
+          className="border-t border-[#F3F4F6] pt-6 md:pt-8 text-center"
+        >
           <p className="text-xs md:text-sm text-[#9CA3AF]">
             Used by 200+ health system partners
           </p>
-        </footer>
+        </motion.footer>
       </div>
     </div>
   );
