@@ -242,13 +242,13 @@ export default function ScribeFullAnalysis({
           transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-xl p-6 md:p-10 mb-8 text-center relative overflow-hidden"
         >
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <img src={patternV} alt="" className="absolute w-8 md:w-12 top-6 left-8" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternCorner} alt="" className="absolute w-10 md:w-14 top-4 right-12 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternQuarter} alt="" className="absolute w-12 md:w-16 bottom-6 left-16 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternSemicircle} alt="" className="absolute w-6 md:w-10 top-1/3 right-6" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternCorner} alt="" className="absolute w-8 md:w-12 bottom-8 right-20 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternV} alt="" className="absolute w-10 md:w-14 bottom-4 right-1/3 rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+          <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
+            <img src={patternV} alt="" className="absolute w-20 md:w-28 -top-4 -left-4 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternCorner} alt="" className="absolute w-24 md:w-32 -top-6 right-8 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternQuarter} alt="" className="absolute w-28 md:w-36 -bottom-8 -left-6 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternSemicircle} alt="" className="absolute w-16 md:w-24 top-1/4 -right-4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternCorner} alt="" className="absolute w-20 md:w-28 -bottom-4 right-1/4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternV} alt="" className="absolute w-24 md:w-32 bottom-1/3 -right-8 rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
           </div>
 
           <div className="relative">
