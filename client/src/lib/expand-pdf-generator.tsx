@@ -604,7 +604,13 @@ const formatCurrency = (num: number): string => {
   return `$${num.toLocaleString()}`;
 };
 
-const formatNumber = (num: number): string => num.toLocaleString();
+const formatNumber = (num: number): string => {
+  // Round to 2 decimal places for cleaner display
+  const rounded = Math.round(num * 100) / 100;
+  // Only show decimals if needed
+  if (Number.isInteger(rounded)) return rounded.toLocaleString();
+  return rounded.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+};
 
 const today = (): string => new Date().toLocaleDateString("en-US", { 
   year: "numeric", 
@@ -624,38 +630,38 @@ const getMetricNarrative = (metric: ExpandMetricData): string => {
   const magnitude = Math.abs(metric.changePercent);
   
   if (metric.id === "wrvu" || metric.id === "wrvuCapture") {
-    if (magnitude >= 5) return "This is the kind of improvement that gets CFO attention. Documentation is now capturing the true complexity of care—revenue that was always earned but never captured. Your providers aren't working harder; they're just getting credit for what they already do.";
-    if (magnitude >= 3) return "Documentation is telling a more complete story of the care being delivered. This isn't about upcoding—it's about accuracy. Every wRVU recovered is revenue that was earned but previously left on the table.";
-    if (magnitude >= 1) return "Early signals of improvement are emerging. As providers trust the AI-generated notes more, they're making fewer edits—and the documentation naturally becomes more complete.";
-    return "The foundation is being laid. wRVU improvement typically accelerates as providers settle into the new workflow and trust the documentation quality.";
+    if (magnitude >= 5) return "We're observing documentation that appears to be capturing more clinical complexity. This suggests providers may be getting better recognition for work they were already doing—though it's worth validating what's driving this pattern.";
+    if (magnitude >= 3) return "The data suggests documentation is telling a more complete story. This isn't about upcoding—it's about accuracy. These early patterns are worth monitoring as the deployment matures.";
+    if (magnitude >= 1) return "We're seeing early signals of improvement. As providers become more comfortable with AI-generated notes, the documentation often becomes more thorough naturally.";
+    return "The foundation is being established. wRVU patterns typically become clearer as providers settle into the new workflow and develop trust in the documentation quality.";
   }
   
   if (metric.id === "timeSavings") {
     const minutes = Math.abs(metric.change);
-    if (minutes >= 4) return `${minutes} minutes per encounter doesn't sound like much—until you multiply it by thousands of visits. That's hours back every week. Hours that used to be spent typing, now spent with patients, with family, or just breathing.`;
-    if (minutes >= 2) return `Think about what ${minutes} minutes per encounter really means: less clicking, less typing, fewer "I'll finish this chart later" moments. It's the small wins that change how work feels.`;
-    return "Time savings often start small and grow as providers find their rhythm. The muscle memory of documentation is being rewired—and that takes time.";
+    if (minutes >= 4) return `We're seeing about ${minutes} minutes saved per encounter. Across thousands of visits, that translates to meaningful time recovered—time that might go back to patients, or help providers leave the office earlier.`;
+    if (minutes >= 2) return `The data shows around ${minutes} minutes saved per encounter. These incremental gains often compound as providers refine their workflow and find their rhythm.`;
+    return "Time savings often start modestly and grow as providers find their rhythm. The transition period is real—new habits take time to form.";
   }
   
   if (metric.id === "workOutsideWork") {
-    if (metric.change < -20) return "This is the metric that matters most to providers and their families. Less pajama time means more presence at home, more recovery between shifts, and ultimately—more sustainable careers. Burnout prevention isn't just good for people; it's good for retention.";
-    if (metric.change < 0) return "Fewer hours spent charting after the kids are in bed. Less guilt about bringing work home. This is what sustainable practice looks like—and your providers are starting to feel it.";
-    return "After-hours documentation is one of the last metrics to move, because old habits die hard. But the foundation is in place for meaningful change.";
+    if (metric.change < -20) return "We're seeing a notable reduction in after-hours documentation. If this pattern holds, it could meaningfully impact work-life balance—something providers consistently tell us matters most.";
+    if (metric.change < 0) return "The trend suggests less documentation is happening outside of work hours. This is often a leading indicator of providers finding a more sustainable rhythm.";
+    return "After-hours documentation patterns are still developing. This is typically one of the last metrics to shift, as established habits take time to change.";
   }
   
   if (metric.id === "chartClosure") {
-    if (metric.change > 20) return "Same-day chart closure used to feel impossible. Now it's becoming routine. This isn't just about compliance—it's about care continuity. When charts close same-day, the next provider has what they need. Patients get better follow-up. Nothing falls through the cracks.";
-    if (metric.change > 0) return "More charts closing same-day means less cognitive burden carried overnight. It means leaving work at work. The ripple effects of this change extend far beyond the EHR.";
-    return "Chart closure patterns are shifting as providers adapt to the new workflow. This metric typically improves as trust in the documentation grows.";
+    if (metric.change > 20) return "Same-day chart closure is improving significantly. This pattern often indicates providers are documenting in real-time rather than batching at day's end—a workflow shift worth understanding.";
+    if (metric.change > 0) return "More charts are closing same-day. This suggests the documentation workflow is becoming more integrated into the clinical rhythm, though individual patterns vary.";
+    return "Chart closure patterns are still developing as providers adapt to the new workflow. This metric often improves gradually as trust in the documentation grows.";
   }
   
   if (metric.id === "clinicianSatisfaction") {
-    if (metric.change > 10) return "When providers say they're happier, that's not just a survey answer—it's a leading indicator of retention, engagement, and care quality. Happy providers don't just stay; they bring their best selves to every patient encounter.";
-    if (metric.change > 0) return "Satisfaction is trending in the right direction. Providers are noticing the difference in their day-to-day—and that matters more than any ROI calculation.";
-    return "Provider sentiment is complex and multifaceted. Even stable satisfaction during a technology transition is a signal worth celebrating.";
+    if (metric.change > 10) return "Provider satisfaction is trending upward—a signal worth paying attention to. When clinicians feel better about their tools, it often ripples into engagement and retention.";
+    if (metric.change > 0) return "Satisfaction is moving in a positive direction. Providers are noticing changes in their day-to-day experience—worth exploring what's driving this.";
+    return "Provider sentiment is complex and evolves over time. Stable satisfaction during any technology transition is itself a meaningful signal.";
   }
   
-  return metric.whatThisMeans || "This metric reflects meaningful change in how your providers experience documentation—and that ripples into everything else.";
+  return metric.whatThisMeans || "This metric reflects changes in how your providers experience documentation—patterns worth continuing to monitor.";
 };
 
 // Mini sparkline component
@@ -752,12 +758,12 @@ const JourneyValueChart = ({
         <Rect x={todayX - 32} y={currentY - 26} width={64} height={16} rx={8} fill={colors.emerald} />
       </Svg>
       
-      {/* Labels below chart */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4, paddingHorizontal: 20 }}>
-        <Text style={{ fontSize: 7, color: colors.mediumGray }}>Baseline</Text>
-        <Text style={{ fontSize: 7, color: colors.emerald, fontWeight: "bold" }}>Today</Text>
-        <Text style={{ fontSize: 7, color: colors.mediumGray }}>Maturity</Text>
-        <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Full Scale</Text>
+      {/* Labels below chart - fixed width for proper alignment */}
+      <View style={{ flexDirection: "row", marginTop: 4, paddingHorizontal: 0 }}>
+        <Text style={{ fontSize: 7, color: colors.mediumGray, width: 60, textAlign: "center" }}>Baseline</Text>
+        <Text style={{ fontSize: 7, color: colors.emerald, fontWeight: "bold", flex: 1, textAlign: "center" }}>Today</Text>
+        <Text style={{ fontSize: 7, color: colors.mediumGray, flex: 1, textAlign: "center" }}>Maturity</Text>
+        <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold", width: 60, textAlign: "center" }}>Full Scale</Text>
       </View>
     </View>
   );
@@ -825,13 +831,13 @@ const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
   // Generate a personalized opening based on their journey
   const getPersonalizedOpening = () => {
     if (data.monthsOnAbridge <= 3) {
-      return `In just ${data.monthsOnAbridge} months, your team is already seeing the impact of Abridge—and this is only the beginning.`;
+      return `At ${data.monthsOnAbridge} months, we're beginning to see patterns emerge. Here's what the data is showing us so far.`;
     } else if (data.monthsOnAbridge <= 6) {
-      return `Half a year in, and the results speak for themselves. Your providers are spending less time on documentation and more time on what matters.`;
+      return `With ${data.monthsOnAbridge} months of data, we can start to observe meaningful trends. This report explores what we're seeing across your deployment.`;
     } else if (data.monthsOnAbridge <= 12) {
-      return `${data.monthsOnAbridge} months of partnership, and the transformation is clear. What started as a pilot has become a foundation for lasting change.`;
+      return `${data.monthsOnAbridge} months gives us a clearer picture of how Abridge is integrating into your workflows. Here's what the data suggests.`;
     }
-    return `Over a year into your Abridge journey, you've built something remarkable—a new way of working that your providers rely on every day.`;
+    return `Over a year into your Abridge journey, we have substantial data to analyze. This report explores the patterns we're observing.`;
   };
   
   return (
@@ -846,7 +852,7 @@ const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
         <Text style={styles.heroClientName}>{displayClientName}</Text>
         <Text style={styles.heroTagline}>
           Your Value Realization Report{"\n"}
-          {data.monthsOnAbridge} months of partnership. Real results.
+          {data.monthsOnAbridge} months of partnership. Here's what we're seeing.
         </Text>
       </View>
 
@@ -868,7 +874,7 @@ const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
           <View style={styles.metricCardGreen}>
             <Text style={styles.metricLabel}>Annual Value Created</Text>
             <Text style={styles.metricValueGreen}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={styles.metricSub}>proven from your data</Text>
+            <Text style={styles.metricSub}>based on your data</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricLabel}>Value Per Provider</Text>
@@ -925,24 +931,30 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
   const category = getMetricCategory(metric.id);
   const narrative = getMetricNarrative(metric);
   const isPositive = metric.isPositiveGood ? metric.change > 0 : metric.change < 0;
-  const changeDisplay = metric.change > 0 ? `+${metric.change}` : `${metric.change}`;
   
-  // Get a compelling one-liner for the hero based on the metric
+  // Round values for clean display
+  const roundedChange = Math.round(metric.change * 100) / 100;
+  const roundedPercent = Math.round(metric.changePercent * 100) / 100;
+  const roundedBefore = Math.round(metric.before * 100) / 100;
+  const roundedAfter = Math.round(metric.after * 100) / 100;
+  const changeDisplay = roundedChange > 0 ? `+${roundedChange}` : `${roundedChange}`;
+  
+  // Get an exploratory tagline for the hero based on the metric
   const getMetricTagline = () => {
     if (metric.id === "wrvu" || metric.id === "wrvuCapture") {
-      return isPositive ? "Capturing the value that was always there." : "Building the foundation for revenue recovery.";
+      return isPositive ? "Exploring patterns in revenue capture." : "Understanding baseline patterns.";
     }
     if (metric.id === "timeSavings") {
-      return isPositive ? "Time reclaimed, one encounter at a time." : "Every minute saved is a minute earned.";
+      return isPositive ? "Observing changes in documentation time." : "Measuring time-to-document patterns.";
     }
     if (metric.id === "workOutsideWork") {
-      return isPositive ? "When work stays at work." : "The path to sustainable practice.";
+      return isPositive ? "Tracking after-hours documentation trends." : "Understanding work-life patterns.";
     }
     if (metric.id === "chartClosure") {
-      return isPositive ? "Charts that close when you do." : "Working toward same-day completion.";
+      return isPositive ? "Following chart closure patterns." : "Monitoring documentation completion.";
     }
     if (metric.id === "clinicianSatisfaction") {
-      return isPositive ? "Happier providers, better care." : "Measuring what matters most.";
+      return isPositive ? "Understanding provider sentiment." : "Measuring provider experience.";
     }
     return "Tracking meaningful change.";
   };
@@ -969,7 +981,7 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
         <View style={styles.comparisonRow}>
           <View style={styles.comparisonBox}>
             <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Before</Text>
-            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.black }}>{metric.before}</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.black }}>{roundedBefore}</Text>
             <Text style={{ fontSize: 8, color: colors.mediumGray }}>{metric.unit}</Text>
           </View>
           
@@ -983,7 +995,7 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
           
           <View style={styles.comparisonBox}>
             <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>After</Text>
-            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.black }}>{metric.after}</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.black }}>{roundedAfter}</Text>
             <Text style={{ fontSize: 8, color: colors.mediumGray }}>{metric.unit}</Text>
           </View>
           
@@ -994,7 +1006,7 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
           <View style={styles.comparisonChange}>
             <Text style={{ fontSize: 7, color: colors.emeraldDark, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Change</Text>
             <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.emerald }}>{changeDisplay}</Text>
-            <Text style={{ fontSize: 8, color: colors.emeraldDark }}>{metric.changePercent > 0 ? "+" : ""}{metric.changePercent}%</Text>
+            <Text style={{ fontSize: 8, color: colors.emeraldDark }}>{roundedPercent > 0 ? "+" : ""}{roundedPercent}%</Text>
           </View>
         </View>
 
@@ -1080,20 +1092,20 @@ const ExpansionPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number
   const getExpansionNarrative = () => {
     const ratio = expansion.targetProviders / expansion.currentProviders;
     if (ratio >= 5) {
-      return `Your pilot with ${expansion.currentProviders} providers has proven the concept. Now imagine that same transformation reaching ${additionalProviders} more providers across your organization. The documentation burden they carry today? It doesn't have to be permanent.`;
+      return `Your deployment with ${expansion.currentProviders} providers gives us a window into what broader adoption might look like. Here's what the data suggests for the remaining ${additionalProviders} providers.`;
     } else if (ratio >= 2) {
-      return `You've built a strong foundation with ${expansion.currentProviders} providers. Extending to ${expansion.targetProviders} means ${additionalProviders} more clinicians spending less time in the EHR and more time with patients. That's the kind of change that defines culture.`;
+      return `With ${expansion.currentProviders} providers actively using Abridge, we can start to model what extending to ${expansion.targetProviders} might mean for your organization. Here's what we're seeing.`;
     }
-    return `With ${expansion.currentProviders} providers already on board, you're closer to full deployment than you might think. Adding the remaining ${additionalProviders} providers would complete the picture—and multiply the value you're already seeing.`;
+    return `At ${expansion.currentProviders} providers, you're well into your deployment. The data below explores what completing the rollout to ${expansion.targetProviders} might unlock.`;
   };
   
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.heroCompact}>
         <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
-        <Text style={styles.heroCompactTitle}>What Could Be</Text>
+        <Text style={styles.heroCompactTitle}>Looking Ahead</Text>
         <Text style={styles.heroCompactSubtitle}>
-          You've proven value. Now let's talk about scale.
+          Exploring what broader adoption might look like.
         </Text>
       </View>
 
@@ -1150,10 +1162,10 @@ const ExpansionPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number
         </View>
 
         <View style={styles.opportunityBox}>
-          <Text style={styles.opportunityTitle}>The Question Isn't If—It's When</Text>
+          <Text style={styles.opportunityTitle}>What the Numbers Suggest</Text>
           <Text style={styles.opportunityText}>
-            Every month you wait is another month of documentation burden for {additionalProviders} providers who could be experiencing the same relief your current users already have.{"\n"}{"\n"}
-            At {formatCurrency(valuePerProvider)} per provider per year, the math works. But the real win? A better day-to-day for your clinical team.
+            Based on current patterns, extending to {additionalProviders} additional providers could generate meaningful value. At approximately {formatCurrency(valuePerProvider)} per provider per year, the opportunity is worth exploring.{"\n"}{"\n"}
+            Of course, every organization's journey is different—these projections assume similar adoption patterns to what you're seeing today.
           </Text>
         </View>
       </View>
@@ -1180,13 +1192,13 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
     const hasExpansionPotential = data.expansion.expansionValue > data.tier1Value;
     
     if (hasStrongResults && hasExpansionPotential) {
-      return "You've proven the value. You have the data. The question now is simple: how fast can you bring this to the rest of your organization?";
+      return "The data tells an interesting story. We're seeing meaningful patterns worth exploring further as you consider next steps.";
     } else if (hasStrongResults) {
-      return "The numbers tell a clear story: Abridge is working for your providers. The path forward is about deepening what's already succeeding.";
+      return "Your current deployment is showing promising signals. Understanding what's driving these patterns could inform your path forward.";
     } else if (hasExpansionPotential) {
-      return "Your foundation is in place. As utilization grows and more providers come on board, these numbers will grow with them.";
+      return "Your foundation is being established. As utilization grows and more providers come on board, we'll have more data to understand the trajectory.";
     }
-    return "Every journey starts somewhere. You've taken the first steps—and the data shows it's working.";
+    return "Every deployment journey unfolds differently. We're here to help you understand what the data is showing and where it might lead.";
   };
   
   return (
@@ -1201,9 +1213,9 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
 
       <View style={styles.contentSection}>
         <Text style={styles.chapterLabel}>Executive Summary</Text>
-        <Text style={styles.sectionTitle}>What We've Built Together</Text>
+        <Text style={styles.sectionTitle}>What the Data Shows</Text>
         <Text style={styles.sectionSubtitle}>
-          {data.monthsOnAbridge} months. {data.providers} providers. {formatNumber(data.documentedEncounters)} encounters. Real results.
+          {data.monthsOnAbridge} months. {data.providers} providers. {formatNumber(data.documentedEncounters)} encounters. Here's what we're observing.
         </Text>
 
         <View style={styles.summaryBox}>
@@ -1212,7 +1224,7 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
             <View style={styles.summaryItem}>
               <Text style={styles.summaryItemLabel}>Annual Value</Text>
               <Text style={styles.summaryItemValueGreen}>{formatCurrency(data.tier1Value)}</Text>
-              <Text style={styles.summaryItemSubtext}>proven from your data</Text>
+              <Text style={styles.summaryItemSubtext}>based on your data</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryItemLabel}>Per Provider</Text>
@@ -1259,7 +1271,7 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
             
             {data.workingWell.length > 0 && (
               <View style={[styles.insightCard, { backgroundColor: colors.emeraldLight, marginBottom: 8 }]}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.emeraldDark, marginBottom: 6 }}>What's Working</Text>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.emeraldDark, marginBottom: 6 }}>Patterns We're Seeing</Text>
                 {data.workingWell.slice(0, 3).map((item, idx) => (
                   <Text key={idx} style={{ fontSize: 8, color: colors.emeraldDark, marginBottom: 2 }}>• {item}</Text>
                 ))}
@@ -1268,7 +1280,7 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
             
             {data.areasToWatch.length > 0 && (
               <View style={[styles.insightCard, { backgroundColor: colors.amberLight }]}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber, marginBottom: 6 }}>Opportunities to Optimize</Text>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber, marginBottom: 6 }}>Areas Worth Exploring</Text>
                 {data.areasToWatch.slice(0, 3).map((item, idx) => (
                   <Text key={idx} style={{ fontSize: 8, color: colors.amber, marginBottom: 2 }}>• {item}</Text>
                 ))}
