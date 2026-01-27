@@ -1185,9 +1185,10 @@ export default function ExpandResults({
 
       <PDFExportModal
         open={showExportModal}
-        onOpenChange={setShowExportModal}
+        onClose={() => setShowExportModal(false)}
         onExport={handleExportPDF}
-        isGenerating={isExporting}
+        isExporting={isExporting}
+        documentType="value realization report"
       />
     </div>
   );

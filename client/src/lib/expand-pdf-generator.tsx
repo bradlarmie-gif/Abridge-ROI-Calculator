@@ -7,12 +7,10 @@ import {
   Image,
   pdf,
   Svg,
-  Path,
+  Rect,
   Line,
   Circle,
-  Rect,
   Polyline,
-  G,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
@@ -123,1124 +121,1038 @@ export interface ExpandPDFData {
 }
 
 // ============================================================================
-// COLORS - Professional palette
+// COLORS - Premium palette matching Scribe PDF
 // ============================================================================
 
-const c = {
+const colors = {
   primary: "#EA2C00",
-  primaryLight: "#FEF2F0",
-  green: "#059669",
-  greenLight: "#D1FAE5",
-  greenDark: "#047857",
+  primaryLight: "#FEF7F5",
+  primaryDark: "#C42400",
   black: "#111827",
-  dark: "#374151",
-  medium: "#6B7280",
-  light: "#9CA3AF",
-  pale: "#F3F4F6",
-  border: "#E5E7EB",
+  darkGray: "#374151",
+  mediumGray: "#6B7280",
+  lightGray: "#9CA3AF",
+  borderGray: "#E5E7EB",
+  backgroundGray: "#F1F5F9",
   white: "#FFFFFF",
-  amber: "#D97706",
-  amberLight: "#FEF3C7",
+  emerald: "#059669",
+  emeraldLight: "#ECFDF5",
+  emeraldDark: "#047857",
+  slate800: "#1e293b",
+  slate900: "#0f172a",
   blue: "#2563EB",
   blueLight: "#DBEAFE",
+  amber: "#D97706",
+  amberLight: "#FEF3C7",
 };
 
 // ============================================================================
-// STYLES - Dense Bloomberg/Stripe-style layout
+// STYLES - Premium god tier layout
 // ============================================================================
 
-const s = StyleSheet.create({
+const styles = StyleSheet.create({
   page: {
-    padding: 24,
-    paddingBottom: 36,
+    padding: 0,
     fontFamily: "Helvetica",
-    fontSize: 8,
-    color: c.black,
-    backgroundColor: c.white,
-    lineHeight: 1.2,
+    fontSize: 9,
+    color: colors.black,
+    backgroundColor: colors.white,
   },
   
-  // Header - compact
-  header: {
+  // Hero sections
+  heroSection: {
+    backgroundColor: colors.slate900,
+    padding: 40,
+    paddingBottom: 32,
+  },
+  heroMeta: {
+    position: "absolute",
+    top: 40,
+    right: 40,
+    textAlign: "right",
+  },
+  heroMetaText: {
+    fontSize: 8,
+    color: colors.lightGray,
+    marginBottom: 2,
+  },
+  heroClientName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  heroTagline: {
+    fontSize: 11,
+    color: colors.lightGray,
+    lineHeight: 1.6,
+  },
+  
+  heroCompact: {
+    backgroundColor: colors.slate900,
+    padding: 28,
+    paddingTop: 24,
+    paddingBottom: 20,
+    alignItems: "center",
+  },
+  heroCompactTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.white,
+    textAlign: "center",
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  heroCompactSubtitle: {
+    fontSize: 10,
+    color: colors.lightGray,
+    textAlign: "center",
+    lineHeight: 1.5,
+    maxWidth: 400,
+  },
+  
+  // Content section
+  contentSection: {
+    padding: 40,
+    paddingTop: 28,
+  },
+  
+  // Typography
+  chapterLabel: {
+    fontSize: 7,
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  sectionSubtitle: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginBottom: 20,
+    lineHeight: 1.5,
+  },
+  
+  storyText: {
+    fontSize: 10,
+    color: colors.darkGray,
+    lineHeight: 1.7,
+    marginBottom: 12,
+  },
+  storyTextBold: {
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  storyTextEmphasis: {
+    color: colors.emerald,
+    fontWeight: "bold",
+  },
+  
+  // Metrics grid
+  metricsGrid: {
+    flexDirection: "row",
+    marginBottom: 24,
+  },
+  metricCard: {
+    flex: 1,
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 8,
+    padding: 14,
+    marginRight: 10,
+    alignItems: "center",
+  },
+  metricCardLast: {
+    marginRight: 0,
+  },
+  metricCardDark: {
+    flex: 1,
+    backgroundColor: colors.slate800,
+    borderRadius: 8,
+    padding: 14,
+    marginRight: 10,
+    alignItems: "center",
+  },
+  metricCardGreen: {
+    flex: 1,
+    backgroundColor: colors.emeraldLight,
+    borderRadius: 8,
+    padding: 14,
+    marginRight: 10,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.emerald,
+  },
+  metricLabel: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  metricLabelLight: {
+    fontSize: 7,
+    color: colors.lightGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  metricValue: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  metricValueLight: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.white,
+  },
+  metricValueGreen: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  metricSub: {
+    fontSize: 7,
+    color: colors.mediumGray,
+    marginTop: 2,
+  },
+  
+  // Comparison boxes
+  comparisonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  comparisonBox: {
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 8,
+    padding: 16,
+    alignItems: "center",
+    minWidth: 100,
+  },
+  comparisonArrow: {
+    paddingHorizontal: 12,
+  },
+  comparisonChange: {
+    backgroundColor: colors.emeraldLight,
+    borderRadius: 8,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.emerald,
+  },
+  
+  // Insight cards
+  insightCard: {
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+  },
+  insightRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  insightLabel: {
+    fontSize: 9,
+    color: colors.darkGray,
+    flex: 1,
+  },
+  insightValue: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  insightValueGreen: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  
+  // Opportunity box
+  opportunityBox: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: "#FECDC4",
+    borderRadius: 10,
+    padding: 20,
+    marginTop: 16,
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  opportunityTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: colors.primaryDark,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  opportunityText: {
+    fontSize: 9,
+    color: colors.darkGray,
+    textAlign: "center",
+    lineHeight: 1.6,
+    maxWidth: 380,
+  },
+  
+  // Summary box
+  summaryBox: {
+    backgroundColor: colors.slate800,
+    borderRadius: 10,
+    padding: 20,
+  },
+  summaryTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 14,
+  },
+  summaryGrid: {
+    flexDirection: "row",
+  },
+  summaryItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  summaryItemLabel: {
+    fontSize: 7,
+    color: colors.lightGray,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  summaryItemValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.white,
+  },
+  summaryItemValueGreen: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  summaryItemSubtext: {
+    fontSize: 7,
+    color: colors.lightGray,
+    marginTop: 2,
+    textAlign: "center",
+  },
+  
+  // Divider
+  divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+    marginVertical: 20,
+  },
+  
+  // Quote box
+  quoteBox: {
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+  },
+  quoteText: {
+    fontSize: 9,
+    color: colors.darkGray,
+    lineHeight: 1.6,
+    fontStyle: "italic",
+  },
+  
+  // CTA section
+  ctaSection: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  ctaText: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    textAlign: "center",
+  },
+  ctaLink: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginTop: 4,
+  },
+  
+  // Footer
+  footer: {
+    position: "absolute",
+    bottom: 24,
+    left: 40,
+    right: 40,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    marginBottom: 8,
-    paddingBottom: 6,
-    borderBottomWidth: 1.5,
-    borderBottomColor: c.primary,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderGray,
   },
-  logo: { width: 70, height: 14 },
-  headerRight: { textAlign: "right" },
-  headerTitle: { fontSize: 10, fontWeight: "bold", color: c.black },
-  headerDate: { fontSize: 7, color: c.medium, marginTop: 1 },
-  
-  // Footer - minimal
-  footer: {
-    position: "absolute",
-    bottom: 12,
-    left: 24,
-    right: 24,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 4,
-    borderTopWidth: 0.5,
-    borderTopColor: c.border,
+  footerText: {
+    fontSize: 7,
+    color: colors.lightGray,
   },
-  footerText: { fontSize: 6, color: c.light },
-  
-  // Context bar - tight
-  contextBar: {
-    backgroundColor: c.pale,
-    borderRadius: 2,
-    padding: 5,
-    marginBottom: 6,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-  },
-  contextItem: { fontSize: 7, color: c.dark },
-  contextValue: { fontWeight: "bold" },
-  
-  // Hero metrics - compact
-  heroRow: {
-    flexDirection: "row",
-    marginBottom: 8,
-    gap: 6,
-  },
-  heroCard: {
-    flex: 1,
-    backgroundColor: c.pale,
-    borderRadius: 2,
-    padding: 6,
-    alignItems: "center",
-  },
-  heroCardPrimary: {
-    flex: 1,
-    backgroundColor: c.greenLight,
-    borderRadius: 2,
-    padding: 6,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: c.green,
-  },
-  heroValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: c.black,
-  },
-  heroValueGreen: {
-    fontSize: 18,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-    color: c.green,
-  },
-  heroLabel: {
+  methodNote: {
     fontSize: 6,
-    fontWeight: "bold",
-    color: c.medium,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginTop: 1,
+    color: colors.lightGray,
+    marginTop: 4,
+    maxWidth: 350,
   },
-  heroSub: { fontSize: 5, color: c.light, marginTop: 1 },
   
-  // Section headers - minimal
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 6,
-    marginBottom: 4,
+  // Trend chart
+  trendContainer: {
+    backgroundColor: colors.backgroundGray,
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 12,
   },
-  sectionDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginRight: 4,
-  },
-  sectionTitle: {
+  trendTitle: {
     fontSize: 8,
     fontWeight: "bold",
-    color: c.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  
-  // Cards - tight borders, minimal padding
-  card: {
-    borderWidth: 0.5,
-    borderColor: c.border,
-    borderRadius: 2,
-    marginBottom: 5,
-    overflow: "hidden",
-  },
-  cardHeader: {
-    backgroundColor: c.pale,
-    padding: 5,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 0.5,
-    borderBottomColor: c.border,
-  },
-  cardHeaderGreen: {
-    backgroundColor: c.greenLight,
-    padding: 5,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 0.5,
-    borderBottomColor: c.green,
-  },
-  cardTitle: { fontSize: 9, fontWeight: "bold", color: c.black },
-  cardSub: { fontSize: 6, color: c.medium },
-  cardValue: { fontSize: 11, fontWeight: "bold", color: c.green },
-  cardBody: { padding: 6 },
-  
-  // Table rows - tight
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 3,
-    borderBottomWidth: 0.5,
-    borderBottomColor: c.border,
-  },
-  rowLast: { borderBottomWidth: 0 },
-  rowLabel: { flex: 1, fontSize: 8, color: c.dark },
-  rowValue: { fontSize: 9, fontWeight: "bold", color: c.green },
-  rowValueNeutral: { fontSize: 9, fontWeight: "bold", color: c.black },
-  
-  // Two column layout
-  twoCol: { flexDirection: "row", gap: 6, marginBottom: 5 },
-  col: { flex: 1 },
-  
-  // Callout boxes - compact
-  callout: {
-    backgroundColor: c.primaryLight,
-    borderLeftWidth: 2,
-    borderLeftColor: c.primary,
-    padding: 6,
+    color: colors.darkGray,
     marginBottom: 8,
-    borderRadius: 1,
   },
-  calloutTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: c.primary,
-    textTransform: "uppercase",
-    marginBottom: 2,
-  },
-  calloutText: { fontSize: 8, color: c.dark, lineHeight: 1.3 },
   
-  // Key takeaway - inline
-  takeaway: {
-    backgroundColor: c.pale,
-    borderWidth: 0.5,
-    borderColor: c.border,
-    borderRadius: 2,
-    padding: 6,
-    marginTop: 8,
-    flexDirection: "row",
-  },
-  takeawayLabel: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: c.primary,
-    textTransform: "uppercase",
-    marginRight: 6,
-  },
-  takeawayText: { flex: 1, fontSize: 8, color: c.dark, lineHeight: 1.3 },
-  
-  // Metric comparison - DENSE horizontal table style
-  comparison: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingVertical: 4,
-    gap: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: c.border,
-    marginBottom: 4,
-  },
-  compBox: { alignItems: "center", minWidth: 50 },
-  compLabel: { fontSize: 6, fontWeight: "bold", color: c.medium, textTransform: "uppercase", marginBottom: 1 },
-  compValue: { fontSize: 14, fontWeight: "bold", color: c.black, fontFamily: "Courier" },
-  compUnit: { fontSize: 6, color: c.medium },
-  compChange: {
-    alignItems: "center",
-    backgroundColor: c.greenLight,
-    borderRadius: 2,
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-  },
-  compChangeValue: { fontSize: 12, fontWeight: "bold", color: c.green, fontFamily: "Courier" },
-  compChangePercent: { fontSize: 6, color: c.greenDark },
-  
-  // Benchmark/Warning - inline compact
-  benchBox: {
-    backgroundColor: c.blueLight,
-    padding: 4,
-    borderRadius: 2,
-    marginTop: 4,
-  },
-  benchTitle: { fontSize: 6, fontWeight: "bold", color: c.blue, textTransform: "uppercase", marginBottom: 1 },
-  benchText: { fontSize: 7, color: c.blue, lineHeight: 1.2 },
-  
-  warnBox: {
-    backgroundColor: c.amberLight,
-    padding: 4,
-    borderRadius: 2,
-    marginTop: 4,
-  },
-  warnTitle: { fontSize: 6, fontWeight: "bold", color: c.amber, textTransform: "uppercase", marginBottom: 1 },
-  warnText: { fontSize: 7, color: c.amber, lineHeight: 1.2 },
-  
-  // Value calc - prominent formula
-  valueBox: {
-    backgroundColor: c.white,
+  // Value calc box
+  valueCalcBox: {
+    backgroundColor: colors.emeraldLight,
     borderWidth: 1,
-    borderColor: c.green,
-    padding: 4,
-    borderRadius: 2,
-    marginTop: 4,
+    borderColor: colors.emerald,
+    borderRadius: 8,
+    padding: 14,
+    marginTop: 12,
   },
-  valueFormula: { fontSize: 9, fontWeight: "bold", color: c.black, fontFamily: "Courier" },
-  valueNote: { fontSize: 6, color: c.medium, marginTop: 2 },
-  
-  // What this means - compact
-  meaningBox: {
-    backgroundColor: c.pale,
-    padding: 4,
-    borderRadius: 2,
-    marginTop: 4,
-  },
-  meaningTitle: { fontSize: 6, fontWeight: "bold", color: c.dark, textTransform: "uppercase", marginBottom: 2 },
-  meaningText: { fontSize: 7, color: c.dark, lineHeight: 1.25 },
-  
-  // Opportunity cards - tight
-  oppCard: {
-    backgroundColor: c.white,
-    borderWidth: 0.5,
-    borderColor: c.border,
-    borderRadius: 2,
-    padding: 4,
+  valueCalcLabel: {
+    fontSize: 7,
+    color: colors.emeraldDark,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
     marginBottom: 4,
   },
-  oppHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 2,
-  },
-  oppNum: {
-    backgroundColor: c.green,
-    borderRadius: 1,
-    paddingHorizontal: 3,
-    paddingVertical: 1,
-    marginRight: 4,
-  },
-  oppNumText: { fontSize: 5, color: c.white, fontWeight: "bold" },
-  oppTitle: { fontSize: 7, fontWeight: "bold", color: c.black },
-  oppValue: { fontSize: 8, fontWeight: "bold", color: c.green },
-  oppRow: { flexDirection: "row", gap: 4, marginBottom: 2 },
-  oppLabel: { fontSize: 5, color: c.medium },
-  oppData: { fontSize: 6, fontWeight: "bold", color: c.black },
-  oppAction: { fontSize: 5, color: c.dark, lineHeight: 1.2, marginTop: 1 },
-  
-  // Progress bar - slim
-  progressTrack: {
-    height: 4,
-    backgroundColor: c.border,
-    borderRadius: 2,
-    overflow: "hidden",
-    marginVertical: 2,
-  },
-  progressFill: { height: 4, borderRadius: 2 },
-  
-  // Status dots - small
-  statusDot: { width: 4, height: 4, borderRadius: 2, marginRight: 3 },
-  statusRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 2 },
-  statusText: { flex: 1, fontSize: 6, color: c.dark, lineHeight: 1.2 },
-  
-  // Chart container - minimal
-  chartContainer: {
-    backgroundColor: c.pale,
-    borderRadius: 2,
-    padding: 6,
+  valueCalcFormula: {
+    fontSize: 9,
+    color: colors.darkGray,
+    fontFamily: "Courier",
     marginBottom: 4,
   },
-  chartTitle: { fontSize: 6, fontWeight: "bold", color: c.dark, textTransform: "uppercase", marginBottom: 3 },
+  valueCalcResult: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  
+  // Warning box
+  warningBox: {
+    backgroundColor: colors.amberLight,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  warningTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.amber,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  warningText: {
+    fontSize: 8,
+    color: colors.amber,
+    lineHeight: 1.4,
+  },
+  
+  // Benchmark box
+  benchmarkBox: {
+    backgroundColor: colors.blueLight,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  benchmarkTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: colors.blue,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  benchmarkText: {
+    fontSize: 8,
+    color: colors.blue,
+    lineHeight: 1.4,
+  },
 });
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
-const fmt = (value: number): string => {
-  if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (Math.abs(value) >= 1000) return `$${Math.round(value / 1000)}K`;
-  return `$${value.toLocaleString()}`;
+const formatCurrency = (num: number): string => {
+  if (Math.abs(num) >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+  if (Math.abs(num) >= 1000) return `$${Math.round(num / 1000)}K`;
+  return `$${num.toLocaleString()}`;
 };
 
-const fmtNum = (value: number): string => value.toLocaleString();
+const formatNumber = (num: number): string => num.toLocaleString();
 
-const today = (): string => new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+const today = (): string => new Date().toLocaleDateString("en-US", { 
+  year: "numeric", 
+  month: "long", 
+  day: "numeric" 
+});
 
-const statusColor = (status: "good" | "warning" | "alert"): string => {
-  return status === "good" ? c.green : status === "warning" ? c.amber : c.primary;
+const getMetricCategory = (id: string): string => {
+  if (id === "wrvu" || id === "wrvuCapture") return "Revenue Capture";
+  if (id === "timeSavings" || id === "chartClosure") return "Time Efficiency";
+  if (id === "workOutsideWork" || id === "clinicianSatisfaction") return "Quality of Life";
+  return "Performance";
 };
 
-// ============================================================================
-// COMPONENTS
-// ============================================================================
+const getMetricNarrative = (metric: ExpandMetricData): string => {
+  const isPositive = metric.isPositiveGood ? metric.change > 0 : metric.change < 0;
+  const magnitude = Math.abs(metric.changePercent);
+  
+  if (metric.id === "wrvu" || metric.id === "wrvuCapture") {
+    if (magnitude >= 5) return "This is a significant improvement in revenue capture, suggesting documentation is capturing clinical complexity more completely.";
+    if (magnitude >= 3) return "This represents meaningful progress in revenue capture, with documentation better reflecting the care being delivered.";
+    return "While modest, this improvement indicates documentation is trending in the right direction.";
+  }
+  
+  if (metric.id === "timeSavings") {
+    const minutes = Math.abs(metric.change);
+    if (minutes >= 4) return `Saving ${minutes} minutes per encounter translates to meaningful time back in the day for your providers.`;
+    if (minutes >= 2) return `Every minute counts—${minutes} minutes saved per encounter adds up across thousands of visits.`;
+    return "Time savings are emerging as providers become more comfortable with the workflow.";
+  }
+  
+  if (metric.id === "workOutsideWork") {
+    if (metric.change < -20) return "A significant reduction in after-hours work directly impacts provider wellbeing and retention.";
+    if (metric.change < 0) return "Less time documenting after hours means more time for rest and recovery.";
+    return "After-hours documentation patterns are stabilizing.";
+  }
+  
+  if (metric.id === "chartClosure") {
+    if (metric.change > 20) return "Dramatically more charts closing same-day reduces compliance risk and improves care continuity.";
+    if (metric.change > 0) return "Same-day chart closure is improving, supporting better care coordination.";
+    return "Chart closure patterns are evolving with the new workflow.";
+  }
+  
+  if (metric.id === "clinicianSatisfaction") {
+    if (metric.change > 0) return "Improved satisfaction scores reflect the positive impact on daily work experience.";
+    return "Provider sentiment is an important indicator to continue monitoring.";
+  }
+  
+  return metric.whatThisMeans || "This metric reflects meaningful change in your documentation workflow.";
+};
 
-const Header = ({ title, clientName }: { title: string; clientName?: string }) => (
-  <View style={s.header} fixed>
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Image src={abridgeLogoPath} style={s.logo} />
-      {clientName && (
-        <Text style={{ fontSize: 8, color: c.medium, marginLeft: 8, fontWeight: "bold" }}>{clientName}</Text>
-      )}
-    </View>
-    <View style={s.headerRight}>
-      <Text style={s.headerTitle}>{title}</Text>
-      <Text style={s.headerDate}>{today()}</Text>
-    </View>
-  </View>
-);
-
-const Footer = ({ pageNum, totalPages, preparedBy }: { pageNum: number; totalPages: number; preparedBy?: string }) => (
-  <View style={s.footer} fixed>
-    <Text style={s.footerText}>
-      Abridge Value Realization Report{preparedBy ? ` | Prepared by ${preparedBy}` : ''}
-    </Text>
-    <Text style={s.footerText}>Page {pageNum} of {totalPages}</Text>
-  </View>
-);
-
-const SectionHeader = ({ title, color = c.primary }: { title: string; color?: string }) => (
-  <View style={s.sectionHeader}>
-    <View style={[s.sectionDot, { backgroundColor: color }]} />
-    <Text style={s.sectionTitle}>{title}</Text>
-  </View>
-);
-
-const StatusDot = ({ status }: { status: "good" | "warning" | "alert" }) => (
-  <View style={[s.statusDot, { backgroundColor: statusColor(status) }]} />
-);
-
-const Arrow = ({ size = 10, color = c.medium }: { size?: number; color?: string }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M5 12h14M12 5l7 7-7 7" stroke={color} strokeWidth="2.5" fill="none" />
-  </Svg>
-);
-
-// Mini sparkline for compact display
-const Sparkline = ({ values, width = 40, height = 12, color = c.green }: { values: number[]; width?: number; height?: number; color?: string }) => {
+// Mini sparkline component
+const TrendSparkline = ({ values, width = 200, height = 40 }: { values: number[]; width?: number; height?: number }) => {
   if (values.length < 2) return null;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
   const points = values.map((v, i) => {
     const x = (i / (values.length - 1)) * width;
-    const y = height - 1 - ((v - min) / range) * (height - 2);
+    const y = height - 4 - ((v - min) / range) * (height - 8);
     return `${x},${y}`;
   }).join(" ");
   
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-      <Polyline points={points} stroke={color} strokeWidth="1.5" fill="none" />
-      <Circle cx={width} cy={height - 1 - ((values[values.length - 1] - min) / range) * (height - 2)} r="2" fill={color} />
+      <Polyline points={points} stroke={colors.emerald} strokeWidth="2" fill="none" />
+      <Circle 
+        cx={width} 
+        cy={height - 4 - ((values[values.length - 1] - min) / range) * (height - 8)} 
+        r="4" 
+        fill={colors.emerald} 
+      />
     </Svg>
   );
 };
 
-// Journey visualization - larger, cleaner
-const JourneyChart = ({ current, projected }: { current: number; projected: number }) => {
-  const width = 500;
-  const height = 60;
-  const padding = { left: 45, right: 20, top: 10, bottom: 10 };
-  const graphWidth = width - padding.left - padding.right;
-  const graphHeight = height - padding.top - padding.bottom;
-  
-  const maxVal = projected * 1.1;
-  const currentX = padding.left + (current / maxVal) * graphWidth * 0.6;
-  const projectedX = padding.left + graphWidth;
-  const currentY = padding.top + graphHeight * 0.5;
-  
+// Progress bar for comparisons
+const ProgressBar = ({ percent, color, width = 200 }: { percent: number; color: string; width?: number }) => {
+  const barWidth = Math.max((percent / 100) * width, 4);
   return (
-    <View style={s.chartContainer} wrap={false}>
-      <Text style={s.chartTitle}>Value Journey: Current to Full Scale</Text>
-      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-        {/* Background track */}
-        <Rect x={padding.left} y={currentY - 3} width={graphWidth} height={6} fill={c.border} rx={3} />
-        
-        {/* Progress fill */}
-        <Rect x={padding.left} y={currentY - 3} width={currentX - padding.left} height={6} fill={c.green} rx={3} />
-        
-        {/* Current position marker */}
-        <Circle cx={currentX} cy={currentY} r={8} fill={c.green} />
-        <Circle cx={currentX} cy={currentY} r={4} fill={c.white} />
-        
-        {/* Target marker */}
-        <Circle cx={projectedX} cy={currentY} r={6} fill={c.pale} stroke={c.green} strokeWidth={2} />
-      </Svg>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.green, marginRight: 4 }} />
-          <Text style={{ fontSize: 7, color: c.dark }}>Now: {fmt(current)}</Text>
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.pale, borderWidth: 1, borderColor: c.green, marginRight: 4 }} />
-          <Text style={{ fontSize: 7, color: c.dark }}>Target: {fmt(projected)}</Text>
-        </View>
-      </View>
-    </View>
+    <Svg width={width} height={12}>
+      <Rect x={0} y={0} width={width} height={12} fill={colors.backgroundGray} rx={6} />
+      <Rect x={0} y={0} width={barWidth} height={12} fill={color} rx={6} />
+    </Svg>
   );
 };
 
-
 // ============================================================================
-// PAGE 1: EXECUTIVE DASHBOARD
+// PAGE 1: EXECUTIVE SUMMARY - YOUR ABRIDGE JOURNEY
 // ============================================================================
 
-const Page1Dashboard = ({ data, totalPages }: { data: ExpandPDFData; totalPages: number }) => {
-  const valuePerProvider = data.providers > 0 ? data.tier1Value / data.providers : 0;
-  const hardMetrics = data.metrics.filter(m => m.value && m.value > 0);
-  const maturityLabel = data.utilizationRate >= 80 ? "Optimized" : data.utilizationRate >= 60 ? "Developing" : data.utilizationRate >= 40 ? "Emerging" : "Early Stage";
-  const maturityColor = data.utilizationRate >= 80 ? c.green : data.utilizationRate >= 60 ? c.blue : c.amber;
+const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
+  const displayClientName = data.clientName || "Your Organization";
+  const displayPreparedBy = data.preparedBy || "Abridge";
+  const valuePerProvider = data.providers > 0 ? Math.round(data.tier1Value / data.providers) : 0;
   
   return (
-    <Page size="A4" style={s.page}>
-      <Header title="Value Realization Report" clientName={data.clientName} />
-      
-      {/* Context bar */}
-      <View style={s.contextBar} wrap={false}>
-        <Text style={s.contextItem}><Text style={s.contextValue}>{data.providers}</Text> providers</Text>
-        <Text style={s.contextItem}><Text style={s.contextValue}>{data.monthsOnAbridge}</Text> months on Abridge</Text>
-        <Text style={s.contextItem}><Text style={s.contextValue}>{data.utilizationRate}%</Text> utilization</Text>
-        <Text style={s.contextItem}><Text style={s.contextValue}>{fmtNum(data.documentedEncounters)}</Text> documented encounters</Text>
-      </View>
-      
-      {/* Executive callout */}
-      <View style={s.callout} wrap={false}>
-        <Text style={s.calloutTitle}>Summary</Text>
-        <Text style={s.calloutText}>
-          Based on your data, each of your {data.providers} providers is generating approximately {fmt(valuePerProvider)} annually. With {data.utilizationRate}% of eligible encounters documented, the current measured value is {fmt(data.tier1Value)}. As utilization increases, this number would grow proportionally.
+    <Page size="A4" style={styles.page}>
+      {/* Hero Section */}
+      <View style={styles.heroSection}>
+        <View style={styles.heroMeta}>
+          <Text style={styles.heroMetaText}>{today()}</Text>
+          <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
+        </View>
+        <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
+        <Text style={styles.heroClientName}>{displayClientName}</Text>
+        <Text style={styles.heroTagline}>
+          You've been using Abridge for {data.monthsOnAbridge} months.{"\n"}
+          Here's the value you've created—and what's still ahead.
         </Text>
       </View>
-      
-      {/* Hero metrics */}
-      <View style={s.heroRow} wrap={false}>
-        <View style={s.heroCardPrimary}>
-          <Text style={s.heroValueGreen}>{fmt(data.tier1Value)}</Text>
-          <Text style={s.heroLabel}>Annual Value Created</Text>
-          <Text style={s.heroSub}>Measured from your data</Text>
-        </View>
-        <View style={s.heroCard}>
-          <Text style={s.heroValue}>{fmt(valuePerProvider)}</Text>
-          <Text style={s.heroLabel}>Value / Provider</Text>
-          <Text style={s.heroSub}>Based on {data.providers} providers</Text>
-        </View>
-        <View style={s.heroCard}>
-          <Text style={s.heroValueGreen}>+{fmt(data.expansion.expansionValue)}</Text>
-          <Text style={s.heroLabel}>Expansion Potential</Text>
-          <Text style={s.heroSub}>At {data.expansion.targetProviders} providers</Text>
-        </View>
-      </View>
-      
-      {/* Two column: Maturity + Drivers */}
-      <View style={s.twoCol} wrap={false}>
-        <View style={s.col}>
-          <View style={[s.card, { marginBottom: 0 }]}>
-            <View style={s.cardHeader}>
-              <Text style={s.cardTitle}>Deployment Maturity</Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: maturityColor, marginRight: 4 }} />
-                <Text style={{ fontSize: 7, fontWeight: "bold", color: maturityColor }}>{maturityLabel}</Text>
-              </View>
-            </View>
-            <View style={s.cardBody}>
-              <Text style={{ fontSize: 7, color: c.medium, marginBottom: 2 }}>Utilization Rate</Text>
-              <View style={s.progressTrack}>
-                <View style={[s.progressFill, { width: `${data.utilizationRate}%`, backgroundColor: maturityColor }]} />
-              </View>
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: 6, color: c.medium }}>0%</Text>
-                <Text style={{ fontSize: 6, fontWeight: "bold", color: maturityColor }}>{data.utilizationRate}%</Text>
-                <Text style={{ fontSize: 6, color: c.medium }}>100%</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-        <View style={s.col}>
-          <View style={[s.card, { marginBottom: 0 }]}>
-            <View style={s.cardHeader}>
-              <Text style={s.cardTitle}>Key Value Drivers</Text>
-            </View>
-            <View style={s.cardBody}>
-              {hardMetrics.slice(0, 3).map((m, idx) => (
-                <View key={idx} style={[s.row, idx === Math.min(2, hardMetrics.length - 1) ? s.rowLast : {}]}>
-                  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-                    <StatusDot status="good" />
-                    <Text style={s.rowLabel}>{m.name}</Text>
-                  </View>
-                  {m.trend && m.trend.length > 0 && <Sparkline values={[m.before, ...m.trend.map(t => t.value)]} />}
-                  <Text style={[s.rowValue, { marginLeft: 8 }]}>{fmt(m.value!)}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
-      </View>
-      
-      {/* Journey chart */}
-      <SectionHeader title="Your Value Journey" color={c.green} />
-      <JourneyChart current={data.tier1Value} projected={data.expansion.projectedValue} />
-      
-      {/* Value breakdown */}
-      <SectionHeader title="Value Breakdown" color={c.green} />
-      
-      <View style={s.card} wrap={false}>
-        <View style={s.cardHeaderGreen}>
-          <View>
-            <Text style={s.cardTitle}>Core Financial Value</Text>
-            <Text style={s.cardSub}>Directly measurable revenue impact</Text>
-          </View>
-          <Text style={s.cardValue}>{fmt(data.tier1Value)}</Text>
-        </View>
-        <View style={s.cardBody}>
-          {hardMetrics.map((m, idx) => (
-            <View key={m.id} style={[s.row, idx === hardMetrics.length - 1 ? s.rowLast : {}]}>
-              <View style={{ flex: 1 }}>
-                <Text style={s.rowLabel}>{m.name}</Text>
-                {m.formula && <Text style={{ fontSize: 6, color: c.light, fontFamily: "Courier" }}>{m.formula}</Text>}
-              </View>
-              <Text style={s.rowValue}>{fmt(m.value!)}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      
-      {data.tier2Items.length > 0 && (
-        <View style={s.card} wrap={false}>
-          <View style={s.cardHeader}>
-            <View>
-              <Text style={s.cardTitle}>Operational Efficiency</Text>
-              <Text style={s.cardSub}>Time and workflow improvements</Text>
-            </View>
-          </View>
-          <View style={s.cardBody}>
-            {data.tier2Items.map((item, idx) => (
-              <View key={idx} style={[s.row, idx === data.tier2Items.length - 1 ? s.rowLast : {}]}>
-                <Text style={s.rowLabel}>{item.label}</Text>
-                <Text style={s.rowValueNeutral}>{item.value}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-      
-      <View style={s.takeaway} wrap={false}>
-        <Text style={s.takeawayLabel}>Key Takeaway</Text>
-        <Text style={s.takeawayText}>
-          This report reflects your current deployment state. As providers become more familiar with the tool and utilization increases, you'll have more data to refine these measurements and track progress over time.
+
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>Your Journey So Far</Text>
+        <Text style={styles.sectionTitle}>The Value You've Created</Text>
+        <Text style={styles.sectionSubtitle}>
+          With {data.providers} providers and {data.utilizationRate}% utilization, you're building a foundation of measurable value.
         </Text>
+
+        <View style={styles.metricsGrid}>
+          <View style={styles.metricCardGreen}>
+            <Text style={styles.metricLabel}>Annual Value Created</Text>
+            <Text style={styles.metricValueGreen}>{formatCurrency(data.tier1Value)}</Text>
+            <Text style={styles.metricSub}>from your data</Text>
+          </View>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Value Per Provider</Text>
+            <Text style={styles.metricValue}>{formatCurrency(valuePerProvider)}</Text>
+            <Text style={styles.metricSub}>{data.providers} providers</Text>
+          </View>
+          <View style={[styles.metricCardDark, styles.metricCardLast]}>
+            <Text style={styles.metricLabelLight}>Expansion Potential</Text>
+            <Text style={styles.metricValueLight}>+{formatCurrency(data.expansion.expansionValue)}</Text>
+            <Text style={{ fontSize: 7, color: colors.lightGray, marginTop: 2 }}>at {data.expansion.targetProviders} providers</Text>
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        <Text style={styles.chapterLabel}>Where You Stand</Text>
+        <Text style={styles.sectionTitle}>Deployment Progress</Text>
+        
+        <Text style={styles.storyText}>
+          With <Text style={styles.storyTextBold}>{formatNumber(data.documentedEncounters)} documented encounters</Text> across {data.providers} providers, your team has established a meaningful baseline. At <Text style={styles.storyTextBold}>{data.utilizationRate}% utilization</Text>, there's still room to grow—and as utilization increases, so does value.
+        </Text>
+
+        <View style={styles.insightCard}>
+          <View style={styles.insightRow}>
+            <Text style={styles.insightLabel}>Documented encounters to date</Text>
+            <Text style={styles.insightValue}>{formatNumber(data.documentedEncounters)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.insightCard}>
+          <View style={styles.insightRow}>
+            <Text style={styles.insightLabel}>Current utilization rate</Text>
+            <Text style={styles.insightValue}>{data.utilizationRate}%</Text>
+          </View>
+        </View>
+
+        <View style={styles.insightCard}>
+          <View style={styles.insightRow}>
+            <Text style={styles.insightLabel}>Metrics showing improvement</Text>
+            <Text style={styles.insightValueGreen}>{data.metrics.filter(m => m.change !== 0).length} of {data.metrics.length}</Text>
+          </View>
+        </View>
+
+        <View style={styles.quoteBox}>
+          <Text style={styles.quoteText}>
+            "The value captured here is measured from your actual data—real changes in documentation time, revenue capture, and provider experience. As your deployment matures, these numbers grow with it."
+          </Text>
+        </View>
       </View>
-      
-      <Footer pageNum={1} totalPages={totalPages} preparedBy={data.preparedBy} />
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Value Realization Report</Text>
+        <Text style={styles.footerText}>Page 1</Text>
+      </View>
     </Page>
   );
 };
 
 // ============================================================================
-// PAGE 2+: METRIC DEEP DIVES - Dense table-style layout
+// DRIVER PAGES: One page per metric with full story
 // ============================================================================
 
-const MetricSection = ({ metric }: { metric: ExpandMetricData }) => {
-  const isValueMetric = metric.value && metric.value > 0;
-  const status: "good" | "warning" | "alert" = isValueMetric ? "good" : metric.changePercent > 0 ? "good" : "warning";
-  const hasTrend = metric.trend && metric.trend.length > 0;
+const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageNum: number; data: ExpandPDFData }) => {
+  const category = getMetricCategory(metric.id);
+  const narrative = getMetricNarrative(metric);
+  const isPositive = metric.isPositiveGood ? metric.change > 0 : metric.change < 0;
+  const changeDisplay = metric.change > 0 ? `+${metric.change}` : `${metric.change}`;
   
   return (
-    <View style={[s.card, { marginBottom: 6 }]} wrap={false}>
-      {/* Compact header with inline value */}
-      <View style={[s.cardHeader, isValueMetric ? { backgroundColor: c.greenLight, borderBottomColor: c.green } : {}, { padding: 4 }]}>
-        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-          <StatusDot status={status} />
-          <Text style={[s.cardTitle, { fontSize: 8 }]}>{metric.name}</Text>
-          {isValueMetric && (
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: c.green, marginLeft: 8 }}>{fmt(metric.value!)}</Text>
-          )}
-        </View>
-        <Text style={{ fontSize: 6, color: c.medium }}>{metric.description}</Text>
+    <Page size="A4" style={styles.page}>
+      {/* Compact Hero */}
+      <View style={styles.heroCompact}>
+        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
+        <Text style={styles.heroCompactTitle}>{metric.name}</Text>
+        <Text style={styles.heroCompactSubtitle}>
+          {category} · {data.clientName || "Your Organization"}
+        </Text>
       </View>
-      
-      <View style={[s.cardBody, { padding: 4 }]}>
-        {/* Two-column layout: Data left, Chart right (if exists) */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          {/* Left: Core data table */}
-          <View style={{ flex: hasTrend ? 1 : 2, minWidth: 160 }}>
-            {/* Before/After as compact table rows */}
-            <View style={{ flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: c.border, paddingBottom: 2, marginBottom: 2 }}>
-              <Text style={{ width: 45, fontSize: 6, color: c.medium, fontWeight: "bold" }}>BEFORE</Text>
-              <Text style={{ width: 45, fontSize: 6, color: c.medium, fontWeight: "bold" }}>AFTER</Text>
-              <Text style={{ width: 50, fontSize: 6, color: c.medium, fontWeight: "bold" }}>CHANGE</Text>
-              <Text style={{ flex: 1, fontSize: 6, color: c.medium, fontWeight: "bold" }}>%</Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-              <Text style={{ width: 45, fontSize: 10, fontWeight: "bold", fontFamily: "Courier", color: c.dark }}>{metric.before.toFixed(2)}</Text>
-              <Text style={{ width: 45, fontSize: 10, fontWeight: "bold", fontFamily: "Courier", color: c.dark }}>{metric.after.toFixed(2)}</Text>
-              <Text style={{ width: 50, fontSize: 10, fontWeight: "bold", fontFamily: "Courier", color: metric.isPositiveGood ? (metric.change >= 0 ? c.green : c.primary) : (metric.change <= 0 ? c.green : c.primary) }}>
-                {metric.change >= 0 ? "+" : ""}{metric.change.toFixed(2)}
-              </Text>
-              <View style={{ backgroundColor: metric.isPositiveGood ? (metric.change >= 0 ? c.greenLight : c.amberLight) : (metric.change <= 0 ? c.greenLight : c.amberLight), paddingHorizontal: 3, paddingVertical: 1, borderRadius: 1 }}>
-                <Text style={{ fontSize: 7, fontWeight: "bold", color: metric.isPositiveGood ? (metric.change >= 0 ? c.green : c.amber) : (metric.change <= 0 ? c.green : c.amber) }}>
-                  {Math.abs(metric.changePercent).toFixed(0)}% {metric.isPositiveGood ? (metric.change >= 0 ? "up" : "down") : (metric.change <= 0 ? "down" : "up")}
-                </Text>
-              </View>
-            </View>
-            <Text style={{ fontSize: 5, color: c.light, marginBottom: 4 }}>Unit: {metric.unit}</Text>
-            
-            {/* Formula - prominent, dark */}
-            {isValueMetric && metric.formula && (
-              <View style={{ backgroundColor: c.pale, padding: 3, borderRadius: 1, marginBottom: 3 }}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", fontFamily: "Courier", color: c.black }}>{metric.formula}</Text>
-                <Text style={{ fontSize: 8, fontWeight: "bold", fontFamily: "Courier", color: c.green }}>= {fmt(metric.value!)}</Text>
-                {metric.formulaExplanation && <Text style={{ fontSize: 5, color: c.medium, marginTop: 1 }}>{metric.formulaExplanation}</Text>}
-              </View>
-            )}
-            
-            {/* Benchmark inline */}
-            {metric.benchmark && (
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
-                <Text style={{ fontSize: 6, color: c.blue, marginRight: 4 }}>Benchmark: {metric.benchmark.typicalRange}</Text>
-                <Text style={{ fontSize: 6, fontWeight: "bold", color: c.blue }}>{metric.benchmark.statusLabel}</Text>
-              </View>
-            )}
-            
-            {/* Warning inline */}
-            {metric.warningMessage && (
-              <View style={{ backgroundColor: c.amberLight, padding: 2, borderRadius: 1, marginBottom: 2 }}>
-                <Text style={{ fontSize: 5, color: c.amber }}>{metric.warningMessage}</Text>
-              </View>
-            )}
+
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>Before & After</Text>
+        <Text style={styles.sectionTitle}>What Changed</Text>
+        <Text style={styles.sectionSubtitle}>
+          Comparing your baseline to current performance across {formatNumber(data.documentedEncounters)} documented encounters.
+        </Text>
+
+        {/* Before/After Comparison */}
+        <View style={styles.comparisonRow}>
+          <View style={styles.comparisonBox}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Before</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.black }}>{metric.before}</Text>
+            <Text style={{ fontSize: 8, color: colors.mediumGray }}>{metric.unit}</Text>
           </View>
           
-          {/* Right: Compact trend chart */}
-          {hasTrend && (
-            <View style={{ flex: 1 }}>
-              <CompactTrendChart metric={metric} baseline={metric.before} />
-            </View>
-          )}
+          <View style={styles.comparisonArrow}>
+            <Svg width={24} height={24} viewBox="0 0 24 24">
+              <Line x1={4} y1={12} x2={20} y2={12} stroke={colors.mediumGray} strokeWidth={2} />
+              <Line x1={14} y1={6} x2={20} y2={12} stroke={colors.mediumGray} strokeWidth={2} />
+              <Line x1={14} y1={18} x2={20} y2={12} stroke={colors.mediumGray} strokeWidth={2} />
+            </Svg>
+          </View>
+          
+          <View style={styles.comparisonBox}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>After</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.black }}>{metric.after}</Text>
+            <Text style={{ fontSize: 8, color: colors.mediumGray }}>{metric.unit}</Text>
+          </View>
+          
+          <View style={styles.comparisonArrow}>
+            <Text style={{ fontSize: 16, color: colors.mediumGray }}>=</Text>
+          </View>
+          
+          <View style={styles.comparisonChange}>
+            <Text style={{ fontSize: 7, color: colors.emeraldDark, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Change</Text>
+            <Text style={{ fontSize: 22, fontWeight: "bold", color: colors.emerald }}>{changeDisplay}</Text>
+            <Text style={{ fontSize: 8, color: colors.emeraldDark }}>{metric.changePercent > 0 ? "+" : ""}{metric.changePercent}%</Text>
+          </View>
         </View>
+
+        {/* Trend chart if available */}
+        {metric.trend && metric.trend.length > 1 && (
+          <View style={styles.trendContainer}>
+            <Text style={styles.trendTitle}>Trend Over Time</Text>
+            <TrendSparkline values={metric.trend.map(t => t.value)} width={460} height={50} />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
+              <Text style={{ fontSize: 7, color: colors.mediumGray }}>{metric.trend[0].month}</Text>
+              <Text style={{ fontSize: 7, color: colors.emerald, fontWeight: "bold" }}>
+                {metric.trendDirection === "improving" ? "↑ Improving" : metric.trendDirection === "stable" ? "→ Stable" : "↓ Declining"}
+              </Text>
+              <Text style={{ fontSize: 7, color: colors.mediumGray }}>{metric.trend[metric.trend.length - 1].month}</Text>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.divider} />
+
+        {/* What This Means */}
+        <Text style={styles.chapterLabel}>The Story</Text>
+        <Text style={styles.sectionTitle}>What This Means</Text>
         
-        {/* What this means - single line if short */}
-        {metric.whatThisMeans && (
-          <View style={{ backgroundColor: c.pale, padding: 3, borderRadius: 1, marginTop: 2 }}>
-            <Text style={{ fontSize: 6, color: c.dark, lineHeight: 1.2 }}>{metric.whatThisMeans}</Text>
+        <Text style={styles.storyText}>{narrative}</Text>
+        
+        {metric.whatThisMeans && metric.whatThisMeans !== narrative && (
+          <Text style={styles.storyText}>{metric.whatThisMeans}</Text>
+        )}
+
+        {/* Value Calculation if applicable */}
+        {metric.value && metric.value > 0 && (
+          <View style={styles.valueCalcBox}>
+            <Text style={styles.valueCalcLabel}>Annual Value Created</Text>
+            {metric.formula && (
+              <Text style={styles.valueCalcFormula}>{metric.formula}</Text>
+            )}
+            <Text style={styles.valueCalcResult}>{formatCurrency(metric.value)}/year</Text>
+            {metric.formulaExplanation && (
+              <Text style={{ fontSize: 7, color: colors.emeraldDark, marginTop: 4 }}>{metric.formulaExplanation}</Text>
+            )}
+          </View>
+        )}
+
+        {/* Benchmark if available */}
+        {metric.benchmark && (
+          <View style={styles.benchmarkBox}>
+            <Text style={styles.benchmarkTitle}>Industry Benchmark</Text>
+            <Text style={styles.benchmarkText}>
+              Typical range: {metric.benchmark.typicalRange}. Your result is {metric.benchmark.statusLabel.toLowerCase()}.
+            </Text>
+          </View>
+        )}
+
+        {/* Warning if applicable */}
+        {metric.warningMessage && (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>Note</Text>
+            <Text style={styles.warningText}>{metric.warningMessage}</Text>
           </View>
         )}
       </View>
-    </View>
-  );
-};
 
-// Compact trend chart for inline display
-const CompactTrendChart = ({ metric, baseline }: { metric: ExpandMetricData; baseline: number }) => {
-  const trend = metric.trend || [];
-  if (trend.length === 0) return null;
-  
-  const data = [{ label: "BL", value: baseline }, ...trend.map((t, i) => ({ label: `M${i + 1}`, value: t.value }))];
-  const width = 180;
-  const height = 50;
-  const padding = { left: 25, right: 5, top: 5, bottom: 12 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  
-  const values = data.map(d => d.value);
-  const minVal = Math.min(...values) * 0.95;
-  const maxVal = Math.max(...values) * 1.05;
-  const range = maxVal - minVal || 1;
-  
-  const getX = (i: number) => padding.left + (i / (data.length - 1)) * chartWidth;
-  const getY = (v: number) => padding.top + chartHeight - ((v - minVal) / range) * chartHeight;
-  
-  const linePath = data.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.value)}`).join(" ");
-  const current = data[data.length - 1];
-  const change = current.value - baseline;
-  const isPositive = metric.isPositiveGood ? change >= 0 : change <= 0;
-  
-  return (
-    <View style={{ backgroundColor: c.white, borderWidth: 0.5, borderColor: c.border, borderRadius: 1, padding: 2 }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
-        <Text style={{ fontSize: 5, fontWeight: "bold", color: c.medium }}>{trend.length}mo trend</Text>
-        <Text style={{ fontSize: 6, fontWeight: "bold", color: isPositive ? c.green : c.amber }}>
-          {change >= 0 ? "+" : ""}{change.toFixed(2)}
-        </Text>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Value Realization Report · {category}</Text>
+        <Text style={styles.footerText}>Page {pageNum}</Text>
       </View>
-      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
-        {/* Grid line */}
-        <Line x1={padding.left} y1={padding.top + chartHeight / 2} x2={padding.left + chartWidth} y2={padding.top + chartHeight / 2} stroke={c.border} strokeWidth={0.5} strokeDasharray="1,1" />
-        
-        {/* Line */}
-        <Path d={linePath} stroke={isPositive ? c.green : c.amber} strokeWidth={1.5} fill="none" />
-        
-        {/* Points - only first and last */}
-        <Circle cx={getX(0)} cy={getY(data[0].value)} r={2.5} fill={c.primary} />
-        <Circle cx={getX(data.length - 1)} cy={getY(current.value)} r={3} fill={isPositive ? c.green : c.amber} />
-        
-        {/* X labels */}
-        {data.filter((_, i) => i === 0 || i === data.length - 1).map((d, idx) => {
-          const actualIdx = idx === 0 ? 0 : data.length - 1;
-          return (
-            <G key={`label-${actualIdx}`}>
-              <Rect x={getX(actualIdx) - 8} y={height - 10} width={16} height={10} fill="transparent" />
-            </G>
-          );
-        })}
-      </Svg>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: padding.left - 5 }}>
-        <Text style={{ fontSize: 5, color: c.primary, fontWeight: "bold" }}>BL</Text>
-        <Text style={{ fontSize: 5, color: isPositive ? c.green : c.amber, fontWeight: "bold" }}>Now</Text>
-      </View>
-    </View>
-  );
-};
-
-const MetricDeepDivePage = ({ metrics, pageNum, totalPages, clientName, preparedBy }: { metrics: ExpandMetricData[]; pageNum: number; totalPages: number; clientName?: string; preparedBy?: string }) => (
-  <Page size="A4" style={s.page}>
-    <Header title="Metric Deep Dives" clientName={clientName} />
-    {metrics.map(m => <MetricSection key={m.id} metric={m} />)}
-    <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={preparedBy} />
-  </Page>
-);
-
-// ============================================================================
-// PAGE: STRATEGIC ANALYSIS
-// ============================================================================
-
-const StrategicAnalysisPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => (
-  <Page size="A4" style={s.page}>
-    <Header title="Strategic Analysis" clientName={data.clientName} />
-    
-    <SectionHeader title="Early Indicators" color={c.blue} />
-    
-    <View style={s.twoCol} wrap={false}>
-      <View style={s.col}>
-        <View style={[s.card, { marginBottom: 0 }]}>
-          <View style={[s.cardHeader, { backgroundColor: c.greenLight, borderBottomColor: c.green }]}>
-            <Text style={[s.cardTitle, { color: c.green }]}>What's Working Well</Text>
-          </View>
-          <View style={s.cardBody}>
-            {data.workingWell.map((item, idx) => (
-              <View key={idx} style={s.statusRow}>
-                <StatusDot status="good" />
-                <Text style={s.statusText}>{item}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-      <View style={s.col}>
-        <View style={[s.card, { marginBottom: 0 }]}>
-          <View style={[s.cardHeader, { backgroundColor: c.amberLight, borderBottomColor: c.amber }]}>
-            <Text style={[s.cardTitle, { color: c.amber }]}>Areas to Watch</Text>
-          </View>
-          <View style={s.cardBody}>
-            {data.areasToWatch.map((item, idx) => (
-              <View key={idx} style={s.statusRow}>
-                <StatusDot status="warning" />
-                <Text style={s.statusText}>{item}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-    </View>
-    
-    <SectionHeader title="Optimization Opportunities" color={c.green} />
-    
-    {data.optimizationOpportunities.map((opp, idx) => (
-      <View key={idx} style={s.oppCard} wrap={false}>
-        <View style={s.oppHeader}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={s.oppNum}><Text style={s.oppNumText}>{idx + 1}</Text></View>
-            <Text style={s.oppTitle}>{opp.title}</Text>
-          </View>
-          <Text style={s.oppValue}>+{fmt(opp.potentialValue)}/yr</Text>
-        </View>
-        <View style={s.oppRow}>
-          <View style={{ flex: 1, backgroundColor: c.pale, padding: 4, borderRadius: 2 }}>
-            <Text style={s.oppLabel}>CURRENT</Text>
-            <Text style={s.oppData}>{opp.current}</Text>
-          </View>
-          <View style={{ justifyContent: "center", paddingHorizontal: 4 }}><Arrow size={10} color={c.green} /></View>
-          <View style={{ flex: 1, backgroundColor: c.greenLight, padding: 4, borderRadius: 2 }}>
-            <Text style={[s.oppLabel, { color: c.greenDark }]}>TARGET</Text>
-            <Text style={[s.oppData, { color: c.green }]}>{opp.target}</Text>
-          </View>
-        </View>
-        <Text style={s.oppAction}>{opp.action}</Text>
-      </View>
-    ))}
-    
-    {data.utilizationRate < 70 && (
-      <View style={[s.callout, { backgroundColor: c.amberLight, borderLeftColor: c.amber }]} wrap={false}>
-        <Text style={[s.calloutTitle, { color: c.amber }]}>Context Note</Text>
-        <Text style={[s.calloutText, { fontSize: 7 }]}>
-          At {data.utilizationRate}% utilization and {data.monthsOnAbridge} months into deployment, your organization is still building adoption patterns. These early metrics will become more stable as usage matures.
-        </Text>
-      </View>
-    )}
-    
-    <View style={s.takeaway} wrap={false}>
-      <Text style={s.takeawayLabel}>Where You Are</Text>
-      <Text style={s.takeawayText}>
-        {data.utilizationRate < 70 
-          ? `At ${data.utilizationRate}% utilization, you're in the growth phase of adoption. The ${fmt(data.tier1Value)} measured so far provides a baseline to track as your team becomes more comfortable with the workflow.`
-          : `At ${data.utilizationRate}% utilization, you've established consistent adoption patterns. This is a good foundation for understanding which workflows are driving the most value for your organization.`
-        }
-      </Text>
-    </View>
-    
-    <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={data.preparedBy} />
-  </Page>
-);
-
-// ============================================================================
-// PAGE: EXPANSION OPPORTUNITY
-// ============================================================================
-
-const ExpansionPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => {
-  const { expansion } = data;
-  const providerMult = expansion.targetProviders / expansion.currentProviders;
-  const utilMult = expansion.targetUtilization / expansion.currentUtilization;
-  const valuePerProvider = expansion.targetProviders > 0 ? expansion.projectedValue / expansion.targetProviders : 0;
-  
-  return (
-    <Page size="A4" style={s.page}>
-      <Header title="Expansion Opportunity" clientName={data.clientName} />
-      
-      <View style={s.callout} wrap={false}>
-        <Text style={s.calloutTitle}>Understanding Scale</Text>
-        <Text style={s.calloutText}>
-          Based on your current per-provider metrics, expanding to additional providers would proportionally increase measured value. At target utilization, each provider would contribute approximately {fmt(valuePerProvider)} annually.
-        </Text>
-      </View>
-      
-      <View style={s.heroRow} wrap={false}>
-        <View style={s.heroCardPrimary}>
-          <Text style={s.heroValueGreen}>{fmt(expansion.projectedValue)}</Text>
-          <Text style={s.heroLabel}>Projected Annual Value</Text>
-          <Text style={s.heroSub}>At full scale</Text>
-        </View>
-        <View style={s.heroCard}>
-          <Text style={s.heroValueGreen}>+{fmt(expansion.expansionValue)}</Text>
-          <Text style={s.heroLabel}>Additional Value</Text>
-          <Text style={s.heroSub}>Beyond current</Text>
-        </View>
-        <View style={s.heroCard}>
-          <Text style={s.heroValue}>{expansion.targetProviders}</Text>
-          <Text style={s.heroLabel}>Target Providers</Text>
-          <Text style={s.heroSub}>{expansion.targetUtilization}% utilization</Text>
-        </View>
-      </View>
-      
-      <SectionHeader title="Expansion Calculation" color={c.green} />
-      
-      <View style={s.card} wrap={false}>
-        <View style={s.cardBody}>
-          <View style={s.row}>
-            <Text style={s.rowLabel}>Current annual value</Text>
-            <Text style={s.rowValue}>{fmt(expansion.currentValue)}</Text>
-          </View>
-          <View style={s.row}>
-            <View>
-              <Text style={s.rowLabel}>Provider scale</Text>
-              <Text style={{ fontSize: 6, color: c.medium }}>{expansion.currentProviders} → {expansion.targetProviders} providers</Text>
-            </View>
-            <Text style={s.rowValueNeutral}>{providerMult.toFixed(1)}x</Text>
-          </View>
-          <View style={s.row}>
-            <View>
-              <Text style={s.rowLabel}>Utilization improvement</Text>
-              <Text style={{ fontSize: 6, color: c.medium }}>{expansion.currentUtilization}% → {expansion.targetUtilization}%</Text>
-            </View>
-            <Text style={s.rowValueNeutral}>{utilMult.toFixed(2)}x</Text>
-          </View>
-          <View style={[s.row, s.rowLast, { backgroundColor: c.greenLight, borderRadius: 4, marginTop: 4, padding: 8 }]}>
-            <Text style={[s.rowLabel, { fontWeight: "bold", fontSize: 9 }]}>Projected annual value at scale</Text>
-            <Text style={[s.rowValue, { fontSize: 12 }]}>{fmt(expansion.projectedValue)}</Text>
-          </View>
-        </View>
-      </View>
-      
-      <SectionHeader title="Current vs. Full Scale" color={c.blue} />
-      
-      <View style={s.twoCol} wrap={false}>
-        <View style={s.col}>
-          <View style={s.card}>
-            <View style={s.cardHeader}>
-              <Text style={s.cardTitle}>Current State</Text>
-            </View>
-            <View style={s.cardBody}>
-              <View style={s.row}><Text style={s.rowLabel}>Providers</Text><Text style={s.rowValueNeutral}>{expansion.currentProviders}</Text></View>
-              <View style={s.row}><Text style={s.rowLabel}>Utilization</Text><Text style={s.rowValueNeutral}>{expansion.currentUtilization}%</Text></View>
-              <View style={s.row}><Text style={s.rowLabel}>Annual value</Text><Text style={s.rowValue}>{fmt(expansion.currentValue)}</Text></View>
-              <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Value/provider</Text><Text style={s.rowValueNeutral}>{fmt(expansion.currentProviders > 0 ? expansion.currentValue / expansion.currentProviders : 0)}</Text></View>
-            </View>
-          </View>
-        </View>
-        <View style={s.col}>
-          <View style={[s.card, { borderColor: c.green, borderWidth: 2 }]}>
-            <View style={s.cardHeaderGreen}>
-              <Text style={[s.cardTitle, { color: c.green }]}>Full Scale Target</Text>
-            </View>
-            <View style={s.cardBody}>
-              <View style={s.row}><Text style={s.rowLabel}>Providers</Text><Text style={s.rowValueNeutral}>{expansion.targetProviders}</Text></View>
-              <View style={s.row}><Text style={s.rowLabel}>Utilization</Text><Text style={s.rowValueNeutral}>{expansion.targetUtilization}%</Text></View>
-              <View style={s.row}><Text style={s.rowLabel}>Annual value</Text><Text style={s.rowValue}>{fmt(expansion.projectedValue)}</Text></View>
-              <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Added value</Text><Text style={[s.rowValue, { fontWeight: "bold" }]}>+{fmt(expansion.expansionValue)}</Text></View>
-            </View>
-          </View>
-        </View>
-      </View>
-      
-      <View style={s.takeaway} wrap={false}>
-        <Text style={s.takeawayLabel}>Key Insight</Text>
-        <Text style={s.takeawayText}>
-          These projections are based on your current per-provider performance. Actual results at scale will depend on factors like specialty mix, patient volume, and workflow adoption across different departments.
-        </Text>
-      </View>
-      
-      <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={data.preparedBy} />
     </Page>
   );
 };
 
 // ============================================================================
-// PAGE: METHODOLOGY
+// EXPANSION OPPORTUNITY PAGE
 // ============================================================================
 
-const MethodologyPage = ({ data, pageNum, totalPages }: { data: ExpandPDFData; pageNum: number; totalPages: number }) => (
-  <Page size="A4" style={s.page}>
-    <Header title="Methodology" clientName={data.clientName} />
-    
-    <View style={[s.callout, { marginBottom: 8 }]} wrap={false}>
-      <Text style={s.calloutText}>
-        This section explains how each calculation was derived. All figures are based on either your input data or established industry benchmarks. The methodology is documented here so you can review and adjust assumptions as needed.
-      </Text>
-    </View>
-    
-    <View style={s.twoCol} wrap={false}>
-      <View style={s.col}>
-        <View style={s.card}>
-          <View style={s.cardHeader}><Text style={s.cardTitle}>Your Inputs</Text></View>
-          <View style={s.cardBody}>
-            <View style={s.row}><Text style={s.rowLabel}>Providers</Text><Text style={s.rowValueNeutral}>{data.providers}</Text></View>
-            <View style={s.row}><Text style={s.rowLabel}>Annual encounters</Text><Text style={s.rowValueNeutral}>{fmtNum(data.encounters)}</Text></View>
-            <View style={s.row}><Text style={s.rowLabel}>Utilization rate</Text><Text style={s.rowValueNeutral}>{data.utilizationRate}%</Text></View>
-            <View style={s.row}><Text style={s.rowLabel}>Months on Abridge</Text><Text style={s.rowValueNeutral}>{data.monthsOnAbridge}</Text></View>
-            <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Documented encounters</Text><Text style={s.rowValueNeutral}>{fmtNum(data.documentedEncounters)}</Text></View>
+const ExpansionPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }) => {
+  const { expansion } = data;
+  const multiplier = expansion.targetProviders / expansion.currentProviders;
+  const valuePerProvider = Math.round(expansion.projectedValue / expansion.targetProviders);
+  
+  return (
+    <Page size="A4" style={styles.page}>
+      <View style={styles.heroCompact}>
+        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
+        <Text style={styles.heroCompactTitle}>The Opportunity Ahead</Text>
+        <Text style={styles.heroCompactSubtitle}>
+          You've proven value with {expansion.currentProviders} providers.{"\n"}
+          Here's what full deployment could look like.
+        </Text>
+      </View>
+
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>Expansion Modeling</Text>
+        <Text style={styles.sectionTitle}>From {expansion.currentProviders} to {expansion.targetProviders} Providers</Text>
+        <Text style={styles.sectionSubtitle}>
+          Based on your current per-provider performance, expanding to additional providers would scale value proportionally.
+        </Text>
+
+        <View style={styles.metricsGrid}>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Current Value</Text>
+            <Text style={styles.metricValue}>{formatCurrency(expansion.currentValue)}</Text>
+            <Text style={styles.metricSub}>{expansion.currentProviders} providers</Text>
+          </View>
+          <View style={styles.metricCardGreen}>
+            <Text style={styles.metricLabel}>Projected Value</Text>
+            <Text style={styles.metricValueGreen}>{formatCurrency(expansion.projectedValue)}</Text>
+            <Text style={styles.metricSub}>at full scale</Text>
+          </View>
+          <View style={[styles.metricCardDark, styles.metricCardLast]}>
+            <Text style={styles.metricLabelLight}>Growth Multiple</Text>
+            <Text style={styles.metricValueLight}>{multiplier.toFixed(1)}×</Text>
+            <Text style={{ fontSize: 7, color: colors.lightGray, marginTop: 2 }}>provider scale</Text>
           </View>
         </View>
-      </View>
-      <View style={s.col}>
-        <View style={s.card}>
-          <View style={s.cardHeader}><Text style={s.cardTitle}>Value Attribution</Text></View>
-          <View style={s.cardBody}>
-            <View style={s.row}><Text style={s.rowLabel}>wRVU conversion</Text><Text style={s.rowValueNeutral}>$33/wRVU</Text></View>
-            <View style={s.row}><Text style={s.rowLabel}>wRVU attribution</Text><Text style={s.rowValueNeutral}>50%</Text></View>
-            <View style={s.row}><Text style={s.rowLabel}>Provider hourly value</Text><Text style={s.rowValueNeutral}>$150/hr</Text></View>
-            <View style={s.row}><Text style={s.rowLabel}>Retention cost</Text><Text style={s.rowValueNeutral}>$500K/departure</Text></View>
-            <View style={[s.row, s.rowLast]}><Text style={s.rowLabel}>Commercial uplift</Text><Text style={s.rowValueNeutral}>30-50% higher</Text></View>
+
+        <View style={styles.divider} />
+
+        <Text style={styles.chapterLabel}>The Math</Text>
+        <Text style={styles.sectionTitle}>How We Get There</Text>
+
+        <View style={styles.insightCard}>
+          <View style={styles.insightRow}>
+            <Text style={styles.insightLabel}>Current value per provider</Text>
+            <Text style={styles.insightValue}>{formatCurrency(Math.round(expansion.currentValue / expansion.currentProviders))}</Text>
           </View>
         </View>
-      </View>
-    </View>
-    
-    <SectionHeader title="Reference Benchmarks" color={c.blue} />
-    
-    <View style={s.twoCol} wrap={false}>
-      <View style={s.col}>
-        <View style={[s.card, { backgroundColor: c.blueLight }]}>
-          <View style={s.cardBody}>
-            <Text style={[s.cardTitle, { color: c.blue, marginBottom: 6 }]}>Industry Observations</Text>
-            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>wRVU change: 3-7% range observed</Text></View>
-            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Documentation time: 3-5 min/encounter typical</Text></View>
-            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Same-day chart closure: varies widely</Text></View>
+
+        <View style={styles.insightCard}>
+          <View style={styles.insightRow}>
+            <Text style={styles.insightLabel}>Target utilization rate</Text>
+            <Text style={styles.insightValue}>{expansion.targetUtilization}%</Text>
           </View>
         </View>
-      </View>
-      <View style={s.col}>
-        <View style={[s.card, { backgroundColor: c.greenLight }]}>
-          <View style={s.cardBody}>
-            <Text style={[s.cardTitle, { color: c.green, marginBottom: 6 }]}>Provider Experience</Text>
-            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>After-hours documentation: varies</Text></View>
-            <View style={s.statusRow}><StatusDot status="good" /><Text style={s.statusText}>Satisfaction surveys: context-dependent</Text></View>
-            <View style={s.statusRow}><StatusDot status="warning" /><Text style={s.statusText}>Burnout indicators: organization-specific</Text></View>
+
+        <View style={styles.insightCard}>
+          <View style={styles.insightRow}>
+            <Text style={styles.insightLabel}>Additional value at full scale</Text>
+            <Text style={styles.insightValueGreen}>+{formatCurrency(expansion.expansionValue)}</Text>
           </View>
         </View>
+
+        <View style={styles.opportunityBox}>
+          <Text style={styles.opportunityTitle}>The Expansion Opportunity</Text>
+          <Text style={styles.opportunityText}>
+            Imagine all {expansion.targetProviders} providers experiencing the same documentation improvements you've measured today.{"\n"}{"\n"}
+            That's {formatCurrency(expansion.projectedValue)} in annual value—an additional {formatCurrency(expansion.expansionValue)} beyond what you're capturing now.
+          </Text>
+        </View>
+
+        <Text style={styles.storyText}>
+          <Text style={styles.storyTextBold}>The bottom line:</Text> Your pilot has proven the model works. At {formatCurrency(valuePerProvider)} per provider, expansion isn't just possible—it's a multiplier on what you've already built.
+        </Text>
       </View>
-    </View>
-    
-    <SectionHeader title="What We Don't Include" color={c.medium} />
-    
-    <View style={s.card} wrap={false}>
-      <View style={s.cardBody}>
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Downstream revenue from patient experience</Text>
-            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Quality measure incentives (MIPS, HEDIS)</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Reduced compliance/audit risk</Text>
-            <Text style={{ fontSize: 7, color: c.dark, marginBottom: 2 }}>• Training time reduction</Text>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Value Realization Report</Text>
+        <Text style={styles.footerText}>Page {pageNum}</Text>
+      </View>
+    </Page>
+  );
+};
+
+// ============================================================================
+// SUMMARY PAGE
+// ============================================================================
+
+const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }) => {
+  const valuePerProvider = data.providers > 0 ? Math.round(data.tier1Value / data.providers) : 0;
+  const displayClientName = data.clientName || "Your Organization";
+  
+  return (
+    <Page size="A4" style={styles.page}>
+      <View style={styles.heroCompact}>
+        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
+        <Text style={styles.heroCompactTitle}>Your Summary to Share</Text>
+        <Text style={styles.heroCompactSubtitle}>
+          The key numbers from {displayClientName}'s Abridge deployment.
+        </Text>
+      </View>
+
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>At a Glance</Text>
+        <Text style={styles.sectionTitle}>The Numbers That Matter</Text>
+        <Text style={styles.sectionSubtitle}>
+          A snapshot of your value realization journey—ready to share with leadership.
+        </Text>
+
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryTitle}>Value Created</Text>
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Annual Value</Text>
+              <Text style={styles.summaryItemValueGreen}>{formatCurrency(data.tier1Value)}</Text>
+              <Text style={styles.summaryItemSubtext}>measured from data</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Value/Provider</Text>
+              <Text style={styles.summaryItemValue}>{formatCurrency(valuePerProvider)}</Text>
+              <Text style={styles.summaryItemSubtext}>{data.providers} providers</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Expansion</Text>
+              <Text style={styles.summaryItemValueGreen}>+{formatCurrency(data.expansion.expansionValue)}</Text>
+              <Text style={styles.summaryItemSubtext}>at {data.expansion.targetProviders} providers</Text>
+            </View>
           </View>
         </View>
+
+        <View style={{ height: 20 }} />
+
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryTitle}>Deployment Status</Text>
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Providers</Text>
+              <Text style={styles.summaryItemValue}>{data.providers}</Text>
+              <Text style={styles.summaryItemSubtext}>on Abridge</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Utilization</Text>
+              <Text style={styles.summaryItemValue}>{data.utilizationRate}%</Text>
+              <Text style={styles.summaryItemSubtext}>of encounters</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryItemLabel}>Duration</Text>
+              <Text style={styles.summaryItemValue}>{data.monthsOnAbridge}</Text>
+              <Text style={styles.summaryItemSubtext}>months</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* Working Well / Areas to Watch */}
+        {(data.workingWell.length > 0 || data.areasToWatch.length > 0) && (
+          <>
+            <Text style={styles.chapterLabel}>Performance Summary</Text>
+            
+            {data.workingWell.length > 0 && (
+              <View style={[styles.insightCard, { backgroundColor: colors.emeraldLight }]}>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.emeraldDark, marginBottom: 6 }}>Working Well</Text>
+                {data.workingWell.slice(0, 3).map((item, idx) => (
+                  <Text key={idx} style={{ fontSize: 8, color: colors.emeraldDark, marginBottom: 2 }}>• {item}</Text>
+                ))}
+              </View>
+            )}
+            
+            {data.areasToWatch.length > 0 && (
+              <View style={[styles.insightCard, { backgroundColor: colors.amberLight }]}>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber, marginBottom: 6 }}>Areas to Watch</Text>
+                {data.areasToWatch.slice(0, 3).map((item, idx) => (
+                  <Text key={idx} style={{ fontSize: 8, color: colors.amber, marginBottom: 2 }}>• {item}</Text>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        <View style={styles.ctaSection}>
+          <Text style={styles.ctaText}>Ready to expand your deployment or optimize further?</Text>
+          <Text style={styles.ctaLink}>Contact your Abridge partner to discuss next steps</Text>
+        </View>
       </View>
-    </View>
-    
-    <View style={s.takeaway} wrap={false}>
-      <Text style={s.takeawayLabel}>About These Estimates</Text>
-      <Text style={s.takeawayText}>
-        These calculations use Medicare conversion factors and conservative attribution percentages. Organizations with a higher proportion of commercial payers or different specialty mixes may see different results. We recommend validating these assumptions against your specific payer mix.
-      </Text>
-    </View>
-    
-    <Footer pageNum={pageNum} totalPages={totalPages} preparedBy={data.preparedBy} />
-  </Page>
-);
+
+      <View style={styles.footer}>
+        <View>
+          <Text style={styles.footerText}>Abridge Value Realization Report</Text>
+          <Text style={styles.methodNote}>
+            Values based on {data.providers} providers, {data.utilizationRate}% utilization, ${33}/wRVU with 50% attribution.
+          </Text>
+        </View>
+        <Text style={styles.footerText}>Page {pageNum}</Text>
+      </View>
+    </Page>
+  );
+};
 
 // ============================================================================
 // MAIN DOCUMENT
 // ============================================================================
 
 const ExpandROIDocument = ({ data }: { data: ExpandPDFData }) => {
-  const metricsWithDeepDive = data.metrics.filter(m => (m.value && m.value > 0) || m.trend || m.before !== m.after);
+  // Filter metrics that have meaningful data
+  const metricsWithData = data.metrics.filter(m => 
+    (m.value && m.value > 0) || 
+    m.change !== 0 || 
+    (m.trend && m.trend.length > 1)
+  );
   
-  const metricsPerPage = 3;
-  const metricPages: ExpandMetricData[][] = [];
-  for (let i = 0; i < metricsWithDeepDive.length; i += metricsPerPage) {
-    metricPages.push(metricsWithDeepDive.slice(i, i + metricsPerPage));
-  }
-  
-  const totalPages = 1 + metricPages.length + 3;
+  let pageNum = 1;
   
   return (
     <Document>
-      <Page1Dashboard data={data} totalPages={totalPages} />
+      {/* Page 1: Executive Summary */}
+      <Page1ExecutiveSummary data={data} />
       
-      {metricPages.map((metrics, idx) => (
-        <MetricDeepDivePage key={idx} metrics={metrics} pageNum={2 + idx} totalPages={totalPages} clientName={data.clientName} preparedBy={data.preparedBy} />
+      {/* Driver Pages: One per metric */}
+      {metricsWithData.map((metric, idx) => (
+        <DriverPage key={metric.id} metric={metric} pageNum={++pageNum} data={data} />
       ))}
       
-      <StrategicAnalysisPage data={data} pageNum={2 + metricPages.length} totalPages={totalPages} />
-      <ExpansionPage data={data} pageNum={3 + metricPages.length} totalPages={totalPages} />
-      <MethodologyPage data={data} pageNum={4 + metricPages.length} totalPages={totalPages} />
+      {/* Expansion Opportunity Page */}
+      <ExpansionPage data={data} pageNum={++pageNum} />
+      
+      {/* Summary Page */}
+      <SummaryPage data={data} pageNum={++pageNum} />
     </Document>
   );
 };
