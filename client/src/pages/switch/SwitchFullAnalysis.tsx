@@ -180,25 +180,25 @@ export default function SwitchFullAnalysis({
 
           {/* 3-Year Gap */}
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5" data-testid="card-3year-gap">
-            <div className="flex items-center justify-between">
+            <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
+              3-Year Potential
+            </div>
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
-                  3-Year Potential
-                </div>
                 <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
                 <div className="text-xs text-[#6B7280] mt-0.5">cumulative opportunity</div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-1">
+              <div className="flex flex-col justify-center gap-0.5">
+                <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-slate-300" />
                   <span className="text-[10px] text-[#6B7280]">Year 1</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-slate-400" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-slate-500" />
                   <span className="text-[10px] text-[#6B7280]">Year 2</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-slate-600" />
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-slate-700" />
                   <span className="text-[10px] text-[#6B7280]">Year 3</span>
                 </div>
               </div>
