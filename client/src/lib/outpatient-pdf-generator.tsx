@@ -90,6 +90,7 @@ const colors = {
   green: "#059669",
   greenLight: "#ECFDF5",
   greenDark: "#047857",
+  emerald: "#10b981",
   black: "#111827",
   darkGray: "#374151",
   mediumGray: "#6B7280",
@@ -102,20 +103,93 @@ const colors = {
   amberDark: "#92400E",
   blue: "#3B82F6",
   blueLight: "#EFF6FF",
+  slate: "#1e293b",
+  slateLight: "#334155",
 };
 
 // ============================================================================
-// STYLES - Dense, professional, McKinsey-inspired
+// STYLES - God Tier Premium Storytelling Format
 // ============================================================================
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 0,
     paddingBottom: 50,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: colors.black,
     backgroundColor: colors.white,
+  },
+
+  // Dark Hero Section (Page 1)
+  heroSection: {
+    backgroundColor: colors.slate,
+    padding: 40,
+    paddingTop: 30,
+    paddingBottom: 35,
+    marginBottom: 0,
+  },
+  heroMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  heroMetaText: {
+    fontSize: 8,
+    color: colors.lightGray,
+  },
+  heroClientName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  heroTagline: {
+    fontSize: 12,
+    color: colors.lightGray,
+    lineHeight: 1.6,
+  },
+
+  // Compact Hero for driver pages
+  heroCompact: {
+    backgroundColor: colors.slate,
+    padding: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  heroCompactTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 4,
+  },
+  heroCompactSubtitle: {
+    fontSize: 10,
+    color: colors.lightGray,
+  },
+  heroCompactValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginTop: 8,
+  },
+
+  // Content section below hero
+  contentSection: {
+    padding: 40,
+    paddingTop: 24,
+    paddingBottom: 20,
+  },
+
+  // Chapter labels
+  chapterLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 6,
   },
 
   header: {
@@ -163,13 +237,15 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    marginTop: 16,
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 9,
+    color: colors.mediumGray,
+    marginBottom: 16,
   },
   sectionTitlePrimary: {
     fontSize: 10,
@@ -870,44 +946,44 @@ const formatNumber = (value: number): string => {
 // ============================================================================
 
 const driverTheories: Record<string, string> = {
-  patientAccess: `When clinicians spend less time on documentation, they have capacity to see additional patients. Not all saved time converts to visits—scheduling, room availability, and demand limit realization—but even a modest portion creates meaningful revenue. The math is conservative: we assume only a portion of saved time goes to access, and only 50% of that actually converts to visits.`,
+  patientAccess: `The hypothesis here is straightforward: when clinicians spend less time on documentation, they may have capacity to see additional patients. Of course, not all saved time converts to visits—scheduling, room availability, and patient demand all play a role. The model uses conservative assumptions: only a portion of saved time goes to access, and only 50% of that actually converts to visits. Your actual results depend on how your practice operates.`,
   
-  wrvu: `Physicians under time pressure document less than the full clinical picture. AI-assisted documentation captures the complexity that supports accurate coding—not upcoding, just getting credit for work already done. A 5% wRVU lift across thousands of encounters compounds into significant revenue without changing clinical behavior.`,
+  wrvu: `The theory behind wRVU improvement is that physicians under time pressure often document less than the full clinical picture. More thorough documentation could capture complexity that supports accurate coding—not upcoding, just getting credit for work already done. Whether you see this lift depends on your current documentation quality and coding practices.`,
   
-  workforce: `Documentation burden is the #1 driver of physician burnout. Reducing this burden improves satisfaction and retention. Replacing a physician costs $400K-$800K+ when you factor in recruiting, lost revenue during vacancy, and onboarding. Even preventing a fraction of turnover creates substantial value.`,
+  workforce: `Research suggests documentation burden is a major driver of physician burnout. The hypothesis is that reducing this burden could improve satisfaction and retention over time. Replacing a physician typically costs $400K-$800K+ when you factor in recruiting, lost revenue during vacancy, and onboarding. This is a long-term metric—benefits would materialize over 12+ months as burnout patterns shift.`,
   
-  overtime: `Documentation that spills into after-hours ("pajama time") has real costs: overtime premiums, locum coverage, and burnout. Abridge helps clinicians finish notes during the workday, reducing the portion that converts to measurable savings.`,
+  overtime: `Documentation that spills into after-hours ("pajama time") has measurable costs: overtime premiums, locum coverage, and burnout. The theory is that Abridge could help clinicians finish notes during the workday. How much of this reclaimed time converts to cost savings versus quality-of-life improvement varies by practice.`,
   
-  hcc: `Physicians discuss chronic conditions that don't make it into notes under time pressure. Each missed HCC-eligible condition represents risk adjustment value. Abridge captures what's discussed, recovering conditions that would otherwise be lost to documentation gaps.`,
+  hcc: `The hypothesis is that physicians discuss chronic conditions that don't always make it into notes, especially under time pressure. Each missed HCC-eligible condition represents potential risk adjustment value. Abridge aims to capture what's discussed, potentially recovering conditions that would otherwise be lost. Results depend significantly on your current capture maturity and payer mix.`,
   
-  denials: `When documentation doesn't support the billed service, claims get denied. Not all are recoverable—some are abandoned because the documentation can't be fixed retroactively. Abridge captures the MDM and clinical reasoning in real-time, preventing denials at the source.`,
+  denials: `When documentation doesn't fully support the billed service, claims may get denied. The theory is that capturing MDM and clinical reasoning in real-time could prevent denials at the source. Whether this translates to value depends on your current denial rates and the nature of those denials.`,
 };
 
 const driverImplications: Record<string, (value: number, data: OutpatientPDFData) => string> = {
   patientAccess: (value, data) => {
     const visits = Math.round(value / 200);
-    return `At ${formatCurrency(value)} annually, this represents approximately ${visits} additional patient visits. Organizations with strong scheduling operations often see higher conversion rates as capacity improves.`;
+    return `Based on these inputs, the model suggests potential value of ${formatCurrency(value)} annually, representing approximately ${visits} additional patient visits. Actual results depend on your scheduling operations, patient demand, and how providers choose to use reclaimed time.`;
   },
   
   wrvu: (value, data) => {
-    return `The ${formatCurrency(value)} in wRVU improvement reflects documentation that accurately captures visit complexity. This isn't about billing more—it's about billing correctly for work already performed.`;
+    return `The calculation suggests ${formatCurrency(value)} in potential wRVU improvement from more thorough documentation. This reflects the hypothesis that capturing visit complexity could support more accurate coding. Your experience may vary based on current documentation quality.`;
   },
   
   workforce: (value, data) => {
     const departures = value / 400000;
-    return `This ${formatCurrency(value)} represents ${departures.toFixed(1)} avoided departures annually. Note: this is a long-term metric—benefits materialize over 12+ months as burnout reduction translates to retention.`;
+    return `The model suggests ${formatCurrency(value)} in potential value, representing approximately ${departures.toFixed(1)} avoided departures annually. This is a long-term metric—benefits would materialize over 12+ months as burnout patterns shift. Your retention outcomes depend on many factors beyond documentation.`;
   },
   
   overtime: (value, data) => {
-    return `The ${formatCurrency(value)} in overtime reduction comes from documentation that stays within working hours. As providers become proficient with Abridge, this value typically increases.`;
+    return `Based on these assumptions, the calculation suggests ${formatCurrency(value)} in potential overtime reduction. As providers become comfortable with Abridge, this value may increase—though how much reclaimed time converts to savings versus quality-of-life varies by practice.`;
   },
   
   hcc: (value, data) => {
-    return `At ${formatCurrency(value)} in risk adjustment value, this represents HCCs that were discussed in visits but not making it into notes. Results vary significantly based on your current capture maturity.`;
+    return `The model suggests ${formatCurrency(value)} in potential risk adjustment value from conditions discussed but not currently documented. Results depend significantly on your current capture maturity, payer mix, and documentation practices.`;
   },
   
   denials: (value, data) => {
-    return `The ${formatCurrency(value)} recovered represents claims that would otherwise be written off due to insufficient documentation. Abridge captures the clinical reasoning that either prevents denials or makes them winnable on appeal.`;
+    return `The calculation suggests ${formatCurrency(value)} in potential value from improved documentation that could prevent or win denials. Whether this translates to your practice depends on current denial patterns and the nature of those denials.`;
   },
 };
 
@@ -1326,43 +1402,48 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
   const valuePerProvider = Math.round(data.netGain / data.providers);
-  const monthlyValue = Math.round(data.netGain / 12);
+
+  // Get display name for client
+  const displayClientName = data.clientName || data.organizationName || "Your Organization";
+
+  // Generate personalized tagline based on their numbers
+  const getPersonalizedTagline = () => {
+    if (data.roi > 5) {
+      return `With ${data.providers} ${data.unitNamePlural} and ${formatNumber(data.encounters)} annual encounters, the model suggests strong potential ROI. Here's how we got there.`;
+    } else if (data.roi > 2) {
+      return `For a practice of your scale, we're exploring what ${data.drivers.length} value drivers could mean for your bottom line.`;
+    }
+    return `An exploratory look at how ambient documentation might create value for your outpatient practice.`;
+  };
 
   return (
     <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
+      {/* Dark Hero Section */}
+      <View style={styles.heroSection}>
+        <View style={styles.heroMeta}>
+          <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
+          <Text style={styles.heroMetaText}>{today}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
-          <Text style={styles.headerSubtitle}>{today}</Text>
-        </View>
+        <Text style={styles.heroClientName}>{displayClientName}</Text>
+        <Text style={styles.heroTagline}>{getPersonalizedTagline()}</Text>
       </View>
 
-      {data.organizationName && (
-        <View style={{ marginBottom: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black }}>{data.organizationName}</Text>
-          <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>
-            {data.providers} {data.unitNamePlural} | {formatNumber(data.encounters)} encounters | {data.utilization}% utilization
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>What We're Exploring</Text>
+        <Text style={styles.sectionTitle}>Your Outpatient ROI Model</Text>
+        <Text style={styles.sectionSubtitle}>
+          {data.providers} {data.unitNamePlural} | {formatNumber(data.encounters)} encounters | {data.utilization}% utilization
+        </Text>
+
+        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            This assessment explores what ambient documentation could mean for your outpatient practice. Every projection traces back to your inputs and industry benchmarks—designed so you can stress-test the assumptions and adjust where needed.
+          </Text>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginTop: 6 }}>
+            You selected <Text style={{ fontWeight: "bold" }}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step.
           </Text>
         </View>
-      )}
-
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>ROI models can feel like black boxes</Text>—numbers that sound good but don't explain themselves. This assessment is different.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          You selected <Text style={styles.narrativeBold}>{data.drivers.length} value drivers</Text>: {data.drivers.map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
-        </Text>
-      </View>
 
       <View style={styles.metricsRow}>
         <View style={styles.metricBoxHighlight}>
@@ -1495,14 +1576,15 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
         </View>
       </View>
 
-      <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
-        <Text style={styles.narrativeText}>
-          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in net annual value, scaling from {data.providers} to {Math.round(data.providers * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
-        </Text>
+        <View style={{ backgroundColor: colors.paleGray, padding: 12, borderRadius: 4, marginTop: 8, borderLeftWidth: 3, borderLeftColor: colors.green }}>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            At <Text style={{ fontWeight: "bold" }}>{formatCurrency(valuePerProvider)} per {data.unitName}</Text> in projected net annual value, scaling could increase benefits proportionally. The methodology section explains how these projections work—and where your situation might differ.
+          </Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Outpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1616,12 +1698,12 @@ const DriverDetailPage = ({
       </View>
 
       <View style={styles.implicationBox}>
-        <Text style={styles.implicationTitle}>What This Means</Text>
+        <Text style={styles.implicationTitle}>What This Suggests</Text>
         <Text style={styles.implicationText}>{implication}</Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Outpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1651,19 +1733,19 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; p
         </View>
       </View>
 
-      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>Your Journey with Abridge</Text>
-      <Text style={{ fontSize: 9, color: colors.mediumGray, marginBottom: 14 }}>Start with a pilot. Prove the value. Scale across your organization.</Text>
+      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>How Scaling Could Work</Text>
+      <Text style={{ fontSize: 9, color: colors.mediumGray, marginBottom: 14 }}>Exploring the path from pilot to full deployment—and where the math might differ.</Text>
 
       <View style={styles.narrativeBox}>
         <Text style={styles.narrativeText}>
-          The ROI you see today reflects a pilot deployment of {journey.pilotProviders} {data.unitNamePlural} at {journey.pilotUtilization}% utilization. 
-          As you scale, value compounds—not just linearly with {data.unitName} count, but exponentially as utilization matures, 
-          workflows optimize, and network effects emerge.
+          This analysis starts with a pilot of {journey.pilotProviders} {data.unitNamePlural} at {journey.pilotUtilization}% utilization. 
+          If adoption follows typical patterns, value may compound—not just linearly with {data.unitName} count, but as utilization matures 
+          and workflows adapt to the new documentation approach.
         </Text>
         <Text style={[styles.narrativeText, { marginTop: 6 }]}>
           At full scale ({journey.fullScaleProviders} {data.unitNamePlural}, {journey.fullScaleUtilization}% utilization), 
-          annual value reaches <Text style={styles.narrativeHighlight}>{formatCurrency(journey.fullScaleValue)}</Text>—a{" "}
-          <Text style={styles.narrativeBold}>{valueMultiple}x increase</Text> from pilot.
+          projected annual value could reach <Text style={styles.narrativeHighlight}>{formatCurrency(journey.fullScaleValue)}</Text>—approximately{" "}
+          <Text style={styles.narrativeBold}>{valueMultiple}x</Text> the pilot projection. Individual results will vary.
         </Text>
       </View>
 
@@ -1821,16 +1903,17 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; p
       </View>
 
       <View style={styles.compoundingBox}>
-        <Text style={styles.compoundingTitle}>Why Value Compounds</Text>
+        <Text style={styles.compoundingTitle}>How Scaling Affects Value</Text>
         <Text style={styles.compoundingValue}>{valueMultiple}x</Text>
         <Text style={styles.compoundingSubtext}>
-          Value doesn't just scale linearly with {data.unitName} count. As utilization improves ({journey.pilotUtilization}% to {journey.fullScaleUtilization}%), 
-          workflows optimize, and network effects emerge, each {data.unitName} generates more value at maturity than at pilot.
+          In typical deployments, value doesn't scale linearly. As utilization improves ({journey.pilotUtilization}% to {journey.fullScaleUtilization}%) 
+          and workflows adapt, each {data.unitName} may generate more value at maturity than at pilot. These projections assume adoption patterns 
+          we've observed—your experience could differ.
         </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Outpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1852,7 +1935,8 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
         </View>
       </View>
 
-      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 14 }}>Methodology & Assumptions</Text>
+      <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>How We Built This Model</Text>
+      <Text style={{ fontSize: 9, color: colors.mediumGray, marginBottom: 14 }}>Understanding the inputs, benchmarks, and principles behind these projections.</Text>
 
       <View style={styles.methodologyGrid}>
         <View style={styles.methodologyColumn}>
@@ -1866,7 +1950,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
         
         <View style={styles.methodologyColumn}>
           <Text style={styles.methodologyTitle}>Industry Benchmarks</Text>
-          <Text style={styles.methodologyItem}>wRVU conversion: $33 (Medicare)</Text>
+          <Text style={styles.methodologyItem}>wRVU conversion: $33 (Medicare avg)</Text>
           <Text style={styles.methodologyItem}>Provider replacement: $400K-$800K</Text>
           <Text style={styles.methodologyItem}>Time value: $150/hr (fully-loaded)</Text>
           <Text style={styles.methodologyItem}>Visit conversion: 50% of capacity</Text>
@@ -1879,23 +1963,26 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
           <Text style={styles.methodologyItem}>Medicare rates (not commercial)</Text>
           <Text style={styles.methodologyItem}>Transparent, auditable logic</Text>
           <Text style={styles.methodologyItem}>No compounding in Year 1</Text>
-          <Text style={styles.methodologyItem}>10% annual growth for Y2-Y3</Text>
+          <Text style={styles.methodologyItem}>10% projected growth for Y2-Y3</Text>
         </View>
       </View>
 
       <Text style={styles.methodologyNote}>
-        All benchmarks based on aggregate data from 200+ health system partners. Individual results vary based on specialty mix, 
-        payer mix, operational factors, and implementation quality. We use conservative assumptions throughout—actual value may be higher.
+        These benchmarks reflect aggregate patterns from health system deployments. Your results will depend on specialty mix, 
+        payer mix, operational factors, and implementation approach. We use conservative assumptions—actual value could be higher or lower 
+        depending on your specific circumstances.
       </Text>
 
       <View style={styles.closingBox}>
         <Text style={styles.closingText}>
-          "Most organizations don't fail to get value from ambient documentation—they fail to optimize for it. The difference between a 2x ROI and a 5x ROI usually isn't the technology. It's utilization, change management, and knowing which drivers matter most for your situation."
+          This model is designed as a starting point for conversation, not a guarantee of results. The calculations are transparent 
+          and adjustable—feel free to stress-test the assumptions. The goal is to help you explore what ambient documentation 
+          might mean for your organization.
         </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Outpatient ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
