@@ -12,6 +12,11 @@ import { generateScribePDF } from "@/components/switch/ScribePDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 
+import patternV from "@assets/pattern-3-v_1769391110218.png";
+import patternSemicircle from "@assets/pattern-4-semicircle_1769391110218.png";
+import patternQuarter from "@assets/pattern-8-quartercircle_1769391110218.png";
+import patternCorner from "@assets/pattern-2-corner_1769391110218.png";
+
 interface ScribeFullAnalysisProps {
   inputs: ScribeInputs;
   onBack: () => void;
@@ -237,10 +242,13 @@ export default function ScribeFullAnalysis({
           transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-xl p-6 md:p-10 mb-8 text-center relative overflow-hidden"
         >
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-8 left-12 w-40 h-40 rounded-full border border-white" />
-            <div className="absolute bottom-8 right-16 w-32 h-32 rounded-full border border-white" />
-            <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full border border-white" />
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <img src={patternV} alt="" className="absolute w-8 md:w-12 top-6 left-8" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternCorner} alt="" className="absolute w-10 md:w-14 top-4 right-12 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternQuarter} alt="" className="absolute w-12 md:w-16 bottom-6 left-16 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternSemicircle} alt="" className="absolute w-6 md:w-10 top-1/3 right-6" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternCorner} alt="" className="absolute w-8 md:w-12 bottom-8 right-20 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <img src={patternV} alt="" className="absolute w-10 md:w-14 bottom-4 right-1/3 rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
           </div>
 
           <div className="relative">
