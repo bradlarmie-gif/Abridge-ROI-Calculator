@@ -85,6 +85,9 @@ const colors = {
   green: "#059669",
   greenLight: "#ECFDF5",
   greenDark: "#047857",
+  emerald: "#10b981",
+  emeraldLight: "#d1fae5",
+  emeraldDark: "#065f46",
   black: "#111827",
   darkGray: "#374151",
   mediumGray: "#6B7280",
@@ -103,17 +106,93 @@ const colors = {
   blueLight: "#EFF6FF",
   purple: "#7C3AED",
   purpleLight: "#F3E8FF",
+  slate: "#1e293b",
+  slateLight: "#334155",
 };
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 0,
     paddingBottom: 50,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: colors.black,
     backgroundColor: colors.white,
   },
+
+  heroSection: {
+    backgroundColor: colors.slate,
+    padding: 40,
+    paddingTop: 30,
+    paddingBottom: 35,
+    marginBottom: 0,
+  },
+  heroMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  heroMetaText: {
+    fontSize: 8,
+    color: colors.lightGray,
+  },
+  heroClientName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  heroTagline: {
+    fontSize: 12,
+    color: colors.lightGray,
+    lineHeight: 1.6,
+  },
+
+  heroCompact: {
+    backgroundColor: colors.slate,
+    padding: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  heroCompactTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 4,
+  },
+  heroCompactSubtitle: {
+    fontSize: 10,
+    color: colors.lightGray,
+  },
+  heroCompactValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.emerald,
+    marginTop: 8,
+  },
+  heroCompactValuePotential: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.amber,
+    marginTop: 8,
+  },
+
+  contentSection: {
+    padding: 40,
+    paddingTop: 24,
+    paddingBottom: 20,
+  },
+
+  chapterLabel: {
+    fontSize: 8,
+    fontWeight: "bold",
+    color: colors.primary,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1386,42 +1465,63 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const qualityDrivers = data.drivers.filter(d => d.category === "quality");
   const valuePerBed = Math.round(data.netGain / data.staffedBeds);
+  const displayClientName = data.clientName || data.organizationName || "Your Organization";
+  const displayPreparedBy = data.preparedBy || "Abridge";
+
+  const getHeroTagline = () => {
+    const hasOvertime = data.drivers.some(d => d.id === "nursingOvertime");
+    const hasRetention = data.drivers.some(d => d.id === "nursingRetention");
+    const hasAgency = data.drivers.some(d => d.id === "nursingAgency");
+    
+    if (data.roi >= 5 && hasOvertime) {
+      return "Addressing the charting burden that keeps nurses past their shifts";
+    } else if (data.roi >= 5 && hasRetention) {
+      return "Exploring how documentation relief could support nurse retention";
+    } else if (data.roi >= 5 && hasAgency) {
+      return "Reducing reliance on agency staff through better workflows";
+    } else if (data.roi >= 5) {
+      return "Strong potential across your nursing value drivers";
+    } else if (data.roi >= 3) {
+      return "Meaningful pathways to nursing efficiency and quality";
+    } else if (data.roi >= 2) {
+      return "A foundation worth exploring for your nursing units";
+    }
+    return "Understanding your nursing documentation landscape";
+  };
+
+  const getOpeningNarrative = () => {
+    if (data.drivers.length >= 4) {
+      return `Nurses spend 25-35% of their shifts documenting—time that could be spent at the bedside. With ${data.drivers.length} value drivers selected, this model explores multiple pathways where ambient documentation could create value for your nursing organization. Each page walks through the math step-by-step.`;
+    } else if (data.drivers.length >= 2) {
+      return `Nursing workflows are unique: shift handoffs, patient ratios, regulatory documentation, and the constant tension between charting and caregiving. This assessment explores ${data.drivers.length} key areas: ${data.drivers.map(d => d.name).join(" and ")}. Each driver page breaks down the calculation so you can stress-test the assumptions.`;
+    }
+    return `Nurses didn't become nurses to chart. They became nurses to care for patients. This focused assessment explores ${data.drivers[0]?.name || "your selected driver"} in depth, showing exactly how we arrived at each number.`;
+  };
 
   return (
     <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
+      <View style={styles.heroSection}>
+        <View style={styles.heroMeta}>
+          <Text style={styles.heroMetaText}>{today}</Text>
+          <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
-          <Text style={styles.headerSubtitle}>{today}</Text>
-        </View>
-      </View>
-
-      {data.organizationName && (
-        <View style={{ marginBottom: 12 }}>
-          <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black }}>{data.organizationName}</Text>
-          <Text style={{ fontSize: 8, color: colors.mediumGray, marginTop: 2 }}>
-            {data.staffedBeds} {data.unitNamePlural} | {formatNumber(data.documentationEvents)} documentation events | {data.utilization}% utilization
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>ROI models can feel like black boxes</Text>—numbers that sound good but don't explain themselves. This assessment is different.
+        <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
+        <Text style={styles.heroClientName}>{displayClientName}</Text>
+        <Text style={styles.heroTagline}>
+          {getHeroTagline()}
         </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          Every value traces back to your inputs, industry benchmarks, and assumptions you can inspect. We're not selling you on a number. We're giving you a model you can stress-test, adjust, and defend internally.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          You selected <Text style={styles.narrativeBold}>{laborDrivers.length + qualityDrivers.length} value drivers</Text>: {[...laborDrivers, ...qualityDrivers].map(d => d.name).join(", ")}. Each section walks through the logic step by step—what we're measuring, why it matters, and exactly how we calculated it.
+        <Text style={{ fontSize: 9, color: colors.lightGray, marginTop: 8, lineHeight: 1.5 }}>
+          Nursing ROI Assessment — An exploratory model built from your inputs and industry benchmarks.
         </Text>
       </View>
+
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>The Overview</Text>
+        <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>What We're Exploring Together</Text>
+        
+        <Text style={{ fontSize: 9, color: colors.darkGray, lineHeight: 1.6, marginBottom: 16 }}>
+          {getOpeningNarrative()}
+        </Text>
 
       <View style={styles.metricsRow}>
         <View style={styles.metricBoxHighlight}>
@@ -1557,14 +1657,16 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
         </View>
       </View>
 
-      <View style={[styles.narrativeBox, { marginTop: 8, borderLeftColor: colors.green }]}>
-        <Text style={styles.narrativeText}>
-          At <Text style={styles.narrativeBold}>{formatCurrency(valuePerBed)} per {data.unitName}</Text> in net annual value, scaling from {data.staffedBeds} to {Math.round(data.staffedBeds * 3)} {data.unitNamePlural} would increase annual benefit from {formatCurrency(data.netGain)} to approximately {formatCurrency(data.netGain * 3)}. The methodology section explains how these projections work—and where your situation might differ.
-        </Text>
+      <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginTop: 12, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
+          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Inside This Report</Text>
+          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
+            Each of the following pages explores one driver in depth—showing the theory, the step-by-step calculation, industry benchmarks, and what the numbers might suggest for your nursing units. Review, adjust assumptions, and see what resonates.
+          </Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Generated by Abridge{data.preparedBy ? ` | Prepared by ${data.preparedBy}` : ''}</Text>
+        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
