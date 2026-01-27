@@ -54,18 +54,34 @@ export function BrandedLoadingOverlay({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden animate-in fade-in duration-300" style={{ backgroundColor: '#f8f9fa' }}>
       <div className="absolute inset-0 pointer-events-none">
+        {/* Top left area */}
         <img 
           src={patternV} 
           alt="" 
           className="absolute w-16 md:w-24"
           style={{ 
-            top: '10%', 
+            top: '8%', 
             left: '-5%',
             animation: 'floatRight 3s ease-in-out forwards',
             filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.15
+            opacity: 0.08
           }}
         />
+        <img 
+          src={patternCorner} 
+          alt="" 
+          className="absolute w-12 md:w-20"
+          style={{ 
+            top: '20%', 
+            left: '8%',
+            animation: 'floatRight 3.5s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.06,
+            transform: 'rotate(45deg)'
+          }}
+        />
+        
+        {/* Top right area */}
         <img 
           src={patternCorner} 
           alt="" 
@@ -76,33 +92,23 @@ export function BrandedLoadingOverlay({
             animation: 'floatLeft 3.5s ease-in-out forwards',
             transform: 'rotate(180deg)',
             filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.12
-          }}
-        />
-        <img 
-          src={patternQuarter} 
-          alt="" 
-          className="absolute w-24 md:w-40"
-          style={{ 
-            bottom: '5%', 
-            left: '5%',
-            animation: 'floatUp 2.8s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.15
+            opacity: 0.07
           }}
         />
         <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-20 md:w-32"
+          className="absolute w-14 md:w-24"
           style={{ 
-            bottom: '10%', 
-            right: '10%',
-            animation: 'floatUp 3.2s ease-in-out forwards',
+            top: '18%', 
+            right: '12%',
+            animation: 'floatLeft 4s ease-in-out forwards',
             filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.12
+            opacity: 0.05
           }}
         />
+        
+        {/* Middle left */}
         <img 
           src={patternBridge} 
           alt="" 
@@ -112,9 +118,24 @@ export function BrandedLoadingOverlay({
             left: '-20%',
             animation: 'slideFromLeft 2s ease-out forwards',
             filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.1
+            opacity: 0.06
           }}
         />
+        <img 
+          src={patternQuarter} 
+          alt="" 
+          className="absolute w-16 md:w-28"
+          style={{ 
+            top: '55%', 
+            left: '5%',
+            animation: 'floatRight 3.8s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.05,
+            transform: 'rotate(90deg)'
+          }}
+        />
+        
+        {/* Middle right */}
         <img 
           src={patternBridge} 
           alt="" 
@@ -125,7 +146,73 @@ export function BrandedLoadingOverlay({
             transform: 'scaleX(-1)',
             animation: 'slideFromRight 2s ease-out forwards',
             filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.1
+            opacity: 0.06
+          }}
+        />
+        <img 
+          src={patternV} 
+          alt="" 
+          className="absolute w-14 md:w-22"
+          style={{ 
+            top: '58%', 
+            right: '8%',
+            animation: 'floatLeft 3.2s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.05,
+            transform: 'rotate(-30deg)'
+          }}
+        />
+        
+        {/* Bottom left */}
+        <img 
+          src={patternQuarter} 
+          alt="" 
+          className="absolute w-24 md:w-40"
+          style={{ 
+            bottom: '5%', 
+            left: '5%',
+            animation: 'floatUp 2.8s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.08
+          }}
+        />
+        <img 
+          src={patternCorner} 
+          alt="" 
+          className="absolute w-12 md:w-20"
+          style={{ 
+            bottom: '22%', 
+            left: '15%',
+            animation: 'floatUp 3.5s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.05
+          }}
+        />
+        
+        {/* Bottom right */}
+        <img 
+          src={patternSemicircle} 
+          alt="" 
+          className="absolute w-20 md:w-32"
+          style={{ 
+            bottom: '10%', 
+            right: '10%',
+            animation: 'floatUp 3.2s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.07
+          }}
+        />
+        <img 
+          src={patternV} 
+          alt="" 
+          className="absolute w-10 md:w-18"
+          style={{ 
+            bottom: '25%', 
+            right: '20%',
+            animation: 'floatUp 4s ease-in-out forwards',
+            filter: 'grayscale(100%) brightness(0.7)',
+            opacity: 0.04,
+            transform: 'rotate(15deg)'
           }}
         />
       </div>

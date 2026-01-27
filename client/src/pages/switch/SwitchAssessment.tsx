@@ -12,12 +12,6 @@ import {
   type SolutionType 
 } from "@/lib/switchGapCalculator";
 
-import patternA from "@assets/pattern-9-a_1769391110218.png";
-import patternBridge from "@assets/pattern-10-bridge_1769391110219.png";
-import patternV from "@assets/pattern-3-v_1769391110218.png";
-import patternSemicircle from "@assets/pattern-4-semicircle_1769391110218.png";
-import patternQuarter from "@assets/pattern-8-quartercircle_1769391110218.png";
-import patternCorner from "@assets/pattern-2-corner_1769391110218.png";
 
 interface SwitchAssessmentProps {
   inputs: SwitchInputs;
@@ -146,49 +140,8 @@ export default function SwitchAssessment({
     ? circumference - (calculations.realizationScore / 100) * circumference 
     : circumference;
 
-  const greyFilter = 'grayscale(100%) brightness(0.75)';
-
   return (
-    <div className="min-h-screen bg-[#f8fafc] relative overflow-hidden">
-      {/* Decorative background patterns - 2x shapes, more transparent */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Top left area */}
-        <img src={patternV} alt="" className="absolute w-16 md:w-24 opacity-[0.06]" style={{ top: '8%', left: '3%', filter: greyFilter }} />
-        <img src={patternCorner} alt="" className="absolute w-12 md:w-20 opacity-[0.05]" style={{ top: '15%', left: '12%', filter: greyFilter, transform: 'rotate(45deg)' }} />
-        <img src={patternSemicircle} alt="" className="absolute w-10 md:w-16 opacity-[0.04]" style={{ top: '25%', left: '5%', filter: greyFilter }} />
-        
-        {/* Top right area */}
-        <img src={patternCorner} alt="" className="absolute w-20 md:w-32 opacity-[0.05]" style={{ top: '5%', right: '5%', filter: greyFilter, transform: 'rotate(180deg)' }} />
-        <img src={patternQuarter} alt="" className="absolute w-14 md:w-24 opacity-[0.04]" style={{ top: '18%', right: '15%', filter: greyFilter }} />
-        <img src={patternV} alt="" className="absolute w-10 md:w-16 opacity-[0.05]" style={{ top: '28%', right: '8%', filter: greyFilter, transform: 'rotate(-30deg)' }} />
-        
-        {/* Middle left */}
-        <img src={patternBridge} alt="" className="absolute w-28 md:w-44 opacity-[0.04]" style={{ top: '35%', left: '2%', filter: greyFilter }} />
-        <img src={patternA} alt="" className="absolute w-20 md:w-32 opacity-[0.06]" style={{ top: '50%', left: '8%', filter: 'none' }} />
-        <img src={patternQuarter} alt="" className="absolute w-12 md:w-20 opacity-[0.04]" style={{ top: '60%', left: '3%', filter: greyFilter, transform: 'rotate(90deg)' }} />
-        
-        {/* Middle right */}
-        <img src={patternBridge} alt="" className="absolute w-28 md:w-44 opacity-[0.04]" style={{ top: '35%', right: '2%', filter: greyFilter, transform: 'scaleX(-1)' }} />
-        <img src={patternSemicircle} alt="" className="absolute w-16 md:w-28 opacity-[0.05]" style={{ top: '48%', right: '10%', filter: greyFilter }} />
-        <img src={patternCorner} alt="" className="absolute w-14 md:w-24 opacity-[0.04]" style={{ top: '62%', right: '5%', filter: greyFilter, transform: 'rotate(-45deg)' }} />
-        
-        {/* Bottom left */}
-        <img src={patternQuarter} alt="" className="absolute w-24 md:w-40 opacity-[0.05]" style={{ bottom: '8%', left: '5%', filter: greyFilter }} />
-        <img src={patternV} alt="" className="absolute w-12 md:w-20 opacity-[0.04]" style={{ bottom: '20%', left: '15%', filter: greyFilter, transform: 'rotate(15deg)' }} />
-        <img src={patternCorner} alt="" className="absolute w-10 md:w-16 opacity-[0.05]" style={{ bottom: '30%', left: '8%', filter: greyFilter }} />
-        
-        {/* Bottom right */}
-        <img src={patternSemicircle} alt="" className="absolute w-20 md:w-32 opacity-[0.05]" style={{ bottom: '10%', right: '8%', filter: greyFilter }} />
-        <img src={patternA} alt="" className="absolute w-12 md:w-20 opacity-[0.04]" style={{ bottom: '25%', right: '18%', filter: greyFilter }} />
-        <img src={patternQuarter} alt="" className="absolute w-14 md:w-22 opacity-[0.04]" style={{ bottom: '35%', right: '5%', filter: greyFilter, transform: 'rotate(180deg)' }} />
-        
-        {/* Extra scattered shapes for density */}
-        <img src={patternV} alt="" className="absolute w-8 md:w-14 opacity-[0.03]" style={{ top: '40%', left: '25%', filter: greyFilter, transform: 'rotate(60deg)' }} />
-        <img src={patternCorner} alt="" className="absolute w-10 md:w-16 opacity-[0.03]" style={{ top: '55%', right: '30%', filter: greyFilter }} />
-        <img src={patternSemicircle} alt="" className="absolute w-8 md:w-12 opacity-[0.03]" style={{ top: '70%', left: '20%', filter: greyFilter, transform: 'rotate(45deg)' }} />
-        <img src={patternQuarter} alt="" className="absolute w-10 md:w-18 opacity-[0.03]" style={{ top: '75%', right: '25%', filter: greyFilter }} />
-      </div>
-
+    <div className="min-h-screen bg-[#f8fafc]">
       <UnifiedHeader 
         pathType="switch"
         currentStep={1} 
