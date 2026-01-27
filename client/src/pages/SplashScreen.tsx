@@ -128,6 +128,39 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             animation: 'splashFloat10 13s ease-in-out infinite'
           }}
         />
+        <img 
+          src={patternA} 
+          alt="" 
+          className="absolute w-16 md:w-24 opacity-35"
+          style={{ 
+            top: '45%', 
+            right: '25%',
+            filter: greyFilter,
+            animation: 'splashFloat11 14s ease-in-out infinite'
+          }}
+        />
+        <img 
+          src={patternCorner} 
+          alt="" 
+          className="absolute w-14 md:w-20 opacity-25"
+          style={{ 
+            bottom: '30%', 
+            left: '18%',
+            filter: greyFilter,
+            animation: 'splashFloat12 11s ease-in-out infinite'
+          }}
+        />
+        <img 
+          src={patternSemicircle} 
+          alt="" 
+          className="absolute w-18 md:w-28 opacity-30"
+          style={{ 
+            top: '75%', 
+            left: '45%',
+            filter: greyFilter,
+            animation: 'splashFloat13 15s ease-in-out infinite'
+          }}
+        />
       </div>
 
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
@@ -223,6 +256,24 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           25% { transform: translate(-25px, -30px) rotate(5deg); }
           50% { transform: translate(5px, -50px) rotate(-3deg); }
           75% { transform: translate(20px, -35px) rotate(7deg); }
+        }
+        @keyframes splashFloat11 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(-20px, -25px) rotate(-4deg); }
+          66% { transform: translate(15px, -40px) rotate(6deg); }
+        }
+        @keyframes splashFloat12 {
+          0%, 100% { transform: translate(0, 0) rotate(90deg); }
+          25% { transform: translate(20px, -20px) rotate(95deg); }
+          50% { transform: translate(-10px, -35px) rotate(85deg); }
+          75% { transform: translate(15px, -15px) rotate(92deg); }
+        }
+        @keyframes splashFloat13 {
+          0%, 100% { transform: translate(0, 0); }
+          20% { transform: translate(-20px, -15px); }
+          40% { transform: translate(15px, -30px); }
+          60% { transform: translate(-10px, -45px); }
+          80% { transform: translate(10px, -20px); }
         }
         @keyframes splashPulse {
           0%, 100% { 
