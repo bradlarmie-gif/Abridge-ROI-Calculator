@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Download, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Calendar, BarChart3, Clock, DollarSign, Smile, ChevronRight, ChevronDown, Info, Lightbulb, ArrowUpDown, Loader2, Heart, Users, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from "recharts";
@@ -89,7 +89,7 @@ export default function SwitchFullAnalysis({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
-              Your Gap Analysis
+              Your Value Assessment
             </h1>
             <p className="text-sm md:text-base text-[#6B7280]">
               {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · {solutionLabel}
@@ -121,20 +121,20 @@ export default function SwitchFullAnalysis({
             
             <div className="relative">
               <div className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">
-                Your Annual Gap
+                Your Opportunity
               </div>
               <div className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 tracking-tight">
                 {formatCurrency(calculations.annualGap)}
               </div>
               <div className="text-sm md:text-base text-slate-400">
-                in unrealized value each year
+                in additional annual value based on what we're seeing
               </div>
               
               {/* Monthly breakdown */}
               <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-center gap-2">
                 <Clock className="w-4 h-4 text-slate-500" />
                 <span className="text-sm text-slate-400">
-                  That's <span className="text-white font-semibold">{formatCurrency(calculations.monthlyGap)}/month</span> left on the table
+                  Approximately <span className="text-white font-semibold">{formatCurrency(calculations.monthlyGap)}/month</span> in potential value
                 </span>
               </div>
             </div>
@@ -177,10 +177,10 @@ export default function SwitchFullAnalysis({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
-                  3-Year Cumulative
+                  3-Year Potential
                 </div>
                 <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
-                <div className="text-xs text-[#6B7280] mt-0.5">total unrealized value</div>
+                <div className="text-xs text-[#6B7280] mt-0.5">cumulative opportunity</div>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center gap-1">
@@ -201,9 +201,9 @@ export default function SwitchFullAnalysis({
         </div>
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of the Gap Over Time</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Opportunity Over Time</h2>
           <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">
-            Cumulative value if you stay at current performance vs. reach Abridge benchmarks
+            Based on what we're seeing: your current trajectory vs. Abridge customer benchmarks
           </p>
 
           <div className="h-56 sm:h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
@@ -284,7 +284,7 @@ export default function SwitchFullAnalysis({
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 p-3 md:p-4 bg-gradient-to-r from-emerald-50 to-slate-50 rounded-lg border border-emerald-100">
             <div className="flex items-center gap-2">
               <div className="w-6 h-3 md:w-8 md:h-4 rounded bg-gradient-to-b from-emerald-500/20 to-emerald-500/5 border border-emerald-200" />
-              <span className="text-xs md:text-sm text-[#6B7280]">Shaded area = unrealized value</span>
+              <span className="text-xs md:text-sm text-[#6B7280]">Shaded area = additional potential</span>
             </div>
             <span className="hidden md:block text-slate-300">|</span>
             <div className="flex items-center gap-2">
@@ -292,6 +292,54 @@ export default function SwitchFullAnalysis({
               <span className="text-xs md:text-sm text-[#6B7280]">over 3 years</span>
             </div>
           </div>
+        </section>
+
+        {/* NEW: Human Angle Section - What This Means Day-to-Day */}
+        <section className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Heart className="w-5 h-5 text-amber-600" />
+            <h2 className="text-lg md:text-xl font-bold text-[#111827]">What This Means Day-to-Day</h2>
+          </div>
+          
+          <p className="text-sm md:text-base text-slate-700 mb-5">
+            The numbers tell one story. But here's what we're hearing from providers who've made the switch:
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white/80 rounded-lg p-4 border border-amber-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Coffee className="w-4 h-4 text-amber-600" />
+                <span className="font-semibold text-slate-900 text-sm">Less Pajama Time</span>
+              </div>
+              <p className="text-xs text-slate-600">
+                Providers tell us they're finishing notes before leaving the office. That's time back with family — not charting at 10pm.
+              </p>
+            </div>
+            
+            <div className="bg-white/80 rounded-lg p-4 border border-amber-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4 text-amber-600" />
+                <span className="font-semibold text-slate-900 text-sm">More Face Time</span>
+              </div>
+              <p className="text-xs text-slate-600">
+                When documentation happens in real-time, providers can actually look at patients during visits instead of screens.
+              </p>
+            </div>
+            
+            <div className="bg-white/80 rounded-lg p-4 border border-amber-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Smile className="w-4 h-4 text-amber-600" />
+                <span className="font-semibold text-slate-900 text-sm">Reduced Burnout</span>
+              </div>
+              <p className="text-xs text-slate-600">
+                Documentation burden is the #1 driver of physician burnout. When that weight lifts, we see satisfaction scores climb.
+              </p>
+            </div>
+          </div>
+          
+          <p className="text-xs text-slate-500 mt-4 italic">
+            These outcomes are harder to quantify — but they're often what matters most to the providers living it.
+          </p>
         </section>
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
@@ -361,30 +409,30 @@ export default function SwitchFullAnalysis({
         </section>
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of Waiting</h2>
-          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">What you leave on the table by delaying</p>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Value of Moving Sooner</h2>
+          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">How timing affects your 3-year opportunity</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
             <div className="border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-4 md:p-6 text-center relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 md:px-3 py-0.5 md:py-1 bg-emerald-500 text-white text-[10px] md:text-xs font-semibold rounded-full">
-                RECOMMENDED
+                FULL POTENTIAL
               </div>
-              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Act now</div>
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Start now</div>
               <div className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearGap)}</div>
               <div className="text-xs md:text-sm text-emerald-700 font-medium mt-1">full 3-year value</div>
             </div>
 
             <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-4 md:p-6 text-center">
-              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Wait 6 months</div>
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Start in 6 months</div>
               <div className="text-2xl md:text-3xl font-bold text-amber-600">-{formatCurrency(calculations.wait6MonthsLoss)}</div>
-              <div className="text-xs md:text-sm text-amber-700 font-medium mt-1">lost forever</div>
+              <div className="text-xs md:text-sm text-amber-700 font-medium mt-1">opportunity cost</div>
               <div className="text-[10px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait6MonthsValue)} remaining</div>
             </div>
 
             <div className="border border-red-200 bg-red-50/50 rounded-xl p-4 md:p-6 text-center">
-              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Wait 12 months</div>
+              <div className="text-xs md:text-sm font-medium text-[#6B7280] mb-2">Start in 12 months</div>
               <div className="text-2xl md:text-3xl font-bold text-red-500">-{formatCurrency(calculations.wait12MonthsLoss)}</div>
-              <div className="text-xs md:text-sm text-red-600 font-medium mt-1">lost forever</div>
+              <div className="text-xs md:text-sm text-red-600 font-medium mt-1">opportunity cost</div>
               <div className="text-[10px] md:text-xs text-[#9CA3AF] mt-2">{formatCurrency(calculations.wait12MonthsValue)} remaining</div>
             </div>
           </div>
@@ -392,7 +440,7 @@ export default function SwitchFullAnalysis({
           <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-slate-50 rounded-lg border border-slate-200">
             <Clock className="w-5 h-5 md:w-6 md:h-6 text-slate-500 flex-shrink-0" />
             <span className="text-sm md:text-base text-[#111827]">
-              Every month you wait = <strong className="text-amber-600">{formatCurrency(calculations.monthlyGap)}</strong> gone
+              Each month represents approximately <strong className="text-amber-600">{formatCurrency(calculations.monthlyGap)}</strong> in potential value
             </span>
           </div>
         </section>
@@ -443,9 +491,9 @@ export default function SwitchFullAnalysis({
 
       <PDFExportModal
         open={showExportModal}
-        onOpenChange={setShowExportModal}
+        onClose={() => setShowExportModal(false)}
         onExport={handleExportPDF}
-        isGenerating={isExporting}
+        isExporting={isExporting}
       />
     </div>
   );
