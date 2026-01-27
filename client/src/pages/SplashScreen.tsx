@@ -161,6 +161,64 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             animation: 'splashFloat13 15s ease-in-out infinite'
           }}
         />
+        <img 
+          src={patternBridge} 
+          alt="" 
+          className="absolute w-28 md:w-40 opacity-30"
+          style={{ 
+            top: '55%', 
+            left: '12%',
+            filter: greyFilter,
+            animation: 'splashFloat14 12s ease-in-out infinite'
+          }}
+        />
+        <img 
+          src={patternBridge} 
+          alt="" 
+          className="absolute w-24 md:w-36 opacity-25"
+          style={{ 
+            top: '25%', 
+            right: '15%',
+            filter: greyFilter,
+            transform: 'scaleX(-1)',
+            animation: 'splashFloat15 16s ease-in-out infinite'
+          }}
+        />
+        <img 
+          src={patternCorner} 
+          alt="" 
+          className="absolute w-16 md:w-24 opacity-30"
+          style={{ 
+            top: '40%', 
+            left: '35%',
+            filter: greyFilter,
+            animation: 'splashFloat16 13s ease-in-out infinite'
+          }}
+        />
+        <img 
+          src={patternCorner} 
+          alt="" 
+          className="absolute w-12 md:w-18 opacity-25"
+          style={{ 
+            bottom: '20%', 
+            right: '35%',
+            filter: greyFilter,
+            transform: 'rotate(180deg)',
+            animation: 'splashFloat17 11s ease-in-out infinite'
+          }}
+        />
+        <img 
+          src={patternCorner} 
+          alt="" 
+          className="absolute w-18 md:w-26 opacity-20"
+          style={{ 
+            top: '85%', 
+            right: '8%',
+            filter: greyFilter,
+            transform: 'rotate(270deg)',
+            animation: 'splashFloat18 14s ease-in-out infinite'
+          }}
+        />
       </div>
 
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
@@ -274,6 +332,33 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           40% { transform: translate(15px, -30px); }
           60% { transform: translate(-10px, -45px); }
           80% { transform: translate(10px, -20px); }
+        }
+        @keyframes splashFloat14 {
+          0%, 100% { transform: translate(0, 0); }
+          33% { transform: translate(25px, -20px); }
+          66% { transform: translate(10px, 15px); }
+        }
+        @keyframes splashFloat15 {
+          0%, 100% { transform: translate(0, 0) scaleX(-1); }
+          25% { transform: translate(-15px, -30px) scaleX(-1); }
+          50% { transform: translate(10px, -45px) scaleX(-1); }
+          75% { transform: translate(-20px, -20px) scaleX(-1); }
+        }
+        @keyframes splashFloat16 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(-15px, -25px) rotate(5deg); }
+          66% { transform: translate(20px, -35px) rotate(-3deg); }
+        }
+        @keyframes splashFloat17 {
+          0%, 100% { transform: translate(0, 0) rotate(180deg); }
+          25% { transform: translate(15px, -20px) rotate(185deg); }
+          50% { transform: translate(-10px, -40px) rotate(175deg); }
+          75% { transform: translate(20px, -25px) rotate(182deg); }
+        }
+        @keyframes splashFloat18 {
+          0%, 100% { transform: translate(0, 0) rotate(270deg); }
+          33% { transform: translate(-20px, -15px) rotate(275deg); }
+          66% { transform: translate(15px, -30px) rotate(265deg); }
         }
         @keyframes splashPulse {
           0%, 100% { 
