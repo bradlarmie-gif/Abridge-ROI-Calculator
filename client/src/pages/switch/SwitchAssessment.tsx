@@ -403,7 +403,7 @@ export default function SwitchAssessment({
             hasMinimumData ? 'bg-white border-slate-200' : 'bg-slate-50 border-dashed border-slate-300'
           }`}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-[#111827]">Your Annual Gap</h3>
+              <h3 className="text-lg font-bold text-[#111827]">Your Opportunity</h3>
               {hasMinimumData ? (
                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -421,17 +421,17 @@ export default function SwitchAssessment({
               {hasMinimumData ? (
                 <div className="text-5xl font-bold text-[#111827]" data-testid="text-annual-gap">
                   {formatCurrency(calculations.annualGap)}
-                  <span className="text-xl text-[#6B7280] font-normal">/year in unrealized value</span>
+                  <span className="text-xl text-[#6B7280] font-normal">/year in additional potential</span>
                 </div>
               ) : (
                 <div className="py-4" data-testid="text-annual-gap">
                   <div className="text-5xl font-bold text-slate-300 mb-2">--</div>
                   <p className="text-sm text-slate-500">
                     {inputs.providers > 0 && inputs.annualEncounters > 0 
-                      ? "Adjust the metrics above to calculate your gap"
+                      ? "Adjust the metrics above to see your opportunity"
                       : hasAnyDimensionValue
                         ? "Enter your provider count and annual encounters above"
-                        : "Enter providers, encounters, and at least one metric to calculate your gap"
+                        : "Enter providers, encounters, and at least one metric to see your opportunity"
                     }
                   </p>
                 </div>

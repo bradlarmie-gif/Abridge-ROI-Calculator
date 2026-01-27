@@ -1276,13 +1276,13 @@ interface DimensionInfo {
 const getStageNarrative = (stage: string, score: number, gap: number): string => {
   switch(stage) {
     case 'Early Stage':
-      return `At ${score}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments, but it does mean significant value is being left on the table. The gap of ${formatCurrency(gap)} annually represents real dollars that could be recovered with focused optimization.`;
+      return `At ${score}% value realization, your organization is in the early stages of capturing ambient AI's potential. This isn't unusual for newer deployments — we're seeing similar patterns across organizations at this stage. Based on what we're observing, there's approximately ${formatCurrency(gap)} in additional annual value that could be captured with focused optimization.`;
     case 'Developing':
-      return `At ${score}% value realization, your organization has made progress but is at a critical juncture. This is where most organizations plateau without focused optimization. You've proven the solution works — the question now is whether you'll capture its full potential or settle for partial value.`;
+      return `At ${score}% value realization, your organization has made meaningful progress. We're seeing this as a common inflection point — organizations at this stage have proven the solution works, and the opportunity now is determining how much of the remaining potential to pursue.`;
     case 'Optimized':
-      return `At ${score}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI, but there's still a gap of ${formatCurrency(gap)} annually that represents optimization opportunity.`;
+      return `At ${score}% value realization, your organization is performing above average. You're capturing meaningful value from ambient AI. Based on what we're seeing, there may be additional opportunity of approximately ${formatCurrency(gap)} annually worth exploring.`;
     case 'Transformed':
-      return `At ${score}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining gap of ${formatCurrency(gap)} represents marginal optimization opportunity.`;
+      return `At ${score}% value realization, your organization is among the top performers in ambient AI adoption. You're capturing the vast majority of available value. The remaining ${formatCurrency(gap)} represents incremental optimization opportunity.`;
     default:
       return `At ${score}% value realization, your organization has room to optimize ambient AI performance.`;
   }
@@ -1295,15 +1295,15 @@ const getPrimaryRecommendation = (lowest: DimensionInfo, highest: DimensionInfo)
 const getRiskStatement = (stage: string, gap: number): string => {
   switch(stage) {
     case 'Early Stage':
-      return `The risk of staying at this stage: providers may lose confidence in the solution if they don't see consistent value, leading to declining utilization over time — a downward spiral that becomes harder to reverse.`;
+      return `What we're seeing at this stage: provider confidence often depends on consistent value realization. Building momentum now could help prevent the gradual utilization decline that sometimes occurs without focused attention.`;
     case 'Developing':
-      return `Organizations that stay in the "Developing" stage often see erosion over time — small drops in utilization, creeping dissatisfaction, gradual return to old habits. The ${formatCurrency(gap)} annual gap compounds: every year at this level is another year of unrealized value.`;
+      return `Organizations at the "Developing" stage sometimes see gradual changes over time — small shifts in utilization, evolving satisfaction levels. The ${formatCurrency(gap)} annual opportunity represents value that could be captured with focused optimization efforts.`;
     case 'Optimized':
-      return `The risk at this stage is complacency. "Good enough" can become the enemy of excellent. Organizations that push from Optimized to Transformed often see the highest ROI on their optimization efforts because the foundation is already strong.`;
+      return `At this stage, there's an interesting opportunity. Organizations that move from Optimized to Transformed often see strong returns on their optimization efforts because the foundation is already solid.`;
     case 'Transformed':
-      return `Even top performers need to maintain vigilance. Technology evolves, staff turns over, workflows change. What got you to Transformed requires ongoing attention to stay there.`;
+      return `Even top performers benefit from ongoing attention. Technology evolves, staff turns over, workflows change. Maintaining performance at this level requires continued focus.`;
     default:
-      return `Gaps compound over time. Each year at current performance means another ${formatCurrency(gap)} in unrealized value.`;
+      return `Based on what we're seeing, each year represents approximately ${formatCurrency(gap)} in potential additional value.`;
   }
 };
 
@@ -1571,10 +1571,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
             <Text style={styles.execSummaryTitle}>EXECUTIVE SUMMARY</Text>
           </View>
           <View style={styles.execSummaryContent}>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.annualGap)} annual gap</Text> — value that exists in your ambient AI investment but isn't being captured</Text>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.annualGap)} annual opportunity</Text> — additional value that could be captured from your ambient AI investment</Text>
             <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{calculations.realizationScore}% value realization</Text> — you're capturing {calculations.realizationScore} cents of every dollar of potential value</Text>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{lowestDimension.name} is your primary opportunity</Text> — at {lowestDimension.score}% of benchmark, this is where focused effort will yield the greatest returns</Text>
-            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.threeYearGap)} at risk over 3 years</Text> — if current performance continues without optimization</Text>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{lowestDimension.name} is your primary opportunity</Text> — at {lowestDimension.score}% of benchmark, this is where focused effort may yield the greatest returns</Text>
+            <Text style={styles.execBullet}>• <Text style={styles.execBulletBold}>{formatCurrency(calculations.threeYearGap)} potential over 3 years</Text> — based on Abridge customer benchmarks</Text>
           </View>
         </View>
 
@@ -1596,8 +1596,8 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
         <View style={styles.metricsGrid}>
           <View style={styles.metricCard}>
             <Text style={styles.metricValueGreen}>{formatCurrency(calculations.annualGap)}</Text>
-            <Text style={styles.metricLabel}>Annual Gap</Text>
-            <Text style={styles.metricDescription}>Value that exists but isn't being captured</Text>
+            <Text style={styles.metricLabel}>Annual Opportunity</Text>
+            <Text style={styles.metricDescription}>Additional value based on benchmarks</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricValue}>{calculations.realizationScore}%</Text>
@@ -1606,8 +1606,8 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricValue}>{formatCurrency(calculations.threeYearGap)}</Text>
-            <Text style={styles.metricLabel}>3-Year Gap</Text>
-            <Text style={styles.metricDescription}>Cumulative gap over three years</Text>
+            <Text style={styles.metricLabel}>3-Year Potential</Text>
+            <Text style={styles.metricDescription}>Cumulative opportunity over three years</Text>
           </View>
           <View style={[styles.metricCard, styles.metricCardLast]}>
             <Text style={styles.metricValue}>{calculations.maturityLevel}</Text>
@@ -1740,7 +1740,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
             YOU: {calculations.realizationScore}%
           </Text>
           <Text style={styles.spectrumExplanation}>
-            At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. The gap between where you are and where you could be represents {formatCurrency(calculations.annualGap)} annually in unrealized value.
+            At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. Based on what we're seeing, the opportunity between where you are and where you could be represents approximately {formatCurrency(calculations.annualGap)} annually.
           </Text>
         </View>
 
@@ -1971,7 +1971,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
           <View style={styles.monthlyCallout}>
             <Text style={styles.monthlyText}>
-              Every month at current performance = {formatCurrency(calculations.monthlyGap)} in unrealized value
+              Each month represents approximately {formatCurrency(calculations.monthlyGap)} in additional potential value
             </Text>
           </View>
         </View>
@@ -2036,7 +2036,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
 
         <View style={styles.totalGapBox}>
           <View style={styles.totalGapRow}>
-            <Text style={styles.totalGapLabel}>TOTAL ANNUAL GAP</Text>
+            <Text style={styles.totalGapLabel}>TOTAL ANNUAL OPPORTUNITY</Text>
             <Text style={styles.totalGapValue}>{formatCurrency(calculations.annualGap)}</Text>
           </View>
           <Text style={styles.totalGapBreakdown}>
@@ -2044,10 +2044,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </Text>
         </View>
 
-        {/* Trajectory Chart - Cost of Gap Over Time (Bar-based) */}
+        {/* Trajectory Chart - Opportunity Over Time (Bar-based) */}
         <View style={styles.trajectoryChart}>
-          <Text style={styles.trajectoryTitle}>THE COST OF THE GAP OVER TIME</Text>
-          <Text style={styles.trajectorySubtitle}>Cumulative unrealized value grows each year if the gap persists</Text>
+          <Text style={styles.trajectoryTitle}>THE OPPORTUNITY OVER TIME</Text>
+          <Text style={styles.trajectorySubtitle}>Cumulative potential based on Abridge customer benchmarks</Text>
           
           {/* Bar chart showing cumulative gap */}
           <View style={styles.timelineBarChart}>
@@ -2097,7 +2097,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           {/* Summary callout */}
           <View style={styles.trajectorySummary}>
             <View style={styles.trajectorySummaryIcon} />
-            <Text style={styles.trajectorySummaryLabel}>Total unrealized value:</Text>
+            <Text style={styles.trajectorySummaryLabel}>Total opportunity:</Text>
             <Text style={styles.trajectorySummaryValue}>{formatCurrency(calculations.threeYearGap)}</Text>
             <Text style={styles.trajectorySummaryPeriod}>over 3 years</Text>
           </View>
@@ -2188,7 +2188,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
             <Text style={styles.contactCTATitle}>NEXT STEPS</Text>
           </View>
           <Text style={styles.contactCTAText}>
-            To discuss these findings and explore how Abridge can help close your value gap, contact your Abridge representative.
+            To discuss these findings and explore how Abridge can help capture this opportunity, contact your Abridge representative.
           </Text>
           <Text style={styles.contactCTAPrepared}>
             This assessment was prepared by: <Text style={{ fontWeight: "bold" }}>{preparedBy}</Text>
