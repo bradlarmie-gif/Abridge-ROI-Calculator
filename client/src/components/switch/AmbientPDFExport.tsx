@@ -629,11 +629,11 @@ const getScoreColor = (score: number): string => {
 
 const getMaturityDescription = (stage: string): string => {
   switch(stage) {
-    case 'Early Stage': return 'Early in the value capture journey with significant upside';
-    case 'Developing': return 'Building momentum with room to optimize';
-    case 'Optimized': return 'Performing well with fine-tuning opportunities';
-    case 'Transformed': return 'Among top performers, maximizing value';
-    default: return 'Progressing on the value capture journey';
+    case 'Early Stage': return 'You have the tool, but it hasn\'t become habit yet. That\'s normal—and fixable.';
+    case 'Developing': return 'The foundation is there. Now it\'s about removing friction and building momentum.';
+    case 'Optimized': return 'You\'re doing this well. The remaining gains are about fine-tuning, not overhauling.';
+    case 'Transformed': return 'This is what success looks like. The focus now is sustaining it.';
+    default: return 'There\'s meaningful work to do, and a clear path to do it.';
   }
 };
 
@@ -755,15 +755,15 @@ interface DimensionInfo {
 const getStageNarrative = (stage: string, score: number, gap: number): string => {
   switch(stage) {
     case 'Early Stage':
-      return `At ${score}% value realization, your organization is capturing roughly one-third of ambient AI's potential. This isn't unusual for early deployments—but it represents a ${formatCurrency(gap)} annual opportunity that compounds over time. The good news: the path to higher value is clear and actionable.`;
+      return `You're capturing about ${score}% of what's possible. That's common early on—most organizations start here. The ${formatCurrency(gap)} gap isn't a failure; it's just unrealized potential. The encouraging part: you don't need to change everything. Usually it's a few specific things—adoption patterns, workflow friction, training gaps—that explain most of the difference.`;
     case 'Developing':
-      return `At ${score}% value realization, you've built a solid foundation. The ${formatCurrency(gap)} opportunity isn't about starting over—it's about optimizing what's already working. Organizations at this stage typically see the fastest improvements with targeted interventions.`;
+      return `At ${score}%, you've moved past the initial hurdles. Providers are using the tool, and it's creating real value. The ${formatCurrency(gap)} still on the table isn't about starting over—it's about asking harder questions. Which providers aren't using it, and why? Where are notes being edited when they shouldn't need to be? The answers are usually specific and addressable.`;
     case 'Optimized':
-      return `At ${score}% value realization, you're outperforming most deployments. The ${formatCurrency(gap)} remaining opportunity represents fine-tuning rather than fundamental change. You're in a position to become a reference case for what's possible.`;
+      return `${score}% is genuinely strong. You're outperforming most deployments we see. The remaining ${formatCurrency(gap)} is about refinement—finding the edge cases, the stragglers, the small inefficiencies that add up. This is optimization work, not transformation work. The hard part is already done.`;
     case 'Transformed':
-      return `At ${score}% value realization, you're among the top performers. The ${formatCurrency(gap)} represents marginal gains—worth pursuing, but your primary value is already being captured. Consider how to maintain and extend this success.`;
+      return `At ${score}%, you're among the best we've measured. The ${formatCurrency(gap)} that remains is real, but it's marginal gains—worth pursuing, but not urgent. The more interesting question now is: how do you sustain this? What made it work here, and how do you protect it as things change?`;
     default:
-      return `At ${score}% value realization, there's meaningful opportunity to optimize. The ${formatCurrency(gap)} annual gap is addressable with focused effort on your weakest dimensions.`;
+      return `At ${score}% value realization, there's a clear ${formatCurrency(gap)} opportunity. The gap isn't a mystery—it traces back to specific dimensions where performance differs from benchmark. Understanding which ones, and why, is the first step.`;
   }
 };
 
@@ -797,33 +797,33 @@ const getOptimizationOpportunities = (
     const utilizationGap = ABRIDGE_BENCHMARKS.utilization - inputs.utilization;
     const potentialValue = Math.round(calculations.utilizationGapValue * 0.5);
     opportunities.push({
-      title: 'Increase Utilization',
+      title: 'Close the Adoption Gap',
       current: `${inputs.utilization}% of encounters`,
       target: `${Math.min(inputs.utilization + Math.round(utilizationGap / 2), ABRIDGE_BENCHMARKS.utilization)}%`,
       potentialValue,
-      action: 'Focus on workflow integration and provider training to capture more encounters.',
+      action: 'Find the providers who stopped using it or never started. Ask them directly what\'s in the way. The answers are usually specific: "it doesn\'t work with my workflow," "I forget to start it," "the notes need too much editing." Each one is solvable.',
     });
   }
   
   if (calculations.efficiencyScore < 90) {
     const potentialValue = Math.round(calculations.efficiencyGapValue * 0.5);
     opportunities.push({
-      title: 'Improve Time Savings',
+      title: 'Reduce Post-Visit Editing',
       current: `${inputs.timeSavedPerEncounter} min/encounter`,
       target: `${Math.min(inputs.timeSavedPerEncounter + 1, ABRIDGE_BENCHMARKS.timeSavedAvg)} min`,
       potentialValue,
-      action: 'Review note templates and reduce post-visit editing to increase per-encounter savings.',
+      action: 'Pull a sample of notes that required heavy editing. Look for patterns: certain visit types, certain providers, certain phrases that consistently need correction. Template adjustments or brief retraining often fix these.',
     });
   }
   
   if (calculations.qualityScore < 90) {
     const potentialValue = Math.round(calculations.wrvuGapValue * 0.5);
     opportunities.push({
-      title: 'Enhance Documentation Quality',
+      title: 'Capture Missing Complexity',
       current: `+${inputs.wrvuLift}% wRVU`,
       target: `+${Math.min(inputs.wrvuLift + 1, ABRIDGE_BENCHMARKS.wrvuLift)}%`,
       potentialValue,
-      action: 'Partner with coding team to identify documentation gaps affecting wRVU capture.',
+      action: 'Meet with your coding team. Ask: "What clinical details are you adding that the notes should have included?" Their audit findings will tell you exactly what the AI is missing and why. Usually it\'s specific documentation gaps that can be addressed.',
     });
   }
   
@@ -833,43 +833,43 @@ const getOptimizationOpportunities = (
 const DimensionEducation = {
   utilization: {
     definition: "The percentage of encounters where ambient AI is used for documentation.",
-    whyMatters: "Every encounter not using ambient AI is one where providers carry full documentation burden. Low utilization means paying for capacity that isn't being used.",
-    whatDrives: "Workflow integration, provider habits, technical friction, and whether the tool feels natural in clinical environments.",
+    whyMatters: "Every encounter without ambient AI is a provider doing documentation the old way—staying late, carrying the cognitive load, feeling the weight of notes piling up. When utilization is low, you're paying for relief that isn't reaching the people who need it.",
+    whatDrives: "Usually it's specific friction: the tool doesn't fit the workflow, providers forget to start it, or early bad experiences created lasting skepticism. Sometimes it's simpler—no one reminded them it exists.",
     getInsight: (score: number, value: number) => score < 70 
-      ? `At ${score}% of benchmark, this dimension represents ${formatCurrency(value)} in untapped value. Focus here could yield quick wins.`
+      ? `At ${score}% of benchmark, a meaningful portion of your providers aren't getting help. That's ${formatCurrency(value)} in value—but more importantly, it's people still doing documentation the hard way.`
       : score < 90 
-        ? `Solid utilization with room to grow. Closing the gap could add ${formatCurrency(value)} annually.`
-        : `Strong utilization. Maintain current practices while looking for edge cases.`,
+        ? `You're getting good adoption. The remaining gap is probably specific providers or visit types. Worth investigating, but not a crisis.`
+        : `Strong adoption. The tool has become habit. Focus on maintaining that and catching any backsliding.`,
   },
   efficiency: {
     definition: "Average time saved per encounter when ambient AI is used.",
-    whyMatters: "This is the core promise: giving time back to providers. Less time saved means the documentation burden persists despite the tool.",
-    whatDrives: "Note quality out of the box, editing frequency, template optimization, and EHR integration smoothness.",
+    whyMatters: "This is the promise: time back in the day. When providers still spend significant time editing notes, the tool is creating work instead of removing it. That's not a technology problem—it's usually a configuration or training gap.",
+    whatDrives: "Note quality matters most. If providers trust the note, they sign and move on. If they don't, they edit—and editing adds up. Template fit, specialty-specific language, and EHR integration all play roles.",
     getInsight: (score: number, value: number) => score < 70 
-      ? `At ${score}% of benchmark, providers may be editing notes extensively. ${formatCurrency(value)} opportunity through optimization.`
+      ? `At ${score}% of benchmark, providers are likely editing notes heavily. That's frustrating for them and leaves ${formatCurrency(value)} on the table. Worth understanding what's causing the distrust.`
       : score < 90 
-        ? `Good efficiency with optimization potential. Target: reduce editing time to capture ${formatCurrency(value)}.`
-        : `Excellent efficiency. Providers are experiencing the full time-saving promise.`,
+        ? `Good efficiency, but there's still editing happening that probably doesn't need to. Small template adjustments often make a real difference here.`
+        : `Providers are trusting the notes and moving on. That's the goal. Protect this.`,
   },
   quality: {
     definition: "Documentation improvement measured through wRVU capture.",
-    whyMatters: "Better documentation leads to better coding, which leads to better reimbursement. Often the largest dollar opportunity.",
-    whatDrives: "Clinical detail capture, coder feedback loops, and whether notes reflect complexity of care delivered.",
+    whyMatters: "Better notes capture more clinical complexity, which translates to more accurate coding and appropriate reimbursement. This is often the largest dollar opportunity because it compounds: every encounter documented more completely is revenue that would have been left behind.",
+    whatDrives: "The connection between what the provider says, what the AI captures, and what the coder submits. Gaps anywhere in that chain mean lost accuracy. The fix usually requires talking to your coders—they know exactly what's missing.",
     getInsight: (score: number, value: number) => score < 70 
-      ? `At ${score}% of benchmark, documentation isn't translating to coding accuracy. This ${formatCurrency(value)} gap is often the largest opportunity.`
+      ? `At ${score}% of benchmark, documentation isn't capturing the complexity of care delivered. That's ${formatCurrency(value)} annually—often the biggest single opportunity.`
       : score < 90 
-        ? `Documentation quality is good. Tightening the coder feedback loop could capture ${formatCurrency(value)}.`
-        : `Strong quality metrics. Your documentation is supporting appropriate reimbursement.`,
+        ? `Good quality, with room to improve. A conversation with your coding team will reveal the specific gaps.`
+        : `Strong documentation quality. Your notes are supporting appropriate reimbursement. This is often the hardest dimension to get right.`,
   },
   satisfaction: {
     definition: "Provider satisfaction—typically measured through NPS or likelihood to recommend.",
-    whyMatters: "Satisfaction is a leading indicator. Dissatisfied providers use solutions less over time. Happy providers become champions who drive adoption.",
-    whatDrives: "Note accuracy, time actually saved, reliability, and whether it genuinely makes their day better.",
+    whyMatters: "Satisfaction predicts everything else. Providers who love the tool use it consistently, trust its output, and tell their colleagues. Providers who don't will quietly stop using it, and you'll see utilization decline months later. This is a leading indicator.",
+    whatDrives: "Does it actually make their day better? Is the note accurate? Does it save real time? Is it reliable? Providers are practical—if it works, they'll use it. If it creates friction, they'll find workarounds.",
     getInsight: (score: number) => score < 70 
-      ? `At ${score}% of benchmark, there may be fundamental experience issues to address. Low satisfaction often predicts declining utilization.`
+      ? `At ${score}% of benchmark, something is genuinely frustrating providers. This deserves attention before it affects other metrics. Ask them directly—they'll tell you.`
       : score < 90 
-        ? `Good satisfaction with room for improvement. Understanding the remaining friction points is key.`
-        : `Excellent satisfaction. These providers are likely your best advocates for expansion.`,
+        ? `Good satisfaction, but some providers have reservations. Understanding what would change their mind is worth the conversation.`
+        : `High satisfaction. These providers are your advocates. When you expand, they're the ones who can bring others along.`,
   },
 };
 
@@ -915,7 +915,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </View>
           <Text style={styles.heroClientName}>{clientName}</Text>
           <Text style={styles.heroTagline}>
-            Value Realization Assessment — Understanding where you are today and the path to full value capture
+            A clear-eyed look at where you are, what's possible, and how to get there
           </Text>
         </View>
         
@@ -923,7 +923,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           <Text style={styles.chapterLabel}>EXECUTIVE SUMMARY</Text>
           <Text style={styles.sectionTitle}>Your Value Realization at a Glance</Text>
           <Text style={styles.sectionSubtitle}>
-            This assessment examines four dimensions of ambient AI value: utilization, efficiency, quality, and satisfaction. Your overall realization score reflects how much potential value is being captured.
+            Ambient AI creates value in four ways. This assessment measures how much of that value you're actually capturing—and where the gaps are.
           </Text>
           
           <View style={styles.metricsGrid}>
@@ -975,15 +975,14 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </Text>
           
           <Text style={styles.storyText}>
-            <Text style={styles.storyTextBold}>Primary opportunity: </Text>
-            {dimensionRankings.lowest.name} at {dimensionRankings.lowest.score}% is your biggest gap. 
-            {dimensionRankings.highest.name} at {dimensionRankings.highest.score}% shows what's possible when a dimension is optimized.
+            <Text style={styles.storyTextBold}>Where to look first: </Text>
+            {dimensionRankings.lowest.name} at {dimensionRankings.lowest.score}% is where the most value is being left behind. Meanwhile, {dimensionRankings.highest.name} at {dimensionRankings.highest.score}% proves you can get this right—the question is extending that success.
           </Text>
           
           <View style={styles.opportunityBox}>
-            <Text style={styles.opportunityTitle}>Every Month of Delay = {formatCurrency(monthlyGap)}</Text>
+            <Text style={styles.opportunityTitle}>The Math on Waiting: {formatCurrency(monthlyGap)}/month</Text>
             <Text style={styles.opportunityText}>
-              This isn't about blame—it's about opportunity cost. The value gap compounds monthly. Taking action now captures value that would otherwise be left on the table.
+              This isn't pressure—it's just arithmetic. The gap exists whether you address it now or later. Every month is another {formatCurrency(monthlyGap)} that could have been captured. That's worth knowing as you decide on timing.
             </Text>
           </View>
         </View>
@@ -999,9 +998,9 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.heroCompact}>
-          <Text style={styles.heroCompactTitle}>Understanding Your Four Dimensions</Text>
+          <Text style={styles.heroCompactTitle}>The Four Ways Ambient AI Creates Value</Text>
           <Text style={styles.heroCompactSubtitle}>
-            Value realization depends on performance across four interconnected areas. Weakness in one dimension limits the others.
+            These dimensions are connected. Low utilization limits time savings. Poor note quality undermines satisfaction. Understanding each one helps you see where the system is working—and where it's not.
           </Text>
         </View>
         
@@ -1102,7 +1101,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
         <View style={styles.heroCompact}>
           <Text style={styles.heroCompactTitle}>Quality & Satisfaction</Text>
           <Text style={styles.heroCompactSubtitle}>
-            Revenue impact and provider experience—the outcomes that validate the investment
+            Quality affects your revenue. Satisfaction predicts your future. These are the outcomes that tell you whether the investment is paying off.
           </Text>
         </View>
         
@@ -1184,9 +1183,9 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           
           {calculations.satisfactionScore < 70 && (
             <View style={styles.warningBox}>
-              <Text style={styles.warningTitle}>Attention Required</Text>
+              <Text style={styles.warningTitle}>Worth Watching</Text>
               <Text style={styles.warningText}>
-                Low satisfaction often predicts declining utilization. Consider surveying providers to understand friction points before they impact adoption.
+                When satisfaction is low, utilization tends to follow—sometimes months later. It's worth asking providers directly what's not working before the numbers catch up to the sentiment.
               </Text>
             </View>
           )}
@@ -1203,9 +1202,9 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.heroCompact}>
-          <Text style={styles.heroCompactTitle}>How Each Gap is Calculated</Text>
+          <Text style={styles.heroCompactTitle}>The Math Behind the Numbers</Text>
           <Text style={styles.heroCompactSubtitle}>
-            Every number traces back to your inputs and transparent assumptions
+            No black boxes. Every dollar traces back to your inputs and clearly stated assumptions. If something looks wrong, you can challenge it.
           </Text>
         </View>
         
@@ -1305,15 +1304,15 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.heroCompact}>
-          <Text style={styles.heroCompactTitle}>The Cost of Waiting</Text>
+          <Text style={styles.heroCompactTitle}>What Waiting Actually Costs</Text>
           <Text style={styles.heroCompactSubtitle}>
-            Value gaps compound over time—here's what delay means in real dollars
+            The gap doesn't shrink on its own. Here's what delay looks like in dollars—not to pressure, but to help you make an informed decision about timing.
           </Text>
         </View>
         
         <View style={styles.contentSection}>
           <Text style={styles.chapterLabel}>TIMELINE ANALYSIS</Text>
-          <Text style={styles.sectionTitle}>Gap Trajectory: Current State vs. Optimized</Text>
+          <Text style={styles.sectionTitle}>How the Gap Grows Over Time</Text>
           
           <CostTrajectoryChart currentGap={calculations.annualGap} monthlyGap={monthlyGap} />
           
@@ -1348,10 +1347,10 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           
           <View style={styles.divider} />
           
-          <Text style={styles.chapterLabel}>OPTIMIZATION ROADMAP</Text>
-          <Text style={styles.sectionTitle}>Prioritized Actions with Estimated Impact</Text>
+          <Text style={styles.chapterLabel}>WHERE TO START</Text>
+          <Text style={styles.sectionTitle}>Three Things That Would Actually Help</Text>
           <Text style={styles.sectionSubtitle}>
-            Based on your dimension scores, here are the highest-impact opportunities ranked by potential value:
+            These aren't generic recommendations. They're specific to your scores, ranked by potential impact:
           </Text>
           
           {optimizationOpportunities.map((opp, i) => (
@@ -1386,15 +1385,15 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
       {/* ================================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.heroCompact}>
-          <Text style={styles.heroCompactTitle}>Key Takeaways & Next Steps</Text>
+          <Text style={styles.heroCompactTitle}>The Bottom Line</Text>
           <Text style={styles.heroCompactSubtitle}>
-            A summary of findings and the methodology behind this assessment
+            What we learned, what it means, and how we got here
           </Text>
         </View>
         
         <View style={styles.contentSection}>
-          <Text style={styles.chapterLabel}>SUMMARY</Text>
-          <Text style={styles.sectionTitle}>What This Assessment Tells Us</Text>
+          <Text style={styles.chapterLabel}>WHAT THIS MEANS</Text>
+          <Text style={styles.sectionTitle}>Four Things Worth Knowing</Text>
           
           <View style={styles.takeawayCard}>
             <View style={styles.takeawayContent}>
@@ -1407,27 +1406,27 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           
           <View style={styles.takeawayCard}>
             <View style={styles.takeawayContent}>
-              <Text style={styles.takeawayTitle}>Primary Opportunity: {dimensionRankings.lowest.name}</Text>
+              <Text style={styles.takeawayTitle}>Start With {dimensionRankings.lowest.name}</Text>
               <Text style={styles.takeawayText}>
-                At {dimensionRankings.lowest.score}% of benchmark, this dimension has the most room for improvement. Focused intervention here will have the highest impact on overall value capture.
+                At {dimensionRankings.lowest.score}% of benchmark, this is where the biggest opportunity lives. Improving here will have outsized impact on overall value—and the fixes are usually specific and actionable.
               </Text>
             </View>
           </View>
           
           <View style={styles.takeawayCard}>
             <View style={styles.takeawayContent}>
-              <Text style={styles.takeawayTitle}>3-Year Cumulative Impact: {formatCurrency(calculations.threeYearGap)}</Text>
+              <Text style={styles.takeawayTitle}>The Three-Year View: {formatCurrency(calculations.threeYearGap)}</Text>
               <Text style={styles.takeawayText}>
-                Value gaps compound. Every month of delay represents {formatCurrency(monthlyGap)} in unrealized value. The cost of inaction grows linearly with time.
+                Gaps compound. At {formatCurrency(monthlyGap)} per month, delay has a real cost. That's not urgency for its own sake—it's just the math of waiting versus acting.
               </Text>
             </View>
           </View>
           
           <View style={styles.takeawayCard}>
             <View style={styles.takeawayContent}>
-              <Text style={styles.takeawayTitle}>Conservative Assumptions</Text>
+              <Text style={styles.takeawayTitle}>These Numbers Are Conservative</Text>
               <Text style={styles.takeawayText}>
-                All calculations use conservative conversion rates and attribution factors. Actual value may be higher, especially for organizations with strong operational execution.
+                We used cautious conversion rates and attribution factors throughout. If anything, actual value is likely higher. But we'd rather under-promise and have you be pleasantly surprised.
               </Text>
             </View>
           </View>
@@ -1463,7 +1462,7 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
               </View>
             </View>
             <Text style={styles.methodologyNote}>
-              Benchmarks represent median performance across Abridge deployments. Individual results vary based on specialty mix, EHR integration, and organizational factors. All calculations are transparent and adjustable—these are your numbers.
+              These benchmarks come from real Abridge deployments. Your results will vary based on your specialty mix, EHR, and how you implement. The point isn't precision—it's clarity about where you stand and what's possible. Every number in this document can be challenged and adjusted. They're meant to start a conversation, not end one.
             </Text>
           </View>
         </View>
