@@ -5,9 +5,6 @@ import {
   View,
   StyleSheet,
   Image,
-  Svg,
-  Rect,
-  Line,
   pdf,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
@@ -381,58 +378,96 @@ const styles = StyleSheet.create({
   },
 
   // ========================================
-  // SPECTRUM BAR
+  // SCORE CALCULATION CARD (matches web UX)
   // ========================================
-  spectrumContainer: {
+  scoreCalcContainer: {
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
     borderRadius: 6,
-    padding: 14,
+    overflow: "hidden",
+    backgroundColor: "#1E293B", // Dark slate like web
   },
-  spectrumTitle: {
-    fontSize: 10,
+  scoreCalcHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    paddingBottom: 8,
+  },
+  scoreCalcIcon: {
+    width: 16,
+    height: 16,
+    backgroundColor: colors.amber,
+    borderRadius: 8,
+    marginRight: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scoreCalcTitle: {
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 8,
+    color: colors.white,
   },
-  spectrumStages: {
+  scoreCalcSubtitle: {
+    fontSize: 8,
+    color: "#94A3B8", // slate-400
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    lineHeight: 1.4,
+  },
+  scoreCalcRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  spectrumStage: {
-    flex: 1,
     alignItems: "center",
+    backgroundColor: "rgba(71, 85, 105, 0.3)", // slate-700/30
+    marginHorizontal: 10,
+    marginBottom: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 6,
   },
-  spectrumStageLabel: {
-    fontSize: 7,
+  scoreCalcRowLabel: {
+    fontSize: 9,
+    color: "#CBD5E1", // slate-300
+  },
+  scoreCalcRowValue: {
+    fontSize: 12,
     fontWeight: "bold",
-    color: colors.mediumGray,
-    textAlign: "center",
+    color: colors.white,
   },
-  spectrumStageRange: {
-    fontSize: 6,
-    color: colors.lightGray,
-    textAlign: "center",
-    marginTop: 1,
+  scoreCalcDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(71, 85, 105, 0.5)", // slate-600
+    marginHorizontal: 10,
+    marginVertical: 6,
   },
-  spectrumBarWrapper: {
-    marginTop: 8,
-    marginBottom: 8,
+  scoreCalcTotalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "rgba(16, 185, 129, 0.2)", // emerald/20
+    borderWidth: 1,
+    borderColor: "rgba(16, 185, 129, 0.4)", // emerald/40
+    marginHorizontal: 10,
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 6,
   },
-  spectrumYouMarker: {
+  scoreCalcTotalLabel: {
     fontSize: 9,
     fontWeight: "bold",
-    color: colors.primary,
-    textAlign: "center",
-    marginTop: 4,
+    color: colors.white,
   },
-  spectrumExplanation: {
+  scoreCalcTotalValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.emerald,
+  },
+  scoreCalcExplanation: {
     fontSize: 8,
-    color: colors.darkGray,
+    color: "#94A3B8",
     lineHeight: 1.5,
-    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
   },
 
   // ========================================
@@ -1178,27 +1213,7 @@ const getStrategicNextSteps = (lowestDimension: DimensionInfo): NextStepsContent
 // SVG COMPONENTS
 // ============================================================================
 
-const SpectrumBar = ({ score }: { score: number }) => {
-  const barWidth = 460;
-  const markerPosition = Math.min(barWidth - 2, Math.max(2, (score / 100) * barWidth));
-  
-  return (
-    <Svg width={barWidth} height={20}>
-      {/* Background segments */}
-      <Rect x={0} y={6} width={barWidth * 0.4} height={8} fill="#FEE2E2" rx={0} />
-      <Rect x={barWidth * 0.4} y={6} width={barWidth * 0.2} height={8} fill="#FEF3C7" rx={0} />
-      <Rect x={barWidth * 0.6} y={6} width={barWidth * 0.2} height={8} fill="#D1FAE5" rx={0} />
-      <Rect x={barWidth * 0.8} y={6} width={barWidth * 0.2} height={8} fill="#A7F3D0" rx={0} />
-      
-      {/* Rounded edges */}
-      <Rect x={0} y={6} width={6} height={8} fill="#FEE2E2" rx={4} />
-      <Rect x={barWidth - 6} y={6} width={6} height={8} fill="#A7F3D0" rx={4} />
-      
-      {/* Marker */}
-      <Rect x={markerPosition - 2} y={0} width={4} height={20} fill={colors.primary} rx={2} />
-    </Svg>
-  );
-};
+// SpectrumBar removed - replaced with cleaner score calculation card
 
 // ============================================================================
 // DIMENSION EDUCATION CONTENT
@@ -1453,32 +1468,43 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
           </View>
         </View>
 
-        {/* Spectrum */}
-        <View style={styles.spectrumContainer}>
-          <Text style={styles.spectrumTitle}>THE VALUE REALIZATION SPECTRUM</Text>
-          <View style={styles.spectrumStages}>
-            <View style={styles.spectrumStage}>
-              <Text style={styles.spectrumStageLabel}>EARLY STAGE</Text>
-              <Text style={styles.spectrumStageRange}>Under 40%</Text>
+        {/* How Your Score is Calculated - Matches Web UX */}
+        <View style={styles.scoreCalcContainer}>
+          <View style={styles.scoreCalcHeader}>
+            <View style={styles.scoreCalcIcon}>
+              <Text style={{ color: colors.white, fontSize: 8, fontWeight: "bold" }}>!</Text>
             </View>
-            <View style={styles.spectrumStage}>
-              <Text style={styles.spectrumStageLabel}>DEVELOPING</Text>
-              <Text style={styles.spectrumStageRange}>40-60%</Text>
-            </View>
-            <View style={styles.spectrumStage}>
-              <Text style={styles.spectrumStageLabel}>OPTIMIZED</Text>
-              <Text style={styles.spectrumStageRange}>60-80%</Text>
-            </View>
-            <View style={styles.spectrumStage}>
-              <Text style={styles.spectrumStageLabel}>TRANSFORMED</Text>
-              <Text style={styles.spectrumStageRange}>80%+</Text>
-            </View>
+            <Text style={styles.scoreCalcTitle}>How Your Score is Calculated</Text>
           </View>
-          <View style={styles.spectrumBarWrapper}>
-            <SpectrumBar score={calculations.realizationScore} />
+          <Text style={styles.scoreCalcSubtitle}>
+            Your realization score is a simple average of how you perform across all four dimensions:
+          </Text>
+          
+          <View style={styles.scoreCalcRow}>
+            <Text style={styles.scoreCalcRowLabel}>Utilization</Text>
+            <Text style={styles.scoreCalcRowValue}>{calculations.utilizationScore}%</Text>
           </View>
-          <Text style={styles.spectrumYouMarker}>YOU: {calculations.realizationScore}%</Text>
-          <Text style={styles.spectrumExplanation}>
+          <View style={styles.scoreCalcRow}>
+            <Text style={styles.scoreCalcRowLabel}>Efficiency</Text>
+            <Text style={styles.scoreCalcRowValue}>{calculations.efficiencyScore}%</Text>
+          </View>
+          <View style={styles.scoreCalcRow}>
+            <Text style={styles.scoreCalcRowLabel}>Quality</Text>
+            <Text style={styles.scoreCalcRowValue}>{calculations.qualityScore}%</Text>
+          </View>
+          <View style={styles.scoreCalcRow}>
+            <Text style={styles.scoreCalcRowLabel}>Satisfaction</Text>
+            <Text style={styles.scoreCalcRowValue}>{calculations.satisfactionScore}%</Text>
+          </View>
+          
+          <View style={styles.scoreCalcDivider} />
+          
+          <View style={styles.scoreCalcTotalRow}>
+            <Text style={styles.scoreCalcTotalLabel}>Average Score</Text>
+            <Text style={styles.scoreCalcTotalValue}>{calculations.realizationScore}%</Text>
+          </View>
+          
+          <Text style={styles.scoreCalcExplanation}>
             At {calculations.realizationScore}% realization, you're in the "{calculations.maturityLevel}" stage. The gap between where you are and where you could be represents approximately {formatCurrency(calculations.annualGap)} annually.
           </Text>
         </View>
