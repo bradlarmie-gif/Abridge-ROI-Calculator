@@ -624,36 +624,38 @@ const getMetricNarrative = (metric: ExpandMetricData): string => {
   const magnitude = Math.abs(metric.changePercent);
   
   if (metric.id === "wrvu" || metric.id === "wrvuCapture") {
-    if (magnitude >= 5) return "This is a significant improvement in revenue capture, suggesting documentation is capturing clinical complexity more completely.";
-    if (magnitude >= 3) return "This represents meaningful progress in revenue capture, with documentation better reflecting the care being delivered.";
-    return "While modest, this improvement indicates documentation is trending in the right direction.";
+    if (magnitude >= 5) return "This is the kind of improvement that gets CFO attention. Documentation is now capturing the true complexity of care—revenue that was always earned but never captured. Your providers aren't working harder; they're just getting credit for what they already do.";
+    if (magnitude >= 3) return "Documentation is telling a more complete story of the care being delivered. This isn't about upcoding—it's about accuracy. Every wRVU recovered is revenue that was earned but previously left on the table.";
+    if (magnitude >= 1) return "Early signals of improvement are emerging. As providers trust the AI-generated notes more, they're making fewer edits—and the documentation naturally becomes more complete.";
+    return "The foundation is being laid. wRVU improvement typically accelerates as providers settle into the new workflow and trust the documentation quality.";
   }
   
   if (metric.id === "timeSavings") {
     const minutes = Math.abs(metric.change);
-    if (minutes >= 4) return `Saving ${minutes} minutes per encounter translates to meaningful time back in the day for your providers.`;
-    if (minutes >= 2) return `Every minute counts—${minutes} minutes saved per encounter adds up across thousands of visits.`;
-    return "Time savings are emerging as providers become more comfortable with the workflow.";
+    if (minutes >= 4) return `${minutes} minutes per encounter doesn't sound like much—until you multiply it by thousands of visits. That's hours back every week. Hours that used to be spent typing, now spent with patients, with family, or just breathing.`;
+    if (minutes >= 2) return `Think about what ${minutes} minutes per encounter really means: less clicking, less typing, fewer "I'll finish this chart later" moments. It's the small wins that change how work feels.`;
+    return "Time savings often start small and grow as providers find their rhythm. The muscle memory of documentation is being rewired—and that takes time.";
   }
   
   if (metric.id === "workOutsideWork") {
-    if (metric.change < -20) return "A significant reduction in after-hours work directly impacts provider wellbeing and retention.";
-    if (metric.change < 0) return "Less time documenting after hours means more time for rest and recovery.";
-    return "After-hours documentation patterns are stabilizing.";
+    if (metric.change < -20) return "This is the metric that matters most to providers and their families. Less pajama time means more presence at home, more recovery between shifts, and ultimately—more sustainable careers. Burnout prevention isn't just good for people; it's good for retention.";
+    if (metric.change < 0) return "Fewer hours spent charting after the kids are in bed. Less guilt about bringing work home. This is what sustainable practice looks like—and your providers are starting to feel it.";
+    return "After-hours documentation is one of the last metrics to move, because old habits die hard. But the foundation is in place for meaningful change.";
   }
   
   if (metric.id === "chartClosure") {
-    if (metric.change > 20) return "Dramatically more charts closing same-day reduces compliance risk and improves care continuity.";
-    if (metric.change > 0) return "Same-day chart closure is improving, supporting better care coordination.";
-    return "Chart closure patterns are evolving with the new workflow.";
+    if (metric.change > 20) return "Same-day chart closure used to feel impossible. Now it's becoming routine. This isn't just about compliance—it's about care continuity. When charts close same-day, the next provider has what they need. Patients get better follow-up. Nothing falls through the cracks.";
+    if (metric.change > 0) return "More charts closing same-day means less cognitive burden carried overnight. It means leaving work at work. The ripple effects of this change extend far beyond the EHR.";
+    return "Chart closure patterns are shifting as providers adapt to the new workflow. This metric typically improves as trust in the documentation grows.";
   }
   
   if (metric.id === "clinicianSatisfaction") {
-    if (metric.change > 0) return "Improved satisfaction scores reflect the positive impact on daily work experience.";
-    return "Provider sentiment is an important indicator to continue monitoring.";
+    if (metric.change > 10) return "When providers say they're happier, that's not just a survey answer—it's a leading indicator of retention, engagement, and care quality. Happy providers don't just stay; they bring their best selves to every patient encounter.";
+    if (metric.change > 0) return "Satisfaction is trending in the right direction. Providers are noticing the difference in their day-to-day—and that matters more than any ROI calculation.";
+    return "Provider sentiment is complex and multifaceted. Even stable satisfaction during a technology transition is a signal worth celebrating.";
   }
   
-  return metric.whatThisMeans || "This metric reflects meaningful change in your documentation workflow.";
+  return metric.whatThisMeans || "This metric reflects meaningful change in how your providers experience documentation—and that ripples into everything else.";
 };
 
 // Mini sparkline component
@@ -692,6 +694,124 @@ const ProgressBar = ({ percent, color, width = 200 }: { percent: number; color: 
   );
 };
 
+// Journey Value Chart - shows the value progression from baseline to full scale
+const JourneyValueChart = ({ 
+  current, 
+  projected, 
+  monthsOnAbridge 
+}: { 
+  current: number; 
+  projected: number; 
+  monthsOnAbridge: number;
+}) => {
+  // Guard against invalid values
+  if (projected <= 0 || current <= 0) return null;
+  
+  const width = 460;
+  const height = 80;
+  const max = Math.max(projected * 1.1, 1); // Ensure max is never 0
+  
+  // Calculate key points
+  const baselineX = 40;
+  const todayX = 140 + Math.min(monthsOnAbridge * 8, 100);
+  const maturityX = 280;
+  const fullScaleX = 420;
+  
+  const currentY = height - 15 - ((current / max) * (height - 30));
+  const maturityY = height - 15 - ((current * 1.3 / max) * (height - 30));
+  const projectedY = height - 15 - ((projected / max) * (height - 30));
+  
+  return (
+    <View style={{ marginTop: 16, marginBottom: 8 }}>
+      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+        {/* Grid lines */}
+        <Line x1={40} y1={height - 15} x2={fullScaleX} y2={height - 15} stroke={colors.borderGray} strokeWidth={1} />
+        
+        {/* Journey path - dashed for future */}
+        <Polyline 
+          points={`${baselineX},${height - 15} ${todayX},${currentY}`} 
+          stroke={colors.emerald} 
+          strokeWidth={3} 
+          fill="none" 
+        />
+        <Polyline 
+          points={`${todayX},${currentY} ${maturityX},${maturityY} ${fullScaleX},${projectedY}`} 
+          stroke={colors.emerald} 
+          strokeWidth={2} 
+          strokeDasharray="6,4"
+          fill="none" 
+        />
+        
+        {/* Key points */}
+        <Circle cx={baselineX} cy={height - 15} r={4} fill={colors.mediumGray} />
+        <Circle cx={todayX} cy={currentY} r={6} fill={colors.emerald} />
+        <Circle cx={maturityX} cy={maturityY} r={4} fill={colors.emerald} opacity={0.6} />
+        <Circle cx={fullScaleX} cy={projectedY} r={5} fill={colors.primary} />
+        
+        {/* "YOU ARE HERE" marker */}
+        <Rect x={todayX - 32} y={currentY - 26} width={64} height={16} rx={8} fill={colors.emerald} />
+      </Svg>
+      
+      {/* Labels below chart */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4, paddingHorizontal: 20 }}>
+        <Text style={{ fontSize: 7, color: colors.mediumGray }}>Baseline</Text>
+        <Text style={{ fontSize: 7, color: colors.emerald, fontWeight: "bold" }}>Today</Text>
+        <Text style={{ fontSize: 7, color: colors.mediumGray }}>Maturity</Text>
+        <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Full Scale</Text>
+      </View>
+    </View>
+  );
+};
+
+// Expansion Scale Chart - visual bar showing current vs potential
+const ExpansionScaleChart = ({ 
+  currentProviders, 
+  targetProviders,
+  currentValue,
+  projectedValue 
+}: { 
+  currentProviders: number;
+  targetProviders: number;
+  currentValue: number;
+  projectedValue: number;
+}) => {
+  // Guard against invalid values
+  if (targetProviders <= 0 || currentProviders <= 0) return null;
+  
+  const width = 460;
+  const currentPercent = Math.min(Math.max((currentProviders / targetProviders) * 100, 0), 100); // Clamp to 0-100
+  const currentBarWidth = Math.max((currentPercent / 100) * (width - 80), 20);
+  
+  return (
+    <View style={{ marginTop: 12, marginBottom: 16 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+        <Text style={{ fontSize: 8, color: colors.darkGray }}>Provider Coverage</Text>
+        <Text style={{ fontSize: 8, color: colors.emerald, fontWeight: "bold" }}>
+          {currentProviders} of {targetProviders} ({Math.round(currentPercent)}%)
+        </Text>
+      </View>
+      <Svg width={width} height={28} viewBox={`0 0 ${width} 28`}>
+        {/* Background bar */}
+        <Rect x={0} y={4} width={width} height={20} rx={10} fill={colors.backgroundGray} />
+        {/* Current coverage */}
+        <Rect x={0} y={4} width={currentBarWidth} height={20} rx={10} fill={colors.emerald} />
+        {/* Expansion potential */}
+        <Rect x={currentBarWidth} y={4} width={width - currentBarWidth} height={20} rx={10} fill={colors.primaryLight} stroke={colors.primary} strokeWidth={1} strokeDasharray="4,2" />
+      </Svg>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.emerald, marginRight: 4 }} />
+          <Text style={{ fontSize: 7, color: colors.darkGray }}>Active ({formatCurrency(currentValue)})</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primaryLight, borderWidth: 1, borderColor: colors.primary, marginRight: 4 }} />
+          <Text style={{ fontSize: 7, color: colors.darkGray }}>Opportunity (+{formatCurrency(projectedValue - currentValue)})</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 // ============================================================================
 // PAGE 1: EXECUTIVE SUMMARY - YOUR ABRIDGE JOURNEY
 // ============================================================================
@@ -700,6 +820,19 @@ const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
   const displayClientName = data.clientName || "Your Organization";
   const displayPreparedBy = data.preparedBy || "Abridge";
   const valuePerProvider = data.providers > 0 ? Math.round(data.tier1Value / data.providers) : 0;
+  const metricsImproving = data.metrics.filter(m => m.change !== 0).length;
+  
+  // Generate a personalized opening based on their journey
+  const getPersonalizedOpening = () => {
+    if (data.monthsOnAbridge <= 3) {
+      return `In just ${data.monthsOnAbridge} months, your team is already seeing the impact of Abridge—and this is only the beginning.`;
+    } else if (data.monthsOnAbridge <= 6) {
+      return `Half a year in, and the results speak for themselves. Your providers are spending less time on documentation and more time on what matters.`;
+    } else if (data.monthsOnAbridge <= 12) {
+      return `${data.monthsOnAbridge} months of partnership, and the transformation is clear. What started as a pilot has become a foundation for lasting change.`;
+    }
+    return `Over a year into your Abridge journey, you've built something remarkable—a new way of working that your providers rely on every day.`;
+  };
   
   return (
     <Page size="A4" style={styles.page}>
@@ -712,70 +845,66 @@ const Page1ExecutiveSummary = ({ data }: { data: ExpandPDFData }) => {
         <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
         <Text style={styles.heroClientName}>{displayClientName}</Text>
         <Text style={styles.heroTagline}>
-          You've been using Abridge for {data.monthsOnAbridge} months.{"\n"}
-          Here's the value you've created—and what's still ahead.
+          Your Value Realization Report{"\n"}
+          {data.monthsOnAbridge} months of partnership. Real results.
         </Text>
       </View>
 
       {/* Content Section */}
       <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>Your Journey So Far</Text>
-        <Text style={styles.sectionTitle}>The Value You've Created</Text>
-        <Text style={styles.sectionSubtitle}>
-          With {data.providers} providers and {data.utilizationRate}% utilization, you're building a foundation of measurable value.
-        </Text>
+        <Text style={styles.chapterLabel}>The Story So Far</Text>
+        <Text style={styles.sectionTitle}>Your Abridge Journey</Text>
+        
+        <Text style={styles.storyText}>{getPersonalizedOpening()}</Text>
+
+        {/* Journey Value Chart */}
+        <JourneyValueChart 
+          current={data.tier1Value} 
+          projected={data.expansion.projectedValue} 
+          monthsOnAbridge={data.monthsOnAbridge} 
+        />
 
         <View style={styles.metricsGrid}>
           <View style={styles.metricCardGreen}>
             <Text style={styles.metricLabel}>Annual Value Created</Text>
             <Text style={styles.metricValueGreen}>{formatCurrency(data.tier1Value)}</Text>
-            <Text style={styles.metricSub}>from your data</Text>
+            <Text style={styles.metricSub}>proven from your data</Text>
           </View>
           <View style={styles.metricCard}>
             <Text style={styles.metricLabel}>Value Per Provider</Text>
             <Text style={styles.metricValue}>{formatCurrency(valuePerProvider)}</Text>
-            <Text style={styles.metricSub}>{data.providers} providers</Text>
+            <Text style={styles.metricSub}>{data.providers} providers active</Text>
           </View>
           <View style={[styles.metricCardDark, styles.metricCardLast]}>
-            <Text style={styles.metricLabelLight}>Expansion Potential</Text>
+            <Text style={styles.metricLabelLight}>Still Ahead</Text>
             <Text style={styles.metricValueLight}>+{formatCurrency(data.expansion.expansionValue)}</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray, marginTop: 2 }}>at {data.expansion.targetProviders} providers</Text>
+            <Text style={{ fontSize: 7, color: colors.lightGray, marginTop: 2 }}>expansion opportunity</Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.chapterLabel}>Where You Stand</Text>
-        <Text style={styles.sectionTitle}>Deployment Progress</Text>
-        
-        <Text style={styles.storyText}>
-          With <Text style={styles.storyTextBold}>{formatNumber(data.documentedEncounters)} documented encounters</Text> across {data.providers} providers, your team has established a meaningful baseline. At <Text style={styles.storyTextBold}>{data.utilizationRate}% utilization</Text>, there's still room to grow—and as utilization increases, so does value.
-        </Text>
+        <Text style={styles.chapterLabel}>By The Numbers</Text>
+        <Text style={styles.sectionTitle}>What Your Data Shows</Text>
 
-        <View style={styles.insightCard}>
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Documented encounters to date</Text>
-            <Text style={styles.insightValue}>{formatNumber(data.documentedEncounters)}</Text>
+        <View style={{ flexDirection: "row", marginBottom: 12 }}>
+          <View style={[styles.insightCard, { flex: 1, marginRight: 8 }]}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", marginBottom: 4 }}>Encounters Documented</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.black }}>{formatNumber(data.documentedEncounters)}</Text>
           </View>
-        </View>
-
-        <View style={styles.insightCard}>
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Current utilization rate</Text>
-            <Text style={styles.insightValue}>{data.utilizationRate}%</Text>
+          <View style={[styles.insightCard, { flex: 1, marginRight: 8 }]}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", marginBottom: 4 }}>Utilization Rate</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.black }}>{data.utilizationRate}%</Text>
           </View>
-        </View>
-
-        <View style={styles.insightCard}>
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Metrics showing improvement</Text>
-            <Text style={styles.insightValueGreen}>{data.metrics.filter(m => m.change !== 0).length} of {data.metrics.length}</Text>
+          <View style={[styles.insightCard, { flex: 1 }]}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", marginBottom: 4 }}>Metrics Improving</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.emerald }}>{metricsImproving} of {data.metrics.length}</Text>
           </View>
         </View>
 
         <View style={styles.quoteBox}>
           <Text style={styles.quoteText}>
-            "The value captured here is measured from your actual data—real changes in documentation time, revenue capture, and provider experience. As your deployment matures, these numbers grow with it."
+            "Every number in this report comes from your actual experience—measured changes in how your providers work, how they feel, and the value they create. This isn't a projection. It's your reality."
           </Text>
         </View>
       </View>
@@ -798,6 +927,26 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
   const isPositive = metric.isPositiveGood ? metric.change > 0 : metric.change < 0;
   const changeDisplay = metric.change > 0 ? `+${metric.change}` : `${metric.change}`;
   
+  // Get a compelling one-liner for the hero based on the metric
+  const getMetricTagline = () => {
+    if (metric.id === "wrvu" || metric.id === "wrvuCapture") {
+      return isPositive ? "Capturing the value that was always there." : "Building the foundation for revenue recovery.";
+    }
+    if (metric.id === "timeSavings") {
+      return isPositive ? "Time reclaimed, one encounter at a time." : "Every minute saved is a minute earned.";
+    }
+    if (metric.id === "workOutsideWork") {
+      return isPositive ? "When work stays at work." : "The path to sustainable practice.";
+    }
+    if (metric.id === "chartClosure") {
+      return isPositive ? "Charts that close when you do." : "Working toward same-day completion.";
+    }
+    if (metric.id === "clinicianSatisfaction") {
+      return isPositive ? "Happier providers, better care." : "Measuring what matters most.";
+    }
+    return "Tracking meaningful change.";
+  };
+  
   return (
     <Page size="A4" style={styles.page}>
       {/* Compact Hero */}
@@ -805,15 +954,15 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
         <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
         <Text style={styles.heroCompactTitle}>{metric.name}</Text>
         <Text style={styles.heroCompactSubtitle}>
-          {category} · {data.clientName || "Your Organization"}
+          {getMetricTagline()}
         </Text>
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>Before & After</Text>
-        <Text style={styles.sectionTitle}>What Changed</Text>
+        <Text style={styles.chapterLabel}>{category}</Text>
+        <Text style={styles.sectionTitle}>The Transformation</Text>
         <Text style={styles.sectionSubtitle}>
-          Comparing your baseline to current performance across {formatNumber(data.documentedEncounters)} documented encounters.
+          Your data tells the story: {formatNumber(data.documentedEncounters)} encounters documented by {data.providers} providers.
         </Text>
 
         {/* Before/After Comparison */}
@@ -867,8 +1016,8 @@ const DriverPage = ({ metric, pageNum, data }: { metric: ExpandMetricData; pageN
         <View style={styles.divider} />
 
         {/* What This Means */}
-        <Text style={styles.chapterLabel}>The Story</Text>
-        <Text style={styles.sectionTitle}>What This Means</Text>
+        <Text style={styles.chapterLabel}>The Real Story</Text>
+        <Text style={styles.sectionTitle}>Why This Matters</Text>
         
         <Text style={styles.storyText}>{narrative}</Text>
         
@@ -925,80 +1074,88 @@ const ExpansionPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number
   const { expansion } = data;
   const multiplier = expansion.targetProviders / expansion.currentProviders;
   const valuePerProvider = Math.round(expansion.projectedValue / expansion.targetProviders);
+  const additionalProviders = expansion.targetProviders - expansion.currentProviders;
+  
+  // Personalized narrative based on expansion potential
+  const getExpansionNarrative = () => {
+    const ratio = expansion.targetProviders / expansion.currentProviders;
+    if (ratio >= 5) {
+      return `Your pilot with ${expansion.currentProviders} providers has proven the concept. Now imagine that same transformation reaching ${additionalProviders} more providers across your organization. The documentation burden they carry today? It doesn't have to be permanent.`;
+    } else if (ratio >= 2) {
+      return `You've built a strong foundation with ${expansion.currentProviders} providers. Extending to ${expansion.targetProviders} means ${additionalProviders} more clinicians spending less time in the EHR and more time with patients. That's the kind of change that defines culture.`;
+    }
+    return `With ${expansion.currentProviders} providers already on board, you're closer to full deployment than you might think. Adding the remaining ${additionalProviders} providers would complete the picture—and multiply the value you're already seeing.`;
+  };
   
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.heroCompact}>
         <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
-        <Text style={styles.heroCompactTitle}>The Opportunity Ahead</Text>
+        <Text style={styles.heroCompactTitle}>What Could Be</Text>
         <Text style={styles.heroCompactSubtitle}>
-          You've proven value with {expansion.currentProviders} providers.{"\n"}
-          Here's what full deployment could look like.
+          You've proven value. Now let's talk about scale.
         </Text>
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>Expansion Modeling</Text>
-        <Text style={styles.sectionTitle}>From {expansion.currentProviders} to {expansion.targetProviders} Providers</Text>
-        <Text style={styles.sectionSubtitle}>
-          Based on your current per-provider performance, expanding to additional providers would scale value proportionally.
-        </Text>
+        <Text style={styles.chapterLabel}>The Opportunity</Text>
+        <Text style={styles.sectionTitle}>From Pilot to Platform</Text>
+        
+        <Text style={styles.storyText}>{getExpansionNarrative()}</Text>
+
+        {/* Provider Coverage Chart */}
+        <ExpansionScaleChart 
+          currentProviders={expansion.currentProviders}
+          targetProviders={expansion.targetProviders}
+          currentValue={expansion.currentValue}
+          projectedValue={expansion.projectedValue}
+        />
 
         <View style={styles.metricsGrid}>
           <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Current Value</Text>
+            <Text style={styles.metricLabel}>Today's Value</Text>
             <Text style={styles.metricValue}>{formatCurrency(expansion.currentValue)}</Text>
             <Text style={styles.metricSub}>{expansion.currentProviders} providers</Text>
           </View>
           <View style={styles.metricCardGreen}>
-            <Text style={styles.metricLabel}>Projected Value</Text>
+            <Text style={styles.metricLabel}>Full Scale Value</Text>
             <Text style={styles.metricValueGreen}>{formatCurrency(expansion.projectedValue)}</Text>
-            <Text style={styles.metricSub}>at full scale</Text>
+            <Text style={styles.metricSub}>{expansion.targetProviders} providers</Text>
           </View>
           <View style={[styles.metricCardDark, styles.metricCardLast]}>
-            <Text style={styles.metricLabelLight}>Growth Multiple</Text>
-            <Text style={styles.metricValueLight}>{multiplier.toFixed(1)}×</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray, marginTop: 2 }}>provider scale</Text>
+            <Text style={styles.metricLabelLight}>The Unlock</Text>
+            <Text style={styles.metricValueLight}>+{formatCurrency(expansion.expansionValue)}</Text>
+            <Text style={{ fontSize: 7, color: colors.lightGray, marginTop: 2 }}>additional annual value</Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.chapterLabel}>The Math</Text>
-        <Text style={styles.sectionTitle}>How We Get There</Text>
+        <Text style={styles.chapterLabel}>The Economics</Text>
+        <Text style={styles.sectionTitle}>Value Scales With You</Text>
 
-        <View style={styles.insightCard}>
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Current value per provider</Text>
-            <Text style={styles.insightValue}>{formatCurrency(Math.round(expansion.currentValue / expansion.currentProviders))}</Text>
+        <View style={{ flexDirection: "row", marginBottom: 12 }}>
+          <View style={[styles.insightCard, { flex: 1, marginRight: 8 }]}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", marginBottom: 4 }}>Value Per Provider</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.black }}>{formatCurrency(Math.round(expansion.currentValue / expansion.currentProviders))}</Text>
           </View>
-        </View>
-
-        <View style={styles.insightCard}>
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Target utilization rate</Text>
-            <Text style={styles.insightValue}>{expansion.targetUtilization}%</Text>
+          <View style={[styles.insightCard, { flex: 1, marginRight: 8 }]}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", marginBottom: 4 }}>Target Utilization</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.black }}>{expansion.targetUtilization}%</Text>
           </View>
-        </View>
-
-        <View style={styles.insightCard}>
-          <View style={styles.insightRow}>
-            <Text style={styles.insightLabel}>Additional value at full scale</Text>
-            <Text style={styles.insightValueGreen}>+{formatCurrency(expansion.expansionValue)}</Text>
+          <View style={[styles.insightCard, { flex: 1 }]}>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase", marginBottom: 4 }}>Scale Factor</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.primary }}>{multiplier.toFixed(1)}×</Text>
           </View>
         </View>
 
         <View style={styles.opportunityBox}>
-          <Text style={styles.opportunityTitle}>The Expansion Opportunity</Text>
+          <Text style={styles.opportunityTitle}>The Question Isn't If—It's When</Text>
           <Text style={styles.opportunityText}>
-            Imagine all {expansion.targetProviders} providers experiencing the same documentation improvements you've measured today.{"\n"}{"\n"}
-            That's {formatCurrency(expansion.projectedValue)} in annual value—an additional {formatCurrency(expansion.expansionValue)} beyond what you're capturing now.
+            Every month you wait is another month of documentation burden for {additionalProviders} providers who could be experiencing the same relief your current users already have.{"\n"}{"\n"}
+            At {formatCurrency(valuePerProvider)} per provider per year, the math works. But the real win? A better day-to-day for your clinical team.
           </Text>
         </View>
-
-        <Text style={styles.storyText}>
-          <Text style={styles.storyTextBold}>The bottom line:</Text> Your pilot has proven the model works. At {formatCurrency(valuePerProvider)} per provider, expansion isn't just possible—it's a multiplier on what you've already built.
-        </Text>
       </View>
 
       <View style={styles.footer}>
@@ -1017,21 +1174,36 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
   const valuePerProvider = data.providers > 0 ? Math.round(data.tier1Value / data.providers) : 0;
   const displayClientName = data.clientName || "Your Organization";
   
+  // Personalized closing message based on results
+  const getClosingMessage = () => {
+    const hasStrongResults = data.tier1Value > 100000;
+    const hasExpansionPotential = data.expansion.expansionValue > data.tier1Value;
+    
+    if (hasStrongResults && hasExpansionPotential) {
+      return "You've proven the value. You have the data. The question now is simple: how fast can you bring this to the rest of your organization?";
+    } else if (hasStrongResults) {
+      return "The numbers tell a clear story: Abridge is working for your providers. The path forward is about deepening what's already succeeding.";
+    } else if (hasExpansionPotential) {
+      return "Your foundation is in place. As utilization grows and more providers come on board, these numbers will grow with them.";
+    }
+    return "Every journey starts somewhere. You've taken the first steps—and the data shows it's working.";
+  };
+  
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.heroCompact}>
         <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 12 }} />
-        <Text style={styles.heroCompactTitle}>Your Summary to Share</Text>
+        <Text style={styles.heroCompactTitle}>The Bottom Line</Text>
         <Text style={styles.heroCompactSubtitle}>
-          The key numbers from {displayClientName}'s Abridge deployment.
+          A snapshot of {displayClientName}'s Abridge journey—ready to share.
         </Text>
       </View>
 
       <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>At a Glance</Text>
-        <Text style={styles.sectionTitle}>The Numbers That Matter</Text>
+        <Text style={styles.chapterLabel}>Executive Summary</Text>
+        <Text style={styles.sectionTitle}>What We've Built Together</Text>
         <Text style={styles.sectionSubtitle}>
-          A snapshot of your value realization journey—ready to share with leadership.
+          {data.monthsOnAbridge} months. {data.providers} providers. {formatNumber(data.documentedEncounters)} encounters. Real results.
         </Text>
 
         <View style={styles.summaryBox}>
@@ -1040,40 +1212,40 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
             <View style={styles.summaryItem}>
               <Text style={styles.summaryItemLabel}>Annual Value</Text>
               <Text style={styles.summaryItemValueGreen}>{formatCurrency(data.tier1Value)}</Text>
-              <Text style={styles.summaryItemSubtext}>measured from data</Text>
+              <Text style={styles.summaryItemSubtext}>proven from your data</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryItemLabel}>Value/Provider</Text>
+              <Text style={styles.summaryItemLabel}>Per Provider</Text>
               <Text style={styles.summaryItemValue}>{formatCurrency(valuePerProvider)}</Text>
-              <Text style={styles.summaryItemSubtext}>{data.providers} providers</Text>
+              <Text style={styles.summaryItemSubtext}>annual value each</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryItemLabel}>Expansion</Text>
+              <Text style={styles.summaryItemLabel}>Expansion Potential</Text>
               <Text style={styles.summaryItemValueGreen}>+{formatCurrency(data.expansion.expansionValue)}</Text>
-              <Text style={styles.summaryItemSubtext}>at {data.expansion.targetProviders} providers</Text>
+              <Text style={styles.summaryItemSubtext}>at full scale</Text>
             </View>
           </View>
         </View>
 
-        <View style={{ height: 20 }} />
+        <View style={{ height: 16 }} />
 
         <View style={styles.summaryBox}>
-          <Text style={styles.summaryTitle}>Deployment Status</Text>
+          <Text style={styles.summaryTitle}>Your Deployment</Text>
           <View style={styles.summaryGrid}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryItemLabel}>Providers</Text>
+              <Text style={styles.summaryItemLabel}>Active Providers</Text>
               <Text style={styles.summaryItemValue}>{data.providers}</Text>
-              <Text style={styles.summaryItemSubtext}>on Abridge</Text>
+              <Text style={styles.summaryItemSubtext}>using Abridge</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryItemLabel}>Utilization</Text>
               <Text style={styles.summaryItemValue}>{data.utilizationRate}%</Text>
-              <Text style={styles.summaryItemSubtext}>of encounters</Text>
+              <Text style={styles.summaryItemSubtext}>of eligible encounters</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryItemLabel}>Duration</Text>
+              <Text style={styles.summaryItemLabel}>Partnership</Text>
               <Text style={styles.summaryItemValue}>{data.monthsOnAbridge}</Text>
-              <Text style={styles.summaryItemSubtext}>months</Text>
+              <Text style={styles.summaryItemSubtext}>months and counting</Text>
             </View>
           </View>
         </View>
@@ -1082,12 +1254,12 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
 
         {/* Working Well / Areas to Watch */}
         {(data.workingWell.length > 0 || data.areasToWatch.length > 0) && (
-          <>
-            <Text style={styles.chapterLabel}>Performance Summary</Text>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={styles.chapterLabel}>Performance Insights</Text>
             
             {data.workingWell.length > 0 && (
-              <View style={[styles.insightCard, { backgroundColor: colors.emeraldLight }]}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.emeraldDark, marginBottom: 6 }}>Working Well</Text>
+              <View style={[styles.insightCard, { backgroundColor: colors.emeraldLight, marginBottom: 8 }]}>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.emeraldDark, marginBottom: 6 }}>What's Working</Text>
                 {data.workingWell.slice(0, 3).map((item, idx) => (
                   <Text key={idx} style={{ fontSize: 8, color: colors.emeraldDark, marginBottom: 2 }}>• {item}</Text>
                 ))}
@@ -1096,18 +1268,25 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
             
             {data.areasToWatch.length > 0 && (
               <View style={[styles.insightCard, { backgroundColor: colors.amberLight }]}>
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber, marginBottom: 6 }}>Areas to Watch</Text>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.amber, marginBottom: 6 }}>Opportunities to Optimize</Text>
                 {data.areasToWatch.slice(0, 3).map((item, idx) => (
                   <Text key={idx} style={{ fontSize: 8, color: colors.amber, marginBottom: 2 }}>• {item}</Text>
                 ))}
               </View>
             )}
-          </>
+          </View>
         )}
 
-        <View style={styles.ctaSection}>
-          <Text style={styles.ctaText}>Ready to expand your deployment or optimize further?</Text>
-          <Text style={styles.ctaLink}>Contact your Abridge partner to discuss next steps</Text>
+        {/* Personalized closing message */}
+        <View style={styles.quoteBox}>
+          <Text style={styles.quoteText}>{getClosingMessage()}</Text>
+        </View>
+
+        <View style={[styles.ctaSection, { marginTop: 16 }]}>
+          <Text style={{ fontSize: 10, color: colors.darkGray, textAlign: "center", marginBottom: 6 }}>
+            Ready to take the next step?
+          </Text>
+          <Text style={styles.ctaLink}>Contact your Abridge partner to discuss expansion</Text>
         </View>
       </View>
 
@@ -1115,7 +1294,7 @@ const SummaryPage = ({ data, pageNum }: { data: ExpandPDFData; pageNum: number }
         <View>
           <Text style={styles.footerText}>Abridge Value Realization Report</Text>
           <Text style={styles.methodNote}>
-            Values based on {data.providers} providers, {data.utilizationRate}% utilization, ${33}/wRVU with 50% attribution.
+            Values calculated from {data.providers} providers at {data.utilizationRate}% utilization, using ${33}/wRVU with 50% attribution factor.
           </Text>
         </View>
         <Text style={styles.footerText}>Page {pageNum}</Text>
