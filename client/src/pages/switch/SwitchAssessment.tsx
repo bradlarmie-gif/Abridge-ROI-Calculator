@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile } from "lucide-react";
+import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile, Moon, Heart, Eye, TrendingUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
   calculateSwitchGap, 
   formatCurrency,
-  ABRIDGE_BENCHMARKS, 
+  ABRIDGE_BENCHMARKS,
+  VALUE_ASSUMPTIONS,
   type SwitchInputs, 
   type SolutionType 
 } from "@/lib/switchGapCalculator";
@@ -39,6 +40,9 @@ export default function SwitchAssessment({
     }
   };
 
+  // Optional pajama time input (hours/week after-hours documentation)
+  const [pajamaTimeHours, setPajamaTimeHours] = useState<number>(0);
+
   const calculations = useMemo(() => {
     return calculateSwitchGap({
       ...inputs,
@@ -46,6 +50,63 @@ export default function SwitchAssessment({
       annualEncounters: inputs.annualEncounters || 150000,
       currentCostPerProvider: inputs.currentCostPerProvider || 200,
     });
+  }, [inputs]);
+
+  // Human impact calculations
+  const humanImpact = useMemo(() => {
+    const providers = inputs.providers || 0;
+    const encounters = inputs.annualEncounters || 0;
+    const efficiency = inputs.timeSavedPerEncounter || 0;
+    const utilizationRate = inputs.utilization || 0;
+    const wrvuLift = inputs.wrvuLift || 0;
+
+    // Current documentation time per encounter (industry avg is ~16 min, Abridge saves 4 min on top of whatever they save)
+    const baseDocTimeMinutes = 16; // Industry average documentation time
+    const currentTimeSaved = efficiency; // What their current solution saves
+    const abridgeTimeSaved = ABRIDGE_BENCHMARKS.timeSavedAvg;
+    const additionalSavingsPerEncounter = Math.max(0, abridgeTimeSaved - currentTimeSaved);
+    
+    // Calculate encounters documented
+    const documentsAtCurrent = Math.round(encounters * (utilizationRate / 100));
+    const documentsAtBenchmark = Math.round(encounters * (ABRIDGE_BENCHMARKS.utilization / 100));
+    
+    // Hours calculations
+    const currentHoursSavedPerYear = Math.round((documentsAtCurrent * currentTimeSaved) / 60);
+    const potentialHoursSavedPerYear = Math.round((documentsAtBenchmark * abridgeTimeSaved) / 60);
+    const additionalHoursPerYear = Math.max(0, potentialHoursSavedPerYear - currentHoursSavedPerYear);
+    const additionalHoursPerWeek = Math.round((additionalHoursPerYear / 52) * 10) / 10;
+    const additionalHoursPerProvider = providers > 0 ? Math.round(additionalHoursPerYear / providers) : 0;
+    
+    // Pajama time estimation (if efficiency is below benchmark, excess time likely goes to after-hours)
+    const estimatedPajamaReduction = Math.round(additionalHoursPerWeek * 0.6 * 10) / 10; // ~60% of extra doc time is after-hours
+    const pajamaWeeksReclaimed = Math.round(estimatedPajamaReduction * 52 / 40); // Convert to work weeks
+    
+    // Work weeks reclaimed per year
+    const workWeeksReclaimed = Math.round(additionalHoursPerYear / 40);
+    
+    // Evening equivalents (assuming 2-hour evening sessions)
+    const eveningsReclaimedPerYear = Math.round(additionalHoursPerYear / 2);
+    const eveningsReclaimedPerWeek = Math.round((eveningsReclaimedPerYear / 52) * 10) / 10;
+    
+    // wRVU to dollars
+    const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
+    const additionalWRVU = Math.round(documentsAtBenchmark * VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100));
+    const additionalRevenue = Math.round(additionalWRVU * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuAttribution);
+    
+    return {
+      additionalHoursPerYear,
+      additionalHoursPerWeek,
+      additionalHoursPerProvider,
+      workWeeksReclaimed,
+      eveningsReclaimedPerYear,
+      eveningsReclaimedPerWeek,
+      estimatedPajamaReduction,
+      pajamaWeeksReclaimed,
+      additionalRevenue,
+      wrvuGapPercent,
+      additionalWRVU,
+      hasData: providers > 0 && encounters > 0 && (efficiency > 0 || utilizationRate > 0),
+    };
   }, [inputs]);
 
   // Check if user has entered any dimension values
@@ -253,6 +314,7 @@ export default function SwitchAssessment({
                 score={calculations.qualityScore}
                 onChange={(v) => updateInput("wrvuLift", v)}
                 testId="slider-wrvu"
+                dollarValue={humanImpact.additionalRevenue}
               />
 
               <DimensionCard
@@ -271,7 +333,136 @@ export default function SwitchAssessment({
                 testId="slider-satisfaction"
               />
             </div>
+
+            {/* Optional: Pajama Time Context */}
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center">
+                  <Moon className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#111827] text-sm">After-Hours Documentation</h3>
+                  <p className="text-xs text-[#6B7280]">Optional: How much are your providers documenting outside clinic hours?</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min={0}
+                  max={20}
+                  step={1}
+                  value={pajamaTimeHours}
+                  onChange={(e) => setPajamaTimeHours(parseFloat(e.target.value))}
+                  className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  data-testid="slider-pajama-time"
+                />
+                <div className="flex items-center gap-1 min-w-[80px]">
+                  <span className={`text-lg font-semibold ${pajamaTimeHours > 0 ? 'text-indigo-600' : 'text-slate-400'}`}>
+                    {pajamaTimeHours > 0 ? pajamaTimeHours : '--'}
+                  </span>
+                  <span className="text-xs text-[#6B7280]">hrs/week</span>
+                </div>
+              </div>
+              {pajamaTimeHours > 0 && (
+                <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                  <p className="text-sm text-indigo-800">
+                    <span className="font-semibold">{pajamaTimeHours} hours/week</span> equals roughly <span className="font-semibold">{Math.round(pajamaTimeHours * 52)} hours/year</span> — 
+                    or about <span className="font-semibold">{Math.round(pajamaTimeHours * 52 / 40)} full work weeks</span> spent documenting outside clinic hours.
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
+
+          {/* Human Impact Section - What This Means For Your Providers */}
+          {humanImpact.hasData && humanImpact.additionalHoursPerYear > 0 && (
+            <section className="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200 p-5 md:p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100/50 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-100/50 to-transparent rounded-full translate-y-1/2 -translate-x-1/2" />
+              
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-emerald-600" />
+                  <h2 className="text-lg md:text-xl font-bold text-[#111827]">What This Could Mean For Your Providers</h2>
+                </div>
+                <p className="text-sm text-[#6B7280] mb-6">
+                  Based on your current metrics, here's what reaching Abridge benchmarks could look like:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Time Reclaimed */}
+                  <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">Time Reclaimed</span>
+                    </div>
+                    <div className="text-2xl font-bold text-[#111827] mb-1">
+                      {humanImpact.additionalHoursPerYear.toLocaleString()} hrs
+                    </div>
+                    <p className="text-xs text-[#6B7280]">
+                      ~{humanImpact.workWeeksReclaimed} work weeks/year
+                    </p>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      ~{humanImpact.additionalHoursPerWeek} hrs/week across your team
+                    </p>
+                  </div>
+
+                  {/* Evenings Back */}
+                  <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                        <Moon className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Less Pajama Time</span>
+                    </div>
+                    <div className="text-2xl font-bold text-[#111827] mb-1">
+                      ~{humanImpact.eveningsReclaimedPerYear} evenings
+                    </div>
+                    <p className="text-xs text-[#6B7280]">
+                      ~{humanImpact.eveningsReclaimedPerWeek} fewer late nights/week
+                    </p>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      Notes done before leaving clinic
+                    </p>
+                  </div>
+
+                  {/* Revenue Opportunity */}
+                  {humanImpact.additionalRevenue > 0 && (
+                    <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                          <TrendingUp className="w-4 h-4 text-emerald-600" />
+                        </div>
+                        <span className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Revenue Potential</span>
+                      </div>
+                      <div className="text-2xl font-bold text-emerald-600 mb-1">
+                        {formatCurrency(humanImpact.additionalRevenue)}
+                      </div>
+                      <p className="text-xs text-[#6B7280]">
+                        +{humanImpact.wrvuGapPercent.toFixed(1)}% wRVU lift
+                      </p>
+                      <p className="text-xs text-[#6B7280] mt-1">
+                        From better documentation capture
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Burnout callout */}
+                <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-3">
+                  <Heart className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">Documentation is the #1 driver of physician burnout</p>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Every hour reclaimed is an hour back with patients, family, or simply breathing.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
             <div className="text-center mb-4 md:mb-6">
@@ -510,6 +701,7 @@ interface DimensionCardProps {
   score: number;
   onChange: (value: number) => void;
   testId: string;
+  dollarValue?: number;
 }
 
 function DimensionCard({
@@ -527,6 +719,7 @@ function DimensionCard({
   score,
   onChange,
   testId,
+  dollarValue,
 }: DimensionCardProps) {
   // Track if user has entered a value (0 is our "empty" state)
   const hasValue = value > 0;
@@ -678,13 +871,19 @@ function DimensionCard({
         data-testid={testId}
       />
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-2 flex-wrap">
         <span className={`text-lg font-bold transition-all duration-200 ${
           !hasValue ? 'text-slate-400' : isPulsing ? `${colors.text} scale-110` : 'text-[#111827]'
         }`}>
           {hasValue ? `${score}%` : '--'}
         </span>
         <span className="text-xs text-[#6B7280]">of Abridge benchmark</span>
+        {/* Dollar value indicator for quality card */}
+        {dollarValue !== undefined && dollarValue > 0 && hasValue && (
+          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            +{formatCurrency(dollarValue)}
+          </span>
+        )}
         {/* Mini progress indicator */}
         <div className="ml-auto flex items-center gap-1">
           <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
