@@ -22,7 +22,7 @@ const colors = {
   mediumGray: "#6B7280",
   lightGray: "#9CA3AF",
   borderGray: "#E5E7EB",
-  backgroundGray: "#F9FAFB",
+  backgroundGray: "#F1F5F9",
   white: "#FFFFFF",
   emerald: "#059669",
   emeraldLight: "#ECFDF5",
