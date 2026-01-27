@@ -239,7 +239,10 @@ export default function ScribeAssessment({
                 <div className="text-2xl font-bold text-[#111827]">
                   {calculations.unsupportedDocTimeHours.toLocaleString()}
                 </div>
-                <div className="text-xs text-[#6B7280]">hours/year documenting</div>
+                <div className="text-xs text-[#6B7280] mb-1">hours/year documenting</div>
+                <div className="text-xs font-medium text-[#EA2C00]">
+                  {Math.round(calculations.unsupportedDocTimeHours / 2080)} FTEs worth of time
+                </div>
               </div>
 
               <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
@@ -249,7 +252,10 @@ export default function ScribeAssessment({
                 <div className="text-2xl font-bold text-[#111827]">
                   {calculations.pajamaTimeHours.toLocaleString()}
                 </div>
-                <div className="text-xs text-[#6B7280]">hours/year after hours</div>
+                <div className="text-xs text-[#6B7280] mb-1">hours/year after hours</div>
+                <div className="text-xs font-medium text-[#EA2C00]">
+                  Work taken home
+                </div>
               </div>
 
               <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
@@ -259,7 +265,10 @@ export default function ScribeAssessment({
                 <div className="text-2xl font-bold text-[#111827]">
                   {calculations.docTimePerUnsupportedProvider}
                 </div>
-                <div className="text-xs text-[#6B7280]">hrs/year per provider</div>
+                <div className="text-xs text-[#6B7280] mb-1">hrs/year per provider</div>
+                <div className="text-xs font-medium text-[#EA2C00]">
+                  {Math.round(calculations.docTimePerUnsupportedProvider / 40)} weeks of their year
+                </div>
               </div>
             </div>
           </motion.div>
@@ -338,22 +347,39 @@ export default function ScribeAssessment({
           </div>
         </motion.section>
 
-        {/* CTA */}
-        <motion.div 
-          initial={{ opacity: 0, y: 16 }}
+        {/* SECTION 4: The Insight - Bridge to Action */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="flex justify-center"
+          className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 md:p-8 mb-6 text-center relative overflow-hidden"
         >
-          <Button
-            onClick={onNext}
-            className="h-12 px-8 bg-[#EA2C00] hover:bg-[#d12700] text-white font-semibold shadow-sm"
-            data-testid="button-see-full-analysis"
-          >
-            See Full Analysis
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </motion.div>
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute top-4 left-8 w-32 h-32 rounded-full border border-white" />
+            <div className="absolute bottom-4 right-12 w-24 h-24 rounded-full border border-white" />
+          </div>
+          
+          <div className="relative">
+            <p className="text-slate-300 text-sm md:text-base mb-3">
+              Scaling your scribe program to full coverage would cost an additional
+            </p>
+            <div className="text-3xl md:text-4xl font-bold text-white mb-3">
+              {formatCurrency(calculations.costToScale)}/year
+            </div>
+            <p className="text-slate-400 text-sm md:text-base mb-6 max-w-lg mx-auto">
+              But what if you could give every provider documentation support—without adding {calculations.scribesNeededForFullCoverage - inputs.scribeCount} more scribes?
+            </p>
+            
+            <Button
+              onClick={onNext}
+              className="h-12 px-8 bg-[#EA2C00] hover:bg-[#d12700] text-white font-semibold shadow-lg"
+              data-testid="button-see-full-analysis"
+            >
+              See How
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </motion.section>
       </main>
     </div>
   );
