@@ -883,9 +883,10 @@ function EditableUtilizationCard({ utilization, encounters, gapEncounters, gapVa
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                 className="w-12 px-1 py-0.5 text-sm font-semibold rounded border border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-400"
                 autoFocus
+                data-testid="input-utilization-edit"
               />
               <span className="text-xs text-white">%</span>
-              <button onClick={handleSave} className="ml-1 p-0.5 bg-white/20 rounded hover:bg-white/30">
+              <button onClick={handleSave} className="ml-1 p-0.5 bg-white/20 rounded hover:bg-white/30" data-testid="button-utilization-save">
                 <Check className="w-3 h-3 text-white" />
               </button>
             </div>
@@ -893,6 +894,7 @@ function EditableUtilizationCard({ utilization, encounters, gapEncounters, gapVa
             <button 
               onClick={() => { setEditValue(String(utilization)); setIsEditing(true); }}
               className="flex items-center gap-1 text-white hover:text-blue-100 transition-colors"
+              data-testid="button-utilization-edit"
             >
               <span className="text-sm md:text-base font-semibold">You: {utilization}%</span>
               <Pencil className="w-3 h-3 opacity-70" />
@@ -1002,9 +1004,10 @@ function EditableEfficiencyCard({ efficiency, encountersAtBenchmark, gapHours, g
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                 className="w-12 px-1 py-0.5 text-sm font-semibold rounded border border-purple-300 focus:outline-none focus:ring-1 focus:ring-purple-400"
                 autoFocus
+                data-testid="input-efficiency-edit"
               />
               <span className="text-xs text-white">min</span>
-              <button onClick={handleSave} className="ml-1 p-0.5 bg-white/20 rounded hover:bg-white/30">
+              <button onClick={handleSave} className="ml-1 p-0.5 bg-white/20 rounded hover:bg-white/30" data-testid="button-efficiency-save">
                 <Check className="w-3 h-3 text-white" />
               </button>
             </div>
@@ -1012,6 +1015,7 @@ function EditableEfficiencyCard({ efficiency, encountersAtBenchmark, gapHours, g
             <button 
               onClick={() => { setEditValue(String(efficiency)); setIsEditing(true); }}
               className="flex items-center gap-1 text-white hover:text-purple-100 transition-colors"
+              data-testid="button-efficiency-edit"
             >
               <span className="text-sm md:text-base font-semibold">You: {efficiency} min</span>
               <Pencil className="w-3 h-3 opacity-70" />
@@ -1119,9 +1123,10 @@ function EditableQualityCard({ wrvuLift, encountersAtBenchmark, gapValue, onWrvu
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                 className="w-12 px-1 py-0.5 text-sm font-semibold rounded border border-emerald-300 focus:outline-none focus:ring-1 focus:ring-emerald-400"
                 autoFocus
+                data-testid="input-quality-edit"
               />
               <span className="text-xs text-white">%</span>
-              <button onClick={handleSave} className="ml-1 p-0.5 bg-white/20 rounded hover:bg-white/30">
+              <button onClick={handleSave} className="ml-1 p-0.5 bg-white/20 rounded hover:bg-white/30" data-testid="button-quality-save">
                 <Check className="w-3 h-3 text-white" />
               </button>
             </div>
@@ -1129,6 +1134,7 @@ function EditableQualityCard({ wrvuLift, encountersAtBenchmark, gapValue, onWrvu
             <button 
               onClick={() => { setEditValue(String(wrvuLift)); setIsEditing(true); }}
               className="flex items-center gap-1 text-white hover:text-emerald-100 transition-colors"
+              data-testid="button-quality-edit"
             >
               <span className="text-sm md:text-base font-semibold">You: +{wrvuLift}%</span>
               <Pencil className="w-3 h-3 opacity-70" />
