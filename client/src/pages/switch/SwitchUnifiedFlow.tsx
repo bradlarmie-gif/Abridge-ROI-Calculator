@@ -97,6 +97,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
       return (
         <SwitchFullAnalysis
           inputs={ambientInputs}
+          setInputs={handleAmbientInputsChange}
           onBack={goBack}
           onBackToJourney={onBackToJourney}
         />
