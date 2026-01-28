@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
-import SwitchAssessment from "./SwitchAssessment";
-import SwitchFullAnalysis from "./SwitchFullAnalysis";
+import SwitchPathSelection from "./SwitchPathSelection";
 import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import AmbientNarrativeFlow from "./AmbientNarrativeFlow";
@@ -15,22 +14,22 @@ interface SwitchUnifiedFlowProps {
   onExploreAmbientAI?: (providers: number, encounters: number) => void;
 }
 
+type FlowPhase = "path-selection" | "ambient-flow" | "scribe-assessment" | "scribe-analysis";
+
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [solutionType, setSolutionType] = useState<SolutionType>("ambient-ai");
+  const [phase, setPhase] = useState<FlowPhase>("path-selection");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   
-  // Start with empty dimension values - customer fills in their actual numbers
   const [ambientInputs, setAmbientInputs] = useState<SwitchInputs>({
     solution: "ambient-ai" as SolutionType,
     providers: 0,
     annualEncounters: 0,
     currentCostPerProvider: 200,
-    utilization: 0,  // Empty start - will show placeholder
-    timeSavedPerEncounter: 0,  // Empty start
-    wrvuLift: 0,  // Empty start
-    satisfaction: 0,  // Empty start
-    afterHoursPerWeek: 0,  // Empty start - hours/week documenting after clinic
+    utilization: 0,
+    timeSavedPerEncounter: 0,
+    wrvuLift: 0,
+    satisfaction: 0,
+    afterHoursPerWeek: 0,
   });
 
   const [scribeInputs, setScribeInputs] = useState<ScribeInputs>({
@@ -42,74 +41,88 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     annualEncounters: 400000,
   });
 
+  const handleSelectPath = (path: "ambient-ai" | "human-scribes") => {
+    if (path === "ambient-ai") {
+      setPhase("ambient-flow");
+    } else {
+      setPhase("scribe-assessment");
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleAmbientInputsChange = (newInputs: React.SetStateAction<SwitchInputs>) => {
     setAmbientInputs(prev => {
       const updated = typeof newInputs === 'function' ? newInputs(prev) : newInputs;
-      if (updated.solution !== solutionType) {
-        setSolutionType(updated.solution);
-      }
       return updated;
     });
   };
 
-  const goNext = () => {
+  const handleScribeNext = () => {
     setShowLoadingOverlay(true);
   };
 
   const handleLoadingComplete = useCallback(() => {
     setShowLoadingOverlay(false);
-    setCurrentStep(2);
-    window.scrollTo(0, 0);
+    setPhase("scribe-analysis");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const goBack = () => {
-    if (currentStep === 1) {
-      onBack();
-    } else {
-      setCurrentStep(1);
-      window.scrollTo(0, 0);
-    }
+  const handleBackToPathSelection = () => {
+    setPhase("path-selection");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Determine which component to render
+  const handleBackFromScribeAnalysis = () => {
+    setPhase("scribe-assessment");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const getPageContent = () => {
-    // Scribe path: Keep the original 2-step flow
-    if (solutionType === "human-scribes") {
-      if (currentStep === 2) {
+    switch (phase) {
+      case "path-selection":
+        return (
+          <SwitchPathSelection
+            onSelectPath={handleSelectPath}
+            onBack={onBack}
+          />
+        );
+      
+      case "ambient-flow":
+        return (
+          <AmbientNarrativeFlow
+            inputs={ambientInputs}
+            setInputs={handleAmbientInputsChange}
+            onBack={handleBackToPathSelection}
+            onBackToJourney={onBackToJourney}
+            onNavigateToExplore={onExploreAmbientAI}
+          />
+        );
+      
+      case "scribe-assessment":
+        return (
+          <ScribeAssessment
+            inputs={scribeInputs}
+            setInputs={setScribeInputs}
+            onNext={handleScribeNext}
+            onBack={handleBackToPathSelection}
+            onBackToJourney={onBackToJourney}
+          />
+        );
+      
+      case "scribe-analysis":
         return (
           <ScribeFullAnalysis
             inputs={scribeInputs}
-            onBack={goBack}
+            onBack={handleBackFromScribeAnalysis}
             onBackToJourney={onBackToJourney}
             onExploreAmbientAI={onExploreAmbientAI}
           />
         );
-      }
-      return (
-        <ScribeAssessment
-          inputs={scribeInputs}
-          setInputs={setScribeInputs}
-          onNext={goNext}
-          onBack={goBack}
-          onBackToJourney={onBackToJourney}
-        />
-      );
+      
+      default:
+        return null;
     }
-
-    // Ambient AI path: Use the new 6-step narrative flow
-    return (
-      <AmbientNarrativeFlow
-        inputs={ambientInputs}
-        setInputs={handleAmbientInputsChange}
-        onBack={goBack}
-        onBackToJourney={onBackToJourney}
-        onNavigateToExplore={onExploreAmbientAI}
-      />
-    );
   };
-
-  // Create a unique key for page transitions
-  const pageKey = `switch-${solutionType}-step-${currentStep}`;
 
   return (
     <>
@@ -117,7 +130,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
       />
-      <PageTransition pageKey={pageKey}>
+      <PageTransition pageKey={`switch-${phase}`}>
         {getPageContent()}
       </PageTransition>
     </>
