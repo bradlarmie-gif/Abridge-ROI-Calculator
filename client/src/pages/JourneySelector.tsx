@@ -206,7 +206,6 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               testId="card-explore"
               delay={0.15}
               accent={accents.explore}
-              isPrimary={true}
             />
             
             <PathCard
