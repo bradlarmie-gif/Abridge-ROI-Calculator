@@ -21,7 +21,7 @@ const TIER_1_METRICS = [
     id: "wrvuCapture" as MetricType,
     name: "wRVU per Encounter",
     description: "Revenue capture from complete documentation",
-    dollarizable: "$33/wRVU × attribution %",
+    dollarizable: "Directly tied to reimbursement",
     source: "Clarity/Epic",
     icon: DollarSign,
     recommended: true,
@@ -30,7 +30,7 @@ const TIER_1_METRICS = [
     id: "levelOfService" as MetricType,
     name: "Average E&M Level",
     description: "Coding accuracy from complete documentation",
-    dollarizable: "Level shifts have payer-specific values",
+    dollarizable: "Level shifts impact revenue per visit",
     source: "Clarity/Epic",
     icon: FileText,
     recommended: true,
@@ -39,20 +39,20 @@ const TIER_1_METRICS = [
     id: "diagnosisCapture" as MetricType,
     name: "Diagnosis Capture",
     description: "HCC/RAF score improvement from complete documentation",
-    dollarizable: "Direct risk adjustment revenue impact",
+    dollarizable: "Risk adjustment revenue impact",
     source: "Clarity/Epic",
     icon: Target,
     recommended: false,
   },
 ];
 
-// TIER 2: Operational Efficiency - Time that can become dollars
+// TIER 2: Operational Efficiency - Time reclaimed
 const TIER_2_METRICS = [
   {
     id: "timeSavings" as MetricType,
     name: "Time in Notes",
     description: "Minutes per encounter spent documenting",
-    dollarizable: "You choose: patient access, overtime, or hours",
+    dollarizable: "Express as capacity, overtime, or hours",
     source: "Clarity/Epic",
     icon: Clock,
     recommended: true,
@@ -61,20 +61,20 @@ const TIER_2_METRICS = [
     id: "workOutsideWork" as MetricType,
     name: "Work Outside of Work",
     description: "After-hours documentation burden",
-    dollarizable: "Connect to overtime or retention value",
+    dollarizable: "Provider wellbeing and retention signal",
     source: "Clarity/Epic",
     icon: Moon,
     recommended: false,
   },
 ];
 
-// TIER 3: Quality Indicators - Important proof points
+// TIER 3: Quality Indicators - The human signals
 const TIER_3_METRICS = [
   {
     id: "utilization" as MetricType,
     name: "Utilization Rate",
     description: "Percentage of eligible providers actively using Abridge",
-    dollarizable: "Unlocks full value of other metrics",
+    dollarizable: "Adoption is the foundation of all value",
     source: "Clarity/Epic",
     icon: TrendingUp,
     recommended: false,
@@ -83,7 +83,7 @@ const TIER_3_METRICS = [
     id: "chartClosure" as MetricType,
     name: "Same-Day Chart Closure",
     description: "Real-time documentation behavior",
-    dollarizable: "Validates workflow adoption",
+    dollarizable: "Proof that workflows have changed",
     source: "Clarity/Epic",
     icon: FileCheck,
     recommended: false,
@@ -92,7 +92,7 @@ const TIER_3_METRICS = [
     id: "clinicianSatisfaction" as MetricType,
     name: "Clinician Satisfaction",
     description: "Leading indicator for retention",
-    dollarizable: "Supports the retention story",
+    dollarizable: "The voice of your providers",
     source: "Survey",
     icon: Smile,
     recommended: false,
@@ -140,26 +140,26 @@ export default function ExpandDeploymentSetup({
         pathType="expand"
         currentStep={1}
         totalSteps={5}
-        stepName="Your Deployment"
+        stepName="Your Journey"
         onBack={onBack}
         onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
-        {/* Soul Hero - Celebrating What You've Built */}
+        {/* Soul Hero - Your Journey */}
         <div className="mb-8 md:mb-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 text-white">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-amber-400" />
             <span className="text-amber-400 text-sm font-medium tracking-wide uppercase">Your Value Story</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold mb-3" data-testid="text-page-title">
-            Documenting What You've Accomplished
+            Every Deployment Is a Story of Transformation
           </h1>
           <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl mb-6">
-            You believed in this investment. Your organization trusted you. Now let's turn your results 
-            into a story you can share — with the rigor your leadership expects and the clarity 
-            your team deserves.
+            You championed this change. You navigated the rollout. You've seen what's possible when 
+            documentation stops being a burden. Now let's capture what you've built — in a way that 
+            resonates with clinical leaders, operations, and anyone who needs to see the value.
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
@@ -167,12 +167,12 @@ export default function ExpandDeploymentSetup({
               <span className="text-sm text-white/90">Your real outcomes</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-white/90">Clear value created</span>
+              <Scale className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white/90">Transparent methodology</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
               <Target className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-white/90">What's possible next</span>
+              <span className="text-sm text-white/90">Ready to share</span>
             </div>
           </div>
         </div>
@@ -298,10 +298,10 @@ export default function ExpandDeploymentSetup({
               </div>
               <div>
                 <span className="text-sm font-semibold text-emerald-700">Core Financial Value</span>
-                <span className="text-xs text-emerald-600 ml-2">Direct revenue connection</span>
+                <span className="text-xs text-emerald-600 ml-2">The bottom line</span>
               </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3 ml-9">These connect directly to revenue — the clearest part of your value story.</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Direct revenue impact — the foundation of your value story that resonates across leadership.</p>
             
             <div className="space-y-2">
               {TIER_1_METRICS.map((metric) => {
@@ -360,10 +360,10 @@ export default function ExpandDeploymentSetup({
               </div>
               <div>
                 <span className="text-sm font-semibold text-blue-700">Operational Efficiency</span>
-                <span className="text-xs text-blue-600 ml-2">Time that can become dollars</span>
+                <span className="text-xs text-blue-600 ml-2">Where the hours went</span>
               </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3 ml-9">Time saved is real. You decide how to express its value — or just show the hours.</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Time reclaimed from documentation — meaningful to operations, clinical leads, and providers alike.</p>
             
             <div className="space-y-2">
               {TIER_2_METRICS.map((metric) => {
@@ -422,10 +422,10 @@ export default function ExpandDeploymentSetup({
               </div>
               <div>
                 <span className="text-sm font-semibold text-amber-700">Quality Indicators</span>
-                <span className="text-xs text-amber-600 ml-2">Proof points that matter</span>
+                <span className="text-xs text-amber-600 ml-2">The human signals</span>
               </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3 ml-9">These show the behavioral change — adoption happening, habits shifting.</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Adoption, satisfaction, workflow change — the signals that tell you this is working.</p>
             
             <div className="space-y-2">
               {TIER_3_METRICS.map((metric) => {
@@ -480,7 +480,7 @@ export default function ExpandDeploymentSetup({
             className="gap-2"
             data-testid="button-next"
           >
-            Enter Your Data
+            Document Your Results
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>

@@ -906,9 +906,9 @@ export default function ExpandDataEntry({
   };
   
   const getTierConfig = (tier: 1 | 2 | 3) => ({
-    1: { label: "Core Financial Value", color: "emerald", description: "Direct revenue connection" },
-    2: { label: "Operational Efficiency", color: "blue", description: "Time that can become dollars" },
-    3: { label: "Quality Indicators", color: "amber", description: "Proof points that matter" },
+    1: { label: "Core Financial Value", color: "emerald", description: "The bottom line" },
+    2: { label: "Operational Efficiency", color: "blue", description: "Where the hours went" },
+    3: { label: "Quality Indicators", color: "amber", description: "The human signals" },
   }[tier]);
 
   // Determine which metrics are ordered by tier
@@ -1306,7 +1306,7 @@ export default function ExpandDataEntry({
         pathType="expand"
         currentStep={2}
         totalSteps={5}
-        stepName="Your Metrics"
+        stepName="Your Numbers"
         onBack={onBack}
         onHome={onBackToJourney}
       />
