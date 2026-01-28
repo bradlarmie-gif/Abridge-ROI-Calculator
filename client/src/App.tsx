@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,6 +7,20 @@ import { queryClient } from "./lib/queryClient";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SessionSecurityProvider } from "@/contexts/SessionSecurityContext";
 import { PageTransition } from "@/components/PageTransition";
+
+function usePreventNumberInputScroll() {
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'number') {
+        target.blur();
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    return () => document.removeEventListener('wheel', handleWheel);
+  }, []);
+}
 
 import SplashScreen from "@/pages/SplashScreen";
 import JourneySelector from "@/pages/JourneySelector";
@@ -33,6 +47,8 @@ interface SelectionState {
 }
 
 export default function App() {
+  usePreventNumberInputScroll();
+  
   const [currentView, setCurrentView] = useState<AppView>("splash");
 
   const navigateTo = (view: AppView) => {
