@@ -8,7 +8,7 @@ import {
   type SwitchInputs,
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 
 interface StepTheMathProps {
   inputs: SwitchInputs;
@@ -123,56 +123,133 @@ export default function StepTheMath({
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
-        <h2 className="text-lg font-bold text-[#111827] mb-6">Two Paths, Two Outcomes</h2>
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-[#111827] mb-2">Two Paths, Two Outcomes</h2>
+          <p className="text-sm text-[#6B7280]">
+            The shaded area represents value left on the table each year. The gap widens as compounding effects take hold.
+          </p>
+        </div>
         
-        <div className="h-64 md:h-80">
+        <div className="h-72 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <AreaChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
+              <defs>
+                <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.05} />
+                </linearGradient>
+                <linearGradient id="currentGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
               <XAxis 
                 dataKey="month" 
                 tick={{ fontSize: 12, fill: '#6B7280' }}
-                tickFormatter={(value) => value % 12 === 0 ? `Y${value / 12}` : ''}
+                tickFormatter={(value) => value % 12 === 0 ? `Year ${value / 12}` : ''}
+                ticks={[0, 12, 24, 36]}
+                axisLine={{ stroke: '#e2e8f0' }}
+                tickLine={false}
               />
               <YAxis 
                 tick={{ fontSize: 12, fill: '#6B7280' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                axisLine={false}
+                tickLine={false}
+                width={50}
               />
               <Tooltip 
                 formatter={(value: number, name: string) => [
                   formatCurrency(value),
-                  name === 'current' ? 'Status Quo' : 'Full Potential'
+                  name === 'current' ? 'Continue as-is' : 'Optimized implementation'
                 ]}
-                labelFormatter={(label) => `Month ${label}`}
+                labelFormatter={(label) => label % 12 === 0 ? `Year ${label / 12}` : `Month ${label}`}
+                contentStyle={{ 
+                  borderRadius: '8px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="current" 
-                stroke="#94a3b8" 
-                strokeWidth={2}
-                dot={false}
-                name="current"
-              />
-              <Line 
+              <Area 
                 type="monotone" 
                 dataKey="potential" 
                 stroke="#10b981" 
                 strokeWidth={3}
-                dot={false}
+                fill="url(#gapGradient)"
                 name="potential"
+                dot={(props: any) => {
+                  const { cx, cy, payload } = props;
+                  if (payload.month % 12 === 0) {
+                    return (
+                      <circle 
+                        key={payload.month}
+                        cx={cx} 
+                        cy={cy} 
+                        r={6} 
+                        fill="#10b981" 
+                        stroke="white" 
+                        strokeWidth={2}
+                      />
+                    );
+                  }
+                  return <circle key={payload.month} r={0} />;
+                }}
               />
-            </LineChart>
+              <Area 
+                type="monotone" 
+                dataKey="current" 
+                stroke="#94a3b8" 
+                strokeWidth={2}
+                fill="url(#currentGradient)"
+                name="current"
+                dot={(props: any) => {
+                  const { cx, cy, payload } = props;
+                  if (payload.month % 12 === 0) {
+                    return (
+                      <circle 
+                        key={payload.month}
+                        cx={cx} 
+                        cy={cy} 
+                        r={5} 
+                        fill="#94a3b8" 
+                        stroke="white" 
+                        strokeWidth={2}
+                      />
+                    );
+                  }
+                  return <circle key={payload.month} r={0} />;
+                }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
         
-        <div className="flex items-center justify-center gap-6 mt-4">
+        <div className="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-slate-100">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-slate-400" />
-            <span className="text-sm text-[#6B7280]">Status Quo</span>
+            <div className="w-4 h-4 rounded-full bg-slate-400 border-2 border-white shadow-sm" />
+            <div>
+              <span className="text-sm font-medium text-[#374151]">Continue as-is</span>
+              <p className="text-xs text-[#6B7280]">Current trajectory</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span className="text-sm text-[#6B7280]">Full Potential</span>
+            <div className="w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
+            <div>
+              <span className="text-sm font-medium text-[#374151]">Optimized implementation</span>
+              <p className="text-xs text-[#6B7280]">What's achievable</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-lg p-4 border border-emerald-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-emerald-800 font-medium">3-Year Cumulative Difference</p>
+              <p className="text-xs text-emerald-600">The shaded gap represents unrealized value</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-emerald-600">{formatCurrency(calculations.switchNowValue - (calculations.wait12MonthsValue * 0.5))}</p>
+            </div>
           </div>
         </div>
       </section>
