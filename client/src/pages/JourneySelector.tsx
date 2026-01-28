@@ -21,9 +21,19 @@ interface PathCardProps {
   onClick: () => void;
   testId: string;
   delay: number;
+  accent: {
+    iconBg: string;
+    iconColor: string;
+    subtitleColor: string;
+    buttonBorder: string;
+    buttonText: string;
+    buttonHoverBg: string;
+    glowColor: string;
+  };
+  isPrimary?: boolean;
 }
 
-function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClick, testId, delay }: PathCardProps) {
+function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClick, testId, delay, accent, isPrimary }: PathCardProps) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 24 }}
@@ -33,29 +43,107 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
         delay: delay,
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
-      className="group bg-white border border-[#E5E7EB] rounded-xl p-5 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out shadow-sm shadow-black/5 hover:shadow-xl hover:shadow-black/10 hover:-translate-y-1.5 hover:border-[#D1D5DB]"
+      className="group relative bg-white/80 backdrop-blur-sm border border-white/60 rounded-2xl p-5 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out shadow-lg shadow-black/[0.04] hover:shadow-2xl hover:shadow-black/[0.08] hover:-translate-y-2 hover:bg-white/95"
       onClick={onClick}
       data-testid={testId}
+      style={{
+        boxShadow: `0 4px 24px -4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)`,
+      }}
     >
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#FEF0EC] flex items-center justify-center mb-4 md:mb-6 transition-transform duration-300 ease-out group-hover:scale-105">
-        <Icon className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
+      {/* Subtle gradient overlay on hover */}
+      <div 
+        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `linear-gradient(135deg, ${accent.glowColor}08 0%, transparent 50%)`,
+        }}
+      />
+      
+      {/* Icon with subtle glow */}
+      <div 
+        className="relative w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center mb-4 md:mb-5 transition-all duration-300 ease-out group-hover:scale-105"
+        style={{ 
+          backgroundColor: accent.iconBg,
+          boxShadow: `0 4px 12px -2px ${accent.glowColor}30`,
+        }}
+      >
+        <Icon className="w-5 h-5 md:w-6 md:h-6 transition-transform duration-300" style={{ color: accent.iconColor }} />
       </div>
       
-      <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-1">{title}</h3>
-      <p className="text-xs md:text-sm text-[#EA2C00] font-medium mb-2 md:mb-3">{subtitle}</p>
-      <p className="text-[#6B7280] text-xs md:text-sm leading-relaxed flex-1 mb-4 md:mb-6">{description}</p>
+      <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-1 relative">{title}</h3>
+      <p className="text-xs md:text-sm font-medium mb-2 md:mb-3 relative" style={{ color: accent.subtitleColor }}>{subtitle}</p>
+      <p className="text-[#6B7280] text-xs md:text-sm leading-relaxed flex-1 mb-5 md:mb-6 relative">{description}</p>
       
-      <Button
-        variant="outline"
-        className="w-full border-[#EA2C00] text-[#EA2C00] font-medium transition-all duration-200 group-hover:bg-[#EA2C00] group-hover:text-white group-hover:border-[#EA2C00]"
-        data-testid={`${testId}-button`}
-      >
-        {buttonText}
-        <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
-      </Button>
+      {isPrimary ? (
+        <Button
+          className="w-full font-medium transition-all duration-200 text-white relative"
+          style={{ 
+            backgroundColor: accent.buttonHoverBg, 
+            borderColor: accent.buttonHoverBg,
+          }}
+          data-testid={`${testId}-button`}
+        >
+          {buttonText}
+          <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          className="w-full font-medium transition-all duration-200 relative group-hover:text-white"
+          style={{ 
+            borderColor: accent.buttonBorder, 
+            color: accent.buttonText,
+            ['--hover-bg' as string]: accent.buttonHoverBg,
+          }}
+          data-testid={`${testId}-button`}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = accent.buttonHoverBg;
+            e.currentTarget.style.borderColor = accent.buttonHoverBg;
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.borderColor = accent.buttonBorder;
+            e.currentTarget.style.color = accent.buttonText;
+          }}
+        >
+          {buttonText}
+          <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Button>
+      )}
     </motion.div>
   );
 }
+
+// Accent configurations - subtle, brand-appropriate
+const accents = {
+  explore: {
+    iconBg: '#EEF4FF',
+    iconColor: '#4F6BED',
+    subtitleColor: '#4F6BED',
+    buttonBorder: '#4F6BED',
+    buttonText: '#4F6BED',
+    buttonHoverBg: '#4F6BED',
+    glowColor: '#4F6BED',
+  },
+  expand: {
+    iconBg: '#ECFDF5',
+    iconColor: '#059669',
+    subtitleColor: '#059669',
+    buttonBorder: '#059669',
+    buttonText: '#059669',
+    buttonHoverBg: '#059669',
+    glowColor: '#059669',
+  },
+  switch: {
+    iconBg: '#FEF0EC',
+    iconColor: '#EA2C00',
+    subtitleColor: '#EA2C00',
+    buttonBorder: '#EA2C00',
+    buttonText: '#EA2C00',
+    buttonHoverBg: '#EA2C00',
+    glowColor: '#EA2C00',
+  },
+};
 
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
   return (
@@ -97,7 +185,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             What brings you here today?
           </motion.p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
             <PathCard
               icon={Compass}
               title="Explore"
@@ -107,6 +195,8 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               onClick={onSelectExplore}
               testId="card-explore"
               delay={0.15}
+              accent={accents.explore}
+              isPrimary={true}
             />
             
             <PathCard
@@ -118,6 +208,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               onClick={onSelectExpand}
               testId="card-expand"
               delay={0.25}
+              accent={accents.expand}
             />
             
             <PathCard
@@ -129,6 +220,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               onClick={onSelectSwitch}
               testId="card-switch"
               delay={0.35}
+              accent={accents.switch}
             />
           </div>
         </section>
