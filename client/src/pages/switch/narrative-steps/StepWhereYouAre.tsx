@@ -223,7 +223,7 @@ export default function StepWhereYouAre({
                 icon={<DollarSign className="w-5 h-5 text-emerald-600" />}
                 iconBg="bg-emerald-100"
                 title="Quality"
-                description="wRVU lift from better documentation"
+                description="wRVU lift from more accurate documentation capture"
                 value={inputs.wrvuLift}
                 benchmark={ABRIDGE_BENCHMARKS.wrvuLift}
                 unit="%"
