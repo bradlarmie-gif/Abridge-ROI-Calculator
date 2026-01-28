@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, AlertCircle, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   formatCurrency,
   ABRIDGE_BENCHMARKS,
@@ -18,12 +19,78 @@ interface StepTheMathProps {
   onBack: () => void;
 }
 
+interface GapAccordionProps {
+  id: string;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  accentBg: string;
+  accentBorder: string;
+  title: string;
+  subtitle: string;
+  value: number;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+function GapAccordion({
+  id,
+  icon: Icon,
+  iconBg,
+  iconColor,
+  accentBg,
+  accentBorder,
+  title,
+  subtitle,
+  value,
+  isOpen,
+  onToggle,
+  children,
+}: GapAccordionProps) {
+  return (
+    <div className={`rounded-xl border overflow-hidden transition-all ${accentBorder} ${isOpen ? 'shadow-md' : ''}`}>
+      <button
+        onClick={onToggle}
+        className={`w-full flex items-center justify-between p-4 ${accentBg} hover:brightness-95 transition-all`}
+        data-testid={`accordion-${id}`}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center`}>
+            <Icon className={`w-5 h-5 ${iconColor}`} />
+          </div>
+          <div className="text-left">
+            <h3 className="font-semibold text-[#111827]">{title}</h3>
+            <p className="text-xs text-[#6B7280]">{subtitle}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`text-xl font-bold ${iconColor}`}>{formatCurrency(value)}</span>
+          {isOpen ? (
+            <ChevronUp className="w-5 h-5 text-[#6B7280]" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-[#6B7280]" />
+          )}
+        </div>
+      </button>
+      
+      {isOpen && (
+        <div className="p-4 bg-white border-t border-slate-100">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StepTheMath({
   inputs,
+  updateInput,
   calculations,
   onNext,
   onBack,
 }: StepTheMathProps) {
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
 
   const chartData = calculations.currentTrajectory.map((point, i) => ({
@@ -32,6 +99,10 @@ export default function StepTheMath({
     potential: calculations.abridgeTrajectory[i]?.value || 0,
     gap: [point.value, calculations.abridgeTrajectory[i]?.value || 0],
   }));
+
+  const toggleAccordion = (id: string) => {
+    setOpenAccordion(openAccordion === id ? null : id);
+  };
 
   const CustomDot = (props: any) => {
     const { cx, cy, payload, dataKey } = props;
@@ -52,6 +123,8 @@ export default function StepTheMath({
     return null;
   };
 
+  const eligibleEncounters = Math.round(inputs.annualEncounters * ABRIDGE_BENCHMARKS.utilization / 100);
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -64,50 +137,170 @@ export default function StepTheMath({
       </div>
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-6">
-        <div className="flex items-center gap-3 mb-5">
-          <Calculator className="w-5 h-5 text-[#EA2C00]" />
-          <h2 className="text-lg font-bold text-[#111827]">Your Annual Value Gap</h2>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <Calculator className="w-5 h-5 text-[#EA2C00]" />
+            <h2 className="text-lg font-bold text-[#111827]">Your Annual Value Gap</h2>
+          </div>
+          <p className="text-xs text-[#6B7280] flex items-center gap-1">
+            <Edit3 className="w-3 h-3" />
+            Click to expand & edit
+          </p>
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
-              <div>
-                <h3 className="font-semibold text-[#111827]">Utilization Gap</h3>
-                <p className="text-xs text-[#6B7280]">
-                  {inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}%
-                </p>
+          <GapAccordion
+            id="utilization"
+            icon={BarChart3}
+            iconBg="bg-blue-100"
+            iconColor="text-blue-600"
+            accentBg="bg-blue-50"
+            accentBorder="border-blue-100"
+            title="Utilization Gap"
+            subtitle={`${inputs.utilization}% → ${ABRIDGE_BENCHMARKS.utilization}%`}
+            value={calculations.utilizationGapValue}
+            isOpen={openAccordion === 'utilization'}
+            onToggle={() => toggleAccordion('utilization')}
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-[#6B7280] mb-1 block">Your Current Utilization</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={inputs.utilization}
+                      onChange={(e) => updateInput('utilization', parseFloat(e.target.value) || 0)}
+                      className="h-9"
+                      data-testid="input-utilization"
+                    />
+                    <span className="text-sm text-[#6B7280]">%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-[#6B7280] mb-1 block">Benchmark Target</label>
+                  <div className="h-9 flex items-center px-3 bg-slate-50 rounded-md border text-sm text-[#374151]">
+                    {ABRIDGE_BENCHMARKS.utilization}%
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-slate-50 rounded-lg text-xs text-[#6B7280]">
+                <p className="font-medium text-[#374151] mb-2">How we calculate this:</p>
+                <div className="space-y-1 font-mono">
+                  <p>Gap: ({ABRIDGE_BENCHMARKS.utilization}% - {inputs.utilization}%) = {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}%</p>
+                  <p>Additional encounters: {inputs.annualEncounters.toLocaleString()} × {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}% = {Math.round(inputs.annualEncounters * (ABRIDGE_BENCHMARKS.utilization - inputs.utilization) / 100).toLocaleString()}</p>
+                  <p>Time value: × {ABRIDGE_BENCHMARKS.timeSavedAvg} min × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% conversion</p>
+                  <p className="font-bold text-blue-600 pt-1">= {formatCurrency(calculations.utilizationGapValue)}/year</p>
+                </div>
               </div>
             </div>
-            <span className="text-xl font-bold text-blue-600">{formatCurrency(calculations.utilizationGapValue)}</span>
-          </div>
+          </GapAccordion>
 
-          <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-100">
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-purple-600" />
-              <div>
-                <h3 className="font-semibold text-[#111827]">Efficiency Gap</h3>
-                <p className="text-xs text-[#6B7280]">
-                  {inputs.timeSavedPerEncounter} min → {ABRIDGE_BENCHMARKS.timeSavedAvg} min saved
-                </p>
+          <GapAccordion
+            id="efficiency"
+            icon={Clock}
+            iconBg="bg-purple-100"
+            iconColor="text-purple-600"
+            accentBg="bg-purple-50"
+            accentBorder="border-purple-100"
+            title="Efficiency Gap"
+            subtitle={`${inputs.timeSavedPerEncounter} min → ${ABRIDGE_BENCHMARKS.timeSavedAvg} min saved`}
+            value={calculations.efficiencyGapValue}
+            isOpen={openAccordion === 'efficiency'}
+            onToggle={() => toggleAccordion('efficiency')}
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-[#6B7280] mb-1 block">Current Time Saved/Encounter</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={inputs.timeSavedPerEncounter}
+                      onChange={(e) => updateInput('timeSavedPerEncounter', parseFloat(e.target.value) || 0)}
+                      className="h-9"
+                      data-testid="input-time-saved"
+                    />
+                    <span className="text-sm text-[#6B7280]">min</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-[#6B7280] mb-1 block">Benchmark Target</label>
+                  <div className="h-9 flex items-center px-3 bg-slate-50 rounded-md border text-sm text-[#374151]">
+                    {ABRIDGE_BENCHMARKS.timeSavedAvg} min
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-slate-50 rounded-lg text-xs text-[#6B7280]">
+                <p className="font-medium text-[#374151] mb-2">How we calculate this:</p>
+                <div className="space-y-1 font-mono">
+                  <p>Time gap: ({ABRIDGE_BENCHMARKS.timeSavedAvg} - {inputs.timeSavedPerEncounter}) = {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min/encounter</p>
+                  <p>Eligible encounters: {eligibleEncounters.toLocaleString()} (at {ABRIDGE_BENCHMARKS.utilization}% utilization)</p>
+                  <p>Hours saved: {((ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter) * eligibleEncounters / 60).toFixed(0)} hours/year</p>
+                  <p>Value: × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% conversion</p>
+                  <p className="font-bold text-purple-600 pt-1">= {formatCurrency(calculations.efficiencyGapValue)}/year</p>
+                </div>
               </div>
             </div>
-            <span className="text-xl font-bold text-purple-600">{formatCurrency(calculations.efficiencyGapValue)}</span>
-          </div>
+          </GapAccordion>
 
-          <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-            <div className="flex items-center gap-3">
-              <DollarSign className="w-5 h-5 text-emerald-600" />
-              <div>
-                <h3 className="font-semibold text-[#111827]">Quality Gap (wRVU)</h3>
-                <p className="text-xs text-[#6B7280]">
-                  +{inputs.wrvuLift}% → +{ABRIDGE_BENCHMARKS.wrvuLift}% lift
-                </p>
+          <GapAccordion
+            id="quality"
+            icon={DollarSign}
+            iconBg="bg-emerald-100"
+            iconColor="text-emerald-600"
+            accentBg="bg-emerald-50"
+            accentBorder="border-emerald-100"
+            title="Quality Gap (wRVU)"
+            subtitle={`+${inputs.wrvuLift}% → +${ABRIDGE_BENCHMARKS.wrvuLift}% lift`}
+            value={calculations.wrvuGapValue}
+            isOpen={openAccordion === 'quality'}
+            onToggle={() => toggleAccordion('quality')}
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-[#6B7280] mb-1 block">Current wRVU Lift</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={inputs.wrvuLift}
+                      onChange={(e) => updateInput('wrvuLift', parseFloat(e.target.value) || 0)}
+                      className="h-9"
+                      data-testid="input-wrvu-lift"
+                    />
+                    <span className="text-sm text-[#6B7280]">%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-[#6B7280] mb-1 block">Benchmark Target</label>
+                  <div className="h-9 flex items-center px-3 bg-slate-50 rounded-md border text-sm text-[#374151]">
+                    +{ABRIDGE_BENCHMARKS.wrvuLift}%
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-slate-50 rounded-lg text-xs text-[#6B7280]">
+                <p className="font-medium text-[#374151] mb-2">How we calculate this:</p>
+                <div className="space-y-1 font-mono">
+                  <p>wRVU gap: ({ABRIDGE_BENCHMARKS.wrvuLift}% - {inputs.wrvuLift}%) = {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}%</p>
+                  <p>Base wRVU: {VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU/encounter × {eligibleEncounters.toLocaleString()} encounters</p>
+                  <p>Additional wRVU: × {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}%</p>
+                  <p>Value: × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution</p>
+                  <p className="font-bold text-emerald-600 pt-1">= {formatCurrency(calculations.wrvuGapValue)}/year</p>
+                </div>
+              </div>
+              
+              <div className="p-3 bg-amber-50 rounded-lg border border-amber-100 text-xs text-amber-800">
+                <p className="font-medium">Note on wRVU lift:</p>
+                <p className="mt-1">Higher lift often indicates room for improvement in prior documentation. Lower lift with already-strong documentation is equally healthy.</p>
               </div>
             </div>
-            <span className="text-xl font-bold text-emerald-600">{formatCurrency(calculations.wrvuGapValue)}</span>
-          </div>
+          </GapAccordion>
         </div>
 
         <div className="mt-4 bg-slate-900 text-white rounded-lg p-4 flex items-center justify-between">
@@ -294,29 +487,6 @@ export default function StepTheMath({
       {showMethodology && (
         <div className="bg-slate-50 rounded-lg border border-slate-200 p-5 space-y-4 text-sm">
           <div>
-            <h4 className="font-semibold text-[#111827] mb-2">How We Calculate Each Gap</h4>
-            <div className="space-y-3 text-xs text-[#6B7280]">
-              <div className="p-3 bg-white rounded border">
-                <p className="font-medium text-blue-600 mb-1">Utilization Gap</p>
-                <code className="text-[#374151]">
-                  ({ABRIDGE_BENCHMARKS.utilization}% - {inputs.utilization}%) × {inputs.annualEncounters.toLocaleString()} encounters × {ABRIDGE_BENCHMARKS.timeSavedAvg} min × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% conversion
-                </code>
-              </div>
-              <div className="p-3 bg-white rounded border">
-                <p className="font-medium text-purple-600 mb-1">Efficiency Gap</p>
-                <code className="text-[#374151]">
-                  ({ABRIDGE_BENCHMARKS.timeSavedAvg} - {inputs.timeSavedPerEncounter}) min × eligible encounters ÷ 60 × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% conversion
-                </code>
-              </div>
-              <div className="p-3 bg-white rounded border">
-                <p className="font-medium text-emerald-600 mb-1">Quality Gap (wRVU)</p>
-                <code className="text-[#374151]">
-                  ({ABRIDGE_BENCHMARKS.wrvuLift} - {inputs.wrvuLift})% × {VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU/enc × eligible encounters × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution
-                </code>
-              </div>
-            </div>
-          </div>
-          <div>
             <h4 className="font-semibold text-[#111827] mb-2">Key Assumptions</h4>
             <ul className="space-y-1 text-[#6B7280]">
               <li>• Provider hourly rate: ${VALUE_ASSUMPTIONS.hourlyRate}/hour</li>
@@ -352,7 +522,7 @@ export default function StepTheMath({
           className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
           data-testid="button-next"
         >
-          See Your Options
+          What It Takes
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
