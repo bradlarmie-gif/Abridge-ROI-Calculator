@@ -869,43 +869,52 @@ function CareSettingRow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full text-left rounded-xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+      className={`group relative w-full text-left rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
         disabled
           ? "cursor-not-allowed bg-white border-2 border-dashed border-[#D1D5DB]"
           : selected
-            ? "bg-[rgba(234,44,0,0.02)] border-2 border-[#EA2C00]"
-            : "bg-white border-2 border-[#E5E7EB] hover:border-[#EA2C00] hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(0,0,0,0.06)] cursor-pointer"
+            ? "bg-white border-2 border-[#EA2C00] shadow-lg shadow-[#EA2C00]/10 scale-[1.02]"
+            : "bg-white border-2 border-slate-200 shadow-sm hover:border-slate-300 hover:-translate-y-1 hover:shadow-xl hover:scale-[1.01] cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      <div className="flex items-start gap-6 p-6">
+      {/* Top accent bar */}
+      <div 
+        className={`absolute top-0 left-0 right-0 h-1 transition-opacity duration-300 ${
+          selected 
+            ? "opacity-100 bg-[#EA2C00]" 
+            : "opacity-0 group-hover:opacity-100 bg-[#EA2C00]"
+        }`}
+      />
+      
+      <div className="flex items-start gap-5 p-6">
         <div
-          className={`flex items-center justify-center w-12 h-12 rounded-[10px] flex-shrink-0 transition-all duration-300 ${
+          className={`flex items-center justify-center w-14 h-14 rounded-2xl flex-shrink-0 transition-all duration-300 ${
             selected
-              ? "bg-[rgba(234,44,0,0.1)]"
+              ? "bg-[#FEF0EC]"
               : disabled
-                ? "bg-[#F9FAFB]"
-                : "bg-[#F9FAFB] group-hover:bg-[rgba(234,44,0,0.08)]"
+                ? "bg-slate-100"
+                : "bg-slate-100 group-hover:bg-[#FEF0EC]"
           }`}
         >
           <Icon
-            className={`w-6 h-6 transition-colors duration-300 ${selected ? "text-[#EA2C00]" : disabled ? "text-[#9CA3AF]" : "text-[#6B7280] group-hover:text-[#EA2C00]"}`}
+            className={`w-7 h-7 transition-colors duration-300 ${selected ? "text-[#EA2C00]" : disabled ? "text-slate-400" : "text-slate-500 group-hover:text-[#EA2C00]"}`}
           />
         </div>
         
         <div className="flex-1 min-w-0">
           <span
             className={`text-lg font-semibold block ${
-              disabled ? "text-[#9CA3AF]" : "text-[#111827]"
+              disabled ? "text-slate-400" : "text-slate-900"
             }`}
           >
             {label}
           </span>
-          <p className={`text-sm mt-1 leading-relaxed ${disabled ? "text-[#9CA3AF]" : "text-[#6B7280]"}`}>
+          <p className={`text-sm mt-1 leading-relaxed ${disabled ? "text-slate-400" : "text-slate-500"}`}>
             {description}
           </p>
           {disabled && (
-            <p className="text-xs text-[#9CA3AF] italic mt-2">Coming soon</p>
+            <p className="text-xs text-slate-400 italic mt-2">Coming soon</p>
           )}
         </div>
       </div>
@@ -2468,7 +2477,7 @@ export default function ObjectiveSelectionScreen({
   const stepName = stepNames[currentStep - 1] || "";
   
   return (
-    <div className="min-h-screen flex flex-col relative font-sans bg-neutral-50">
+    <div className="min-h-screen flex flex-col relative font-sans bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <UnifiedHeader 
         pathType="explore"
         currentStep={currentStep}
@@ -2546,7 +2555,7 @@ export default function ObjectiveSelectionScreen({
 
               {/* Right: Selection Sidebar */}
               <div className="hidden lg:block">
-                <div className="sticky top-[100px] bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
+                <div className="sticky top-[100px] bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                   <div className="px-8 py-6 border-b border-[#E5E7EB]">
                     <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
                       Your Selection
@@ -2718,7 +2727,7 @@ export default function ObjectiveSelectionScreen({
               
               {/* Right: Selection Sidebar */}
               <div className="hidden lg:block">
-                <div className="sticky top-[100px] bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden">
+                <div className="sticky top-[100px] bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                   <div className="px-8 py-6 border-b border-[#E5E7EB]">
                     <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
                       Your Selections
