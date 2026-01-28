@@ -200,8 +200,8 @@ export default function StepWhereYouAre({
     inputs.satisfaction > 0;
 
   return (
-    <div className="flex gap-8">
-      <div className="flex-1 space-y-8">
+    <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-8">
+      <div className="space-y-8">
         <div className="text-center lg:text-left">
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
             Where You Are Today
@@ -388,7 +388,7 @@ export default function StepWhereYouAre({
         </div>
       </div>
 
-      <div className="hidden lg:block w-72 flex-shrink-0">
+      <div className="hidden lg:block">
         <LiveReceipt inputs={inputs} calculations={calculations} />
       </div>
     </div>
