@@ -863,55 +863,62 @@ function CareSettingRow({
   onClick: () => void;
 }) {
   const description = SETTING_DESCRIPTIONS[settingKey] || "";
+  const drivers = SETTING_DRIVERS[settingKey] || [];
 
   const buttonContent = (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full text-left rounded-xl transition-all duration-200 ${
+      className={`group relative w-full h-full text-left rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
         disabled
-          ? "cursor-not-allowed opacity-50"
+          ? "cursor-not-allowed opacity-50 border-dashed border-slate-300"
           : selected
-            ? "bg-white ring-2 ring-[#EA2C00] shadow-lg"
-            : "bg-white ring-1 ring-slate-200 hover:ring-slate-300 hover:shadow-md cursor-pointer"
+            ? "border-[#EA2C00] shadow-xl shadow-[#EA2C00]/10 scale-[1.02] bg-white"
+            : "border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-lg bg-white"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      <div className="flex items-center gap-4 p-4">
-        {/* Icon */}
-        <div
-          className={`flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0 transition-all duration-200 ${
+      {/* Top accent bar */}
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA2C00] to-[#ff6b4a] transition-opacity duration-300 ${
+        selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+      }`} />
+      
+      <div className="p-6 md:p-7">
+        {/* Header row */}
+        <div className="flex items-start justify-between mb-5">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
             selected
-              ? "bg-[#EA2C00]"
-              : "bg-slate-100 group-hover:bg-slate-50"
-          }`}
-        >
-          <Icon
-            className={`w-6 h-6 transition-colors duration-200 ${
-              selected ? "text-white" : "text-slate-600"
-            }`}
-          />
+              ? "bg-[#EA2C00] text-white"
+              : "bg-slate-100 text-slate-600 group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00]"
+          }`}>
+            <Icon className="w-7 h-7" />
+          </div>
+          <ChevronRight className={`w-5 h-5 transition-all duration-300 ${
+            selected 
+              ? "text-[#EA2C00] translate-x-1" 
+              : "text-slate-300 group-hover:text-slate-400 group-hover:translate-x-1"
+          }`} />
         </div>
         
-        {/* Text */}
-        <div className="flex-1 min-w-0">
-          <span className={`text-base font-semibold block ${selected ? "text-slate-900" : "text-slate-800"}`}>
-            {label}
-          </span>
-          <p className="text-sm text-slate-500 leading-snug">{description}</p>
-        </div>
-
-        {/* Radio indicator */}
-        <div 
-          className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-            selected 
-              ? "border-[#EA2C00] bg-[#EA2C00]" 
-              : "border-slate-300 group-hover:border-slate-400"
-          }`}
-        >
-          {selected && <div className="w-2 h-2 rounded-full bg-white" />}
-        </div>
+        {/* Title and description */}
+        <h3 className="text-xl font-bold text-slate-900 mb-2">{label}</h3>
+        <p className="text-slate-500 text-sm leading-relaxed mb-5">{description}</p>
+        
+        {/* Drivers list */}
+        {drivers.length > 0 && (
+          <div className="space-y-2 pt-4 border-t border-slate-100">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Key value drivers
+            </p>
+            {drivers.slice(0, 3).map((driver, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]/60" />
+                <span>{driver}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </button>
   );
@@ -2508,8 +2515,8 @@ export default function ObjectiveSelectionScreen({
               </div>
             </div>
 
-            <div className="max-w-3xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                 {ALL_SETTINGS.map((setting) => {
                   return (
                     <CareSettingRow
@@ -2525,21 +2532,21 @@ export default function ObjectiveSelectionScreen({
                 })}
               </div>
               
-              {/* Inline continue button */}
-              <div className="mt-8 flex justify-center">
+              {/* Continue button */}
+              <div className="mt-10 flex justify-center">
                 <button
                   type="button"
                   disabled={!canContinuePage1}
                   onClick={handleContinueToPage2}
-                  className={`inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                  className={`inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl font-semibold transition-all duration-200 ${
                     canContinuePage1
-                      ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-sm hover:shadow-md"
+                      ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-lg shadow-[#EA2C00]/20 hover:shadow-xl hover:-translate-y-0.5"
                       : "bg-slate-100 text-slate-400 cursor-not-allowed"
                   }`}
                   data-testid="button-continue-to-priorities"
                 >
                   Continue
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
             </div>
