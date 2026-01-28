@@ -2,7 +2,6 @@ import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "luc
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import { PrivacyNotice } from "@/components/PrivacyNotice";
 import abridgeABg from "@assets/abridge-a-bg_1769025961657.png";
 
 interface JourneySelectorProps {
@@ -180,9 +179,18 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 md:mb-4 tracking-tight px-2">
             Model the impact of ambient documentation
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-slate-500 max-w-2xl mx-auto px-2 leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-slate-500 max-w-2xl mx-auto px-2 leading-relaxed mb-4">
             Understand where the value actually comes from.
           </p>
+          <button
+            onClick={onSelectLearn}
+            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#EA2C00] transition-colors"
+            data-testid="link-learn"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Learn the methodology</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </motion.section>
 
         <section className="mb-8 md:mb-12">
@@ -234,43 +242,14 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           </div>
         </section>
 
-        <motion.section 
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-          className="max-w-5xl mx-auto mb-6 md:mb-8"
-        >
-          <div 
-            onClick={onSelectLearn}
-            className="flex flex-wrap items-center justify-center gap-2 md:gap-3 py-3 md:py-4 px-4 md:px-6 bg-[#F9FAFB] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[#F3F4F6]"
-            data-testid="link-learn"
-          >
-            <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-[#6B7280]" />
-            <span className="text-[#6B7280] text-xs md:text-sm text-center">Just want to understand how ambient ROI works?</span>
-            <span className="text-[#EA2C00] text-xs md:text-sm font-medium flex items-center gap-1">
-              Learn the methodology
-              <ChevronRight className="w-4 h-4" />
-            </span>
-          </div>
-        </motion.section>
-
-        <motion.section 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
-          className="max-w-2xl mx-auto mb-8 md:mb-12"
-        >
-          <PrivacyNotice />
-        </motion.section>
-
         <motion.footer 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.7 }}
-          className="border-t border-[#F3F4F6] pt-6 md:pt-8 text-center"
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="text-center pt-4 md:pt-6"
         >
-          <p className="text-xs md:text-sm text-[#9CA3AF]">
-            Used by 200+ health system partners
+          <p className="text-xs text-slate-400">
+            Estimates are for planning purposes. Results should be validated with your organization's data.
           </p>
         </motion.footer>
       </div>
