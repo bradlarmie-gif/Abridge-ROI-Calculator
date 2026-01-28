@@ -147,6 +147,34 @@ const METRIC_CONFIG = {
     isPositiveGood: true,
     step: 1,
   },
+  utilization: {
+    name: "Utilization Rate",
+    description: "Adoption across eligible providers",
+    icon: TrendingUp,
+    iconBg: "bg-teal-50",
+    iconColor: "text-teal-600",
+    unit: "%",
+    benchmarkText: "Strong deployments reach 75%+ utilization",
+    benchmarkWhisper: "Typical range: 40-90% depending on rollout phase",
+    benchmarkMin: 60,
+    benchmarkMax: 85,
+    isPositiveGood: true,
+    step: 1,
+  },
+  diagnosisCapture: {
+    name: "Diagnosis Capture",
+    description: "HCC/RAF score improvement",
+    icon: FileText,
+    iconBg: "bg-violet-50",
+    iconColor: "text-violet-600",
+    unit: "diagnoses/enc",
+    benchmarkText: "Typical improvement: 0.5-2 additional diagnoses per encounter",
+    benchmarkWhisper: "Measured via HCC recapture rate or RAF score delta",
+    benchmarkMin: 0.5,
+    benchmarkMax: 2,
+    isPositiveGood: true,
+    step: 0.1,
+  },
 };
 
 // Level of Service - using Level 1-5
@@ -866,15 +894,51 @@ export default function ExpandDataEntry({
     return total > 0 ? weighted / total : null;
   };
 
-  // Determine which metrics are ordered: PRIMARY first, then SECONDARY
+  // Organize metrics by tier for ordering and context
+  const TIER_1 = ["wrvuCapture", "levelOfService", "diagnosisCapture"] as MetricType[];
+  const TIER_2 = ["timeSavings", "workOutsideWork"] as MetricType[];
+  const TIER_3 = ["utilization", "chartClosure", "clinicianSatisfaction"] as MetricType[];
+  
+  const getMetricTier = (metricId: MetricType): 1 | 2 | 3 => {
+    if (TIER_1.includes(metricId)) return 1;
+    if (TIER_2.includes(metricId)) return 2;
+    return 3;
+  };
+  
+  const getTierConfig = (tier: 1 | 2 | 3) => ({
+    1: { label: "Core Financial Value", color: "emerald", description: "Direct revenue connection" },
+    2: { label: "Operational Efficiency", color: "blue", description: "Time that can become dollars" },
+    3: { label: "Quality Indicators", color: "amber", description: "Proof points that matter" },
+  }[tier]);
+
+  // Determine which metrics are ordered by tier
   const orderedMetrics = useMemo(() => {
-    const primary = ["wrvuCapture", "timeSavings", "chartClosure"] as MetricType[];
-    const secondary = ["levelOfService", "workOutsideWork", "clinicianSatisfaction"] as MetricType[];
     return [
-      ...primary.filter(m => selectedMetrics.includes(m)),
-      ...secondary.filter(m => selectedMetrics.includes(m)),
+      ...TIER_1.filter(m => selectedMetrics.includes(m)),
+      ...TIER_2.filter(m => selectedMetrics.includes(m)),
+      ...TIER_3.filter(m => selectedMetrics.includes(m)),
     ];
   }, [selectedMetrics]);
+  
+  // Calculate completion status
+  const completedMetrics = orderedMetrics.filter(metricId => {
+    const data = metricsData[metricId];
+    if (metricId === "levelOfService") {
+      const losData = data as typeof metricsData.levelOfService;
+      return losData.averageBefore !== null && losData.averageAfter !== null;
+    }
+    if (metricId === "chartClosure") {
+      const closureData = data as typeof metricsData.chartClosure;
+      return closureData.sameDayBefore !== null && closureData.sameDayAfter !== null;
+    }
+    const simpleData = data as { before: number | null; after: number | null };
+    return simpleData.before !== null && simpleData.after !== null;
+  });
+  
+  // Guard against division by zero
+  const progressPercent = orderedMetrics.length > 0 
+    ? Math.round((completedMetrics.length / orderedMetrics.length) * 100) 
+    : 0;
 
   // Render a metric section
   const renderMetricSection = (metricId: MetricType) => {
@@ -1249,18 +1313,75 @@ export default function ExpandDataEntry({
       <UnifiedHeaderSpacer />
 
       <main className="max-w-3xl mx-auto px-6 py-6 md:py-8 pb-10">
-        {/* Title */}
+        {/* Soul Hero */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
-            Enter Your Results
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
+            Your Numbers, Your Story
           </h1>
-          <p className="text-[#6B7280]">
-            {deploymentData.providers} providers · {months} months on Abridge · {selectedMetrics.length} metrics
+          <p className="text-[#6B7280] mb-4">
+            Each metric you enter becomes part of your value narrative. We'll show you what it means as you go.
           </p>
+          
+          {/* Progress Bar */}
+          <div className="p-4 bg-white border border-neutral-200 rounded-xl" data-testid="progress-container">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-[#111827]" data-testid="text-progress-count">
+                  {completedMetrics.length} of {orderedMetrics.length} metrics documented
+                </span>
+                {completedMetrics.length === orderedMetrics.length && orderedMetrics.length > 0 && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold" data-testid="badge-complete">
+                    <Check className="w-3 h-3" />
+                    Complete
+                  </span>
+                )}
+              </div>
+              <span className="text-sm text-[#6B7280]" data-testid="text-deployment-info">
+                {deploymentData.providers} providers · {months} months
+              </span>
+            </div>
+            <div className="h-2 bg-neutral-100 rounded-full overflow-hidden" data-testid="progress-bar-track">
+              <motion.div 
+                className={`h-full rounded-full ${completedMetrics.length === orderedMetrics.length && orderedMetrics.length > 0 ? "bg-emerald-500" : "bg-[#EA2C00]"}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                data-testid="progress-bar-fill"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Metric Sections */}
-        {orderedMetrics.map(metricId => renderMetricSection(metricId))}
+        {/* Metric Sections with Tier Headers */}
+        {orderedMetrics.map((metricId, index) => {
+          const tier = getMetricTier(metricId);
+          const tierConfig = getTierConfig(tier);
+          const prevTier = index > 0 ? getMetricTier(orderedMetrics[index - 1]) : 0;
+          const showTierHeader = tier !== prevTier;
+          
+          return (
+            <Fragment key={metricId}>
+              {showTierHeader && tierConfig && (
+                <div className={`flex items-center gap-2 mb-4 mt-8 first:mt-0`} data-testid={`tier-header-${tier}`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    tier === 1 ? "bg-emerald-500" : tier === 2 ? "bg-blue-500" : "bg-amber-500"
+                  }`} />
+                  <span className={`text-sm font-semibold ${
+                    tier === 1 ? "text-emerald-700" : tier === 2 ? "text-blue-700" : "text-amber-700"
+                  }`} data-testid={`text-tier-label-${tier}`}>
+                    {tierConfig.label}
+                  </span>
+                  <span className={`text-xs ${
+                    tier === 1 ? "text-emerald-600" : tier === 2 ? "text-blue-600" : "text-amber-600"
+                  }`} data-testid={`text-tier-description-${tier}`}>
+                    {tierConfig.description}
+                  </span>
+                </div>
+              )}
+              {renderMetricSection(metricId)}
+            </Fragment>
+          );
+        })}
 
         {/* Actions */}
         <div className="flex justify-end mt-8">

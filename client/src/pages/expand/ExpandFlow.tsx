@@ -32,6 +32,8 @@ export interface MetricEntryModes {
   levelOfService: MetricEntryMode;
   workOutsideWork: MetricEntryMode;
   clinicianSatisfaction: MetricEntryMode;
+  utilization: MetricEntryMode;
+  diagnosisCapture: MetricEntryMode;
 }
 
 // Trend data entry for monthly values
@@ -48,6 +50,8 @@ export interface MetricTrendData {
   levelOfService: TrendDataEntry;
   workOutsideWork: TrendDataEntry;
   clinicianSatisfaction: TrendDataEntry;
+  utilization: TrendDataEntry;
+  diagnosisCapture: TrendDataEntry;
 }
 
 // Track which metrics have trend data enabled
@@ -58,6 +62,8 @@ export interface MetricEntryModeState {
   levelOfService: "quick" | "trend";
   workOutsideWork: "quick" | "trend";
   clinicianSatisfaction: "quick" | "trend";
+  utilization: "quick" | "trend";
+  diagnosisCapture: "quick" | "trend";
 }
 
 export interface TimelineDataPoint {
@@ -110,6 +116,16 @@ export interface ClinicianSatisfactionData {
   recommendRate: number | null;
 }
 
+export interface UtilizationData {
+  before: number | null;
+  after: number | null;
+}
+
+export interface DiagnosisCaptureData {
+  before: number | null;
+  after: number | null;
+}
+
 export interface MetricsData {
   timeSavings: TimeSavingsData;
   workOutsideWork: WorkOutsideWorkData;
@@ -117,6 +133,8 @@ export interface MetricsData {
   wrvuCapture: WrvuCaptureData;
   chartClosure: ChartClosureData;
   clinicianSatisfaction: ClinicianSatisfactionData;
+  utilization: UtilizationData;
+  diagnosisCapture: DiagnosisCaptureData;
 }
 
 export type MetricType = 
@@ -125,7 +143,9 @@ export type MetricType =
   | "levelOfService" 
   | "wrvuCapture" 
   | "chartClosure" 
-  | "clinicianSatisfaction";
+  | "clinicianSatisfaction"
+  | "utilization"
+  | "diagnosisCapture";
 
 export interface ExpandFlowProps {
   onBackToJourney?: () => void;
@@ -201,6 +221,8 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
       useDetailed: false,
     },
     clinicianSatisfaction: { before: null, after: null, recommendRate: null },
+    utilization: { before: null, after: null },
+    diagnosisCapture: { before: null, after: null },
   });
   
   // Trend data for each metric (monthly values)
@@ -211,6 +233,8 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     levelOfService: { baseline: null, monthlyData: Array(12).fill(null) },
     workOutsideWork: { baseline: null, monthlyData: Array(12).fill(null) },
     clinicianSatisfaction: { baseline: null, monthlyData: Array(12).fill(null) },
+    utilization: { baseline: null, monthlyData: Array(12).fill(null) },
+    diagnosisCapture: { baseline: null, monthlyData: Array(12).fill(null) },
   });
   
   // Track which metrics are using trend entry mode
@@ -221,6 +245,8 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     levelOfService: "quick",
     workOutsideWork: "quick",
     clinicianSatisfaction: "quick",
+    utilization: "quick",
+    diagnosisCapture: "quick",
   });
 
   const goNext = () => {

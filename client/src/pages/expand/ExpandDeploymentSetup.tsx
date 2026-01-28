@@ -35,6 +35,15 @@ const TIER_1_METRICS = [
     icon: FileText,
     recommended: true,
   },
+  {
+    id: "diagnosisCapture" as MetricType,
+    name: "Diagnosis Capture",
+    description: "HCC/RAF score improvement from complete documentation",
+    dollarizable: "Direct risk adjustment revenue impact",
+    source: "Clarity/Epic",
+    icon: Target,
+    recommended: false,
+  },
 ];
 
 // TIER 2: Operational Efficiency - Time that can become dollars
@@ -61,6 +70,15 @@ const TIER_2_METRICS = [
 
 // TIER 3: Quality Indicators - Important proof points
 const TIER_3_METRICS = [
+  {
+    id: "utilization" as MetricType,
+    name: "Utilization Rate",
+    description: "Percentage of eligible providers actively using Abridge",
+    dollarizable: "Unlocks full value of other metrics",
+    source: "Clarity/Epic",
+    icon: TrendingUp,
+    recommended: false,
+  },
   {
     id: "chartClosure" as MetricType,
     name: "Same-Day Chart Closure",
