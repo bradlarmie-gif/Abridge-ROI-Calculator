@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Target, Award, BarChart3, Clock, DollarSign, Smile, Moon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, Award, CheckCircle, BarChart3, Clock, DollarSign, Smile, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ABRIDGE_BENCHMARKS, type SwitchInputs, type SwitchCalculations } from "@/lib/switchGapCalculator";
 
@@ -10,53 +10,125 @@ interface StepWhatGoodLooksLikeProps {
   onBack: () => void;
 }
 
-const BENCHMARKS = [
-  {
-    icon: BarChart3,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-    metric: "Utilization",
-    value: `${ABRIDGE_BENCHMARKS.utilization}%`,
-    label: "of encounters documented",
-    context: "Not 40%. Not 60%. Mature implementations consistently hit this mark within 3-4 months."
-  },
-  {
-    icon: Clock,
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-    metric: "Efficiency",
-    value: `${ABRIDGE_BENCHMARKS.timeSavedAvg} min`,
-    label: "saved per encounter",
-    context: "Real time back in providers' days. That's 6-8 hours per provider per week at full utilization."
-  },
-  {
-    icon: DollarSign,
-    iconBg: "bg-emerald-100",
-    iconColor: "text-emerald-600",
-    metric: "Quality",
-    value: `+${ABRIDGE_BENCHMARKS.wrvuLift}%`,
-    label: "wRVU lift",
-    context: "Better documentation means better capture. The notes support the work you're already doing."
-  },
-  {
-    icon: Smile,
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
-    metric: "Satisfaction",
-    value: `${ABRIDGE_BENCHMARKS.satisfaction}%`,
-    label: "would recommend",
-    context: "When providers love the tool, they use it. When they use it, everyone wins."
-  },
-  {
-    icon: Moon,
-    iconBg: "bg-indigo-100",
-    iconColor: "text-indigo-600",
-    metric: "After-Hours",
-    value: `-${ABRIDGE_BENCHMARKS.afterHoursReduction} hrs`,
-    label: "per week",
-    context: "Providers finish their notes before leaving clinic. Evenings belong to families again."
-  }
-];
+interface DimensionMeterProps {
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  currentValue: number;
+  currentLabel: string;
+  rangeMin: number;
+  rangeMax: number;
+  rangeLabel: string;
+  unit: string;
+  prefix?: string;
+  maxScale: number;
+  context: string;
+  isInverted?: boolean;
+}
+
+function DimensionMeter({
+  icon: Icon,
+  iconBg,
+  iconColor,
+  label,
+  currentValue,
+  currentLabel,
+  rangeMin,
+  rangeMax,
+  rangeLabel,
+  unit,
+  prefix = "",
+  maxScale,
+  context,
+  isInverted = false,
+}: DimensionMeterProps) {
+  const currentPercent = Math.min(100, (currentValue / maxScale) * 100);
+  const rangeMinPercent = (rangeMin / maxScale) * 100;
+  const rangeMaxPercent = Math.min(100, (rangeMax / maxScale) * 100);
+  
+  const isInRange = currentValue >= rangeMin && currentValue <= rangeMax;
+  const isBelowRange = currentValue < rangeMin;
+  
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-[#111827]">{label}</h3>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <span className="text-xs text-[#6B7280] uppercase tracking-wide">You're at</span>
+          <div className={`text-2xl font-bold ${isBelowRange ? 'text-amber-600' : 'text-emerald-600'}`}>
+            {prefix}{currentValue}{unit}
+          </div>
+        </div>
+        <div className="text-right">
+          <span className="text-xs text-[#6B7280] uppercase tracking-wide">Top performers</span>
+          <div className="text-2xl font-bold text-[#111827]">
+            {prefix}{rangeMin}–{rangeMax}{unit}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative h-3 bg-slate-100 rounded-full overflow-visible mb-3">
+        <div 
+          className="absolute h-full bg-gradient-to-r from-emerald-200 to-emerald-300 rounded-full"
+          style={{ 
+            left: `${rangeMinPercent}%`, 
+            width: `${rangeMaxPercent - rangeMinPercent}%` 
+          }}
+        />
+        
+        <div 
+          className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md transition-all ${
+            isBelowRange ? 'bg-amber-500' : 'bg-emerald-500'
+          }`}
+          style={{ left: `${currentPercent}%`, transform: 'translate(-50%, -50%)' }}
+        />
+        
+        <div 
+          className="absolute -top-6 text-xs font-medium text-slate-500"
+          style={{ left: `${rangeMinPercent}%`, transform: 'translateX(-50%)' }}
+        >
+          {prefix}{rangeMin}{unit}
+        </div>
+        <div 
+          className="absolute -top-6 text-xs font-medium text-slate-500"
+          style={{ left: `${rangeMaxPercent}%`, transform: 'translateX(-50%)' }}
+        >
+          {prefix}{rangeMax}{unit}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-xs mb-4">
+        <span className="text-slate-400">0{unit}</span>
+        <span className="text-slate-400">{maxScale}{unit}</span>
+      </div>
+
+      {isBelowRange && (
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
+          <p className="text-sm text-amber-800">
+            <span className="font-semibold">The opportunity:</span> {context}
+          </p>
+        </div>
+      )}
+      
+      {isInRange && (
+        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+          <p className="text-sm text-emerald-800">
+            <span className="font-semibold">You're in the zone.</span> This dimension is performing well.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function StepWhatGoodLooksLike({
   inputs,
@@ -64,6 +136,69 @@ export default function StepWhatGoodLooksLike({
   onNext,
   onBack,
 }: StepWhatGoodLooksLikeProps) {
+  const dimensions = [
+    {
+      icon: BarChart3,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+      label: "Utilization",
+      currentValue: inputs.utilization || 0,
+      currentLabel: "of encounters",
+      rangeMin: 70,
+      rangeMax: 82,
+      rangeLabel: "top performers",
+      unit: "%",
+      maxScale: 100,
+      context: "Moving from " + (inputs.utilization || 0) + "% to 70%+ means thousands more documented encounters per year."
+    },
+    {
+      icon: Clock,
+      iconBg: "bg-purple-100",
+      iconColor: "text-purple-600",
+      label: "Time Saved",
+      currentValue: inputs.timeSavedPerEncounter || 0,
+      currentLabel: "per encounter",
+      rangeMin: 3,
+      rangeMax: 5,
+      rangeLabel: "top performers",
+      unit: " min",
+      maxScale: 6,
+      context: "Each additional minute saved per encounter compounds across your entire organization."
+    },
+    {
+      icon: DollarSign,
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
+      label: "wRVU Lift",
+      currentValue: inputs.wrvuLift || 0,
+      currentLabel: "improvement",
+      rangeMin: 4,
+      rangeMax: 7,
+      rangeLabel: "top performers",
+      unit: "%",
+      prefix: "+",
+      maxScale: 10,
+      context: "Better documentation captures the complexity of care you're already providing."
+    },
+    {
+      icon: Smile,
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-600",
+      label: "Provider Satisfaction",
+      currentValue: inputs.satisfaction || 0,
+      currentLabel: "would recommend",
+      rangeMin: 82,
+      rangeMax: 95,
+      rangeLabel: "top performers",
+      unit: "%",
+      maxScale: 100,
+      context: "When providers love the tool, adoption follows. Satisfaction drives utilization."
+    },
+  ];
+
+  const belowRangeCount = dimensions.filter(d => d.currentValue < d.rangeMin).length;
+  const inRangeCount = dimensions.filter(d => d.currentValue >= d.rangeMin).length;
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -71,42 +206,29 @@ export default function StepWhatGoodLooksLike({
           What Good Looks Like
         </h1>
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          These aren't aspirational targets. They're what top performers 
+          These aren't aspirational targets. They're achievable ranges 
           <br className="hidden md:block" />
-          are actually achieving today.
+          based on real implementations.
         </p>
       </div>
 
       <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-200 p-5 md:p-6">
         <div className="flex items-center gap-3 mb-3">
           <Target className="w-5 h-5 text-emerald-600" />
-          <span className="font-semibold text-[#111827]">The benchmark standard</span>
+          <span className="font-semibold text-[#111827]">Your position vs. top performers</span>
         </div>
         <p className="text-[#6B7280]">
-          These numbers come from organizations that got implementation right. 
-          <span className="font-medium text-[#111827]"> They prove what's possible </span>
-          — not in theory, but in practice.
+          The green zones show where mature implementations land. 
+          <span className="font-medium text-[#111827]"> See where you stand — and what's within reach.</span>
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {BENCHMARKS.map((benchmark) => (
-          <div 
-            key={benchmark.metric}
-            className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`w-10 h-10 rounded-lg ${benchmark.iconBg} flex items-center justify-center`}>
-                <benchmark.icon className={`w-5 h-5 ${benchmark.iconColor}`} />
-              </div>
-              <div>
-                <p className="text-xs text-[#6B7280] uppercase tracking-wide">{benchmark.metric}</p>
-                <div className="text-2xl font-bold text-[#111827]">{benchmark.value}</div>
-              </div>
-            </div>
-            <p className="text-sm font-medium text-[#374151] mb-2">{benchmark.label}</p>
-            <p className="text-xs text-[#6B7280]">{benchmark.context}</p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+        {dimensions.map((dimension) => (
+          <DimensionMeter
+            key={dimension.label}
+            {...dimension}
+          />
         ))}
       </div>
 
@@ -116,19 +238,19 @@ export default function StepWhatGoodLooksLike({
             <Award className="w-6 h-6 text-emerald-600" />
           </div>
           <div>
-            <h3 className="font-bold text-[#111827] mb-2">The difference isn't the technology — it's the implementation</h3>
+            <h3 className="font-bold text-[#111827] mb-2">What makes the difference</h3>
             <p className="text-[#6B7280] mb-4">
-              Organizations hitting these benchmarks share common traits: executive sponsorship, 
-              dedicated change management, continuous optimization, and technology that's genuinely 
-              built for healthcare workflows.
+              Organizations in these ranges share common traits: dedicated implementation support, 
+              specialty-specific customization, continuous optimization, and technology purpose-built 
+              for clinical workflows.
             </p>
             <div className="flex flex-wrap gap-2">
-              {["90-day onboarding", "Specialty customization", "Ongoing success support", "Real-time analytics"].map((trait) => (
+              {["90-day guided onboarding", "Specialty customization", "Ongoing success support", "Real-time analytics"].map((trait) => (
                 <span 
                   key={trait}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 text-emerald-700 text-sm rounded-full"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-full"
                 >
-                  <CheckCircle className="w-3 h-3" />
+                  <CheckCircle className="w-3.5 h-3.5" />
                   {trait}
                 </span>
               ))}
@@ -137,14 +259,23 @@ export default function StepWhatGoodLooksLike({
         </div>
       </div>
 
-      <div className="bg-slate-900 text-white rounded-xl p-6 text-center">
-        <p className="text-lg">
-          You're at <span className="font-bold text-amber-400">{calculations.realizationScore}%</span> of benchmark.
-          <br />
-          <span className="text-slate-300">
-            That's not a failure — it's an opportunity worth <span className="font-bold text-emerald-400">{calculations.annualGap.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}/year</span>.
-          </span>
-        </p>
+      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white rounded-xl p-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="text-slate-300 text-sm mb-1">Your current position</p>
+            <p className="text-2xl font-bold">
+              {inRangeCount} of 4 dimensions in range
+            </p>
+          </div>
+          {belowRangeCount > 0 && (
+            <div className="text-right">
+              <p className="text-slate-300 text-sm mb-1">Opportunity areas</p>
+              <p className="text-2xl font-bold text-amber-400">
+                {belowRangeCount} dimension{belowRangeCount > 1 ? 's' : ''} below benchmark
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-between items-center pt-4">
