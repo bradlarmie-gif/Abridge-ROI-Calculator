@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, RotateCcw, Brain, Users, RefreshCw, Layers, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, RotateCcw, Brain, Users, TrendingDown, Puzzle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   type SwitchInputs,
@@ -34,16 +34,16 @@ interface FlipCardData {
 
 const FLIP_CARDS: FlipCardData[] = [
   {
-    id: "technology",
+    id: "ai-quality",
     icon: Brain,
     challenge: {
-      title: "The Technology Ceiling",
-      description: "Not all AI is created equal. Some tools hit accuracy limits, require excessive editing, or can't keep pace with clinical complexity."
+      title: "Your AI wasn't built for this",
+      description: "Most ambient tools are general-purpose AI with a clinical skin. They weren't trained on real doctor-patient conversations. They guess. That's why you're still editing."
     },
     solution: {
-      title: "Clinical-Grade AI",
-      description: "Technology built for healthcare from the ground up — not retrofitted from consumer applications.",
-      traits: ["Clinician-level accuracy", "Specialty-aware understanding", "Seamless EHR integration"]
+      title: "Built from clinical conversations",
+      description: "Our AI was trained on millions of real clinical encounters. It understands medicine because it learned medicine.",
+      traits: ["Trained on real clinical audio", "Specialty-aware from day one", "Lives inside your EHR"]
     },
     frontBg: "bg-slate-700",
     frontText: "text-white",
@@ -51,16 +51,16 @@ const FLIP_CARDS: FlipCardData[] = [
     accentColor: "text-slate-700"
   },
   {
-    id: "partnership",
+    id: "vendor-gone",
     icon: Users,
     challenge: {
-      title: "The Implementation Gap",
-      description: "Software vendors ship and disappear. Without dedicated partnership, organizations are left to figure it out alone."
+      title: "Your vendor disappeared",
+      description: "You signed. They launched. Then they moved on to the next deal. Now you're stuck figuring it out alone, and nobody picks up the phone."
     },
     solution: {
-      title: "Dedicated Partnership",
-      description: "Teams who stay with you — understanding your workflows, your challenges, your goals.",
-      traits: ["Named success partners", "Healthcare-fluent support", "Executive alignment"]
+      title: "We stay",
+      description: "Named success partners who know your org, your workflows, your goals. Not a ticket number. A relationship.",
+      traits: ["Dedicated partners, not call centers", "Executives who stay accountable", "We're in it with you"]
     },
     frontBg: "bg-slate-600",
     frontText: "text-white",
@@ -68,16 +68,16 @@ const FLIP_CARDS: FlipCardData[] = [
     accentColor: "text-slate-600"
   },
   {
-    id: "optimization",
-    icon: RefreshCw,
+    id: "plateau",
+    icon: TrendingDown,
     challenge: {
-      title: "The Plateau Effect",
-      description: "Most implementations peak at launch and flatline. Without ongoing refinement, early gains slowly erode."
+      title: "You peaked at launch",
+      description: "The first few weeks felt great. Then usage flatlined. Value eroded. Now it's just another tool nobody's optimizing."
     },
     solution: {
-      title: "Continuous Improvement",
-      description: "Regular optimization cycles that treat implementation as a journey, not a one-time event.",
-      traits: ["Quarterly performance reviews", "Proactive monitoring", "Feedback-driven updates"]
+      title: "We keep climbing",
+      description: "Ongoing optimization, not set-and-forget. We monitor, we refine, we push. Launch is the starting line, not the finish.",
+      traits: ["Continuous improvement cycles", "Proactive performance monitoring", "Quarterly business reviews"]
     },
     frontBg: "bg-slate-500",
     frontText: "text-white",
@@ -85,16 +85,16 @@ const FLIP_CARDS: FlipCardData[] = [
     accentColor: "text-slate-600"
   },
   {
-    id: "specialty",
-    icon: Layers,
+    id: "generic",
+    icon: Puzzle,
     challenge: {
-      title: "The Generic Approach",
-      description: "One-size-fits-all rarely fits anyone well. Different specialties have different needs, different workflows, different language."
+      title: "Templates failed you",
+      description: "Cardiology isn't ortho. Your urgent care isn't like theirs. But your tool treats everyone the same. No wonder half your providers gave up."
     },
     solution: {
-      title: "Specialty-Native Design",
-      description: "Configuration that respects the complexity of each specialty — not templates, but true adaptation.",
-      traits: ["Specialty-specific templates", "Workflow customization", "Organizational culture fit"]
+      title: "We configure for real",
+      description: "Not templates. Real specialty-by-specialty configuration. Your workflows, your preferences, your organization.",
+      traits: ["Built for how you actually work", "Specialty-specific adaptation", "Evolves with your feedback"]
     },
     frontBg: "bg-slate-400",
     frontText: "text-white",
@@ -143,7 +143,7 @@ function FlipCard({ card, isFlipped, onFlip }: {
             </p>
             <div className="mt-3 pt-3 border-t border-white/15">
               <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
-                The challenge
+                Sound familiar?
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ function FlipCard({ card, isFlipped, onFlip }: {
             </div>
             <div className="mt-3 pt-3 border-t border-slate-200">
               <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
-                What makes the difference
+                How we're different
               </p>
             </div>
           </div>
@@ -220,17 +220,9 @@ export default function StepWhyThisHappens({
           What It Takes
         </h1>
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          The gap between potential and reality isn't random.
+          From hundreds of implementations, we've seen the same patterns.
           <br className="hidden md:block" />
-          <span className="text-[#374151]">These four things explain most of it.</span>
-        </p>
-      </div>
-
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-center">
-        <p className="text-[#374151] text-sm md:text-base">
-          <span className="font-medium">From hundreds of implementations,</span> we've learned what separates
-          <br className="hidden md:block" />
-          organizations that capture full value from those that plateau.
+          <span className="text-[#374151]">Here's what actually matters.</span>
         </p>
       </div>
 
@@ -257,11 +249,11 @@ export default function StepWhyThisHappens({
         <div className="bg-slate-800 rounded-xl p-6 text-white text-center">
           <div className="max-w-xl mx-auto">
             <p className="text-base md:text-lg font-medium mb-2">
-              This is the pattern.
+              This is why the gap exists.
             </p>
             <p className="text-slate-400 text-sm">
-              The organizations that capture full value don't just have better technology — 
-              they have partners who understand these challenges and know how to solve them.
+              And this is what it takes to close it. Not just better software — 
+              the right partner who's been here before and knows how to get you there.
             </p>
           </div>
         </div>
@@ -270,8 +262,7 @@ export default function StepWhyThisHappens({
       {!allFlipped && (
         <div className="bg-slate-100 rounded-xl p-5 border border-slate-200 text-center">
           <p className="text-[#374151] text-sm">
-            <span className="font-medium">The takeaway:</span> closing the gap you saw in The Math 
-            isn't about working harder. It's about these four things.
+            Tap each card to see what we do differently.
           </p>
         </div>
       )}
