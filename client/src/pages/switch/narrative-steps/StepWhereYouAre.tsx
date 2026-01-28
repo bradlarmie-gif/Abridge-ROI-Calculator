@@ -327,16 +327,16 @@ export default function StepWhereYouAre({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full cursor-help"
+                  className="flex items-center gap-3 px-4 py-2.5 bg-slate-100 rounded-xl cursor-help border border-slate-200"
                   data-testid="realization-indicator"
                 >
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-2 h-2 rounded-full ${realizationData.maturity.bg}`} />
-                    <span className="text-sm font-medium text-slate-700">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${realizationData.maturity.bg}`} />
+                    <span className="text-base font-semibold text-slate-800">
                       {realizationData.avgScore}% realized
                     </span>
                   </div>
-                  <Info className="w-3.5 h-3.5 text-slate-400" />
+                  <Info className="w-4 h-4 text-slate-400" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-xs p-3">
