@@ -11,6 +11,7 @@ import {
   Line,
   Circle,
   Polyline,
+  Polygon,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import type { SwitchInputs, SwitchCalculations } from "@/lib/switchGapCalculator";
@@ -699,40 +700,77 @@ const CostTrajectoryChart = ({
   monthlyGap: number;
 }) => {
   const width = 460;
-  const height = 100;
+  const height = 120;
   const paddingLeft = 50;
   const paddingRight = 20;
-  const paddingTop = 10;
+  const paddingTop = 15;
   const paddingBottom = 25;
   const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
   
   const years = [0, 1, 2, 3];
-  const currentPath = years.map(y => y * currentGap);
-  const abridgePath = years.map(() => 0);
+  
+  // The gap grows cumulatively if you don't act
+  const cumulativeLoss = years.map(y => y * currentGap);
+  
+  // With Abridge, you capture that value instead (mirrored as gains)
+  const cumulativeGain = years.map(y => y * currentGap);
   
   const maxValue = currentGap * 3;
+  const midLine = paddingTop + chartHeight / 2;
   
   const getX = (year: number) => paddingLeft + (year / 3) * chartWidth;
-  const getY = (value: number) => paddingTop + chartHeight - (value / maxValue) * chartHeight;
   
-  const currentPoints = years.map(y => `${getX(y)},${getY(currentPath[y])}`).join(' ');
+  // Loss goes UP from midline (bad direction)
+  const getYLoss = (value: number) => midLine - (value / maxValue) * (chartHeight / 2);
+  
+  // Gain goes DOWN from midline (good direction - toward positive territory)
+  const getYGain = (value: number) => midLine + (value / maxValue) * (chartHeight / 2);
+  
+  const lossPoints = years.map(y => `${getX(y)},${getYLoss(cumulativeLoss[y])}`).join(' ');
+  const gainPoints = years.map(y => `${getX(y)},${getYGain(cumulativeGain[y])}`).join(' ');
   
   return (
     <View style={{ marginVertical: 12 }}>
       <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+        {/* Background fill for loss area (subtle red) */}
+        <Polygon 
+          points={`${paddingLeft},${midLine} ${lossPoints} ${getX(3)},${midLine}`}
+          fill={colors.red}
+          opacity={0.08}
+        />
+        
+        {/* Background fill for gain area (subtle green) */}
+        <Polygon 
+          points={`${paddingLeft},${midLine} ${gainPoints} ${getX(3)},${midLine}`}
+          fill={colors.emerald}
+          opacity={0.12}
+        />
+        
+        {/* Y-axis */}
         <Line x1={paddingLeft} y1={paddingTop} x2={paddingLeft} y2={height - paddingBottom} stroke={colors.borderGray} strokeWidth={1} />
+        
+        {/* Midline (today's baseline) */}
+        <Line x1={paddingLeft} y1={midLine} x2={width - paddingRight} y2={midLine} stroke={colors.borderGray} strokeWidth={1} strokeDasharray="4,4" />
+        
+        {/* X-axis */}
         <Line x1={paddingLeft} y1={height - paddingBottom} x2={width - paddingRight} y2={height - paddingBottom} stroke={colors.borderGray} strokeWidth={1} />
         
-        <Polyline points={currentPoints} stroke={colors.red} strokeWidth={2} fill="none" />
+        {/* Loss line (going up = bad) */}
+        <Polyline points={lossPoints} stroke={colors.red} strokeWidth={2.5} fill="none" />
         
-        <Line x1={paddingLeft} y1={height - paddingBottom} x2={width - paddingRight} y2={height - paddingBottom} stroke={colors.emerald} strokeWidth={3} />
+        {/* Gain line (going down = good, toward positive territory) */}
+        <Polyline points={gainPoints} stroke={colors.emerald} strokeWidth={2.5} fill="none" />
         
+        {/* Data points for loss line */}
         {years.map((y) => (
-          <Circle key={y} cx={getX(y)} cy={getY(currentPath[y])} r={4} fill={colors.red} />
+          <Circle key={`loss-${y}`} cx={getX(y)} cy={getYLoss(cumulativeLoss[y])} r={4} fill={colors.red} />
         ))}
         
-        <Circle cx={width - paddingRight} cy={height - paddingBottom} r={6} fill={colors.emerald} />
+        {/* Data points for gain line */}
+        {years.map((y) => (
+          <Circle key={`gain-${y}`} cx={getX(y)} cy={getYGain(cumulativeGain[y])} r={4} fill={colors.emerald} />
+        ))}
       </Svg>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingLeft: paddingLeft - 10, paddingRight: paddingRight }}>
         <Text style={{ fontSize: 7, color: colors.mediumGray }}>Today</Text>
@@ -1331,18 +1369,18 @@ const AmbientPDFDocument = ({ inputs, calculations, clientName, preparedBy }: Am
         
         <View style={styles.contentSection}>
           <Text style={styles.chapterLabel}>TIMELINE ANALYSIS</Text>
-          <Text style={styles.sectionTitle}>How the Gap Grows Over Time</Text>
+          <Text style={styles.sectionTitle}>Two Paths, Two Outcomes</Text>
           
           <CostTrajectoryChart currentGap={calculations.annualGap} monthlyGap={monthlyGap} />
           
-          <View style={{ flexDirection: 'row', marginBottom: 16, marginTop: 8 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 24 }}>
+          <View style={{ flexDirection: 'row', marginBottom: 16, marginTop: 8, gap: 24 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ width: 12, height: 3, backgroundColor: colors.red, marginRight: 6 }} />
-              <Text style={{ fontSize: 8, color: colors.darkGray }}>Cumulative gap if no action taken</Text>
+              <Text style={{ fontSize: 8, color: colors.darkGray }}>Value left on table (status quo)</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ width: 12, height: 3, backgroundColor: colors.emerald, marginRight: 6 }} />
-              <Text style={{ fontSize: 8, color: colors.darkGray }}>Value captured with Abridge optimization</Text>
+              <Text style={{ fontSize: 8, color: colors.darkGray }}>Value captured (with Abridge)</Text>
             </View>
           </View>
           
