@@ -21,27 +21,41 @@ The application guides users through multi-step processes:
     4. Value Drivers (ModelBuilder.tsx) - ROI driver cards with Live Model sidebar
     5. Investment (InvestmentPage.tsx) - pricing configuration
     6. Summary (SummaryCommandCenter.tsx) - final ROI results with waterfall chart
--   **Switch Path (Value Realization Assessment)**: A 2-page diagnostic with two separate flows based on solution type:
-    - **Ambient AI Path** (for prospects using other ambient AI solutions):
-      1. **Assessment Page** (SwitchAssessment.tsx) - Four-dimensional value assessment:
-         - Solution type selector (Ambient AI, Human Scribes)
+-   **Switch Path (Value Realization Assessment)**: Different flows based on solution type:
+    - **Ambient AI Path** (6-step narrative wizard for prospects using other ambient AI solutions):
+      - **Narrative Arc**: "Where you are → The gap → Why this happens → What good looks like → The math → The invitation"
+      - **Design Philosophy**: Educational with soul, never salesy, delayed pitch approach
+      1. **Step 1 - Where You Are** (StepWhereYouAre.tsx) - Reflection and data gathering:
          - Provider count and annual encounters inputs
-         - 2x2 grid of dimension cards with sliders + editable number inputs: Utilization (75%), Efficiency (4 min), Quality/wRVU (+5%), Satisfaction (85%)
-         - Value Realization Score using simple average of all 4 dimensions
-         - Maturity spectrum bar (Early Stage <40%, Developing 40-60%, Optimized 60-80%, Transformed 80%+)
-         - Live-updating "Your Annual Gap" card with gap components
-      2. **Full Analysis Page** (SwitchFullAnalysis.tsx) - Comprehensive gap analysis:
-         - 3 headline cards (Annual Gap, Realization Score %, 3-Year Gap)
-         - "Cost of Gap Over Time" line chart (current vs Abridge trajectory)
-         - "How the Gap Breaks Down" with expandable step-by-step calculation details for each dimension
-         - "How Your Score is Calculated" with simple average formula
-         - "The Cost of Waiting" (close now vs wait 6mo vs wait 12mo)
-         - "Methodology" with all four Abridge benchmarks
-         - CTAs: Export PDF, Share with Team
+         - Four dimension sliders: Utilization (75%), Efficiency (4 min), Quality/wRVU (+5%), Satisfaction (85%)
+         - Live value realization score with maturity spectrum
+         - Reflective framing: "Let's understand your current experience"
+      2. **Step 2 - The Gap** (StepTheGap.tsx) - Dramatic value reveal:
+         - Animated gap headline with dollar amount
+         - Gap breakdown by dimension (utilization, efficiency, quality)
+         - "What you're leaving on the table" framing
+         - Loading overlay transition from Step 1
+      3. **Step 3 - Why This Happens** (StepWhyThisHappens.tsx) - Diagnostic framing:
+         - Four diagnostic cards: Adoption Friction, Technology Ceiling, Implementation Gaps, Provider Fatigue
+         - Educational content explaining common challenges
+         - Empathetic, non-judgmental tone
+      4. **Step 4 - What Good Looks Like** (StepWhatGoodLooksLike.tsx) - Benchmark showcase:
+         - Abridge benchmark cards as proof points
+         - Educational content, not sales pitch
+         - Industry context and validation
+      5. **Step 5 - The Math** (StepTheMath.tsx) - Transparent calculations:
+         - Full breakdown with editable assumptions
+         - Value attribution methodology
+         - Conversion rate explanations
+      6. **Step 6 - The Invitation** (StepTheInvitation.tsx) - Clear next steps:
+         - Summary of total opportunity
+         - CTAs: Export PDF, Share with Team, Schedule Conversation
+         - Professional, consultative close
+      - **Orchestrator**: AmbientNarrativeFlow.tsx manages step state, progress indicator, and navigation
+      - **Progress Indicator**: Clickable dots allowing navigation between completed steps
       - **Key Benchmarks**: Utilization 75%, Efficiency 4 min/encounter, Quality +5% wRVU, Satisfaction 85%
-      - **Value Assumptions**: $150/hr × 15% conversion (utilization gap tied to time savings), $150/hr × 20% conversion (efficiency gap), $33/wRVU × 50% attribution (quality gap)
+      - **Value Assumptions**: $150/hr × 15% conversion (utilization gap), $150/hr × 20% conversion (efficiency gap), $33/wRVU × 50% attribution (quality gap)
       - **Calculation Engine**: switchGapCalculator.ts with simple average realization score
-      - **UI Styling**: Dollar amounts in gap cards shown in emerald-600 (green), bar text sizes increased for readability
     - **Human Scribes Path** (Scribe Program Analysis - purely educational):
       1. **Assessment Page** (ScribeAssessment.tsx) - Scribe program cost/coverage analysis:
          - Scribe program inputs: scribe count, cost per hour, hours per week
