@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
-import ExpandSettingSelection from "./ExpandSettingSelection";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
 import ExpandDataEntry from "./ExpandDataEntry";
+import ExpandBenchmarkComparison from "./ExpandBenchmarkComparison";
 import ExpandValueConfiguration from "./ExpandValueConfiguration";
 import ExpandResults from "./ExpandResults";
 import { type ValueConfigData, EXPAND_ROI_DEFAULTS } from "@/lib/expandRoiCalculator";
@@ -133,11 +133,11 @@ export interface ExpandFlowProps {
 }
 
 // ============================================================================
-// EXPAND FLOW MAIN COMPONENT (5 Steps)
-// 1. Setting Selection
-// 2. Deployment Setup  
-// 3. Data Entry
-// 4. Value Configuration
+// EXPAND FLOW MAIN COMPONENT (5 Steps) - "Your Value Journey"
+// 1. Your Deployment (setup + metric selection)
+// 2. Your Metrics (data entry)
+// 3. How You're Doing (benchmark comparison) ← NEW
+// 4. Your Value (financial configuration)
 // 5. Your Results (consolidated)
 // ============================================================================
 
@@ -250,25 +250,17 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     switch (currentStep) {
       case 1:
         return (
-          <ExpandSettingSelection
-            onNext={goNext}
-            onExplore={goToExplore}
-            onBack={goBackToJourney}
-          />
-        );
-      case 2:
-        return (
           <ExpandDeploymentSetup
             deploymentData={deploymentData}
             setDeploymentData={setDeploymentData}
             selectedMetrics={selectedMetrics}
             setSelectedMetrics={setSelectedMetrics}
             onNext={goNext}
-            onBack={goBack}
+            onBack={goBackToJourney}
             onBackToJourney={goBackToJourney}
           />
         );
-      case 3:
+      case 2:
         return (
           <ExpandDataEntry
             deploymentData={deploymentData}
@@ -281,6 +273,17 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
             setMetricTrendData={setMetricTrendData}
             metricEntryModes={metricEntryModes}
             setMetricEntryModes={setMetricEntryModes}
+            onNext={goNext}
+            onBack={goBack}
+            onBackToJourney={goBackToJourney}
+          />
+        );
+      case 3:
+        return (
+          <ExpandBenchmarkComparison
+            deploymentData={deploymentData}
+            selectedMetrics={selectedMetrics}
+            metricsData={metricsData}
             onNext={goNext}
             onBack={goBack}
             onBackToJourney={goBackToJourney}

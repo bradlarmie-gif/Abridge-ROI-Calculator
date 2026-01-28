@@ -1175,9 +1175,9 @@ export default function ExpandDataEntry({
           </div>
           <div>
             <h2 className="text-base font-semibold text-[#111827]">
-              {config.tooltipKey === "wRVU" ? (
+              {'tooltipKey' in config && config.tooltipKey === "wRVU" ? (
                 <><TermTooltip {...TERMS.wRVU} /> per Encounter</>
-              ) : config.tooltipKey === "pajamaTime" ? (
+              ) : 'tooltipKey' in config && config.tooltipKey === "pajamaTime" ? (
                 <>Work Outside Work (<TermTooltip {...TERMS.pajamaTime} />)</>
               ) : config.name}
             </h2>
@@ -1240,9 +1240,9 @@ export default function ExpandDataEntry({
     <div className="min-h-screen bg-[#f8fafc]">
       <UnifiedHeader 
         pathType="expand"
-        currentStep={3}
+        currentStep={2}
         totalSteps={5}
-        stepName="Enter Data"
+        stepName="Your Metrics"
         onBack={onBack}
         onHome={onBackToJourney}
       />

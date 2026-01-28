@@ -95,7 +95,7 @@ export default function ExpandValueConfiguration({
         pathType="expand"
         currentStep={4}
         totalSteps={5}
-        stepName="Value Config"
+        stepName="Your Value"
         onBack={onBack}
         onHome={onBackToJourney}
       />

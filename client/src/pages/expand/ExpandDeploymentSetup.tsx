@@ -104,53 +104,52 @@ export default function ExpandDeploymentSetup({
     <div className="min-h-screen bg-[#f8fafc]">
       <UnifiedHeader 
         pathType="expand"
-        currentStep={2}
+        currentStep={1}
         totalSteps={5}
-        stepName="Deployment Setup"
+        stepName="Your Deployment"
         onBack={onBack}
         onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
-        {/* Why This Matters - Hero Card */}
-        <div className="mb-6 md:mb-8 bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200 rounded-xl p-4 md:p-6">
-          <div className="flex items-start gap-3 md:gap-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+        {/* Soul Hero - The Story */}
+        <div className="mb-8 md:mb-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <span className="text-amber-400 text-sm font-medium tracking-wide uppercase">Your Value Journey</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-3" data-testid="text-page-title">
+            Seeing What You've Built
+          </h1>
+          <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl mb-6">
+            You've invested in Abridge. Now let's understand what that investment is actually creating — 
+            in concrete terms you can share with your CFO, celebrate with your team, and use to plan 
+            what's next.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white/90">Track real outcomes</span>
             </div>
-            <div className="flex-1">
-              <h2 className="text-base md:text-lg font-semibold text-blue-900 mb-1">Why This Matters</h2>
-              <p className="text-xs md:text-sm text-blue-700 leading-relaxed">
-                You're about to discover the real value your Abridge deployment is creating. 
-                This analysis will give you concrete numbers to share with leadership, justify 
-                expansion, and celebrate wins with your team.
-              </p>
-              <div className="flex flex-wrap gap-3 md:gap-4 mt-3">
-                <div className="flex items-center gap-1.5 text-xs text-blue-600">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  <span>Track real outcomes</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-blue-600">
-                  <DollarSign className="w-3.5 h-3.5" />
-                  <span>Quantify your value</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-blue-600">
-                  <Target className="w-3.5 h-3.5" />
-                  <span>Plan your expansion</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
+              <DollarSign className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white/90">Quantify your value</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
+              <Target className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white/90">Plan your expansion</span>
             </div>
           </div>
         </div>
 
-        {/* Title */}
-        <div className="mb-8 md:mb-10">
-          <h1 className="text-xl md:text-2xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
-            Your Outpatient Deployment
-          </h1>
-          <p className="text-sm md:text-base text-[#6B7280]">
-            Tell us about your Abridge setup so we can analyze your results
+        {/* Section Title */}
+        <div className="mb-6">
+          <h2 className="text-lg md:text-xl font-semibold text-[#111827] mb-1">
+            Tell Us About Your Deployment
+          </h2>
+          <p className="text-sm text-[#6B7280]">
+            We'll use this to calculate your value per provider and compare you to benchmarks.
           </p>
         </div>
 

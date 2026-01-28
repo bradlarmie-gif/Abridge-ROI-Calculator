@@ -582,33 +582,43 @@ export default function ExpandResults({
       <UnifiedHeaderSpacer />
       
       <div className="py-6 md:py-8 px-4 md:px-6 pb-8 max-w-5xl mx-auto">
+        {/* Celebratory Hero */}
         <motion.div 
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8"
+          className="mb-8 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-6 md:p-8 text-white"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="text-center sm:text-left mb-4 sm:mb-0">
-            <h1 className="text-2xl md:text-3xl font-semibold text-[#1F2937] mb-2">
-              Your Abridge Results
-            </h1>
-            <p className="text-sm md:text-base text-[#6B7280]">
-              {providers} providers · {months} mo · {utilizationRate}% utilization
-            </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-emerald-200" />
+                <span className="text-emerald-200 text-sm font-medium tracking-wide uppercase">Your Results</span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">
+                {formatCurrency(currentValue)} in Value Created
+              </h1>
+              <p className="text-emerald-100 text-sm md:text-base leading-relaxed max-w-xl">
+                {providers} providers · {months} months on Abridge · {utilizationRate}% utilization
+              </p>
+              <p className="text-emerald-100/80 text-sm mt-2 max-w-xl">
+                This is the defensible value your deployment is creating today — ready for your next Executive Business Review.
+              </p>
+            </div>
+            <Button 
+              onClick={handleOpenExportModal}
+              disabled={isExporting}
+              className="bg-white text-emerald-700 hover:bg-emerald-50 gap-2"
+              data-testid="button-export-pdf"
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              {isExporting ? 'Generating...' : 'Export PDF'}
+            </Button>
           </div>
-          <Button 
-            onClick={handleOpenExportModal}
-            disabled={isExporting}
-            className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
-            data-testid="button-export-pdf"
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            {isExporting ? 'Generating...' : 'Export PDF'}
-          </Button>
         </motion.div>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8">
