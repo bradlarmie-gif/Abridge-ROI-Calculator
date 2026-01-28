@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
-import { ArrowRight, ArrowLeft, Mic, Users, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import SwitchAssessment from "./SwitchAssessment";
+import SwitchFullAnalysis from "./SwitchFullAnalysis";
 import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import AmbientNarrativeFlow from "./AmbientNarrativeFlow";
@@ -17,8 +16,8 @@ interface SwitchUnifiedFlowProps {
 }
 
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
-  const [currentStep, setCurrentStep] = useState(0); // 0 = solution selection
-  const [solutionType, setSolutionType] = useState<SolutionType | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [solutionType, setSolutionType] = useState<SolutionType>("ambient-ai");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   
   // Start with empty dimension values - customer fills in their actual numbers
@@ -53,12 +52,6 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     });
   };
 
-  const goToAssessment = () => {
-    if (!solutionType) return;
-    setCurrentStep(1);
-    window.scrollTo(0, 0);
-  };
-
   const goNext = () => {
     setShowLoadingOverlay(true);
   };
@@ -70,127 +63,16 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
   }, []);
 
   const goBack = () => {
-    if (currentStep === 0) {
+    if (currentStep === 1) {
       onBack();
-    } else if (currentStep === 1) {
-      setCurrentStep(0);
-      window.scrollTo(0, 0);
     } else {
       setCurrentStep(1);
       window.scrollTo(0, 0);
     }
   };
 
-  // Solution selection screen
-  const renderSolutionSelection = () => (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <UnifiedHeader 
-        pathType="switch"
-        currentStep={1}
-        totalSteps={2}
-        stepName="Select Solution"
-        onBack={onBack}
-        onHome={onBackToJourney}
-      />
-      <UnifiedHeaderSpacer />
-
-      <main className="max-w-2xl mx-auto px-6 py-6 md:py-8 pb-12">
-        <div className="text-center mb-10">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
-            What solution are you using today?
-          </h1>
-          <p className="text-slate-500">
-            We'll show you what you might be leaving on the table.
-          </p>
-        </div>
-
-        <div className="space-y-4 mb-8">
-          <button
-            onClick={() => setSolutionType("ambient-ai")}
-            className={`w-full p-5 rounded-xl border-2 transition-all text-left relative ${
-              solutionType === "ambient-ai"
-                ? "border-slate-800 bg-white shadow-sm"
-                : "border-slate-200 bg-white hover:border-slate-300"
-            }`}
-            data-testid="button-solution-ambient-ai"
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  solutionType === "ambient-ai"
-                    ? "bg-slate-800/10 text-slate-800"
-                    : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                <Mic className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">Ambient AI</h3>
-                <p className="text-sm text-slate-500 mt-0.5">Currently using DAX, Ambience, Suki, or similar</p>
-              </div>
-              {solutionType === "ambient-ai" && (
-                <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </div>
-          </button>
-
-          <button
-            onClick={() => setSolutionType("human-scribes")}
-            className={`w-full p-5 rounded-xl border-2 transition-all text-left relative ${
-              solutionType === "human-scribes"
-                ? "border-slate-800 bg-white shadow-sm"
-                : "border-slate-200 bg-white hover:border-slate-300"
-            }`}
-            data-testid="button-solution-human-scribes"
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  solutionType === "human-scribes"
-                    ? "bg-slate-800/10 text-slate-800"
-                    : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                <Users className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">Human Scribes</h3>
-                <p className="text-sm text-slate-500 mt-0.5">In-person or virtual scribes</p>
-              </div>
-              {solutionType === "human-scribes" && (
-                <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </div>
-          </button>
-        </div>
-
-        <div className="mt-10 flex justify-center">
-          <Button
-            size="lg"
-            onClick={goToAssessment}
-            disabled={!solutionType}
-            className={solutionType ? "bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2" : "gap-2"}
-            data-testid="button-continue"
-          >
-            Continue
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </main>
-    </div>
-  );
-
   // Determine which component to render
   const getPageContent = () => {
-    // Step 0: Solution Selection
-    if (currentStep === 0) {
-      return renderSolutionSelection();
-    }
-
     // Scribe path: Keep the original 2-step flow
     if (solutionType === "human-scribes") {
       if (currentStep === 2) {
