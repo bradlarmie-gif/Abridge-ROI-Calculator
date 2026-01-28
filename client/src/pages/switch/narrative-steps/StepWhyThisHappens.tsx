@@ -45,10 +45,10 @@ const FLIP_CARDS: FlipCardData[] = [
       description: "Implementation that treats adoption as a human challenge, not a technical one.",
       traits: ["Dedicated success partners", "Provider champions program", "Behavioral design expertise"]
     },
-    frontBg: "bg-slate-700",
+    frontBg: "bg-gradient-to-br from-indigo-600 to-indigo-800",
     frontText: "text-white",
-    backBg: "bg-slate-50",
-    accentColor: "text-slate-700"
+    backBg: "bg-indigo-50",
+    accentColor: "text-indigo-700"
   },
   {
     id: "optimization",
@@ -62,10 +62,10 @@ const FLIP_CARDS: FlipCardData[] = [
       description: "Ongoing refinement that treats implementation as a journey, not a destination.",
       traits: ["Quarterly business reviews", "Real-time analytics", "Proactive performance monitoring"]
     },
-    frontBg: "bg-slate-600",
+    frontBg: "bg-gradient-to-br from-teal-600 to-teal-800",
     frontText: "text-white",
-    backBg: "bg-slate-50",
-    accentColor: "text-slate-600"
+    backBg: "bg-teal-50",
+    accentColor: "text-teal-700"
   },
   {
     id: "specialty",
@@ -79,10 +79,10 @@ const FLIP_CARDS: FlipCardData[] = [
       description: "Configuration that respects the complexity of healthcare, specialty by specialty.",
       traits: ["Specialty-specific templates", "Workflow integration", "EHR-native experience"]
     },
-    frontBg: "bg-slate-500",
+    frontBg: "bg-gradient-to-br from-rose-500 to-rose-700",
     frontText: "text-white",
-    backBg: "bg-slate-50",
-    accentColor: "text-slate-600"
+    backBg: "bg-rose-50",
+    accentColor: "text-rose-700"
   },
   {
     id: "leadership",
@@ -96,10 +96,10 @@ const FLIP_CARDS: FlipCardData[] = [
       description: "Engagement models designed to maintain executive visibility and organizational momentum.",
       traits: ["Executive briefings", "ROI dashboards", "Stakeholder alignment"]
     },
-    frontBg: "bg-slate-400",
+    frontBg: "bg-gradient-to-br from-amber-500 to-orange-600",
     frontText: "text-white",
-    backBg: "bg-slate-50",
-    accentColor: "text-slate-600"
+    backBg: "bg-amber-50",
+    accentColor: "text-amber-700"
   }
 ];
 
