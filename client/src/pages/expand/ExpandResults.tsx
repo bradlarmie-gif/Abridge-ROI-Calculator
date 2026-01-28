@@ -575,7 +575,7 @@ export default function ExpandResults({
         pathType="expand"
         currentStep={5}
         totalSteps={5}
-        stepName="Your Results"
+        stepName="Your Story"
         onBack={onBack}
         onHome={onBackToJourney}
       />
@@ -593,7 +593,7 @@ export default function ExpandResults({
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-5 h-5 text-emerald-200" />
-                <span className="text-emerald-200 text-sm font-medium tracking-wide uppercase">Your Results</span>
+                <span className="text-emerald-200 text-sm font-medium tracking-wide uppercase">Your Story</span>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold mb-2">
                 {formatCurrency(currentValue)} in Value Created
@@ -602,7 +602,7 @@ export default function ExpandResults({
                 {providers} providers · {months} months on Abridge · {utilizationRate}% utilization
               </p>
               <p className="text-emerald-100/80 text-sm mt-2 max-w-xl">
-                This is the defensible value your deployment is creating today — ready for your next Executive Business Review.
+                Your results are ready to share. Export and bring this story to any stakeholder in your organization.
               </p>
             </div>
             <Button 

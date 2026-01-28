@@ -182,6 +182,52 @@ const BENCHMARKS: Record<MetricType, BenchmarkConfig> = {
       return "Room to grow. Satisfaction often lags initial adoption by a few months.";
     }
   },
+  utilization: {
+    name: "Utilization Rate",
+    icon: TrendingUp,
+    iconBg: "bg-teal-50",
+    iconColor: "text-teal-600",
+    unit: "% improvement",
+    typicalMin: 10,
+    typicalMax: 25,
+    topPerformer: 40,
+    isHigherBetter: true,
+    getValue: (data: MetricsData) => {
+      const before = data.utilization.before;
+      const after = data.utilization.after;
+      if (before === null || after === null) return null;
+      return after - before;
+    },
+    formatValue: (val: number) => `${val >= 0 ? '+' : ''}${val.toFixed(0)}pts`,
+    insight: (val: number, status: string) => {
+      if (status === 'above') return "Outstanding adoption growth. Providers are embracing the tool.";
+      if (status === 'on-track') return "Healthy adoption trajectory. Keep the momentum going.";
+      return "Adoption is building. Focus on training and workflow integration.";
+    }
+  },
+  diagnosisCapture: {
+    name: "Diagnosis Capture",
+    icon: Target,
+    iconBg: "bg-rose-50",
+    iconColor: "text-rose-600",
+    unit: "% improvement",
+    typicalMin: 2,
+    typicalMax: 5,
+    topPerformer: 10,
+    isHigherBetter: true,
+    getValue: (data: MetricsData) => {
+      const before = data.diagnosisCapture.before;
+      const after = data.diagnosisCapture.after;
+      if (before === null || after === null) return null;
+      return after - before;
+    },
+    formatValue: (val: number) => `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`,
+    insight: (val: number, status: string) => {
+      if (status === 'above') return "Excellent HCC capture improvement. Documentation is driving risk adjustment revenue.";
+      if (status === 'on-track') return "Good diagnosis capture. Complete documentation supports accurate coding.";
+      return "Early gains in diagnosis capture. This typically grows with documentation quality.";
+    }
+  },
 };
 
 function getStatus(value: number, benchmark: typeof BENCHMARKS.wrvuCapture): 'above' | 'on-track' | 'developing' {
@@ -294,23 +340,28 @@ export default function ExpandBenchmarkComparison({
         pathType="expand"
         currentStep={3}
         totalSteps={5}
-        stepName="How You're Doing"
+        stepName="Your Impact"
         onBack={onBack}
         onHome={onBackToJourney}
       />
       <UnifiedHeaderSpacer />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
-        {/* Hero Section */}
-        <div className="text-center mb-8">
+        {/* Hero Section - The Reveal */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
-            How You're Doing
+            Here's What You've Built
           </h1>
           <p className="text-base text-[#6B7280] max-w-2xl mx-auto">
-            We've compared your results against what we see in healthy Abridge deployments. 
-            Here's where you stand.
+            Your data tells a story of transformation. Let's see how you compare to other 
+            successful Abridge deployments.
           </p>
-        </div>
+        </motion.div>
 
         {/* Overall Health Score Card */}
         <motion.div 

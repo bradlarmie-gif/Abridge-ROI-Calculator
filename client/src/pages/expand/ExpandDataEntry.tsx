@@ -33,6 +33,7 @@ import type {
   MetricTrendData,
   MetricEntryModeState
 } from "./ExpandFlow";
+import { EXPAND_ROI_DEFAULTS } from "@/lib/expandRoiCalculator";
 import {
   LineChart,
   Line,
@@ -244,6 +245,68 @@ function ModeToggle({
   );
 }
 
+// Benchmark feedback badge
+function BenchmarkBadge({ 
+  change, 
+  benchmarkMin, 
+  benchmarkMax, 
+  isPositiveGood,
+  metricName 
+}: { 
+  change: number | null; 
+  benchmarkMin: number;
+  benchmarkMax: number;
+  isPositiveGood: boolean;
+  metricName: string;
+}) {
+  if (change === null) return null;
+  
+  const actualChange = isPositiveGood ? change : -change; // Normalize for comparison
+  
+  let status: "excellent" | "good" | "developing" | "below";
+  let message: string;
+  
+  if (actualChange >= benchmarkMax) {
+    status = "excellent";
+    message = "Exceptional result";
+  } else if (actualChange >= benchmarkMin) {
+    status = "good";
+    message = "Strong improvement";
+  } else if (actualChange > 0) {
+    status = "developing";
+    message = "Room to grow";
+  } else {
+    status = "below";
+    message = "Opportunity ahead";
+  }
+  
+  const styles = {
+    excellent: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    good: "bg-blue-100 text-blue-700 border-blue-200",
+    developing: "bg-amber-100 text-amber-700 border-amber-200",
+    below: "bg-neutral-100 text-neutral-600 border-neutral-200",
+  };
+  
+  const icons = {
+    excellent: <Zap className="w-3 h-3" />,
+    good: <TrendingUp className="w-3 h-3" />,
+    developing: <TrendingUp className="w-3 h-3" />,
+    below: <TrendingDown className="w-3 h-3" />,
+  };
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${styles[status]}`}
+      data-testid={`badge-benchmark-${metricName}`}
+    >
+      {icons[status]}
+      {message}
+    </motion.div>
+  );
+}
+
 // Quick Entry Component
 function QuickEntry({
   before,
@@ -255,6 +318,8 @@ function QuickEntry({
   step = 1,
   testIdPrefix,
   benchmarkWhisper,
+  benchmarkMin,
+  benchmarkMax,
 }: {
   before: number | null;
   after: number | null;
@@ -265,6 +330,8 @@ function QuickEntry({
   step?: number;
   testIdPrefix: string;
   benchmarkWhisper?: string;
+  benchmarkMin?: number;
+  benchmarkMax?: number;
 }) {
   const change = before !== null && after !== null
     ? isPositiveGood ? after - before : before - after
@@ -351,6 +418,18 @@ function QuickEntry({
                 <span className={`text-sm block mt-1 font-medium ${isGood ? "text-emerald-700" : "text-red-700"}`}>
                   {percentChange}% {isPositiveGood ? "lift" : "reduction"}
                 </span>
+              )}
+              {/* Benchmark Badge */}
+              {benchmarkMin !== undefined && benchmarkMax !== undefined && (
+                <div className="mt-2">
+                  <BenchmarkBadge 
+                    change={change} 
+                    benchmarkMin={benchmarkMin} 
+                    benchmarkMax={benchmarkMax}
+                    isPositiveGood={isPositiveGood}
+                    metricName={testIdPrefix}
+                  />
+                </div>
               )}
             </motion.div>
           ) : (
@@ -940,6 +1019,43 @@ export default function ExpandDataEntry({
     ? Math.round((completedMetrics.length / orderedMetrics.length) * 100) 
     : 0;
 
+  // Calculate live value preview
+  const valuePreview = useMemo(() => {
+    const encounters = deploymentData.annualEncounters && deploymentData.utilizationRate
+      ? Math.round(deploymentData.annualEncounters * (deploymentData.utilizationRate / 100))
+      : 0;
+    
+    let totalValue = 0;
+    const breakdown: { label: string; value: number; icon: string }[] = [];
+    
+    // wRVU Value (Tier 1)
+    const wrvuData = metricsData.wrvuCapture;
+    if (wrvuData.before !== null && wrvuData.after !== null && wrvuData.after > wrvuData.before) {
+      const lift = wrvuData.after - wrvuData.before;
+      const wrvuValue = Math.round(lift * encounters * EXPAND_ROI_DEFAULTS.dollarPerWRVU * EXPAND_ROI_DEFAULTS.wrvuAttribution);
+      if (wrvuValue > 0) {
+        totalValue += wrvuValue;
+        breakdown.push({ label: "wRVU Capture", value: wrvuValue, icon: "dollar" });
+      }
+    }
+    
+    // Time Savings (show hours, not dollars yet - that's in Value Config)
+    const timeData = metricsData.timeSavings;
+    let hoursSaved = 0;
+    if (timeData.before !== null && timeData.after !== null && timeData.before > timeData.after) {
+      const minsSaved = timeData.before - timeData.after;
+      hoursSaved = Math.round((minsSaved * encounters) / 60);
+    }
+    
+    return {
+      totalValue,
+      breakdown,
+      hoursSaved,
+      hasAnyValue: totalValue > 0 || hoursSaved > 0,
+      isComplete: completedMetrics.length === orderedMetrics.length && orderedMetrics.length > 0,
+    };
+  }, [metricsData, deploymentData, completedMetrics.length, orderedMetrics.length]);
+
   // Render a metric section
   const renderMetricSection = (metricId: MetricType) => {
     const config = METRIC_CONFIG[metricId];
@@ -989,6 +1105,8 @@ export default function ExpandDataEntry({
                 step={0.01}
                 testIdPrefix="los-avg"
                 benchmarkWhisper="Typical average: 3.0-4.5 across specialties"
+                benchmarkMin={0.2}
+                benchmarkMax={0.5}
               />
 
               <button
@@ -1124,6 +1242,8 @@ export default function ExpandDataEntry({
                 step={1}
                 testIdPrefix="closure"
                 benchmarkWhisper="Typical: 40-95% same-day closure"
+                benchmarkMin={5}
+                benchmarkMax={15}
               />
 
               <button
@@ -1263,6 +1383,8 @@ export default function ExpandDataEntry({
               step={config.step}
               testIdPrefix={metricId}
               benchmarkWhisper={config.benchmarkWhisper}
+              benchmarkMin={config.benchmarkMin}
+              benchmarkMax={config.benchmarkMax}
             />
 
             {hasData && (
@@ -1383,6 +1505,47 @@ export default function ExpandDataEntry({
           );
         })}
 
+        {/* Value Preview - Live Value So Far */}
+        {valuePreview.hasAnyValue && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl text-white"
+            data-testid="value-preview-card"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-400 text-xs font-medium tracking-wide uppercase">Value Taking Shape</span>
+            </div>
+            
+            <div className="flex flex-wrap items-baseline gap-4 mb-3">
+              {valuePreview.totalValue > 0 && (
+                <div>
+                  <span className="text-2xl md:text-3xl font-bold text-emerald-400" data-testid="text-value-total">
+                    ${valuePreview.totalValue.toLocaleString()}
+                  </span>
+                  <span className="text-slate-400 text-sm ml-2">annual value (so far)</span>
+                </div>
+              )}
+              {valuePreview.hoursSaved > 0 && (
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-400" />
+                  <span className="text-lg font-semibold text-blue-400" data-testid="text-hours-saved">
+                    {valuePreview.hoursSaved.toLocaleString()} hours
+                  </span>
+                  <span className="text-slate-400 text-sm">saved annually</span>
+                </div>
+              )}
+            </div>
+            
+            <p className="text-slate-400 text-sm">
+              {valuePreview.isComplete 
+                ? "All metrics documented. Ready to see your full impact?"
+                : "Keep going — your story is taking shape. We'll show you the full picture next."}
+            </p>
+          </motion.div>
+        )}
+
         {/* Actions */}
         <div className="flex justify-end mt-8">
           <Button
@@ -1390,7 +1553,7 @@ export default function ExpandDataEntry({
             className="gap-2"
             data-testid="button-next"
           >
-            See Your Results
+            {valuePreview.hasAnyValue ? "See Your Impact" : "Continue"}
             <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
