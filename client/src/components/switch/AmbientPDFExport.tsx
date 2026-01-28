@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.lightGray,
     lineHeight: 1.6,
+    maxWidth: 400,
   },
   
   heroCompact: {
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     color: colors.lightGray,
     textAlign: "center",
     lineHeight: 1.5,
-    maxWidth: 400,
+    maxWidth: 450,
   },
   
   // Content section
