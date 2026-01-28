@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, AlertCircle, Edit3 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, AlertCircle, Edit3, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -17,6 +17,14 @@ interface StepTheMathProps {
   calculations: SwitchCalculations;
   onNext: () => void;
   onBack: () => void;
+}
+
+interface EditableAssumptions {
+  hourlyRate: number;
+  utilizationConversion: number;
+  efficiencyConversion: number;
+  wrvuDollarValue: number;
+  wrvuAttribution: number;
 }
 
 interface GapAccordionProps {
@@ -83,6 +91,33 @@ function GapAccordion({
   );
 }
 
+interface InlineEditProps {
+  value: number;
+  onChange: (value: number) => void;
+  prefix?: string;
+  suffix?: string;
+  step?: number;
+  width?: string;
+  testId: string;
+}
+
+function InlineEdit({ value, onChange, prefix = "", suffix = "", step = 1, width = "w-16", testId }: InlineEditProps) {
+  return (
+    <span className="inline-flex items-center gap-0.5 bg-amber-100 border border-amber-300 rounded px-1 py-0.5">
+      {prefix && <span className="text-amber-700">{prefix}</span>}
+      <input
+        type="number"
+        value={value}
+        step={step}
+        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        className={`${width} bg-transparent text-amber-800 font-bold text-center focus:outline-none focus:bg-amber-50 rounded`}
+        data-testid={testId}
+      />
+      {suffix && <span className="text-amber-700">{suffix}</span>}
+    </span>
+  );
+}
+
 export default function StepTheMath({
   inputs,
   updateInput,
@@ -92,6 +127,52 @@ export default function StepTheMath({
 }: StepTheMathProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
+  
+  const [assumptions, setAssumptions] = useState<EditableAssumptions>({
+    hourlyRate: VALUE_ASSUMPTIONS.hourlyRate,
+    utilizationConversion: VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100,
+    efficiencyConversion: VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100,
+    wrvuDollarValue: VALUE_ASSUMPTIONS.wrvuDollarValue,
+    wrvuAttribution: VALUE_ASSUMPTIONS.wrvuAttribution * 100,
+  });
+
+  const updateAssumption = <K extends keyof EditableAssumptions>(key: K, value: number) => {
+    setAssumptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  const eligibleEncounters = Math.round(inputs.annualEncounters * ABRIDGE_BENCHMARKS.utilization / 100);
+
+  const recalculatedValues = useMemo(() => {
+    const utilizationGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.utilization - inputs.utilization);
+    const additionalEncounters = Math.round(inputs.annualEncounters * utilizationGapPercent / 100);
+    const utilizationPotentialTimeSavedHours = (additionalEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
+    const utilizationGapValue = Math.round(utilizationPotentialTimeSavedHours * assumptions.hourlyRate * (assumptions.utilizationConversion / 100));
+
+    const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter);
+    const efficiencyGapHours = Math.round((eligibleEncounters * efficiencyGapMin) / 60);
+    const efficiencyGapValue = Math.round(efficiencyGapHours * assumptions.hourlyRate * (assumptions.efficiencyConversion / 100));
+
+    const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift);
+    const wrvuGapPerEncounter = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100);
+    const wrvuGapValue = Math.round(wrvuGapPerEncounter * eligibleEncounters * assumptions.wrvuDollarValue * (assumptions.wrvuAttribution / 100));
+
+    const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
+    const switchNowValue = annualGap * 3;
+    const wait6MonthsValue = annualGap * 2.5;
+    const wait12MonthsValue = annualGap * 2;
+
+    return {
+      utilizationGapValue,
+      efficiencyGapValue,
+      wrvuGapValue,
+      annualGap,
+      switchNowValue,
+      wait6MonthsValue,
+      wait12MonthsValue,
+      wait6MonthsLoss: switchNowValue - wait6MonthsValue,
+      wait12MonthsLoss: switchNowValue - wait12MonthsValue,
+    };
+  }, [inputs, assumptions, eligibleEncounters]);
 
   const chartData = calculations.currentTrajectory.map((point, i) => ({
     month: point.month,
@@ -122,8 +203,6 @@ export default function StepTheMath({
     }
     return null;
   };
-
-  const eligibleEncounters = Math.round(inputs.annualEncounters * ABRIDGE_BENCHMARKS.utilization / 100);
 
   return (
     <div className="space-y-6">
@@ -158,7 +237,7 @@ export default function StepTheMath({
             accentBorder="border-blue-100"
             title="Utilization Gap"
             subtitle={`${inputs.utilization}% → ${ABRIDGE_BENCHMARKS.utilization}%`}
-            value={calculations.utilizationGapValue}
+            value={recalculatedValues.utilizationGapValue}
             isOpen={openAccordion === 'utilization'}
             onToggle={() => toggleAccordion('utilization')}
           >
@@ -186,12 +265,34 @@ export default function StepTheMath({
               </div>
               
               <div className="p-3 bg-slate-50 rounded-lg text-xs text-[#6B7280]">
-                <p className="font-medium text-[#374151] mb-2">How we calculate this:</p>
-                <div className="space-y-1 font-mono">
+                <p className="font-medium text-[#374151] mb-2 flex items-center gap-1.5">
+                  <Settings2 className="w-3.5 h-3.5" />
+                  How we calculate this (click values to edit):
+                </p>
+                <div className="space-y-1.5 font-mono">
                   <p>Gap: ({ABRIDGE_BENCHMARKS.utilization}% - {inputs.utilization}%) = {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}%</p>
                   <p>Additional encounters: {inputs.annualEncounters.toLocaleString()} × {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}% = {Math.round(inputs.annualEncounters * (ABRIDGE_BENCHMARKS.utilization - inputs.utilization) / 100).toLocaleString()}</p>
-                  <p>Time value: × {ABRIDGE_BENCHMARKS.timeSavedAvg} min × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}% conversion</p>
-                  <p className="font-bold text-blue-600 pt-1">= {formatCurrency(calculations.utilizationGapValue)}/year</p>
+                  <p className="flex items-center flex-wrap gap-1">
+                    Time value: × {ABRIDGE_BENCHMARKS.timeSavedAvg} min × 
+                    <InlineEdit
+                      value={assumptions.hourlyRate}
+                      onChange={(v) => updateAssumption('hourlyRate', v)}
+                      prefix="$"
+                      suffix="/hr"
+                      width="w-12"
+                      testId="edit-hourly-rate-util"
+                    />
+                    ×
+                    <InlineEdit
+                      value={assumptions.utilizationConversion}
+                      onChange={(v) => updateAssumption('utilizationConversion', v)}
+                      suffix="%"
+                      width="w-10"
+                      testId="edit-util-conversion"
+                    />
+                    conversion
+                  </p>
+                  <p className="font-bold text-blue-600 pt-1">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -206,7 +307,7 @@ export default function StepTheMath({
             accentBorder="border-purple-100"
             title="Efficiency Gap"
             subtitle={`${inputs.timeSavedPerEncounter} min → ${ABRIDGE_BENCHMARKS.timeSavedAvg} min saved`}
-            value={calculations.efficiencyGapValue}
+            value={recalculatedValues.efficiencyGapValue}
             isOpen={openAccordion === 'efficiency'}
             onToggle={() => toggleAccordion('efficiency')}
           >
@@ -235,13 +336,35 @@ export default function StepTheMath({
               </div>
               
               <div className="p-3 bg-slate-50 rounded-lg text-xs text-[#6B7280]">
-                <p className="font-medium text-[#374151] mb-2">How we calculate this:</p>
-                <div className="space-y-1 font-mono">
+                <p className="font-medium text-[#374151] mb-2 flex items-center gap-1.5">
+                  <Settings2 className="w-3.5 h-3.5" />
+                  How we calculate this (click values to edit):
+                </p>
+                <div className="space-y-1.5 font-mono">
                   <p>Time gap: ({ABRIDGE_BENCHMARKS.timeSavedAvg} - {inputs.timeSavedPerEncounter}) = {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min/encounter</p>
                   <p>Eligible encounters: {eligibleEncounters.toLocaleString()} (at {ABRIDGE_BENCHMARKS.utilization}% utilization)</p>
                   <p>Hours saved: {((ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter) * eligibleEncounters / 60).toFixed(0)} hours/year</p>
-                  <p>Value: × ${VALUE_ASSUMPTIONS.hourlyRate}/hr × {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}% conversion</p>
-                  <p className="font-bold text-purple-600 pt-1">= {formatCurrency(calculations.efficiencyGapValue)}/year</p>
+                  <p className="flex items-center flex-wrap gap-1">
+                    Value: ×
+                    <InlineEdit
+                      value={assumptions.hourlyRate}
+                      onChange={(v) => updateAssumption('hourlyRate', v)}
+                      prefix="$"
+                      suffix="/hr"
+                      width="w-12"
+                      testId="edit-hourly-rate-eff"
+                    />
+                    ×
+                    <InlineEdit
+                      value={assumptions.efficiencyConversion}
+                      onChange={(v) => updateAssumption('efficiencyConversion', v)}
+                      suffix="%"
+                      width="w-10"
+                      testId="edit-eff-conversion"
+                    />
+                    conversion
+                  </p>
+                  <p className="font-bold text-purple-600 pt-1">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -256,7 +379,7 @@ export default function StepTheMath({
             accentBorder="border-emerald-100"
             title="Quality Gap (wRVU)"
             subtitle={`+${inputs.wrvuLift}% → +${ABRIDGE_BENCHMARKS.wrvuLift}% lift`}
-            value={calculations.wrvuGapValue}
+            value={recalculatedValues.wrvuGapValue}
             isOpen={openAccordion === 'quality'}
             onToggle={() => toggleAccordion('quality')}
           >
@@ -285,13 +408,35 @@ export default function StepTheMath({
               </div>
               
               <div className="p-3 bg-slate-50 rounded-lg text-xs text-[#6B7280]">
-                <p className="font-medium text-[#374151] mb-2">How we calculate this:</p>
-                <div className="space-y-1 font-mono">
+                <p className="font-medium text-[#374151] mb-2 flex items-center gap-1.5">
+                  <Settings2 className="w-3.5 h-3.5" />
+                  How we calculate this (click values to edit):
+                </p>
+                <div className="space-y-1.5 font-mono">
                   <p>wRVU gap: ({ABRIDGE_BENCHMARKS.wrvuLift}% - {inputs.wrvuLift}%) = {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}%</p>
                   <p>Base wRVU: {VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU/encounter × {eligibleEncounters.toLocaleString()} encounters</p>
                   <p>Additional wRVU: × {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}%</p>
-                  <p>Value: × ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU × {VALUE_ASSUMPTIONS.wrvuAttribution * 100}% attribution</p>
-                  <p className="font-bold text-emerald-600 pt-1">= {formatCurrency(calculations.wrvuGapValue)}/year</p>
+                  <p className="flex items-center flex-wrap gap-1">
+                    Value: ×
+                    <InlineEdit
+                      value={assumptions.wrvuDollarValue}
+                      onChange={(v) => updateAssumption('wrvuDollarValue', v)}
+                      prefix="$"
+                      suffix="/wRVU"
+                      width="w-10"
+                      testId="edit-wrvu-value"
+                    />
+                    ×
+                    <InlineEdit
+                      value={assumptions.wrvuAttribution}
+                      onChange={(v) => updateAssumption('wrvuAttribution', v)}
+                      suffix="%"
+                      width="w-10"
+                      testId="edit-wrvu-attribution"
+                    />
+                    attribution
+                  </p>
+                  <p className="font-bold text-emerald-600 pt-1">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
                 </div>
               </div>
               
@@ -308,12 +453,12 @@ export default function StepTheMath({
             <TrendingUp className="w-5 h-5 text-emerald-400" />
             <span className="font-semibold">Total Annual Gap</span>
           </div>
-          <span className="text-2xl font-bold text-emerald-400">{formatCurrency(calculations.annualGap)}</span>
+          <span className="text-2xl font-bold text-emerald-400">{formatCurrency(recalculatedValues.annualGap)}</span>
         </div>
 
         <div className="mt-4 text-center">
           <p className="text-sm text-[#6B7280]">
-            That's <span className="font-semibold text-[#111827]">{formatCurrency(calculations.annualGap)}</span> in unrealized value — every year.
+            That's <span className="font-semibold text-[#111827]">{formatCurrency(recalculatedValues.annualGap)}</span> in unrealized value — every year.
             <br />
             <span className="text-[#9CA3AF]">Here's what that looks like over time, and why timing matters.</span>
           </p>
@@ -445,33 +590,33 @@ export default function StepTheMath({
               </span>
             </div>
             <div className="mt-2">
-              <p className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(calculations.switchNowValue)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(recalculatedValues.switchNowValue)}</p>
               <p className="text-xs text-emerald-700 mt-1">3-year value captured</p>
             </div>
           </div>
 
           <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
             <p className="text-[10px] text-amber-600 font-semibold uppercase tracking-wide mb-1">Wait 6 Months</p>
-            <p className="text-xl md:text-2xl font-bold text-amber-600">{formatCurrency(calculations.wait6MonthsValue)}</p>
+            <p className="text-xl md:text-2xl font-bold text-amber-600">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
             <div className="flex items-center gap-1 mt-1">
               <AlertCircle className="w-3 h-3 text-red-500" />
-              <p className="text-xs text-red-600 font-medium">-{formatCurrency(calculations.wait6MonthsLoss)}</p>
+              <p className="text-xs text-red-600 font-medium">-{formatCurrency(recalculatedValues.wait6MonthsLoss)}</p>
             </div>
           </div>
 
           <div className="bg-red-50 rounded-xl p-4 border border-red-200">
             <p className="text-[10px] text-red-600 font-semibold uppercase tracking-wide mb-1">Wait 12 Months</p>
-            <p className="text-xl md:text-2xl font-bold text-red-600">{formatCurrency(calculations.wait12MonthsValue)}</p>
+            <p className="text-xl md:text-2xl font-bold text-red-600">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
             <div className="flex items-center gap-1 mt-1">
               <AlertCircle className="w-3 h-3 text-red-500" />
-              <p className="text-xs text-red-600 font-medium">-{formatCurrency(calculations.wait12MonthsLoss)}</p>
+              <p className="text-xs text-red-600 font-medium">-{formatCurrency(recalculatedValues.wait12MonthsLoss)}</p>
             </div>
           </div>
         </div>
 
         <div className="mt-4 text-center">
           <p className="text-sm text-[#6B7280]">
-            Every 6 months of delay costs approximately <span className="font-semibold text-red-600">{formatCurrency(calculations.wait6MonthsLoss)}</span> in unrealized value.
+            Every 6 months of delay costs approximately <span className="font-semibold text-red-600">{formatCurrency(recalculatedValues.wait6MonthsLoss)}</span> in unrealized value.
           </p>
         </div>
       </section>
@@ -487,13 +632,13 @@ export default function StepTheMath({
       {showMethodology && (
         <div className="bg-slate-50 rounded-lg border border-slate-200 p-5 space-y-4 text-sm">
           <div>
-            <h4 className="font-semibold text-[#111827] mb-2">Key Assumptions</h4>
+            <h4 className="font-semibold text-[#111827] mb-2">Your Current Assumptions</h4>
             <ul className="space-y-1 text-[#6B7280]">
-              <li>• Provider hourly rate: ${VALUE_ASSUMPTIONS.hourlyRate}/hour</li>
-              <li>• Time-to-value conversion (utilization): {VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100}%</li>
-              <li>• Time-to-value conversion (efficiency): {VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100}%</li>
-              <li>• wRVU value: ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU</li>
-              <li>• wRVU attribution: {VALUE_ASSUMPTIONS.wrvuAttribution * 100}%</li>
+              <li>• Provider hourly rate: <span className="font-medium text-[#111827]">${assumptions.hourlyRate}/hour</span></li>
+              <li>• Time-to-value conversion (utilization): <span className="font-medium text-[#111827]">{assumptions.utilizationConversion}%</span></li>
+              <li>• Time-to-value conversion (efficiency): <span className="font-medium text-[#111827]">{assumptions.efficiencyConversion}%</span></li>
+              <li>• wRVU value: <span className="font-medium text-[#111827]">${assumptions.wrvuDollarValue}/wRVU</span></li>
+              <li>• wRVU attribution: <span className="font-medium text-[#111827]">{assumptions.wrvuAttribution}%</span></li>
             </ul>
           </div>
           <div>
