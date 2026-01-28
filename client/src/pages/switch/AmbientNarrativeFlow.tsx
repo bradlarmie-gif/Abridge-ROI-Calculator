@@ -26,9 +26,9 @@ interface AmbientNarrativeFlowProps {
 const STEPS = [
   { id: 1, name: "Where You Are", shortName: "Input" },
   { id: 2, name: "The Gap", shortName: "Gap" },
-  { id: 3, name: "Why This Happens", shortName: "Why" },
-  { id: 4, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 5, name: "The Math", shortName: "Math" },
+  { id: 3, name: "What Good Looks Like", shortName: "Proof" },
+  { id: 4, name: "The Math", shortName: "Math" },
+  { id: 5, name: "What It Takes", shortName: "How" },
   { id: 6, name: "The Invitation", shortName: "Next" },
 ];
 
@@ -167,11 +167,11 @@ export default function AmbientNarrativeFlow({
       case 2:
         return <StepTheGap {...commonProps} />;
       case 3:
-        return <StepWhyThisHappens {...commonProps} />;
-      case 4:
         return <StepWhatGoodLooksLike {...commonProps} />;
-      case 5:
+      case 4:
         return <StepTheMath {...commonProps} />;
+      case 5:
+        return <StepWhyThisHappens {...commonProps} />;
       case 6:
         return (
           <StepTheInvitation 

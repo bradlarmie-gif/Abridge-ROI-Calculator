@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Zap, Settings, AlertTriangle, Clock, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, RotateCcw, Users, Zap, Settings, TrendingUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   type SwitchInputs,
@@ -14,72 +14,178 @@ interface StepWhyThisHappensProps {
   onBack: () => void;
 }
 
-const DIAGNOSTIC_CARDS = [
+interface FlipCardData {
+  id: string;
+  icon: React.ElementType;
+  challenge: {
+    title: string;
+    description: string;
+  };
+  solution: {
+    title: string;
+    description: string;
+    traits: string[];
+  };
+  gradient: string;
+  accentLight: string;
+  accentDark: string;
+}
+
+const FLIP_CARDS: FlipCardData[] = [
   {
     id: "adoption",
     icon: Users,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-    accentColor: "blue",
-    title: "Adoption Friction",
-    subtitle: "The human element",
-    description: "Even the best technology fails without proper change management. Providers are creatures of habit — and old workflows die hard.",
-    symptoms: [
-      { id: "forget", text: "Providers forget to start recording" },
-      { id: "inconsistent", text: "Inconsistent usage across departments" },
-      { id: "workarounds", text: "Workarounds that bypass the system" },
-      { id: "training", text: "Training that didn't stick" }
-    ]
+    challenge: {
+      title: "The Adoption Challenge",
+      description: "Technology alone doesn't change behavior. Without intentional change management, providers revert to old habits within weeks."
+    },
+    solution: {
+      title: "Strategic Change Partners",
+      description: "Implementation that treats adoption as a human challenge, not a technical one.",
+      traits: ["Dedicated success partners", "Provider champions program", "Behavioral design expertise"]
+    },
+    gradient: "from-blue-500 to-blue-600",
+    accentLight: "bg-blue-50",
+    accentDark: "text-blue-600"
   },
   {
-    id: "technology",
-    icon: Zap,
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
-    accentColor: "amber",
-    title: "Technology Ceiling",
-    subtitle: "The product itself",
-    description: "Not all ambient AI is created equal. Some solutions hit a ceiling on accuracy, specialty support, or EHR integration.",
-    symptoms: [
-      { id: "editing", text: "Notes require significant editing" },
-      { id: "specialty", text: "Missing specialty-specific terminology" },
-      { id: "complex", text: "Poor handling of complex visits" },
-      { id: "integration", text: "Integration issues with your EHR" }
-    ]
-  },
-  {
-    id: "implementation",
+    id: "optimization",
     icon: Settings,
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-    accentColor: "purple",
-    title: "Implementation Gaps",
-    subtitle: "The rollout",
-    description: "A rushed or incomplete implementation leaves value on the table. Without proper setup, even great technology underperforms.",
-    symptoms: [
-      { id: "templates", text: "Generic templates, not customized" },
-      { id: "optimization", text: "No ongoing optimization" },
-      { id: "sponsorship", text: "Lack of executive sponsorship" },
-      { id: "metrics", text: "Missing performance metrics" }
-    ]
+    challenge: {
+      title: "The Set-It-and-Forget-It Trap",
+      description: "Most implementations peak at launch and plateau. Without continuous optimization, value erodes over time."
+    },
+    solution: {
+      title: "Continuous Optimization",
+      description: "Ongoing refinement that treats implementation as a journey, not a destination.",
+      traits: ["Quarterly business reviews", "Real-time analytics", "Proactive performance monitoring"]
+    },
+    gradient: "from-purple-500 to-purple-600",
+    accentLight: "bg-purple-50",
+    accentDark: "text-purple-600"
   },
   {
-    id: "fatigue",
-    icon: Clock,
-    iconBg: "bg-rose-100",
-    iconColor: "text-rose-600",
-    accentColor: "rose",
-    title: "Provider Fatigue",
-    subtitle: "The burnout factor",
-    description: "When providers are already exhausted, learning new technology feels like one more burden. Adoption suffers — and so does ROI.",
-    symptoms: [
-      { id: "changes", text: "Too many changes at once" },
-      { id: "chore", text: "Documentation still feels like a chore" },
-      { id: "wins", text: "No visible wins to celebrate" },
-      { id: "support", text: "Support feels distant or slow" }
-    ]
+    id: "specialty",
+    icon: Zap,
+    challenge: {
+      title: "The One-Size-Fits-All Problem",
+      description: "Generic solutions miss the nuances of different specialties, workflows, and organizational cultures."
+    },
+    solution: {
+      title: "Deep Customization",
+      description: "Configuration that respects the complexity of healthcare, specialty by specialty.",
+      traits: ["Specialty-specific templates", "Workflow integration", "EHR-native experience"]
+    },
+    gradient: "from-amber-500 to-amber-600",
+    accentLight: "bg-amber-50",
+    accentDark: "text-amber-600"
+  },
+  {
+    id: "leadership",
+    icon: TrendingUp,
+    challenge: {
+      title: "The Missing Executive Sponsor",
+      description: "Without visible leadership support, initiatives lose momentum. Providers sense when something isn't a priority."
+    },
+    solution: {
+      title: "Strategic Partnership",
+      description: "Engagement models designed to maintain executive visibility and organizational momentum.",
+      traits: ["Executive briefings", "ROI dashboards", "Stakeholder alignment"]
+    },
+    gradient: "from-emerald-500 to-emerald-600",
+    accentLight: "bg-emerald-50",
+    accentDark: "text-emerald-600"
   }
 ];
+
+function FlipCard({ card, isFlipped, onFlip }: { 
+  card: FlipCardData; 
+  isFlipped: boolean; 
+  onFlip: () => void;
+}) {
+  const Icon = card.icon;
+  
+  return (
+    <div 
+      className="relative h-[280px] cursor-pointer group perspective-1000"
+      onClick={onFlip}
+      data-testid={`flip-card-${card.id}`}
+    >
+      <div 
+        className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+          isFlipped ? 'rotate-y-180' : ''
+        }`}
+        style={{
+          transformStyle: 'preserve-3d',
+          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+        }}
+      >
+        <div 
+          className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden"
+          style={{ backfaceVisibility: 'hidden' }}
+        >
+          <div className={`w-full h-full bg-gradient-to-br ${card.gradient} p-6 flex flex-col text-white`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                <Icon className="w-6 h-6" />
+              </div>
+              <div className="flex items-center gap-1.5 text-white/70 text-xs font-medium">
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Tap to flip</span>
+              </div>
+            </div>
+            <h3 className="text-xl font-bold mb-3">{card.challenge.title}</h3>
+            <p className="text-white/90 text-sm leading-relaxed flex-1">
+              {card.challenge.description}
+            </p>
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <p className="text-xs text-white/60 uppercase tracking-wide font-medium">
+                The pattern we see
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden"
+          style={{ 
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)'
+          }}
+        >
+          <div className={`w-full h-full ${card.accentLight} p-6 flex flex-col border border-slate-200`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm`}>
+                <Sparkles className={`w-6 h-6 ${card.accentDark}`} />
+              </div>
+              <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Tap to flip</span>
+              </div>
+            </div>
+            <h3 className={`text-xl font-bold mb-2 ${card.accentDark}`}>{card.solution.title}</h3>
+            <p className="text-slate-600 text-sm mb-4">
+              {card.solution.description}
+            </p>
+            <div className="space-y-2 flex-1">
+              {card.solution.traits.map((trait, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full ${card.accentDark.replace('text-', 'bg-')}`} />
+                  <span className="text-sm text-slate-700">{trait}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">
+                What success requires
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function StepWhyThisHappens({
   inputs,
@@ -87,142 +193,83 @@ export default function StepWhyThisHappens({
   onNext,
   onBack,
 }: StepWhyThisHappensProps) {
-  const [selectedSymptoms, setSelectedSymptoms] = useState<Set<string>>(new Set());
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
-  const toggleSymptom = (symptomId: string) => {
-    setSelectedSymptoms(prev => {
+  const toggleCard = (cardId: string) => {
+    setFlippedCards(prev => {
       const next = new Set(prev);
-      if (next.has(symptomId)) {
-        next.delete(symptomId);
+      if (next.has(cardId)) {
+        next.delete(cardId);
       } else {
-        next.add(symptomId);
+        next.add(cardId);
       }
       return next;
     });
   };
 
-  const totalSelected = selectedSymptoms.size;
+  const flippedCount = flippedCards.size;
+  const allFlipped = flippedCount === FLIP_CARDS.length;
 
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
-          Why This Happens
+          What It Takes
         </h1>
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          You're not alone. Most organizations experience the same patterns.
+          The gap between potential and reality isn't about the technology.
           <br className="hidden md:block" />
-          <span className="text-[#374151]">Tap any that feel familiar.</span>
+          <span className="text-[#374151]">It's about the approach.</span>
         </p>
       </div>
 
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600" />
-          <span className="font-semibold text-[#111827]">The uncomfortable truth</span>
-        </div>
-        <p className="text-[#6B7280]">
-          Buying ambient AI is easy. <span className="font-medium text-[#111827]">Getting full value from it is hard.</span> 
-          The gap you're seeing isn't a failure — it's a pattern.
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 text-center">
+        <p className="text-[#374151]">
+          <span className="font-medium">Here's what we've learned</span> from hundreds of implementations.
+          <br />
+          <span className="text-[#6B7280]">Tap each card to see what makes the difference.</span>
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {DIAGNOSTIC_CARDS.map((card) => {
-          const cardSelectedCount = card.symptoms.filter(s => selectedSymptoms.has(s.id)).length;
-          const hasSelections = cardSelectedCount > 0;
-          
-          return (
-            <div 
-              key={card.id}
-              className={`bg-white rounded-xl border p-5 transition-all duration-200 ${
-                hasSelections 
-                  ? 'border-slate-300 shadow-md' 
-                  : 'border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-lg ${card.iconBg} flex items-center justify-center flex-shrink-0`}>
-                    <card.icon className={`w-5 h-5 ${card.iconColor}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[#111827]">{card.title}</h3>
-                    <p className="text-xs text-[#6B7280]">{card.subtitle}</p>
-                  </div>
-                </div>
-                {hasSelections && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-full">
-                    <Check className="w-3 h-3 text-slate-600" />
-                    <span className="text-xs font-medium text-slate-600">{cardSelectedCount}</span>
-                  </div>
-                )}
-              </div>
-              
-              <p className="text-sm text-[#6B7280] mb-4">
-                {card.description}
-              </p>
-              
-              <div className="space-y-2">
-                {card.symptoms.map((symptom) => {
-                  const isSelected = selectedSymptoms.has(symptom.id);
-                  return (
-                    <button
-                      key={symptom.id}
-                      onClick={() => toggleSymptom(symptom.id)}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-all duration-150 ${
-                        isSelected 
-                          ? 'bg-slate-100 border border-slate-300' 
-                          : 'bg-slate-50 border border-transparent hover:bg-slate-100 hover:border-slate-200'
-                      }`}
-                      data-testid={`symptom-${symptom.id}`}
-                    >
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                        isSelected 
-                          ? 'bg-slate-700 text-white' 
-                          : 'bg-white border-2 border-slate-300'
-                      }`}>
-                        {isSelected && <Check className="w-3 h-3" />}
-                      </div>
-                      <span className={`text-sm ${isSelected ? 'text-[#111827] font-medium' : 'text-[#6B7280]'}`}>
-                        {symptom.text}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+        {FLIP_CARDS.map((card) => (
+          <FlipCard
+            key={card.id}
+            card={card}
+            isFlipped={flippedCards.has(card.id)}
+            onFlip={() => toggleCard(card.id)}
+          />
+        ))}
       </div>
 
-      {totalSelected > 0 && (
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-5 text-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg font-bold">{totalSelected}</span>
-            </div>
-            <div>
-              <p className="font-medium">
-                {totalSelected === 1 
-                  ? "You identified 1 pattern that resonates." 
-                  : `You identified ${totalSelected} patterns that resonate.`
-                }
-              </p>
-              <p className="text-sm text-slate-300">
-                This is valuable self-awareness. The next step is understanding what's possible.
-              </p>
-            </div>
+      {flippedCount > 0 && !allFlipped && (
+        <div className="text-center">
+          <p className="text-sm text-[#6B7280]">
+            {flippedCount} of {FLIP_CARDS.length} explored
+          </p>
+        </div>
+      )}
+
+      {allFlipped && (
+        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 text-white text-center">
+          <div className="max-w-xl mx-auto">
+            <Sparkles className="w-8 h-8 mx-auto mb-4 text-amber-400" />
+            <p className="text-lg font-medium mb-2">
+              This is why implementation matters more than the tool itself.
+            </p>
+            <p className="text-slate-300 text-sm">
+              The organizations that capture full value aren't just buying technology — 
+              they're partnering with teams who understand these challenges deeply.
+            </p>
           </div>
         </div>
       )}
 
-      {totalSelected === 0 && (
-        <div className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl p-6 border border-slate-200">
-          <p className="text-center text-[#374151]">
-            <span className="font-semibold">Here's what this adds up to:</span> organizations are leaving 
-            <span className="font-bold text-[#EA2C00]"> 30-50% of potential value </span>
-            on the table — year after year.
+      {!allFlipped && (
+        <div className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl p-6 border border-slate-200 text-center">
+          <p className="text-[#374151]">
+            <span className="font-medium">The bottom line:</span> capturing the value you saw in The Math 
+            requires more than good technology. It requires the right partnership.
           </p>
         </div>
       )}
@@ -243,7 +290,7 @@ export default function StepWhyThisHappens({
           className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
           data-testid="button-next"
         >
-          What Good Looks Like
+          Your Next Steps
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
