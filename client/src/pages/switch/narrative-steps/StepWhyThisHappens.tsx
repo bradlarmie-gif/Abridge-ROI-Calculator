@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, RotateCcw, Brain, Users, TrendingDown, Puzzle, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, RotateCcw, Users, Settings, Zap, TrendingUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   type SwitchInputs,
@@ -34,16 +34,16 @@ interface FlipCardData {
 
 const FLIP_CARDS: FlipCardData[] = [
   {
-    id: "ai-quality",
-    icon: Brain,
+    id: "adoption",
+    icon: Users,
     challenge: {
-      title: "Your AI wasn't built for this",
-      description: "Most ambient tools are general-purpose AI with a clinical skin. They weren't trained on real doctor-patient conversations. They guess. That's why you're still editing."
+      title: "The Adoption Challenge",
+      description: "Technology alone doesn't change behavior. Without intentional change management, providers revert to old habits within weeks."
     },
     solution: {
-      title: "Built from clinical conversations",
-      description: "Our AI was trained on millions of real clinical encounters. It understands medicine because it learned medicine.",
-      traits: ["Trained on real clinical audio", "Specialty-aware from day one", "Lives inside your EHR"]
+      title: "Strategic Change Partners",
+      description: "Implementation that treats adoption as a human challenge, not a technical one.",
+      traits: ["Dedicated success partners", "Provider champions program", "Behavioral design expertise"]
     },
     frontBg: "bg-slate-700",
     frontText: "text-white",
@@ -51,16 +51,16 @@ const FLIP_CARDS: FlipCardData[] = [
     accentColor: "text-slate-700"
   },
   {
-    id: "vendor-gone",
-    icon: Users,
+    id: "optimization",
+    icon: Settings,
     challenge: {
-      title: "Your vendor disappeared",
-      description: "You signed. They launched. Then they moved on to the next deal. Now you're stuck figuring it out alone, and nobody picks up the phone."
+      title: "The Set-It-and-Forget-It Trap",
+      description: "Most implementations peak at launch and plateau. Without continuous optimization, value erodes over time."
     },
     solution: {
-      title: "We stay",
-      description: "Named success partners who know your org, your workflows, your goals. Not a ticket number. A relationship.",
-      traits: ["Dedicated partners, not call centers", "Executives who stay accountable", "We're in it with you"]
+      title: "Continuous Optimization",
+      description: "Ongoing refinement that treats implementation as a journey, not a destination.",
+      traits: ["Quarterly business reviews", "Real-time analytics", "Proactive performance monitoring"]
     },
     frontBg: "bg-slate-600",
     frontText: "text-white",
@@ -68,16 +68,16 @@ const FLIP_CARDS: FlipCardData[] = [
     accentColor: "text-slate-600"
   },
   {
-    id: "plateau",
-    icon: TrendingDown,
+    id: "specialty",
+    icon: Zap,
     challenge: {
-      title: "You peaked at launch",
-      description: "The first few weeks felt great. Then usage flatlined. Value eroded. Now it's just another tool nobody's optimizing."
+      title: "The One-Size-Fits-All Problem",
+      description: "Generic solutions miss the nuances of different specialties, workflows, and organizational cultures."
     },
     solution: {
-      title: "We keep climbing",
-      description: "Ongoing optimization, not set-and-forget. We monitor, we refine, we push. Launch is the starting line, not the finish.",
-      traits: ["Continuous improvement cycles", "Proactive performance monitoring", "Quarterly business reviews"]
+      title: "Deep Customization",
+      description: "Configuration that respects the complexity of healthcare, specialty by specialty.",
+      traits: ["Specialty-specific templates", "Workflow integration", "EHR-native experience"]
     },
     frontBg: "bg-slate-500",
     frontText: "text-white",
@@ -85,16 +85,16 @@ const FLIP_CARDS: FlipCardData[] = [
     accentColor: "text-slate-600"
   },
   {
-    id: "generic",
-    icon: Puzzle,
+    id: "leadership",
+    icon: TrendingUp,
     challenge: {
-      title: "Templates failed you",
-      description: "Cardiology isn't ortho. Your urgent care isn't like theirs. But your tool treats everyone the same. No wonder half your providers gave up."
+      title: "The Missing Executive Sponsor",
+      description: "Without visible leadership support, initiatives lose momentum. Providers sense when something isn't a priority."
     },
     solution: {
-      title: "We configure for real",
-      description: "Not templates. Real specialty-by-specialty configuration. Your workflows, your preferences, your organization.",
-      traits: ["Built for how you actually work", "Specialty-specific adaptation", "Evolves with your feedback"]
+      title: "Strategic Partnership",
+      description: "Engagement models designed to maintain executive visibility and organizational momentum.",
+      traits: ["Executive briefings", "ROI dashboards", "Stakeholder alignment"]
     },
     frontBg: "bg-slate-400",
     frontText: "text-white",
@@ -143,7 +143,7 @@ function FlipCard({ card, isFlipped, onFlip }: {
             </p>
             <div className="mt-3 pt-3 border-t border-white/15">
               <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
-                Sound familiar?
+                The pattern we see
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ function FlipCard({ card, isFlipped, onFlip }: {
             </div>
             <div className="mt-3 pt-3 border-t border-slate-200">
               <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
-                How we're different
+                What success requires
               </p>
             </div>
           </div>
@@ -220,9 +220,9 @@ export default function StepWhyThisHappens({
           What It Takes
         </h1>
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          From hundreds of implementations, we've seen the same patterns.
+          Here's what we've learned from hundreds of implementations.
           <br className="hidden md:block" />
-          <span className="text-[#374151]">Here's what actually matters.</span>
+          <span className="text-[#374151]">Tap each card to see what makes the difference.</span>
         </p>
       </div>
 
@@ -249,11 +249,11 @@ export default function StepWhyThisHappens({
         <div className="bg-slate-800 rounded-xl p-6 text-white text-center">
           <div className="max-w-xl mx-auto">
             <p className="text-base md:text-lg font-medium mb-2">
-              This is why the gap exists.
+              This is why implementation matters more than the tool itself.
             </p>
             <p className="text-slate-400 text-sm">
-              And this is what it takes to close it. Not just better software — 
-              the right partner who's been here before and knows how to get you there.
+              The organizations that capture full value aren't just buying technology — 
+              they're partnering with teams who understand these challenges deeply.
             </p>
           </div>
         </div>
@@ -262,7 +262,8 @@ export default function StepWhyThisHappens({
       {!allFlipped && (
         <div className="bg-slate-100 rounded-xl p-5 border border-slate-200 text-center">
           <p className="text-[#374151] text-sm">
-            Tap each card to see what we do differently.
+            <span className="font-medium">The bottom line:</span> capturing the value you saw in The Math 
+            requires more than good technology. It requires the right partnership.
           </p>
         </div>
       )}
@@ -283,7 +284,7 @@ export default function StepWhyThisHappens({
           className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
           data-testid="button-next"
         >
-          See Your Summary
+          Your Next Steps
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
