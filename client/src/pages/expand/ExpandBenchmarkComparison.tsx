@@ -368,20 +368,20 @@ export default function ExpandBenchmarkComparison({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 mb-8 text-white"
+          className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-8 mb-8 shadow-sm"
         >
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="flex-shrink-0">
-              <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-white/10 flex items-center justify-center relative">
+              <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-neutral-50 flex items-center justify-center relative border border-neutral-100">
                 <div className="text-center">
-                  <div className="text-4xl md:text-5xl font-bold">{healthScore}</div>
-                  <div className="text-xs text-white/60 uppercase tracking-wider">Health Score</div>
+                  <div className="text-4xl md:text-5xl font-bold text-[#1F2937]">{healthScore}</div>
+                  <div className="text-xs text-[#6B7280] uppercase tracking-wider font-medium">Health Score</div>
                 </div>
                 {/* Circular progress indicator */}
                 <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
                   <circle 
                     cx="50" cy="50" r="45" 
-                    stroke="rgba(255,255,255,0.1)" 
+                    stroke="#E5E7EB" 
                     strokeWidth="6" 
                     fill="none" 
                   />
@@ -399,12 +399,12 @@ export default function ExpandBenchmarkComparison({
             
             <div className="flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                <Sparkles className="w-5 h-5 text-amber-400" />
-                <span className={`text-xl font-semibold ${healthLabel.color.replace('text-', 'text-').replace('-600', '-400')}`}>
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                <span className={`text-xl font-semibold ${healthLabel.color}`}>
                   {healthLabel.label}
                 </span>
               </div>
-              <p className="text-white/70 text-sm md:text-base mb-4">
+              <p className="text-[#4B5563] text-sm md:text-base mb-4 leading-relaxed">
                 {healthScore >= 65 
                   ? "Your deployment is performing well across key metrics. You're realizing real value."
                   : healthScore >= 45
@@ -416,17 +416,17 @@ export default function ExpandBenchmarkComparison({
               {/* Status summary pills */}
               <div className="flex flex-wrap justify-center md:justify-start gap-2">
                 {aboveCount > 0 && (
-                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
                     {aboveCount} Exceeding
                   </span>
                 )}
                 {onTrackCount > 0 && (
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
                     {onTrackCount} On Track
                   </span>
                 )}
                 {developingCount > 0 && (
-                  <span className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs font-medium">
+                  <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
                     {developingCount} Developing
                   </span>
                 )}
