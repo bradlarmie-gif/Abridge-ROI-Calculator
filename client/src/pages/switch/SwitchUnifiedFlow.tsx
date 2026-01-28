@@ -33,12 +33,12 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
   });
 
   const [scribeInputs, setScribeInputs] = useState<ScribeInputs>({
-    scribeCount: 10,
-    scribeCostPerHour: 25,
-    scribeHoursPerWeek: 40,
-    providersWithScribes: 15,
-    totalProviders: 200,
-    annualEncounters: 400000,
+    scribeCount: 0,
+    scribeCostPerHour: 0,
+    scribeHoursPerWeek: 0,
+    providersWithScribes: 0,
+    totalProviders: 0,
+    annualEncounters: 0,
   });
 
   const handleSelectPath = (path: "ambient-ai" | "human-scribes") => {
