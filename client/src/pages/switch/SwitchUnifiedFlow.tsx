@@ -3,6 +3,7 @@ import SwitchAssessment from "./SwitchAssessment";
 import SwitchFullAnalysis from "./SwitchFullAnalysis";
 import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
+import AmbientNarrativeFlow from "./AmbientNarrativeFlow";
 import { type SwitchInputs, type SolutionType } from "@/lib/switchGapCalculator";
 import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 import { PageTransition } from "@/components/PageTransition";
@@ -72,6 +73,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
 
   // Determine which component to render
   const getPageContent = () => {
+    // Scribe path: Keep the original 2-step flow
     if (solutionType === "human-scribes") {
       if (currentStep === 2) {
         return (
@@ -94,22 +96,11 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
       );
     }
 
-    if (currentStep === 2) {
-      return (
-        <SwitchFullAnalysis
-          inputs={ambientInputs}
-          setInputs={handleAmbientInputsChange}
-          onBack={goBack}
-          onBackToJourney={onBackToJourney}
-        />
-      );
-    }
-
+    // Ambient AI path: Use the new 6-step narrative flow
     return (
-      <SwitchAssessment
+      <AmbientNarrativeFlow
         inputs={ambientInputs}
         setInputs={handleAmbientInputsChange}
-        onNext={goNext}
         onBack={goBack}
         onBackToJourney={onBackToJourney}
         onNavigateToExplore={onExploreAmbientAI}
