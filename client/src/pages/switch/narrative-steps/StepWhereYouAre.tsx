@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, BarChart3, Clock, DollarSign, Smile, Moon, TrendingUp } from "lucide-react";
+import { ArrowRight, ArrowLeft, BarChart3, Clock, DollarSign, Smile, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
@@ -52,37 +52,31 @@ function DimensionSlider({
   
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
-      <div className="flex items-start gap-3 mb-3">
-        <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-[#111827] text-sm">{title}</h3>
-          <p className="text-xs text-[#6B7280]">{description}</p>
         </div>
-        <div className="text-right flex-shrink-0">
-          <div className="flex items-center gap-1 justify-end">
-            {prefix && <span className="text-lg font-bold text-[#111827]">{prefix}</span>}
-            <input
-              type="number"
-              value={value || ''}
-              onChange={(e) => handleInputChange(e.target.value)}
-              placeholder="--"
-              min={minValue}
-              max={maxValue}
-              step={step}
-              className="w-16 text-lg font-bold text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#EA2C00] focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              data-testid={`${testId}-input`}
-            />
-            <span className="text-lg font-bold text-[#111827]">{unit}</span>
-          </div>
-          <div className="text-xs text-[#6B7280]">
-            Benchmark: {prefix}{benchmark}{unit}
-          </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {prefix && <span className="text-base font-semibold text-[#111827]">{prefix}</span>}
+          <input
+            type="number"
+            value={value || ''}
+            onChange={(e) => handleInputChange(e.target.value)}
+            placeholder="--"
+            min={minValue}
+            max={maxValue}
+            step={step}
+            className="w-12 text-base font-semibold text-center bg-slate-50 border border-slate-200 rounded px-1 py-0.5 focus:border-[#EA2C00] focus:outline-none focus:ring-1 focus:ring-[#EA2C00] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            data-testid={`${testId}-input`}
+          />
+          <span className="text-sm text-[#6B7280]">{unit}</span>
         </div>
       </div>
       
-      <div className="space-y-2">
+      <div className="space-y-1">
         <input
           type="range"
           min={minValue}
@@ -93,18 +87,14 @@ function DimensionSlider({
           className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
           data-testid={testId}
         />
-        {value > 0 && (
-          <div className="flex items-center justify-between text-xs">
-            <span className={percentage >= 80 ? 'text-emerald-600 font-medium' : 'text-slate-500'}>
-              {percentage}% of benchmark
+        <div className="flex items-center justify-between text-xs text-[#6B7280]">
+          <span>Benchmark: {prefix}{benchmark}{unit}</span>
+          {value > 0 && (
+            <span className={percentage >= 80 ? 'text-emerald-600 font-medium' : 'text-amber-600'}>
+              {percentage}%
             </span>
-            {percentage < 80 && (
-              <span className="text-amber-600">
-                Room for improvement
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -194,23 +184,44 @@ export default function StepWhereYouAre({
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
-        <div className="flex flex-col lg:flex-row lg:gap-8">
-          <div className="flex-1">
-            <h2 className="text-lg font-bold text-[#111827] mb-2">What You're Getting</h2>
-            <p className="text-sm text-[#6B7280] mb-6">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-[#111827] mb-1">What You're Getting</h2>
+            <p className="text-sm text-[#6B7280]">
               Be honest — this isn't a test. The more accurate you are, the clearer the picture.
             </p>
-
-            {!hasAnyDimensionValue && (
-              <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <p className="text-sm text-slate-700">
-                  Move the sliders to reflect your current experience. Don't know exactly? 
-                  <span className="font-medium"> Estimates work.</span>
-                </p>
+          </div>
+          
+          {hasAnyDimensionValue && (
+            <div className="flex-shrink-0 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg px-4 py-2 text-white shadow-md" data-testid="realization-badge">
+              <div className="flex items-center gap-3">
+                <div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wide">Realization</div>
+                  <div className={`text-xl font-bold ${realizationData.maturity.color}`}>
+                    {realizationData.avgScore}%
+                  </div>
+                </div>
+                <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${realizationData.maturity.bg} transition-all duration-500`}
+                    style={{ width: `${Math.min(100, realizationData.avgScore)}%` }}
+                  />
+                </div>
               </div>
-            )}
+            </div>
+          )}
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {!hasAnyDimensionValue && (
+          <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <p className="text-sm text-slate-700">
+              Move the sliders or type values to reflect your current experience. Don't know exactly? 
+              <span className="font-medium"> Estimates work.</span>
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DimensionSlider
                 icon={<BarChart3 className="w-5 h-5 text-blue-600" />}
                 iconBg="bg-blue-100"
@@ -301,58 +312,14 @@ export default function StepWhereYouAre({
                   <span className="text-xs text-[#6B7280]">hrs/week</span>
                 </div>
               </div>
-              {afterHoursPerWeek > 0 && (
-                <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                  <p className="text-sm text-indigo-800">
-                    That's <span className="font-semibold">{Math.round(afterHoursPerWeek * 52)} hours/year</span> per provider 
-                    spent charting instead of living their lives.
-                  </p>
-                </div>
-              )}
+          {afterHoursPerWeek > 0 && (
+            <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+              <p className="text-sm text-indigo-800">
+                That's <span className="font-semibold">{Math.round(afterHoursPerWeek * 52)} hours/year</span> per provider 
+                spent charting instead of living their lives.
+              </p>
             </div>
-          </div>
-
-          <div className="lg:w-64 mt-6 lg:mt-0" data-testid="realization-indicator">
-            <div className="lg:sticky lg:top-24">
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-5 text-white shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-4 h-4 text-slate-400" />
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Value Realization</span>
-                </div>
-                
-                <div className="text-center mb-4">
-                  <div className={`text-4xl font-bold mb-1 transition-all duration-300 ${
-                    realizationData.avgScore > 0 ? 'text-white' : 'text-slate-500'
-                  }`}>
-                    {realizationData.avgScore > 0 ? `${realizationData.avgScore}%` : '--'}
-                  </div>
-                  <div className={`text-sm font-medium ${realizationData.maturity.color}`}>
-                    {realizationData.avgScore > 0 ? realizationData.maturity.label : 'Awaiting data'}
-                  </div>
-                </div>
-
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden mb-3">
-                  <div 
-                    className={`h-full ${realizationData.maturity.bg} transition-all duration-500 ease-out`}
-                    style={{ width: `${Math.min(100, realizationData.avgScore)}%` }}
-                  />
-                </div>
-
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>0%</span>
-                  <span>100%</span>
-                </div>
-
-                {realizationData.filledDimensions > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-700">
-                    <div className="text-xs text-slate-400">
-                      Based on {realizationData.filledDimensions} of 4 dimensions
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
