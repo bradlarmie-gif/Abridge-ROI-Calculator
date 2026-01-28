@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile, Moon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile, Moon, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
   ABRIDGE_BENCHMARKS,
+  formatCurrency,
   type SwitchInputs,
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
@@ -104,6 +105,70 @@ export default function StepWhereYouAre({
     inputs.timeSavedPerEncounter > 0 || 
     inputs.wrvuLift > 0 || 
     inputs.satisfaction > 0;
+
+  const receiptItems = useMemo(() => {
+    const hourlyRate = 150;
+    const wrvuValue = 33;
+    const annualEncounters = inputs.annualEncounters || 0;
+    const providers = inputs.providers || 1;
+    
+    const utilizationValue = inputs.utilization > 0 
+      ? Math.round((inputs.utilization / 100) * annualEncounters * (inputs.timeSavedPerEncounter / 60) * hourlyRate * 0.15)
+      : 0;
+    
+    const efficiencyValue = inputs.timeSavedPerEncounter > 0 
+      ? Math.round(annualEncounters * (inputs.timeSavedPerEncounter / 60) * hourlyRate * 0.20)
+      : 0;
+    
+    const qualityValue = inputs.wrvuLift > 0 
+      ? Math.round(annualEncounters * (inputs.wrvuLift / 100) * wrvuValue * 0.50)
+      : 0;
+    
+    const satisfactionIndicator = inputs.satisfaction >= 80 ? "Strong" 
+      : inputs.satisfaction >= 60 ? "Moderate" 
+      : inputs.satisfaction > 0 ? "Low" 
+      : null;
+    
+    const afterHoursAnnual = afterHoursPerWeek > 0 
+      ? Math.round(afterHoursPerWeek * 52 * providers)
+      : 0;
+    
+    const totalValue = utilizationValue + efficiencyValue + qualityValue;
+    
+    return {
+      utilization: { 
+        label: "Coverage Value", 
+        sublabel: `${inputs.utilization || 0}% of encounters documented`,
+        value: utilizationValue,
+        hasValue: inputs.utilization > 0
+      },
+      efficiency: { 
+        label: "Time Efficiency", 
+        sublabel: `${inputs.timeSavedPerEncounter || 0} min saved per encounter`,
+        value: efficiencyValue,
+        hasValue: inputs.timeSavedPerEncounter > 0
+      },
+      quality: { 
+        label: "Revenue Capture", 
+        sublabel: `+${inputs.wrvuLift || 0}% wRVU lift`,
+        value: qualityValue,
+        hasValue: inputs.wrvuLift > 0
+      },
+      satisfaction: { 
+        label: "Provider Satisfaction", 
+        sublabel: `${inputs.satisfaction || 0}% would recommend`,
+        indicator: satisfactionIndicator,
+        hasValue: inputs.satisfaction > 0
+      },
+      afterHours: { 
+        label: "After-Hours Burden", 
+        sublabel: `${afterHoursPerWeek} hrs/week × ${providers} providers`,
+        hoursAnnual: afterHoursAnnual,
+        hasValue: afterHoursPerWeek > 0
+      },
+      total: totalValue
+    };
+  }, [inputs, afterHoursPerWeek]);
 
   return (
     <div className="space-y-8">
@@ -266,6 +331,116 @@ export default function StepWhereYouAre({
                 spent charting instead of living their lives.
               </p>
             </div>
+          )}
+        </div>
+      </section>
+
+      <section className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 p-5 md:p-6" data-testid="live-receipt">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center">
+            <Receipt className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-[#111827]">Your Current Return</h2>
+            <p className="text-xs text-[#6B7280]">Live breakdown based on your inputs</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
+          <div className="flex justify-between items-center px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-md bg-blue-100 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#111827]">{receiptItems.utilization.label}</p>
+                <p className="text-xs text-[#6B7280]">{receiptItems.utilization.sublabel}</p>
+              </div>
+            </div>
+            <span className={`font-mono text-sm font-semibold ${receiptItems.utilization.hasValue ? 'text-[#111827]' : 'text-slate-400'}`}>
+              {receiptItems.utilization.hasValue ? formatCurrency(receiptItems.utilization.value) : '--'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-md bg-purple-100 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#111827]">{receiptItems.efficiency.label}</p>
+                <p className="text-xs text-[#6B7280]">{receiptItems.efficiency.sublabel}</p>
+              </div>
+            </div>
+            <span className={`font-mono text-sm font-semibold ${receiptItems.efficiency.hasValue ? 'text-[#111827]' : 'text-slate-400'}`}>
+              {receiptItems.efficiency.hasValue ? formatCurrency(receiptItems.efficiency.value) : '--'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-md bg-emerald-100 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#111827]">{receiptItems.quality.label}</p>
+                <p className="text-xs text-[#6B7280]">{receiptItems.quality.sublabel}</p>
+              </div>
+            </div>
+            <span className={`font-mono text-sm font-semibold ${receiptItems.quality.hasValue ? 'text-[#111827]' : 'text-slate-400'}`}>
+              {receiptItems.quality.hasValue ? formatCurrency(receiptItems.quality.value) : '--'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-md bg-amber-100 flex items-center justify-center">
+                <Smile className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#111827]">{receiptItems.satisfaction.label}</p>
+                <p className="text-xs text-[#6B7280]">{receiptItems.satisfaction.sublabel}</p>
+              </div>
+            </div>
+            <span className={`text-sm font-semibold ${
+              receiptItems.satisfaction.indicator === 'Strong' ? 'text-emerald-600' :
+              receiptItems.satisfaction.indicator === 'Moderate' ? 'text-amber-600' :
+              receiptItems.satisfaction.indicator === 'Low' ? 'text-red-500' : 'text-slate-400'
+            }`}>
+              {receiptItems.satisfaction.indicator || '--'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center px-4 py-3 bg-slate-50">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-md bg-indigo-100 flex items-center justify-center">
+                <Moon className="w-4 h-4 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#111827]">{receiptItems.afterHours.label}</p>
+                <p className="text-xs text-[#6B7280]">{receiptItems.afterHours.sublabel}</p>
+              </div>
+            </div>
+            <span className={`text-sm font-semibold ${receiptItems.afterHours.hasValue ? 'text-indigo-600' : 'text-slate-400'}`}>
+              {receiptItems.afterHours.hasValue ? `${receiptItems.afterHours.hoursAnnual.toLocaleString()} hrs/yr` : '--'}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-slate-300">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-semibold text-[#111827]">Estimated Annual Value</p>
+              <p className="text-xs text-[#6B7280]">What you're currently capturing</p>
+            </div>
+            <span className={`text-xl font-bold ${receiptItems.total > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+              {receiptItems.total > 0 ? formatCurrency(receiptItems.total) : '--'}
+            </span>
+          </div>
+          {hasAnyDimensionValue && receiptItems.total > 0 && (
+            <p className="text-xs text-[#6B7280] mt-2">
+              This reflects what you're getting today. Next, we'll show you what's possible.
+            </p>
           )}
         </div>
       </section>
