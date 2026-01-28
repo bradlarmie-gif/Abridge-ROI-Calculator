@@ -30,6 +30,7 @@ export default function StepTheMath({
     month: point.month,
     current: point.value,
     potential: calculations.abridgeTrajectory[i]?.value || 0,
+    gap: [point.value, calculations.abridgeTrajectory[i]?.value || 0],
   }));
 
   return (
@@ -135,12 +136,8 @@ export default function StepTheMath({
             <AreaChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
               <defs>
                 <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="currentGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#94a3b8" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="#94a3b8" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.08} />
                 </linearGradient>
               </defs>
               <XAxis 
@@ -159,10 +156,14 @@ export default function StepTheMath({
                 width={50}
               />
               <Tooltip 
-                formatter={(value: number, name: string) => [
-                  formatCurrency(value),
-                  name === 'current' ? 'Continue as-is' : 'Optimized implementation'
-                ]}
+                formatter={(value: number | number[], name: string) => {
+                  if (name === 'gap') return null;
+                  const displayValue = Array.isArray(value) ? value[0] : value;
+                  return [
+                    formatCurrency(displayValue),
+                    name === 'current' ? 'Continue as-is' : 'Optimized implementation'
+                  ];
+                }}
                 labelFormatter={(label) => label % 12 === 0 ? `Year ${label / 12}` : `Month ${label}`}
                 contentStyle={{ 
                   borderRadius: '8px', 
@@ -172,10 +173,17 @@ export default function StepTheMath({
               />
               <Area 
                 type="monotone" 
+                dataKey="gap" 
+                stroke="none"
+                fill="url(#gapGradient)"
+                name="gap"
+              />
+              <Area 
+                type="monotone" 
                 dataKey="potential" 
                 stroke="#10b981" 
                 strokeWidth={3}
-                fill="url(#gapGradient)"
+                fill="none"
                 name="potential"
                 dot={(props: any) => {
                   const { cx, cy, payload } = props;
@@ -200,7 +208,7 @@ export default function StepTheMath({
                 dataKey="current" 
                 stroke="#94a3b8" 
                 strokeWidth={2}
-                fill="url(#currentGradient)"
+                fill="none"
                 name="current"
                 dot={(props: any) => {
                   const { cx, cy, payload } = props;
