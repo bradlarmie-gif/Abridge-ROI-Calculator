@@ -1610,53 +1610,62 @@ const DriverDetailPage = ({
   const benchmarks = getDriverBenchmarks(driver.id);
   const warnings = getDriverWarnings(driver, data);
 
+  // Driver-specific hero taglines
+  const driverHeroTaglines: Record<string, string> = {
+    patientAccess: "Exploring how efficiency gains could expand capacity",
+    wrvu: "Examining patterns in documentation complexity capture",
+    workforce: "Understanding the connection between documentation burden and retention",
+    overtime: "Analyzing potential reductions in after-hours documentation",
+    hcc: "Exploring how complete documentation could improve HCC capture",
+    denials: "Exploring how complete documentation could reduce denial rates",
+  };
+  const heroTagline = driverHeroTaglines[driver.id] || "Exploring potential value pathways";
+
   return (
-    <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-          {data.clientName && (
-            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
-          )}
-        </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>{data.careSetting} ROI Assessment</Text>
+    <Page size="A4" style={styles.page} wrap={false}>
+      {/* Compact Dark Hero */}
+      <View style={styles.heroCompact}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <View style={{ flex: 1 }}>
+            <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
+            <Text style={styles.heroCompactTitle}>{driver.name}</Text>
+            <Text style={styles.heroCompactSubtitle}>{heroTagline}</Text>
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={{ fontSize: 8, color: colors.lightGray, marginBottom: 4 }}>Potential Value</Text>
+            <Text style={styles.heroCompactValue}>{formatCurrency(driver.value)}</Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.driverHeader}>
-        <Text style={styles.driverName}>{driver.name}</Text>
-        <Text style={styles.driverValue}>{formatCurrency(driver.value)}</Text>
-      </View>
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text style={styles.chapterLabel}>The Opportunity</Text>
+        <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginBottom: 14 }}>{theory}</Text>
 
-      <View style={styles.theoryBox}>
-        <Text style={styles.theoryLabel}>The Theory</Text>
-        <Text style={styles.theoryText}>{theory}</Text>
-      </View>
+        {warnings && (
+          <View style={styles.calloutBox}>
+            <Text style={styles.calloutTitle}>{warnings.title}</Text>
+            <Text style={styles.calloutText}>{warnings.text}</Text>
+          </View>
+        )}
 
-      {warnings && (
-        <View style={styles.calloutBox}>
-          <Text style={styles.calloutTitle}>{warnings.title}</Text>
-          <Text style={styles.calloutText}>{warnings.text}</Text>
-        </View>
-      )}
-
-      <View style={styles.calcSection}>
-        <Text style={styles.calcSectionTitle}>Your Calculation</Text>
-        
-        {steps.map((step, index) => (
-          <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]}>
-            <Text style={styles.stepLabel}>{step.label}</Text>
-            <Text style={styles.stepQuestion}>{step.question}</Text>
-            
-            <View style={styles.stepMath}>
-              {step.inputs.map((input, i) => (
-                <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-                  {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
-                  <View style={styles.stepInput}>
-                    <Text style={styles.stepInputText}>{input.value}</Text>
-                  </View>
-                  {input.label && (
+        <View style={styles.calcSection}>
+          <Text style={styles.calcSectionTitle}>Your Calculation</Text>
+          
+          {steps.map((step, index) => (
+            <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]} wrap={false}>
+              <Text style={styles.stepLabel}>{step.label}</Text>
+              <Text style={styles.stepQuestion}>{step.question}</Text>
+              
+              <View style={styles.stepMath}>
+                {step.inputs.map((input, i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+                    {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
+                    <View style={styles.stepInput}>
+                      <Text style={styles.stepInputText}>{input.value}</Text>
+                    </View>
+                    {input.label && (
                     <Text style={{ fontSize: 7, color: colors.lightGray, marginLeft: 2 }}>{input.label}</Text>
                   )}
                 </View>
@@ -1672,10 +1681,10 @@ const DriverDetailPage = ({
             )}
           </View>
         ))}
-      </View>
+        </View>
 
-      {benchmarks && (
-        <View style={styles.benchmarkBox}>
+        {benchmarks && (
+          <View style={styles.benchmarkBox}>
           <Text style={styles.benchmarkTitle}>Benchmark: {benchmarks.title}</Text>
           {benchmarks.rows.map((row, i) => (
             <View key={i} style={styles.benchmarkRow}>
@@ -1686,20 +1695,21 @@ const DriverDetailPage = ({
           {benchmarks.note && (
             <Text style={styles.benchmarkNote}>{benchmarks.note}</Text>
           )}
-        </View>
-      )}
+          </View>
+        )}
 
-      <View style={styles.finalValueBox}>
-        <View>
-          <Text style={styles.finalValueLabel}>Annual {driver.name} Value</Text>
-          <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
+        <View style={styles.finalValueBox}>
+          <View>
+            <Text style={styles.finalValueLabel}>Annual {driver.name} Value</Text>
+            <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
+          </View>
+          <Text style={styles.finalValueAmount}>{formatCurrency(driver.value)}</Text>
         </View>
-        <Text style={styles.finalValueAmount}>{formatCurrency(driver.value)}</Text>
-      </View>
 
-      <View style={styles.implicationBox}>
-        <Text style={styles.implicationTitle}>What This Suggests</Text>
-        <Text style={styles.implicationText}>{implication}</Text>
+        <View style={styles.implicationBox}>
+          <Text style={styles.implicationTitle}>What This Suggests</Text>
+          <Text style={styles.implicationText}>{implication}</Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
