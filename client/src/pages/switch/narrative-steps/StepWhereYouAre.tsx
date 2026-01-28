@@ -40,6 +40,16 @@ function DimensionSlider({
 }: DimensionSliderProps) {
   const percentage = Math.min(100, Math.round((value / benchmark) * 100));
   
+  const handleInputChange = (inputValue: string) => {
+    const num = parseFloat(inputValue);
+    if (!isNaN(num)) {
+      const clampedValue = Math.min(maxValue, Math.max(minValue, num));
+      onChange(clampedValue);
+    } else if (inputValue === '') {
+      onChange(minValue);
+    }
+  };
+  
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
       <div className="flex items-start gap-3 mb-3">
@@ -51,8 +61,20 @@ function DimensionSlider({
           <p className="text-xs text-[#6B7280]">{description}</p>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className={`text-lg font-bold ${value > 0 ? 'text-[#111827]' : 'text-slate-400'}`}>
-            {value > 0 ? `${prefix}${value}${unit}` : '--'}
+          <div className="flex items-center gap-1 justify-end">
+            {prefix && <span className="text-lg font-bold text-[#111827]">{prefix}</span>}
+            <input
+              type="number"
+              value={value || ''}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder="--"
+              min={minValue}
+              max={maxValue}
+              step={step}
+              className="w-16 text-lg font-bold text-right bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#EA2C00] focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              data-testid={`${testId}-input`}
+            />
+            <span className="text-lg font-bold text-[#111827]">{unit}</span>
           </div>
           <div className="text-xs text-[#6B7280]">
             Benchmark: {prefix}{benchmark}{unit}
