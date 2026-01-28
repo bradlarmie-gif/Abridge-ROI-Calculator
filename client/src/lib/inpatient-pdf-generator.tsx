@@ -332,9 +332,35 @@ const styles = StyleSheet.create({
     color: colors.lightGray,
   },
 
+  // Compact Hero for driver pages
+  heroCompact: {
+    backgroundColor: colors.heroSlate,
+    padding: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  heroCompactTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 4,
+  },
+  heroCompactSubtitle: {
+    fontSize: 10,
+    color: colors.lightGray,
+  },
+  heroCompactValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.success,
+    marginTop: 8,
+  },
+
   // Content section styles
   contentSection: {
-    paddingHorizontal: 0,
+    padding: 40,
+    paddingTop: 24,
+    paddingBottom: 20,
   },
   chapterLabel: {
     fontSize: 7,
