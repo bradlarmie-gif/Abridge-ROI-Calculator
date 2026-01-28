@@ -863,6 +863,7 @@ function CareSettingRow({
   onClick: () => void;
 }) {
   const description = SETTING_DESCRIPTIONS[settingKey] || "";
+  const drivers = SETTING_DRIVERS[settingKey] || [];
 
   const buttonContent = (
     <button
@@ -871,63 +872,98 @@ function CareSettingRow({
       disabled={disabled}
       className={`group relative w-full text-left rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
         disabled
-          ? "cursor-not-allowed bg-white border-2 border-dashed border-[#D1D5DB]"
+          ? "cursor-not-allowed bg-white border-2 border-dashed border-slate-300"
           : selected
-            ? "bg-white border-2 border-[#EA2C00] shadow-lg shadow-[#EA2C00]/10 scale-[1.02]"
-            : "bg-white border-2 border-slate-200 shadow-sm hover:border-slate-300 hover:-translate-y-1 hover:shadow-xl hover:scale-[1.01] cursor-pointer"
+            ? "bg-gradient-to-br from-[#FEF0EC] to-white border-2 border-[#EA2C00] shadow-xl shadow-[#EA2C00]/15"
+            : "bg-white border-2 border-slate-200 shadow-sm hover:border-[#EA2C00]/50 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
       }`}
       data-testid={`setting-row-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      {/* Top accent bar */}
-      <div 
-        className={`absolute top-0 left-0 right-0 h-1 transition-opacity duration-300 ${
-          selected 
-            ? "opacity-100 bg-[#EA2C00]" 
-            : "opacity-0 group-hover:opacity-100 bg-[#EA2C00]"
-        }`}
-      />
+      {/* Selection glow effect */}
+      {selected && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#EA2C00]/5 to-transparent pointer-events-none" />
+      )}
       
-      <div className="flex items-start gap-5 p-6">
-        <div
-          className={`flex items-center justify-center w-14 h-14 rounded-2xl flex-shrink-0 transition-all duration-300 ${
-            selected
-              ? "bg-[#FEF0EC]"
-              : disabled
-                ? "bg-slate-100"
-                : "bg-slate-100 group-hover:bg-[#FEF0EC]"
-          }`}
-        >
-          <Icon
-            className={`w-7 h-7 transition-colors duration-300 ${selected ? "text-[#EA2C00]" : disabled ? "text-slate-400" : "text-slate-500 group-hover:text-[#EA2C00]"}`}
-          />
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <span
-            className={`text-lg font-semibold block ${
-              disabled ? "text-slate-400" : "text-slate-900"
+      <div className="relative p-6 md:p-8">
+        {/* Header with icon and title */}
+        <div className="flex items-start gap-5 mb-4">
+          <div
+            className={`flex items-center justify-center w-16 h-16 rounded-2xl flex-shrink-0 transition-all duration-300 ${
+              selected
+                ? "bg-[#EA2C00] shadow-lg shadow-[#EA2C00]/30"
+                : disabled
+                  ? "bg-slate-100"
+                  : "bg-slate-100 group-hover:bg-[#FEF0EC]"
             }`}
           >
-            {label}
-          </span>
-          <p className={`text-sm mt-1 leading-relaxed ${disabled ? "text-slate-400" : "text-slate-500"}`}>
-            {description}
-          </p>
-          {disabled && (
-            <p className="text-xs text-slate-400 italic mt-2">Coming soon</p>
-          )}
+            <Icon
+              className={`w-8 h-8 transition-all duration-300 ${
+                selected 
+                  ? "text-white" 
+                  : disabled 
+                    ? "text-slate-400" 
+                    : "text-slate-500 group-hover:text-[#EA2C00]"
+              }`}
+            />
+          </div>
+          
+          <div className="flex-1 min-w-0 pt-1">
+            <span
+              className={`text-xl font-bold block transition-colors duration-300 ${
+                disabled ? "text-slate-400" : selected ? "text-[#EA2C00]" : "text-slate-900"
+              }`}
+            >
+              {label}
+            </span>
+            <p className={`text-sm mt-1 leading-relaxed ${disabled ? "text-slate-400" : "text-slate-500"}`}>
+              {description}
+            </p>
+          </div>
+
+          {/* Selection indicator */}
+          <div 
+            className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+              selected 
+                ? "bg-[#EA2C00] border-[#EA2C00] scale-100" 
+                : "border-slate-300 group-hover:border-[#EA2C00]/50 scale-100"
+            }`}
+          >
+            {selected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+          </div>
         </div>
-      </div>
-      
-      {/* Checkmark in top-right corner */}
-      <div 
-        className={`absolute top-6 right-6 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-          selected 
-            ? "bg-[#EA2C00] opacity-100 scale-100" 
-            : "opacity-0 scale-[0.8]"
-        }`}
-      >
-        <Check className="w-4 h-4 text-white" strokeWidth={3} />
+
+        {/* Drivers preview - only show when selected or on hover */}
+        {drivers.length > 0 && (
+          <div 
+            className={`mt-4 pt-4 border-t transition-all duration-300 ${
+              selected 
+                ? "border-[#EA2C00]/20 opacity-100" 
+                : "border-slate-100 opacity-0 group-hover:opacity-70"
+            }`}
+          >
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              Value drivers
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {drivers.slice(0, 3).map((driver, idx) => (
+                <span 
+                  key={idx} 
+                  className={`text-xs px-2.5 py-1 rounded-full transition-colors duration-300 ${
+                    selected 
+                      ? "bg-[#EA2C00]/10 text-[#EA2C00]" 
+                      : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  {driver}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {disabled && (
+          <p className="text-xs text-slate-400 italic mt-3">Coming soon</p>
+        )}
       </div>
     </button>
   );
@@ -2524,111 +2560,58 @@ export default function ObjectiveSelectionScreen({
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-[1fr_380px] gap-12 lg:gap-16">
-              {/* Left: Options */}
-              <div>
-                <div className="mb-8">
-                  <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em] mb-2">
-                    Available Care Settings
-                  </h3>
-                  <p className="text-[15px] text-[#6B7280]">
-                    Choose the environment that matches your organization
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {ALL_SETTINGS.map((setting) => {
-                    return (
-                      <CareSettingRow
-                        key={setting}
-                        icon={SETTING_ICONS[setting]}
-                        label={CARE_SETTING_LABELS[setting]}
-                        settingKey={setting}
-                        selected={selectedSetting === setting}
-                        disabled={false}
-                        onClick={() => handleSettingSelect(setting)}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right: Selection Sidebar */}
-              <div className="hidden lg:block">
-                <div className="sticky top-[100px] bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="px-8 py-6 border-b border-[#E5E7EB]">
-                    <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
-                      Your Selection
-                    </h3>
-                  </div>
-                  
-                  <div className="px-8 py-8">
-                    <p className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.05em] mb-2">
-                      Care Setting
-                    </p>
-                    {selectedSetting ? (
-                      <span className="text-[17px] font-semibold text-[#111827]">
-                        {CARE_SETTING_LABELS[selectedSetting]}
-                      </span>
-                    ) : (
-                      <p className="text-[15px] text-[#9CA3AF]">No setting selected</p>
-                    )}
-                    
-                    {selectedSetting && SETTING_DRIVERS[selectedSetting] && SETTING_DRIVERS[selectedSetting].length > 0 && (
-                      <div className="mt-6">
-                        <p className="text-sm text-[#6B7280] mb-2">Typical drivers:</p>
-                        <ul className="space-y-1.5 text-[14px] text-[#6B7280] leading-relaxed">
-                          {SETTING_DRIVERS[selectedSetting].map((driver, idx) => (
-                            <li key={idx}>• {driver}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="border-t border-[#E5E7EB] px-8 py-6">
-                    <button
-                      type="button"
-                      disabled={!canContinuePage1}
-                      onClick={handleContinueToPage2}
-                      className={`w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-[15px] transition-all duration-200 ${
-                        canContinuePage1
-                          ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                          : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
-                      }`}
-                      data-testid="button-continue-to-priorities"
-                    >
-                      Continue
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                {ALL_SETTINGS.map((setting) => {
+                  return (
+                    <CareSettingRow
+                      key={setting}
+                      icon={SETTING_ICONS[setting]}
+                      label={CARE_SETTING_LABELS[setting]}
+                      settingKey={setting}
+                      selected={selectedSetting === setting}
+                      disabled={false}
+                      onClick={() => handleSettingSelect(setting)}
+                    />
+                  );
+                })}
               </div>
             </div>
             
-            {/* Mobile sticky bottom bar */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] shadow-[0_-4px_12px_rgba(0,0,0,0.08)] px-6 py-5 z-50">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[15px] text-[#6B7280]">
+            {/* Sticky bottom action bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-6 py-4 z-50">
+              <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                <div className="flex-1">
                   {selectedSetting ? (
-                    <span className="text-[#111827] font-semibold">{CARE_SETTING_LABELS[selectedSetting]} selected</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#EA2C00] flex items-center justify-center">
+                        {(() => {
+                          const SelectedIcon = SETTING_ICONS[selectedSetting];
+                          return <SelectedIcon className="w-5 h-5 text-white" />;
+                        })()}
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-500">Selected</p>
+                        <p className="font-semibold text-slate-900">{CARE_SETTING_LABELS[selectedSetting]}</p>
+                      </div>
+                    </div>
                   ) : (
-                    "Select a care setting"
+                    <p className="text-slate-500">Select a care setting to continue</p>
                   )}
-                </span>
+                </div>
                 <button
                   type="button"
                   disabled={!canContinuePage1}
                   onClick={handleContinueToPage2}
-                  className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-[15px] transition-all duration-200 ${
+                  className={`inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-[15px] transition-all duration-200 ${
                     canContinuePage1
-                      ? "bg-[#EA2C00] text-white hover:bg-[#d12700]"
-                      : "bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed"
+                      ? "bg-[#EA2C00] text-white hover:bg-[#d12700] shadow-lg shadow-[#EA2C00]/25 hover:shadow-xl hover:shadow-[#EA2C00]/30 hover:-translate-y-0.5"
+                      : "bg-slate-200 text-slate-400 cursor-not-allowed"
                   }`}
-                  data-testid="button-continue-to-priorities-mobile"
+                  data-testid="button-continue-to-priorities"
                 >
                   Continue
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
             </div>
