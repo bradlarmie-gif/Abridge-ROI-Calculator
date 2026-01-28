@@ -78,12 +78,13 @@ export interface SwitchCalculations {
 
 // Abridge benchmarks (based on aggregate data)
 export const ABRIDGE_BENCHMARKS = {
-  utilization: 75, // 75% average utilization
+  utilization: 76, // 76% average utilization (mature implementation)
   timeSavedMin: 3, // 3 min minimum
   timeSavedMax: 5, // 5 min maximum
-  timeSavedAvg: 4, // 4 min average
-  wrvuLift: 5, // 5% wRVU lift average
-  satisfaction: 85, // 85% provider satisfaction/recommendation
+  timeSavedAvg: 4, // 4 min average time saved per encounter
+  wrvuLift: 5.5, // 5.5% wRVU lift average
+  satisfaction: 88, // 88% provider satisfaction/recommendation
+  afterHoursReduction: 3, // 3 hours/week after-hours documentation reduction
   costPerProviderMonth: 250, // Abridge cost estimate
 };
 
