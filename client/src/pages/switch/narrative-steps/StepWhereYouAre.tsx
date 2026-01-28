@@ -1,7 +1,8 @@
-import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, BarChart3, Clock, DollarSign, Smile, Moon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, ArrowLeft, BarChart3, Clock, DollarSign, Smile, Moon, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   ABRIDGE_BENCHMARKS,
   type SwitchInputs,
@@ -52,31 +53,37 @@ function DimensionSlider({
   
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+      <div className="flex items-start gap-3 mb-3">
+        <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-[#111827] text-sm">{title}</h3>
+          <p className="text-xs text-[#6B7280] leading-tight">{description}</p>
         </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {prefix && <span className="text-base font-semibold text-[#111827]">{prefix}</span>}
-          <input
-            type="number"
-            value={value || ''}
-            onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="--"
-            min={minValue}
-            max={maxValue}
-            step={step}
-            className="w-12 text-base font-semibold text-center bg-slate-50 border border-slate-200 rounded px-1 py-0.5 focus:border-[#EA2C00] focus:outline-none focus:ring-1 focus:ring-[#EA2C00] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            data-testid={`${testId}-input`}
-          />
-          <span className="text-sm text-[#6B7280]">{unit}</span>
+        <div className="text-right flex-shrink-0">
+          <div className="flex items-center gap-1 justify-end">
+            {prefix && <span className="text-lg font-bold text-[#111827]">{prefix}</span>}
+            <input
+              type="number"
+              value={value || ''}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder="--"
+              min={minValue}
+              max={maxValue}
+              step={step}
+              className="w-14 text-lg font-bold text-center bg-slate-50 border border-slate-200 rounded px-1 py-0.5 hover:border-slate-300 focus:border-[#EA2C00] focus:outline-none focus:ring-1 focus:ring-[#EA2C00] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              data-testid={`${testId}-input`}
+            />
+            <span className="text-lg font-bold text-[#111827]">{unit}</span>
+          </div>
+          <div className="text-xs text-[#6B7280] mt-0.5">
+            Benchmark: {prefix}{benchmark}{unit}
+          </div>
         </div>
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-2">
         <input
           type="range"
           min={minValue}
@@ -87,14 +94,18 @@ function DimensionSlider({
           className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
           data-testid={testId}
         />
-        <div className="flex items-center justify-between text-xs text-[#6B7280]">
-          <span>Benchmark: {prefix}{benchmark}{unit}</span>
-          {value > 0 && (
-            <span className={percentage >= 80 ? 'text-emerald-600 font-medium' : 'text-amber-600'}>
-              {percentage}%
+        {value > 0 && (
+          <div className="flex items-center justify-between text-xs">
+            <span className={percentage >= 80 ? 'text-emerald-600 font-medium' : 'text-slate-500'}>
+              {percentage}% of benchmark
             </span>
-          )}
-        </div>
+            {percentage < 80 && (
+              <span className="text-amber-600">
+                Room for improvement
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -184,33 +195,10 @@ export default function StepWhereYouAre({
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-lg font-bold text-[#111827] mb-1">What You're Getting</h2>
-            <p className="text-sm text-[#6B7280]">
-              Be honest — this isn't a test. The more accurate you are, the clearer the picture.
-            </p>
-          </div>
-          
-          {hasAnyDimensionValue && (
-            <div className="flex-shrink-0 bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg px-4 py-2 text-white shadow-md" data-testid="realization-badge">
-              <div className="flex items-center gap-3">
-                <div>
-                  <div className="text-xs text-slate-400 uppercase tracking-wide">Realization</div>
-                  <div className={`text-xl font-bold ${realizationData.maturity.color}`}>
-                    {realizationData.avgScore}%
-                  </div>
-                </div>
-                <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full ${realizationData.maturity.bg} transition-all duration-500`}
-                    style={{ width: `${Math.min(100, realizationData.avgScore)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <h2 className="text-lg font-bold text-[#111827] mb-2">What You're Getting</h2>
+        <p className="text-sm text-[#6B7280] mb-6">
+          Be honest — this isn't a test. The more accurate you are, the clearer the picture.
+        </p>
 
         {!hasAnyDimensionValue && (
           <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
@@ -333,16 +321,58 @@ export default function StepWhereYouAre({
           <ArrowLeft className="w-4 h-4" />
           Back
         </Button>
-        
-        <Button
-          onClick={onNext}
-          disabled={!canProceed}
-          className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
-          data-testid="button-next"
-        >
-          See What You're Missing
-          <ArrowRight className="w-4 h-4" />
-        </Button>
+
+        <div className="flex items-center gap-4">
+          {hasAnyDimensionValue && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div 
+                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full cursor-help"
+                  data-testid="realization-indicator"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-2 h-2 rounded-full ${realizationData.maturity.bg}`} />
+                    <span className="text-sm font-medium text-slate-700">
+                      {realizationData.avgScore}% realized
+                    </span>
+                  </div>
+                  <Info className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Value Realization Score</p>
+                  <p className="text-xs text-slate-600">
+                    Based on {realizationData.filledDimensions} of 4 dimensions, you're capturing 
+                    <span className={`font-semibold ${realizationData.maturity.color}`}> {realizationData.avgScore}%</span> of 
+                    potential value compared to top performers.
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${realizationData.maturity.bg} transition-all duration-300`}
+                        style={{ width: `${Math.min(100, realizationData.avgScore)}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-medium ${realizationData.maturity.color}`}>
+                      {realizationData.maturity.label}
+                    </span>
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          
+          <Button
+            onClick={onNext}
+            disabled={!canProceed}
+            className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
+            data-testid="button-next"
+          >
+            See What You're Missing
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
