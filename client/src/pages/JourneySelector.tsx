@@ -43,30 +43,28 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
         delay: delay,
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
-      className="group relative bg-white/80 backdrop-blur-sm border border-white/60 rounded-2xl p-5 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out shadow-lg shadow-black/[0.04] hover:shadow-2xl hover:shadow-black/[0.08] hover:-translate-y-2 hover:bg-white/95"
+      whileHover={{ scale: 1.02, y: -4 }}
+      className="group relative bg-white border-2 border-slate-200 rounded-2xl p-6 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out shadow-sm hover:shadow-xl hover:border-slate-300"
       onClick={onClick}
       data-testid={testId}
       style={{
-        boxShadow: `0 4px 24px -4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)`,
+        ['--accent-color' as string]: accent.glowColor,
       }}
     >
-      {/* Subtle gradient overlay on hover */}
+      {/* Top accent bar on hover */}
       <div 
-        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-        style={{
-          background: `linear-gradient(135deg, ${accent.glowColor}08 0%, transparent 50%)`,
-        }}
+        className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{ backgroundColor: accent.glowColor }}
       />
       
-      {/* Icon with subtle glow */}
+      {/* Icon */}
       <div 
-        className="relative w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center mb-4 md:mb-5 transition-all duration-300 ease-out group-hover:scale-105"
+        className="relative w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-5 md:mb-6 transition-all duration-300 ease-out group-hover:scale-105"
         style={{ 
           backgroundColor: accent.iconBg,
-          boxShadow: `0 4px 12px -2px ${accent.glowColor}30`,
         }}
       >
-        <Icon className="w-5 h-5 md:w-6 md:h-6 transition-transform duration-300" style={{ color: accent.iconColor }} />
+        <Icon className="w-6 h-6 md:w-7 md:h-7 transition-transform duration-300" style={{ color: accent.iconColor }} />
       </div>
       
       <h3 className="text-lg md:text-xl font-semibold text-[#111827] mb-1 relative">{title}</h3>
@@ -147,8 +145,10 @@ const accents = {
 
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
       <GlobalHeader pageName="Home" />
+      {/* Subtle radial gradient overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-100/50 via-transparent to-transparent pointer-events-none" />
       {/* Giant A background on right */}
       <div 
         className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none z-0"
@@ -157,7 +157,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'left center',
           backgroundSize: 'cover',
-          opacity: 0.65,
+          opacity: 0.45,
         }}
       />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
@@ -165,22 +165,32 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-8 md:mb-10"
+          className="text-center mb-10 md:mb-14"
         >
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#111827] mb-2 md:mb-3 tracking-tight px-2">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-full text-sm text-slate-600 mb-6 shadow-sm"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#EA2C00] animate-pulse" />
+            ROI Calculator
+          </motion.div>
+          
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 md:mb-4 tracking-tight px-2">
             Model the impact of ambient documentation
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-[#6B7280] max-w-xl mx-auto px-2">
+          <p className="text-base sm:text-lg md:text-xl text-slate-500 max-w-2xl mx-auto px-2 leading-relaxed">
             Understand where the value actually comes from.
           </p>
         </motion.section>
 
-        <section className="mb-6 md:mb-10">
+        <section className="mb-8 md:mb-12">
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-xs md:text-sm text-[#9CA3AF] uppercase tracking-wider font-medium text-center mb-5 md:mb-6"
+            className="text-xs md:text-sm text-slate-400 uppercase tracking-wider font-semibold text-center mb-6 md:mb-8"
           >
             What brings you here today?
           </motion.p>
