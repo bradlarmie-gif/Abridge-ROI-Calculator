@@ -41,8 +41,8 @@ export default function SwitchAssessment({
     }
   };
 
-  // Optional pajama time input (hours/week after-hours documentation)
-  const [pajamaTimeHours, setPajamaTimeHours] = useState<number>(0);
+  // After-hours documentation is now a core metric, stored in inputs
+  const afterHoursPerWeek = inputs.afterHoursPerWeek || 0;
 
   const calculations = useMemo(() => {
     return calculateSwitchGap({
@@ -81,14 +81,14 @@ export default function SwitchAssessment({
     
     // Pajama time reduction: Use actual input if provided, otherwise estimate
     // If user reports pajama time, we estimate ~60% of time savings could reduce after-hours work
-    const estimatedPajamaReduction = pajamaTimeHours > 0 
-      ? Math.min(pajamaTimeHours, Math.round(additionalHoursPerWeek * 0.6 * 10) / 10)
+    const estimatedPajamaReduction = afterHoursPerWeek > 0 
+      ? Math.min(afterHoursPerWeek, Math.round(additionalHoursPerWeek * 0.6 * 10) / 10)
       : Math.round(additionalHoursPerWeek * 0.6 * 10) / 10;
     
     // Evenings reclaimed: Use pajama time if available, otherwise estimate from additional hours
     // If user reports 10 hrs/week pajama time, and we can reduce ~60% of additional savings, that's X evenings
-    const pajamaHoursReduced = pajamaTimeHours > 0 
-      ? Math.min(pajamaTimeHours, estimatedPajamaReduction)
+    const pajamaHoursReduced = afterHoursPerWeek > 0 
+      ? Math.min(afterHoursPerWeek, estimatedPajamaReduction)
       : estimatedPajamaReduction;
     const eveningsReclaimedPerWeek = Math.round(pajamaHoursReduced / 2 * 10) / 10; // Assuming 2-hour evening sessions
     const eveningsReclaimedPerYear = Math.round(eveningsReclaimedPerWeek * 52);
@@ -111,9 +111,9 @@ export default function SwitchAssessment({
       wrvuGapPercent,
       additionalWRVU,
       hasData: providers > 0 && encounters > 0 && (efficiency > 0 || utilizationRate > 0),
-      usedPajamaInput: pajamaTimeHours > 0,
+      usedPajamaInput: afterHoursPerWeek > 0,
     };
-  }, [inputs, pajamaTimeHours]);
+  }, [inputs, afterHoursPerWeek]);
 
   // Check if user has entered any dimension values
   const hasAnyDimensionValue = 
@@ -340,7 +340,7 @@ export default function SwitchAssessment({
               />
             </div>
 
-            {/* Optional: Pajama Time Context */}
+            {/* After-Hours Documentation - Core metric, not optional */}
             <div className="mt-6 pt-6 border-t border-slate-200">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center">
@@ -348,7 +348,7 @@ export default function SwitchAssessment({
                 </div>
                 <div>
                   <h3 className="font-semibold text-[#111827] text-sm">After-Hours Documentation</h3>
-                  <p className="text-xs text-[#6B7280]">Optional: How much are your providers documenting outside clinic hours?</p>
+                  <p className="text-xs text-[#6B7280]">How much time are providers spending on notes after clinic hours?</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -357,23 +357,23 @@ export default function SwitchAssessment({
                   min={0}
                   max={20}
                   step={1}
-                  value={pajamaTimeHours}
-                  onChange={(e) => setPajamaTimeHours(parseFloat(e.target.value))}
+                  value={afterHoursPerWeek}
+                  onChange={(e) => updateInput('afterHoursPerWeek', parseFloat(e.target.value))}
                   className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                  data-testid="slider-pajama-time"
+                  data-testid="slider-after-hours"
                 />
                 <div className="flex items-center gap-1 min-w-[80px]">
-                  <span className={`text-lg font-semibold ${pajamaTimeHours > 0 ? 'text-indigo-600' : 'text-slate-400'}`}>
-                    {pajamaTimeHours > 0 ? pajamaTimeHours : '--'}
+                  <span className={`text-lg font-semibold ${afterHoursPerWeek > 0 ? 'text-indigo-600' : 'text-slate-400'}`}>
+                    {afterHoursPerWeek > 0 ? afterHoursPerWeek : '--'}
                   </span>
                   <span className="text-xs text-[#6B7280]">hrs/week</span>
                 </div>
               </div>
-              {pajamaTimeHours > 0 && (
+              {afterHoursPerWeek > 0 && (
                 <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
                   <p className="text-sm text-indigo-800">
-                    <span className="font-semibold">{pajamaTimeHours} hours/week</span> equals roughly <span className="font-semibold">{Math.round(pajamaTimeHours * 52)} hours/year</span> — 
-                    or about <span className="font-semibold">{Math.round(pajamaTimeHours * 52 / 40)} full work weeks</span> spent documenting outside clinic hours.
+                    That's <span className="font-semibold">{Math.round(afterHoursPerWeek * 52)} hours/year</span> per provider spent charting instead of with family — 
+                    roughly <span className="font-semibold">{Math.round(afterHoursPerWeek * 52 / 40)} full work weeks</span> of evenings and weekends.
                   </p>
                 </div>
               )}
@@ -436,7 +436,7 @@ export default function SwitchAssessment({
                     </p>
                     <p className="text-xs text-[#6B7280] mt-1">
                       {humanImpact.usedPajamaInput 
-                        ? `Based on your ${pajamaTimeHours} hrs/week reported` 
+                        ? `Based on your ${afterHoursPerWeek} hrs/week reported` 
                         : 'Notes done before leaving clinic'}
                     </p>
                   </div>

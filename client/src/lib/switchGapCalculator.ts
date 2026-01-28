@@ -13,7 +13,8 @@ export interface SwitchInputs {
   utilization: number;
   timeSavedPerEncounter: number;
   wrvuLift: number;
-  satisfaction: number; // NEW: Provider satisfaction %
+  satisfaction: number;
+  afterHoursPerWeek: number; // Hours/week providers spend documenting after clinic hours
 }
 
 export interface GapItem {

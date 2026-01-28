@@ -29,6 +29,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     timeSavedPerEncounter: 0,  // Empty start
     wrvuLift: 0,  // Empty start
     satisfaction: 0,  // Empty start
+    afterHoursPerWeek: 0,  // Empty start - hours/week documenting after clinic
   });
 
   const [scribeInputs, setScribeInputs] = useState<ScribeInputs>({
