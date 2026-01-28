@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, RotateCcw, Users, Zap, Settings, TrendingUp, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, RotateCcw, Brain, Users, RefreshCw, Layers, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   type SwitchInputs,
@@ -26,75 +26,80 @@ interface FlipCardData {
     description: string;
     traits: string[];
   };
-  gradient: string;
-  accentLight: string;
-  accentDark: string;
+  frontBg: string;
+  frontText: string;
+  backBg: string;
+  accentColor: string;
 }
 
 const FLIP_CARDS: FlipCardData[] = [
   {
-    id: "adoption",
-    icon: Users,
+    id: "technology",
+    icon: Brain,
     challenge: {
-      title: "The Adoption Challenge",
-      description: "Technology alone doesn't change behavior. Without intentional change management, providers revert to old habits within weeks."
+      title: "The Technology Ceiling",
+      description: "Not all AI is created equal. Some tools hit accuracy limits, require excessive editing, or can't keep pace with clinical complexity."
     },
     solution: {
-      title: "Strategic Change Partners",
-      description: "Implementation that treats adoption as a human challenge, not a technical one.",
-      traits: ["Dedicated success partners", "Provider champions program", "Behavioral design expertise"]
+      title: "Clinical-Grade AI",
+      description: "Technology built for healthcare from the ground up — not retrofitted from consumer applications.",
+      traits: ["Clinician-level accuracy", "Specialty-aware understanding", "Seamless EHR integration"]
     },
-    gradient: "from-blue-500 to-blue-600",
-    accentLight: "bg-blue-50",
-    accentDark: "text-blue-600"
+    frontBg: "bg-slate-700",
+    frontText: "text-white",
+    backBg: "bg-slate-50",
+    accentColor: "text-slate-700"
+  },
+  {
+    id: "partnership",
+    icon: Users,
+    challenge: {
+      title: "The Implementation Gap",
+      description: "Software vendors ship and disappear. Without dedicated partnership, organizations are left to figure it out alone."
+    },
+    solution: {
+      title: "Dedicated Partnership",
+      description: "Teams who stay with you — understanding your workflows, your challenges, your goals.",
+      traits: ["Named success partners", "Healthcare-fluent support", "Executive alignment"]
+    },
+    frontBg: "bg-slate-600",
+    frontText: "text-white",
+    backBg: "bg-slate-50",
+    accentColor: "text-slate-600"
   },
   {
     id: "optimization",
-    icon: Settings,
+    icon: RefreshCw,
     challenge: {
-      title: "The Set-It-and-Forget-It Trap",
-      description: "Most implementations peak at launch and plateau. Without continuous optimization, value erodes over time."
+      title: "The Plateau Effect",
+      description: "Most implementations peak at launch and flatline. Without ongoing refinement, early gains slowly erode."
     },
     solution: {
-      title: "Continuous Optimization",
-      description: "Ongoing refinement that treats implementation as a journey, not a destination.",
-      traits: ["Quarterly business reviews", "Real-time analytics", "Proactive performance monitoring"]
+      title: "Continuous Improvement",
+      description: "Regular optimization cycles that treat implementation as a journey, not a one-time event.",
+      traits: ["Quarterly performance reviews", "Proactive monitoring", "Feedback-driven updates"]
     },
-    gradient: "from-purple-500 to-purple-600",
-    accentLight: "bg-purple-50",
-    accentDark: "text-purple-600"
+    frontBg: "bg-slate-500",
+    frontText: "text-white",
+    backBg: "bg-slate-50",
+    accentColor: "text-slate-600"
   },
   {
     id: "specialty",
-    icon: Zap,
+    icon: Layers,
     challenge: {
-      title: "The One-Size-Fits-All Problem",
-      description: "Generic solutions miss the nuances of different specialties, workflows, and organizational cultures."
+      title: "The Generic Approach",
+      description: "One-size-fits-all rarely fits anyone well. Different specialties have different needs, different workflows, different language."
     },
     solution: {
-      title: "Deep Customization",
-      description: "Configuration that respects the complexity of healthcare, specialty by specialty.",
-      traits: ["Specialty-specific templates", "Workflow integration", "EHR-native experience"]
+      title: "Specialty-Native Design",
+      description: "Configuration that respects the complexity of each specialty — not templates, but true adaptation.",
+      traits: ["Specialty-specific templates", "Workflow customization", "Organizational culture fit"]
     },
-    gradient: "from-amber-500 to-amber-600",
-    accentLight: "bg-amber-50",
-    accentDark: "text-amber-600"
-  },
-  {
-    id: "leadership",
-    icon: TrendingUp,
-    challenge: {
-      title: "The Missing Executive Sponsor",
-      description: "Without visible leadership support, initiatives lose momentum. Providers sense when something isn't a priority."
-    },
-    solution: {
-      title: "Strategic Partnership",
-      description: "Engagement models designed to maintain executive visibility and organizational momentum.",
-      traits: ["Executive briefings", "ROI dashboards", "Stakeholder alignment"]
-    },
-    gradient: "from-emerald-500 to-emerald-600",
-    accentLight: "bg-emerald-50",
-    accentDark: "text-emerald-600"
+    frontBg: "bg-slate-400",
+    frontText: "text-white",
+    backBg: "bg-slate-50",
+    accentColor: "text-slate-600"
   }
 ];
 
@@ -107,77 +112,75 @@ function FlipCard({ card, isFlipped, onFlip }: {
   
   return (
     <div 
-      className="relative h-[280px] cursor-pointer group perspective-1000"
+      className="relative h-[260px] cursor-pointer group"
       onClick={onFlip}
       data-testid={`flip-card-${card.id}`}
     >
       <div 
-        className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-          isFlipped ? 'rotate-y-180' : ''
-        }`}
+        className="relative w-full h-full transition-transform duration-500"
         style={{
           transformStyle: 'preserve-3d',
           transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
         }}
       >
         <div 
-          className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden"
+          className="absolute w-full h-full rounded-xl overflow-hidden shadow-sm"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className={`w-full h-full bg-gradient-to-br ${card.gradient} p-6 flex flex-col text-white`}>
+          <div className={`w-full h-full ${card.frontBg} p-5 flex flex-col ${card.frontText}`}>
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                <Icon className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-lg bg-white/15 flex items-center justify-center">
+                <Icon className="w-5 h-5" />
               </div>
-              <div className="flex items-center gap-1.5 text-white/70 text-xs font-medium">
-                <RotateCcw className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 text-white/50 text-xs font-medium">
+                <RotateCcw className="w-3 h-3" />
                 <span>Tap to flip</span>
               </div>
             </div>
-            <h3 className="text-xl font-bold mb-3">{card.challenge.title}</h3>
-            <p className="text-white/90 text-sm leading-relaxed flex-1">
+            <h3 className="text-lg font-bold mb-2">{card.challenge.title}</h3>
+            <p className="text-white/80 text-sm leading-relaxed flex-1">
               {card.challenge.description}
             </p>
-            <div className="mt-4 pt-4 border-t border-white/20">
-              <p className="text-xs text-white/60 uppercase tracking-wide font-medium">
-                The pattern we see
+            <div className="mt-3 pt-3 border-t border-white/15">
+              <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
+                The challenge
               </p>
             </div>
           </div>
         </div>
 
         <div 
-          className="absolute w-full h-full backface-hidden rounded-2xl overflow-hidden"
+          className="absolute w-full h-full rounded-xl overflow-hidden"
           style={{ 
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
         >
-          <div className={`w-full h-full ${card.accentLight} p-6 flex flex-col border border-slate-200`}>
+          <div className={`w-full h-full ${card.backBg} p-5 flex flex-col border border-slate-200`}>
             <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm`}>
-                <Sparkles className={`w-6 h-6 ${card.accentDark}`} />
+              <div className="w-11 h-11 rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center">
+                <Sparkles className={`w-5 h-5 ${card.accentColor}`} />
               </div>
-              <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
-                <RotateCcw className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 text-slate-300 text-xs font-medium">
+                <RotateCcw className="w-3 h-3" />
                 <span>Tap to flip</span>
               </div>
             </div>
-            <h3 className={`text-xl font-bold mb-2 ${card.accentDark}`}>{card.solution.title}</h3>
-            <p className="text-slate-600 text-sm mb-4">
+            <h3 className={`text-lg font-bold mb-2 ${card.accentColor}`}>{card.solution.title}</h3>
+            <p className="text-slate-500 text-sm mb-3">
               {card.solution.description}
             </p>
-            <div className="space-y-2 flex-1">
+            <div className="space-y-1.5 flex-1">
               {card.solution.traits.map((trait, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <div className={`w-1.5 h-1.5 rounded-full ${card.accentDark.replace('text-', 'bg-')}`} />
-                  <span className="text-sm text-slate-700">{trait}</span>
+                  <div className="w-1 h-1 rounded-full bg-slate-400" />
+                  <span className="text-sm text-slate-600">{trait}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t border-slate-200">
-              <p className="text-xs text-slate-400 uppercase tracking-wide font-medium">
-                What success requires
+            <div className="mt-3 pt-3 border-t border-slate-200">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
+                What makes the difference
               </p>
             </div>
           </div>
@@ -217,21 +220,21 @@ export default function StepWhyThisHappens({
           What It Takes
         </h1>
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          The gap between potential and reality isn't about the technology.
+          The gap between potential and reality isn't random.
           <br className="hidden md:block" />
-          <span className="text-[#374151]">It's about the approach.</span>
+          <span className="text-[#374151]">These four things explain most of it.</span>
         </p>
       </div>
 
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 text-center">
-        <p className="text-[#374151]">
-          <span className="font-medium">Here's what we've learned</span> from hundreds of implementations.
-          <br />
-          <span className="text-[#6B7280]">Tap each card to see what makes the difference.</span>
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-center">
+        <p className="text-[#374151] text-sm md:text-base">
+          <span className="font-medium">From hundreds of implementations,</span> we've learned what separates
+          <br className="hidden md:block" />
+          organizations that capture full value from those that plateau.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {FLIP_CARDS.map((card) => (
           <FlipCard
             key={card.id}
@@ -244,32 +247,31 @@ export default function StepWhyThisHappens({
 
       {flippedCount > 0 && !allFlipped && (
         <div className="text-center">
-          <p className="text-sm text-[#6B7280]">
+          <p className="text-sm text-[#9CA3AF]">
             {flippedCount} of {FLIP_CARDS.length} explored
           </p>
         </div>
       )}
 
       {allFlipped && (
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 text-white text-center">
+        <div className="bg-slate-800 rounded-xl p-6 text-white text-center">
           <div className="max-w-xl mx-auto">
-            <Sparkles className="w-8 h-8 mx-auto mb-4 text-amber-400" />
-            <p className="text-lg font-medium mb-2">
-              This is why implementation matters more than the tool itself.
+            <p className="text-base md:text-lg font-medium mb-2">
+              This is the pattern.
             </p>
-            <p className="text-slate-300 text-sm">
-              The organizations that capture full value aren't just buying technology — 
-              they're partnering with teams who understand these challenges deeply.
+            <p className="text-slate-400 text-sm">
+              The organizations that capture full value don't just have better technology — 
+              they have partners who understand these challenges and know how to solve them.
             </p>
           </div>
         </div>
       )}
 
       {!allFlipped && (
-        <div className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl p-6 border border-slate-200 text-center">
-          <p className="text-[#374151]">
-            <span className="font-medium">The bottom line:</span> capturing the value you saw in The Math 
-            requires more than good technology. It requires the right partnership.
+        <div className="bg-slate-100 rounded-xl p-5 border border-slate-200 text-center">
+          <p className="text-[#374151] text-sm">
+            <span className="font-medium">The takeaway:</span> closing the gap you saw in The Math 
+            isn't about working harder. It's about these four things.
           </p>
         </div>
       )}
@@ -290,7 +292,7 @@ export default function StepWhyThisHappens({
           className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
           data-testid="button-next"
         >
-          Your Next Steps
+          See Your Summary
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
