@@ -1041,27 +1041,49 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             </View>
           </View>
           
-          <Text style={styles.sectionTitle}>Dimension Summary</Text>
+          <Text style={styles.sectionTitle}>Your Dimensions vs. Benchmark</Text>
           
           <View style={styles.benchmarkRow}>
             <View style={[styles.benchmarkCard, styles.benchmarkCardYou]}>
-              <Text style={styles.benchmarkLabel}>Utilization</Text>
-              <Text style={styles.benchmarkValue}>{inputs.utilization}% → {ABRIDGE_BENCHMARKS.utilization}%</Text>
+              <Text style={styles.benchmarkLabel}>Utilization - You</Text>
+              <Text style={styles.benchmarkValue}>{inputs.utilization}%</Text>
             </View>
-            <View style={[styles.benchmarkCard, styles.benchmarkCardYou]}>
-              <Text style={styles.benchmarkLabel}>Efficiency</Text>
-              <Text style={styles.benchmarkValue}>{inputs.timeSavedPerEncounter} → {ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget]}>
+              <Text style={styles.benchmarkLabel}>Utilization - Target</Text>
+              <Text style={styles.benchmarkValueGreen}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
             </View>
           </View>
           
           <View style={styles.benchmarkRow}>
             <View style={[styles.benchmarkCard, styles.benchmarkCardYou]}>
-              <Text style={styles.benchmarkLabel}>Quality</Text>
-              <Text style={styles.benchmarkValue}>+{inputs.wrvuLift}% → +{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+              <Text style={styles.benchmarkLabel}>Efficiency - You</Text>
+              <Text style={styles.benchmarkValue}>{inputs.timeSavedPerEncounter} min</Text>
             </View>
-            <View style={[styles.benchmarkCard, styles.benchmarkCardYou, { marginRight: 0 }]}>
-              <Text style={styles.benchmarkLabel}>Satisfaction</Text>
-              <Text style={styles.benchmarkValue}>{inputs.satisfaction}% → {ABRIDGE_BENCHMARKS.satisfaction}%</Text>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget]}>
+              <Text style={styles.benchmarkLabel}>Efficiency - Target</Text>
+              <Text style={styles.benchmarkValueGreen}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
+            </View>
+          </View>
+          
+          <View style={styles.benchmarkRow}>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardYou]}>
+              <Text style={styles.benchmarkLabel}>Quality - You</Text>
+              <Text style={styles.benchmarkValue}>+{inputs.wrvuLift}%</Text>
+            </View>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget]}>
+              <Text style={styles.benchmarkLabel}>Quality - Target</Text>
+              <Text style={styles.benchmarkValueGreen}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
+            </View>
+          </View>
+          
+          <View style={styles.benchmarkRow}>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardYou]}>
+              <Text style={styles.benchmarkLabel}>Satisfaction - You</Text>
+              <Text style={styles.benchmarkValue}>{inputs.satisfaction}%</Text>
+            </View>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget, { marginRight: 0 }]}>
+              <Text style={styles.benchmarkLabel}>Satisfaction - Target</Text>
+              <Text style={styles.benchmarkValueGreen}>{ABRIDGE_BENCHMARKS.satisfaction}%</Text>
             </View>
           </View>
           
