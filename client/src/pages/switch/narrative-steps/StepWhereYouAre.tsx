@@ -88,6 +88,100 @@ function DimensionSlider({
   );
 }
 
+function LiveReceipt({ 
+  inputs, 
+  calculations 
+}: { 
+  inputs: SwitchInputs; 
+  calculations: SwitchCalculations;
+}) {
+  const hasInputs = inputs.providers > 0 && inputs.annualEncounters > 0;
+  const hasAnyDimension = inputs.utilization > 0 || inputs.timeSavedPerEncounter > 0 || 
+                          inputs.wrvuLift > 0 || inputs.satisfaction > 0;
+  
+  const utilizationPct = Math.round((inputs.utilization / ABRIDGE_BENCHMARKS.utilization) * 100);
+  const efficiencyPct = Math.round((inputs.timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100);
+  const qualityPct = Math.round((inputs.wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100);
+  const satisfactionPct = Math.round((inputs.satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100);
+
+  const formatCurrency = (val: number) => {
+    if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+    if (val >= 1000) return `$${Math.round(val / 1000)}K`;
+    return `$${Math.round(val)}`;
+  };
+
+  return (
+    <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-5 text-white sticky top-4">
+      <div className="text-center mb-4">
+        <div className="text-xs uppercase tracking-wider text-slate-400 mb-1">Live Score</div>
+        <div className="text-4xl font-bold" data-testid="text-live-score">
+          {hasAnyDimension ? `${calculations.realizationScore}%` : '--'}
+        </div>
+        <div className="text-xs text-slate-400 mt-1">Value Realization</div>
+      </div>
+
+      <div className="space-y-3 mb-4">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-slate-300 flex items-center gap-2">
+            <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
+            Utilization
+          </span>
+          <span className={inputs.utilization > 0 ? 'text-white font-medium' : 'text-slate-500'}>
+            {inputs.utilization > 0 ? `${utilizationPct}%` : '--'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-slate-300 flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-purple-400" />
+            Efficiency
+          </span>
+          <span className={inputs.timeSavedPerEncounter > 0 ? 'text-white font-medium' : 'text-slate-500'}>
+            {inputs.timeSavedPerEncounter > 0 ? `${efficiencyPct}%` : '--'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-slate-300 flex items-center gap-2">
+            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+            Quality
+          </span>
+          <span className={inputs.wrvuLift > 0 ? 'text-white font-medium' : 'text-slate-500'}>
+            {inputs.wrvuLift > 0 ? `${qualityPct}%` : '--'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-slate-300 flex items-center gap-2">
+            <Smile className="w-3.5 h-3.5 text-amber-400" />
+            Satisfaction
+          </span>
+          <span className={inputs.satisfaction > 0 ? 'text-white font-medium' : 'text-slate-500'}>
+            {inputs.satisfaction > 0 ? `${satisfactionPct}%` : '--'}
+          </span>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-700 pt-4">
+        <div className="text-xs uppercase tracking-wider text-slate-400 mb-2 text-center">Your Annual Gap</div>
+        <div className="text-center">
+          <div className={`text-2xl font-bold ${hasInputs && hasAnyDimension ? 'text-emerald-400' : 'text-slate-500'}`} data-testid="text-live-gap">
+            {hasInputs && hasAnyDimension ? formatCurrency(calculations.annualGap) : '--'}
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            {hasInputs && hasAnyDimension ? 'potential value unrealized' : 'enter data to see gap'}
+          </div>
+        </div>
+      </div>
+
+      {hasInputs && hasAnyDimension && calculations.realizationScore < 80 && (
+        <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <p className="text-xs text-amber-300 text-center">
+            You're at {calculations.realizationScore}% — there may be room to unlock more value.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StepWhereYouAre({
   inputs,
   updateInput,
@@ -106,17 +200,18 @@ export default function StepWhereYouAre({
     inputs.satisfaction > 0;
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
-          Where You Are Today
-        </h1>
-        <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          You did the hard part — got buy-in, trained providers, changed workflows. 
-          <br className="hidden md:block" />
-          Let's see what you're actually getting back.
-        </p>
-      </div>
+    <div className="flex gap-8">
+      <div className="flex-1 space-y-8">
+        <div className="text-center lg:text-left">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
+            Where You Are Today
+          </h1>
+          <p className="text-base md:text-lg text-[#6B7280] max-w-2xl">
+            You did the hard part — got buy-in, trained providers, changed workflows. 
+            <br className="hidden md:block" />
+            Let's see what you're actually getting back.
+          </p>
+        </div>
 
       <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
         <h2 className="text-lg font-bold text-[#111827] mb-4">Your Organization</h2>
@@ -270,26 +365,31 @@ export default function StepWhereYouAre({
         </div>
       </section>
 
-      <div className="flex justify-between items-center pt-4">
-        <Button 
-          variant="ghost" 
-          onClick={onBack}
-          className="gap-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-        
-        <Button
-          onClick={onNext}
-          disabled={!canProceed}
-          className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
-          data-testid="button-next"
-        >
-          See What You're Missing
-          <ArrowRight className="w-4 h-4" />
-        </Button>
+        <div className="flex justify-between items-center pt-4">
+          <Button 
+            variant="ghost" 
+            onClick={onBack}
+            className="gap-2"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+          
+          <Button
+            onClick={onNext}
+            disabled={!canProceed}
+            className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
+            data-testid="button-next"
+          >
+            See What You're Missing
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="hidden lg:block w-72 flex-shrink-0">
+        <LiveReceipt inputs={inputs} calculations={calculations} />
       </div>
     </div>
   );
