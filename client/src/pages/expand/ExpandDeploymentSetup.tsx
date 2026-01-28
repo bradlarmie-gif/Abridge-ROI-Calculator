@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Sparkles, TrendingUp, Target } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Smile, Sparkles, TrendingUp, Target, BadgeDollarSign, Scale, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -15,58 +15,77 @@ interface ExpandDeploymentSetupProps {
   onBackToJourney?: () => void;
 }
 
-// PRIMARY metrics - strongest ROI impact, pre-selected by default
-const PRIMARY_METRICS = [
+// TIER 1: Core Financial Value - CFO-defensible dollars
+// These hit revenue directly. They WILL be scrutinized.
+const TIER_1_METRICS = [
   {
     id: "wrvuCapture" as MetricType,
     name: "wRVU per Encounter",
-    description: "Revenue capture improvement",
-    source: "Clarity",
+    description: "Direct revenue impact via documentation completeness",
+    dollarizable: "Yes — $33/wRVU with attribution %",
+    source: "Clarity/Epic",
     icon: DollarSign,
+    recommended: true,
   },
-  {
-    id: "timeSavings" as MetricType,
-    name: "Time in Notes",
-    description: "Documentation efficiency",
-    source: "Clarity",
-    icon: Clock,
-  },
-  {
-    id: "chartClosure" as MetricType,
-    name: "Same-Day Chart Closure",
-    description: "Revenue cycle acceleration",
-    source: "Clarity",
-    icon: FileCheck,
-  },
-];
-
-// SECONDARY metrics - additional evidence, optional
-const SECONDARY_METRICS = [
   {
     id: "levelOfService" as MetricType,
     name: "Average E&M Level",
-    description: "Coding accuracy",
-    source: "Clarity",
+    description: "Coding accuracy from complete documentation",
+    dollarizable: "Yes — level shifts have payer-specific $ values",
+    source: "Clarity/Epic",
     icon: FileText,
+    recommended: true,
+  },
+];
+
+// TIER 2: Operational Efficiency - dollars with methodology options
+// Time saved is real. The question is how to value it.
+const TIER_2_METRICS = [
+  {
+    id: "timeSavings" as MetricType,
+    name: "Time in Notes",
+    description: "Minutes per encounter spent documenting",
+    dollarizable: "Optional — can convert via patient access or overtime",
+    source: "Clarity/Epic",
+    icon: Clock,
+    recommended: true,
   },
   {
     id: "workOutsideWork" as MetricType,
     name: "Work Outside of Work",
-    description: "After-hours burden",
-    source: "Clarity",
+    description: "After-hours documentation burden",
+    dollarizable: "Optional — overtime reduction or retention value",
+    source: "Clarity/Epic",
     icon: Moon,
+    recommended: false,
+  },
+];
+
+// TIER 3: Quality Indicators - proof points, not dollars
+// These support the story but don't need independent financial values
+const TIER_3_METRICS = [
+  {
+    id: "chartClosure" as MetricType,
+    name: "Same-Day Chart Closure",
+    description: "Real-time documentation behavior indicator",
+    dollarizable: "Supporting — validates workflow adoption",
+    source: "Clarity/Epic",
+    icon: FileCheck,
+    recommended: false,
   },
   {
     id: "clinicianSatisfaction" as MetricType,
     name: "Clinician Satisfaction",
-    description: "Provider experience",
+    description: "Leading indicator for retention",
+    dollarizable: "Supporting — retention story, not direct $",
     source: "Survey",
     icon: Smile,
+    recommended: false,
   },
 ];
 
 // Combined for backward compatibility
-const METRICS_CONFIG = [...PRIMARY_METRICS, ...SECONDARY_METRICS];
+const METRICS_CONFIG = [...TIER_1_METRICS, ...TIER_2_METRICS, ...TIER_3_METRICS];
 
 export default function ExpandDeploymentSetup({
   deploymentData,
@@ -113,32 +132,31 @@ export default function ExpandDeploymentSetup({
       <UnifiedHeaderSpacer />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-10">
-        {/* Soul Hero - The Story */}
+        {/* Soul Hero - Built for CFO Scrutiny */}
         <div className="mb-8 md:mb-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 md:p-8 text-white">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <span className="text-amber-400 text-sm font-medium tracking-wide uppercase">Your Value Journey</span>
+            <Scale className="w-5 h-5 text-amber-400" />
+            <span className="text-amber-400 text-sm font-medium tracking-wide uppercase">Value Assessment</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold mb-3" data-testid="text-page-title">
-            Seeing What You've Built
+            Built to Survive CFO Scrutiny
           </h1>
           <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl mb-6">
-            You've invested in Abridge. Now let's understand what that investment is actually creating — 
-            in concrete terms you can share with your CFO, celebrate with your team, and use to plan 
-            what's next.
+            Every assumption is transparent. Every value is editable. Every methodology is documented.
+            This isn't a marketing pitch — it's ammunition for your next Executive Business Review.
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
-              <TrendingUp className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-white/90">Track real outcomes</span>
+              <DollarSign className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white/90">Defensible dollars</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-white/90">Quantify your value</span>
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-white/90">Editable assumptions</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
               <Target className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-white/90">Plan your expansion</span>
+              <span className="text-sm text-white/90">Clear methodology</span>
             </div>
           </div>
         </div>
@@ -244,24 +262,33 @@ export default function ExpandDeploymentSetup({
           )}
         </section>
 
-        {/* Metrics Selection */}
+        {/* Metrics Selection - The CFO Scrutiny Section */}
         <section className="mb-8 md:mb-10">
-          <div className="mb-4 md:mb-6">
-            <h2 className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase mb-1">
-              WHAT METRICS DO YOU HAVE DATA FOR?
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-[#111827] mb-2">
+              Which Metrics Are You Tracking?
             </h2>
+            <p className="text-sm text-[#6B7280]">
+              Select the metrics you have data for. We've organized these by how they translate to dollars — 
+              because your CFO will ask.
+            </p>
           </div>
 
-          {/* PRIMARY METRICS */}
-          <div className="mb-4 md:mb-6">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">PRIMARY METRICS</span>
-              <span className="text-xs text-[#6B7280]">(Recommended)</span>
+          {/* TIER 1: Core Financial Value */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-emerald-700">Tier 1: Core Financial Value</span>
+                <span className="text-xs text-emerald-600 ml-2">CFO-defensible dollars</span>
+              </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3">These have the strongest ROI impact</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">These hit revenue directly. They will be scrutinized — and they'll hold up.</p>
             
             <div className="space-y-2">
-              {PRIMARY_METRICS.map((metric) => {
+              {TIER_1_METRICS.map((metric) => {
                 const isSelected = selectedMetrics.includes(metric.id);
                 const Icon = metric.icon;
                 
@@ -276,12 +303,9 @@ export default function ExpandDeploymentSetup({
                     onClick={() => toggleMetric(metric.id)}
                     data-testid={`metric-${metric.id}`}
                   >
-                    {/* Checkbox */}
                     <div
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                        isSelected
-                          ? "bg-emerald-500 border-emerald-500"
-                          : "border-neutral-300 bg-white"
+                        isSelected ? "bg-emerald-500 border-emerald-500" : "border-neutral-300 bg-white"
                       }`}
                     >
                       {isSelected && (
@@ -290,79 +314,141 @@ export default function ExpandDeploymentSetup({
                         </svg>
                       )}
                     </div>
-
-                    {/* Icon */}
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       isSelected ? "bg-emerald-100" : "bg-neutral-100"
                     }`}>
                       <Icon className={`w-4 h-4 ${isSelected ? "text-emerald-600" : "text-neutral-500"}`} />
                     </div>
-
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-[#111827]">{metric.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-[#111827]">{metric.name}</h3>
+                        {metric.recommended && (
+                          <span className="text-[10px] font-medium text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Recommended</span>
+                        )}
+                      </div>
                       <p className="text-sm text-[#6B7280]">{metric.description}</p>
+                      <p className="text-xs text-emerald-600 mt-0.5">{metric.dollarizable}</p>
                     </div>
-
-                    {/* Source */}
-                    <span className="text-xs text-neutral-400 flex-shrink-0">Source: {metric.source}</span>
+                    <span className="text-xs text-neutral-400 flex-shrink-0 hidden sm:block">{metric.source}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* SECONDARY METRICS */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">SECONDARY METRICS</span>
-              <span className="text-xs text-neutral-400">(Optional)</span>
+          {/* TIER 2: Operational Efficiency */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                <Clock className="w-3.5 h-3.5 text-blue-600" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-blue-700">Tier 2: Operational Efficiency</span>
+                <span className="text-xs text-blue-600 ml-2">Dollars with methodology options</span>
+              </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3">Additional evidence of impact</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Time saved is real. You'll choose how to value it — or leave it as hours.</p>
             
             <div className="space-y-2">
-              {SECONDARY_METRICS.map((metric) => {
+              {TIER_2_METRICS.map((metric) => {
                 const isSelected = selectedMetrics.includes(metric.id);
                 const Icon = metric.icon;
                 
                 return (
                   <div
                     key={metric.id}
-                    className={`flex items-center gap-4 p-4 bg-white border rounded-lg cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white border-l-4 border rounded-lg cursor-pointer transition-all ${
                       isSelected
-                        ? "border-[#EA2C00] bg-[#FEF0EC]"
-                        : "border-neutral-200 hover:border-neutral-300 opacity-70"
+                        ? "border-l-blue-500 border-blue-200 bg-blue-50/30"
+                        : "border-l-transparent border-neutral-200 hover:border-neutral-300"
                     }`}
                     onClick={() => toggleMetric(metric.id)}
                     data-testid={`metric-${metric.id}`}
                   >
-                    {/* Radio-style circle */}
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        isSelected
-                          ? "border-[#EA2C00]"
-                          : "border-neutral-300"
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? "bg-blue-500 border-blue-500" : "border-neutral-300 bg-white"
                       }`}
                     >
                       {isSelected && (
-                        <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                          <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                       )}
                     </div>
-
-                    {/* Icon */}
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      isSelected ? "bg-[#EA2C00]/10" : "bg-neutral-100"
+                      isSelected ? "bg-blue-100" : "bg-neutral-100"
                     }`}>
-                      <Icon className={`w-4 h-4 ${isSelected ? "text-[#EA2C00]" : "text-neutral-400"}`} />
+                      <Icon className={`w-4 h-4 ${isSelected ? "text-blue-600" : "text-neutral-500"}`} />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-[#111827]">{metric.name}</h3>
+                        {metric.recommended && (
+                          <span className="text-[10px] font-medium text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Recommended</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-[#6B7280]">{metric.description}</p>
+                      <p className="text-xs text-blue-600 mt-0.5">{metric.dollarizable}</p>
+                    </div>
+                    <span className="text-xs text-neutral-400 flex-shrink-0 hidden sm:block">{metric.source}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                    {/* Content */}
+          {/* TIER 3: Quality Indicators */}
+          <div className="mb-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
+                <Activity className="w-3.5 h-3.5 text-amber-600" />
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-amber-700">Tier 3: Quality Indicators</span>
+                <span className="text-xs text-amber-600 ml-2">Proof points, not dollars</span>
+              </div>
+            </div>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">These support the story. They validate adoption and signal future value.</p>
+            
+            <div className="space-y-2">
+              {TIER_3_METRICS.map((metric) => {
+                const isSelected = selectedMetrics.includes(metric.id);
+                const Icon = metric.icon;
+                
+                return (
+                  <div
+                    key={metric.id}
+                    className={`flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white border-l-4 border rounded-lg cursor-pointer transition-all ${
+                      isSelected
+                        ? "border-l-amber-500 border-amber-200 bg-amber-50/30"
+                        : "border-l-transparent border-neutral-200 hover:border-neutral-300 opacity-80"
+                    }`}
+                    onClick={() => toggleMetric(metric.id)}
+                    data-testid={`metric-${metric.id}`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                        isSelected ? "bg-amber-500 border-amber-500" : "border-neutral-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && (
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                          <path d="M10 3L4.5 8.5L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isSelected ? "bg-amber-100" : "bg-neutral-100"
+                    }`}>
+                      <Icon className={`w-4 h-4 ${isSelected ? "text-amber-600" : "text-neutral-400"}`} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <h3 className={`font-medium ${isSelected ? "text-[#111827]" : "text-neutral-600"}`}>{metric.name}</h3>
+                      <p className="text-sm text-[#6B7280]">{metric.description}</p>
+                      <p className="text-xs text-amber-600 mt-0.5">{metric.dollarizable}</p>
                     </div>
-
-                    {/* Source */}
-                    <span className="text-xs text-neutral-400 flex-shrink-0">Source: {metric.source}</span>
+                    <span className="text-xs text-neutral-400 flex-shrink-0 hidden sm:block">{metric.source}</span>
                   </div>
                 );
               })}
