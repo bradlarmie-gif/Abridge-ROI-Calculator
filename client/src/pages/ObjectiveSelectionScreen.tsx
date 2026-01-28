@@ -2486,36 +2486,34 @@ export default function ObjectiveSelectionScreen({
       >
         {/* PAGE 1 — CARE SETTING */}
         {currentPage === "setting" && (
-          <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-12 md:py-16">
-            {/* Page Header with Benefits */}
-            <div className="mb-10">
-              <h2 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-3">
-                Select a care setting
-              </h2>
-              <p className="text-[17px] leading-relaxed text-[#6B7280] max-w-[700px] mb-4">
-                Each care setting has unique documentation workflows and value drivers. Your selection determines the baseline assumptions throughout this calculator.
-              </p>
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
-                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
-                Setting-specific ROI drivers
-              </span>
-              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
-                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
-                Tailored assumptions
-              </span>
-              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
-                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
-                Shareable output
-              </span>
-              <span className="flex items-center gap-2 text-sm font-medium text-[#6B7280]">
-                <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
-                Based on 200+ health system partners
-              </span>
-              </div>
-            </div>
-
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-16">
+            {/* Centered content container */}
             <div className="max-w-5xl mx-auto">
+              {/* Page Header */}
+              <div className="text-center mb-10">
+                <h2 className="text-3xl sm:text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
+                  Select a care setting
+                </h2>
+                <p className="text-base sm:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
+                  Each setting has unique documentation workflows and value drivers that shape your ROI model.
+                </p>
+                <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    Setting-specific drivers
+                  </span>
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    Tailored assumptions
+                  </span>
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    Shareable results
+                  </span>
+                </div>
+              </div>
+
+              {/* Card grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                 {ALL_SETTINGS.map((setting) => {
                   return (
