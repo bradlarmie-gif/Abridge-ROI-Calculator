@@ -1,6 +1,7 @@
-import { ArrowRight, ArrowLeft, Target, Award, CheckCircle, BarChart3, Clock, DollarSign, Smile, Moon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, Award, CheckCircle, BarChart3, Clock, DollarSign, Smile, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ABRIDGE_BENCHMARKS, type SwitchInputs, type SwitchCalculations } from "@/lib/switchGapCalculator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { type SwitchInputs, type SwitchCalculations } from "@/lib/switchGapCalculator";
 
 interface StepWhatGoodLooksLikeProps {
   inputs: SwitchInputs;
@@ -16,15 +17,13 @@ interface DimensionMeterProps {
   iconColor: string;
   label: string;
   currentValue: number;
-  currentLabel: string;
   rangeMin: number;
   rangeMax: number;
-  rangeLabel: string;
   unit: string;
   prefix?: string;
   maxScale: number;
   context: string;
-  isInverted?: boolean;
+  caveat?: string;
 }
 
 function DimensionMeter({
@@ -33,17 +32,15 @@ function DimensionMeter({
   iconColor,
   label,
   currentValue,
-  currentLabel,
   rangeMin,
   rangeMax,
-  rangeLabel,
   unit,
   prefix = "",
   maxScale,
   context,
-  isInverted = false,
+  caveat,
 }: DimensionMeterProps) {
-  const currentPercent = Math.min(100, (currentValue / maxScale) * 100);
+  const currentPercent = Math.min(100, Math.max(0, (currentValue / maxScale) * 100));
   const rangeMinPercent = (rangeMin / maxScale) * 100;
   const rangeMaxPercent = Math.min(100, (rangeMax / maxScale) * 100);
   
@@ -52,80 +49,91 @@ function DimensionMeter({
   
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5">
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-5">
         <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 flex items-center gap-2">
           <h3 className="font-bold text-[#111827]">{label}</h3>
+          {caveat && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-4 h-4 text-slate-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs text-sm">
+                {caveat}
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <span className="text-xs text-[#6B7280] uppercase tracking-wide">You're at</span>
-          <div className={`text-2xl font-bold ${isBelowRange ? 'text-amber-600' : 'text-emerald-600'}`}>
-            {prefix}{currentValue}{unit}
-          </div>
+      <div className="relative mb-8">
+        <div className="h-3 bg-slate-100 rounded-full">
+          <div 
+            className="absolute h-full bg-gradient-to-r from-emerald-200 to-emerald-400 rounded-full"
+            style={{ 
+              left: `${rangeMinPercent}%`, 
+              width: `${rangeMaxPercent - rangeMinPercent}%` 
+            }}
+          />
+          
+          <div 
+            className={`absolute top-1/2 w-5 h-5 rounded-full border-[3px] border-white shadow-lg transition-all z-10 ${
+              isBelowRange ? 'bg-amber-500' : 'bg-emerald-500'
+            }`}
+            style={{ left: `${currentPercent}%`, transform: 'translate(-50%, -50%)' }}
+          />
         </div>
-        <div className="text-right">
-          <span className="text-xs text-[#6B7280] uppercase tracking-wide">Top performers</span>
-          <div className="text-2xl font-bold text-[#111827]">
-            {prefix}{rangeMin}–{rangeMax}{unit}
-          </div>
-        </div>
-      </div>
-
-      <div className="relative h-3 bg-slate-100 rounded-full overflow-visible mb-3">
-        <div 
-          className="absolute h-full bg-gradient-to-r from-emerald-200 to-emerald-300 rounded-full"
-          style={{ 
-            left: `${rangeMinPercent}%`, 
-            width: `${rangeMaxPercent - rangeMinPercent}%` 
-          }}
-        />
         
         <div 
-          className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md transition-all ${
-            isBelowRange ? 'bg-amber-500' : 'bg-emerald-500'
+          className={`absolute -bottom-6 text-sm font-bold whitespace-nowrap ${
+            isBelowRange ? 'text-amber-600' : 'text-emerald-600'
           }`}
-          style={{ left: `${currentPercent}%`, transform: 'translate(-50%, -50%)' }}
-        />
+          style={{ 
+            left: `${currentPercent}%`, 
+            transform: 'translateX(-50%)' 
+          }}
+        >
+          {prefix}{currentValue}{unit}
+        </div>
         
         <div 
-          className="absolute -top-6 text-xs font-medium text-slate-500"
-          style={{ left: `${rangeMinPercent}%`, transform: 'translateX(-50%)' }}
+          className="absolute -top-6 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded whitespace-nowrap"
+          style={{ 
+            left: `${(rangeMinPercent + rangeMaxPercent) / 2}%`, 
+            transform: 'translateX(-50%)' 
+          }}
         >
-          {prefix}{rangeMin}{unit}
-        </div>
-        <div 
-          className="absolute -top-6 text-xs font-medium text-slate-500"
-          style={{ left: `${rangeMaxPercent}%`, transform: 'translateX(-50%)' }}
-        >
-          {prefix}{rangeMax}{unit}
+          {prefix}{rangeMin}–{rangeMax}{unit}
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs mb-4">
-        <span className="text-slate-400">0{unit}</span>
-        <span className="text-slate-400">{maxScale}{unit}</span>
+      <div className="mt-4">
+        {isBelowRange && (
+          <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
+            <p className="text-sm text-amber-800">
+              <span className="font-semibold">The opportunity:</span> {context}
+            </p>
+          </div>
+        )}
+        
+        {isInRange && (
+          <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+            <p className="text-sm text-emerald-800">
+              <span className="font-semibold">You're in the zone.</span> This dimension is performing well.
+            </p>
+          </div>
+        )}
+        
+        {!isBelowRange && !isInRange && (
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+            <p className="text-sm text-blue-800">
+              <span className="font-semibold">Above benchmark.</span> You're exceeding typical performance.
+            </p>
+          </div>
+        )}
       </div>
-
-      {isBelowRange && (
-        <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
-          <p className="text-sm text-amber-800">
-            <span className="font-semibold">The opportunity:</span> {context}
-          </p>
-        </div>
-      )}
-      
-      {isInRange && (
-        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-          <p className="text-sm text-emerald-800">
-            <span className="font-semibold">You're in the zone.</span> This dimension is performing well.
-          </p>
-        </div>
-      )}
     </div>
   );
 }
@@ -143,13 +151,11 @@ export default function StepWhatGoodLooksLike({
       iconColor: "text-blue-600",
       label: "Utilization",
       currentValue: inputs.utilization || 0,
-      currentLabel: "of encounters",
       rangeMin: 70,
-      rangeMax: 82,
-      rangeLabel: "top performers",
+      rangeMax: 84,
       unit: "%",
       maxScale: 100,
-      context: "Moving from " + (inputs.utilization || 0) + "% to 70%+ means thousands more documented encounters per year."
+      context: "Moving to 70%+ means thousands more documented encounters per year."
     },
     {
       icon: Clock,
@@ -157,13 +163,11 @@ export default function StepWhatGoodLooksLike({
       iconColor: "text-purple-600",
       label: "Time Saved",
       currentValue: inputs.timeSavedPerEncounter || 0,
-      currentLabel: "per encounter",
-      rangeMin: 3,
-      rangeMax: 5,
-      rangeLabel: "top performers",
+      rangeMin: 2.7,
+      rangeMax: 4.1,
       unit: " min",
       maxScale: 6,
-      context: "Each additional minute saved per encounter compounds across your entire organization."
+      context: "Each additional minute saved compounds across your entire organization."
     },
     {
       icon: DollarSign,
@@ -171,14 +175,13 @@ export default function StepWhatGoodLooksLike({
       iconColor: "text-emerald-600",
       label: "wRVU Lift",
       currentValue: inputs.wrvuLift || 0,
-      currentLabel: "improvement",
-      rangeMin: 4,
-      rangeMax: 7,
-      rangeLabel: "top performers",
+      rangeMin: 4.5,
+      rangeMax: 8,
       unit: "%",
       prefix: "+",
-      maxScale: 10,
-      context: "Better documentation captures the complexity of care you're already providing."
+      maxScale: 12,
+      context: "Better documentation captures the complexity of care you're already providing.",
+      caveat: "wRVU lift depends on baseline documentation quality. Higher lift often indicates room for improvement in prior documentation. Lower lift with already-strong documentation is equally healthy."
     },
     {
       icon: Smile,
@@ -186,10 +189,8 @@ export default function StepWhatGoodLooksLike({
       iconColor: "text-amber-600",
       label: "Provider Satisfaction",
       currentValue: inputs.satisfaction || 0,
-      currentLabel: "would recommend",
-      rangeMin: 82,
-      rangeMax: 95,
-      rangeLabel: "top performers",
+      rangeMin: 79,
+      rangeMax: 92,
       unit: "%",
       maxScale: 100,
       context: "When providers love the tool, adoption follows. Satisfaction drives utilization."
@@ -208,7 +209,7 @@ export default function StepWhatGoodLooksLike({
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
           These aren't aspirational targets. They're achievable ranges 
           <br className="hidden md:block" />
-          based on real implementations.
+          based on mature implementations.
         </p>
       </div>
 
@@ -223,7 +224,7 @@ export default function StepWhatGoodLooksLike({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {dimensions.map((dimension) => (
           <DimensionMeter
             key={dimension.label}
