@@ -166,16 +166,6 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center mb-10 md:mb-14"
         >
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-full text-sm text-slate-600 mb-6 shadow-sm"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#EA2C00] animate-pulse" />
-            ROI Calculator
-          </motion.div>
-          
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 md:mb-4 tracking-tight px-2">
             Model the impact of ambient documentation
           </h1>
