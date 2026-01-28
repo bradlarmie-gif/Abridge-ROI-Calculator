@@ -522,7 +522,7 @@ export default function StepTheMath({
           className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
           data-testid="button-next"
         >
-          What It Takes
+          See Full Analysis
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
