@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
-import { ArrowRight, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile, TrendingUp, Sparkles, Target, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, Mic, Users, FileText, BarChart3, Clock, DollarSign, Smile, TrendingUp, Sparkles, Target, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -69,16 +70,28 @@ export default function SwitchAssessment({
     hasAnyDimensionValue
   );
 
-  // Auto-expand next dimension when one is filled
+  // Track which dimensions have auto-expanded (so we don't override user navigation)
+  const [autoExpandedDimensions, setAutoExpandedDimensions] = useState<Set<string>>(new Set());
+  
+  // Auto-expand next dimension when one is filled (but only once per dimension)
   useEffect(() => {
-    if (inputs.utilization > 0 && expandedDimension === "utilization") {
-      setExpandedDimension("efficiency");
-    } else if (inputs.timeSavedPerEncounter > 0 && expandedDimension === "efficiency") {
-      setExpandedDimension("quality");
-    } else if (inputs.wrvuLift > 0 && expandedDimension === "quality") {
-      setExpandedDimension("satisfaction");
+    if (inputs.utilization > 0 && expandedDimension === "utilization" && !autoExpandedDimensions.has("efficiency")) {
+      setTimeout(() => {
+        setExpandedDimension("efficiency");
+        setAutoExpandedDimensions(prev => new Set(prev).add("efficiency"));
+      }, 300);
+    } else if (inputs.timeSavedPerEncounter > 0 && expandedDimension === "efficiency" && !autoExpandedDimensions.has("quality")) {
+      setTimeout(() => {
+        setExpandedDimension("quality");
+        setAutoExpandedDimensions(prev => new Set(prev).add("quality"));
+      }, 300);
+    } else if (inputs.wrvuLift > 0 && expandedDimension === "quality" && !autoExpandedDimensions.has("satisfaction")) {
+      setTimeout(() => {
+        setExpandedDimension("satisfaction");
+        setAutoExpandedDimensions(prev => new Set(prev).add("satisfaction"));
+      }, 300);
     }
-  }, [inputs.utilization, inputs.timeSavedPerEncounter, inputs.wrvuLift, expandedDimension]);
+  }, [inputs.utilization, inputs.timeSavedPerEncounter, inputs.wrvuLift, expandedDimension, autoExpandedDimensions]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -608,12 +621,29 @@ function LiveModelSidebar({ calculations, inputs, hasMinimumData, hasAnyDimensio
 
       {/* Realization Score */}
       <div className="bg-slate-50 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-[#111827]">Realization Score</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-[#111827]">Realization Score</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                  <HelpCircle className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                <p className="text-sm">
+                  <strong>How close you are to optimal performance.</strong> We average your results across all four dimensions compared to Abridge benchmarks. 100% = you're matching what's possible.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <span className={`text-2xl font-bold ${hasAnyDimensionValue ? 'text-[#111827]' : 'text-slate-300'}`}>
             {hasAnyDimensionValue ? `${calculations.realizationScore}%` : '--%'}
           </span>
         </div>
+        <p className="text-xs text-[#6B7280] mb-3">
+          Average of your scores across all dimensions vs. Abridge benchmarks
+        </p>
         <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"
@@ -631,20 +661,39 @@ function LiveModelSidebar({ calculations, inputs, hasMinimumData, hasAnyDimensio
 
       {/* Gap Breakdown */}
       {hasMinimumData && (
-        <div className="space-y-2">
-          <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">Gap Breakdown</div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">How This Adds Up</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                  <HelpCircle className="w-3.5 h-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                <p className="text-sm">
+                  Each dimension gap translates to real dollars based on your encounter volume and standard industry conversion factors.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           
           {calculations.utilizationGapValue > 0 && (
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
+              className="p-3 bg-blue-50 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-600" />
-                <span className="text-sm text-blue-800">Utilization</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-800">Utilization Gap</span>
+                </div>
+                <span className="font-semibold text-blue-700">{formatCurrency(calculations.utilizationGapValue)}</span>
               </div>
-              <span className="font-semibold text-blue-700">{formatCurrency(calculations.utilizationGapValue)}</span>
+              <p className="text-xs text-blue-600/80 pl-6">
+                Encounters going undocumented → time lost that could be recaptured
+              </p>
             </motion.div>
           )}
           
@@ -653,13 +702,18 @@ function LiveModelSidebar({ calculations, inputs, hasMinimumData, hasAnyDimensio
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="flex items-center justify-between p-3 bg-purple-50 rounded-lg"
+              className="p-3 bg-purple-50 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-purple-600" />
-                <span className="text-sm text-purple-800">Efficiency</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-800">Efficiency Gap</span>
+                </div>
+                <span className="font-semibold text-purple-700">{formatCurrency(calculations.efficiencyGapValue)}</span>
               </div>
-              <span className="font-semibold text-purple-700">{formatCurrency(calculations.efficiencyGapValue)}</span>
+              <p className="text-xs text-purple-600/80 pl-6">
+                Minutes per encounter → hours annually that could drive patient access or reduce overtime
+              </p>
             </motion.div>
           )}
           
@@ -668,13 +722,18 @@ function LiveModelSidebar({ calculations, inputs, hasMinimumData, hasAnyDimensio
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg"
+              className="p-3 bg-emerald-50 rounded-lg"
             >
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <span className="text-sm text-emerald-800">Quality (wRVU)</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <span className="text-sm font-medium text-emerald-800">Quality Gap</span>
+                </div>
+                <span className="font-semibold text-emerald-700">{formatCurrency(calculations.wrvuGapValue)}</span>
               </div>
-              <span className="font-semibold text-emerald-700">{formatCurrency(calculations.wrvuGapValue)}</span>
+              <p className="text-xs text-emerald-600/80 pl-6">
+                Better documentation → accurate coding → higher reimbursement per encounter
+              </p>
             </motion.div>
           )}
         </div>
