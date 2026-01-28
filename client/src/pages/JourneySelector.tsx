@@ -33,7 +33,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
         delay: delay,
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
-      className="group bg-white border border-[#E5E7EB] rounded-xl p-5 md:p-8 flex flex-col cursor-pointer transition-all duration-300 ease-out hover:shadow-lg hover:shadow-black/8 hover:-translate-y-1 hover:border-[#D1D5DB]"
+      className="group bg-white border border-[#E5E7EB] rounded-xl p-5 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out shadow-sm shadow-black/5 hover:shadow-xl hover:shadow-black/10 hover:-translate-y-1.5 hover:border-[#D1D5DB]"
       onClick={onClick}
       data-testid={testId}
     >
@@ -74,25 +74,25 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
       />
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
         <motion.section 
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-10 md:mb-16"
+          className="text-center mb-8 md:mb-10"
         >
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-[#111827] mb-3 md:mb-4 tracking-tight px-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#111827] mb-2 md:mb-3 tracking-tight px-2">
             Model the impact of ambient documentation
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto px-2">
+          <p className="text-sm sm:text-base md:text-lg text-[#6B7280] max-w-xl mx-auto px-2">
             Understand where the value actually comes from.
           </p>
         </motion.section>
 
-        <section className="mb-8 md:mb-12">
+        <section className="mb-6 md:mb-10">
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-xs md:text-sm text-[#9CA3AF] uppercase tracking-wider font-medium text-center mb-6 md:mb-8"
+            className="text-xs md:text-sm text-[#9CA3AF] uppercase tracking-wider font-medium text-center mb-5 md:mb-6"
           >
             What brings you here today?
           </motion.p>
