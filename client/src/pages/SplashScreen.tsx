@@ -180,7 +180,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
           style={{ textShadow: '0 0 40px rgba(234, 44, 0, 0.3)' }}
         >
-          Build A bridge to your value story
+          Build your value story
         </h1>
 
         <p className="text-slate-400 text-lg md:text-xl mb-12 max-w-lg mx-auto">
