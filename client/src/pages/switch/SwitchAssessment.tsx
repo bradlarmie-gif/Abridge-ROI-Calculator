@@ -155,10 +155,10 @@ export default function SwitchAssessment({
       <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 md:mb-3" data-testid="text-page-title">
-            Value Realization Assessment
+            Where You Are Today
           </h1>
-          <p className="text-base md:text-lg text-[#6B7280]">
-            See where you stand on the ambient AI value spectrum — and what reaching your potential could mean.
+          <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
+            You did the hard part — got buy-in, trained providers, changed workflows. Let's see if you're getting the payoff.
           </p>
         </div>
 
@@ -253,9 +253,9 @@ export default function SwitchAssessment({
           </section>
 
           <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
-            <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Your Results</h2>
+            <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">What You're Getting</h2>
             <p className="text-[#6B7280] mb-4 text-sm md:text-base">
-              How do your metrics compare to Abridge benchmarks?
+              Enter your current metrics. We'll show you how much value you're capturing vs. leaving on the table.
             </p>
 
             {!hasAnyDimensionValue && (
@@ -266,8 +266,8 @@ export default function SwitchAssessment({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-blue-800">Adjust the sliders or enter values to see how you compare</p>
-                  <p className="text-xs text-blue-600 mt-1">Each metric shows your current performance vs. what Abridge customers typically achieve.</p>
+                  <p className="text-sm font-medium text-blue-800">Adjust the sliders or enter your actual numbers</p>
+                  <p className="text-xs text-blue-600 mt-1">Don't know exactly? Estimates work — you can refine later.</p>
                 </div>
               </div>
             )}
@@ -389,15 +389,15 @@ export default function SwitchAssessment({
               <div className="relative">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-emerald-600" />
-                  <h2 className="text-lg md:text-xl font-bold text-[#111827]">What This Could Mean For Your Providers</h2>
+                  <h2 className="text-lg md:text-xl font-bold text-[#111827]">What You're Missing</h2>
                 </div>
                 <p className="text-sm text-[#6B7280] mb-4">
-                  Based on your current metrics, here's what reaching Abridge benchmarks could look like:
+                  This isn't about Abridge. It's about what your current solution <em>should</em> be delivering.
                 </p>
                 <p className="text-xs text-[#9CA3AF] mb-6 flex items-center gap-1">
                   <Eye className="w-3 h-3" />
-                  Modeled from your inputs vs. Abridge benchmarks (75% utilization, 4 min/encounter, 5% wRVU lift)
-                  {humanImpact.usedPajamaInput && <span className="text-indigo-500 font-medium ml-1">• Using your reported pajama time</span>}
+                  Compared to top-performing ambient AI implementations (76% utilization, 4 min/encounter, 5.5% wRVU)
+                  {humanImpact.usedPajamaInput && <span className="text-indigo-500 font-medium ml-1">• Using your after-hours data</span>}
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -479,8 +479,8 @@ export default function SwitchAssessment({
 
           <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
             <div className="text-center mb-4 md:mb-6">
-              <h3 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Your Value Realization Score</h3>
-              <p className="text-sm md:text-base text-[#6B7280]">How much of ambient AI's potential value are you capturing?</p>
+              <h3 className="text-lg md:text-xl font-bold text-[#111827] mb-2">How Much Are You Capturing?</h3>
+              <p className="text-sm md:text-base text-[#6B7280]">You're paying for 100% of this technology. Here's what you're actually getting.</p>
             </div>
 
             <div className="flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-8 mb-6 md:mb-8">
@@ -590,14 +590,14 @@ export default function SwitchAssessment({
             <p className="text-center text-[#6B7280]">
               {hasAnyDimensionValue ? (
                 <>
-                  At <strong className="text-[#111827]">{calculations.realizationScore}%</strong> realization, you're in the <strong className="text-[#111827]">{calculations.maturityLevel}</strong> stage.
-                  {calculations.realizationScore < 40 && " Most organizations plateau here without focused optimization."}
-                  {calculations.realizationScore >= 40 && calculations.realizationScore < 80 && " You're making progress but there's significant room to grow."}
-                  {calculations.realizationScore >= 80 && " You're among top performers in ambient AI value realization."}
+                  At <strong className="text-[#111827]">{calculations.realizationScore}%</strong>, you're in the <strong className="text-[#111827]">{calculations.maturityLevel}</strong> stage.
+                  {calculations.realizationScore < 40 && " This is where most organizations get stuck — but it's not where you have to stay."}
+                  {calculations.realizationScore >= 40 && calculations.realizationScore < 80 && " You've made real progress. The question is whether you're hitting the ceiling."}
+                  {calculations.realizationScore >= 80 && " You're in rare company. Most never get here."}
                 </>
               ) : (
                 <span className="text-slate-400 italic">
-                  Enter your metrics above to see your realization score and maturity stage.
+                  Enter your metrics above to see your realization score.
                 </span>
               )}
             </p>
@@ -607,7 +607,7 @@ export default function SwitchAssessment({
             hasMinimumData ? 'bg-white border-slate-200' : 'bg-slate-50 border-dashed border-slate-300'
           }`}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-[#111827]">Your Opportunity</h3>
+              <h3 className="text-lg font-bold text-[#111827]">The Gap</h3>
               {hasMinimumData ? (
                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -625,7 +625,7 @@ export default function SwitchAssessment({
               {hasMinimumData ? (
                 <div className="text-5xl font-bold text-[#111827]" data-testid="text-annual-gap">
                   {formatCurrency(calculations.annualGap)}
-                  <span className="text-xl text-[#6B7280] font-normal">/year in additional potential</span>
+                  <span className="text-xl text-[#6B7280] font-normal">/year left on the table</span>
                 </div>
               ) : (
                 <div className="py-4" data-testid="text-annual-gap">

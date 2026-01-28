@@ -95,7 +95,7 @@ export default function SwitchFullAnalysis({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
-              Your Value Assessment
+              The Full Picture
             </h1>
             <p className="text-sm md:text-base text-[#6B7280]">
               {inputs.providers || 75} providers · {(inputs.annualEncounters || 150000).toLocaleString()} encounters · {solutionLabel}
@@ -127,13 +127,13 @@ export default function SwitchFullAnalysis({
             
             <div className="relative">
               <div className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">
-                Your Opportunity
+                Value Left on the Table
               </div>
               <div className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 tracking-tight">
                 {formatCurrency(calculations.annualGap)}
               </div>
               <div className="text-sm md:text-base text-slate-400">
-                in additional annual value based on what we're seeing
+                per year — that you're already paying for
               </div>
               
               {/* Monthly breakdown */}
@@ -154,10 +154,10 @@ export default function SwitchFullAnalysis({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
-                  Realization Score
+                  What You're Getting
                 </div>
                 <div className="text-2xl md:text-3xl font-bold text-[#111827]">{calculations.realizationScore}%</div>
-                <div className="text-xs text-[#6B7280] mt-0.5">of potential captured</div>
+                <div className="text-xs text-[#6B7280] mt-0.5">of the value you paid for</div>
               </div>
               <div className="w-16 h-16 md:w-20 md:h-20 relative">
                 <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
@@ -181,12 +181,12 @@ export default function SwitchFullAnalysis({
           {/* 3-Year Gap */}
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5" data-testid="card-3year-gap">
             <div className="text-[10px] md:text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">
-              3-Year Potential
+              3-Year Cost of Status Quo
             </div>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-2xl md:text-3xl font-bold text-[#111827]">{formatCurrency(calculations.threeYearGap)}</div>
-                <div className="text-xs text-[#6B7280] mt-0.5">cumulative opportunity</div>
+                <div className="text-xs text-[#6B7280] mt-0.5">if nothing changes</div>
               </div>
               <div className="flex flex-col justify-center gap-0.5">
                 <div className="flex items-center gap-1.5">
@@ -210,8 +210,8 @@ export default function SwitchFullAnalysis({
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-[#111827]">How the Opportunity Breaks Down</h2>
-              <p className="text-sm text-[#6B7280] mt-1">Click any value to adjust assumptions and see the impact in real-time</p>
+              <h2 className="text-lg md:text-xl font-bold text-[#111827]">Where the Value Is Leaking</h2>
+              <p className="text-sm text-[#6B7280] mt-1">Click any value to adjust assumptions — you'll see the math update in real time</p>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-100">
               <ArrowUpDown className="w-4 h-4 text-blue-600" />
@@ -262,9 +262,9 @@ export default function SwitchFullAnalysis({
         </section>
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Opportunity Over Time</h2>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Two Paths, Two Outcomes</h2>
           <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">
-            Based on what we're seeing: your current trajectory vs. Abridge customer benchmarks
+            The gray line is where you're headed. The green line is what's possible. The gap is the cost of the status quo.
           </p>
 
           <div className="h-56 sm:h-64 md:h-80 mb-4 md:mb-6 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
@@ -404,8 +404,8 @@ export default function SwitchFullAnalysis({
         </section>
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Value of Moving Sooner</h2>
-          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">How timing affects your 3-year opportunity</p>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of Waiting</h2>
+          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">Every month at the current trajectory is a month of value left unclaimed</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
             <div className="border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-4 md:p-6 text-center relative">
@@ -478,7 +478,7 @@ export default function SwitchFullAnalysis({
           </ul>
 
           <p className="mt-4 text-xs text-slate-500 italic">
-            Conservative estimates based on aggregate data from 200+ health system partners.
+            All calculations use conservative assumptions. Actual results may be higher or lower based on your specific implementation and context.
           </p>
         </section>
 
