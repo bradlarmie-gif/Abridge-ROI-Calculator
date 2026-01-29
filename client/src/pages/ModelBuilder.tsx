@@ -4091,7 +4091,7 @@ export default function ModelBuilder({
               </div>
             </div>
             <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-[#111827]">{preventableDepartures.toFixed(1)} preventable</span>
+            <span className="font-mono font-semibold text-[#111827]">{preventableDepartures.toFixed(1)} burnout-related</span>
           </div>
           
           <p className="text-xs text-[#6B7280]">
@@ -4221,7 +4221,7 @@ export default function ModelBuilder({
         <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
           <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-amber-800">
-            Retention impact typically measurable after 12-18 months.
+            Retention impact typically measurable after 12-18 months. Earlier indicators include improved satisfaction scores and reduced burnout reports.
           </p>
         </div>
       </div>
