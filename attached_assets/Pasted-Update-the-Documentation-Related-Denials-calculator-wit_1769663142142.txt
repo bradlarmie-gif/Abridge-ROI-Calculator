@@ -1,0 +1,31 @@
+Update the Documentation-Related Denials calculator with the following changes while keeping the same visual style and format:
+
+STEP 1: TOTAL DENIALS
+- Keep as is (Documented Encounters × Denial Rate = X denials)
+- Keep the benchmark note: "ED denial rates average 8-12%. Higher scrutiny than outpatient due to medical necessity reviews."
+
+STEP 2: UNRECOVERABLE DOCUMENTATION DENIALS
+- Change title from "DOCUMENTATION-RELATED" to "UNRECOVERABLE DUE TO DOCUMENTATION"
+- Change question from "How many are caused by documentation gaps?" to "How many are written off due to missing documentation?"
+- Change the calculation: X denials × 10% = Y unrecoverable
+- Change the explanation text to: "Roughly 10% of ED denials are written off because the clinical reasoning was never documented and can't be reconstructed after the fact. These aren't appeal failures—they're documentation that never existed."
+
+STEP 3: ABRIDGE PREVENTION
+- Change title from "PREVENTABLE" to "ABRIDGE PREVENTION"
+- Change question from "What % are preventable with better documentation?" to "What % can Abridge prevent?"
+- Change the calculation: Y unrecoverable × 50% = Z prevented
+- Change the explanation text to: "Abridge captures the clinical reasoning, medical necessity, and decision-making that ED physicians think but don't document under time pressure. We conservatively estimate Abridge prevents 50% of unrecoverable documentation denials by capturing this context at the point of care—before it's lost."
+
+DELETE STEP 4 (the old Abridge Prevention step) - it's now combined into Step 3
+
+STEP 4: VALUE PRESERVED (rename from Step 5)
+- Change title from "VALUE PRESERVED" to "VALUE PRESERVED"
+- Change question to "What's the revenue impact?"
+- Keep calculation: Z prevented × $650 = Annual Value
+- Keep the benchmark table as is
+- Update the Annual Value box text to: "X claims preserved × $650" (instead of "recovered")
+
+Update The Theory section to:
+"ED claims face intense payer scrutiny. When denials happen, most can be recovered through appeals and rework—but some are written off entirely because the clinical reasoning was never documented. Abridge captures the context that prevents these unrecoverable write-offs."
+
+Keep all the same input fields, formatting, colors, benchmark tables, and layout. Only change the copy/structure as specified above.

@@ -485,7 +485,7 @@ export default function ModelBuilder({
     edDenials: {
       documentedEncounters: 31500,
       denialRate: 10,
-      docRelatedPercent: 40,
+      docRelatedPercent: 10,
       writtenOffPercent: 30,
       abridgeCaptureRate: 50,
       avgClaimValue: 650,
@@ -3871,23 +3871,20 @@ export default function ModelBuilder({
   };
   
   const renderEdDenialsInputs = () => {
-    const { documentedEncounters, denialRate, docRelatedPercent, writtenOffPercent, abridgeCaptureRate, avgClaimValue } = driverInputs.edDenials;
+    const { documentedEncounters, denialRate, docRelatedPercent, abridgeCaptureRate, avgClaimValue } = driverInputs.edDenials;
 
-    // ED DOCUMENTATION-RELATED DENIALS (5-step)
+    // ED DOCUMENTATION-RELATED DENIALS (4-step)
     // Step 1: Total Denials
     const totalDenials = documentedEncounters * (denialRate / 100);
     
-    // Step 2: Documentation-Related
-    const docRelatedDenials = totalDenials * (docRelatedPercent / 100);
+    // Step 2: Unrecoverable Due to Documentation (10% of total denials)
+    const unrecoverableDenials = totalDenials * (docRelatedPercent / 100);
     
-    // Step 3: Written Off
-    const writtenOffDenials = docRelatedDenials * (writtenOffPercent / 100);
+    // Step 3: Abridge Prevention (50% of unrecoverable)
+    const claimsPrevented = unrecoverableDenials * (abridgeCaptureRate / 100);
     
-    // Step 4: Abridge Capture
-    const claimsRecovered = writtenOffDenials * (abridgeCaptureRate / 100);
-    
-    // Step 5: Value
-    const annualValue = claimsRecovered * avgClaimValue;
+    // Step 4: Value Preserved
+    const annualValue = claimsPrevented * avgClaimValue;
 
     const StepDivider = () => (
       <div className="border-t border-dashed border-neutral-200 my-4" />
@@ -3902,9 +3899,9 @@ export default function ModelBuilder({
             <div className="space-y-2">
               <p className="text-sm font-semibold text-blue-800">The Theory</p>
               <p className="text-sm text-blue-700 leading-relaxed">
-                ED claims face intense payer scrutiny. Medical necessity, level of service, and procedure 
-                documentation are common denial triggers. Most denials are recoverable with rework—but some 
-                are written off entirely. Abridge captures the clinical detail that saves these claims.
+                ED claims face intense payer scrutiny. When denials happen, most can be recovered through 
+                appeals and rework—but some are written off entirely because the clinical reasoning was 
+                never documented. Abridge captures the context that prevents these unrecoverable write-offs.
               </p>
             </div>
           </div>
@@ -3954,10 +3951,10 @@ export default function ModelBuilder({
 
         <StepDivider />
 
-        {/* Step 2: Documentation-Related */}
+        {/* Step 2: Unrecoverable Due to Documentation */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Related</p>
-          <p className="text-xs text-[#6B7280]">How many are caused by documentation gaps?</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Unrecoverable Due to Documentation</p>
+          <p className="text-xs text-[#6B7280]">How many are written off due to missing documentation?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -3978,63 +3975,28 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {docRelatedDenials.toLocaleString()} doc denials
+                {unrecoverableDenials.toLocaleString()} unrecoverable
               </div>
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            40% of ED denials stem from documentation gaps: medical necessity not supported, level of service 
-            documentation insufficient, procedure documentation incomplete.
+            Roughly 10% of ED denials are written off because the clinical reasoning was never documented 
+            and can't be reconstructed after the fact. These aren't appeal failures—they're documentation 
+            that never existed.
           </p>
         </div>
 
         <StepDivider />
 
-        {/* Step 3: Preventable */}
+        {/* Step 3: Abridge Prevention */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Preventable</p>
-          <p className="text-xs text-[#6B7280]">What % are preventable with better documentation?</p>
-          
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                {docRelatedDenials.toLocaleString()} doc denials
-              </div>
-              <span className="text-neutral-400">×</span>
-              <div className="flex items-center gap-1">
-                <EditableNumberInput
-                  value={writtenOffPercent}
-                  onChange={(val) => setDriverInputs(prev => ({ ...prev, edDenials: { ...prev.edDenials, writtenOffPercent: val } }))}
-                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                  data-testid="ed-denials-writeoff-input"
-                />
-                <span className="text-xs text-[#6B7280]">%</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-neutral-400">=</span>
-              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {writtenOffDenials.toLocaleString()} preventable/year
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            These denials could be avoided entirely with complete documentation at the point of care—capturing 
-            the clinical reasoning before it's lost.
-          </p>
-        </div>
-
-        <StepDivider />
-
-        {/* Step 4: Abridge Prevention */}
-        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Prevention</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Prevention</p>
           <p className="text-xs text-[#6B7280]">What % can Abridge prevent?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                {writtenOffDenials.toLocaleString()} preventable
+                {unrecoverableDenials.toLocaleString()} unrecoverable
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
@@ -4050,27 +4012,28 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {Math.round(claimsRecovered).toLocaleString()} prevented
+                {Math.round(claimsPrevented).toLocaleString()} prevented
               </div>
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Abridge captures the MDM, medical necessity, and clinical reasoning that ED physicians think 
-            but don't document—preventing denials before they happen.
+            Abridge captures the clinical reasoning, medical necessity, and decision-making that ED physicians 
+            think but don't document under time pressure. We conservatively estimate Abridge prevents 50% of 
+            unrecoverable documentation denials by capturing this context at the point of care—before it's lost.
           </p>
         </div>
 
         <StepDivider />
 
-        {/* Step 5: Value */}
+        {/* Step 4: Value Preserved */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 5: Value Preserved</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Value Preserved</p>
           <p className="text-xs text-[#6B7280]">What's the revenue impact?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                {Math.round(claimsRecovered).toLocaleString()} prevented
+                {Math.round(claimsPrevented).toLocaleString()} prevented
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
@@ -4131,7 +4094,7 @@ export default function ModelBuilder({
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(claimsRecovered).toLocaleString()} claims recovered × ${avgClaimValue}
+            {Math.round(claimsPrevented).toLocaleString()} claims preserved × ${avgClaimValue}
           </p>
         </div>
       </div>
