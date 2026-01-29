@@ -3097,7 +3097,7 @@ export default function ModelBuilder({
         {/* Step 2: Patients Retained */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Patients Retained</p>
-          <p className="text-xs text-[#6B7280]">How much can faster throughput help?</p>
+          <p className="text-xs text-[#6B7280]">How many could be retained with faster throughput?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -3250,7 +3250,7 @@ export default function ModelBuilder({
                   </div>
                 </div>
                 <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded">
-                  LWBS patients skew lower acuity, so admission rate (12%) is below typical ED average (15-20%). Adjust if needed.
+                  LWBS patients skew lower acuity, so admission rate (12%) is below typical ED average (15-20%). Varies by hospital acuity. Adjust if needed.
                 </p>
                 <div className="p-2 bg-amber-50 rounded border border-amber-200">
                   <p className="text-xs text-amber-700 flex items-center gap-2">
