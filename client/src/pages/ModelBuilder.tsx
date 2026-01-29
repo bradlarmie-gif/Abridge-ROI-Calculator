@@ -106,20 +106,13 @@ interface DriverResult {
 
 interface DriverInputs {
   overtime: {
-    // Overtime Savings inputs
-    otPercentWithOT: number;        // % of providers who regularly work OT
-    otHoursPerWeek: number;         // Avg OT hours per week
-    otWeeksPerYear: number;         // Working weeks per year
-    otReductionRate: number;        // Abridge impact on documentation time (0-1)
-    otConversionRate: number;       // % of saved time → actual OT reduction (0-1)
-    physicianHourlyRate: number;    // Fully-loaded physician labor cost
-    // Locum Avoidance inputs
-    includeLocum: boolean;
-    locumProviders: number;         // Number of locum providers used
-    locumHoursPerWeek: number;      // Hours per locum per week
-    locumWeeksPerYear: number;      // Weeks of locum coverage annually
-    locumConversionRate: number;    // % of efficiency gain → locum reduction (0-1)
-    locumHourlyRate: number;        // Avg locum cost per hour
+    // Locum Cost Avoidance inputs
+    locumProviders: number;              // Number of locum providers used
+    locumHoursPerWeek: number;           // Hours per locum per week
+    locumWeeksPerYear: number;           // Weeks of locum coverage annually
+    docDrivenPercent: number;            // % of locum usage driven by documentation inefficiency
+    abridgeReductionRate: number;        // % of documentation-driven hours Abridge can reduce
+    locumHourlyRate: number;             // Avg locum cost per hour (including agency fees)
   };
   patientAccess: {
     // Step 1: Time Returned
@@ -295,7 +288,7 @@ const DRIVER_ICONS: Record<string, typeof Clock> = {
 };
 
 const DRIVER_NAMES: Record<string, string> = {
-  overtime: "Overtime & Locum Savings",
+  overtime: "Locum Cost Avoidance",
   patientAccess: "Patient Access",
   retention: "Clinician Retention",
   levelOfService: "Accurate Level of Service",
@@ -409,20 +402,13 @@ export default function ModelBuilder({
   
   const [driverInputs, setDriverInputs] = useState<DriverInputs>({
     overtime: {
-      // Overtime Savings defaults (from spec)
-      otPercentWithOT: 60,           // 60% of providers regularly work OT
-      otHoursPerWeek: 4,             // Avg 4 OT hours per week
-      otWeeksPerYear: 50,            // 50 working weeks
-      otReductionRate: 70,           // 70% Abridge impact on doc time
-      otConversionRate: 33,          // 33% of saved time → actual OT reduction
-      physicianHourlyRate: 150,      // $150/hour fully-loaded
-      // Locum Avoidance defaults
-      includeLocum: false,
+      // Locum Cost Avoidance defaults
       locumProviders: 2,             // 2 locum providers
       locumHoursPerWeek: 40,         // 40 hrs/week per locum
       locumWeeksPerYear: 30,         // 30 weeks of coverage
-      locumConversionRate: 50,       // 50% reduction rate
-      locumHourlyRate: 275,          // $275/hr locum cost
+      docDrivenPercent: 33,          // 33% of locum usage is documentation-driven
+      abridgeReductionRate: 50,      // 50% of documentation-driven hours can be reduced
+      locumHourlyRate: 275,          // $275/hr locum cost (including agency fees)
     },
     patientAccess: {
       timeSavedPerEncounter: 2.5,      // 2.5 min saved per encounter
@@ -648,42 +634,25 @@ export default function ModelBuilder({
     switch (driverId) {
       case "overtime": {
         const {
-          otPercentWithOT,
-          otHoursPerWeek,
-          otWeeksPerYear,
-          otReductionRate,
-          otConversionRate,
-          physicianHourlyRate,
-          includeLocum,
           locumProviders,
           locumHoursPerWeek,
           locumWeeksPerYear,
-          locumConversionRate,
+          docDrivenPercent,
+          abridgeReductionRate,
           locumHourlyRate,
         } = driverInputs.overtime;
         
-        // OVERTIME SAVINGS (4-step calculation)
-        // Step 1: Baseline OT Hours
-        const annualOTHours = providers * (otPercentWithOT / 100) * otHoursPerWeek * otWeeksPerYear;
-        // Step 2: Documentation Time Eliminated
-        const otHoursEliminated = annualOTHours * (otReductionRate / 100);
-        // Step 3: Hours Converted to Savings
-        const otHoursConvertedToSavings = otHoursEliminated * (otConversionRate / 100);
+        // LOCUM COST AVOIDANCE (4-step calculation)
+        // Step 1: Current Locum Usage
+        const annualLocumHours = locumProviders * locumHoursPerWeek * locumWeeksPerYear;
+        // Step 2: Documentation-Driven Usage
+        const docDrivenHours = annualLocumHours * (docDrivenPercent / 100);
+        // Step 3: Abridge Reduction
+        const hoursReduced = docDrivenHours * (abridgeReductionRate / 100);
         // Step 4: Cost Savings
-        const annualOTSavings = otHoursConvertedToSavings * physicianHourlyRate;
+        const annualLocumSavings = hoursReduced * locumHourlyRate;
         
-        // LOCUM AVOIDANCE (3-step calculation) - only if enabled
-        let annualLocumSavings = 0;
-        if (includeLocum) {
-          // Step 1: Current Locum Usage
-          const annualLocumHours = locumProviders * locumHoursPerWeek * locumWeeksPerYear;
-          // Step 2: Locum Hours Avoided
-          const locumHoursAvoided = annualLocumHours * (locumConversionRate / 100);
-          // Step 3: Cost Savings
-          annualLocumSavings = locumHoursAvoided * locumHourlyRate;
-        }
-        
-        return Math.round(annualOTSavings + annualLocumSavings);
+        return Math.round(annualLocumSavings);
       }
       case "patientAccess": {
         const {
@@ -996,34 +965,25 @@ export default function ModelBuilder({
     const getDriverInputs = (driverId: string): Record<string, number | string | boolean> => {
       switch (driverId) {
         case "overtime": {
-          const pctWithOT = driverInputs.overtime.otPercentWithOT;
-          const hrsPerWk = driverInputs.overtime.otHoursPerWeek;
-          const wksPerYr = driverInputs.overtime.otWeeksPerYear;
-          const redRate = driverInputs.overtime.otReductionRate;
-          const convRate = driverInputs.overtime.otConversionRate;
-          const hrlyRate = driverInputs.overtime.physicianHourlyRate;
-          const providersWithOT = providers * (pctWithOT / 100);
-          const totalOTHours = providersWithOT * hrsPerWk * wksPerYr;
-          const hoursReclaimed = totalOTHours * (redRate / 100);
-          const costSavingsHours = hoursReclaimed * (convRate / 100);
+          const locumProvs = driverInputs.overtime.locumProviders;
+          const hrsPerWk = driverInputs.overtime.locumHoursPerWeek;
+          const wksPerYr = driverInputs.overtime.locumWeeksPerYear;
+          const docDrivenPct = driverInputs.overtime.docDrivenPercent;
+          const abridgeRedRate = driverInputs.overtime.abridgeReductionRate;
+          const hrlyRate = driverInputs.overtime.locumHourlyRate;
+          const annualLocumHours = locumProvs * hrsPerWk * wksPerYr;
+          const docDrivenHours = annualLocumHours * (docDrivenPct / 100);
+          const hoursReduced = docDrivenHours * (abridgeRedRate / 100);
           return {
-            providers: providers,
-            otPercentWithOT: pctWithOT,
-            providersWithOT: Math.round(providersWithOT),
-            otHoursPerWeek: hrsPerWk,
-            otWeeksPerYear: wksPerYr,
-            totalOTHours: Math.round(totalOTHours),
-            otReductionRate: redRate,
-            hoursReclaimed: Math.round(hoursReclaimed),
-            otConversionRate: convRate,
-            costSavingsHours: Math.round(costSavingsHours),
-            physicianHourlyRate: hrlyRate,
-            includeLocum: driverInputs.overtime.includeLocum,
-            locumProviders: driverInputs.overtime.locumProviders,
-            locumHoursPerWeek: driverInputs.overtime.locumHoursPerWeek,
-            locumWeeksPerYear: driverInputs.overtime.locumWeeksPerYear,
-            locumConversionRate: driverInputs.overtime.locumConversionRate,
-            locumHourlyRate: driverInputs.overtime.locumHourlyRate,
+            locumProviders: locumProvs,
+            locumHoursPerWeek: hrsPerWk,
+            locumWeeksPerYear: wksPerYr,
+            annualLocumHours: Math.round(annualLocumHours),
+            docDrivenPercent: docDrivenPct,
+            docDrivenHours: Math.round(docDrivenHours),
+            abridgeReductionRate: abridgeRedRate,
+            hoursReduced: Math.round(hoursReduced),
+            locumHourlyRate: hrlyRate,
           };
         }
         case "patientAccess": {
@@ -1380,32 +1340,26 @@ export default function ModelBuilder({
   
   const renderOvertimeInputs = () => {
     const {
-      otPercentWithOT,
-      otHoursPerWeek,
-      otWeeksPerYear,
-      otReductionRate,
-      otConversionRate,
-      physicianHourlyRate,
-      includeLocum,
       locumProviders,
       locumHoursPerWeek,
       locumWeeksPerYear,
-      locumConversionRate,
+      docDrivenPercent,
+      abridgeReductionRate,
       locumHourlyRate,
     } = driverInputs.overtime;
 
-    // OVERTIME CALCULATIONS
-    const annualOTHours = providers * (otPercentWithOT / 100) * otHoursPerWeek * otWeeksPerYear;
-    const otHoursEliminated = annualOTHours * (otReductionRate / 100);
-    const otHoursConvertedToSavings = otHoursEliminated * (otConversionRate / 100);
-    const annualOTSavings = otHoursConvertedToSavings * physicianHourlyRate;
-
-    // LOCUM CALCULATIONS
+    // LOCUM COST AVOIDANCE CALCULATIONS (4-step)
+    // Step 1: Current Locum Usage
     const annualLocumHours = locumProviders * locumHoursPerWeek * locumWeeksPerYear;
-    const locumHoursAvoided = annualLocumHours * (locumConversionRate / 100);
-    const annualLocumSavings = locumHoursAvoided * locumHourlyRate;
-
-    const totalSavings = annualOTSavings + (includeLocum ? annualLocumSavings : 0);
+    
+    // Step 2: Documentation-Driven Usage
+    const docDrivenHours = annualLocumHours * (docDrivenPercent / 100);
+    
+    // Step 3: Abridge Reduction
+    const hoursReduced = docDrivenHours * (abridgeReductionRate / 100);
+    
+    // Step 4: Cost Savings
+    const annualLocumSavings = hoursReduced * locumHourlyRate;
 
     const StepDivider = () => (
       <div className="border-t border-dashed border-neutral-200 my-4" />
@@ -1413,326 +1367,202 @@ export default function ModelBuilder({
 
     return (
       <div className="space-y-6">
-        {/* OVERTIME SAVINGS SECTION */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-[#111827] uppercase tracking-wide">Overtime Savings</h4>
-            <span className="font-mono font-bold text-emerald-600">{formatCurrency(Math.round(annualOTSavings))}</span>
-          </div>
-
-          {/* Step 1: Baseline Overtime Hours */}
-          <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline Overtime Hours</p>
-            <p className="text-xs text-[#6B7280]">How much overtime exists today?</p>
-            
-            <div className="grid grid-cols-5 gap-2 items-center text-center">
-              <div>
-                <label className="text-xs text-[#6B7280] block mb-1">Providers</label>
-                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{providers}</div>
-              </div>
-              <div className="text-neutral-400">×</div>
-              <div>
-                <label className="text-xs text-[#6B7280] block mb-1">% with OT</label>
-                <EditableNumberInput
-                  value={otPercentWithOT}
-                  onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otPercentWithOT: val } }))}
-                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                  data-testid="ot-percent-input"
-                />
-              </div>
-              <div className="text-neutral-400">×</div>
-              <div>
-                <label className="text-xs text-[#6B7280] block mb-1">Hrs/Week</label>
-                <EditableNumberInput
-                  value={otHoursPerWeek}
-                  onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otHoursPerWeek: val } }))}
-                  className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                  data-testid="ot-hours-per-week-input"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400">×</span>
-                <div>
-                  <label className="text-xs text-[#6B7280] block mb-1">Weeks/Year</label>
-                  <EditableNumberInput
-                    value={otWeeksPerYear}
-                    onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otWeeksPerYear: val } }))}
-                    className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                    data-testid="ot-weeks-per-year-input"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400">=</span>
-                <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                  {Math.round(annualOTHours).toLocaleString()} hrs
-                </div>
-              </div>
+        {/* Theory Box */}
+        <div className="p-5 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-start gap-3">
+            <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-800">The Theory</p>
+              <p className="text-sm text-blue-700 leading-relaxed">
+                Locum coverage is expensive—typically $200-300/hr plus agency fees. Organizations use locums 
+                to fill gaps when permanent staff can't keep up with patient demand. When documentation 
+                efficiency improves, your permanent providers have more capacity, reducing the need for locum coverage.
+              </p>
             </div>
           </div>
+        </div>
 
-          <StepDivider />
-
-          {/* Step 2: Documentation Time Eliminated */}
-          <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation Time Eliminated</p>
-            <p className="text-xs text-[#6B7280]">How much can Abridge reduce?</p>
-            
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                  {Math.round(annualOTHours).toLocaleString()} hrs
-                </div>
-                <span className="text-neutral-400">×</span>
-                <div>
-                  <EditableNumberInput
-                    value={otReductionRate}
-                    onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otReductionRate: val } }))}
-                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                    data-testid="ot-reduction-rate-input"
-                  />
-                </div>
-                <span className="text-xs text-[#6B7280]">%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400">=</span>
-                <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                  {Math.round(otHoursEliminated).toLocaleString()} hrs
-                </div>
-              </div>
+        {/* Step 1: Current Locum Usage */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Locum Usage</p>
+          <p className="text-xs text-[#6B7280]">How many locum hours are you using today to meet patient demand?</p>
+          
+          <div className="grid grid-cols-5 gap-2 items-center text-center">
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Locum Providers</label>
+              <EditableNumberInput
+                value={locumProviders}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumProviders: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="locum-providers-input"
+              />
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Hrs/Week</label>
+              <EditableNumberInput
+                value={locumHoursPerWeek}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHoursPerWeek: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="locum-hours-per-week-input"
+              />
+            </div>
+            <div className="text-neutral-400">×</div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Weeks/Yr</label>
+              <EditableNumberInput
+                value={locumWeeksPerYear}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumWeeksPerYear: val } }))}
+                className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="locum-weeks-per-year-input"
+              />
             </div>
           </div>
-
-          <StepDivider />
-
-          {/* Step 3: Hours Converted to Savings */}
-          <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Hours Converted to Savings</p>
-            <p className="text-xs text-[#6B7280]">What portion becomes actual OT reduction?</p>
-            
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                  {Math.round(otHoursEliminated).toLocaleString()} hrs
-                </div>
-                <span className="text-neutral-400">×</span>
-                <div>
-                  <EditableNumberInput
-                    value={otConversionRate}
-                    onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, otConversionRate: val } }))}
-                    className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                    data-testid="ot-conversion-rate-input"
-                  />
-                </div>
-                <span className="text-xs text-[#6B7280]">%</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400">=</span>
-                <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                  {Math.round(otHoursConvertedToSavings).toLocaleString()} hrs
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-2">
-              The remaining {100 - otConversionRate}% goes to quality of life and seeing more patients
-            </p>
-          </div>
-
-          <StepDivider />
-
-          {/* Step 4: Cost Savings */}
-          <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
-            <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
-            
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                  {Math.round(otHoursConvertedToSavings).toLocaleString()} hrs
-                </div>
-                <span className="text-neutral-400">×</span>
-                <span className="text-sm text-[#6B7280]">$</span>
-                <EditableNumberInput
-                  value={physicianHourlyRate}
-                  onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, physicianHourlyRate: val } }))}
-                  className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                  data-testid="ot-physician-rate-input"
-                />
-                <span className="text-xs text-[#6B7280]">/hr</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400">=</span>
-                <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
-                  {formatCurrency(Math.round(annualOTSavings))}
-                </div>
+          <div className="flex justify-end mt-2">
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(annualLocumHours).toLocaleString()} hrs
               </div>
             </div>
           </div>
         </div>
 
-        {/* LOCUM AVOIDANCE SECTION */}
-        <div className="border-t-2 border-neutral-200 pt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeLocum}
-                  onChange={(e) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, includeLocum: e.target.checked } }))}
-                  className="w-4 h-4 rounded border-neutral-300 text-[#EA2C00] focus:ring-[#EA2C00]"
-                  data-testid="include-locum-checkbox"
-                />
-                <span className="text-sm font-semibold text-[#111827] uppercase tracking-wide">Locum Avoidance</span>
-              </label>
+        <StepDivider />
+
+        {/* Step 2: Documentation-Driven Usage */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Driven Usage</p>
+          <p className="text-xs text-[#6B7280]">How much locum usage is driven by documentation inefficiency?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(annualLocumHours).toLocaleString()} hrs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <EditableNumberInput
+                value={docDrivenPercent}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, docDrivenPercent: val } }))}
+                className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="locum-doc-driven-input"
+              />
+              <span className="text-xs text-[#6B7280]">%</span>
             </div>
-            <span className={`font-mono font-bold ${includeLocum ? 'text-emerald-600' : 'text-neutral-400'}`}>
-              {includeLocum ? formatCurrency(Math.round(annualLocumSavings)) : '$0'}
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(docDrivenHours).toLocaleString()} hrs
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Not all locum usage is reducible—some covers PTO, leave, or true demand spikes. We conservatively 
+            estimate 1/3 of locum hours exist because permanent staff lose capacity to documentation burden.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 3: Abridge Reduction */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Reduction</p>
+          <p className="text-xs text-[#6B7280]">How much can Abridge reduce?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(docDrivenHours).toLocaleString()} hrs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <EditableNumberInput
+                value={abridgeReductionRate}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, abridgeReductionRate: val } }))}
+                className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="locum-reduction-rate-input"
+              />
+              <span className="text-xs text-[#6B7280]">%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
+                {Math.round(hoursReduced).toLocaleString()} hrs reduced
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Abridge returns documentation time to providers, increasing their effective capacity. 
+            We estimate 50% of documentation-driven locum hours can be eliminated.
+          </p>
+        </div>
+
+        <StepDivider />
+
+        {/* Step 4: Cost Savings */}
+        <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
+          <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
+                {Math.round(hoursReduced).toLocaleString()} hrs
+              </div>
+              <span className="text-neutral-400">×</span>
+              <span className="text-sm text-[#6B7280]">$</span>
+              <EditableNumberInput
+                value={locumHourlyRate}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHourlyRate: val } }))}
+                className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                data-testid="locum-hourly-rate-input"
+              />
+              <span className="text-xs text-[#6B7280]">/hr</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-400">=</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
+                {formatCurrency(Math.round(annualLocumSavings))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: Locum Rates
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Primary Care Locum</span>
+              <span className="font-mono text-slate-700">$150 - $200/hr</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Specialty Locum</span>
+              <span className="font-mono text-slate-700">$250 - $350/hr</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Blended Average</span>
+              <span className="font-mono text-slate-700">~$275/hr</span>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            Locum rates include agency fees and premium pay. Rates vary by specialty and market.
+          </p>
+        </div>
+
+        {/* Result Summary */}
+        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-[#111827]">Annual Locum Cost Avoidance</span>
+            <span className="font-mono font-bold text-emerald-600 text-xl">
+              {formatCurrency(Math.round(annualLocumSavings))}
             </span>
           </div>
-
-          {includeLocum && (
-            <>
-              {/* Step 1: Current Locum Usage */}
-              <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Locum Usage</p>
-                <p className="text-xs text-[#6B7280]">How many locum hours are you using today?</p>
-                
-                <div className="grid grid-cols-5 gap-2 items-center text-center">
-                  <div>
-                    <label className="text-xs text-[#6B7280] block mb-1">Locum Providers</label>
-                    <EditableNumberInput
-                      value={locumProviders}
-                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumProviders: val } }))}
-                      className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                      data-testid="locum-providers-input"
-                    />
-                  </div>
-                  <div className="text-neutral-400">×</div>
-                  <div>
-                    <label className="text-xs text-[#6B7280] block mb-1">Hrs/Week</label>
-                    <EditableNumberInput
-                      value={locumHoursPerWeek}
-                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHoursPerWeek: val } }))}
-                      className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                      data-testid="locum-hours-per-week-input"
-                    />
-                  </div>
-                  <div className="text-neutral-400">×</div>
-                  <div>
-                    <label className="text-xs text-[#6B7280] block mb-1">Weeks/Yr</label>
-                    <EditableNumberInput
-                      value={locumWeeksPerYear}
-                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumWeeksPerYear: val } }))}
-                      className="w-full text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                      data-testid="locum-weeks-per-year-input"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end mt-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-400">=</span>
-                    <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                      {Math.round(annualLocumHours).toLocaleString()} hrs
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <StepDivider />
-
-              {/* Step 2: Locum Hours Avoided */}
-              <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Locum Hours Avoided</p>
-                <p className="text-xs text-[#6B7280]">What portion can improved efficiency reduce?</p>
-                
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                      {Math.round(annualLocumHours).toLocaleString()} hrs
-                    </div>
-                    <span className="text-neutral-400">×</span>
-                    <EditableNumberInput
-                      value={locumConversionRate}
-                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumConversionRate: val } }))}
-                      className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                      data-testid="locum-conversion-rate-input"
-                    />
-                    <span className="text-xs text-[#6B7280]">%</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-400">=</span>
-                    <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                      {Math.round(locumHoursAvoided).toLocaleString()} hrs
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-                  We conservatively assume 1/3 of locum usage is tied to documentation-driven capacity constraints
-                </p>
-              </div>
-
-              <StepDivider />
-
-              {/* Step 3: Cost Savings */}
-              <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost Savings</p>
-                <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
-                
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                      {Math.round(locumHoursAvoided).toLocaleString()} hrs
-                    </div>
-                    <span className="text-neutral-400">×</span>
-                    <span className="text-sm text-[#6B7280]">$</span>
-                    <EditableNumberInput
-                      value={locumHourlyRate}
-                      onChange={(val) => setDriverInputs(prev => ({ ...prev, overtime: { ...prev.overtime, locumHourlyRate: val } }))}
-                      className="w-20 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
-                      data-testid="locum-hourly-rate-input"
-                    />
-                    <span className="text-xs text-[#6B7280]">/hr</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-400">=</span>
-                    <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-1.5 font-mono text-sm font-bold text-emerald-600">
-                      {formatCurrency(Math.round(annualLocumSavings))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-2">
-                  National avg locum rate. Specialists may run $350-500/hr.
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* COMBINED TOTAL */}
-        <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200 space-y-3">
-          <p className="text-sm font-semibold text-[#111827]">Total Overtime & Locum Savings</p>
-          <div className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span className="text-[#6B7280]">Overtime Savings:</span>
-              <span className="font-mono text-emerald-600">{formatCurrency(Math.round(annualOTSavings))}</span>
-            </div>
-            {includeLocum && (
-              <div className="flex justify-between text-sm">
-                <span className="text-[#6B7280]">Locum Avoidance:</span>
-                <span className="font-mono text-emerald-600">{formatCurrency(Math.round(annualLocumSavings))}</span>
-              </div>
-            )}
-            <div className="border-t border-emerald-200 pt-2 mt-2">
-              <div className="flex justify-between">
-                <span className="font-medium text-[#111827]">Total Annual Savings:</span>
-                <span className="font-mono font-bold text-emerald-600 text-xl">
-                  {formatCurrency(Math.round(totalSavings))}
-                </span>
-              </div>
-            </div>
-          </div>
+          <p className="text-xs text-neutral-400 font-mono mt-1">
+            {Math.round(hoursReduced).toLocaleString()} locum hours avoided × ${locumHourlyRate}/hr
+          </p>
         </div>
       </div>
     );
