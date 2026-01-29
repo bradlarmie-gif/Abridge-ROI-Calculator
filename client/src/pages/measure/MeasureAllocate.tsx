@@ -1,8 +1,9 @@
 import { useMemo, useCallback } from "react";
-import { ArrowRight, ArrowLeft, DollarSign, TrendingUp, Heart, Lightbulb } from "lucide-react";
+import { ArrowRight, ArrowLeft, DollarSign, TrendingUp, Heart, Lightbulb, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
+import { motion } from "framer-motion";
 import { 
   type MeasureState,
   type TimeAllocation,
@@ -23,6 +24,8 @@ interface MeasureAllocateProps {
 interface AllocationSliderProps {
   icon: React.ReactNode;
   iconBg: string;
+  gradient: string;
+  borderColor: string;
   label: string;
   description: string;
   value: number;
@@ -30,27 +33,42 @@ interface AllocationSliderProps {
   resultText: string;
   subText?: string;
   color: string;
+  trackColor: string;
 }
 
 function AllocationSlider({ 
-  icon, iconBg, label, description, value, onChange, resultText, subText, color 
+  icon, iconBg, gradient, borderColor, label, description, value, onChange, resultText, subText, color, trackColor
 }: AllocationSliderProps) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5">
-      <div className="flex items-start justify-between mb-4">
+    <motion.div 
+      className={`bg-gradient-to-br ${gradient} rounded-2xl border ${borderColor} p-5 md:p-6 shadow-sm`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className="flex items-start justify-between mb-5">
         <div className="flex items-start gap-3">
-          <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
+          <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
             {icon}
           </div>
           <div>
-            <h3 className="font-semibold text-[#111827]">{label}</h3>
-            <p className="text-sm text-[#6B7280]">{description}</p>
+            <h3 className="font-bold text-slate-900 text-lg">{label}</h3>
+            <p className="text-sm text-slate-500">{description}</p>
           </div>
         </div>
-        <span className="text-2xl font-bold text-[#111827]">{value}%</span>
+        <div className="text-right">
+          <span className="text-3xl font-bold text-slate-900">{value}</span>
+          <span className="text-lg font-medium text-slate-500">%</span>
+        </div>
       </div>
       
-      <div className="mb-4">
+      <div className="mb-5 relative">
+        <div className="h-3 bg-white/80 rounded-full overflow-hidden shadow-inner">
+          <div 
+            className={`h-full ${trackColor} rounded-full transition-all duration-200`}
+            style={{ width: `${value}%` }}
+          />
+        </div>
         <input
           type="range"
           min={0}
@@ -58,19 +76,16 @@ function AllocationSlider({
           step={5}
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value))}
-          className="w-full"
-          style={{
-            accentColor: color,
-          }}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           data-testid={`slider-${label.toLowerCase().replace(/\s+/g, '-')}`}
         />
       </div>
       
-      <div className="bg-slate-50 rounded-lg p-3">
-        <p className="text-sm font-medium text-[#111827]">{resultText}</p>
-        {subText && <p className="text-xs text-[#6B7280] mt-0.5">{subText}</p>}
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-sm">
+        <p className="text-sm font-semibold text-slate-800">{resultText}</p>
+        {subText && <p className="text-xs text-slate-500 mt-1">{subText}</p>}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -121,7 +136,11 @@ export default function MeasureAllocate({
   const qolHours = totalHours * (qualityOfLife / 100);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
+      {/* Premium background layers */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/30 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-orange-100/20 via-transparent to-transparent pointer-events-none" />
+      
       <UnifiedHeader 
         pathType="measure"
         currentStep={4} 
@@ -133,32 +152,48 @@ export default function MeasureAllocate({
       <UnifiedHeaderSpacer />
 
       <PageTransition pageKey="measure-allocate">
-        <main className="max-w-xl mx-auto px-4 md:px-6 py-6 md:py-10">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-allocate-title">
+        <main className="relative z-10 max-w-xl mx-auto px-4 md:px-6 py-6 md:py-10">
+          <motion.div 
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-orange-50 border border-blue-200/50 rounded-full text-sm text-blue-700 shadow-sm mb-4">
+              <Clock className="w-4 h-4" />
+              <span className="font-semibold">Time Allocation</span>
+            </div>
+            
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-3 tracking-tight" data-testid="text-allocate-title">
               Where Did the Time Go?
             </h1>
-          </div>
+          </motion.div>
 
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8 text-center">
-            <p className="text-4xl md:text-5xl font-bold text-blue-900 mb-2">
-              {formatNumber(Math.round(totalHours))} hours
-            </p>
-            <p className="text-base text-blue-700">
-              Your providers reclaimed this much documentation time.
-              <br className="hidden md:block" />
-              Where did it land?
-            </p>
-          </div>
-
-          <p className="text-center text-[#6B7280] mb-6">
-            Help us understand how your organization experienced this time savings. Drag the sliders to allocate.
-          </p>
+          {/* Hero Hours Card */}
+          <motion.div 
+            className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-6 md:p-8 mb-8 text-center text-white relative overflow-hidden shadow-xl shadow-blue-500/20"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
+            <div className="relative z-10">
+              <p className="text-5xl md:text-6xl font-bold mb-2">
+                {formatNumber(Math.round(totalHours))}
+              </p>
+              <p className="text-xl text-blue-100 font-medium">hours reclaimed</p>
+              <p className="text-sm text-blue-200 mt-3 max-w-sm mx-auto">
+                Your providers got this time back. Help us understand where it landed.
+              </p>
+            </div>
+          </motion.div>
 
           <div className="space-y-4 mb-6">
             <AllocationSlider
-              icon={<DollarSign className="w-5 h-5 text-emerald-600" />}
+              icon={<DollarSign className="w-6 h-6 text-emerald-600" />}
               iconBg="bg-emerald-100"
+              gradient="from-emerald-50 to-teal-50"
+              borderColor="border-emerald-200/60"
               label="Hard Savings"
               description="Overtime reduced, locum costs avoided"
               value={hardSavings}
@@ -166,11 +201,14 @@ export default function MeasureAllocate({
               resultText={`${formatNumber(Math.round(hardSavingsHours))} hours → ${formatCurrency(hardSavingsHours * MEASURE_CONSTANTS.OVERTIME_HOURLY_RATE)}`}
               subText={`at $${MEASURE_CONSTANTS.OVERTIME_HOURLY_RATE}/hr blended OT rate`}
               color="#10b981"
+              trackColor="bg-gradient-to-r from-emerald-400 to-emerald-500"
             />
 
             <AllocationSlider
-              icon={<TrendingUp className="w-5 h-5 text-blue-600" />}
+              icon={<TrendingUp className="w-6 h-6 text-blue-600" />}
               iconBg="bg-blue-100"
+              gradient="from-blue-50 to-indigo-50"
+              borderColor="border-blue-200/60"
               label="Capacity Unlocked"
               description="More patients seen, panels expanded"
               value={capacityUnlocked}
@@ -178,11 +216,14 @@ export default function MeasureAllocate({
               resultText={`${formatNumber(Math.round(capacityHours))} hours → ${formatNumber(Math.round(capacityHours * 60 / MEASURE_CONSTANTS.MINUTES_PER_VISIT))} additional visits`}
               subText={`at ${MEASURE_CONSTANTS.MINUTES_PER_VISIT} min/visit average`}
               color="#3b82f6"
+              trackColor="bg-gradient-to-r from-blue-400 to-blue-500"
             />
 
             <AllocationSlider
-              icon={<Heart className="w-5 h-5 text-orange-600" />}
+              icon={<Heart className="w-6 h-6 text-orange-600" />}
               iconBg="bg-orange-100"
+              gradient="from-orange-50 to-amber-50"
+              borderColor="border-orange-200/60"
               label="Quality of Life"
               description="Providers going home on time, less burnout"
               value={qualityOfLife}
@@ -192,51 +233,72 @@ export default function MeasureAllocate({
                 ? `That's ${(qolHours / state.deployment.providers / MEASURE_CONSTANTS.WEEKS_PER_YEAR).toFixed(1)} hours/week per provider`
                 : undefined}
               color="#f97316"
+              trackColor="bg-gradient-to-r from-orange-400 to-orange-500"
             />
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-[#374151]">Total allocated</span>
-              <span className={`text-sm font-bold ${isValid ? 'text-emerald-600' : 'text-amber-600'}`}>
+          {/* Total Progress Bar */}
+          <motion.div 
+            className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/80 p-5 mb-6 shadow-lg shadow-slate-200/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-slate-700">Total allocated</span>
+              <span className={`text-lg font-bold ${isValid ? 'text-emerald-600' : 'text-amber-600'}`}>
                 {totalAllocation}%
               </span>
             </div>
-            <div className="h-3 bg-slate-200 rounded-full overflow-hidden flex">
+            <div className="h-4 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
               <div 
-                className="h-full bg-emerald-500 transition-all" 
+                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all" 
                 style={{ width: `${hardSavings}%` }} 
               />
               <div 
-                className="h-full bg-blue-500 transition-all" 
+                className="h-full bg-gradient-to-r from-blue-400 to-blue-500 transition-all" 
                 style={{ width: `${capacityUnlocked}%` }} 
               />
               <div 
-                className="h-full bg-orange-500 transition-all" 
+                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 transition-all" 
                 style={{ width: `${qualityOfLife}%` }} 
               />
             </div>
             {!isValid && (
-              <p className="text-xs text-amber-600 mt-2">
+              <p className="text-xs text-amber-600 mt-2 font-medium">
                 Adjust sliders so they sum to 100%
               </p>
             )}
-          </div>
+          </motion.div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800">
-                Most organizations tell us the majority lands in Quality of Life — and that's still real value. It's retention. It's satisfaction. It's providers who stay.
+          {/* Tip Card */}
+          <motion.div 
+            className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 mb-8 shadow-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Lightbulb className="w-5 h-5 text-amber-600" />
+              </div>
+              <p className="text-sm text-amber-800 leading-relaxed">
+                Most organizations tell us the majority lands in <span className="font-semibold">Quality of Life</span> — and that's still real value. It's retention. It's satisfaction. It's providers who stay.
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Navigation */}
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
             <Button
               variant="outline"
               onClick={onBack}
-              className="flex-1 sm:flex-none sm:w-auto h-12 text-base font-medium"
+              className="flex-1 sm:flex-none sm:w-auto h-12 text-base font-medium border-2 hover:bg-slate-50"
               data-testid="button-back"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -245,13 +307,13 @@ export default function MeasureAllocate({
             <Button
               onClick={onNext}
               disabled={!isValid}
-              className="flex-1 bg-[#EA2C00] hover:bg-[#d12700] text-white h-12 text-base font-semibold disabled:opacity-50"
+              className="flex-1 bg-gradient-to-r from-[#EA2C00] to-[#d12700] hover:from-[#d12700] hover:to-[#b82300] text-white h-12 text-base font-semibold shadow-lg shadow-[#EA2C00]/20 disabled:opacity-50 disabled:shadow-none"
               data-testid="button-see-story"
             >
               See Your Story
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
+          </motion.div>
         </main>
       </PageTransition>
     </div>

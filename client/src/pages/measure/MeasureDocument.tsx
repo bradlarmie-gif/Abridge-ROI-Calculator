@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, TrendingUp, Info } from "lucide-react";
+import { ArrowRight, ArrowLeft, TrendingUp, Info, Sparkles, Target, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   type MeasureState,
   type MetricDefinition,
@@ -101,9 +102,14 @@ export default function MeasureDocument({
   }
 
   const benchmarkStatus = getBenchmarkStatus();
+  const progressPercent = ((currentIndex + 1) / totalMetrics) * 100;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
+      {/* Premium background layers */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/30 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-100/20 via-transparent to-transparent pointer-events-none" />
+      
       <UnifiedHeader 
         pathType="measure"
         currentStep={3} 
@@ -115,36 +121,81 @@ export default function MeasureDocument({
       <UnifiedHeaderSpacer />
 
       <PageTransition pageKey={`measure-document-${currentMetric.slug}`}>
-        <main className="max-w-xl mx-auto px-4 md:px-6 py-6 md:py-8">
-          <div className="mb-6">
-            <div className="flex items-center justify-between text-sm text-[#6B7280] mb-2">
-              <span>Metric {currentIndex + 1} of {totalMetrics}</span>
-              <span>Value so far: <span className="font-semibold text-[#111827]">{formatCurrency(valueSoFar)}</span></span>
+        <main className="relative z-10 max-w-xl mx-auto px-4 md:px-6 py-6 md:py-8">
+          {/* Progress Section */}
+          <motion.div 
+            className="mb-8 bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/80 p-4 shadow-sm"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="flex items-center justify-between text-sm mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#EA2C00]/10 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-[#EA2C00]" />
+                </div>
+                <span className="font-semibold text-slate-700">Metric {currentIndex + 1} of {totalMetrics}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-500">Value so far</span>
+                <span className="ml-2 font-bold text-emerald-600">{formatCurrency(valueSoFar)}</span>
+              </div>
             </div>
-            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[#EA2C00] rounded-full transition-all duration-300"
-                style={{ width: `${((currentIndex + 1) / totalMetrics) * 100}%` }}
+            <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-[#EA2C00] to-[#ff6b4a] rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
               />
             </div>
-          </div>
-
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 text-[#6B7280] text-sm mb-2">
-              <span className="capitalize">{currentMetric.categoryName}</span>
+            {/* Metric dots */}
+            <div className="flex justify-between mt-2 px-1">
+              {selectedMetrics.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    idx < currentIndex ? 'bg-emerald-500' : 
+                    idx === currentIndex ? 'bg-[#EA2C00]' : 'bg-slate-300'
+                  }`}
+                />
+              ))}
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-[#111827]" data-testid="text-metric-name">
-              {currentMetric.name}
-            </h1>
-            <p className="text-base text-[#6B7280] mt-1">
-              {currentMetric.description}
-            </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-5 md:p-8 mb-6">
-            <div className="flex items-center justify-center gap-4 md:gap-8 mb-6">
-              <div className="text-center flex-1">
-                <label className="block text-sm font-medium text-[#6B7280] mb-2">Before</label>
+          {/* Metric Header */}
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={currentMetric.key}
+              className="text-center mb-6"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                {currentMetric.categoryName}
+              </div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight" data-testid="text-metric-name">
+                {currentMetric.name}
+              </h1>
+              <p className="text-base text-slate-500 mt-2 max-w-md mx-auto">
+                {currentMetric.description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Input Card */}
+          <motion.div 
+            className="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200/80 p-6 md:p-8 mb-6 shadow-lg shadow-slate-200/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <div className="flex items-stretch justify-center gap-3 md:gap-6">
+              {/* Before Input */}
+              <div className="text-center flex-1 max-w-[180px]">
+                <label className="block text-sm font-semibold text-slate-600 mb-3">Before</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -155,21 +206,25 @@ export default function MeasureDocument({
                     }}
                     placeholder="--"
                     step="any"
-                    className="w-full h-16 text-2xl md:text-3xl font-bold text-center border-2 border-slate-200 rounded-xl focus:border-[#EA2C00] focus:ring-0 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full h-20 text-2xl md:text-3xl font-bold text-center border-2 border-slate-200 rounded-2xl focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 outline-none transition-all bg-slate-50 hover:bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     data-testid="input-before"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#6B7280]">
+                  <span className="absolute right-3 bottom-2 text-xs text-slate-400 font-medium">
                     {currentMetric.unit}
                   </span>
                 </div>
               </div>
               
-              <div className="flex-shrink-0">
-                <ArrowRight className="w-6 h-6 text-[#9CA3AF]" />
+              {/* Arrow */}
+              <div className="flex items-center justify-center pt-6">
+                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                  <ArrowRight className="w-5 h-5 text-slate-400" />
+                </div>
               </div>
               
-              <div className="text-center flex-1">
-                <label className="block text-sm font-medium text-[#6B7280] mb-2">After</label>
+              {/* After Input */}
+              <div className="text-center flex-1 max-w-[180px]">
+                <label className="block text-sm font-semibold text-slate-600 mb-3">After</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -180,71 +235,105 @@ export default function MeasureDocument({
                     }}
                     placeholder="--"
                     step="any"
-                    className="w-full h-16 text-2xl md:text-3xl font-bold text-center border-2 border-slate-200 rounded-xl focus:border-[#EA2C00] focus:ring-0 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full h-20 text-2xl md:text-3xl font-bold text-center border-2 border-slate-200 rounded-2xl focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 outline-none transition-all bg-slate-50 hover:bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     data-testid="input-after"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#6B7280]">
+                  <span className="absolute right-3 bottom-2 text-xs text-slate-400 font-medium">
                     {currentMetric.unit}
                   </span>
                 </div>
               </div>
             </div>
 
-            {hasValidData && liftDisplay !== null && (
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 text-center">
-                <p className="text-sm font-medium text-emerald-700 mb-1">YOUR IMPACT</p>
-                <p className="text-2xl md:text-3xl font-bold text-emerald-800">
-                  {liftDisplay >= 0 ? '+' : ''}{liftDisplay.toFixed(2)} {currentMetric.unit}
+            {/* Impact Display */}
+            <AnimatePresence>
+              {hasValidData && liftDisplay !== null && (
+                <motion.div 
+                  className="mt-6 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 rounded-xl p-5 text-center"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">YOUR IMPACT</p>
+                  <p className="text-3xl md:text-4xl font-bold text-emerald-700">
+                    {liftDisplay >= 0 ? '+' : ''}{liftDisplay.toFixed(2)} {currentMetric.unit}
+                  </p>
+                  {liftPercent !== null && (
+                    <p className="text-lg font-semibold text-emerald-600 mt-1">
+                      {Math.abs(liftPercent).toFixed(0)}% {currentMetric.category === 'operational' && currentMetric.key !== 'utilizationRate' ? 'reduction' : 'lift'}
+                    </p>
+                  )}
+                  {currentResult?.isStrong && (
+                    <div className="flex items-center justify-center gap-1.5 mt-3 text-sm font-medium text-emerald-700">
+                      <CheckCircle className="w-4 h-4" />
+                      Strong result
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Benchmark Status */}
+          <AnimatePresence>
+            {hasValidData && benchmarkStatus && (
+              <motion.div 
+                className="bg-slate-100/80 backdrop-blur-sm rounded-xl p-4 mb-4 border border-slate-200/50"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">BENCHMARK</p>
+                <p className="text-sm text-slate-600">{currentMetric.benchmarkLabel}</p>
+                <p className={`text-sm font-semibold mt-1.5 ${benchmarkStatus.isStrong ? 'text-emerald-600' : 'text-slate-600'}`}>
+                  You're at {Math.abs(liftPercent || 0).toFixed(0)}% — {benchmarkStatus.label}
                 </p>
-                {liftPercent !== null && (
-                  <p className="text-lg font-medium text-emerald-600">
-                    {Math.abs(liftPercent).toFixed(0)}% {currentMetric.category === 'operational' && currentMetric.key !== 'utilizationRate' ? 'reduction' : 'lift'}
-                  </p>
-                )}
-                {currentResult?.isStrong && (
-                  <p className="text-sm text-emerald-600 mt-2 flex items-center justify-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
-                    Strong result
-                  </p>
-                )}
-              </div>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
 
-          {hasValidData && benchmarkStatus && (
-            <div className="bg-slate-100 rounded-xl p-4 mb-6">
-              <p className="text-sm font-medium text-[#374151] mb-1">BENCHMARK</p>
-              <p className="text-sm text-[#6B7280]">{currentMetric.benchmarkLabel}</p>
-              <p className={`text-sm font-medium mt-1 ${benchmarkStatus.isStrong ? 'text-emerald-600' : 'text-slate-600'}`}>
-                You're at {Math.abs(liftPercent || 0).toFixed(0)}% — {benchmarkStatus.label}
-              </p>
-            </div>
-          )}
+          {/* Calculated Value */}
+          <AnimatePresence>
+            {hasValidData && currentResult && currentResult.value > 0 && (
+              <motion.div 
+                className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-4 mb-6 shadow-sm"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">CALCULATED VALUE</p>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="w-3.5 h-3.5 text-slate-400" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-xs">Based on your deployment data and conservative attribution factors.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-2xl font-bold text-slate-900">
+                  {formatCurrency(currentResult.value)} 
+                  <span className="text-base font-normal text-slate-500 ml-2">annual value</span>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {hasValidData && currentResult && currentResult.value > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
-              <div className="flex items-start gap-2">
-                <p className="text-sm font-medium text-[#374151] mb-2">CALCULATED VALUE</p>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="w-4 h-4 text-[#9CA3AF]" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="text-xs">Based on your deployment data and conservative attribution factors.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <p className="text-2xl font-bold text-[#111827]">
-                {formatCurrency(currentResult.value)} <span className="text-base font-normal text-[#6B7280]">annual value</span>
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Navigation */}
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
             <Button
               variant="outline"
               onClick={handleBack}
-              className="flex-1 sm:flex-none sm:w-auto h-12 text-base font-medium"
+              className="flex-1 sm:flex-none sm:w-auto h-12 text-base font-medium border-2 hover:bg-slate-50"
               data-testid="button-back"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -252,13 +341,13 @@ export default function MeasureDocument({
             </Button>
             <Button
               onClick={handleNext}
-              className="flex-1 bg-[#EA2C00] hover:bg-[#d12700] text-white h-12 text-base font-semibold"
+              className="flex-1 bg-gradient-to-r from-[#EA2C00] to-[#d12700] hover:from-[#d12700] hover:to-[#b82300] text-white h-12 text-base font-semibold shadow-lg shadow-[#EA2C00]/20"
               data-testid="button-next"
             >
               {currentIndex < totalMetrics - 1 ? 'Next Metric' : 'Continue'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
+          </motion.div>
         </main>
       </PageTransition>
     </div>

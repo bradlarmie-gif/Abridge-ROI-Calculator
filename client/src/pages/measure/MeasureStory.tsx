@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { 
-  ArrowRight, ArrowLeft, Download, Share2, Sparkles, DollarSign, 
-  Clock, Heart, TrendingUp, Users, CheckCircle, ExternalLink 
+  ArrowLeft, Download, Share2, Sparkles, DollarSign, 
+  Clock, Heart, TrendingUp, CheckCircle, ExternalLink, Trophy, Zap 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
+import { motion } from "framer-motion";
+import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
 import { 
   type MeasureState,
   calculateMeasureResults,
@@ -27,15 +29,25 @@ interface SummaryCardProps {
   value: string;
   label: string;
   sublabel?: string;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
 }
 
-function SummaryCard({ value, label, sublabel }: SummaryCardProps) {
+function SummaryCard({ value, label, sublabel, icon: Icon, iconBg, iconColor }: SummaryCardProps) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5 text-center flex-1">
-      <p className="text-2xl md:text-3xl font-bold text-[#111827]">{value}</p>
-      <p className="text-sm font-medium text-[#6B7280] mt-1">{label}</p>
-      {sublabel && <p className="text-xs text-[#9CA3AF]">{sublabel}</p>}
-    </div>
+    <motion.div 
+      className="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-200/80 p-5 md:p-6 text-center flex-1 shadow-lg shadow-slate-200/50 hover:shadow-xl transition-shadow"
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center mx-auto mb-3 shadow-sm`}>
+        <Icon className={`w-6 h-6 ${iconColor}`} />
+      </div>
+      <p className="text-2xl md:text-3xl font-bold text-slate-900">{value}</p>
+      <p className="text-sm font-medium text-slate-600 mt-1">{label}</p>
+      {sublabel && <p className="text-xs text-slate-400 mt-0.5">{sublabel}</p>}
+    </motion.div>
   );
 }
 
@@ -50,13 +62,14 @@ export default function MeasureStory({
 
   const getPerformanceLabel = (totalValue: number, providers: number) => {
     const perProvider = providers > 0 ? totalValue / providers : 0;
-    if (perProvider >= 20000) return { text: "Exceptional results", emoji: "exceptional" };
-    if (perProvider >= 15000) return { text: "Strong performance", emoji: "strong" };
-    if (perProvider >= 10000) return { text: "Solid foundation", emoji: "solid" };
-    return { text: "Building momentum", emoji: "building" };
+    if (perProvider >= 20000) return { text: "Exceptional results", icon: Trophy, color: "text-amber-500" };
+    if (perProvider >= 15000) return { text: "Strong performance", icon: Zap, color: "text-emerald-500" };
+    if (perProvider >= 10000) return { text: "Solid foundation", icon: TrendingUp, color: "text-blue-500" };
+    return { text: "Building momentum", icon: TrendingUp, color: "text-slate-500" };
   };
 
   const performance = getPerformanceLabel(results.totalValue, state.deployment.providers);
+  const PerformanceIcon = performance.icon;
 
   const handleExportPDF = () => {
     alert('PDF export functionality coming soon!');
@@ -66,8 +79,35 @@ export default function MeasureStory({
     alert('Share functionality coming soon!');
   };
 
+  const staggerChildren = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      {/* Premium background layers */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#EA2C00]/20 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+        <img src={geometricPattern} alt="" className="w-full h-full object-cover" />
+      </div>
+      
       <UnifiedHeader 
         pathType="measure"
         currentStep={5} 
@@ -79,195 +119,293 @@ export default function MeasureStory({
       <UnifiedHeaderSpacer />
 
       <PageTransition pageKey="measure-story">
-        <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-10">
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-10 mb-8 text-center text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(234,44,0,0.15),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)]" />
+        <main className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-10">
+          {/* Hero Section */}
+          <motion.div 
+            className="text-center mb-10"
+            initial="hidden"
+            animate="visible"
+            variants={staggerChildren}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-white/90 shadow-lg mb-6"
+              variants={fadeInUp}
+            >
+              <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+              <span className="font-semibold">Your Value Story</span>
+            </motion.div>
             
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 text-[#EA2C00] mb-4">
-                <Sparkles className="w-5 h-5" />
-                <span className="text-sm font-semibold tracking-wide uppercase">Your Value Story</span>
-              </div>
-              
-              <p className="text-5xl md:text-6xl lg:text-7xl font-bold mb-2" data-testid="text-total-value">
-                {formatCurrency(results.totalValue)}
-              </p>
-              <p className="text-xl md:text-2xl text-slate-300 mb-4">in Value Created</p>
-              
-              <p className="text-sm text-slate-400 mb-6">
-                {state.deployment.providers} providers · {state.deployment.monthsOnAbridge} months · {state.deployment.utilizationRate}% utilization
-              </p>
+            <motion.p 
+              className="text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-2 tracking-tight"
+              variants={fadeInUp}
+              data-testid="text-total-value"
+            >
+              {formatCurrency(results.totalValue)}
+            </motion.p>
+            
+            <motion.p 
+              className="text-xl md:text-2xl text-slate-300 mb-6"
+              variants={fadeInUp}
+            >
+              in Documented Value
+            </motion.p>
+            
+            <motion.div 
+              className="flex items-center justify-center gap-2 text-white/70 mb-8"
+              variants={fadeInUp}
+            >
+              <PerformanceIcon className={`w-5 h-5 ${performance.color}`} />
+              <span className="font-medium">{performance.text}</span>
+            </motion.div>
+            
+            <motion.p 
+              className="text-sm text-slate-400 mb-8 font-mono"
+              variants={fadeInUp}
+            >
+              {state.deployment.providers} providers · {state.deployment.monthsOnAbridge} months · {state.deployment.utilizationRate}% utilization
+            </motion.p>
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  variant="outline"
-                  onClick={handleExportPDF}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  data-testid="button-export-pdf"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleShare}
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  data-testid="button-share"
-                >
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </Button>
-              </div>
-            </div>
-          </div>
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-3 justify-center"
+              variants={fadeInUp}
+            >
+              <Button
+                variant="outline"
+                onClick={handleExportPDF}
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm px-6"
+                data-testid="button-export-pdf"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export PDF
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleShare}
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm px-6"
+                data-testid="button-share"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            </motion.div>
+          </motion.div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <SummaryCard 
-              value={formatCurrency(results.totalValue)} 
-              label="Total Value" 
-            />
-            <SummaryCard 
-              value={formatCurrency(results.valuePerProvider)} 
-              label="Per Provider" 
-            />
-            <SummaryCard 
-              value={formatHours(results.timeAllocation.totalHoursSaved)} 
-              label="Time Saved" 
-            />
-          </div>
+          {/* Summary Cards - White Section */}
+          <div className="bg-gradient-to-b from-slate-100 to-white rounded-t-3xl -mx-4 md:-mx-6 px-4 md:px-6 pt-8 pb-8">
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 mb-8 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <SummaryCard 
+                value={formatCurrency(results.totalValue)} 
+                label="Total Value"
+                icon={DollarSign}
+                iconBg="bg-emerald-100"
+                iconColor="text-emerald-600"
+              />
+              <SummaryCard 
+                value={formatCurrency(results.valuePerProvider)} 
+                label="Per Provider"
+                icon={TrendingUp}
+                iconBg="bg-blue-100"
+                iconColor="text-blue-600"
+              />
+              <SummaryCard 
+                value={formatHours(results.timeAllocation.totalHoursSaved)} 
+                label="Time Protected"
+                icon={Clock}
+                iconBg="bg-purple-100"
+                iconColor="text-purple-600"
+              />
+            </motion.div>
 
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-bold text-[#111827] mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-emerald-600" />
-                Core Financial Value
-                <span className="ml-auto text-xl font-bold text-emerald-600">
-                  {formatCurrency(results.totalFinancialValue)}
-                </span>
-              </h2>
-              
-              <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-                {results.metricResults
-                  .filter(r => r.metric.category === 'financial')
-                  .map(result => (
-                    <div key={result.metric.key} className="p-4 flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-[#111827]">{result.metric.name}</p>
-                        <p className="text-sm text-[#6B7280]">{result.label}</p>
-                        {result.isStrong && (
-                          <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1">
-                            <TrendingUp className="w-3 h-3" />
-                            Exceeding typical range
-                          </p>
-                        )}
+            {/* Detailed Results */}
+            <motion.div 
+              className="space-y-6 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              {/* Financial Value */}
+              {results.metricResults.filter(r => r.metric.category === 'financial').length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                  <div className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shadow-sm">
+                          <DollarSign className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                          <h2 className="font-bold text-slate-900">Core Financial Value</h2>
+                          <p className="text-sm text-slate-500">The bottom line</p>
+                        </div>
                       </div>
-                      <p className="text-lg font-bold text-[#111827]">
-                        {formatCurrency(result.dollarValue)}
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {hasOpEfficiency && (
-              <div>
-                <h2 className="text-lg font-bold text-[#111827] mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" />
-                  Time Reallocated
-                  <span className="ml-auto text-xl font-bold text-blue-600">
-                    {formatCurrency(results.timeAllocation.hardSavings.dollarValue)}
-                  </span>
-                </h2>
-                
-                <div className="bg-white rounded-xl border border-slate-200 p-4">
-                  <p className="text-sm text-[#6B7280] mb-3">Based on your allocation:</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">
-                        <span className="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2" />
-                        {state.timeAllocation.hardSavings}% → Hard savings (OT reduction)
-                      </span>
-                      <span className="font-medium">
-                        {formatCurrency(results.timeAllocation.hardSavings.dollarValue)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">
-                        <span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2" />
-                        {state.timeAllocation.capacityUnlocked}% → Capacity ({formatNumber(results.timeAllocation.capacityUnlocked.additionalVisits)} additional visits)
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">
-                        <span className="inline-block w-3 h-3 rounded-full bg-orange-500 mr-2" />
-                        {state.timeAllocation.qualityOfLife}% → Quality of life ({results.timeAllocation.qualityOfLife.hoursPerProviderPerWeek.toFixed(1)} hrs/wk back)
+                      <span className="text-xl font-bold text-emerald-600">
+                        {formatCurrency(results.totalFinancialValue)}
                       </span>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {results.qualityIndicators.length > 0 && (
-              <div>
-                <h2 className="text-lg font-bold text-[#111827] mb-4 flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-purple-600" />
-                  Quality Indicators
-                </h2>
-                
-                <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
-                  {results.qualityIndicators.map(result => (
-                    <div key={result.metric.key} className="p-4 flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-[#111827]">{result.metric.name}</p>
-                        {result.isStrong && (
-                          <p className="text-xs text-purple-600 flex items-center gap-1 mt-1">
-                            <CheckCircle className="w-3 h-3" />
-                            Exceeding expectations
+                  
+                  <div className="divide-y divide-slate-100">
+                    {results.metricResults
+                      .filter(r => r.metric.category === 'financial')
+                      .map(result => (
+                        <div key={result.metric.key} className="p-4 flex items-start justify-between hover:bg-slate-50 transition-colors">
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-900">{result.metric.name}</p>
+                            <p className="text-sm text-slate-500">{result.label}</p>
+                            {result.isStrong && (
+                              <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1 font-medium">
+                                <TrendingUp className="w-3 h-3" />
+                                Exceeding typical range
+                              </p>
+                            )}
+                          </div>
+                          <p className="text-lg font-bold text-slate-900 ml-4">
+                            {formatCurrency(result.dollarValue)}
                           </p>
-                        )}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Time Reallocated */}
+              {hasOpEfficiency && (
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                  <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shadow-sm">
+                          <Clock className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h2 className="font-bold text-slate-900">Time Reallocated</h2>
+                          <p className="text-sm text-slate-500">Where the hours went</p>
+                        </div>
                       </div>
-                      <p className="text-lg font-bold text-purple-600">{result.label}</p>
+                      <span className="text-xl font-bold text-blue-600">
+                        {formatCurrency(results.timeAllocation.hardSavings.dollarValue)}
+                      </span>
                     </div>
-                  ))}
+                  </div>
+                  
+                  <div className="p-5">
+                    <p className="text-sm text-slate-500 mb-4">Based on your allocation:</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                          <span className="text-sm font-medium text-slate-700">
+                            {state.timeAllocation.hardSavings}% → Hard savings (OT reduction)
+                          </span>
+                        </div>
+                        <span className="font-bold text-emerald-600">
+                          {formatCurrency(results.timeAllocation.hardSavings.dollarValue)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-blue-500" />
+                          <span className="text-sm font-medium text-slate-700">
+                            {state.timeAllocation.capacityUnlocked}% → Capacity ({formatNumber(results.timeAllocation.capacityUnlocked.additionalVisits)} visits)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-orange-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-orange-500" />
+                          <span className="text-sm font-medium text-slate-700">
+                            {state.timeAllocation.qualityOfLife}% → Quality of life ({results.timeAllocation.qualityOfLife.hoursPerProviderPerWeek.toFixed(1)} hrs/wk)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Quality Indicators */}
+              {results.qualityIndicators.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
+                  <div className="p-5 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-purple-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shadow-sm">
+                        <Heart className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-slate-900">Quality Indicators</h2>
+                        <p className="text-sm text-slate-500">The human signals</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="divide-y divide-slate-100">
+                    {results.qualityIndicators.map(result => (
+                      <div key={result.metric.key} className="p-4 flex items-start justify-between hover:bg-slate-50 transition-colors">
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-900">{result.metric.name}</p>
+                          {result.isStrong && (
+                            <p className="text-xs text-purple-600 flex items-center gap-1 mt-1 font-medium">
+                              <CheckCircle className="w-3 h-3" />
+                              Exceeding expectations
+                            </p>
+                          )}
+                        </div>
+                        <p className="text-lg font-bold text-purple-600 ml-4">{result.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* What This Means */}
+              <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <CheckCircle className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-emerald-900 text-lg mb-2">What This Means</h3>
+                    <p className="text-emerald-800 leading-relaxed">
+                      You're in a strong position. The value you're seeing is real and measurable. 
+                      Your providers are happier, your documentation is better, and you have the proof to show for it.
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
 
-          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 mt-8">
-            <h3 className="font-bold text-emerald-900 mb-2">What This Means</h3>
-            <p className="text-emerald-800">
-              You're in a strong position. The value you're seeing is real and measurable. Your providers are happier, your documentation is better, and you have the proof to show for it.
-            </p>
-          </div>
+              {/* Expansion CTA */}
+              {onExpand && (
+                <div className="text-center pt-4">
+                  <p className="text-slate-500 mb-4">Curious what this looks like at scale?</p>
+                  <Button
+                    variant="outline"
+                    onClick={onExpand}
+                    className="text-[#EA2C00] border-[#EA2C00] border-2 hover:bg-orange-50 px-6 font-semibold"
+                    data-testid="button-model-expansion"
+                  >
+                    Model expansion potential
+                    <ExternalLink className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              )}
 
-          {onExpand && (
-            <div className="mt-8 text-center">
-              <p className="text-[#6B7280] mb-3">Curious what this looks like at scale?</p>
-              <Button
-                variant="outline"
-                onClick={onExpand}
-                className="text-[#EA2C00] border-[#EA2C00] hover:bg-orange-50"
-                data-testid="button-model-expansion"
-              >
-                Model expansion potential
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          )}
-
-          <div className="flex justify-center mt-8">
-            <Button
-              variant="outline"
-              onClick={onBack}
-              className="h-12 text-base font-medium"
-              data-testid="button-back"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Allocate
-            </Button>
+              {/* Back Button */}
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                  className="h-12 text-base font-medium border-2 hover:bg-slate-50"
+                  data-testid="button-back"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Allocate
+                </Button>
+              </div>
+            </motion.div>
           </div>
         </main>
       </PageTransition>
