@@ -2196,6 +2196,32 @@ export default function ModelBuilder({
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
             Don't know your wRVUs? We estimate using 1.5 wRVU per encounter (typical outpatient blend).
           </p>
+
+          {/* Benchmark Box */}
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3 mt-3">
+            <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Benchmark: wRVU per Encounter
+            </p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Primary Care</span>
+                <span className="font-mono text-slate-700">1.2 - 1.5</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Specialty</span>
+                <span className="font-mono text-slate-700">1.5 - 2.5</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Procedural</span>
+                <span className="font-mono text-slate-700">2.5 - 4.0+</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-600">Your input</span>
+                <span className="font-mono text-[#EA2C00] font-medium">{avgWrvuPerEncounter}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <StepDivider />
@@ -2229,7 +2255,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            On average, Abridge improves wRVU capture by 5% through more complete documentation of clinical complexity.
+            Abridge improves wRVU capture by 5% through more complete documentation of clinical complexity. Complete HPI, ROS, and medical decision-making supports appropriate E&M level coding (e.g., 99214 vs 99213)—not upcoding, just accurate coding for work already performed.
           </p>
         </div>
 
