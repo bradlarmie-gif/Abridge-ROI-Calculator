@@ -1985,7 +1985,7 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {preventableDepartures.toFixed(2)} preventable
+                {preventableDepartures.toFixed(2)} burnout-related
               </div>
             </div>
           </div>
@@ -2067,6 +2067,36 @@ export default function ModelBuilder({
           </div>
         </div>
 
+        {/* Benchmark Box */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+          <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Benchmark: Physician Replacement Cost
+          </p>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Recruiting + signing bonus</span>
+              <span className="font-mono text-slate-700">$50K - $100K</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Lost revenue (vacancy)</span>
+              <span className="font-mono text-slate-700">$250K - $500K</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Onboarding</span>
+              <span className="font-mono text-slate-700">$30K - $75K</span>
+            </div>
+            <div className="flex justify-between text-xs border-t border-slate-200 pt-2">
+              <span className="text-slate-700 font-medium">Total</span>
+              <span className="font-mono text-slate-700 font-medium">$400K - $800K</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Your input</span>
+              <span className="font-mono text-[#EA2C00] font-medium">{formatCurrency(replacementCost)}</span>
+            </div>
+          </div>
+        </div>
+
         {/* Dynamic "What This Means" Box */}
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
           <p className="text-sm font-semibold text-slate-800">What This Means</p>
@@ -2076,6 +2106,9 @@ export default function ModelBuilder({
             <Clock className="w-3 h-3 text-slate-500" />
             <span className="text-xs text-slate-500">{framing.timeframe}</span>
           </div>
+          <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mt-2">
+            Retention impact measurable after 12-18 months. Earlier indicators include improved satisfaction scores and reduced burnout reports.
+          </p>
         </div>
 
         {/* Result Summary */}
