@@ -1,0 +1,52 @@
+Update the Inpatient calculators with the following changes:
+
+PART 1: UPDATE DRG ACCURACY (PREVENT DOWNCODING) CALCULATOR
+
+UPDATE THE TITLE:
+- Change from "DRG Accuracy (Prevent Downcoding)" to "DRG Accuracy & Revenue Protection"
+
+UPDATE THE THEORY SECTION:
+"Incomplete documentation costs you twice. First, at coding—when conditions discussed at bedside aren't captured, DRGs are assigned lower than clinically appropriate. Second, after submission—when payers deny claims because medical necessity, level of care, or status criteria weren't documented. Both stem from the same root cause: documentation gaps. Abridge captures the clinical reasoning that prevents both."
+
+KEEP STEPS 1-4 EXACTLY AS PREVIOUSLY UPDATED (the Prevent Downcoding reframe)
+
+AFTER STEP 4 (REALITY CHECK), ADD A NEW SECTION:
+
+Title: "What This Includes"
+Style: Use the same box style as "What This Means" in other calculators
+
+Content:
+"This calculation captures two types of revenue protection:
+
+**DRG Accuracy**
+Conditions discussed but not documented lead to lower DRG assignments. Abridge captures clinical complexity upfront, ensuring accurate coding the first time.
+
+**Denial Prevention**
+Documentation gaps also cause post-submission denials—medical necessity not supported, level of care not justified, IP vs Obs status unclear. The same documentation that improves DRG accuracy also reduces denial write-offs.
+
+We combine these into a single value to avoid double-counting. Both stem from the same Abridge capability: capturing what's discussed at bedside."
+
+ADD A SMALL BENCHMARK BOX BELOW THAT:
+
+Title: "Benchmark: Documentation-Driven Revenue Leakage"
+- DRG downcoding: 2-4% of inpatient revenue
+- Denial write-offs: 1-2% of inpatient revenue
+- Combined opportunity: 3-6% of inpatient revenue
+- "This calculator conservatively estimates Abridge captures 15-25% of this leakage."
+
+UPDATE THE ANNUAL VALUE BOX:
+- Change "Annual Revenue Protected" to "Annual Revenue Protected (DRG Accuracy + Denial Prevention)"
+- Keep the same calculation/number
+- Update subtext to: "Includes DRG accuracy improvement and denial prevention from complete documentation"
+
+KEEP THE ORANGE WARNING:
+"Work with your CDI team to validate capture rates for your specific case mix."
+
+---
+
+PART 2: REMOVE DOCUMENTATION-RELATED DENIALS FROM INPATIENT
+
+- Remove "Documentation-Related Denials" as a separate calculator/line item from the Inpatient strategic priorities selection screen
+- It should no longer appear as a selectable option for Inpatient
+
+Keep all other formatting, colors, input fields, and layout consistent with the existing style.
