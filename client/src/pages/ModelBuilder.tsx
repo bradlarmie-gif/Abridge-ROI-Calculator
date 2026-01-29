@@ -301,7 +301,7 @@ const DRIVER_NAMES: Record<string, string> = {
   edDenials: "Documentation-Related Denials",
   // Inpatient drivers
   inpatientRetention: "Hospitalist Retention",
-  inpatientCCMCC: "DRG Accuracy & Revenue Protection",
+  inpatientCCMCC: "DRG Accuracy",
   inpatientCDI: "CDI Query Reduction",
   inpatientDenials: "Documentation-Related Denials",
   // Nursing drivers
