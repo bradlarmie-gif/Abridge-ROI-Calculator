@@ -33,7 +33,7 @@ const INPATIENT_DRIVER_CATEGORIES: Record<string, "labor" | "revenue"> = {
 
 const INPATIENT_DRIVER_NAMES: Record<string, string> = {
   inpatientRetention: "Hospitalist Retention",
-  inpatientCCMCC: "CC/MCC Capture (DRG Optimization)",
+  inpatientCCMCC: "DRG Accuracy (Prevent Downcoding)",
   inpatientCDI: "CDI Query Reduction",
   inpatientDenials: "Documentation-Related Denials",
 };

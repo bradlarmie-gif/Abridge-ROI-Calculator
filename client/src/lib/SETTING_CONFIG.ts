@@ -211,7 +211,7 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
     },
     {
       id: "inpatientCCMCC",
-      label: "CC/MCC Capture (DRG Optimization)",
+      label: "DRG Accuracy (Prevent Downcoding)",
       category: "qualityRevenue",
       description:
         "Document the complexity you're managing.",

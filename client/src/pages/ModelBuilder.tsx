@@ -301,7 +301,7 @@ const DRIVER_NAMES: Record<string, string> = {
   edDenials: "Documentation-Related Denials",
   // Inpatient drivers
   inpatientRetention: "Hospitalist Retention",
-  inpatientCCMCC: "CC/MCC Capture (DRG Optimization)",
+  inpatientCCMCC: "DRG Accuracy (Prevent Downcoding)",
   inpatientCDI: "CDI Query Reduction",
   inpatientDenials: "Documentation-Related Denials",
   // Nursing drivers
@@ -484,8 +484,8 @@ export default function ModelBuilder({
       replacementCost: 500000,   // $500K replacement cost
     },
     inpatientCCMCC: {
-      gapRate: 40,             // 40% of admissions have documentation gaps
-      improvementRate: 15,     // 15% of gaps Abridge can capture
+      gapRate: 25,             // 25% of admissions at risk of downcoding
+      improvementRate: 25,     // 25% of at-risk admissions Abridge can protect
       drgWeightIncrease: 0.4,  // Avg DRG weight increase
       baseDrgPayment: 6000,    // Base DRG payment
       realizationRate: 50,     // 50% passes audit
@@ -4249,18 +4249,18 @@ export default function ModelBuilder({
             <div>
               <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
               <p className="text-sm text-amber-800 leading-relaxed">
-                DRG reimbursement depends on documented comorbidities. Conditions discussed at bedside but not captured in notes mean missed CC/MCC assignments and lower DRG weights. Abridge ensures what's discussed gets documented.
+                Incomplete documentation leads to DRG assignments that don't reflect true clinical complexity. When conditions discussed at bedside aren't captured in the note, the result is lower reimbursement than clinically appropriate. Abridge ensures what's discussed gets documented—preventing revenue loss from documentation gaps, not upcoding.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Step 1: Admissions with Opportunity */}
+        {/* Step 1: Admissions at Risk of Downcoding */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Admissions with Opportunity</span>
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Admissions at Risk of Downcoding</span>
           </div>
-          <p className="text-sm text-[#6B7280]">How many admissions have documentation gaps?</p>
+          <p className="text-sm text-[#6B7280]">How many admissions are at risk of downcoding?</p>
           
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex flex-col items-center">
@@ -4271,7 +4271,7 @@ export default function ModelBuilder({
             </div>
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Gap Rate</span>
+              <span className="text-xs text-[#6B7280] mb-1">At-Risk Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
                 <EditableNumberInput
                   value={gapRate}
@@ -4283,33 +4283,33 @@ export default function ModelBuilder({
               </div>
             </div>
             <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-[#111827]">{Math.round(opportunities).toLocaleString()} opportunities</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(opportunities).toLocaleString()} admissions at risk</span>
           </div>
           
           <p className="text-xs text-[#6B7280]">
-            Studies show 30-50% of admissions have undocumented CC/MCC opportunities. We use 40% as a moderate estimate.
+            20-30% of admissions have documentation gaps that affect final DRG assignment—conditions discussed but not documented, clinical complexity not fully captured. We use 25% as a moderate estimate.
           </p>
         </div>
 
         <div className="border-t border-dashed border-neutral-300" />
 
-        {/* Step 2: Capture Improvement */}
+        {/* Step 2: Abridge Protection */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Capture Improvement</span>
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Abridge Protection</span>
           </div>
-          <p className="text-sm text-[#6B7280]">How much can Abridge help?</p>
+          <p className="text-sm text-[#6B7280]">How many can Abridge protect?</p>
           
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Opportunities</span>
+              <span className="text-xs text-[#6B7280] mb-1">At Risk</span>
               <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
                 <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(opportunities).toLocaleString()}</span>
               </div>
             </div>
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Improvement Rate</span>
+              <span className="text-xs text-[#6B7280] mb-1">Protection Rate</span>
               <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
                 <EditableNumberInput
                   value={improvementRate}
@@ -4321,26 +4321,26 @@ export default function ModelBuilder({
               </div>
             </div>
             <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-[#111827]">{Math.round(admissionsImproved).toLocaleString()} admissions improved</span>
+            <span className="font-mono font-semibold text-[#111827]">{Math.round(admissionsImproved).toLocaleString()} admissions protected</span>
           </div>
           
           <p className="text-xs text-[#6B7280]">
-            Not every gap is capturable. 15% accounts for cases where Abridge documentation directly enables CC/MCC capture that wouldn't have happened otherwise.
+            Abridge captures clinical discussions that would otherwise be lost. We estimate 25% of at-risk admissions are protected through more complete initial documentation—the complexity was discussed, now it's documented.
           </p>
         </div>
 
         <div className="border-t border-dashed border-neutral-300" />
 
-        {/* Step 3: DRG Weight Impact */}
+        {/* Step 3: Revenue Protected */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: DRG Weight Impact</span>
+            <span className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Revenue Protected</span>
           </div>
-          <p className="text-sm text-[#6B7280]">What's the revenue impact?</p>
+          <p className="text-sm text-[#6B7280]">What's the value of prevented downcoding?</p>
           
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex flex-col items-center">
-              <span className="text-xs text-[#6B7280] mb-1">Admissions Improved</span>
+              <span className="text-xs text-[#6B7280] mb-1">Admissions Protected</span>
               <div className="px-4 py-2 bg-neutral-100 rounded-lg border border-neutral-200">
                 <span className="font-mono text-sm font-medium text-[#111827]">{Math.round(admissionsImproved).toLocaleString()}</span>
               </div>
@@ -4372,7 +4372,7 @@ export default function ModelBuilder({
               </div>
             </div>
             <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-[#111827]">{formatCurrency(Math.round(grossImpact))} gross</span>
+            <span className="font-mono font-semibold text-[#111827]">{formatCurrency(Math.round(grossImpact))} protected (gross)</span>
           </div>
           
           {/* Benchmark: What Drives 0.4 DRG Weight? */}
@@ -4389,7 +4389,7 @@ export default function ModelBuilder({
               <div className="flex justify-between"><span>Acute kidney injury</span><span className="font-mono">+0.1 to +0.3</span></div>
             </div>
             <p className="text-xs text-neutral-400 mt-3">
-              0.4 is a blended average for MCC captures.
+              0.4 represents the average DRG weight difference when documentation gaps cause downcoding. Higher acuity facilities may see 0.5-0.6.
             </p>
           </div>
         </div>
@@ -4424,24 +4424,24 @@ export default function ModelBuilder({
               </div>
             </div>
             <span className="text-lg text-[#6B7280]">=</span>
-            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(Math.round(annualValue))}</span>
+            <span className="font-mono font-semibold text-emerald-600">{formatCurrency(Math.round(annualValue))} net</span>
           </div>
           
           <p className="text-xs text-[#6B7280]">
-            50% haircut accounts for RAC/PEPPER audits, coder discretion, and cases where documentation doesn't change final code.
+            50% haircut accounts for RAC/PEPPER audits, coder discretion, cases where documentation doesn't change final code, and retrospective adjustments. This is revenue you can actually count on.
           </p>
         </div>
 
         {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Annual Value</span>
+            <span className="font-medium text-[#111827]">Annual Revenue Protected</span>
             <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-ccmcc-result">
               {formatCurrency(Math.round(annualValue))}
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(admissionsImproved).toLocaleString()} admissions × {drgWeightIncrease} weight × ${baseDrgPayment.toLocaleString()} × {realizationRate}% realization
+            {Math.round(admissionsImproved).toLocaleString()} admissions protected × {drgWeightIncrease} weight × ${baseDrgPayment.toLocaleString()} × {realizationRate}% realization
           </p>
         </div>
         

@@ -1,0 +1,44 @@
+Update the CC/MCC Capture (DRG Optimization) calculator with the following changes while keeping the same visual style and format:
+
+RENAME THE CALCULATOR:
+- Change title from "CC/MCC Capture (DRG Optimization)" to "DRG Accuracy (Prevent Downcoding)"
+
+UPDATE THE THEORY SECTION:
+"Incomplete documentation leads to DRG assignments that don't reflect true clinical complexity. When conditions discussed at bedside aren't captured in the note, the result is lower reimbursement than clinically appropriate. Abridge ensures what's discussed gets documented—preventing revenue loss from documentation gaps, not upcoding."
+
+STEP 1: ADMISSIONS AT RISK
+- Change title from "ADMISSIONS WITH OPPORTUNITY" to "ADMISSIONS AT RISK OF DOWNCODING"
+- Change question from "How many admissions have documentation gaps?" to "How many admissions are at risk of downcoding?"
+- Change "Gap Rate" label to "At-Risk Rate"
+- Change default from 40% to 25%
+- Change output label from "1,040 opportunities" to "X admissions at risk"
+- Update explanation text to: "20-30% of admissions have documentation gaps that affect final DRG assignment—conditions discussed but not documented, clinical complexity not fully captured. We use 25% as a moderate estimate."
+
+STEP 2: ABRIDGE PROTECTION
+- Change title from "CAPTURE IMPROVEMENT" to "ABRIDGE PROTECTION"
+- Change question from "How much can Abridge help?" to "How many can Abridge protect?"
+- Change "Improvement Rate" label to "Protection Rate"
+- Change default from 15% to 25%
+- Change output label from "156 admissions improved" to "X admissions protected"
+- Update explanation text to: "Abridge captures clinical discussions that would otherwise be lost. We estimate 25% of at-risk admissions are protected through more complete initial documentation—the complexity was discussed, now it's documented."
+
+STEP 3: REVENUE IMPACT
+- Change title from "DRG WEIGHT IMPACT" to "REVENUE PROTECTED"
+- Change question from "What's the revenue impact?" to "What's the value of prevented downcoding?"
+- Change output label from "$374,400 gross" to "$X protected (gross)"
+- Keep the benchmark table exactly as is (it's good)
+- Update the note under the benchmark table to: "0.4 represents the average DRG weight difference when documentation gaps cause downcoding. Higher acuity facilities may see 0.5-0.6."
+
+STEP 4: REALITY CHECK
+- Keep title "REALITY CHECK"
+- Keep question "What passes audit?"
+- Change output label from "$187,200" to "$X net"
+- Update explanation text to: "50% haircut accounts for RAC/PEPPER audits, coder discretion, cases where documentation doesn't change final code, and retrospective adjustments. This is revenue you can actually count on."
+
+ANNUAL VALUE BOX:
+- Change "Annual Value" to "Annual Revenue Protected"
+- Update the subtext to: "X admissions protected × 0.4 weight × $6,000 × 50% realization"
+
+KEEP the orange warning at the bottom: "Work with your CDI team to validate capture rates for your specific case mix."
+
+Keep all input fields, formatting, colors, benchmark tables, and layout exactly the same. Only change the copy/labels as specified above.
