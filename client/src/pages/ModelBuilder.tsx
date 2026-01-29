@@ -2482,7 +2482,7 @@ export default function ModelBuilder({
               </div>
             </div>
             <p className="text-xs text-slate-500 pt-2">
-              Not every condition discussed is documented, and not every undocumented condition is HCC-eligible.
+              Not every condition discussed is documented, and not every undocumented condition is HCC-eligible. This means roughly 1 in 7 risk encounters has a missed HCC opportunity.
             </p>
           </div>
         </div>
@@ -2492,7 +2492,7 @@ export default function ModelBuilder({
         {/* Step 3: Abridge Capture */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Capture</p>
-          <p className="text-xs text-[#6B7280]">How many can Abridge recover?</p>
+          <p className="text-xs text-[#6B7280]">How many can Abridge capture?</p>
           
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -2603,6 +2603,9 @@ export default function ModelBuilder({
               <span className="font-mono text-slate-700">~$800</span>
             </div>
           </div>
+          <p className="text-xs text-slate-500 mt-2">
+            HCC value represents the annual risk adjustment payment associated with each captured condition.
+          </p>
         </div>
 
         {/* Variability Warning */}
