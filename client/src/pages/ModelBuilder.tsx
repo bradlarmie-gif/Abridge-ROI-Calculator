@@ -36,6 +36,7 @@ import {
   CheckCircle,
   Shield,
   Info,
+  Pencil,
 } from "lucide-react";
 
 export interface ValueResults {
@@ -6306,7 +6307,7 @@ export default function ModelBuilder({
             {/* Live Model Sidebar - hidden on mobile, shown on desktop right column */}
             <div className="hidden lg:block w-full lg:w-[380px] lg:order-2 lg:flex-shrink-0">
               <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                     <Calculator className="w-5 h-5 text-emerald-600" />
                   </div>
@@ -6314,6 +6315,38 @@ export default function ModelBuilder({
                     <h3 className="text-lg font-semibold text-[#111827]">Live Model</h3>
                     <p className="text-xs text-[#6B7280]">Updates as you customize</p>
                   </div>
+                </div>
+                
+                {/* Compact Baseline Reference */}
+                <div className="mb-5 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Your Baseline</span>
+                    <button
+                      onClick={onBack}
+                      className="text-xs font-medium text-[#EA2C00] hover:text-[#d12700] transition-colors flex items-center gap-1"
+                      data-testid="sidebar-edit-baseline"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Edit
+                    </button>
+                  </div>
+                  <div className="font-mono text-lg font-bold text-slate-800">
+                    {(isNursingSetting ? eligibleDocEvents : eligibleEncounters).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {isNursingSetting 
+                      ? "documentation events/year" 
+                      : isInpatientSetting 
+                        ? "eligible admissions/year" 
+                        : "eligible encounters/year"
+                    }
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                    {isNursingSetting 
+                      ? `${staffedBeds} beds · ${nursingOccupancyRate}% occ · ${eventsPerPatientDay} events/day`
+                      : `${providers} ${isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} · ${encounters.toLocaleString()} ${isInpatientSetting ? "adm" : "enc"} · ${utilizationRate}%`
+                    }
+                  </p>
                 </div>
                 
                 <div className="space-y-1 mb-4">
@@ -6369,44 +6402,6 @@ export default function ModelBuilder({
             
             {/* Main Content - appears second in DOM but first visually on desktop */}
             <div className="flex-1 space-y-6 lg:order-1">
-              {/* Baseline Summary Card */}
-              <div className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Your Baseline</span>
-                </div>
-                <div className="flex flex-wrap items-end gap-4 mb-4">
-                  <div className="font-mono text-4xl font-bold text-emerald-700">
-                    {(isNursingSetting ? eligibleDocEvents : eligibleEncounters).toLocaleString()}
-                  </div>
-                  <p className="text-base font-medium text-emerald-700 pb-1">
-                    eligible {isNursingSetting ? "documentation events" : isInpatientSetting ? "admissions" : "encounters"} per year
-                  </p>
-                </div>
-                {isNursingSetting ? (
-                  <div className="font-mono text-sm text-slate-500 mb-3 space-y-1">
-                    <p>{staffedBeds.toLocaleString()} beds × {nursingOccupancyRate}% occupancy × 365 days = {patientDaysPerYear.toLocaleString()} patient days</p>
-                    <p>{patientDaysPerYear.toLocaleString()} patient days × {eventsPerPatientDay} events/day × {utilizationRate}% utilization</p>
-                    <p className="text-xs text-slate-400 italic mt-2">
-                      <Info className="w-3 h-3 inline mr-1" />
-                      This accounts for ~{Math.round(staffedBeds * 1.5).toLocaleString()} nurse FTEs (1.5 FTEs per bed)
-                    </p>
-                  </div>
-                ) : (
-                  <p className="font-mono text-sm text-slate-500 mb-3">
-                    {providers.toLocaleString()} {isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} × {encounters.toLocaleString()} {isInpatientSetting ? "admissions" : "encounters"} × {utilizationRate}% utilization
-                  </p>
-                )}
-                <button
-                  onClick={onBack}
-                  className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-                  data-testid="button-edit-baseline"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  Edit baseline
-                </button>
-              </div>
-              
               <section className="bg-white rounded-2xl border border-neutral-200 p-6 md:p-8">
               {/* Inpatient ED Connection Callout - appears at TOP before drivers */}
               {isInpatientSetting && (
@@ -6582,7 +6577,7 @@ export default function ModelBuilder({
             {/* Live Model Sidebar - Mobile/Tablet version at bottom of page */}
             <div className="lg:hidden w-full">
               <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                     <Calculator className="w-5 h-5 text-emerald-600" />
                   </div>
@@ -6590,6 +6585,38 @@ export default function ModelBuilder({
                     <h3 className="text-lg font-semibold text-[#111827]">Live Model</h3>
                     <p className="text-xs text-[#6B7280]">Updates as you customize</p>
                   </div>
+                </div>
+                
+                {/* Compact Baseline Reference - Mobile */}
+                <div className="mb-5 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Your Baseline</span>
+                    <button
+                      onClick={onBack}
+                      className="text-xs font-medium text-[#EA2C00] hover:text-[#d12700] transition-colors flex items-center gap-1"
+                      data-testid="mobile-sidebar-edit-baseline"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Edit
+                    </button>
+                  </div>
+                  <div className="font-mono text-lg font-bold text-slate-800">
+                    {(isNursingSetting ? eligibleDocEvents : eligibleEncounters).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {isNursingSetting 
+                      ? "documentation events/year" 
+                      : isInpatientSetting 
+                        ? "eligible admissions/year" 
+                        : "eligible encounters/year"
+                    }
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                    {isNursingSetting 
+                      ? `${staffedBeds} beds · ${nursingOccupancyRate}% occ · ${eventsPerPatientDay} events/day`
+                      : `${providers} ${isInpatientSetting ? "hospitalists" : isEDSetting ? "physicians" : "providers"} · ${encounters.toLocaleString()} ${isInpatientSetting ? "adm" : "enc"} · ${utilizationRate}%`
+                    }
+                  </p>
                 </div>
                 
                 <div className="space-y-1 mb-4">
