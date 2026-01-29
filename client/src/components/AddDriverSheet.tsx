@@ -127,7 +127,7 @@ const DRIVER_INPUT_CONFIGS: Record<string, DriverInputConfig[]> = {
   patientAccess: [
     { key: "timeSavedPerEncounter", label: "Minutes saved per encounter", defaultValue: 2.5, type: "number", min: 1, max: 10, step: 0.5 },
     { key: "accessAllocation", label: "Time allocated to access (%)", defaultValue: 33, type: "percent", min: 0, max: 100 },
-    { key: "conversionRate", label: "Conversion to visits (%)", defaultValue: 60, type: "percent", min: 0, max: 100 },
+    { key: "conversionRate", label: "Conversion to visits (%)", defaultValue: 40, type: "percent", min: 0, max: 100 },
     { key: "timePerVisit", label: "Minutes per visit", defaultValue: 30, type: "number", min: 10, max: 60 },
     { key: "revenuePerVisit", label: "Revenue per visit ($)", defaultValue: 200, type: "currency", min: 50, max: 500 },
   ],

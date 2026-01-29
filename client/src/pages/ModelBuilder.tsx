@@ -127,7 +127,7 @@ interface DriverInputs {
     // Step 2: Time Allocated to Access
     accessAllocation: number;          // % of saved time → access potential (default 33%)
     // Step 3: Conversion to Visits
-    conversionRate: number;            // % of access time → actual visits (default 60%)
+    conversionRate: number;            // % of access time → actual visits (default 40%)
     // Step 4: New Visits
     timePerVisit: number;              // Minutes per visit (default 30)
     // Step 5: Revenue Impact
@@ -427,7 +427,7 @@ export default function ModelBuilder({
     patientAccess: {
       timeSavedPerEncounter: 2.5,      // 2.5 min saved per encounter
       accessAllocation: 25,            // 25% of saved time → access potential
-      conversionRate: 60,              // 60% of access time → actual visits
+      conversionRate: 40,              // 40% of access time → actual visits
       timePerVisit: 30,                // 30 min per visit
       revenuePerVisit: 200,            // $200 blended reimbursement
     },
@@ -1888,7 +1888,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Conversion depends on patient demand, room availability, and scheduling capacity. 60% is conservative.
+            Conversion depends on patient demand, room availability, and scheduling capacity. 40% is conservative.
           </p>
         </div>
 
