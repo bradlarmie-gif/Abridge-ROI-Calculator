@@ -152,16 +152,16 @@ export default function SwitchAmbientAnalysis({
           </p>
         </div>
         
-        <section className="bg-white rounded-2xl border border-slate-200 p-8 text-center mb-8">
+        <section className="bg-white rounded-2xl border border-slate-200 p-4 md:p-8 text-center mb-6 md:mb-8">
           <span className="text-xs font-semibold text-slate-400 tracking-wide">ESTIMATED ANNUAL GAP</span>
-          <span className="block text-5xl font-bold text-slate-900 mt-3 mb-4 tracking-tight" data-testid="text-annual-gap">
+          <span className="block text-3xl md:text-5xl font-bold text-slate-900 mt-3 mb-4 tracking-tight" data-testid="text-annual-gap">
             ${formatNumber(calculations.totalAnnualGap)}
           </span>
-          <div className="flex items-center justify-center gap-4 text-sm text-slate-500">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-xs md:text-sm text-slate-500">
             <span data-testid="text-monthly-gap">${formatNumber(calculations.monthlyGap)}/month</span>
-            <span className="text-slate-200">·</span>
+            <span className="text-slate-200 hidden sm:inline">·</span>
             <span data-testid="text-daily-gap">${formatNumber(calculations.dailyGap)}/day</span>
-            <span className="text-slate-200">·</span>
+            <span className="text-slate-200 hidden sm:inline">·</span>
             <span data-testid="text-hourly-gap">${formatNumber(calculations.hourlyGap)}/hour</span>
           </div>
         </section>
@@ -172,10 +172,10 @@ export default function SwitchAmbientAnalysis({
             <section>
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">THE GAPS WE IDENTIFIED</h2>
               
-              <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                   <span className="text-sm font-semibold text-slate-700">Utilization</span>
-                  <span className="text-sm text-slate-500">
+                  <span className="text-xs sm:text-sm text-slate-500">
                     {inputs.utilization}% → {benchmarks.utilization}% = +{formatNumber(calculations.additionalEncounters)} encounters
                   </span>
                 </div>
@@ -198,10 +198,10 @@ export default function SwitchAmbientAnalysis({
                 </div>
               </div>
               
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                   <span className="text-sm font-semibold text-slate-700">Efficiency</span>
-                  <span className="text-sm text-slate-500">
+                  <span className="text-xs sm:text-sm text-slate-500">
                     {inputs.efficiency} min → {benchmarks.efficiency} min = +{formatNumber(calculations.additionalHours)} hours
                   </span>
                 </div>
@@ -228,7 +228,7 @@ export default function SwitchAmbientAnalysis({
             <section>
               <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">HOW THIS TRANSLATES TO VALUE</h2>
               
-              <div className="bg-white rounded-xl border border-slate-200 p-8">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-8">
                 <p className="text-sm text-slate-600 mb-5">
                   When utilization and efficiency improve together, the impact is <strong>multiplicative</strong>:
                 </p>

@@ -65,8 +65,8 @@ export default function SwitchScribesComparison({
         <section className="mb-8">
           <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">3-YEAR COST COMPARISON</h2>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 md:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
                   <Users className="w-4 h-4 text-slate-600" />
@@ -75,29 +75,29 @@ export default function SwitchScribesComparison({
               </div>
               
               <div className="text-center py-4">
-                <span className="text-4xl font-bold text-slate-900" data-testid="text-scribe-3yr-cost">
+                <span className="text-2xl sm:text-4xl font-bold text-slate-900" data-testid="text-scribe-3yr-cost">
                   {formatCurrency(threeYearScribeCost)}
                 </span>
                 <span className="block text-sm text-slate-500 mt-1">over 3 years</span>
               </div>
               
-              <div className="space-y-2 pt-4 border-t border-slate-100 text-sm">
+              <div className="space-y-2 pt-4 border-t border-slate-100 text-xs sm:text-sm">
                 <div className="flex items-center gap-2 text-slate-500">
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span>{calculations.coveragePercent}% provider coverage</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-500">
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span>Limited to business hours</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-500">
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span>~{data.turnoverRate}% annual turnover</span>
                 </div>
               </div>
             </div>
             
-            <div className="bg-emerald-50 rounded-2xl border-2 border-emerald-500 p-6">
+            <div className="bg-emerald-50 rounded-2xl border-2 border-emerald-500 p-4 md:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-[#EA2C00] to-[#D94E32] rounded-lg flex items-center justify-center text-white font-bold text-sm">
                   A
@@ -106,13 +106,13 @@ export default function SwitchScribesComparison({
               </div>
               
               <div className="text-center py-4">
-                <span className="text-4xl font-bold text-emerald-600" data-testid="text-abridge-3yr-cost">
+                <span className="text-2xl sm:text-4xl font-bold text-emerald-600" data-testid="text-abridge-3yr-cost">
                   {formatCurrency(threeYearAbridgeCost)}
                 </span>
                 <span className="block text-sm text-emerald-700 mt-1">over 3 years</span>
               </div>
               
-              <div className="space-y-2 pt-4 border-t border-emerald-200 text-sm">
+              <div className="space-y-2 pt-4 border-t border-emerald-200 text-xs sm:text-sm">
                 <div className="flex items-center gap-2 text-emerald-800">
                   <Check className="w-4 h-4 text-emerald-600" />
                   <span>100% provider access</span>
@@ -132,12 +132,12 @@ export default function SwitchScribesComparison({
         
         {threeYearSavings > 0 && (
           <section className="mb-8">
-            <div className="bg-emerald-600 rounded-2xl p-6 text-center text-white">
-              <span className="text-sm font-medium opacity-90">POTENTIAL 3-YEAR SAVINGS</span>
-              <span className="block text-4xl font-bold mt-2" data-testid="text-three-year-savings">
+            <div className="bg-emerald-600 rounded-2xl p-4 md:p-6 text-center text-white">
+              <span className="text-xs sm:text-sm font-medium opacity-90">POTENTIAL 3-YEAR SAVINGS</span>
+              <span className="block text-2xl sm:text-4xl font-bold mt-2" data-testid="text-three-year-savings">
                 {formatCurrency(threeYearSavings)}
               </span>
-              <span className="block text-sm opacity-80 mt-2">
+              <span className="block text-xs sm:text-sm opacity-80 mt-2">
                 While expanding from {calculations.coveragePercent}% to 100% provider coverage
               </span>
             </div>

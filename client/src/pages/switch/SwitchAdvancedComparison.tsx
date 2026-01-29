@@ -158,7 +158,7 @@ export default function SwitchAdvancedComparison({
           </p>
         </div>
         
-        <section className="bg-white rounded-2xl border border-slate-200 p-10 text-center mb-10">
+        <section className="bg-white rounded-2xl border border-slate-200 p-5 md:p-10 text-center mb-6 md:mb-10">
           <span className="text-xs font-semibold text-slate-400 tracking-wide">OVERALL BENCHMARK ACHIEVEMENT</span>
           
           <div className="relative mt-6 mb-4 mx-auto max-w-md">
@@ -194,7 +194,7 @@ export default function SwitchAdvancedComparison({
           <h2 className="text-xs font-semibold text-slate-400 tracking-wide mb-4">METRIC-BY-METRIC COMPARISON</h2>
           
           {comparisons.length === 0 && (
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-8 text-center">
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 md:p-8 text-center">
               <p className="text-slate-500 mb-2">No metrics selected for comparison.</p>
               <p className="text-sm text-slate-400">Go back to select specific metrics to see detailed comparisons.</p>
             </div>
@@ -205,8 +205,8 @@ export default function SwitchAdvancedComparison({
               const badge = getBadgeStyle(comparison.percentOfBenchmark);
               
               return (
-                <div key={comparison.id} className="bg-white rounded-2xl border border-slate-200 p-8" data-testid={`comparison-card-${comparison.id}`}>
-                  <div className="flex items-start justify-between mb-5">
+                <div key={comparison.id} className="bg-white rounded-2xl border border-slate-200 p-4 md:p-8" data-testid={`comparison-card-${comparison.id}`}>
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0 mb-5">
                     <div>
                       <h3 className="text-lg font-semibold text-slate-900">{comparison.name}</h3>
                       <p className="text-sm text-slate-500">{comparison.description}</p>
@@ -216,27 +216,27 @@ export default function SwitchAdvancedComparison({
                     </span>
                   </div>
                   
-                  <div className="flex items-center justify-between gap-4 mb-5">
-                    <div className="flex-1 text-center">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mb-5">
+                    <div className="flex-1 text-center w-full sm:w-auto">
                       <span className="block text-xs font-semibold text-slate-400 tracking-wide mb-1">YOUR CURRENT</span>
-                      <span className="block text-2xl font-bold text-slate-700">{comparison.current}</span>
+                      <span className="block text-xl sm:text-2xl font-bold text-slate-700">{comparison.current}</span>
                     </div>
                     
-                    <div className="flex items-center gap-2 px-4">
-                      <div className="w-12 h-0.5 bg-slate-200" />
+                    <div className="flex items-center gap-2 px-2 sm:px-4">
+                      <div className="w-6 sm:w-12 h-0.5 bg-slate-200" />
                       <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full ${comparison.direction === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50 text-emerald-600'}`}>
                         {comparison.direction === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                         <span className="text-sm font-semibold">{comparison.gap}</span>
                       </div>
-                      <div className="w-12 h-0.5 bg-slate-200" />
+                      <div className="w-6 sm:w-12 h-0.5 bg-slate-200" />
                     </div>
                     
-                    <div className="flex-1 text-center">
+                    <div className="flex-1 text-center w-full sm:w-auto">
                       <span className="flex items-center justify-center gap-1 text-xs font-semibold text-emerald-600 tracking-wide mb-1">
                         <Sparkles className="w-3 h-3" />
                         ABRIDGE BENCHMARK
                       </span>
-                      <span className="block text-2xl font-bold text-emerald-600">{comparison.benchmark}</span>
+                      <span className="block text-xl sm:text-2xl font-bold text-emerald-600">{comparison.benchmark}</span>
                     </div>
                   </div>
                   
@@ -262,7 +262,7 @@ export default function SwitchAdvancedComparison({
           </div>
         </section>
         
-        <section className="bg-slate-50 border border-slate-200 rounded-2xl p-8 mb-10">
+        <section className="bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-8 mb-6 md:mb-10">
           <p className="text-sm text-slate-600 mb-3">
             These gaps represent <strong className="text-slate-900">unrealized value</strong> — not because your current solution 
             is bad, but because small differences across multiple dimensions compound into significant overall impact.

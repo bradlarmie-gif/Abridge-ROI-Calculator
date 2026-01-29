@@ -242,7 +242,7 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('utilization')}
           >
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs text-[#6B7280] mb-1 block">Your Current Utilization</label>
                   <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('efficiency')}
           >
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs text-[#6B7280] mb-1 block">Current Time Saved/Encounter</label>
                   <div className="flex items-center gap-2">
@@ -384,7 +384,7 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('quality')}
           >
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs text-[#6B7280] mb-1 block">Current wRVU Lift</label>
                   <div className="flex items-center gap-2">

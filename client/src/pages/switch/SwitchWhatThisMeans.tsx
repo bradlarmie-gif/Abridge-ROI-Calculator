@@ -141,11 +141,11 @@ export default function SwitchWhatThisMeans({
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 p-8 mb-8 text-center">
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 p-5 md:p-8 mb-6 md:mb-8 text-center">
           <p className="text-sm text-slate-500 uppercase tracking-wider mb-2">
             ESTIMATED ANNUAL GAP
           </p>
-          <p className="text-5xl font-bold text-emerald-600 mb-4" data-testid="text-annual-gap">
+          <p className="text-3xl md:text-5xl font-bold text-emerald-600 mb-4" data-testid="text-annual-gap">
             {formatCurrency(totalAnnualGap)}
           </p>
           <p className="text-sm text-slate-600 max-w-md mx-auto">
@@ -154,50 +154,50 @@ export default function SwitchWhatThisMeans({
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 mb-6 md:mb-8">
           <h3 className="text-xs font-semibold text-slate-500 tracking-wider uppercase mb-4">
             HOW WE CALCULATED THIS
           </h3>
 
           <div className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <div className="flex justify-between items-start">
+            <div className="p-3 md:p-4 bg-slate-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <p className="font-medium text-slate-800">Utilization gap</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     +{formatNumber(additionalEncounters)} additional encounters × value per encounter
                   </p>
                 </div>
-                <p className="text-lg font-semibold text-emerald-600">
+                <p className="text-base sm:text-lg font-semibold text-emerald-600">
                   = {formatCurrency(utilizationGapValue)}
                 </p>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <div className="flex justify-between items-start">
+            <div className="p-3 md:p-4 bg-slate-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                 <div>
                   <p className="font-medium text-slate-800">Efficiency gap</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     +{formatNumber(additionalHours)} additional hours × ${productivityValuePerHour}/hour productivity value
                   </p>
                 </div>
-                <p className="text-lg font-semibold text-emerald-600">
+                <p className="text-base sm:text-lg font-semibold text-emerald-600">
                   = {formatCurrency(efficiencyGapValue)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center">
+          <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <p className="font-semibold text-slate-800">Total Annual Gap</p>
-            <p className="text-xl font-bold text-emerald-600">
+            <p className="text-lg md:text-xl font-bold text-emerald-600">
               {formatCurrency(totalAnnualGap)}/year
             </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 mb-6 md:mb-8">
           <h3 className="text-xs font-semibold text-slate-500 tracking-wider uppercase mb-4">
             WHERE THAT VALUE SHOWS UP
           </h3>
@@ -205,15 +205,15 @@ export default function SwitchWhatThisMeans({
             {drivers.map((driver) => (
               <div
                 key={driver.id}
-                className="flex items-center justify-between p-4 bg-slate-50 rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 bg-slate-50 rounded-lg gap-2"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 flex-shrink-0">
                     {driver.icon}
                   </div>
-                  <span className="font-medium text-slate-800">{driver.name}</span>
+                  <span className="font-medium text-slate-800 text-sm md:text-base">{driver.name}</span>
                 </div>
-                <span className="font-semibold text-emerald-600">
+                <span className="font-semibold text-emerald-600 text-sm md:text-base">
                   +{formatCurrency(driver.value)}/yr
                 </span>
               </div>
@@ -221,25 +221,25 @@ export default function SwitchWhatThisMeans({
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 mb-8">
+        <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 md:p-6 mb-6 md:mb-8">
           <h4 className="font-semibold text-slate-800 mb-3">THE DECISION</h4>
           <p className="text-sm text-slate-600 mb-4">
             You already invested in ambient AI. The question is whether you're getting full value.
           </p>
-          <ul className="space-y-2 text-sm text-slate-700 mb-4">
-            <li className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-slate-400" />
-              Your utilization: <strong>{currentUtilization}%</strong>
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-700 mb-4">
+            <li className="flex flex-wrap items-center gap-1 sm:gap-2">
+              <TrendingUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span>Your utilization: <strong>{currentUtilization}%</strong></span>
               <span className="text-slate-400">(Abridge avg: 65%)</span>
             </li>
-            <li className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-slate-400" />
-              Your time savings: <strong>{currentTimeSavings} min</strong>
+            <li className="flex flex-wrap items-center gap-1 sm:gap-2">
+              <TrendingUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span>Your time savings: <strong>{currentTimeSavings} min</strong></span>
               <span className="text-slate-400">(Abridge avg: 3 min)</span>
             </li>
-            <li className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-slate-400" />
-              Annual gap: <strong className="text-emerald-600">{formatCurrency(totalAnnualGap)}</strong>
+            <li className="flex flex-wrap items-center gap-1 sm:gap-2">
+              <TrendingUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span>Annual gap: <strong className="text-emerald-600">{formatCurrency(totalAnnualGap)}</strong></span>
             </li>
           </ul>
           <p className="text-sm text-slate-600">

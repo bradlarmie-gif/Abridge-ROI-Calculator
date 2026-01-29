@@ -61,38 +61,38 @@ export default function SwitchFramework({
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-8 mb-8">
-          <div className="flex items-center justify-center gap-4 mb-8">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-8 mb-6 md:mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 mb-6 md:mb-8">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-blue-50 flex items-center justify-center mb-3 mx-auto">
-                <Users className="w-8 h-8 text-blue-500" />
+              <div className="w-14 h-14 md:w-20 md:h-20 rounded-xl bg-blue-50 flex items-center justify-center mb-2 md:mb-3 mx-auto">
+                <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
               </div>
-              <p className="text-sm font-semibold text-slate-800">UTILIZATION</p>
-              <p className="text-xs text-slate-500 mt-1">% of encounters<br/>using the tool</p>
+              <p className="text-xs md:text-sm font-semibold text-slate-800">UTILIZATION</p>
+              <p className="text-[10px] md:text-xs text-slate-500 mt-1">% of encounters<br/>using the tool</p>
             </div>
 
-            <div className="text-2xl text-slate-300 font-light">
-              <X className="w-5 h-5" />
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-amber-50 flex items-center justify-center mb-3 mx-auto">
-                <Clock className="w-8 h-8 text-amber-500" />
-              </div>
-              <p className="text-sm font-semibold text-slate-800">EFFICIENCY</p>
-              <p className="text-xs text-slate-500 mt-1">Minutes saved<br/>per encounter</p>
-            </div>
-
-            <div className="text-2xl text-slate-300 font-light">
-              <X className="w-5 h-5" />
+            <div className="text-xl md:text-2xl text-slate-300 font-light hidden sm:block">
+              <X className="w-4 h-4 md:w-5 md:h-5" />
             </div>
 
             <div className="text-center">
-              <div className="w-20 h-20 rounded-xl bg-emerald-50 flex items-center justify-center mb-3 mx-auto">
-                <FileCheck className="w-8 h-8 text-emerald-500" />
+              <div className="w-14 h-14 md:w-20 md:h-20 rounded-xl bg-amber-50 flex items-center justify-center mb-2 md:mb-3 mx-auto">
+                <Clock className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
               </div>
-              <p className="text-sm font-semibold text-slate-800">QUALITY</p>
-              <p className="text-xs text-slate-500 mt-1">Documentation<br/>quality lift</p>
+              <p className="text-xs md:text-sm font-semibold text-slate-800">EFFICIENCY</p>
+              <p className="text-[10px] md:text-xs text-slate-500 mt-1">Minutes saved<br/>per encounter</p>
+            </div>
+
+            <div className="text-xl md:text-2xl text-slate-300 font-light hidden sm:block">
+              <X className="w-4 h-4 md:w-5 md:h-5" />
+            </div>
+
+            <div className="text-center">
+              <div className="w-14 h-14 md:w-20 md:h-20 rounded-xl bg-emerald-50 flex items-center justify-center mb-2 md:mb-3 mx-auto">
+                <FileCheck className="w-6 h-6 md:w-8 md:h-8 text-emerald-500" />
+              </div>
+              <p className="text-xs md:text-sm font-semibold text-slate-800">QUALITY</p>
+              <p className="text-[10px] md:text-xs text-slate-500 mt-1">Documentation<br/>quality lift</p>
             </div>
           </div>
 
