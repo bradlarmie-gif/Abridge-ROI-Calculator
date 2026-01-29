@@ -1,0 +1,30 @@
+Update the Physician Retention calculator with the following changes while keeping the same visual style and format:
+
+STEP 1: BASELINE TURNOVER
+- Keep as is (ED Physicians × Turnover Rate = X departures/year)
+- Keep the benchmark note: "ED turnover averages 10-15%. High-stress EDs often see 15-20%+"
+
+STEP 2: BURNOUT-RELATED DEPARTURES
+- Change question from "How much is burnout-driven?" to "How many departures are burnout-related?"
+- Keep the 50% calculation (X departures × 50% = Y burnout-related)
+- Update the explanation text to: "50% of ED departures cite burnout as a primary factor. Documentation burden is consistently ranked as a top-3 contributor to ED burnout, alongside acuity, pace, and staffing."
+
+STEP 3: ABRIDGE ATTRIBUTION
+- Change question from "What can Abridge prevent?" to "What portion of burnout can Abridge address?"
+- Keep the 10% calculation (Y burnout-related × 10% = Z annual turnover risk reduced)
+- Update the "Why 10%?" explanation to: "ED burnout has multiple drivers—pace, acuity, shifts, high-stakes decisions. Documentation burden is ONE major addressable factor. We conservatively estimate Abridge impacts 10% of burnout-related turnover by eliminating after-shift charting and reducing documentation stress. In Abridge user surveys, ED physicians report significantly reduced administrative burden and improved work-life balance."
+
+STEP 4: ANNUAL COST AVOIDANCE
+- Change the title from "COST SAVINGS" to "ANNUAL COST AVOIDANCE"
+- Change question from "What's the dollar value?" to "What's the annual value of reduced turnover risk?"
+- Keep calculation: Z avoided × $800,000 = Annual Value
+- Update "What This Means" section:
+  Title: "Understanding Turnover Risk Reduction"
+  Body: "Reducing turnover by 0.15 physicians/year means you're lowering your annual probability of costly departures. Even fractional retention creates real savings through reduced recruiting, signing bonuses, locum coverage, and lost productivity. Over 5-7 years, this compounds to retaining 1+ additional physician."
+  Keep the "5+ year investment horizon" note
+
+- Keep the "Benchmark: ED Physician Replacement Cost" section exactly as is
+
+- Update the orange warning to: "Retention impact measurable after 12-18 months. Earlier indicators include reduced burnout scores and improved documentation satisfaction."
+
+Keep all the same input fields, calculations, formatting, colors, and layout. Only change the copy/text as specified above.

@@ -3470,7 +3470,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            ED turnover averages 10-15%. High-stress EDs see higher.
+            ED turnover averages 10-15%. High-stress EDs often see 15-20%+
           </p>
         </div>
 
@@ -3479,7 +3479,7 @@ export default function ModelBuilder({
         {/* Step 2: Burnout-Related Departures */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Burnout-Related Departures</p>
-          <p className="text-xs text-[#6B7280]">How much is burnout-driven?</p>
+          <p className="text-xs text-[#6B7280]">How many departures are burnout-related?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -3500,12 +3500,12 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {preventableDepartures.toFixed(2)} preventable
+                {preventableDepartures.toFixed(2)} burnout-related
               </div>
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            50% of ED departures cite burnout as primary factor. ED has the highest burnout rate of any specialty.
+            50% of ED departures cite burnout as a primary factor. Documentation burden is consistently ranked as a top-3 contributor to ED burnout, alongside acuity, pace, and staffing.
           </p>
         </div>
 
@@ -3514,12 +3514,12 @@ export default function ModelBuilder({
         {/* Step 3: Abridge Attribution */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Attribution</p>
-          <p className="text-xs text-[#6B7280]">What can Abridge prevent?</p>
+          <p className="text-xs text-[#6B7280]">What portion of burnout can Abridge address?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">
-                {preventableDepartures.toFixed(2)} preventable
+                {preventableDepartures.toFixed(2)} burnout-related
               </div>
               <span className="text-neutral-400">×</span>
               <div className="flex items-center gap-1">
@@ -3535,7 +3535,7 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {departuresAvoided.toFixed(2)}/year avoided
+                {departuresAvoided.toFixed(2)} annual turnover risk reduced
               </div>
             </div>
           </div>
@@ -3547,19 +3547,19 @@ export default function ModelBuilder({
               Why 10%?
             </p>
             <p className="text-xs text-slate-600">
-              ED burnout has multiple drivers—pace, acuity, shifts, high-stakes decisions. Documentation is ONE major factor. 
+              ED burnout has multiple drivers—pace, acuity, shifts, high-stakes decisions. Documentation burden is ONE major addressable factor. 
               We conservatively estimate Abridge impacts 10% of burnout-related turnover by eliminating after-shift charting 
-              and reducing documentation burden during surges.
+              and reducing documentation stress. In Abridge user surveys, ED physicians report significantly reduced administrative burden and improved work-life balance.
             </p>
           </div>
         </div>
 
         <StepDivider />
 
-        {/* Step 4: Cost Savings */}
+        {/* Step 4: Annual Cost Avoidance */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
-          <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Annual Cost Avoidance</p>
+          <p className="text-xs text-[#6B7280]">What's the annual value of reduced turnover risk?</p>
           
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
@@ -3580,23 +3580,26 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-semibold text-emerald-600">
-                {formatCurrency(Math.round(annualRetentionSavings))}
+                {formatCurrency(Math.round(annualRetentionSavings))} Annual Value
               </div>
             </div>
           </div>
         </div>
 
-        {/* What This Means Box */}
+        {/* Understanding Turnover Risk Reduction Box */}
         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
           <p className="text-sm font-semibold text-slate-800 flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
-            What This Means
+            Understanding Turnover Risk Reduction
           </p>
-          <p className="text-sm font-medium text-slate-700">{framing.headline}</p>
-          <p className="text-xs text-slate-600">{framing.detail}</p>
+          <p className="text-xs text-slate-600">
+            Reducing turnover by {departuresAvoided.toFixed(2)} physicians/year means you're lowering your annual probability of costly departures. 
+            Even fractional retention creates real savings through reduced recruiting, signing bonuses, locum coverage, and lost productivity. 
+            Over 5-7 years, this compounds to retaining 1+ additional physician.
+          </p>
           <p className="text-xs text-slate-500 flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {framing.timeframe}
+            5+ year investment horizon
           </p>
         </div>
 
@@ -3634,7 +3637,7 @@ export default function ModelBuilder({
         <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
           <p className="text-xs text-amber-700 flex items-center gap-2">
             <Clock className="w-4 h-4 flex-shrink-0" />
-            Retention impact typically measurable after 12-18 months
+            Retention impact measurable after 12-18 months. Earlier indicators include reduced burnout scores and improved documentation satisfaction.
           </p>
         </div>
 
