@@ -4596,7 +4596,7 @@ export default function ModelBuilder({
           </div>
           
           <p className="text-xs text-[#6B7280]">
-            When initial documentation is complete, CDI doesn't need to query. 25% is conservative — many queries ask for info that was discussed but not documented.
+            When initial documentation is complete, CDI doesn't need to query. 25% is conservative—many queries ask for info that was discussed but not documented. Common examples: severity of illness indicators, clinical indicators for conditions like malnutrition or encephalopathy, and specificity on diagnoses already discussed at bedside.
           </p>
         </div>
 
@@ -4659,6 +4659,13 @@ export default function ModelBuilder({
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
             {Math.round(queriesAvoided).toLocaleString()} queries avoided × ${costPerQuery} per query
+          </p>
+        </div>
+        
+        {/* Complementary Note */}
+        <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+          <p className="text-xs text-[#6B7280]">
+            Query reduction and DRG accuracy are complementary. Fewer queries means faster, more accurate coding—and the documentation that avoids queries is the same documentation that supports accurate DRG assignment.
           </p>
         </div>
         
