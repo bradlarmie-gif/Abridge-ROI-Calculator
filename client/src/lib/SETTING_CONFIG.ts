@@ -227,15 +227,6 @@ export const SETTING_CONFIG: Record<CareSettingType, LeverConfig[]> = {
       driverSummary: "Operational efficiency—CDI teams love this",
       keyMetric: "$20K-50K for 20 providers",
     },
-    {
-      id: "inpatientDenials",
-      label: "Documentation-Related Denials",
-      category: "qualityRevenue",
-      description:
-        "Protect your reimbursement.",
-      driverSummary: "Inpatient denials are high-dollar",
-      keyMetric: "$150K-400K for 20 providers",
-    },
     // Qualitative (not quantified)
     {
       id: "inpatientCareCoordination",

@@ -301,7 +301,7 @@ const DRIVER_NAMES: Record<string, string> = {
   edDenials: "Documentation-Related Denials",
   // Inpatient drivers
   inpatientRetention: "Hospitalist Retention",
-  inpatientCCMCC: "DRG Accuracy (Prevent Downcoding)",
+  inpatientCCMCC: "DRG Accuracy & Revenue Protection",
   inpatientCDI: "CDI Query Reduction",
   inpatientDenials: "Documentation-Related Denials",
   // Nursing drivers
@@ -622,7 +622,7 @@ export default function ModelBuilder({
         return ["edThroughput", "edLevelOfService", "edDenials"];
       }
       if (isInpatientSetting) {
-        return ["inpatientRetention", "inpatientCCMCC", "inpatientDenials"];
+        return ["inpatientRetention", "inpatientCCMCC", "inpatientCDI"];
       }
       return ["overtime", "patientAccess", "levelOfService"];
     }
@@ -4249,7 +4249,7 @@ export default function ModelBuilder({
             <div>
               <p className="text-sm font-medium text-amber-900 mb-1">The Theory</p>
               <p className="text-sm text-amber-800 leading-relaxed">
-                Incomplete documentation leads to DRG assignments that don't reflect true clinical complexity. When conditions discussed at bedside aren't captured in the note, the result is lower reimbursement than clinically appropriate. Abridge ensures what's discussed gets documented—preventing revenue loss from documentation gaps, not upcoding.
+                Incomplete documentation costs you twice. First, at coding—when conditions discussed at bedside aren't captured, DRGs are assigned lower than clinically appropriate. Second, after submission—when payers deny claims because medical necessity, level of care, or status criteria weren't documented. Both stem from the same root cause: documentation gaps. Abridge captures the clinical reasoning that prevents both.
               </p>
             </div>
           </div>
@@ -4430,16 +4430,63 @@ export default function ModelBuilder({
           </p>
         </div>
 
+        {/* What This Includes */}
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">What This Includes</p>
+          <p className="text-sm text-blue-800 mb-3">
+            This calculation captures two types of revenue protection:
+          </p>
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-medium text-blue-900">DRG Accuracy</p>
+              <p className="text-sm text-blue-800">
+                Conditions discussed but not documented lead to lower DRG assignments. Abridge captures clinical complexity upfront, ensuring accurate coding the first time.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-blue-900">Denial Prevention</p>
+              <p className="text-sm text-blue-800">
+                Documentation gaps also cause post-submission denials—medical necessity not supported, level of care not justified, IP vs Obs status unclear. The same documentation that improves DRG accuracy also reduces denial write-offs.
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-blue-800 mt-3">
+            We combine these into a single value to avoid double-counting. Both stem from the same Abridge capability: capturing what's discussed at bedside.
+          </p>
+        </div>
+
+        {/* Benchmark: Documentation-Driven Revenue Leakage */}
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Benchmark: Documentation-Driven Revenue Leakage</p>
+          <div className="space-y-1.5 text-sm">
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">DRG downcoding</span>
+              <span className="font-mono text-[#111827]">2-4% of inpatient revenue</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B7280]">Denial write-offs</span>
+              <span className="font-mono text-[#111827]">1-2% of inpatient revenue</span>
+            </div>
+            <div className="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5">
+              <span className="text-[#6B7280] font-medium">Combined opportunity</span>
+              <span className="font-mono text-[#111827] font-medium">3-6% of inpatient revenue</span>
+            </div>
+          </div>
+          <p className="text-xs text-[#6B7280] mt-3">
+            This calculator conservatively estimates Abridge captures 15-25% of this leakage.
+          </p>
+        </div>
+
         {/* Final Result */}
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-[#111827]">Annual Revenue Protected</span>
+            <span className="font-medium text-[#111827]">Annual Revenue Protected (DRG Accuracy + Denial Prevention)</span>
             <span className="font-mono font-bold text-emerald-600 text-xl" data-testid="inpatient-ccmcc-result">
               {formatCurrency(Math.round(annualValue))}
             </span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(admissionsImproved).toLocaleString()} admissions protected × {drgWeightIncrease} weight × ${baseDrgPayment.toLocaleString()} × {realizationRate}% realization
+          <p className="text-xs text-neutral-500 mt-1">
+            Includes DRG accuracy improvement and denial prevention from complete documentation
           </p>
         </div>
         
