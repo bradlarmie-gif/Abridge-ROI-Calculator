@@ -122,7 +122,7 @@ const accents = {
     buttonHoverBg: '#4F6BED',
     glowColor: '#4F6BED',
   },
-  expand: {
+  measure: {
     iconBg: '#ECFDF5',
     iconColor: '#059669',
     subtitleColor: '#059669',
@@ -208,14 +208,14 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             
             <PathCard
               icon={TrendingUp}
-              title="Expand"
+              title="Measure"
               subtitle="Already using Abridge?"
-              description="Model what expansion to new settings or more providers could look like based on your current results"
-              buttonText="Load Your Results"
+              description="See what you've built and capture your value story"
+              buttonText="Start Your Story"
               onClick={onSelectExpand}
-              testId="card-expand"
+              testId="card-measure"
               delay={0.25}
-              accent={accents.expand}
+              accent={accents.measure}
             />
             
             <PathCard

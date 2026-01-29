@@ -1,0 +1,809 @@
+Navigation & Naming Changes
+Global changes:
+
+Rename "Expand" → "Measure" everywhere
+Update home screen card:
+
+Old: "Expand — Already using Abridge? Model what expansion to new settings or more providers could look like based on your current results"
+New: "Measure — Already using Abridge? See what you've built and capture your value story."
+
+
+Button text: "Load Your Results" → "Start Your Story"
+
+
+The Flow: 5 Phases
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   PHASE 1   │────▶│   PHASE 2   │────▶│   PHASE 3   │────▶│   PHASE 4   │────▶│   PHASE 5   │
+│   Welcome   │     │   Select    │     │   Document  │     │   Allocate  │     │   Reveal    │
+│             │     │   Metrics   │     │   Numbers   │     │   Time      │     │   Story     │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+                                                                                       │
+                                                                                       ▼
+                                                                               ┌─────────────┐
+                                                                               │  (Optional) │
+                                                                               │   Expand    │
+                                                                               └─────────────┘
+
+PHASE 1: Welcome
+Purpose: Set the emotional tone. Confirm deployment basics. Make them feel seen.
+URL path: /measure/welcome
+Screen layout:
+┌────────────────────────────────────────────────────────────────┐
+│  ABRIDGE                                        Measure        │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│                                                                │
+│                    ✦ YOUR VALUE STORY                          │
+│                                                                │
+│         Every Deployment Is a Story                            │
+│            of Transformation                                   │
+│                                                                │
+│     You championed this change. You navigated the              │
+│     rollout. Now let's capture what you've built —             │
+│     in a way that resonates with anyone who needs              │
+│     to see the value.                                          │
+│                                                                │
+│                                                                │
+│     ┌─────────────────────────────────────────────┐            │
+│     │                                             │            │
+│     │  ◉ Your real outcomes                       │            │
+│     │  ◉ Transparent methodology                  │            │
+│     │  ◉ Ready to share                           │            │
+│     │                                             │            │
+│     └─────────────────────────────────────────────┘            │
+│                                                                │
+│                                                                │
+│              ┌──────────────────────────┐                      │
+│              │     Let's Begin  →       │                      │
+│              └──────────────────────────┘                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+Interaction: Single button. No form fields on this screen. Just emotional setup.
+
+PHASE 1B: Deployment Basics
+Purpose: Gather the foundational numbers. Keep it fast.
+URL path: /measure/deployment
+Screen layout:
+┌────────────────────────────────────────────────────────────────┐
+│  ← Back                                  Measure · Deployment  │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│                                                                │
+│              Tell Us About Your Deployment                     │
+│                                                                │
+│        We'll use this to calculate your value per              │
+│        provider and compare to benchmarks.                     │
+│                                                                │
+│                                                                │
+│        ┌─────────────────────────────────────────┐             │
+│        │  Providers using Abridge                │             │
+│        │  ┌─────────────────────────────────┐    │             │
+│        │  │ 80                              │    │             │
+│        │  └─────────────────────────────────┘    │             │
+│        └─────────────────────────────────────────┘             │
+│                                                                │
+│        ┌─────────────────────────────────────────┐             │
+│        │  Total annual encounters                │             │
+│        │  ┌─────────────────────────────────┐    │             │
+│        │  │ 130,000                         │    │             │
+│        │  └─────────────────────────────────┘    │             │
+│        └─────────────────────────────────────────┘             │
+│                                                                │
+│        ┌─────────────────────────────────────────┐             │
+│        │  Utilization rate                       │             │
+│        │  ┌─────────────────────────────────┐    │             │
+│        │  │ 70                            % │    │             │
+│        │  └─────────────────────────────────┘    │             │
+│        │  % of encounters using Abridge          │             │
+│        └─────────────────────────────────────────┘             │
+│                                                                │
+│        ┌─────────────────────────────────────────┐             │
+│        │  Months on Abridge                      │             │
+│        │  ┌─────────────────────────────────┐    │             │
+│        │  │ 6                               │    │             │
+│        │  └─────────────────────────────────┘    │             │
+│        └─────────────────────────────────────────┘             │
+│                                                                │
+│                                                                │
+│              ┌──────────────────────────┐                      │
+│              │       Continue  →        │                      │
+│              └──────────────────────────┘                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+Interaction:
+
+Four simple inputs
+Validation: all fields required, reasonable ranges
+On continue: store values, advance to Phase 2
+
+
+PHASE 2: Select Your Metrics
+Purpose: Let them choose which metrics they can document. This determines what screens they'll see next.
+URL path: /measure/metrics
+Screen layout:
+┌────────────────────────────────────────────────────────────────┐
+│  ← Back                                    Measure · Metrics   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│              Which Metrics Can You Document?                   │
+│                                                                │
+│        Select the metrics you have before/after data for.      │
+│        We'll build your value story from what you choose.      │
+│                                                                │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │  $ CORE FINANCIAL VALUE                                │   │
+│   │    The bottom line                                     │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☑ wRVU per Encounter              Recommended  │  │   │
+│   │    │   Revenue capture from complete documentation  │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☑ Average E&M Level                            │  │   │
+│   │    │   Coding accuracy from complete documentation  │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☐ Diagnosis Capture                            │  │   │
+│   │    │   HCC/RAF score improvement                    │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │  ◷ OPERATIONAL EFFICIENCY                              │   │
+│   │    Where the hours went                                │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☑ Time in Notes                   Recommended  │  │   │
+│   │    │   Minutes per encounter documenting            │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☑ Work Outside of Work                         │  │   │
+│   │    │   After-hours documentation burden             │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │  ♡ QUALITY INDICATORS                                  │   │
+│   │    The human signals                                   │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☐ Utilization Rate                             │  │   │
+│   │    │   Percentage of providers actively using       │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☑ Same-Day Chart Closure                       │  │   │
+│   │    │   Real-time documentation behavior             │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   │                                                        │   │
+│   │    ┌────────────────────────────────────────────────┐  │   │
+│   │    │ ☐ Clinician Satisfaction                       │  │   │
+│   │    │   Leading indicator for retention              │  │   │
+│   │    └────────────────────────────────────────────────┘  │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│        Selected: 5 metrics                                     │
+│                                                                │
+│              ┌──────────────────────────┐                      │
+│              │   Document Your Numbers →│                      │
+│              └──────────────────────────┘                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+Interaction:
+
+Checkboxes for each metric
+At least 1 metric required to continue
+Counter shows how many selected
+Selection determines which screens appear in Phase 3
+
+Logic:
+
+If ANY Operational Efficiency metric selected → Phase 4 (Where Did the Time Go) will appear
+If NO Operational Efficiency metrics selected → Skip Phase 4, go straight to Phase 5
+
+
+PHASE 3: Document Your Numbers
+Purpose: Collect before/after data for each selected metric. One metric per screen. Building momentum.
+URL path: /measure/document/[metric-slug]
+Critical UX change: NOT a long scroll. Each metric is its own full screen. User advances through them one at a time.
+Progress indicator at top:
+┌────────────────────────────────────────────────────────────────┐
+│  Metric 1 of 5                          Value so far: $0      │
+│  ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+└────────────────────────────────────────────────────────────────┘
+Screen layout (example: wRVU per Encounter):
+┌────────────────────────────────────────────────────────────────┐
+│  ← Back                                   Measure · Document   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│   Metric 1 of 5                        Value so far: $0       │
+│   ████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│                                                                │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│                                                                │
+│                    $ wRVU per Encounter                        │
+│                      Revenue capture improvement               │
+│                                                                │
+│                                                                │
+│                      Before ──────→ After                      │
+│                                                                │
+│          ┌──────────────┐        ┌──────────────┐              │
+│          │              │        │              │              │
+│          │     2.1      │        │     2.3      │              │
+│          │              │        │              │              │
+│          │  wRVU/enc    │        │  wRVU/enc    │              │
+│          └──────────────┘        └──────────────┘              │
+│                                                                │
+│                                                                │
+│                    ┌──────────────────────┐                    │
+│                    │    YOUR IMPACT       │                    │
+│                    │                      │                    │
+│                    │   +0.20 wRVU/enc     │                    │
+│                    │      10% lift        │                    │
+│                    │                      │                    │
+│                    │  ✦ Strong result     │                    │
+│                    └──────────────────────┘                    │
+│                                                                │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │  BENCHMARK                                             │   │
+│   │  Typical: 3-9% lift                                    │   │
+│   │  You're at 10% — Above typical range                   │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │  CALCULATED VALUE                                      │   │
+│   │                                                        │   │
+│   │  +0.20 wRVU × 130,000 encounters × 70% utilization     │   │
+│   │  × $33/wRVU × 50% attribution                          │   │
+│   │                                                        │   │
+│   │  = $300,300 annual value                               │   │
+│   │                                                        │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│                                                                │
+│              ┌──────────────────────────┐                      │
+│              │     Next Metric  →       │                      │
+│              └──────────────────────────┘                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+Interactions:
+
+Before/After inputs are editable
+Impact calculates in real time
+Benchmark comparison updates based on their input
+"Value so far" in header accumulates as they progress
+"Next Metric" advances to next selected metric
+
+Repeat this screen pattern for each metric they selected:
+
+wRVU per Encounter
+Average E&M Level
+Diagnosis Capture
+Time in Notes
+Work Outside of Work
+Utilization Rate
+Same-Day Chart Closure
+Clinician Satisfaction
+
+Each metric has its own:
+
+Title and description
+Before/after input fields with appropriate units
+Impact calculation
+Benchmark data
+Value calculation (where applicable)
+
+
+PHASE 4: Where Did the Time Go?
+Purpose: THE CENTERPIECE. They allocate saved time to value buckets. This is where they own the story.
+URL path: /measure/allocate
+Trigger: Only appears if they selected at least one Operational Efficiency metric (Time in Notes or Work Outside of Work)
+Screen layout:
+┌────────────────────────────────────────────────────────────────┐
+│  ← Back                                   Measure · Allocate   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│                                                                │
+│                                                                │
+│                   WHERE DID THE TIME GO?                       │
+│                                                                │
+│                                                                │
+│          ┌─────────────────────────────────────────┐           │
+│          │                                         │           │
+│          │          10,617 hours                   │           │
+│          │                                         │           │
+│          │    Your providers reclaimed this much   │           │
+│          │    documentation time. Where did it     │           │
+│          │    land?                                │           │
+│          │                                         │           │
+│          └─────────────────────────────────────────┘           │
+│                                                                │
+│                                                                │
+│   Help us understand how your organization experienced         │
+│   this time savings. Drag the sliders to allocate.             │
+│                                                                │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │                                                        │   │
+│   │  💰 HARD SAVINGS                              20%      │   │
+│   │     Overtime reduced, locum costs avoided              │   │
+│   │                                                        │   │
+│   │     ○────────●──────────────────────────────────────   │   │
+│   │                                                        │   │
+│   │     2,123 hours → $318,495                             │   │
+│   │     at $150/hr blended OT rate                         │   │
+│   │                                                        │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │                                                        │   │
+│   │  📈 CAPACITY UNLOCKED                         15%      │   │
+│   │     More patients seen, panels expanded                │   │
+│   │                                                        │   │
+│   │     ○──────●────────────────────────────────────────   │   │
+│   │                                                        │   │
+│   │     1,593 hours → 3,186 additional visits              │   │
+│   │     at 30 min/visit average                            │   │
+│   │                                                        │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │                                                        │   │
+│   │  🌅 QUALITY OF LIFE                           65%      │   │
+│   │     Providers going home on time, less burnout         │   │
+│   │                                                        │   │
+│   │     ○──────────────────────────────────────●────────   │   │
+│   │                                                        │   │
+│   │     6,901 hours returned to your providers             │   │
+│   │     That's 2.7 hours/week per provider                 │   │
+│   │                                                        │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │                                                        │   │
+│   │  Total allocated: 100%                                 │   │
+│   │  ████████████████████████████████████████████████████  │   │
+│   │                                                        │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│                                                                │
+│   ┌────────────────────────────────────────────────────────┐   │
+│   │                                                        │   │
+│   │  💡 Most organizations tell us the majority lands      │   │
+│   │     in Quality of Life — and that's still real         │   │
+│   │     value. It's retention. It's satisfaction.          │   │
+│   │     It's providers who stay.                           │   │
+│   │                                                        │   │
+│   └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│                                                                │
+│              ┌──────────────────────────┐                      │
+│              │    See Your Story  →     │                      │
+│              └──────────────────────────┘                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+Interactions:
+
+Three sliders that must sum to 100%
+
+When one slider moves, others adjust proportionally
+OR: lock individual sliders, remaining ones share the adjustment
+Real-time updates as they drag
+
+
+Each bucket shows calculated impact:
+
+Hard Savings: hours × hourly rate = dollar value
+Capacity: hours ÷ time per visit = additional visits (optionally × revenue per visit)
+Quality of Life: hours ÷ providers ÷ weeks = hours/week returned per provider
+
+
+Visual feedback:
+
+Sliders are color-coded (green for Hard Savings, blue for Capacity, warm orange for Quality of Life)
+Total bar at bottom fills as they allocate
+Numbers update smoothly, not jarringly
+
+
+Validation:
+
+Must sum to 100% to continue
+If they try to advance at 95%, gently prompt them
+
+
+The reassurance note:
+
+Always visible at bottom
+Validates that Quality of Life IS value
+Preempts the "but that's not real ROI" objection
+
+
+
+
+PHASE 5: Your Value Story (The Reveal)
+Purpose: The climax. Everything resolves into one beautiful, shareable summary.
+URL path: /measure/story
+Screen layout:
+┌────────────────────────────────────────────────────────────────┐
+│  ← Back                                     Measure · Story    │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                                                          │  │
+│  │  ✦ YOUR VALUE STORY                                      │  │
+│  │                                                          │  │
+│  │                                                          │  │
+│  │              $1.3M                                       │  │
+│  │         in Value Created                                 │  │
+│  │                                                          │  │
+│  │   80 providers · 6 months · 70% utilization              │  │
+│  │                                                          │  │
+│  │                                                          │  │
+│  │   ┌────────────────┐  ┌────────────────┐                 │  │
+│  │   │  Export PDF    │  │    Share       │                 │  │
+│  │   └────────────────┘  └────────────────┘                 │  │
+│  │                                                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                │
+│                                                                │
+│     ┌────────────┐    ┌────────────┐    ┌────────────┐         │
+│     │            │    │            │    │            │         │
+│     │   $1.3M    │    │   $16K     │    │  10,617    │         │
+│     │            │    │            │    │   hrs      │         │
+│     │  TOTAL     │    │  PER       │    │  TIME      │         │
+│     │  VALUE     │    │  PROVIDER  │    │  SAVED     │         │
+│     │            │    │            │    │            │         │
+│     └────────────┘    └────────────┘    └────────────┘         │
+│                                                                │
+│                                                                │
+│  ─────────────────────────────────────────────────────────     │
+│  HOW YOUR VALUE BREAKS DOWN                                    │
+│  ─────────────────────────────────────────────────────────     │
+│                                                                │
+│                                                                │
+│  $ CORE FINANCIAL VALUE                           $500K        │
+│                                                                │
+│     wRVU Lift                                     $300K        │
+│     +0.20 wRVU/encounter · 10% lift                            │
+│     ✦ Exceeding typical range                                  │
+│                                                                │
+│     E&M Level Improvement                         $200K        │
+│     +0.20 avg level · 10% lift                                 │
+│     ◷ Building momentum                                        │
+│                                                                │
+│                                                                │
+│  ◷ TIME REALLOCATED                              $318K         │
+│                                                                │
+│     Based on your allocation:                                  │
+│     • 20% → Hard savings (OT reduction)          $318K         │
+│     • 15% → Capacity (3,186 additional visits)                 │
+│     • 65% → Quality of life (2.7 hrs/wk back)                  │
+│                                                                │
+│                                                                │
+│  ♡ QUALITY INDICATORS                                          │
+│                                                                │
+│     Same-Day Chart Closure                       +34%          │
+│     ✦ Exceeding — Workflows transformed                        │
+│                                                                │
+│     Clinician Satisfaction                       +29 pts       │
+│     ✦ Exceeding — Your providers love this                     │
+│                                                                │
+│                                                                │
+│  ─────────────────────────────────────────────────────────     │
+│  WHAT THIS MEANS                                               │
+│  ─────────────────────────────────────────────────────────     │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                                                          │  │
+│  │  You're in a strong position. The value you're seeing    │  │
+│  │  is real and measurable. Your providers are happier,     │  │
+│  │  your documentation is better, and you have the proof    │  │
+│  │  to show for it.                                         │  │
+│  │                                                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                │
+│                                                                │
+│  ─────────────────────────────────────────────────────────     │
+│                                                                │
+│     Curious what this looks like at scale?                     │
+│     → Model expansion potential                                │
+│                                                                │
+│  ─────────────────────────────────────────────────────────     │
+│                                                                │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+Key elements:
+
+Hero section with total value — Big number, unmissable
+Three summary cards — Total value, per-provider value, time saved
+Value breakdown by category — Shows how the total was built
+Time allocation summary — Reflects what they chose in Phase 4
+Quality indicators — Non-dollar metrics that still matter
+"What This Means" interpretation — Human language summary
+Optional expansion link — Subtle, not forced. Takes them to expansion modeling if they want it.
+
+Export PDF:
+
+Generates a one-page summary with their logo option
+Formatted for sharing with leadership
+Includes methodology footnotes
+
+Share:
+
+Generates a unique link to their value story
+Can be viewed by anyone with the link (read-only)
+
+
+PHASE 6 (Optional): Expansion Modeling
+Purpose: For customers who want to see what growth looks like. NOT part of the core Measure flow.
+URL path: /measure/expand
+Trigger: Only accessible via link from Phase 5. Not automatic.
+Screen layout: (Keep your existing expansion modeling UI, but reframe the copy)
+┌────────────────────────────────────────────────────────────────┐
+│  ← Back to Your Story                      Measure · Expand    │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│              What Could Growth Look Like?                      │
+│                                                                │
+│     Based on what you've already proven, here's what           │
+│     expanding could mean.                                      │
+│                                                                │
+│                                                                │
+│     CURRENT STATE              →        EXPANSION TARGET       │
+│                                                                │
+│     80 providers                        ┌─────────────┐        │
+│     70% utilization                     │ 240         │ provs  │
+│     $1.3M value                         └─────────────┘        │
+│                                                                │
+│                                         ┌─────────────┐        │
+│                                         │ 85        % │ util   │
+│                                         └─────────────┘        │
+│                                                                │
+│                                                                │
+│     ┌────────────────────────────────────────────────────┐     │
+│     │                                                    │     │
+│     │    $5.5M             +$4.2M                        │     │
+│     │    Projected         Additional                    │     │
+│     │                                                    │     │
+│     │    319% increase from current state                │     │
+│     │                                                    │     │
+│     └────────────────────────────────────────────────────┘     │
+│                                                                │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+
+Technical Implementation Notes for Replit
+State Management
+javascript// Core state object for Measure flow
+const measureState = {
+  // Phase 1: Deployment
+  deployment: {
+    providers: null,
+    encounters: null,
+    utilization: null,
+    months: null
+  },
+  
+  // Phase 2: Selected metrics
+  selectedMetrics: {
+    wrvuPerEncounter: false,
+    avgEmLevel: false,
+    diagnosisCapture: false,
+    timeInNotes: false,
+    workOutsideWork: false,
+    utilizationRate: false,
+    sameDayChartClosure: false,
+    clinicianSatisfaction: false
+  },
+  
+  // Phase 3: Metric data
+  metricData: {
+    wrvuPerEncounter: { before: null, after: null },
+    avgEmLevel: { before: null, after: null },
+    // ... etc for each metric
+  },
+  
+  // Phase 4: Time allocation
+  timeAllocation: {
+    hardSavings: 20,      // percentage
+    capacityUnlocked: 15, // percentage
+    qualityOfLife: 65     // percentage
+  },
+  
+  // Calculated values (derived)
+  calculatedValues: {
+    totalHoursSaved: null,
+    totalFinancialValue: null,
+    valuePerProvider: null,
+    // ... etc
+  }
+}
+```
+
+### Routing
+```
+/measure                    → Redirect to /measure/welcome
+/measure/welcome            → Phase 1: Welcome
+/measure/deployment         → Phase 1b: Deployment basics
+/measure/metrics            → Phase 2: Metric selection
+/measure/document           → Phase 3: Redirects to first selected metric
+/measure/document/[slug]    → Phase 3: Individual metric screens
+/measure/allocate           → Phase 4: Where Did the Time Go
+/measure/story              → Phase 5: Your Value Story
+/measure/expand             → Phase 6: Expansion modeling (optional)
+Key Calculations
+javascript// Total hours saved (from Time in Notes + Work Outside of Work)
+const calculateTotalHoursSaved = (state) => {
+  const { deployment, metricData } = state;
+  const { providers, encounters, utilization } = deployment;
+  
+  let totalMinutesSaved = 0;
+  
+  if (metricData.timeInNotes.before && metricData.timeInNotes.after) {
+    const minutesSavedPerEncounter = metricData.timeInNotes.before - metricData.timeInNotes.after;
+    totalMinutesSaved += minutesSavedPerEncounter * encounters * (utilization / 100);
+  }
+  
+  // Convert to hours
+  return totalMinutesSaved / 60;
+};
+
+// Time allocation calculations
+const calculateTimeAllocationValues = (state) => {
+  const totalHours = state.calculatedValues.totalHoursSaved;
+  const { hardSavings, capacityUnlocked, qualityOfLife } = state.timeAllocation;
+  
+  return {
+    hardSavings: {
+      hours: totalHours * (hardSavings / 100),
+      dollarValue: totalHours * (hardSavings / 100) * 150 // $150/hr OT rate
+    },
+    capacityUnlocked: {
+      hours: totalHours * (capacityUnlocked / 100),
+      additionalVisits: (totalHours * (capacityUnlocked / 100)) / 0.5 // 30 min per visit
+    },
+    qualityOfLife: {
+      hours: totalHours * (qualityOfLife / 100),
+      hoursPerProviderPerWeek: (totalHours * (qualityOfLife / 100)) / state.deployment.providers / 52
+    }
+  };
+};
+Slider Interaction (Phase 4)
+javascript// Sliders must sum to 100%
+// When one changes, redistribute the difference proportionally among others
+
+const handleSliderChange = (changedSlider, newValue) => {
+  const currentTotal = hardSavings + capacityUnlocked + qualityOfLife;
+  const oldValue = state.timeAllocation[changedSlider];
+  const difference = newValue - oldValue;
+  
+  // Get the other two sliders
+  const otherSliders = ['hardSavings', 'capacityUnlocked', 'qualityOfLife']
+    .filter(s => s !== changedSlider);
+  
+  // Distribute the difference proportionally
+  const otherTotal = otherSliders.reduce((sum, s) => sum + state.timeAllocation[s], 0);
+  
+  const newState = { ...state.timeAllocation };
+  newState[changedSlider] = newValue;
+  
+  otherSliders.forEach(slider => {
+    const proportion = state.timeAllocation[slider] / otherTotal;
+    newState[slider] = Math.max(0, state.timeAllocation[slider] - (difference * proportion));
+  });
+  
+  // Ensure it sums to 100
+  // ... rounding logic
+  
+  setState({ timeAllocation: newState });
+};
+
+Design Tokens
+css/* Colors */
+--color-primary: #1a1a2e;           /* Dark blue for headers */
+--color-accent: #00c853;            /* Green for positive metrics */
+--color-warning: #ff9800;           /* Orange for "developing" */
+--color-financial: #2196f3;         /* Blue for financial metrics */
+--color-time: #9c27b0;              /* Purple for time metrics */
+--color-quality: #ff5722;           /* Warm orange for quality */
+
+/* For Phase 4 sliders */
+--color-hard-savings: #00c853;      /* Green */
+--color-capacity: #2196f3;          /* Blue */
+--color-quality-of-life: #ff9800;   /* Warm orange */
+
+/* Typography */
+--font-display: 'Inter', sans-serif;
+--font-size-hero: 4rem;
+--font-size-large: 2rem;
+--font-size-body: 1rem;
+
+/* Spacing */
+--spacing-section: 4rem;
+--spacing-element: 1.5rem;
+
+Animations & Transitions
+Phase transitions:
+
+Fade out current phase (200ms)
+Fade in next phase (300ms)
+Slight upward movement on fade in (transform: translateY)
+
+Number updates (Phase 3 & 4):
+
+Use react-countup or similar for smooth number transitions
+Duration: 400ms
+Easing: ease-out
+
+Slider interactions (Phase 4):
+
+Smooth slider movement (CSS transition on thumb position)
+Number updates follow slider in real-time
+Other sliders animate to their new positions (200ms)
+
+Phase 5 reveal:
+
+Staggered fade-in of elements
+Hero number counts up from 0
+Cards fade in sequentially (100ms delay between each)
+
+
+Responsive Considerations
+Desktop (>1024px):
+
+Full layout as shown above
+Sliders are horizontal
+
+Tablet (768-1024px):
+
+Slightly condensed spacing
+Sliders remain horizontal
+
+Mobile (<768px):
+
+Single column layout
+Phase 4 sliders stack vertically
+Hero number on Phase 5 is slightly smaller
+Export/Share buttons stack
+
+
+Edge Cases to Handle
+
+User selects no Operational Efficiency metrics:
+
+Skip Phase 4 entirely
+Go directly from Phase 3 to Phase 5
+Phase 5 shows financial + quality metrics only, no time allocation section
+
+
+User has only 1 metric:
+
+Still allow them to complete the flow
+Phase 5 adapts to show limited data
+Add note: "Add more metrics to strengthen your value story"
+
+
+User enters zero or negative values:
+
+Validation: before must be > 0, after must be >= 0
+If after > before for a metric where improvement means decrease (like Time in Notes), flag it
+
+
+User tries to navigate away mid-flow:
+
+Prompt: "You have unsaved progress. Leave anyway?"
+Consider auto-save to localStorage
+
+
+User returns to earlier phase and changes selections:
+
+If they unselect a metric they already documented, clear that metric's data
+Recalculate totals

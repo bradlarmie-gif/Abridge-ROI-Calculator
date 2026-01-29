@@ -27,7 +27,7 @@ function ProgressDots({ currentStep, totalSteps }: ProgressDotsProps) {
   );
 }
 
-export type PathType = "explore" | "switch" | "expand";
+export type PathType = "explore" | "switch" | "expand" | "measure";
 
 interface UnifiedHeaderProps {
   pathType: PathType;
@@ -43,6 +43,7 @@ const PATH_LABELS: Record<PathType, string> = {
   explore: "Explore",
   switch: "Switch",
   expand: "Expand",
+  measure: "Measure",
 };
 
 export function UnifiedHeader({ 

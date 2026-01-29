@@ -35,11 +35,12 @@ import SummaryCommandCenter from "@/pages/SummaryCommandCenter";
 import { ExpandFlow } from "@/pages/expand";
 import { SwitchFlow } from "@/pages/switch";
 import LearnPath from "@/pages/LearnPath";
+import MeasureFlow from "@/pages/measure/MeasureFlow";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -149,7 +150,7 @@ export default function App() {
                   setModelResults(null);
                   navigateTo("explore");
                 }}
-                onSelectExpand={() => navigateTo("expand")}
+                onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
                 onSelectLearn={() => navigateTo("learn")}
               />
@@ -237,6 +238,10 @@ export default function App() {
                   navigateTo("explore");
                 }}
               />
+            )}
+
+            {currentView === "measure" && (
+              <MeasureFlow />
             )}
             </PageTransition>
           </TooltipProvider>
