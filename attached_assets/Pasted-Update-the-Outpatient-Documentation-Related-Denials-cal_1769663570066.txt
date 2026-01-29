@@ -1,0 +1,33 @@
+Update the Outpatient Documentation-Related Denials calculator with the following changes while keeping the same visual style and format:
+
+UPDATE THE THEORY SECTION:
+"Most denials are recoverable—you appeal, you win, it just costs time. But a portion of documentation-related denials are written off without appeal, either because the documentation lacks the specificity to support medical necessity or the rework cost exceeds the claim value. Abridge captures the clinical detail and reasoning that saves these."
+
+STEP 1: TOTAL DENIALS
+- Keep the same structure (Eligible Encounters × Denial Rate = X denials)
+- Change the default Denial Rate to 6%
+- Update the benchmark note to: "Outpatient denial rates average 5-8%. Lower than ED but still significant volume."
+
+STEP 2: DOCUMENTATION-RELATED
+- Keep the same structure (X denials × Y% = Z doc denials)
+- Keep the default at 35%
+- Update the explanation text to: "30-40% of outpatient denials stem from documentation gaps: insufficient detail to support medical necessity, level of service not justified, or diagnosis specificity lacking."
+
+STEP 3: WRITTEN OFF
+- Keep the same structure (Z doc denials × Y% = W written off)
+- Change the default to 35% (up from 30%)
+- Update the explanation text to: "These claims are abandoned—either the documentation can't support an appeal, or the claim value doesn't justify the rework cost. Smaller outpatient claims are written off more frequently than higher-value ED claims."
+
+STEP 4: ABRIDGE PREVENTION
+- Change the title from "ABRIDGE RECOVERY" to "ABRIDGE PREVENTION"
+- Keep the same structure (W written off × Y% = V prevented)
+- Change the default to 50% (down from 75%)
+- Update the question to: "How many can Abridge prevent?"
+- Update the explanation text to: "Abridge captures the clinical reasoning, diagnostic specificity, and medical decision-making that supports medical necessity and level of service. We estimate Abridge prevents 50% of documentation-related write-offs by ensuring complete documentation at the point of care."
+
+STEP 5: VALUE
+- Keep the same structure (V prevented × $250 = Annual Value)
+- Keep the $250 default and benchmark table as is
+- Update the Annual Value box text to say "X claims preserved × $250 avg claim value" (change "recovered" to "preserved")
+
+Keep all the same input fields, formatting, colors, benchmark tables, and layout. Only change the copy/defaults as specified above.

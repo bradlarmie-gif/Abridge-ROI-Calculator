@@ -452,10 +452,10 @@ export default function ModelBuilder({
       auditFactor: 25,
     },
     denials: {
-      denialRate: 7,
+      denialRate: 6,
       docRelatedPercent: 35,
-      writtenOffPercent: 30,
-      abridgeCaptureRate: 75,
+      writtenOffPercent: 35,
+      abridgeCaptureRate: 50,
       avgClaimValue: 250,
     },
     // ED defaults
@@ -2774,8 +2774,8 @@ export default function ModelBuilder({
               <p className="text-sm text-blue-700 leading-relaxed">
                 Most denials are recoverable—you appeal, you win, it just costs time. But a portion 
                 of documentation-related denials are written off without appeal, either because the 
-                MDM can't support it or the rework cost exceeds the claim value. Abridge captures 
-                the clinical reasoning that saves these.
+                documentation lacks the specificity to support medical necessity or the rework cost 
+                exceeds the claim value. Abridge captures the clinical detail and reasoning that saves these.
               </p>
             </div>
           </div>
@@ -2816,7 +2816,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Industry average: 5-10%. Some organizations see 12%+.
+            Outpatient denial rates average 5-8%. Lower than ED but still significant volume.
           </p>
         </div>
 
@@ -2851,7 +2851,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            30-40% of denials stem from documentation gaps: missing clinical info, insufficient MDM, incomplete notes.
+            30-40% of outpatient denials stem from documentation gaps: insufficient detail to support medical necessity, level of service not justified, or diagnosis specificity lacking.
           </p>
         </div>
 
@@ -2886,16 +2886,16 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            These claims are abandoned—either the documentation can't support an appeal, or the rework cost exceeds the claim value. This is revenue lost forever.
+            These claims are abandoned—either the documentation can't support an appeal, or the claim value doesn't justify the rework cost. Smaller outpatient claims are written off more frequently than higher-value ED claims.
           </p>
         </div>
 
         <StepDivider />
 
-        {/* Step 4: Abridge Recovery */}
+        {/* Step 4: Abridge Prevention */}
         <div className="p-4 bg-neutral-50 rounded-lg space-y-3">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Recovery</p>
-          <p className="text-xs text-[#6B7280]">How many can Abridge save?</p>
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Abridge Prevention</p>
+          <p className="text-xs text-[#6B7280]">How many can Abridge prevent?</p>
           
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -2916,13 +2916,12 @@ export default function ModelBuilder({
             <div className="flex items-center gap-2">
               <span className="text-neutral-400">=</span>
               <div className="bg-white border border-neutral-200 rounded px-3 py-1.5 font-mono text-sm font-medium">
-                {Math.round(claimsRecovered).toLocaleString()} recovered
+                {Math.round(claimsRecovered).toLocaleString()} prevented
               </div>
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Abridge captures the MDM and clinical reasoning that physicians think but don't document. 
-            This either prevents the denial upfront or makes it winnable on appeal.
+            Abridge captures the clinical reasoning, diagnostic specificity, and medical decision-making that supports medical necessity and level of service. We estimate Abridge prevents 50% of documentation-related write-offs by ensuring complete documentation at the point of care.
           </p>
         </div>
 
@@ -2987,7 +2986,7 @@ export default function ModelBuilder({
             </span>
           </div>
           <p className="text-xs text-neutral-400 font-mono mt-1">
-            {Math.round(claimsRecovered).toLocaleString()} claims recovered × ${avgClaimValue} avg claim value
+            {Math.round(claimsRecovered).toLocaleString()} claims preserved × ${avgClaimValue} avg claim value
           </p>
         </div>
       </div>
