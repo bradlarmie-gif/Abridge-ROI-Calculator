@@ -1387,8 +1387,8 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Locum Usage</p>
           <p className="text-xs text-[#6B7280]">How many locum hours are you using today to meet patient demand?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Locum Providers</label>
               <EditableNumberInput
                 value={locumProviders}
@@ -1397,8 +1397,8 @@ export default function ModelBuilder({
                 data-testid="locum-providers-input"
               />
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-1 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Hrs/Week</label>
               <EditableNumberInput
                 value={locumHoursPerWeek}
@@ -1407,8 +1407,8 @@ export default function ModelBuilder({
                 data-testid="locum-hours-per-week-input"
               />
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-1 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Weeks/Yr</label>
               <EditableNumberInput
                 value={locumWeeksPerYear}
@@ -4964,13 +4964,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Overtime</p>
           <p className="text-xs text-[#6B7280]">How much OT exists today?</p>
           
-          <div className="grid grid-cols-7 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[60px]">
               <label className="text-xs text-[#6B7280] block mb-1">Nurse FTEs</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{nurseFTEs}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{nurseFTEs}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">OT Hrs/Week</label>
               <EditableNumberInput
                 value={otHoursPerWeek}
@@ -4979,8 +4979,8 @@ export default function ModelBuilder({
                 data-testid="nursing-ot-hours-week-input"
               />
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Weeks/Year</label>
               <EditableNumberInput
                 value={weeksPerYear}
@@ -4989,10 +4989,10 @@ export default function ModelBuilder({
                 data-testid="nursing-ot-weeks-year-input"
               />
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Annual OT</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {totalOTHours.toLocaleString()}
               </div>
             </div>
@@ -5007,13 +5007,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Driven OT</p>
           <p className="text-xs text-[#6B7280]">How much is charting catch-up?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Total OT Hrs</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{totalOTHours.toLocaleString()}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{totalOTHours.toLocaleString()}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Doc-Related %</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5025,10 +5025,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Doc-Driven OT</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(docDrivenOT).toLocaleString()}
               </div>
             </div>
@@ -5043,13 +5043,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Hours Eliminated</p>
           <p className="text-xs text-[#6B7280]">How much can real-time documentation prevent?</p>
           
-          <div className="grid grid-cols-7 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Doc-Driven OT</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(docDrivenOT).toLocaleString()}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(docDrivenOT).toLocaleString()}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Reduction %</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5061,15 +5061,15 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[60px]">
               <label className="text-xs text-[#6B7280] block mb-1">Adoption</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{utilizationRate}%</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{utilizationRate}%</div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Hrs Eliminated</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(hoursEliminated).toLocaleString()}
               </div>
             </div>
@@ -5084,13 +5084,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
           <p className="text-xs text-[#6B7280]">What's the budget impact?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Hrs Eliminated</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(hoursEliminated).toLocaleString()}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(hoursEliminated).toLocaleString()}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">OT Rate</label>
               <div className="flex items-center">
                 <span className="mr-1 text-[#6B7280]">$</span>
@@ -5103,10 +5103,10 @@ export default function ModelBuilder({
               </div>
               <p className="text-xs text-[#6B7280] mt-0.5">×1.5 = ${overtimeRate.toFixed(2)}</p>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[100px]">
               <label className="text-xs text-[#6B7280] block mb-1">Annual Savings</label>
-              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {formatCurrency(annualSavings)}
               </div>
             </div>
@@ -5187,8 +5187,8 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current HAPI Volume</p>
           <p className="text-xs text-[#6B7280]">How many HAPIs occur today?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Annual Admissions</label>
               <FormattedNumberInput
                 value={annualAdmissions}
@@ -5197,8 +5197,8 @@ export default function ModelBuilder({
                 data-testid="nursing-hapi-admissions-input"
               />
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">HAPI Rate</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5211,10 +5211,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">HAPIs/Year</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(currentHAPIs)}
               </div>
             </div>
@@ -5229,13 +5229,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Preventable</p>
           <p className="text-xs text-[#6B7280]">How many could better documentation help prevent?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Current HAPIs</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(currentHAPIs)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(currentHAPIs)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Prevention Rate</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5247,10 +5247,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(hapisPrevented)}
               </div>
             </div>
@@ -5265,13 +5265,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost Avoidance</p>
           <p className="text-xs text-[#6B7280]">What's the value?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(hapisPrevented)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(hapisPrevented)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Cost per HAPI</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
@@ -5283,10 +5283,10 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[100px]">
               <label className="text-xs text-[#6B7280] block mb-1">Potential Value</label>
-              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {formatCurrency(potentialValue)}
               </div>
             </div>
@@ -5390,8 +5390,8 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Falls Volume</p>
           <p className="text-xs text-[#6B7280]">How many falls occur today?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Annual Admissions</label>
               <FormattedNumberInput
                 value={annualAdmissions}
@@ -5400,8 +5400,8 @@ export default function ModelBuilder({
                 data-testid="nursing-falls-admissions-input"
               />
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Falls Rate</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5413,10 +5413,10 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Falls/Year</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(currentFalls)}
               </div>
             </div>
@@ -5434,13 +5434,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Documentation-Preventable</p>
           <p className="text-xs text-[#6B7280]">How many could better documentation help prevent?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Current Falls</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(currentFalls)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(currentFalls)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Prevention Rate</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5452,10 +5452,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(fallsPrevented)}
               </div>
             </div>
@@ -5470,13 +5470,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Cost Avoidance</p>
           <p className="text-xs text-[#6B7280]">What's the value?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Prevented</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(fallsPrevented)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(fallsPrevented)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Cost per Fall</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
@@ -5488,10 +5488,10 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[100px]">
               <label className="text-xs text-[#6B7280] block mb-1">Potential Value</label>
-              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {formatCurrency(potentialValue)}
               </div>
             </div>
@@ -5595,13 +5595,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Current Agency Utilization</p>
           <p className="text-xs text-[#6B7280]">How much agency are you using?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Staffed Beds</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{staffedBeds}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{staffedBeds}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs/Bed</label>
               <EditableNumberInput
                 value={agencyFTEsPerBed}
@@ -5611,10 +5611,10 @@ export default function ModelBuilder({
                 data-testid="nursing-agency-ftes-per-bed-input"
               />
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {agencyFTEs.toFixed(1)}
               </div>
             </div>
@@ -5629,8 +5629,8 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Agency Premium</p>
           <p className="text-xs text-[#6B7280]">What's the cost difference?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Staff Salary</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
@@ -5642,8 +5642,8 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
-            <div className="text-neutral-400">vs</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">vs</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Agency Cost</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
@@ -5655,10 +5655,10 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Premium</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 ${premium.toLocaleString()}
               </div>
             </div>
@@ -5673,13 +5673,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Retention-Driven Reduction</p>
           <p className="text-xs text-[#6B7280]">How much can better retention reduce agency need?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Agency FTEs</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{agencyFTEs.toFixed(1)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{agencyFTEs.toFixed(1)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Retention Impact</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5691,10 +5691,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">FTEs Converted</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {ftesConverted.toFixed(1)}
               </div>
             </div>
@@ -5709,20 +5709,20 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
           <p className="text-xs text-[#6B7280]">What's the budget impact?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">FTEs Converted</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{ftesConverted.toFixed(1)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{ftesConverted.toFixed(1)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Premium/FTE</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">${premium.toLocaleString()}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">${premium.toLocaleString()}</div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[100px]">
               <label className="text-xs text-[#6B7280] block mb-1">Annual Savings</label>
-              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {formatCurrency(annualSavings)}
               </div>
             </div>
@@ -5805,13 +5805,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 1: Baseline Turnover</p>
           <p className="text-xs text-[#6B7280]">What's the current turnover situation?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Nurse FTEs</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{nurseFTEs}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{nurseFTEs}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Turnover Rate</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5823,10 +5823,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Departures/Yr</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(departures)}
               </div>
             </div>
@@ -5841,13 +5841,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 2: Burnout-Related</p>
           <p className="text-xs text-[#6B7280]">How much is burnout-driven?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Departures</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(departures)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(departures)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Burnout %</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5859,10 +5859,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[80px]">
               <label className="text-xs text-[#6B7280] block mb-1">Preventable</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {Math.round(burnoutDepartures)}
               </div>
             </div>
@@ -5877,13 +5877,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 3: Abridge Attribution</p>
           <p className="text-xs text-[#6B7280]">What can Abridge prevent?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Preventable</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{Math.round(burnoutDepartures)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{Math.round(burnoutDepartures)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Abridge Impact</label>
               <div className="flex items-center">
                 <EditableNumberInput
@@ -5895,10 +5895,10 @@ export default function ModelBuilder({
                 <span className="ml-1 text-[#6B7280]">%</span>
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Avoided</label>
-              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-semibold text-[#111827] bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {departuresAvoided.toFixed(1)}
               </div>
             </div>
@@ -5913,13 +5913,13 @@ export default function ModelBuilder({
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Step 4: Cost Savings</p>
           <p className="text-xs text-[#6B7280]">What's the dollar value?</p>
           
-          <div className="grid grid-cols-5 gap-2 items-center text-center">
-            <div>
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+            <div className="flex-1 min-w-[70px]">
               <label className="text-xs text-[#6B7280] block mb-1">Avoided</label>
-              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5">{departuresAvoided.toFixed(1)}</div>
+              <div className="font-mono text-sm bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">{departuresAvoided.toFixed(1)}</div>
             </div>
-            <div className="text-neutral-400">×</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">×</span>
+            <div className="flex-1 min-w-[100px]">
               <label className="text-xs text-[#6B7280] block mb-1">Replacement Cost</label>
               <div className="flex items-center justify-center">
                 <span className="mr-1 text-[#6B7280] text-xs">$</span>
@@ -5931,10 +5931,10 @@ export default function ModelBuilder({
                 />
               </div>
             </div>
-            <div className="text-neutral-400">=</div>
-            <div>
+            <span className="text-neutral-400 pb-2 hidden sm:block">=</span>
+            <div className="flex-1 min-w-[90px]">
               <label className="text-xs text-[#6B7280] block mb-1">Annual Value</label>
-              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5">
+              <div className="font-mono text-sm font-bold text-emerald-600 bg-white border border-neutral-200 rounded px-2 py-1.5 text-center">
                 {formatCurrency(annualValue)}
               </div>
             </div>
