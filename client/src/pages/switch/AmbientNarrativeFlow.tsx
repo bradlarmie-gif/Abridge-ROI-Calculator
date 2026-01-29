@@ -104,18 +104,18 @@ export default function AmbientNarrativeFlow({
   };
 
   const renderProgressIndicator = () => (
-    <div className="flex items-center justify-center gap-1 md:gap-2 mb-6 md:mb-8">
+    <div className="flex items-center justify-center mb-6 md:mb-8 overflow-x-auto px-2">
       {STEPS.map((step, index) => {
         const isActive = step.id === currentStep;
         const isCompleted = completedSteps.has(step.id);
         const isAccessible = step.id <= currentStep || completedSteps.has(step.id - 1);
         
         return (
-          <div key={step.id} className="flex items-center">
+          <div key={step.id} className="flex items-center flex-shrink-0">
             <button
               onClick={() => isAccessible && goToStep(step.id)}
               disabled={!isAccessible}
-              className={`flex items-center gap-1 px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
+              className={`flex items-center justify-center gap-1 min-w-[28px] md:min-w-auto px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
                 isActive 
                   ? "bg-[#EA2C00] text-white" 
                   : isCompleted 
@@ -129,14 +129,14 @@ export default function AmbientNarrativeFlow({
               {isCompleted && !isActive ? (
                 <Check className="w-3 h-3" />
               ) : (
-                <span className="w-4 h-4 flex items-center justify-center text-xs rounded-full bg-white/20">
+                <span className="w-5 h-5 flex items-center justify-center text-xs font-semibold">
                   {step.id}
                 </span>
               )}
               <span className="hidden md:inline">{step.shortName}</span>
             </button>
             {index < STEPS.length - 1 && (
-              <div className={`w-4 md:w-8 h-0.5 mx-1 ${
+              <div className={`w-5 md:w-8 h-0.5 flex-shrink-0 ${
                 completedSteps.has(step.id) ? "bg-emerald-300" : "bg-slate-200"
               }`} />
             )}

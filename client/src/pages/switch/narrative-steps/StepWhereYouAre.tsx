@@ -91,7 +91,7 @@ function DimensionSlider({
           step={step}
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+          className="w-full"
           data-testid={testId}
         />
         {value > 0 && (
