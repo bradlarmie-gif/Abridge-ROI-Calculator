@@ -4272,11 +4272,11 @@ export default function ModelBuilder({
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">At-Risk Rate</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+              <div className="flex items-center gap-1">
                 <EditableNumberInput
                   value={gapRate}
                   onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, gapRate: val } }))}
-                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="inpatient-ccmcc-gap-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4310,11 +4310,11 @@ export default function ModelBuilder({
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Protection Rate</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+              <div className="flex items-center gap-1">
                 <EditableNumberInput
                   value={improvementRate}
                   onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, improvementRate: val } }))}
-                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="inpatient-ccmcc-improvement-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
@@ -4348,25 +4348,23 @@ export default function ModelBuilder({
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">DRG Weight Increase</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
-                <EditableNumberInput
-                  value={drgWeightIncrease}
-                  onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, drgWeightIncrease: val } }))}
-                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
-                  step="0.1"
-                  data-testid="inpatient-ccmcc-drg-weight-input"
-                />
-              </div>
+              <EditableNumberInput
+                value={drgWeightIncrease}
+                onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, drgWeightIncrease: val } }))}
+                className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
+                step="0.1"
+                data-testid="inpatient-ccmcc-drg-weight-input"
+              />
             </div>
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Base DRG Payment</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+              <div className="flex items-center gap-1">
                 <span className="text-sm text-[#6B7280]">$</span>
                 <EditableNumberInput
                   value={baseDrgPayment}
                   onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, baseDrgPayment: val } }))}
-                  className="w-20 text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  className="w-20 text-center font-mono text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="inpatient-ccmcc-base-drg-input"
                 />
               </div>
@@ -4413,11 +4411,11 @@ export default function ModelBuilder({
             <span className="text-lg text-[#6B7280]">×</span>
             <div className="flex flex-col items-center">
               <span className="text-xs text-[#6B7280] mb-1">Realization Rate</span>
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border border-neutral-200">
+              <div className="flex items-center gap-1">
                 <EditableNumberInput
                   value={realizationRate}
                   onChange={(val) => setDriverInputs(prev => ({ ...prev, inpatientCCMCC: { ...prev.inpatientCCMCC, realizationRate: val } }))}
-                  className="w-16 text-sm border-0 p-0 h-auto focus-visible:ring-0"
+                  className="w-16 text-center text-sm h-8 bg-white border-b-2 border-b-[#EA2C00]/80 border-t-0 border-x-0 rounded-none hover:border-b-[#EA2C00]/95 focus:border-b-[#EA2C00] transition-all"
                   data-testid="inpatient-ccmcc-realization-rate-input"
                 />
                 <span className="text-sm text-[#6B7280]">%</span>
