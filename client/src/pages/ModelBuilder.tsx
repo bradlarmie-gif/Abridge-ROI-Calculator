@@ -1888,7 +1888,7 @@ export default function ModelBuilder({
             </div>
           </div>
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            Conversion depends on patient demand, room availability, and scheduling capacity. 40% is conservative.
+            Conversion depends on patient demand, room availability, and scheduling capacity. 60% is conservative. Practices with high patient demand and scheduling backlog may see 70-80% conversion.
           </p>
         </div>
 
@@ -1921,6 +1921,9 @@ export default function ModelBuilder({
               </div>
             </div>
           </div>
+          <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
+            Adjust based on specialty. Primary care averages 20-30 min/visit, specialty may be 30-45 min.
+          </p>
         </div>
 
         <StepDivider />

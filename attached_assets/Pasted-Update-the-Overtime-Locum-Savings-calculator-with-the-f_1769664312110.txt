@@ -1,0 +1,45 @@
+Update the "Overtime & Locum Savings" calculator with the following changes while keeping the same visual style and format:
+
+GLOBAL CHANGES:
+- Rename the entire driver from "Overtime & Locum Savings" to "Locum Cost Avoidance"
+- Remove the entire "OVERTIME SAVINGS" section (Steps 1-4 related to overtime)
+
+Keep only the LOCUM AVOIDANCE section, restructured as follows:
+
+ADD A THEORY SECTION at the top (same style as other calculators):
+Title: "The Theory"
+Text: "Locum coverage is expensive—typically $200-300/hr plus agency fees. Organizations use locums to fill gaps when permanent staff can't keep up with patient demand. When documentation efficiency improves, your permanent providers have more capacity, reducing the need for locum coverage."
+
+STEP 1: CURRENT LOCUM USAGE
+- Keep the same structure (Locum Providers × Hrs/Week × Weeks/Yr = Total Hours)
+- Keep the defaults (2 providers, 40 hrs/week, 30 weeks/yr = 2,400 hrs)
+- Add explanation text: "How many locum hours are you using today to meet patient demand?"
+
+STEP 2: DOCUMENTATION-DRIVEN LOCUM HOURS
+- Change title from "LOCUM HOURS AVOIDED" to "DOCUMENTATION-DRIVEN USAGE"
+- Change question to: "How much locum usage is driven by documentation inefficiency?"
+- Change the default from 50% to 33%
+- Change the calculation: 2,400 hrs × 33% = 792 hrs
+- Update explanation text to: "Not all locum usage is reducible—some covers PTO, leave, or true demand spikes. We conservatively estimate 1/3 of locum hours exist because permanent staff lose capacity to documentation burden."
+
+STEP 3: ABRIDGE REDUCTION
+- New step
+- Question: "How much can Abridge reduce?"
+- Calculation: 792 hrs × 50% = 396 hrs reduced
+- Explanation text: "Abridge returns documentation time to providers, increasing their effective capacity. We estimate 50% of documentation-driven locum hours can be eliminated."
+
+STEP 4: COST SAVINGS
+- Keep same structure (X hrs × $/hr = Savings)
+- Update calculation: 396 hrs × $275/hr = $108,900
+- Change default rate from $150 to $275
+- Add benchmark table:
+  - Primary Care Locum: $150 - $200/hr
+  - Specialty Locum: $250 - $350/hr
+  - Blended Average: ~$275/hr
+- Explanation text: "Locum rates include agency fees and premium pay. Rates vary by specialty and market."
+
+ANNUAL VALUE BOX:
+- Update to show: "396 locum hours avoided × $275/hr"
+- Title: "Annual Locum Cost Avoidance"
+
+Keep all the same formatting, colors, input field styles, and layout. Only change the structure and copy as specified above.
