@@ -3789,8 +3789,11 @@ export default function ModelBuilder({
           </div>
 
           <p className="text-xs text-neutral-500 bg-neutral-100 px-2 py-1 rounded mt-2">
-            On average, Abridge improves wRVU capture by 3% through more complete documentation of clinical 
-            complexity—especially during high-volume periods when documentation typically suffers.
+            Abridge improves wRVU capture by 3% through more complete documentation of clinical complexity. 
+            Specifically, Abridge captures critical E&M elements—detailed HPI, comprehensive review of systems, 
+            and medical decision-making complexity—that support appropriate level coding. When documentation fully 
+            reflects the work performed, visits can be accurately coded at the appropriate E&M level (e.g., 99284 vs 99283) 
+            rather than conservatively downcoded due to incomplete notes. This isn't upcoding—it's accurate coding based on the clinical picture.
           </p>
         </div>
 
