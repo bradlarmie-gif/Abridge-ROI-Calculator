@@ -20,6 +20,10 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
     const parsed = JSON.parse(decompressed);
     // Validate it has the expected shape
     if (parsed && typeof parsed === 'object' && 'deployment' in parsed) {
+      // Ensure backward compatibility - add trendConfig if missing
+      if (!parsed.trendConfig) {
+        parsed.trendConfig = DEFAULT_MEASURE_STATE.trendConfig;
+      }
       return parsed as MeasureState;
     }
     return null;

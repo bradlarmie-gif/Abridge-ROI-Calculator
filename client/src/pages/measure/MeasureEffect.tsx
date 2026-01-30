@@ -8,6 +8,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { generateShareableUrl } from "@/lib/measureUrlState";
 import { 
   type MeasureState, 
+  type MonthlyMetricData,
   calculateMeasureResults, 
   formatNumber, 
   formatPercent,
@@ -15,6 +16,7 @@ import {
   EM_DISTRIBUTION_WITHOUT,
   EM_DISTRIBUTION_WITH,
 } from "@/lib/measureCalculator";
+import { Switch } from "@/components/ui/switch";
 
 interface MeasureEffectProps {
   state: MeasureState;
@@ -77,6 +79,7 @@ export default function MeasureEffect({
   onViewTrends,
 }: MeasureEffectProps) {
   const [configExpanded, setConfigExpanded] = useState(true);
+  const [trendDataExpanded, setTrendDataExpanded] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const results = useMemo(() => calculateMeasureResults(state), [state]);
 
@@ -97,6 +100,40 @@ export default function MeasureEffect({
   
   const updateTimeEfficiency = <K extends keyof typeof state.timeEfficiency>(key: K, value: number) => {
     updateState({ timeEfficiency: { ...state.timeEfficiency, [key]: value } });
+  };
+  
+  const toggleTrendMode = (enabled: boolean) => {
+    updateState({ 
+      trendConfig: { 
+        ...state.trendConfig, 
+        enabled,
+        // Initialize arrays with empty values when enabling
+        monthlyData: enabled && state.trendConfig.monthlyData.wrvu.length === 0 ? {
+          wrvu: Array(state.deployment.monthsOnAbridge).fill(0),
+          emLevel: Array(state.deployment.monthsOnAbridge).fill(0),
+          timeInNotes: Array(state.deployment.monthsOnAbridge).fill(0),
+          sameDayClosure: Array(state.deployment.monthsOnAbridge).fill(0),
+        } : state.trendConfig.monthlyData
+      } 
+    });
+  };
+  
+  const updateMonthlyValue = (metric: keyof MonthlyMetricData, monthIndex: number, value: number) => {
+    const currentData = [...(state.trendConfig.monthlyData[metric] || [])];
+    // Ensure array is long enough
+    while (currentData.length <= monthIndex) {
+      currentData.push(0);
+    }
+    currentData[monthIndex] = value;
+    updateState({
+      trendConfig: {
+        ...state.trendConfig,
+        monthlyData: {
+          ...state.trendConfig.monthlyData,
+          [metric]: currentData,
+        }
+      }
+    });
   };
 
   return (
@@ -280,6 +317,126 @@ export default function MeasureEffect({
                         <FormattedNumberInput value={state.timeEfficiency.workOutsideWith} onChange={(v) => updateTimeEfficiency('workOutsideWith', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                     </div>
+                  </div>
+                  
+                  {/* Advanced: Monthly Trend Data */}
+                  <div className="border-t border-slate-200 pt-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <button
+                        onClick={() => setTrendDataExpanded(!trendDataExpanded)}
+                        className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                        data-testid="button-toggle-trend-data"
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                        <span>Advanced: Monthly Trend Data</span>
+                        {trendDataExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">Enable</span>
+                        <Switch 
+                          checked={state.trendConfig.enabled} 
+                          onCheckedChange={toggleTrendMode}
+                          data-testid="switch-trend-mode"
+                        />
+                      </div>
+                    </div>
+                    
+                    <AnimatePresence>
+                      {trendDataExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <p className="text-xs text-slate-500 mb-4">
+                            Enter actual monthly values for more accurate trend charts. Leave blank to use interpolated values based on your before/after data.
+                          </p>
+                          
+                          {!state.trendConfig.enabled ? (
+                            <div className="bg-slate-50 rounded-lg p-4 text-center">
+                              <p className="text-sm text-slate-500">Enable the toggle above to enter monthly trend data.</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {/* wRVU Monthly Data */}
+                              <div className="bg-gradient-to-br from-purple-50/80 to-slate-50 rounded-xl p-4 border border-purple-100/50">
+                                <h4 className="text-xs font-semibold text-slate-700 mb-3">wRVU per Encounter (by month)</h4>
+                                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                  {Array.from({ length: state.deployment.monthsOnAbridge }).map((_, i) => (
+                                    <div key={`wrvu-${i}`} className="space-y-1">
+                                      <label className="text-[10px] text-slate-500">Mo {i + 1}</label>
+                                      <FormattedNumberInput
+                                        value={state.trendConfig.monthlyData.wrvu[i] || 0}
+                                        onChange={(v) => updateMonthlyValue('wrvu', i, v)}
+                                        step={0.1}
+                                        className="h-8 text-xs bg-white"
+                                        data-testid={`input-wrvu-month-${i}`}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              {/* E&M Level Monthly Data */}
+                              <div className="bg-gradient-to-br from-amber-50/80 to-slate-50 rounded-xl p-4 border border-amber-100/50">
+                                <h4 className="text-xs font-semibold text-slate-700 mb-3">Avg E&M Level (by month)</h4>
+                                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                  {Array.from({ length: state.deployment.monthsOnAbridge }).map((_, i) => (
+                                    <div key={`em-${i}`} className="space-y-1">
+                                      <label className="text-[10px] text-slate-500">Mo {i + 1}</label>
+                                      <FormattedNumberInput
+                                        value={state.trendConfig.monthlyData.emLevel[i] || 0}
+                                        onChange={(v) => updateMonthlyValue('emLevel', i, v)}
+                                        step={0.1}
+                                        className="h-8 text-xs bg-white"
+                                        data-testid={`input-em-month-${i}`}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              {/* Time in Notes Monthly Data */}
+                              <div className="bg-gradient-to-br from-cyan-50/80 to-slate-50 rounded-xl p-4 border border-cyan-100/50">
+                                <h4 className="text-xs font-semibold text-slate-700 mb-3">Time in Notes - minutes (by month)</h4>
+                                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                  {Array.from({ length: state.deployment.monthsOnAbridge }).map((_, i) => (
+                                    <div key={`time-${i}`} className="space-y-1">
+                                      <label className="text-[10px] text-slate-500">Mo {i + 1}</label>
+                                      <FormattedNumberInput
+                                        value={state.trendConfig.monthlyData.timeInNotes[i] || 0}
+                                        onChange={(v) => updateMonthlyValue('timeInNotes', i, v)}
+                                        className="h-8 text-xs bg-white"
+                                        data-testid={`input-time-month-${i}`}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              {/* Same-day Closure Monthly Data */}
+                              <div className="bg-gradient-to-br from-rose-50/80 to-slate-50 rounded-xl p-4 border border-rose-100/50">
+                                <h4 className="text-xs font-semibold text-slate-700 mb-3">Same-day Closure % (by month)</h4>
+                                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                  {Array.from({ length: state.deployment.monthsOnAbridge }).map((_, i) => (
+                                    <div key={`closure-${i}`} className="space-y-1">
+                                      <label className="text-[10px] text-slate-500">Mo {i + 1}</label>
+                                      <FormattedNumberInput
+                                        value={state.trendConfig.monthlyData.sameDayClosure[i] || 0}
+                                        onChange={(v) => updateMonthlyValue('sameDayClosure', i, v)}
+                                        className="h-8 text-xs bg-white"
+                                        data-testid={`input-closure-month-${i}`}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </motion.div>

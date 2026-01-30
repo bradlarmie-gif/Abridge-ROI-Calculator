@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
@@ -23,9 +23,12 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
   const [selectedMetric, setSelectedMetric] = useState('wrvu');
   
   const trendData = useMemo(() => 
-    generateTrendData(state.deployment.monthsOnAbridge, selectedMetric),
-    [state.deployment.monthsOnAbridge, selectedMetric]
+    generateTrendData(state, selectedMetric),
+    [state, selectedMetric]
   );
+  
+  const hasCustomData = state.trendConfig.enabled && 
+    (state.trendConfig.monthlyData[selectedMetric as keyof typeof state.trendConfig.monthlyData]?.length || 0) > 0;
   
   const metricLabel = METRIC_OPTIONS.find(m => m.value === selectedMetric)?.label || 'wRVU per Encounter';
   
@@ -146,7 +149,10 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
             <div>
               <h3 className="font-bold text-slate-900">WHAT THIS SHOWS</h3>
               <p className="text-sm text-slate-600 mt-1">
-                The gap between Abridge and non-Abridge encounters has remained consistent—and is actually growing. This isn't a fluke. It's a sustained improvement in documentation quality.
+                {hasCustomData 
+                  ? "This chart shows your actual monthly data. The gap between Abridge and non-Abridge encounters demonstrates sustained improvement."
+                  : "This chart shows projected improvement based on your before/after data. Enable monthly data entry in Configure for actual historical values."
+                }
               </p>
             </div>
           </div>

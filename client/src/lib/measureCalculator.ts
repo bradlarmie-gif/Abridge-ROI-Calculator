@@ -43,6 +43,19 @@ export interface Calibration {
   conversionFactor: number;
 }
 
+// Monthly trend data for advanced mode
+export interface MonthlyMetricData {
+  wrvu: number[];
+  emLevel: number[];
+  timeInNotes: number[];
+  sameDayClosure: number[];
+}
+
+export interface TrendConfig {
+  enabled: boolean;
+  monthlyData: MonthlyMetricData;
+}
+
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
   deployment: MeasureDeployment;
@@ -50,6 +63,7 @@ export interface MeasureState {
   timeEfficiency: TimeEfficiency;
   allocation: TimeAllocation;
   calibration: Calibration;
+  trendConfig: TrendConfig;
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -88,6 +102,15 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     minutesPerVisit: 30,
     revenuePerVisit: 200,
     conversionFactor: 33,
+  },
+  trendConfig: {
+    enabled: false,
+    monthlyData: {
+      wrvu: [],
+      emLevel: [],
+      timeInNotes: [],
+      sameDayClosure: [],
+    },
   },
 };
 
@@ -230,24 +253,66 @@ export const EM_DISTRIBUTION_WITH = [
   { level: '99215', percent: 18 },
 ];
 
-export function generateTrendData(months: number, metric: string): { month: string; abridge: number; baseline: number }[] {
+export interface TrendDataPoint {
+  month: string;
+  abridge: number;
+  baseline: number;
+}
+
+export function generateTrendData(
+  state: MeasureState,
+  metric: string
+): TrendDataPoint[] {
+  const months = state.deployment.monthsOnAbridge;
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const data: { month: string; abridge: number; baseline: number }[] = [];
+  const data: TrendDataPoint[] = [];
   
-  const baseValues: Record<string, { baseline: number; abridgeStart: number; growth: number }> = {
-    wrvu: { baseline: 2.1, abridgeStart: 2.2, growth: 0.02 },
-    emLevel: { baseline: 3.2, abridgeStart: 3.3, growth: 0.03 },
-    timeInNotes: { baseline: 12, abridgeStart: 6, growth: -0.3 },
-    sameDayClosure: { baseline: 41, abridgeStart: 65, growth: 2 },
+  // Get baseline (without) and current (with) values from state
+  const metricValues: Record<string, { baseline: number; current: number }> = {
+    wrvu: { 
+      baseline: state.documentationQuality.wrvuWithout, 
+      current: state.documentationQuality.wrvuWith 
+    },
+    emLevel: { 
+      baseline: state.documentationQuality.emLevelWithout, 
+      current: state.documentationQuality.emLevelWith 
+    },
+    timeInNotes: { 
+      baseline: state.timeEfficiency.timeInNotesWithout, 
+      current: state.timeEfficiency.timeInNotesWith 
+    },
+    sameDayClosure: { 
+      baseline: state.timeEfficiency.sameDayClosureWithout, 
+      current: state.timeEfficiency.sameDayClosureWith 
+    },
   };
   
-  const config = baseValues[metric] || baseValues.wrvu;
+  const config = metricValues[metric] || metricValues.wrvu;
+  const trendConfig = state.trendConfig;
+  
+  // Check if we have real monthly data for this metric
+  const monthlyValues = trendConfig.enabled ? 
+    trendConfig.monthlyData[metric as keyof MonthlyMetricData] : [];
   
   for (let i = 0; i < months; i++) {
+    let abridgeValue: number;
+    
+    if (monthlyValues && monthlyValues.length > i && monthlyValues[i] !== undefined) {
+      // Use real monthly data if available
+      abridgeValue = monthlyValues[i];
+    } else {
+      // Interpolate from baseline to current with slight curve
+      // Month 1 starts closer to baseline, final month reaches current value
+      const progress = months > 1 ? i / (months - 1) : 1;
+      // Use easeOutQuad curve for more realistic adoption curve
+      const easedProgress = 1 - (1 - progress) * (1 - progress);
+      abridgeValue = config.baseline + (config.current - config.baseline) * easedProgress;
+    }
+    
     data.push({
-      month: monthNames[i % 12],
+      month: `Month ${i + 1}`,
       baseline: config.baseline,
-      abridge: config.abridgeStart + (config.growth * i),
+      abridge: Number(abridgeValue.toFixed(2)),
     });
   }
   
