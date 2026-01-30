@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { 
   type MeasureState,
   type MeasureCareSetting,
   DEFAULT_MEASURE_STATE,
 } from "@/lib/measureCalculator";
+import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
 import MeasureWelcome from "./MeasureWelcome";
 import MeasureEffect from "./MeasureEffect";
 import MeasureAllocate from "./MeasureAllocate";
@@ -17,6 +18,20 @@ export default function MeasureFlow() {
   const [, setLocation] = useLocation();
   const [phase, setPhase] = useState<MeasurePhase>('welcome');
   const [state, setState] = useState<MeasureState>(DEFAULT_MEASURE_STATE);
+  const [isLoadedFromUrl, setIsLoadedFromUrl] = useState(false);
+
+  // Load state from URL on mount
+  useEffect(() => {
+    const urlState = getStateFromCurrentUrl();
+    if (urlState) {
+      setState(urlState);
+      setIsLoadedFromUrl(true);
+      // Skip to effect page since data is pre-loaded
+      setPhase('effect');
+      // Clean the URL
+      clearUrlState();
+    }
+  }, []);
 
   const updateState = useCallback((updates: Partial<MeasureState>) => {
     setState(prev => ({ ...prev, ...updates }));

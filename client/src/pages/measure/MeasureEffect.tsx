@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ChevronDown, ChevronUp, BarChart3, Clock, Users, Lightbulb, TrendingUp, Settings } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, BarChart3, Clock, Users, Lightbulb, TrendingUp, Settings, Link2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { generateShareableUrl } from "@/lib/measureUrlState";
 import { 
   type MeasureState, 
   calculateMeasureResults, 
@@ -75,7 +76,15 @@ export default function MeasureEffect({
   onViewTrends,
 }: MeasureEffectProps) {
   const [configExpanded, setConfigExpanded] = useState(true);
+  const [linkCopied, setLinkCopied] = useState(false);
   const results = useMemo(() => calculateMeasureResults(state), [state]);
+
+  const handleCopyLink = async () => {
+    const url = generateShareableUrl(state);
+    await navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
   
   const updateDeployment = <K extends keyof typeof state.deployment>(key: K, value: number) => {
     updateState({ deployment: { ...state.deployment, [key]: value } });
@@ -122,14 +131,37 @@ export default function MeasureEffect({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <button
-            onClick={() => setConfigExpanded(!configExpanded)}
-            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-            data-testid="button-toggle-config"
-          >
-            <span className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Settings className="w-4 h-4" /> Configure Data (Demo)</span>
-            {configExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-          </button>
+          <div className="flex items-center justify-between p-4">
+            <button
+              onClick={() => setConfigExpanded(!configExpanded)}
+              className="flex items-center gap-2 hover:bg-slate-50 transition-colors rounded-lg px-2 py-1 -ml-2"
+              data-testid="button-toggle-config"
+            >
+              <Settings className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-semibold text-slate-700">Configure Data</span>
+              {configExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            </button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyLink}
+              className="h-8 text-xs gap-1.5"
+              data-testid="button-copy-link"
+            >
+              {linkCopied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-emerald-600">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Copy Shareable Link</span>
+                </>
+              )}
+            </Button>
+          </div>
           
           <AnimatePresence>
             {configExpanded && (
