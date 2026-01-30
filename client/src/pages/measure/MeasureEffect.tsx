@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, ChevronDown, ChevronUp, BarChart3, Clock, Users, Lightbulb, TrendingUp } from "lucide-react";
+import { ArrowRight, ArrowLeft, ChevronDown, ChevronUp, BarChart3, Clock, Users, Lightbulb, TrendingUp, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -129,7 +129,7 @@ export default function MeasureEffect({
             className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
             data-testid="button-toggle-config"
           >
-            <span className="text-sm font-semibold text-slate-700">⚙️ Configure Data (Demo)</span>
+            <span className="text-sm font-semibold text-slate-700 flex items-center gap-2"><Settings className="w-4 h-4" /> Configure Data (Demo)</span>
             {configExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
           </button>
           

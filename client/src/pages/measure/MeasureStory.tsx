@@ -272,19 +272,19 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                 <p className="text-sm font-semibold text-slate-700">
                   {state.timeEfficiency.sameDayClosureWithout}% → {state.timeEfficiency.sameDayClosureWith}%
                 </p>
-                <span className="text-xs text-emerald-600 font-medium">+{results.sameDayClosureDelta} pts ✦</span>
+                <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">+{results.sameDayClosureDelta} pts <Sparkles className="w-3 h-3" /></span>
               </div>
               <div className="bg-slate-50 p-3 text-center">
                 <p className="text-xs text-slate-500 mb-1">Work outside of work</p>
                 <p className="text-sm font-semibold text-slate-700">
                   {state.timeEfficiency.workOutsideWithout} → {state.timeEfficiency.workOutsideWith} hrs
                 </p>
-                <span className="text-xs text-emerald-600 font-medium">-{formatPercent(results.workOutsideDeltaPercent)} ✦</span>
+                <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">-{formatPercent(results.workOutsideDeltaPercent)} <Sparkles className="w-3 h-3" /></span>
               </div>
               <div className="bg-slate-50 p-3 text-center">
                 <p className="text-xs text-slate-500 mb-1">Utilization</p>
                 <p className="text-sm font-semibold text-slate-700">{state.deployment.utilizationRate}%</p>
-                <span className="text-xs text-amber-600 font-medium">Strong ◐</span>
+                <span className="text-xs text-amber-600 font-medium">Strong</span>
               </div>
             </div>
           </div>
