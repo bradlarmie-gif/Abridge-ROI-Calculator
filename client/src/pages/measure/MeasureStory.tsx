@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Download, Share2, BarChart3, Clock, Heart, Sparkles, ChevronDown, ChevronUp, FileText, Lightbulb } from "lucide-react";
+import { Download, Share2, BarChart3, Clock, Heart, Sparkles, ChevronDown, ChevronUp, FileText, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
   calculateMeasureResults, 
@@ -97,19 +98,16 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={onBack}
-            className="text-slate-500 hover:text-slate-900 transition-colors text-sm flex items-center gap-1"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <div className="text-sm text-slate-500">Step 4 of 4</div>
-        </div>
+      <UnifiedHeader
+        pathType="measure"
+        currentStep={4}
+        totalSteps={4}
+        stepName="Your Value Story"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
         <motion.div 
           className="bg-white rounded-2xl border-2 border-[#EA2C00]/20 p-8 md:p-10 mb-8 text-center relative overflow-hidden shadow-lg"
           initial={{ opacity: 0, scale: 0.95 }}

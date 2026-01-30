@@ -1,8 +1,9 @@
 import { useMemo, useCallback, useState } from "react";
-import { ArrowRight, ArrowLeft, DollarSign, TrendingUp, Sunset, Lightbulb, Settings } from "lucide-react";
+import { ArrowRight, DollarSign, TrendingUp, Sunset, Lightbulb, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
   calculateMeasureResults, 
@@ -170,19 +171,16 @@ export default function MeasureAllocate({
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="max-w-xl mx-auto px-4 md:px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={onBack}
-            className="text-slate-600 hover:text-slate-900 transition-colors text-sm flex items-center gap-1"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <div className="text-sm text-slate-500">Step 3 of 4</div>
-        </div>
+      <UnifiedHeader
+        pathType="measure"
+        currentStep={3}
+        totalSteps={4}
+        stepName="Where Did The Time Go?"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
+      <div className="max-w-xl mx-auto px-4 md:px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -318,24 +316,14 @@ export default function MeasureAllocate({
         </motion.div>
 
         <motion.div 
-          className="flex flex-col sm:flex-row gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
           <Button
-            variant="outline"
-            onClick={onBack}
-            className="flex-1 sm:flex-none sm:w-auto h-12 text-base font-medium border-2"
-            data-testid="button-back-bottom"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <Button
             onClick={onNext}
             disabled={!isValid}
-            className="flex-1 bg-[#EA2C00] hover:bg-[#d42800] text-white h-12 text-base font-semibold shadow-lg disabled:opacity-50"
+            className="w-full bg-[#EA2C00] hover:bg-[#d42800] text-white h-12 text-base font-semibold shadow-lg disabled:opacity-50"
             data-testid="button-see-story"
           >
             See Your Story

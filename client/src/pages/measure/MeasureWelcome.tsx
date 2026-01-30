@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
 interface MeasureWelcomeProps {
   onNext: () => void;
@@ -20,17 +21,16 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="absolute top-4 left-4">
-        <button
-          onClick={onBack}
-          className="text-slate-500 hover:text-slate-900 transition-colors text-sm flex items-center gap-1"
-          data-testid="button-back"
-        >
-          ← Back
-        </button>
-      </div>
+      <UnifiedHeader
+        pathType="measure"
+        currentStep={1}
+        totalSteps={4}
+        stepName="Welcome"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
-      <div className="flex items-center justify-center min-h-screen px-4">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
         <motion.div 
           className="text-center max-w-lg"
           initial={{ opacity: 0, y: 20 }}

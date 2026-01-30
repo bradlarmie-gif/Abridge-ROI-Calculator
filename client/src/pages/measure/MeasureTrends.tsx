@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { ArrowLeft, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, generateTrendData } from "@/lib/measureCalculator";
 
 interface MeasureTrendsProps {
@@ -37,18 +38,16 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={onBack}
-            className="text-slate-600 hover:text-slate-900 transition-colors text-sm flex items-center gap-1"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Summary
-          </button>
-        </div>
+      <UnifiedHeader
+        pathType="measure"
+        currentStep={2}
+        totalSteps={4}
+        stepName="Your Journey (Trends)"
+        onBack={onBack}
+      />
+      <UnifiedHeaderSpacer />
 
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -170,7 +169,6 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
           className="w-full h-12 text-base font-medium border-2"
           data-testid="button-back-bottom"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Summary
         </Button>
       </div>
