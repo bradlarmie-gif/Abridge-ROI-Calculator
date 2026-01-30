@@ -116,6 +116,10 @@ export default function MeasureEffect({
         } : state.trendConfig.monthlyData
       } 
     });
+    // Auto-expand the section when enabling
+    if (enabled) {
+      setTrendDataExpanded(true);
+    }
   };
   
   const updateMonthlyValue = (metric: keyof MonthlyMetricData, monthIndex: number, value: number) => {
