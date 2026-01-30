@@ -1,87 +1,93 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface FormattedNumberInputProps {
-  value: number | string;
+  value: number;
   onChange: (value: number) => void;
-  placeholder?: string;
+  step?: number;
   className?: string;
-  min?: number;
-  max?: number;
   'data-testid'?: string;
 }
 
-function formatWithCommas(value: number | string): string {
-  if (value === '' || value === 0) return '';
-  const num = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value;
-  if (isNaN(num)) return '';
+function formatWithCommas(num: number, decimals: number = 0): string {
+  if (decimals > 0) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }
   return num.toLocaleString('en-US');
 }
 
-function parseFormattedNumber(value: string): number {
-  // Only allow digits
-  const cleaned = value.replace(/[^\d]/g, '');
-  if (!cleaned) return 0;
-  const num = parseInt(cleaned, 10);
-  return isNaN(num) ? 0 : num;
+function parseFormattedNumber(str: string): number {
+  const cleaned = str.replace(/,/g, '').replace(/[^\d.-]/g, '');
+  if (!cleaned || cleaned === '-' || cleaned === '.') return 0;
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
 }
 
 export function FormattedNumberInput({
   value,
   onChange,
-  placeholder,
-  className,
-  min,
-  max,
+  step = 1,
+  className = '',
   'data-testid': testId
 }: FormattedNumberInputProps) {
-  const [displayValue, setDisplayValue] = useState(() => formatWithCommas(value));
+  const decimals = step < 1 ? Math.ceil(-Math.log10(step)) : 0;
+  const [displayValue, setDisplayValue] = useState(() => formatWithCommas(value, decimals));
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isFocused) {
-      setDisplayValue(formatWithCommas(value));
+      setDisplayValue(formatWithCommas(value, decimals));
     }
-  }, [value, isFocused]);
+  }, [value, isFocused, decimals]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    const digitsOnly = input.replace(/[^\d]/g, '');
+    const raw = e.target.value;
+    setDisplayValue(raw);
     
-    let numValue = parseFormattedNumber(digitsOnly);
-    if (min !== undefined && numValue < min) numValue = min;
-    if (max !== undefined && numValue > max) numValue = max;
-    
-    // Format with commas while typing
-    const formatted = numValue > 0 ? numValue.toLocaleString('en-US') : '';
-    setDisplayValue(formatted);
-    onChange(numValue);
+    const parsed = parseFormattedNumber(raw);
+    onChange(parsed);
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-    setDisplayValue(formatWithCommas(value));
+    const parsed = parseFormattedNumber(displayValue);
+    setDisplayValue(formatWithCommas(parsed, decimals));
   };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
-    // Select all text on focus for easy replacement
-    e.target.select();
+    // Show raw number for editing
+    setDisplayValue(value.toString());
+    // Select all on next tick so user can easily replace
+    setTimeout(() => {
+      e.target.select();
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      inputRef.current?.blur();
+    }
+    if (e.key === 'Escape') {
+      setDisplayValue(formatWithCommas(value, decimals));
+      inputRef.current?.blur();
+    }
   };
 
   return (
-    <input
+    <Input
+      ref={inputRef}
       type="text"
-      inputMode="numeric"
+      inputMode="decimal"
       value={displayValue}
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      placeholder={placeholder}
+      onKeyDown={handleKeyDown}
       className={className}
       data-testid={testId}
       autoComplete="off"
-      data-lpignore="true"
-      data-form-type="other"
     />
   );
 }

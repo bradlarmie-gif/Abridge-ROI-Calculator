@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { ArrowRight, ChevronDown, ChevronUp, BarChart3, Clock, Users, Lightbulb, TrendingUp, Settings, Link2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { generateShareableUrl } from "@/lib/measureUrlState";
@@ -184,27 +185,27 @@ export default function MeasureEffect({
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Providers</label>
-                        <Input type="number" value={state.deployment.providers} onChange={(e) => updateDeployment('providers', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-providers" />
+                        <FormattedNumberInput value={state.deployment.providers} onChange={(v) => updateDeployment('providers', v)} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-providers" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Total Encounters</label>
-                        <Input type="number" value={state.deployment.totalEncounters} onChange={(e) => updateDeployment('totalEncounters', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-total-encounters" />
+                        <FormattedNumberInput value={state.deployment.totalEncounters} onChange={(v) => updateDeployment('totalEncounters', v)} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-total-encounters" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Abridge Encounters</label>
-                        <Input type="number" value={state.deployment.abridgeEncounters} onChange={(e) => updateDeployment('abridgeEncounters', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-abridge-encounters" />
+                        <FormattedNumberInput value={state.deployment.abridgeEncounters} onChange={(v) => updateDeployment('abridgeEncounters', v)} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-abridge-encounters" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Non-Abridge Encounters</label>
-                        <Input type="number" value={state.deployment.nonAbridgeEncounters} onChange={(e) => updateDeployment('nonAbridgeEncounters', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-non-abridge-encounters" />
+                        <FormattedNumberInput value={state.deployment.nonAbridgeEncounters} onChange={(v) => updateDeployment('nonAbridgeEncounters', v)} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-non-abridge-encounters" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Utilization %</label>
-                        <Input type="number" value={state.deployment.utilizationRate} onChange={(e) => updateDeployment('utilizationRate', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-utilization" />
+                        <FormattedNumberInput value={state.deployment.utilizationRate} onChange={(v) => updateDeployment('utilizationRate', v)} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-utilization" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Months on Abridge</label>
-                        <Input type="number" value={state.deployment.monthsOnAbridge} onChange={(e) => updateDeployment('monthsOnAbridge', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-months" />
+                        <FormattedNumberInput value={state.deployment.monthsOnAbridge} onChange={(v) => updateDeployment('monthsOnAbridge', v)} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-months" />
                       </div>
                     </div>
                   </div>
@@ -220,19 +221,19 @@ export default function MeasureEffect({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">wRVU Without</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.wrvuWithout} onChange={(e) => updateDocQuality('wrvuWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-wrvu-without" />
+                        <FormattedNumberInput value={state.documentationQuality.wrvuWithout} onChange={(v) => updateDocQuality('wrvuWithout', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-wrvu-without" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">wRVU With</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.wrvuWith} onChange={(e) => updateDocQuality('wrvuWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-wrvu-with" />
+                        <FormattedNumberInput value={state.documentationQuality.wrvuWith} onChange={(v) => updateDocQuality('wrvuWith', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-wrvu-with" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">E&M Level Without</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.emLevelWithout} onChange={(e) => updateDocQuality('emLevelWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-em-without" />
+                        <FormattedNumberInput value={state.documentationQuality.emLevelWithout} onChange={(v) => updateDocQuality('emLevelWithout', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-em-without" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">E&M Level With</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.emLevelWith} onChange={(e) => updateDocQuality('emLevelWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-em-with" />
+                        <FormattedNumberInput value={state.documentationQuality.emLevelWith} onChange={(v) => updateDocQuality('emLevelWith', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-em-with" />
                       </div>
                     </div>
                   </div>
@@ -248,35 +249,35 @@ export default function MeasureEffect({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Time in Notes Without (min)</label>
-                        <Input type="number" value={state.timeEfficiency.timeInNotesWithout} onChange={(e) => updateTimeEfficiency('timeInNotesWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" data-testid="input-time-without" />
+                        <FormattedNumberInput value={state.timeEfficiency.timeInNotesWithout} onChange={(v) => updateTimeEfficiency('timeInNotesWithout', v)} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" data-testid="input-time-without" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Time in Notes With (min)</label>
-                        <Input type="number" value={state.timeEfficiency.timeInNotesWith} onChange={(e) => updateTimeEfficiency('timeInNotesWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" data-testid="input-time-with" />
+                        <FormattedNumberInput value={state.timeEfficiency.timeInNotesWith} onChange={(v) => updateTimeEfficiency('timeInNotesWith', v)} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" data-testid="input-time-with" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Time to Close Without (hrs)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.timeToCloseWithout} onChange={(e) => updateTimeEfficiency('timeToCloseWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                        <FormattedNumberInput value={state.timeEfficiency.timeToCloseWithout} onChange={(v) => updateTimeEfficiency('timeToCloseWithout', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Time to Close With (hrs)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.timeToCloseWith} onChange={(e) => updateTimeEfficiency('timeToCloseWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                        <FormattedNumberInput value={state.timeEfficiency.timeToCloseWith} onChange={(v) => updateTimeEfficiency('timeToCloseWith', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Same-day Closure Without %</label>
-                        <Input type="number" value={state.timeEfficiency.sameDayClosureWithout} onChange={(e) => updateTimeEfficiency('sameDayClosureWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                        <FormattedNumberInput value={state.timeEfficiency.sameDayClosureWithout} onChange={(v) => updateTimeEfficiency('sameDayClosureWithout', v)} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Same-day Closure With %</label>
-                        <Input type="number" value={state.timeEfficiency.sameDayClosureWith} onChange={(e) => updateTimeEfficiency('sameDayClosureWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                        <FormattedNumberInput value={state.timeEfficiency.sameDayClosureWith} onChange={(v) => updateTimeEfficiency('sameDayClosureWith', v)} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Work Outside Without (hrs/day)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.workOutsideWithout} onChange={(e) => updateTimeEfficiency('workOutsideWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                        <FormattedNumberInput value={state.timeEfficiency.workOutsideWithout} onChange={(v) => updateTimeEfficiency('workOutsideWithout', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-medium text-slate-600">Work Outside With (hrs/day)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.workOutsideWith} onChange={(e) => updateTimeEfficiency('workOutsideWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                        <FormattedNumberInput value={state.timeEfficiency.workOutsideWith} onChange={(v) => updateTimeEfficiency('workOutsideWith', v)} step={0.1} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                     </div>
                   </div>
