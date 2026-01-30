@@ -1,0 +1,495 @@
+Completely rebuild the MEASURE path in this application. When user clicks "Start Your Story" on the Measure card, they enter a new experience. Delete all existing Measure components and rebuild from scratch according to this specification.
+
+---
+
+## THE SOUL OF MEASURE
+
+This is NOT a form. This is NOT a dashboard. This is a guided reveal of what's already happening in their data.
+
+The core insight: We compare Abridge encounters vs non-Abridge encounters for the SAME providers. This is a natural experiment. Same doctors, same patients, different documentation method, different outcomes.
+
+We are SHOWING them their data, not ASKING for it.
+
+---
+
+## FLOW OVERVIEW
+
+Step 1: Welcome (emotional setup)
+Step 2: The Abridge Effect (the data reveal)
+Step 3: Where Did the Time Go? (interactive allocation)
+Step 4: Your Value Story (the summary)
+
+Optional: Trend view (if 3+ months of data)
+
+---
+
+## STEP 1: WELCOME
+
+When user clicks "Start Your Story", show this screen:
+
+VISUAL DESIGN:
+- Dark gradient background (deep purple/blue, similar to premium feel)
+- Centered content
+- Minimal, focused
+
+CONTENT:
+✦ MEASURE
+Let's look at what you built.
+Your providers have been using Abridge. The data tells a story.
+Let us show you what's happening—and help you understand what it means.
+[Show Me →]
+Copy
+INTERACTION:
+- Single button "Show Me"
+- On click: Brief loading state ("Pulling your data..."), then advance to Step 2
+
+---
+
+## STEP 2: THE ABRIDGE EFFECT
+
+This is the core data reveal. Show comparison of Abridge vs non-Abridge encounters.
+
+HEADER:
+THE ABRIDGE EFFECT
+Same providers. Same patients. Different documentation.
+Here's what we see.
+Copy
+For this prototype, we need INPUT FIELDS to simulate the data we would pull from Clarity/Abridge. Create a subtle "Configure Data" section at the top (collapsible, starts open for demo purposes) with these inputs:
+
+DEPLOYMENT INPUTS:
+- Providers using Abridge: [80]
+- Total encounters: [47,000]
+- Abridge encounters: [34,000]
+- Non-Abridge encounters: [13,000]
+- Utilization rate: [72] %
+- Months on Abridge: [6]
+
+DOCUMENTATION QUALITY INPUTS:
+- wRVU without Abridge: [2.1]
+- wRVU with Abridge: [2.3]
+- Avg E&M Level without Abridge: [3.2]
+- Avg E&M Level with Abridge: [3.5]
+
+TIME & EFFICIENCY INPUTS:
+- Time in notes without Abridge: [12] min
+- Time in notes with Abridge: [4] min
+- Time to close without Abridge: [4.2] hrs
+- Time to close with Abridge: [1.1] hrs
+- Same-day closure without Abridge: [41] %
+- Same-day closure with Abridge: [78] %
+- Work outside of work without Abridge: [2.1] hrs/day
+- Work outside of work with Abridge: [0.4] hrs/day
+
+After the config section, show THE RESULTS:
+
+---
+
+SECTION 1: DOCUMENTATION QUALITY
+
+Card 1 - wRVU per Encounter:
+wRVU per Encounter
+Without Abridge          With Abridge
+2.1         →           2.3
+Copy        +0.2 wRVU (+10%)
+Your providers capture more complexity when
+Abridge documents the encounter.
+Copy
+Card 2 - E&M Level Distribution:
+Show two horizontal bar charts side by side:
+
+Without Abridge:
+99211  ██░░░░░░░░  8%
+99212  ███░░░░░░░  15%
+99213  █████░░░░░  38%
+99214  ████░░░░░░  28%
+99215  ██░░░░░░░░  11%
+
+With Abridge:
+99211  █░░░░░░░░░  4%
+99212  ██░░░░░░░░  10%
+99213  ████░░░░░░  32%
+99214  █████░░░░░  36%
+99215  ███░░░░░░░  18%
+
+Below the charts:
+The distribution shifts right. Complexity that was being missed is now captured.
+Copy
+Use hardcoded distribution values for the prototype. The visual point is showing the rightward shift.
+
+---
+
+SECTION 2: TIME & EFFICIENCY
+
+Display as a clean table:
+Copy                Without Abridge    With Abridge    Change
+Time in notes          12 min            4 min         -67%
+Time to close          4.2 hrs           1.1 hrs       -74%
+Same-day closure       41%               78%           +37 pts
+Work outside of work   2.1 hrs/day       0.4 hrs/day   -81%
+Copy
+Color the "Change" column green for improvements.
+
+---
+
+SECTION 3: YOUR DEPLOYMENT (context bar)
+
+Simple horizontal stats:
+47,000        80          72%           6 mo
+encounters    providers   utilization   on Abridge
+Copy
+---
+
+INSIGHT BOX:
+💡 This is a natural experiment. Same providers, documenting similar patients,
+with and without Abridge. The difference is the documentation.
+Copy
+---
+
+BOTTOM BUTTONS:
+
+Two buttons:
+1. [View Over Time] - secondary style (only show if months >= 3)
+2. [What Does This Mean? →] - primary style, advances to Step 3
+
+---
+
+## STEP 2B: YOUR JOURNEY (TREND VIEW) - OPTIONAL
+
+Only accessible if months >= 3. Can be a modal or separate view.
+
+HEADER:
+YOUR JOURNEY
+Here's how your metrics have evolved since you started with Abridge.
+Copy
+DROPDOWN:
+Select metric: [wRVU per Encounter ▼]
+Copy
+Options: wRVU per Encounter, Avg E&M Level, Time in Notes, Same-day Closure
+
+LINE CHART:
+- X-axis: Months (Jan, Feb, Mar, etc.)
+- Y-axis: Metric value
+- Solid line: Abridge encounters trending upward
+- Dashed horizontal line: Non-Abridge baseline
+
+For prototype, generate fake monthly data that shows:
+- Consistent gap between Abridge and non-Abridge
+- Slight upward trend over time (improvement compounds)
+
+INTERPRETATION BOX below chart:
+WHAT THIS SHOWS
+The gap between Abridge and non-Abridge encounters has remained
+consistent—and is actually growing. This isn't a fluke. It's a
+sustained improvement in documentation quality.
+Month 1: +5% wRVU lift
+Month 6: +12% wRVU lift
+Copy
+[Back to Summary] button returns to Step 2
+
+---
+
+## STEP 3: WHERE DID THE TIME GO?
+
+This is the emotional core. Interactive allocation of time savings.
+
+HEADER:
+WHERE DID THE TIME GO?
+Copy
+HERO CARD (centered, prominent):
+Copy    6,267 hours
+Your providers reclaimed this much
+documentation time. Where did it land?
+Copy
+Calculate total hours:
+totalHours = (timeInNotesWithout - timeInNotesWith) × abridgeEncounters / 60
+
+INSTRUCTION:
+Help us understand how your organization experienced this time savings.
+Drag the sliders to allocate.
+Copy
+THREE ALLOCATION CARDS:
+
+Card 1 - HARD SAVINGS:
+💰 HARD SAVINGS                                    [20]%
+Overtime reduced, locum costs avoided
+○────────●──────────────────────────────────
+1,253 hours
+≈ $188,000 at $150/hr
+[⚙️ Adjust rate: $150/hr ▼]
+Copy
+Card 2 - CAPACITY UNLOCKED:
+📈 CAPACITY UNLOCKED                               [15]%
+More patients seen, shorter wait times
+○──────●────────────────────────────────────
+940 hours
+≈ 1,880 additional visits at 30 min/visit
+≈ $376,000 at $200/visit
+[⚙️ Adjust: 30 min/visit, $200/visit ▼]
+Copy
+Card 3 - QUALITY OF LIFE:
+🌅 QUALITY OF LIFE                                 [65]%
+Providers going home on time, less burnout
+○──────────────────────────────────────●────
+4,074 hours
+≈ 1.0 hours/week back per provider
+This is retention. This is satisfaction.
+This is why your providers stay.
+Copy
+SLIDER BEHAVIOR:
+- Three sliders must sum to 100%
+- When one slider moves, the other two adjust proportionally
+- Real-time updates to hours and dollar calculations
+- Smooth animations on number changes
+
+TOTAL BAR:
+Total allocated: 100%
+████████████████████████████████████████████████████
+Copy
+REASSURANCE NOTE:
+💡 Most organizations tell us the majority lands in Quality of Life—and
+that's still real value. It's retention. It's satisfaction. It's
+providers who stay instead of burning out.
+Copy
+BUTTON:
+[See Your Story →] - advances to Step 4
+
+CALCULATIONS:
+
+hardSavingsHours = totalHours × (hardSavingsPercent / 100)
+hardSavingsValue = hardSavingsHours × otRate
+
+capacityHours = totalHours × (capacityPercent / 100)
+capacityVisits = capacityHours / (minutesPerVisit / 60)
+capacityValue = capacityVisits × revenuePerVisit
+
+qualityHours = totalHours × (qualityPercent / 100)
+qualityHoursPerWeek = qualityHours / providers / 52
+
+DEFAULT CALIBRATION VALUES:
+- OT hourly rate: $150
+- Minutes per visit: 30
+- Revenue per visit: $200
+- Medicare conversion factor: $33
+
+---
+
+## STEP 4: YOUR VALUE STORY
+
+The summary. Everything comes together.
+
+HERO SECTION (dark gradient background):
+Copy                ✦ YOUR VALUE STORY
+
+
+                    $1.2M
+               Total Value Created
+
+
+    80 providers · 6 months · 72% utilization
+
+
+    [Export PDF]        [Share]
+Copy
+Calculate total value:
+wrvuValue = wrvuDelta × abridgeEncounters × conversionFactor × 0.5 (50% attribution)
+emValue = calculate based on level shift (simplified: use similar logic)
+documentationQualityTotal = wrvuValue + emValue
+timeReallocatedTotal = hardSavingsValue + capacityValue
+totalValue = documentationQualityTotal + timeReallocatedTotal
+
+---
+
+SECTION: THE ABRIDGE EFFECT
+
+Card - DOCUMENTATION QUALITY:
+📊 DOCUMENTATION QUALITY                         $612,000
+Your providers capture more when Abridge documents.
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  wRVU Lift                                    $412,000  │
+│  +0.2 wRVU/encounter (+10%)                             │
+│  34,000 encounters × $0.2 × $33 × 50% attribution       │
+│                                                         │
+│  ✦ Exceeding typical (3-9% lift)                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  E&M Level Shift                              $200,000  │
+│  +0.3 average level                                     │
+│  Distribution shifted toward 99214/99215                │
+│                                                         │
+│  ✦ Complexity captured, not created                     │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+Copy
+Card - TIME REALLOCATED:
+⏱️ TIME REALLOCATED                              $564,000
+6,267 hours reclaimed. Here's where they went:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Hard Savings (20%)                           $188,000  │
+│  1,253 hours of overtime avoided                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Capacity Unlocked (15%)                      $376,000  │
+│  1,880 additional patient visits                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Quality of Life (65%)                                  │
+│  4,074 hours returned to your providers                 │
+│  ≈ 1.0 hours/week back per provider                     │
+│                                                         │
+│  💡 This is retention value. Providers who go home      │
+│     on time are providers who stay.                     │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+Copy
+---
+
+SECTION: PROVIDER EXPERIENCE
+♡ PROVIDER EXPERIENCE
+The signals that predict retention and satisfaction.
+┌─────────────────────┬─────────────────────┬────────────────┐
+│ Same-day closure    │   41% → 78%         │   +37 pts  ✦   │
+├─────────────────────┼─────────────────────┼────────────────┤
+│ Work outside        │   2.1 → 0.4 hrs     │   -81%     ✦   │
+│ of work             │                     │                │
+├─────────────────────┼─────────────────────┼────────────────┤
+│ Utilization         │   72%               │   Strong   ◐   │
+└─────────────────────┴─────────────────────┴────────────────┘
+Copy
+Use ✦ for exceeding/excellent, ◐ for solid/developing
+
+---
+
+SECTION: WHAT THIS MEANS
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  In 6 months, your providers documented 47,000 encounters   │
+│  with Abridge. The result:                                  │
+│                                                             │
+│  • Documentation that captures the complexity you manage    │
+│  • 6,267 hours returned to your providers                   │
+│  • $1.2M in measurable value                                │
+│                                                             │
+│  This is what you built. This is why it matters.            │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+Copy
+---
+
+SECTION: METHODOLOGY (collapsible, starts collapsed)
+📄 METHODOLOGY
+Documentation Quality: Comparison of Abridge vs non-Abridge encounters
+for the same providers. wRVU and E&M values use Medicare conversion
+factor ($33) with 50% attribution to isolate Abridge impact.
+Time Savings: Calculated from time-in-notes differential × encounter
+volume × utilization rate. Allocation based on your organization's
+assessment.
+Provider Experience: Metrics comparing Abridge vs non-Abridge workflow
+patterns.
+Copy
+---
+
+## DESIGN SPECIFICATIONS
+
+COLORS:
+- Primary dark: #1a1a2e (deep navy)
+- Accent: #6366f1 (indigo)
+- Success/Exceeding: #10b981 (emerald)
+- Warning/Developing: #f59e0b (amber)
+- Hard Savings slider: #10b981 (green)
+- Capacity slider: #6366f1 (indigo/blue)
+- Quality of Life slider: #f59e0b (orange/amber)
+- Card backgrounds: white with subtle shadow
+- Section backgrounds: #f8fafc (light gray)
+
+TYPOGRAPHY:
+- Hero numbers: 4rem, bold
+- Section headers: 1.5rem, semibold
+- Body text: 1rem
+- Small text/labels: 0.875rem
+
+ANIMATIONS:
+- Page transitions: fade in with slight upward movement (300ms)
+- Number updates: smooth count animation (400ms)
+- Slider movement: immediate response, numbers animate to new values
+- Cards: subtle hover elevation
+
+SPACING:
+- Sections: 3rem gap
+- Cards within sections: 1.5rem gap
+- Padding within cards: 1.5rem
+
+---
+
+## STATE MANAGEMENT
+
+Track these values across the flow:
+
+// Deployment
+providers: number
+totalEncounters: number
+abridgeEncounters: number
+nonAbridgeEncounters: number
+utilizationRate: number
+monthsOnAbridge: number
+
+// Documentation Quality
+wrvuWithout: number
+wrvuWith: number
+emLevelWithout: number
+emLevelWith: number
+
+// Time & Efficiency
+timeInNotesWithout: number (minutes)
+timeInNotesWith: number (minutes)
+timeToCloseWithout: number (hours)
+timeToCloseWith: number (hours)
+sameDayClosureWithout: number (percent)
+sameDayClosureWith: number (percent)
+workOutsideWithout: number (hours/day)
+workOutsideWith: number (hours/day)
+
+// Allocation (user input)
+hardSavingsPercent: number (default 20)
+capacityPercent: number (default 15)
+qualityOfLifePercent: number (default 65)
+
+// Calibration (optional adjustment)
+otHourlyRate: number (default 150)
+minutesPerVisit: number (default 30)
+revenuePerVisit: number (default 200)
+conversionFactor: number (default 33)
+
+---
+
+## NAVIGATION
+
+- Back button on each step returns to previous step
+- Progress indicator showing which step they're on (1/4, 2/4, etc.)
+- Can navigate backward freely
+- Data persists when navigating back
+
+---
+
+## EXPORT/SHARE (Step 4)
+
+Export PDF button:
+- For now, just show an alert: "PDF export coming soon"
+- Or generate a simple print-friendly view
+
+Share button:
+- For now, just show an alert: "Shareable links coming soon"
+- Or copy a summary to clipboard
+
+---
+
+Build this complete experience. Make it beautiful. Make it feel premium. The emotional peak is the "Where Did the Time Go?" allocation screen—make that interaction feel satisfying. The summary should feel like a reward, like unveiling something they built.
+
+Delete all existing Measure code and start fresh with this specification.Add to Conversation

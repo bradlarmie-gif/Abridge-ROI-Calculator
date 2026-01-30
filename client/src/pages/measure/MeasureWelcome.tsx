@@ -1,9 +1,7 @@
-import { ArrowRight, Sparkles, Target, FileText, Share2, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { PageTransition } from "@/components/PageTransition";
-import { motion } from "framer-motion";
-import geometricPattern from "@assets/Screenshot_2026-01-09_at_2.33.22_AM_1767947608832.png";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MeasureWelcomeProps {
   onNext: () => void;
@@ -11,140 +9,113 @@ interface MeasureWelcomeProps {
 }
 
 export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) {
-  const staggerChildren = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1,
-      },
-    },
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }
-    },
+  const handleShowMe = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      onNext();
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
-      {/* Premium background layers */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-100/30 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-100/20 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[#EA2C00]/[0.03] to-transparent pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/30 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none" />
       
-      {/* Geometric pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-        <img src={geometricPattern} alt="" className="w-full h-full object-cover" />
+      <div className="absolute top-4 left-4">
+        <button
+          onClick={onBack}
+          className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-1"
+          data-testid="button-back"
+        >
+          ← Back
+        </button>
       </div>
 
-      <UnifiedHeader 
-        pathType="measure"
-        currentStep={1} 
-        totalSteps={5}
-        stepName="Welcome"
-        onBack={onBack}
-        onHome={onBack}
-      />
-      <UnifiedHeaderSpacer />
-
-      <PageTransition pageKey="measure-welcome">
-        <main className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-16">
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <motion.div 
+          className="text-center max-w-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           <motion.div 
-            className="text-center space-y-8 md:space-y-12"
-            initial="hidden"
-            animate="visible"
-            variants={staggerChildren}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-indigo-300 mb-8"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
           >
-            <motion.div className="space-y-4" variants={fadeInUp}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-emerald-50 border border-purple-200/50 rounded-full text-sm text-purple-700 shadow-sm">
-                <Sparkles className="w-4 h-4 text-[#EA2C00]" />
-                <span className="font-semibold tracking-wide">Your Value Story</span>
-              </div>
-              
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight" data-testid="text-welcome-title">
-                Every Deployment Is a Story
-                <span className="block bg-gradient-to-r from-[#EA2C00] to-[#ff6b4a] bg-clip-text text-transparent">
-                  of Transformation
-                </span>
-              </h1>
-            </motion.div>
-
-            <motion.p 
-              className="text-lg md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed"
-              variants={fadeInUp}
-            >
-              You championed this change. You navigated the rollout. Now let's capture what you've built — in a way that resonates with anyone who needs to see the value.
-            </motion.p>
-
-            <motion.div 
-              className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/80 p-6 md:p-8 max-w-lg mx-auto shadow-lg shadow-slate-200/50"
-              variants={fadeInUp}
-            >
-              <div className="space-y-5">
-                {[
-                  {
-                    icon: Target,
-                    iconBg: "bg-emerald-100",
-                    iconColor: "text-emerald-600",
-                    title: "Your real outcomes",
-                    subtitle: "Documented with your data"
-                  },
-                  {
-                    icon: FileText,
-                    iconBg: "bg-blue-100",
-                    iconColor: "text-blue-600",
-                    title: "Transparent methodology",
-                    subtitle: "Defensible and clear"
-                  },
-                  {
-                    icon: Share2,
-                    iconBg: "bg-purple-100",
-                    iconColor: "text-purple-600",
-                    title: "Ready to share",
-                    subtitle: "With leadership and stakeholders"
-                  }
-                ].map((item, idx) => (
-                  <div 
-                    key={idx}
-                    className="flex items-center gap-4 text-left group"
-                  >
-                    <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform`}>
-                      <item.icon className={`w-5 h-5 ${item.iconColor}`} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-900">{item.title}</p>
-                      <p className="text-sm text-slate-500">{item.subtitle}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300" />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div className="pt-4 space-y-4" variants={fadeInUp}>
-              <Button
-                onClick={onNext}
-                size="lg"
-                className="bg-gradient-to-r from-[#EA2C00] to-[#d12700] hover:from-[#d12700] hover:to-[#b82300] text-white px-10 py-6 text-lg font-semibold rounded-xl shadow-lg shadow-[#EA2C00]/20 hover:shadow-xl hover:shadow-[#EA2C00]/30 transition-all hover:scale-[1.02]"
-                data-testid="button-lets-begin"
-              >
-                Let's Begin
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              
-              <p className="text-sm text-slate-400">
-                Takes about 5 minutes
-              </p>
-            </motion.div>
+            <Sparkles className="w-4 h-4" />
+            <span className="font-semibold tracking-wide">MEASURE</span>
           </motion.div>
-        </main>
-      </PageTransition>
+
+          <motion.h1 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            Let's look at what<br />
+            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              you built.
+            </span>
+          </motion.h1>
+
+          <motion.p 
+            className="text-lg md:text-xl text-white/70 mb-4 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            Your providers have been using Abridge.
+            <br />
+            The data tells a story.
+          </motion.p>
+
+          <motion.p 
+            className="text-base text-white/50 mb-12 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            Let us show you what's happening—and help you understand what it means.
+          </motion.p>
+
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center gap-3"
+              >
+                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                <span className="text-white/60 text-sm">Pulling your data...</span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="button"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <Button
+                  onClick={handleShowMe}
+                  size="lg"
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white h-14 px-10 text-lg font-semibold shadow-xl shadow-indigo-500/30 rounded-xl"
+                  data-testid="button-show-me"
+                >
+                  Show Me
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
     </div>
   );
 }

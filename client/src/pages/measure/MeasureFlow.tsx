@@ -1,91 +1,29 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { 
   type MeasureState,
-  type DeploymentData,
-  type MetricSelection,
-  type MetricKey,
-  type TimeAllocation,
-  getDefaultMeasureState,
-  hasOperationalEfficiencyMetrics,
-  getSelectedMetricDefinitions,
+  DEFAULT_MEASURE_STATE,
 } from "@/lib/measureCalculator";
 import MeasureWelcome from "./MeasureWelcome";
-import MeasureDeployment from "./MeasureDeployment";
-import MeasureMetrics from "./MeasureMetrics";
-import MeasureDocument from "./MeasureDocument";
+import MeasureEffect from "./MeasureEffect";
 import MeasureAllocate from "./MeasureAllocate";
 import MeasureStory from "./MeasureStory";
+import MeasureTrends from "./MeasureTrends";
 
-type MeasurePhase = 'welcome' | 'deployment' | 'metrics' | 'document' | 'allocate' | 'story' | 'expand';
+type MeasurePhase = 'welcome' | 'effect' | 'allocate' | 'story' | 'trends';
 
 export default function MeasureFlow() {
   const [, setLocation] = useLocation();
   const [phase, setPhase] = useState<MeasurePhase>('welcome');
-  const [state, setState] = useState<MeasureState>(getDefaultMeasureState());
+  const [state, setState] = useState<MeasureState>(DEFAULT_MEASURE_STATE);
 
-  const updateDeployment = useCallback(<K extends keyof DeploymentData>(key: K, value: DeploymentData[K]) => {
-    setState(prev => ({
-      ...prev,
-      deployment: { ...prev.deployment, [key]: value }
-    }));
-  }, []);
-
-  const updateMetric = useCallback((key: MetricKey, value: boolean) => {
-    setState(prev => ({
-      ...prev,
-      selectedMetrics: { ...prev.selectedMetrics, [key]: value }
-    }));
-  }, []);
-
-  const updateMetricData = useCallback((key: string, field: 'before' | 'after', value: number | null) => {
-    setState(prev => ({
-      ...prev,
-      metricData: {
-        ...prev.metricData,
-        [key]: { ...prev.metricData[key as keyof typeof prev.metricData], [field]: value }
-      }
-    }));
-  }, []);
-
-  const updateTimeAllocation = useCallback((allocation: TimeAllocation) => {
-    setState(prev => ({
-      ...prev,
-      timeAllocation: allocation
-    }));
+  const updateState = useCallback((updates: Partial<MeasureState>) => {
+    setState(prev => ({ ...prev, ...updates }));
   }, []);
 
   const goHome = useCallback(() => {
     setLocation('/');
   }, [setLocation]);
-
-  const shouldShowAllocate = useMemo(() => 
-    hasOperationalEfficiencyMetrics(state.selectedMetrics),
-    [state.selectedMetrics]
-  );
-
-  const handleNextFromDocument = useCallback(() => {
-    if (shouldShowAllocate) {
-      setPhase('allocate');
-    } else {
-      setPhase('story');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [shouldShowAllocate]);
-
-  const handleBackFromAllocate = useCallback(() => {
-    setPhase('document');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  const handleBackFromStory = useCallback(() => {
-    if (shouldShowAllocate) {
-      setPhase('allocate');
-    } else {
-      setPhase('document');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [shouldShowAllocate]);
 
   const navigate = useCallback((nextPhase: MeasurePhase) => {
     setPhase(nextPhase);
@@ -96,41 +34,19 @@ export default function MeasureFlow() {
     case 'welcome':
       return (
         <MeasureWelcome
-          onNext={() => navigate('deployment')}
+          onNext={() => navigate('effect')}
           onBack={goHome}
         />
       );
     
-    case 'deployment':
+    case 'effect':
       return (
-        <MeasureDeployment
-          deployment={state.deployment}
-          updateDeployment={updateDeployment}
-          onNext={() => navigate('metrics')}
-          onBack={() => navigate('welcome')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'metrics':
-      return (
-        <MeasureMetrics
-          selectedMetrics={state.selectedMetrics}
-          updateMetric={updateMetric}
-          onNext={() => navigate('document')}
-          onBack={() => navigate('deployment')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'document':
-      return (
-        <MeasureDocument
+        <MeasureEffect
           state={state}
-          updateMetricData={updateMetricData}
-          onNext={handleNextFromDocument}
-          onBack={() => navigate('metrics')}
-          onHome={goHome}
+          updateState={updateState}
+          onNext={() => navigate('allocate')}
+          onBack={() => navigate('welcome')}
+          onViewTrends={() => navigate('trends')}
         />
       );
     
@@ -138,10 +54,9 @@ export default function MeasureFlow() {
       return (
         <MeasureAllocate
           state={state}
-          updateTimeAllocation={updateTimeAllocation}
+          updateState={updateState}
           onNext={() => navigate('story')}
-          onBack={handleBackFromAllocate}
-          onHome={goHome}
+          onBack={() => navigate('effect')}
         />
       );
     
@@ -149,18 +64,16 @@ export default function MeasureFlow() {
       return (
         <MeasureStory
           state={state}
-          onBack={handleBackFromStory}
+          onBack={() => navigate('allocate')}
           onHome={goHome}
-          onExpand={() => navigate('expand')}
         />
       );
     
-    case 'expand':
+    case 'trends':
       return (
-        <MeasureStory
+        <MeasureTrends
           state={state}
-          onBack={() => navigate('story')}
-          onHome={goHome}
+          onBack={() => navigate('effect')}
         />
       );
     
