@@ -36,7 +36,7 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
   const lastLift = ((lastValue - baseline) / baseline * 100).toFixed(0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-[#FAFAFA]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -124,10 +124,10 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
                   type="monotone" 
                   dataKey="abridge" 
                   name="With Abridge"
-                  stroke="#6366f1" 
+                  stroke="#EA2C00" 
                   strokeWidth={3}
-                  dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, fill: '#6366f1' }}
+                  dot={{ fill: '#EA2C00', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: '#EA2C00' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -135,14 +135,14 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
         </motion.div>
 
         <motion.div 
-          className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-6 mb-8"
+          className="bg-gradient-to-br from-[#EA2C00]/5 to-[#F07B5F]/5 rounded-2xl border border-[#EA2C00]/20 p-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 rounded-xl bg-[#EA2C00]/10 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <h3 className="font-bold text-slate-900">WHAT THIS SHOWS</h3>
@@ -155,11 +155,11 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="bg-white/70 rounded-xl p-4">
               <p className="text-sm text-slate-500">Month 1</p>
-              <p className="text-lg font-bold text-indigo-600">+{firstLift}% {metricLabel.toLowerCase().includes('time') ? 'reduction' : 'lift'}</p>
+              <p className="text-lg font-bold text-[#EA2C00]">+{firstLift}% {metricLabel.toLowerCase().includes('time') ? 'reduction' : 'lift'}</p>
             </div>
             <div className="bg-white/70 rounded-xl p-4">
               <p className="text-sm text-slate-500">Month {state.deployment.monthsOnAbridge}</p>
-              <p className="text-lg font-bold text-indigo-600">+{lastLift}% {metricLabel.toLowerCase().includes('time') ? 'reduction' : 'lift'}</p>
+              <p className="text-lg font-bold text-[#EA2C00]">+{lastLift}% {metricLabel.toLowerCase().includes('time') ? 'reduction' : 'lift'}</p>
             </div>
           </div>
         </motion.div>

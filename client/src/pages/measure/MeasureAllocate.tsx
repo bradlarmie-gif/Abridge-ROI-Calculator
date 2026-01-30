@@ -169,7 +169,7 @@ export default function MeasureAllocate({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-[#FAFAFA]">
       <div className="max-w-xl mx-auto px-4 md:px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -194,12 +194,12 @@ export default function MeasureAllocate({
         </motion.div>
 
         <motion.div 
-          className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 rounded-2xl p-6 md:p-8 mb-6 text-center text-white relative overflow-hidden shadow-xl"
+          className="bg-gradient-to-br from-[#1a1a1f] via-[#252528] to-[#1f1f22] rounded-2xl p-6 md:p-8 mb-6 text-center text-white relative overflow-hidden shadow-xl"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(234,44,0,0.2),transparent_50%)]" />
           <div className="relative z-10">
             <motion.p 
               className="text-5xl md:text-6xl font-bold mb-2"
@@ -210,8 +210,8 @@ export default function MeasureAllocate({
             >
               {formatNumber(Math.round(results.totalHoursSaved))}
             </motion.p>
-            <p className="text-xl text-indigo-100 font-medium mb-2">hours</p>
-            <p className="text-sm text-indigo-200 max-w-sm mx-auto">
+            <p className="text-xl text-slate-300 font-medium mb-2">hours</p>
+            <p className="text-sm text-slate-400 max-w-sm mx-auto">
               Your providers reclaimed this much documentation time. Where did it land?
             </p>
           </div>
@@ -240,8 +240,8 @@ export default function MeasureAllocate({
           />
 
           <AllocationCard
-            icon={<TrendingUp className="w-5 h-5 text-indigo-600" />}
-            iconBg="bg-indigo-100"
+            icon={<TrendingUp className="w-5 h-5 text-[#EA2C00]" />}
+            iconBg="bg-[#EA2C00]/10"
             title="CAPACITY UNLOCKED"
             description="More patients seen, shorter wait times"
             percent={capacityPercent}
@@ -249,7 +249,7 @@ export default function MeasureAllocate({
             hours={results.capacityHours}
             primaryValue={`≈ ${formatNumber(Math.round(results.capacityVisits))} additional visits at ${state.calibration.minutesPerVisit} min/visit`}
             secondaryLine={`≈ ${formatCurrency(results.capacityValue)} at $${state.calibration.revenuePerVisit}/visit`}
-            sliderColor="bg-gradient-to-r from-indigo-400 to-indigo-500"
+            sliderColor="bg-gradient-to-r from-[#EA2C00] to-[#F07B5F]"
             calibrationLabel="visit settings"
             calibrationValue={state.calibration.revenuePerVisit}
             onCalibrationChange={(v) => updateCalibration('revenuePerVisit', v)}
@@ -288,7 +288,7 @@ export default function MeasureAllocate({
               transition={{ duration: 0.2 }}
             />
             <motion.div 
-              className="h-full bg-gradient-to-r from-indigo-400 to-indigo-500" 
+              className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F]" 
               animate={{ width: `${capacityPercent}%` }}
               transition={{ duration: 0.2 }}
             />
@@ -335,7 +335,7 @@ export default function MeasureAllocate({
           <Button
             onClick={onNext}
             disabled={!isValid}
-            className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white h-12 text-base font-semibold shadow-lg disabled:opacity-50"
+            className="flex-1 bg-[#EA2C00] hover:bg-[#d42800] text-white h-12 text-base font-semibold shadow-lg disabled:opacity-50"
             data-testid="button-see-story"
           >
             See Your Story

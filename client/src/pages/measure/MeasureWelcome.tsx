@@ -19,9 +19,9 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/30 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1f] via-[#252528] to-[#1f1f22] relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#EA2C00]/15 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-[#EA2C00]/10 via-transparent to-transparent pointer-events-none" />
       
       <div className="absolute top-4 left-4">
         <button
@@ -41,7 +41,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
           transition={{ duration: 0.6 }}
         >
           <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-indigo-300 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-[#F07B5F] mb-8"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
@@ -57,7 +57,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
             transition={{ delay: 0.3, duration: 0.5 }}
           >
             Let's look at what<br />
-            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] bg-clip-text text-transparent">
               you built.
             </span>
           </motion.h1>
@@ -91,7 +91,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center gap-3"
               >
-                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                <Loader2 className="w-8 h-8 text-[#EA2C00] animate-spin" />
                 <span className="text-white/60 text-sm">Pulling your data...</span>
               </motion.div>
             ) : (
@@ -105,7 +105,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
                 <Button
                   onClick={handleShowMe}
                   size="lg"
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white h-14 px-10 text-lg font-semibold shadow-xl shadow-indigo-500/30 rounded-xl"
+                  className="bg-[#EA2C00] hover:bg-[#d42800] text-white h-14 px-10 text-lg font-semibold shadow-xl shadow-[#EA2C00]/30 rounded-xl"
                   data-testid="button-show-me"
                 >
                   Show Me

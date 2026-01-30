@@ -32,7 +32,7 @@ function EMDistributionChart({ data, label }: { data: typeof EM_DISTRIBUTION_WIT
           <span className="text-xs font-mono text-slate-600 w-12">{item.level}</span>
           <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-indigo-400 to-indigo-500 rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-500"
               style={{ width: `${(item.percent / maxPercent) * 100}%` }}
             />
           </div>
@@ -89,7 +89,7 @@ export default function MeasureEffect({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-[#FAFAFA]">
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <button
@@ -245,8 +245,8 @@ export default function MeasureEffect({
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 rounded-xl bg-[#EA2C00]/10 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">DOCUMENTATION QUALITY</h2>
@@ -262,7 +262,7 @@ export default function MeasureEffect({
                   <p className="text-2xl font-bold text-slate-400">{state.documentationQuality.wrvuWithout}</p>
                   <p className="text-xs text-slate-500">Without Abridge</p>
                 </div>
-                <div className="text-2xl text-indigo-400">→</div>
+                <div className="text-2xl text-[#EA2C00]">→</div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-slate-900">{state.documentationQuality.wrvuWith}</p>
                   <p className="text-xs text-slate-500">With Abridge</p>
@@ -299,8 +299,8 @@ export default function MeasureEffect({
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-slate-600" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">TIME & EFFICIENCY</h2>
@@ -398,7 +398,7 @@ export default function MeasureEffect({
           )}
           <Button
             onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white h-12 text-base font-semibold shadow-lg"
+            className="flex-1 bg-[#EA2C00] hover:bg-[#d42800] text-white h-12 text-base font-semibold shadow-lg"
             data-testid="button-what-this-means"
           >
             What Does This Mean?
