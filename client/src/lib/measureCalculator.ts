@@ -1,6 +1,8 @@
 // MEASURE PATH CALCULATOR
 // Natural experiment: comparing Abridge vs non-Abridge encounters for same providers
 
+export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
+
 export interface MeasureDeployment {
   providers: number;
   totalEncounters: number;
@@ -42,6 +44,7 @@ export interface Calibration {
 }
 
 export interface MeasureState {
+  careSetting: MeasureCareSetting | null;
   deployment: MeasureDeployment;
   documentationQuality: DocumentationQuality;
   timeEfficiency: TimeEfficiency;
@@ -50,6 +53,7 @@ export interface MeasureState {
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
+  careSetting: null,
   deployment: {
     providers: 80,
     totalEncounters: 47000,

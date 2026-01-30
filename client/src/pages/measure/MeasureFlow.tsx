@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { 
   type MeasureState,
+  type MeasureCareSetting,
   DEFAULT_MEASURE_STATE,
 } from "@/lib/measureCalculator";
 import MeasureWelcome from "./MeasureWelcome";
@@ -21,6 +22,10 @@ export default function MeasureFlow() {
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
+  const handleSelectCareSetting = useCallback((setting: MeasureCareSetting) => {
+    updateState({ careSetting: setting });
+  }, [updateState]);
+
   const goHome = useCallback(() => {
     setLocation('/');
   }, [setLocation]);
@@ -34,6 +39,8 @@ export default function MeasureFlow() {
     case 'welcome':
       return (
         <MeasureWelcome
+          selectedSetting={state.careSetting}
+          onSelectSetting={handleSelectCareSetting}
           onNext={() => navigate('effect')}
           onBack={goHome}
         />
