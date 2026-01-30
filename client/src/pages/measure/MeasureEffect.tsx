@@ -172,93 +172,111 @@ export default function MeasureEffect({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="px-4 pb-4 space-y-6 border-t border-slate-100 pt-4">
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Deployment</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Providers</label>
-                        <Input type="number" value={state.deployment.providers} onChange={(e) => updateDeployment('providers', Number(e.target.value))} className="h-9" data-testid="input-providers" />
+                <div className="px-4 pb-5 space-y-4 border-t border-slate-100 pt-4">
+                  {/* Deployment Section */}
+                  <div className="bg-gradient-to-br from-blue-50/80 to-slate-50 rounded-xl p-4 border border-blue-100/50">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Users className="w-4 h-4 text-blue-600" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Total encounters</label>
-                        <Input type="number" value={state.deployment.totalEncounters} onChange={(e) => updateDeployment('totalEncounters', Number(e.target.value))} className="h-9" data-testid="input-total-encounters" />
+                      <h4 className="text-sm font-semibold text-slate-700">Deployment</h4>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Providers</label>
+                        <Input type="number" value={state.deployment.providers} onChange={(e) => updateDeployment('providers', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-providers" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Abridge encounters</label>
-                        <Input type="number" value={state.deployment.abridgeEncounters} onChange={(e) => updateDeployment('abridgeEncounters', Number(e.target.value))} className="h-9" data-testid="input-abridge-encounters" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Total Encounters</label>
+                        <Input type="number" value={state.deployment.totalEncounters} onChange={(e) => updateDeployment('totalEncounters', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-total-encounters" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Non-Abridge encounters</label>
-                        <Input type="number" value={state.deployment.nonAbridgeEncounters} onChange={(e) => updateDeployment('nonAbridgeEncounters', Number(e.target.value))} className="h-9" data-testid="input-non-abridge-encounters" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Abridge Encounters</label>
+                        <Input type="number" value={state.deployment.abridgeEncounters} onChange={(e) => updateDeployment('abridgeEncounters', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-abridge-encounters" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Utilization %</label>
-                        <Input type="number" value={state.deployment.utilizationRate} onChange={(e) => updateDeployment('utilizationRate', Number(e.target.value))} className="h-9" data-testid="input-utilization" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Non-Abridge Encounters</label>
+                        <Input type="number" value={state.deployment.nonAbridgeEncounters} onChange={(e) => updateDeployment('nonAbridgeEncounters', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-non-abridge-encounters" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Months on Abridge</label>
-                        <Input type="number" value={state.deployment.monthsOnAbridge} onChange={(e) => updateDeployment('monthsOnAbridge', Number(e.target.value))} className="h-9" data-testid="input-months" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Utilization %</label>
+                        <Input type="number" value={state.deployment.utilizationRate} onChange={(e) => updateDeployment('utilizationRate', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-utilization" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Months on Abridge</label>
+                        <Input type="number" value={state.deployment.monthsOnAbridge} onChange={(e) => updateDeployment('monthsOnAbridge', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-blue-300 focus:ring-blue-200" data-testid="input-months" />
                       </div>
                     </div>
                   </div>
 
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Documentation Quality</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">wRVU without</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.wrvuWithout} onChange={(e) => updateDocQuality('wrvuWithout', Number(e.target.value))} className="h-9" data-testid="input-wrvu-without" />
+                  {/* Documentation Quality Section */}
+                  <div className="bg-gradient-to-br from-orange-50/80 to-slate-50 rounded-xl p-4 border border-orange-100/50">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
+                        <BarChart3 className="w-4 h-4 text-orange-600" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">wRVU with</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.wrvuWith} onChange={(e) => updateDocQuality('wrvuWith', Number(e.target.value))} className="h-9" data-testid="input-wrvu-with" />
+                      <h4 className="text-sm font-semibold text-slate-700">Documentation Quality</h4>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">wRVU Without</label>
+                        <Input type="number" step="0.1" value={state.documentationQuality.wrvuWithout} onChange={(e) => updateDocQuality('wrvuWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-wrvu-without" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">E&M Level without</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.emLevelWithout} onChange={(e) => updateDocQuality('emLevelWithout', Number(e.target.value))} className="h-9" data-testid="input-em-without" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">wRVU With</label>
+                        <Input type="number" step="0.1" value={state.documentationQuality.wrvuWith} onChange={(e) => updateDocQuality('wrvuWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-wrvu-with" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">E&M Level with</label>
-                        <Input type="number" step="0.1" value={state.documentationQuality.emLevelWith} onChange={(e) => updateDocQuality('emLevelWith', Number(e.target.value))} className="h-9" data-testid="input-em-with" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">E&M Level Without</label>
+                        <Input type="number" step="0.1" value={state.documentationQuality.emLevelWithout} onChange={(e) => updateDocQuality('emLevelWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-em-without" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">E&M Level With</label>
+                        <Input type="number" step="0.1" value={state.documentationQuality.emLevelWith} onChange={(e) => updateDocQuality('emLevelWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-orange-300 focus:ring-orange-200" data-testid="input-em-with" />
                       </div>
                     </div>
                   </div>
 
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Time & Efficiency</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Time in notes without (min)</label>
-                        <Input type="number" value={state.timeEfficiency.timeInNotesWithout} onChange={(e) => updateTimeEfficiency('timeInNotesWithout', Number(e.target.value))} className="h-9" data-testid="input-time-without" />
+                  {/* Time & Efficiency Section */}
+                  <div className="bg-gradient-to-br from-emerald-50/80 to-slate-50 rounded-xl p-4 border border-emerald-100/50">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-emerald-600" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Time in notes with (min)</label>
-                        <Input type="number" value={state.timeEfficiency.timeInNotesWith} onChange={(e) => updateTimeEfficiency('timeInNotesWith', Number(e.target.value))} className="h-9" data-testid="input-time-with" />
+                      <h4 className="text-sm font-semibold text-slate-700">Time & Efficiency</h4>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Time in Notes Without (min)</label>
+                        <Input type="number" value={state.timeEfficiency.timeInNotesWithout} onChange={(e) => updateTimeEfficiency('timeInNotesWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" data-testid="input-time-without" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Time to close without (hrs)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.timeToCloseWithout} onChange={(e) => updateTimeEfficiency('timeToCloseWithout', Number(e.target.value))} className="h-9" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Time in Notes With (min)</label>
+                        <Input type="number" value={state.timeEfficiency.timeInNotesWith} onChange={(e) => updateTimeEfficiency('timeInNotesWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" data-testid="input-time-with" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Time to close with (hrs)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.timeToCloseWith} onChange={(e) => updateTimeEfficiency('timeToCloseWith', Number(e.target.value))} className="h-9" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Time to Close Without (hrs)</label>
+                        <Input type="number" step="0.1" value={state.timeEfficiency.timeToCloseWithout} onChange={(e) => updateTimeEfficiency('timeToCloseWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Same-day closure without %</label>
-                        <Input type="number" value={state.timeEfficiency.sameDayClosureWithout} onChange={(e) => updateTimeEfficiency('sameDayClosureWithout', Number(e.target.value))} className="h-9" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Time to Close With (hrs)</label>
+                        <Input type="number" step="0.1" value={state.timeEfficiency.timeToCloseWith} onChange={(e) => updateTimeEfficiency('timeToCloseWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Same-day closure with %</label>
-                        <Input type="number" value={state.timeEfficiency.sameDayClosureWith} onChange={(e) => updateTimeEfficiency('sameDayClosureWith', Number(e.target.value))} className="h-9" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Same-day Closure Without %</label>
+                        <Input type="number" value={state.timeEfficiency.sameDayClosureWithout} onChange={(e) => updateTimeEfficiency('sameDayClosureWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Work outside without (hrs/day)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.workOutsideWithout} onChange={(e) => updateTimeEfficiency('workOutsideWithout', Number(e.target.value))} className="h-9" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Same-day Closure With %</label>
+                        <Input type="number" value={state.timeEfficiency.sameDayClosureWith} onChange={(e) => updateTimeEfficiency('sameDayClosureWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Work outside with (hrs/day)</label>
-                        <Input type="number" step="0.1" value={state.timeEfficiency.workOutsideWith} onChange={(e) => updateTimeEfficiency('workOutsideWith', Number(e.target.value))} className="h-9" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Work Outside Without (hrs/day)</label>
+                        <Input type="number" step="0.1" value={state.timeEfficiency.workOutsideWithout} onChange={(e) => updateTimeEfficiency('workOutsideWithout', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600">Work Outside With (hrs/day)</label>
+                        <Input type="number" step="0.1" value={state.timeEfficiency.workOutsideWith} onChange={(e) => updateTimeEfficiency('workOutsideWith', Number(e.target.value))} className="h-10 bg-white border-slate-200 focus:border-emerald-300 focus:ring-emerald-200" />
                       </div>
                     </div>
                   </div>
