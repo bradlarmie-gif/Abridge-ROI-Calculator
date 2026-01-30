@@ -93,9 +93,9 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     workOutsideWith: 0.4,
   },
   allocation: {
-    hardSavingsPercent: 20,
-    capacityPercent: 15,
-    qualityOfLifePercent: 65,
+    hardSavingsPercent: 0,
+    capacityPercent: 0,
+    qualityOfLifePercent: 0,
   },
   calibration: {
     otHourlyRate: 150,
