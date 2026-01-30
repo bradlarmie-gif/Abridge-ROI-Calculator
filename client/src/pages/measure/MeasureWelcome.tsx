@@ -19,14 +19,11 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1f] via-[#252528] to-[#1f1f22] relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#EA2C00]/15 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-[#EA2C00]/10 via-transparent to-transparent pointer-events-none" />
-      
+    <div className="min-h-screen bg-[#FAFAFA]">
       <div className="absolute top-4 left-4">
         <button
           onClick={onBack}
-          className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-1"
+          className="text-slate-500 hover:text-slate-900 transition-colors text-sm flex items-center gap-1"
           data-testid="button-back"
         >
           ← Back
@@ -41,7 +38,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
           transition={{ duration: 0.6 }}
         >
           <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-[#F07B5F] mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#EA2C00]/10 border border-[#EA2C00]/20 rounded-full text-sm text-[#EA2C00] mb-8"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
@@ -51,7 +48,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
           </motion.div>
 
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight leading-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-tight leading-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
@@ -63,7 +60,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
           </motion.h1>
 
           <motion.p 
-            className="text-lg md:text-xl text-white/70 mb-4 leading-relaxed"
+            className="text-lg md:text-xl text-slate-600 mb-4 leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
@@ -74,7 +71,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
           </motion.p>
 
           <motion.p 
-            className="text-base text-white/50 mb-12 leading-relaxed"
+            className="text-base text-slate-500 mb-12 leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
@@ -92,7 +89,7 @@ export default function MeasureWelcome({ onNext, onBack }: MeasureWelcomeProps) 
                 className="flex flex-col items-center gap-3"
               >
                 <Loader2 className="w-8 h-8 text-[#EA2C00] animate-spin" />
-                <span className="text-white/60 text-sm">Pulling your data...</span>
+                <span className="text-slate-500 text-sm">Pulling your data...</span>
               </motion.div>
             ) : (
               <motion.div

@@ -97,30 +97,28 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
 
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
-      <motion.div 
-        className="bg-gradient-to-br from-[#1a1a1f] via-[#252528] to-[#1f1f22] relative overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#EA2C00]/20 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-[#EA2C00]/10 via-transparent to-transparent pointer-events-none" />
-        
-        <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={onBack}
-              className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-1"
-              data-testid="button-back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-            <div className="text-sm text-white/50">Step 4 of 4</div>
-          </div>
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={onBack}
+            className="text-slate-500 hover:text-slate-900 transition-colors text-sm flex items-center gap-1"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+          <div className="text-sm text-slate-500">Step 4 of 4</div>
+        </div>
 
-          <div className="text-center mb-8">
+        <motion.div 
+          className="bg-white rounded-2xl border-2 border-[#EA2C00]/20 p-8 md:p-10 mb-8 text-center relative overflow-hidden shadow-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-[#EA2C00]/5 via-transparent to-[#F07B5F]/5" />
+          <div className="relative z-10">
             <motion.div 
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-[#F07B5F] mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#EA2C00]/10 border border-[#EA2C00]/20 rounded-full text-sm text-[#EA2C00] mb-6"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
@@ -130,7 +128,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             </motion.div>
 
             <motion.p 
-              className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-3"
+              className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] bg-clip-text text-transparent mb-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -139,7 +137,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               {formatCurrency(results.totalValue)}
             </motion.p>
             <motion.p 
-              className="text-xl text-white/70 mb-4"
+              className="text-xl text-slate-700 mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -148,7 +146,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             </motion.p>
 
             <motion.p 
-              className="text-sm text-white/50 mb-6"
+              className="text-sm text-slate-500 mb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -165,7 +163,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               <Button
                 onClick={handleExport}
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-11 px-6"
+                className="h-11 px-6"
                 data-testid="button-export"
               >
                 <Download className="w-4 h-4 mr-2" />
@@ -174,7 +172,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               <Button
                 onClick={handleShare}
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-11 px-6"
+                className="h-11 px-6"
                 data-testid="button-share"
               >
                 <Share2 className="w-4 h-4 mr-2" />
@@ -182,10 +180,9 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
               </Button>
             </motion.div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-6">
+        <div className="space-y-6">
         <motion.h2 
           className="text-lg font-bold text-slate-900 mb-4"
           initial={{ opacity: 0 }}
@@ -372,6 +369,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           >
             Return to Home
           </Button>
+        </div>
         </div>
       </div>
     </div>

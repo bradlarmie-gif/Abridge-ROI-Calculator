@@ -194,15 +194,15 @@ export default function MeasureAllocate({
         </motion.div>
 
         <motion.div 
-          className="bg-gradient-to-br from-[#1a1a1f] via-[#252528] to-[#1f1f22] rounded-2xl p-6 md:p-8 mb-6 text-center text-white relative overflow-hidden shadow-xl"
+          className="bg-white rounded-2xl border-2 border-[#EA2C00]/20 p-6 md:p-8 mb-6 text-center relative overflow-hidden shadow-lg"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(234,44,0,0.2),transparent_50%)]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#EA2C00]/5 via-transparent to-[#F07B5F]/5" />
           <div className="relative z-10">
             <motion.p 
-              className="text-5xl md:text-6xl font-bold mb-2"
+              className="text-5xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] bg-clip-text text-transparent"
               key={results.totalHoursSaved}
               initial={{ scale: 1.1, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -210,8 +210,8 @@ export default function MeasureAllocate({
             >
               {formatNumber(Math.round(results.totalHoursSaved))}
             </motion.p>
-            <p className="text-xl text-slate-300 font-medium mb-2">hours</p>
-            <p className="text-sm text-slate-400 max-w-sm mx-auto">
+            <p className="text-xl text-slate-700 font-medium mb-2">hours</p>
+            <p className="text-sm text-slate-500 max-w-sm mx-auto">
               Your providers reclaimed this much documentation time. Where did it land?
             </p>
           </div>
