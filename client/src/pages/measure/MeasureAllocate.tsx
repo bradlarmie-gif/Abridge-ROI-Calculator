@@ -218,75 +218,148 @@ export default function MeasureAllocate({
           </div>
         </motion.div>
 
-        {/* Visual Allocation Breakdown */}
+        {/* Gentle Framing */}
+        <AnimatePresence>
+          {hasStarted && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-sm text-slate-500 text-center mb-4 italic"
+            >
+              Here's what that choice means for your organization:
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        {/* Visual Allocation Breakdown - The Math */}
         <AnimatePresence>
           {hasStarted && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-6"
+              className="mb-6 space-y-3"
             >
-              {/* Stacked allocation bar */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                <div className="h-8 bg-slate-100 rounded-full overflow-hidden flex mb-4">
+              {/* Hard Savings Card */}
+              {hardSavingsPercent > 0 && (
+                <motion.div 
+                  className="bg-white rounded-xl border border-emerald-200 p-4 shadow-sm"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <DollarSign className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-900">Hard Savings</h3>
+                          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{hardSavingsPercent}%</span>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-1">
+                          <span className="font-semibold">{formatNumber(Math.round(results.hardSavingsHours))} hours</span> of overtime avoided or locum costs eliminated
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1 font-mono">
+                          {formatNumber(Math.round(results.hardSavingsHours))}h × ${state.calibration.otHourlyRate}/hr
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-emerald-600">{formatCurrency(results.hardSavingsValue)}</p>
+                      <p className="text-xs text-slate-500">direct savings</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Capacity Card */}
+              {capacityPercent > 0 && (
+                <motion.div 
+                  className="bg-white rounded-xl border border-[#EA2C00]/30 p-4 shadow-sm"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#EA2C00]/10 flex items-center justify-center flex-shrink-0">
+                        <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-900">Capacity Unlocked</h3>
+                          <span className="text-xs font-semibold text-[#EA2C00] bg-[#EA2C00]/10 px-2 py-0.5 rounded-full">{capacityPercent}%</span>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-1">
+                          <span className="font-semibold">{formatNumber(Math.round(results.capacityVisits))} additional visits</span> your providers can now see
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1 font-mono">
+                          {formatNumber(Math.round(results.capacityHours))}h ÷ {state.calibration.minutesPerVisit}min × ${state.calibration.revenuePerVisit}/visit
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(results.capacityValue)}</p>
+                      <p className="text-xs text-slate-500">revenue opportunity</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Quality of Life Card */}
+              {qualityOfLifePercent > 0 && (
+                <motion.div 
+                  className="bg-white rounded-xl border border-amber-200 p-4 shadow-sm"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <Sunset className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-900">Quality of Life</h3>
+                          <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">{qualityOfLifePercent}%</span>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-1">
+                          <span className="font-semibold">{results.qualityHoursPerWeek.toFixed(1)} hours/week</span> back per provider
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          That's {formatNumber(Math.round(results.qualityHours))} hours total going back to your people
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-amber-600">Retention</p>
+                      <p className="text-xs text-slate-500 max-w-[120px]">If this prevents 1 departure: $300-500K saved</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Stacked summary bar */}
+              <div className="bg-slate-50 rounded-xl p-3">
+                <div className="h-4 bg-slate-200 rounded-full overflow-hidden flex">
                   <motion.div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 flex items-center justify-center" 
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400" 
                     animate={{ width: `${hardSavingsPercent}%` }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                  >
-                    {hardSavingsPercent >= 15 && (
-                      <span className="text-xs font-bold text-white">{hardSavingsPercent}%</span>
-                    )}
-                  </motion.div>
+                  />
                   <motion.div 
-                    className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] flex items-center justify-center" 
+                    className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F]" 
                     animate={{ width: `${capacityPercent}%` }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                  >
-                    {capacityPercent >= 15 && (
-                      <span className="text-xs font-bold text-white">{capacityPercent}%</span>
-                    )}
-                  </motion.div>
+                  />
                   <motion.div 
-                    className="h-full bg-gradient-to-r from-amber-500 to-amber-400 flex items-center justify-center" 
+                    className="h-full bg-gradient-to-r from-amber-500 to-amber-400" 
                     animate={{ width: `${qualityOfLifePercent}%` }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                  >
-                    {qualityOfLifePercent >= 15 && (
-                      <span className="text-xs font-bold text-white">{qualityOfLifePercent}%</span>
-                    )}
-                  </motion.div>
-                </div>
-                
-                {/* Legend with values */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-emerald-50 rounded-lg p-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-semibold text-slate-700">Hard Savings</span>
-                    </div>
-                    <p className="text-lg font-bold text-emerald-600">{formatNumber(Math.round(results.hardSavingsHours))}h</p>
-                    <p className="text-xs text-slate-500">{formatCurrency(results.hardSavingsValue)}</p>
-                  </div>
-                  
-                  <div className="bg-[#EA2C00]/5 rounded-lg p-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />
-                      <span className="text-xs font-semibold text-slate-700">Capacity</span>
-                    </div>
-                    <p className="text-lg font-bold text-[#EA2C00]">{formatNumber(Math.round(results.capacityHours))}h</p>
-                    <p className="text-xs text-slate-500">{formatCurrency(results.capacityValue)}</p>
-                  </div>
-                  
-                  <div className="bg-amber-50 rounded-lg p-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                      <span className="text-xs font-semibold text-slate-700">Quality of Life</span>
-                    </div>
-                    <p className="text-lg font-bold text-amber-600">{formatNumber(Math.round(results.qualityHours))}h</p>
-                    <p className="text-xs text-slate-500">{results.qualityHoursPerWeek.toFixed(1)}h/wk per provider</p>
-                  </div>
+                  />
                 </div>
               </div>
             </motion.div>
