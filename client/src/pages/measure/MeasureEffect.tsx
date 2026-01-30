@@ -595,7 +595,7 @@ export default function MeasureEffect({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          {state.deployment.monthsOnAbridge >= 3 && (
+          {state.trendConfig.enabled && state.deployment.monthsOnAbridge >= 3 && (
             <Button
               variant="outline"
               onClick={onViewTrends}
