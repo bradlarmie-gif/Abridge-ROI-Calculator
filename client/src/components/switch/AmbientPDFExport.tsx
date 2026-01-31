@@ -294,8 +294,8 @@ const styles = StyleSheet.create({
   gapStep: {
     fontSize: 8,
     color: colors.darkGray,
-    lineHeight: 1.7,
-    marginBottom: 3,
+    lineHeight: 1.9,
+    marginBottom: 4,
   },
   
   totalBox: {
@@ -417,16 +417,26 @@ const styles = StyleSheet.create({
   },
   
   footer: {
-    position: "absolute",
-    bottom: 24,
-    left: 40,
-    right: 40,
+    marginTop: "auto",
+    marginLeft: 40,
+    marginRight: 40,
+    marginBottom: 24,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
+  },
+  pageWrapper: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+  },
+  contentSectionFlex: {
+    padding: 40,
+    paddingTop: 32,
+    flex: 1,
   },
   footerText: {
     fontSize: 7,
@@ -538,8 +548,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
       {/* PAGE 1: YOUR STORY */}
       {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.heroSection}>
-          <Image src={abridgeLogoPath} style={{ width: 80, marginBottom: 24 }} />
+          <Image src={abridgeLogoPath} style={{ width: 70, marginBottom: 24 }} />
           <Text style={styles.heroLabel}>Value Realization Assessment</Text>
           <Text style={styles.heroTitle}>Understanding Where You Are</Text>
           <Text style={styles.heroSubtitle}>
@@ -600,8 +611,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>{today}</Text>
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 1 of 6</Text>
+        </View>
         </View>
       </Page>
 
@@ -609,6 +621,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
       {/* PAGE 2: WHAT WE'VE LEARNED */}
       {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.heroCompact}>
           <Text style={styles.heroCompactLabel}>Page 2 · Benchmarks</Text>
           <Text style={styles.heroCompactTitle}>What Mature Implementations Look Like</Text>
@@ -726,8 +739,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Abridge Value Realization Assessment</Text>
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 2 of 6</Text>
+        </View>
         </View>
       </Page>
 
@@ -735,6 +749,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
       {/* PAGE 3: THE DIFFERENCE */}
       {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.heroCompact}>
           <Text style={styles.heroCompactLabel}>Page 3 · The Difference</Text>
           <Text style={styles.heroCompactTitle}>Understanding the Gap</Text>
@@ -808,8 +823,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Abridge Value Realization Assessment</Text>
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 3 of 6</Text>
+        </View>
         </View>
       </Page>
 
@@ -817,6 +833,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
       {/* PAGE 4: THE MATH */}
       {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.heroCompact}>
           <Text style={styles.heroCompactLabel}>Page 4 · Transparency</Text>
           <Text style={styles.heroCompactTitle}>The Math Behind the Numbers</Text>
@@ -897,6 +914,15 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             </View>
           )}
           
+          {calculations.utilizationGapValue === 0 && calculations.efficiencyGapValue === 0 && calculations.wrvuGapValue === 0 && (
+            <View style={[styles.insightCard, { backgroundColor: colors.emeraldLight, borderLeftColor: colors.emerald }]}>
+              <Text style={[styles.insightTitle, { color: colors.emeraldDark }]}>You're at Benchmark</Text>
+              <Text style={styles.insightText}>
+                Congratulations — your implementation is performing at or above benchmark across all dimensions. This is exceptional. The focus now shifts from closing gaps to maintaining excellence and sharing your success story with other departments or health systems.
+              </Text>
+            </View>
+          )}
+          
           <View style={styles.methodologySection}>
             <Text style={styles.methodologyTitle}>Key Assumptions</Text>
             <View style={styles.methodologyGrid}>
@@ -919,8 +945,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Abridge Value Realization Assessment</Text>
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 4 of 6</Text>
+        </View>
         </View>
       </Page>
 
@@ -928,6 +955,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
       {/* PAGE 5: WHAT WE'VE SEEN WORK */}
       {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.heroCompact}>
           <Text style={styles.heroCompactLabel}>Page 5 · Patterns</Text>
           <Text style={styles.heroCompactTitle}>What We've Seen Work</Text>
@@ -1000,8 +1028,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         </View>
         
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Abridge Value Realization Assessment</Text>
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 5 of 6</Text>
+        </View>
         </View>
       </Page>
 
@@ -1009,6 +1038,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
       {/* PAGE 6: YOUR SUMMARY */}
       {/* ================================================================ */}
       <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.heroCompact}>
           <Text style={styles.heroCompactLabel}>Page 6 · Summary</Text>
           <Text style={styles.heroCompactTitle}>Your Analysis at a Glance</Text>
@@ -1048,7 +1078,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               <Text style={styles.benchmarkLabel}>Utilization - You</Text>
               <Text style={styles.benchmarkValue}>{inputs.utilization}%</Text>
             </View>
-            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget]}>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget, { marginRight: 0 }]}>
               <Text style={styles.benchmarkLabel}>Utilization - Target</Text>
               <Text style={styles.benchmarkValueGreen}>{ABRIDGE_BENCHMARKS.utilization}%</Text>
             </View>
@@ -1059,7 +1089,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               <Text style={styles.benchmarkLabel}>Efficiency - You</Text>
               <Text style={styles.benchmarkValue}>{inputs.timeSavedPerEncounter} min</Text>
             </View>
-            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget]}>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget, { marginRight: 0 }]}>
               <Text style={styles.benchmarkLabel}>Efficiency - Target</Text>
               <Text style={styles.benchmarkValueGreen}>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</Text>
             </View>
@@ -1070,7 +1100,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               <Text style={styles.benchmarkLabel}>Quality - You</Text>
               <Text style={styles.benchmarkValue}>+{inputs.wrvuLift}%</Text>
             </View>
-            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget]}>
+            <View style={[styles.benchmarkCard, styles.benchmarkCardTarget, { marginRight: 0 }]}>
               <Text style={styles.benchmarkLabel}>Quality - Target</Text>
               <Text style={styles.benchmarkValueGreen}>+{ABRIDGE_BENCHMARKS.wrvuLift}%</Text>
             </View>
@@ -1107,8 +1137,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         </View>
         
         <View style={styles.footer}>
-          <Image src={abridgeLogoPath} style={{ width: 60 }} />
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 6 of 6</Text>
+        </View>
         </View>
       </Page>
     </Document>
