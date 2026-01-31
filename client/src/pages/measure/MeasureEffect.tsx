@@ -29,26 +29,44 @@ interface MeasureEffectProps {
 function EMDistributionChart({ 
   data, 
   label,
+  variant = 'without',
   editable,
   onUpdate 
 }: { 
   data: { level: string; percent: number }[]; 
   label: string;
+  variant?: 'without' | 'with';
   editable?: boolean;
   onUpdate?: (levelKey: string, value: number) => void;
 }) {
   const maxPercent = Math.max(...data.map(d => d.percent), 1);
   const levelKeys = ['level1', 'level2', 'level3', 'level4', 'level5'];
   
+  const isWithAbridge = variant === 'with';
+  const barClass = isWithAbridge 
+    ? "h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-500"
+    : "h-full bg-gradient-to-r from-slate-400 to-slate-300 rounded-full transition-all duration-500";
+  
+  const headerClass = isWithAbridge
+    ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#EA2C00]/10 text-[#EA2C00] text-xs font-semibold uppercase tracking-wide mb-4"
+    : "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-semibold uppercase tracking-wide mb-4";
+  
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">{label}</p>
+      <div className={headerClass}>
+        {isWithAbridge ? (
+          <TrendingUp className="w-3.5 h-3.5" />
+        ) : (
+          <BarChart3 className="w-3.5 h-3.5" />
+        )}
+        {label}
+      </div>
       {data.map((item, index) => (
         <div key={item.level} className="flex items-center gap-2">
           <span className="text-xs font-mono text-slate-600 w-12">{item.level}</span>
           <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-500"
+              className={barClass}
               style={{ width: `${(item.percent / maxPercent) * 100}%` }}
             />
           </div>
@@ -518,38 +536,44 @@ export default function MeasureEffect({
                 Enter the percentage of encounters at each E/M level. Click the values to edit.
               </p>
               <div className="grid grid-cols-2 gap-6">
-                <EMDistributionChart 
-                  data={getEMDistributionArray(state.emDistribution.without)} 
-                  label="Without Abridge"
-                  editable
-                  onUpdate={(levelKey, value) => {
-                    updateState({
-                      emDistribution: {
-                        ...state.emDistribution,
-                        without: {
-                          ...state.emDistribution.without,
-                          [levelKey]: value,
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <EMDistributionChart 
+                    data={getEMDistributionArray(state.emDistribution.without)} 
+                    label="Without Abridge"
+                    variant="without"
+                    editable
+                    onUpdate={(levelKey, value) => {
+                      updateState({
+                        emDistribution: {
+                          ...state.emDistribution,
+                          without: {
+                            ...state.emDistribution.without,
+                            [levelKey]: value,
+                          },
                         },
-                      },
-                    });
-                  }}
-                />
-                <EMDistributionChart 
-                  data={getEMDistributionArray(state.emDistribution.with)} 
-                  label="With Abridge"
-                  editable
-                  onUpdate={(levelKey, value) => {
-                    updateState({
-                      emDistribution: {
-                        ...state.emDistribution,
-                        with: {
-                          ...state.emDistribution.with,
-                          [levelKey]: value,
+                      });
+                    }}
+                  />
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-[#EA2C00]/5 to-[#F07B5F]/5 border border-[#EA2C00]/20">
+                  <EMDistributionChart 
+                    data={getEMDistributionArray(state.emDistribution.with)} 
+                    label="With Abridge"
+                    variant="with"
+                    editable
+                    onUpdate={(levelKey, value) => {
+                      updateState({
+                        emDistribution: {
+                          ...state.emDistribution,
+                          with: {
+                            ...state.emDistribution.with,
+                            [levelKey]: value,
+                          },
                         },
-                      },
-                    });
-                  }}
-                />
+                      });
+                    }}
+                  />
+                </div>
               </div>
               <p className="text-xs text-slate-500 text-center mt-4">
                 The distribution shifts right. Complexity that was being missed is now captured.
