@@ -63,8 +63,8 @@ function EMDistributionChart({
       </div>
       {data.map((item, index) => (
         <div key={item.level} className="flex items-center gap-2">
-          <span className="text-xs font-mono text-slate-600 w-12">{item.level}</span>
-          <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+          <span className="text-xs font-mono text-slate-600 w-12 shrink-0">{item.level}</span>
+          <div className="flex-1 min-w-[60px] h-4 bg-slate-100 rounded-full overflow-hidden">
             <div 
               className={barClass}
               style={{ width: `${(item.percent / maxPercent) * 100}%` }}
@@ -77,11 +77,11 @@ function EMDistributionChart({
               max={100}
               value={item.percent}
               onChange={(e) => onUpdate(levelKeys[index], parseInt(e.target.value) || 0)}
-              className={`w-14 h-6 text-xs text-center p-1 ${isWithAbridge ? 'bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20' : 'bg-white border-slate-300'}`}
+              className={`w-14 h-6 text-xs text-center p-1 shrink-0 ${isWithAbridge ? 'bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20' : 'bg-white border-slate-300'}`}
               data-testid={`input-em-${label.toLowerCase().replace(/\s+/g, '-')}-${item.level}`}
             />
           ) : (
-            <span className="text-xs font-medium text-slate-600 w-8">{item.percent}%</span>
+            <span className="text-xs font-medium text-slate-600 w-8 shrink-0">{item.percent}%</span>
           )}
         </div>
       ))}
