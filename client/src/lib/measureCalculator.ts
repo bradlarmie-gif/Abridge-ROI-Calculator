@@ -56,6 +56,14 @@ export interface TrendConfig {
   monthlyData: MonthlyMetricData;
 }
 
+export interface EMDistribution {
+  level1: number; // 99211
+  level2: number; // 99212
+  level3: number; // 99213
+  level4: number; // 99214
+  level5: number; // 99215
+}
+
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
   deployment: MeasureDeployment;
@@ -64,6 +72,10 @@ export interface MeasureState {
   allocation: TimeAllocation;
   calibration: Calibration;
   trendConfig: TrendConfig;
+  emDistribution: {
+    without: EMDistribution;
+    with: EMDistribution;
+  };
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -110,6 +122,22 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
       emLevel: [],
       timeInNotes: [],
       sameDayClosure: [],
+    },
+  },
+  emDistribution: {
+    without: {
+      level1: 8,
+      level2: 15,
+      level3: 38,
+      level4: 28,
+      level5: 11,
+    },
+    with: {
+      level1: 4,
+      level2: 10,
+      level3: 32,
+      level4: 36,
+      level5: 18,
     },
   },
 };
@@ -237,21 +265,15 @@ export function formatDelta(value: number, suffix = ''): string {
   return `${sign}${value.toFixed(1)}${suffix}`;
 }
 
-export const EM_DISTRIBUTION_WITHOUT = [
-  { level: '99211', percent: 8 },
-  { level: '99212', percent: 15 },
-  { level: '99213', percent: 38 },
-  { level: '99214', percent: 28 },
-  { level: '99215', percent: 11 },
-];
-
-export const EM_DISTRIBUTION_WITH = [
-  { level: '99211', percent: 4 },
-  { level: '99212', percent: 10 },
-  { level: '99213', percent: 32 },
-  { level: '99214', percent: 36 },
-  { level: '99215', percent: 18 },
-];
+export function getEMDistributionArray(dist: EMDistribution): { level: string; percent: number }[] {
+  return [
+    { level: '99211', percent: dist.level1 },
+    { level: '99212', percent: dist.level2 },
+    { level: '99213', percent: dist.level3 },
+    { level: '99214', percent: dist.level4 },
+    { level: '99215', percent: dist.level5 },
+  ];
+}
 
 export interface TrendDataPoint {
   month: string;

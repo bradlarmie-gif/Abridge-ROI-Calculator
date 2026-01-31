@@ -24,6 +24,10 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.trendConfig) {
         parsed.trendConfig = DEFAULT_MEASURE_STATE.trendConfig;
       }
+      // Ensure backward compatibility - add emDistribution if missing
+      if (!parsed.emDistribution) {
+        parsed.emDistribution = DEFAULT_MEASURE_STATE.emDistribution;
+      }
       return parsed as MeasureState;
     }
     return null;
