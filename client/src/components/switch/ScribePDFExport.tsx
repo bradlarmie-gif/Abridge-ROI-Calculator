@@ -215,12 +215,13 @@ const styles = StyleSheet.create({
   },
   
   footer: {
-    position: "absolute",
-    bottom: 24,
-    left: 40,
-    right: 40,
+    marginTop: "auto",
+    marginLeft: 40,
+    marginRight: 40,
+    marginBottom: 24,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: colors.borderGray,
@@ -228,6 +229,16 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 7,
     color: colors.lightGray,
+  },
+  pageWrapper: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+  },
+  contentSectionFlex: {
+    padding: 40,
+    paddingTop: 28,
+    flex: 1,
   },
   
   page2Hero: {
@@ -412,14 +423,15 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
   return (
     <Document>
       {/* PAGE 1: YOUR STORY TODAY */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.heroMeta}>
             <Text style={styles.heroMetaText}>{today}</Text>
             <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
           </View>
-          <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
+          <Image src={abridgeLogoPath} style={{ width: 70, marginBottom: 24 }} />
           <Text style={styles.heroClientName}>{displayClientName}</Text>
           <Text style={styles.heroTagline}>
             Your scribe program represents a strategic investment in documentation support.{"\n"}
@@ -500,15 +512,17 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Abridge Scribe Program Analysis</Text>
+          <Image src={abridgeLogoPath} style={{ width: 70 }} />
           <Text style={styles.footerText}>Page 1 of 2</Text>
+        </View>
         </View>
       </Page>
 
       {/* PAGE 2: THE OPPORTUNITY */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.pageWrapper}>
         <View style={styles.page2Hero}>
-          <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 16 }} />
+          <Image src={abridgeLogoPath} style={{ width: 70, marginBottom: 16 }} />
           <Text style={styles.page2HeroTitle}>What If There's Another Way?</Text>
           <Text style={styles.page2HeroSubtitle}>
             Scribes may serve strategic or academic purposes at your organization.{"\n"}
@@ -581,12 +595,13 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
 
         <View style={styles.footer}>
           <View>
-            <Text style={styles.footerText}>Abridge Scribe Program Analysis</Text>
-            <Text style={[styles.methodologyText, { marginTop: 4, maxWidth: 400 }]}>
+            <Image src={abridgeLogoPath} style={{ width: 70, marginBottom: 6 }} />
+            <Text style={[styles.methodologyText, { maxWidth: 400 }]}>
               Based on {inputs.scribeCount} scribes at ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs/week. Hidden costs: ~40% turnover + 15% overhead.
             </Text>
           </View>
           <Text style={styles.footerText}>Page 2 of 2</Text>
+        </View>
         </View>
       </Page>
     </Document>
