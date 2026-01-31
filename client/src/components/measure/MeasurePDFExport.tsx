@@ -788,7 +788,17 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
   const timeInNotesTrend = state.trendConfig.enabled
     ? generateTrendData(state, "timeInNotes")
     : [];
-  const hasTrends = state.trendConfig.enabled && timeInNotesTrend.length >= 2;
+  const wrvuTrend = state.trendConfig.enabled
+    ? generateTrendData(state, "wrvu")
+    : [];
+  const sameDayClosureTrend = state.trendConfig.enabled
+    ? generateTrendData(state, "sameDayClosure")
+    : [];
+  
+  const hasTimeInNotesTrend = state.trendConfig.enabled && timeInNotesTrend.length >= 2;
+  const hasWrvuTrend = state.trendConfig.enabled && wrvuTrend.length >= 2;
+  const hasSameDayClosureTrend = state.trendConfig.enabled && sameDayClosureTrend.length >= 2;
+  const hasAnyTrends = hasTimeInNotesTrend || hasWrvuTrend || hasSameDayClosureTrend;
 
   const totalPages = 5;
 
@@ -896,13 +906,30 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               </View>
             </View>
 
-            {hasTrends && (
+            {hasTimeInNotesTrend && (
               <View style={styles.trendContainer}>
                 <Text style={styles.trendTitle}>Time in Notes Over {state.deployment.monthsOnAbridge} Months</Text>
                 <SimpleTrendChart data={timeInNotesTrend} color={colors.emerald} />
                 <View style={styles.trendLegend}>
                   <View style={styles.trendLegendItem}>
                     <View style={[styles.trendLegendDot, { backgroundColor: colors.emerald }]} />
+                    <Text style={styles.trendLegendText}>With Abridge</Text>
+                  </View>
+                  <View style={styles.trendLegendItem}>
+                    <View style={[styles.trendLegendDot, { backgroundColor: colors.lightGray }]} />
+                    <Text style={styles.trendLegendText}>Baseline (Without)</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+            
+            {hasSameDayClosureTrend && (
+              <View style={styles.trendContainer}>
+                <Text style={styles.trendTitle}>Same-Day Closure Rate Over {state.deployment.monthsOnAbridge} Months</Text>
+                <SimpleTrendChart data={sameDayClosureTrend} color={colors.primary} />
+                <View style={styles.trendLegend}>
+                  <View style={styles.trendLegendItem}>
+                    <View style={[styles.trendLegendDot, { backgroundColor: colors.primary }]} />
                     <Text style={styles.trendLegendText}>With Abridge</Text>
                   </View>
                   <View style={styles.trendLegendItem}>
@@ -1113,6 +1140,23 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
                   <Text style={styles.docQualityMetric}>50-75%</Text>
                 </View>
               </View>
+              
+              {hasWrvuTrend && (
+                <View style={{ marginTop: 12 }}>
+                  <Text style={[styles.trendTitle, { marginBottom: 8 }]}>wRVU per Encounter Over {state.deployment.monthsOnAbridge} Months</Text>
+                  <SimpleTrendChart data={wrvuTrend} color={colors.primary} width={360} height={80} />
+                  <View style={[styles.trendLegend, { marginTop: 6 }]}>
+                    <View style={styles.trendLegendItem}>
+                      <View style={[styles.trendLegendDot, { backgroundColor: colors.primary }]} />
+                      <Text style={styles.trendLegendText}>With Abridge</Text>
+                    </View>
+                    <View style={styles.trendLegendItem}>
+                      <View style={[styles.trendLegendDot, { backgroundColor: colors.lightGray }]} />
+                      <Text style={styles.trendLegendText}>Baseline</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
             </View>
 
             <View style={styles.valueCard}>
@@ -1262,6 +1306,51 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               This analysis uses your organization's actual data—not industry benchmarks or theoretical projections. 
               Here's exactly what went into the calculations and the assumptions behind them.
             </Text>
+
+            {hasAnyTrends && (
+              <View style={{ marginBottom: 14 }}>
+                <Text style={styles.methodologyTitle}>Performance Trends (Advanced)</Text>
+                <View style={styles.metricsTable}>
+                  <View style={styles.metricsTableHeader}>
+                    <Text style={[styles.metricsTableHeaderCell, { flex: 2 }]}>Metric</Text>
+                    <Text style={[styles.metricsTableHeaderCell, { flex: 1, textAlign: "right" }]}>Month 1</Text>
+                    <Text style={[styles.metricsTableHeaderCell, { flex: 1, textAlign: "right" }]}>Current</Text>
+                    <Text style={[styles.metricsTableHeaderCell, { flex: 1, textAlign: "right" }]}>Trend</Text>
+                  </View>
+                  {hasTimeInNotesTrend && timeInNotesTrend.length >= 2 && (
+                    <View style={styles.metricsTableRow}>
+                      <Text style={[styles.metricsTableCell, { flex: 2 }]}>Time in Notes (min)</Text>
+                      <Text style={[styles.metricsTableCell, { flex: 1, textAlign: "right" }]}>{timeInNotesTrend[0].abridge.toFixed(1)}</Text>
+                      <Text style={[styles.metricsTableCellBold, { flex: 1, textAlign: "right" }]}>{timeInNotesTrend[timeInNotesTrend.length - 1].abridge.toFixed(1)}</Text>
+                      <Text style={[styles.metricsTableCellGreen, { flex: 1, textAlign: "right" }]}>
+                        {timeInNotesTrend[timeInNotesTrend.length - 1].abridge < timeInNotesTrend[0].abridge ? "Improving" : "Stable"}
+                      </Text>
+                    </View>
+                  )}
+                  {hasWrvuTrend && wrvuTrend.length >= 2 && (
+                    <View style={styles.metricsTableRow}>
+                      <Text style={[styles.metricsTableCell, { flex: 2 }]}>wRVU per Encounter</Text>
+                      <Text style={[styles.metricsTableCell, { flex: 1, textAlign: "right" }]}>{wrvuTrend[0].abridge.toFixed(2)}</Text>
+                      <Text style={[styles.metricsTableCellBold, { flex: 1, textAlign: "right" }]}>{wrvuTrend[wrvuTrend.length - 1].abridge.toFixed(2)}</Text>
+                      <Text style={[styles.metricsTableCellGreen, { flex: 1, textAlign: "right" }]}>
+                        {wrvuTrend[wrvuTrend.length - 1].abridge > wrvuTrend[0].abridge ? "Improving" : "Stable"}
+                      </Text>
+                    </View>
+                  )}
+                  {hasSameDayClosureTrend && sameDayClosureTrend.length >= 2 && (
+                    <View style={styles.metricsTableRow}>
+                      <Text style={[styles.metricsTableCell, { flex: 2 }]}>Same-Day Closure (%)</Text>
+                      <Text style={[styles.metricsTableCell, { flex: 1, textAlign: "right" }]}>{sameDayClosureTrend[0].abridge.toFixed(0)}</Text>
+                      <Text style={[styles.metricsTableCellBold, { flex: 1, textAlign: "right" }]}>{sameDayClosureTrend[sameDayClosureTrend.length - 1].abridge.toFixed(0)}</Text>
+                      <Text style={[styles.metricsTableCellGreen, { flex: 1, textAlign: "right" }]}>
+                        {sameDayClosureTrend[sameDayClosureTrend.length - 1].abridge > sameDayClosureTrend[0].abridge ? "Improving" : "Stable"}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.divider} />
+              </View>
+            )}
 
             <View style={styles.methodology}>
               <Text style={styles.methodologyTitle}>Your Deployment Data</Text>
