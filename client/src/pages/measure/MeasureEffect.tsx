@@ -293,110 +293,70 @@ export default function MeasureEffect({
                   </div>
 
                   {/* Documentation Quality Section */}
-                  <div className="bg-white rounded-xl p-4 border border-slate-200">
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
                         <BarChart3 className="w-4 h-4 text-orange-600" />
                       </div>
                       <h4 className="text-sm font-semibold text-slate-700">Documentation Quality</h4>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Without Abridge Column */}
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-200 text-slate-600 text-xs font-semibold uppercase tracking-wide mb-3">
-                          <BarChart3 className="w-3 h-3" />
-                          Without Abridge
-                        </div>
-                        <div className="space-y-3">
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">wRVU per Encounter</label>
-                            <FormattedNumberInput value={state.documentationQuality.wrvuWithout} onChange={(v) => updateDocQuality('wrvuWithout', v)} step={0.1} className="h-9 bg-white border-slate-200 focus:border-slate-400 focus:ring-slate-200" data-testid="input-wrvu-without" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">E/M Level (avg)</label>
-                            <FormattedNumberInput value={state.documentationQuality.emLevelWithout} onChange={(v) => updateDocQuality('emLevelWithout', v)} step={0.1} className="h-9 bg-white border-slate-200 focus:border-slate-400 focus:ring-slate-200" data-testid="input-em-without" />
-                          </div>
-                        </div>
-                      </div>
-                      {/* With Abridge Column */}
-                      <div className="p-3 rounded-lg bg-gradient-to-br from-[#EA2C00]/5 to-[#F07B5F]/5 border border-[#EA2C00]/20">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-[#EA2C00]/10 text-[#EA2C00] text-xs font-semibold uppercase tracking-wide mb-3">
-                          <TrendingUp className="w-3 h-3" />
-                          With Abridge
-                        </div>
-                        <div className="space-y-3">
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">wRVU per Encounter</label>
-                            <FormattedNumberInput value={state.documentationQuality.wrvuWith} onChange={(v) => updateDocQuality('wrvuWith', v)} step={0.1} className="h-9 bg-white border-[#EA2C00]/20 focus:border-[#EA2C00]/40 focus:ring-[#EA2C00]/20" data-testid="input-wrvu-with" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">E/M Level (avg)</label>
-                            <FormattedNumberInput value={state.documentationQuality.emLevelWith} onChange={(v) => updateDocQuality('emLevelWith', v)} step={0.1} className="h-9 bg-white border-[#EA2C00]/20 focus:border-[#EA2C00]/40 focus:ring-[#EA2C00]/20" data-testid="input-em-with" />
-                          </div>
-                        </div>
-                      </div>
+                    {/* Table header */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 mb-2 pb-2 border-b border-slate-200">
+                      <div></div>
+                      <div className="text-xs font-semibold text-slate-500 text-center">Without</div>
+                      <div className="text-xs font-semibold text-[#EA2C00] text-center">With Abridge</div>
+                    </div>
+                    {/* wRVU row */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 items-center py-2">
+                      <label className="text-sm font-medium text-slate-700">wRVU per Encounter</label>
+                      <FormattedNumberInput value={state.documentationQuality.wrvuWithout} onChange={(v) => updateDocQuality('wrvuWithout', v)} step={0.1} className="h-9 bg-white border-slate-300" data-testid="input-wrvu-without" />
+                      <FormattedNumberInput value={state.documentationQuality.wrvuWith} onChange={(v) => updateDocQuality('wrvuWith', v)} step={0.1} className="h-9 bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20" data-testid="input-wrvu-with" />
+                    </div>
+                    {/* E/M Level row */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 items-center py-2">
+                      <label className="text-sm font-medium text-slate-700">E/M Level (avg)</label>
+                      <FormattedNumberInput value={state.documentationQuality.emLevelWithout} onChange={(v) => updateDocQuality('emLevelWithout', v)} step={0.1} className="h-9 bg-white border-slate-300" data-testid="input-em-without" />
+                      <FormattedNumberInput value={state.documentationQuality.emLevelWith} onChange={(v) => updateDocQuality('emLevelWith', v)} step={0.1} className="h-9 bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20" data-testid="input-em-with" />
                     </div>
                   </div>
 
                   {/* Time & Efficiency Section */}
-                  <div className="bg-white rounded-xl p-4 border border-slate-200">
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
                         <Clock className="w-4 h-4 text-emerald-600" />
                       </div>
                       <h4 className="text-sm font-semibold text-slate-700">Time & Efficiency</h4>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Without Abridge Column */}
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-200 text-slate-600 text-xs font-semibold uppercase tracking-wide mb-3">
-                          <BarChart3 className="w-3 h-3" />
-                          Without Abridge
-                        </div>
-                        <div className="space-y-3">
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Time in Notes (min)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.timeInNotesWithout} onChange={(v) => updateTimeEfficiency('timeInNotesWithout', v)} className="h-9 bg-white border-slate-200 focus:border-slate-400 focus:ring-slate-200" data-testid="input-time-without" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Time to Close (days)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.timeToCloseWithout} onChange={(v) => updateTimeEfficiency('timeToCloseWithout', v)} step={0.1} className="h-9 bg-white border-slate-200 focus:border-slate-400 focus:ring-slate-200" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Same-Day Closure (%)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.sameDayClosureWithout} onChange={(v) => updateTimeEfficiency('sameDayClosureWithout', v)} className="h-9 bg-white border-slate-200 focus:border-slate-400 focus:ring-slate-200" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Work Outside Hours (hrs/day)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.workOutsideWithout} onChange={(v) => updateTimeEfficiency('workOutsideWithout', v)} step={0.1} className="h-9 bg-white border-slate-200 focus:border-slate-400 focus:ring-slate-200" />
-                          </div>
-                        </div>
-                      </div>
-                      {/* With Abridge Column */}
-                      <div className="p-3 rounded-lg bg-gradient-to-br from-[#EA2C00]/5 to-[#F07B5F]/5 border border-[#EA2C00]/20">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-[#EA2C00]/10 text-[#EA2C00] text-xs font-semibold uppercase tracking-wide mb-3">
-                          <TrendingUp className="w-3 h-3" />
-                          With Abridge
-                        </div>
-                        <div className="space-y-3">
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Time in Notes (min)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.timeInNotesWith} onChange={(v) => updateTimeEfficiency('timeInNotesWith', v)} className="h-9 bg-white border-[#EA2C00]/20 focus:border-[#EA2C00]/40 focus:ring-[#EA2C00]/20" data-testid="input-time-with" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Time to Close (days)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.timeToCloseWith} onChange={(v) => updateTimeEfficiency('timeToCloseWith', v)} step={0.1} className="h-9 bg-white border-[#EA2C00]/20 focus:border-[#EA2C00]/40 focus:ring-[#EA2C00]/20" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Same-Day Closure (%)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.sameDayClosureWith} onChange={(v) => updateTimeEfficiency('sameDayClosureWith', v)} className="h-9 bg-white border-[#EA2C00]/20 focus:border-[#EA2C00]/40 focus:ring-[#EA2C00]/20" />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-slate-600">Work Outside Hours (hrs/day)</label>
-                            <FormattedNumberInput value={state.timeEfficiency.workOutsideWith} onChange={(v) => updateTimeEfficiency('workOutsideWith', v)} step={0.1} className="h-9 bg-white border-[#EA2C00]/20 focus:border-[#EA2C00]/40 focus:ring-[#EA2C00]/20" />
-                          </div>
-                        </div>
-                      </div>
+                    {/* Table header */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 mb-2 pb-2 border-b border-slate-200">
+                      <div></div>
+                      <div className="text-xs font-semibold text-slate-500 text-center">Without</div>
+                      <div className="text-xs font-semibold text-[#EA2C00] text-center">With Abridge</div>
+                    </div>
+                    {/* Time in Notes row */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 items-center py-2">
+                      <label className="text-sm font-medium text-slate-700">Time in Notes (min)</label>
+                      <FormattedNumberInput value={state.timeEfficiency.timeInNotesWithout} onChange={(v) => updateTimeEfficiency('timeInNotesWithout', v)} className="h-9 bg-white border-slate-300" data-testid="input-time-without" />
+                      <FormattedNumberInput value={state.timeEfficiency.timeInNotesWith} onChange={(v) => updateTimeEfficiency('timeInNotesWith', v)} className="h-9 bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20" data-testid="input-time-with" />
+                    </div>
+                    {/* Time to Close row */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 items-center py-2">
+                      <label className="text-sm font-medium text-slate-700">Time to Close (days)</label>
+                      <FormattedNumberInput value={state.timeEfficiency.timeToCloseWithout} onChange={(v) => updateTimeEfficiency('timeToCloseWithout', v)} step={0.1} className="h-9 bg-white border-slate-300" />
+                      <FormattedNumberInput value={state.timeEfficiency.timeToCloseWith} onChange={(v) => updateTimeEfficiency('timeToCloseWith', v)} step={0.1} className="h-9 bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20" />
+                    </div>
+                    {/* Same-Day Closure row */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 items-center py-2">
+                      <label className="text-sm font-medium text-slate-700">Same-Day Closure (%)</label>
+                      <FormattedNumberInput value={state.timeEfficiency.sameDayClosureWithout} onChange={(v) => updateTimeEfficiency('sameDayClosureWithout', v)} className="h-9 bg-white border-slate-300" />
+                      <FormattedNumberInput value={state.timeEfficiency.sameDayClosureWith} onChange={(v) => updateTimeEfficiency('sameDayClosureWith', v)} className="h-9 bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20" />
+                    </div>
+                    {/* Work Outside Hours row */}
+                    <div className="grid grid-cols-[1fr,1fr,1fr] gap-3 items-center py-2">
+                      <label className="text-sm font-medium text-slate-700">Work Outside Hours (hrs/day)</label>
+                      <FormattedNumberInput value={state.timeEfficiency.workOutsideWithout} onChange={(v) => updateTimeEfficiency('workOutsideWithout', v)} step={0.1} className="h-9 bg-white border-slate-300" />
+                      <FormattedNumberInput value={state.timeEfficiency.workOutsideWith} onChange={(v) => updateTimeEfficiency('workOutsideWith', v)} step={0.1} className="h-9 bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20" />
                     </div>
                   </div>
                   
