@@ -77,7 +77,7 @@ function EMDistributionChart({
               max={100}
               value={item.percent}
               onChange={(e) => onUpdate(levelKeys[index], parseInt(e.target.value) || 0)}
-              className="w-14 h-6 text-xs text-center p-1"
+              className={`w-14 h-6 text-xs text-center p-1 ${isWithAbridge ? 'bg-[#EA2C00]/5 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:ring-[#EA2C00]/20' : 'bg-white border-slate-300'}`}
               data-testid={`input-em-${label.toLowerCase().replace(/\s+/g, '-')}-${item.level}`}
             />
           ) : (
