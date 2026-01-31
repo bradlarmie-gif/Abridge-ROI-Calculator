@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, Share2, Clock, FileText, TrendingUp, Users, ChevronDown, ChevronUp, ArrowRight, Sparkles, DollarSign, Heart } from "lucide-react";
+import { Download, Share2, Clock, FileText, TrendingUp, Users, ChevronDown, ChevronUp, ArrowRight, Sparkles, DollarSign, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -9,6 +9,7 @@ import {
   formatCurrency, 
   formatNumber,
 } from "@/lib/measureCalculator";
+import { generateMeasurePDF } from "@/components/measure/MeasurePDFExport";
 
 interface MeasureStoryProps {
   state: MeasureState;
@@ -20,9 +21,17 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
   const results = useMemo(() => calculateMeasureResults(state), [state]);
   const [methodologyExpanded, setMethodologyExpanded] = useState(false);
   const [whatIfProviders, setWhatIfProviders] = useState(state.deployment.providers * 2);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = () => {
-    alert('PDF export coming soon. This will generate a professional summary of your value story.');
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await generateMeasurePDF(state);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleShare = () => {
@@ -312,11 +321,21 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handleExport}
-              className="h-12 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90"
+              disabled={isExporting}
+              className="h-12 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90 disabled:opacity-70"
               data-testid="button-export"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Export PDF
+              {isExporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export PDF
+                </>
+              )}
             </Button>
             <Button
               onClick={handleShare}
