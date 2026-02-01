@@ -877,6 +877,75 @@ export default function SummaryCommandCenter({
                 </div>
               </div>
               
+              {/* Full Scale Configuration */}
+              <div className="bg-white rounded-2xl p-8 border border-slate-100 mb-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <Target className="w-5 h-5 text-[#EA2C00]" />
+                  <span className="font-bold text-slate-900">Model Your Full Scale Potential</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Full Scale Providers */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Total {config.unitNamePlural} at full scale
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="number" 
+                        value={fullScaleUnits}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "") {
+                            setFullScaleUnits("");
+                          } else {
+                            setFullScaleUnits(Number(val));
+                          }
+                        }}
+                        onBlur={() => {
+                          if (fullScaleUnits === "" || fullScaleUnits < pilotUnits + 1) {
+                            setFullScaleUnits(pilotUnits + 1);
+                          }
+                        }}
+                        min={pilotUnits + 1}
+                        className="w-full px-4 py-3 pr-28 rounded-xl border border-slate-200 font-mono text-slate-900 text-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all"
+                        data-testid="input-fullscale-units"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">{config.unitNamePlural}</span>
+                    </div>
+                    <p className="text-sm text-slate-500 mt-2">
+                      Starting with {pilotUnits} {config.unitNamePlural} today
+                    </p>
+                  </div>
+                  
+                  {/* Target Utilization */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Target utilization at full scale
+                    </label>
+                    <div className="space-y-3">
+                      <input
+                        type="range"
+                        min={pilotUtilization}
+                        max={95}
+                        value={fullScaleUtilization}
+                        onChange={(e) => setFullScaleUtilization(Number(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                        data-testid="slider-fullscale-utilization"
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-500">{pilotUtilization}% (today)</span>
+                        <span className="text-2xl font-bold text-[#EA2C00]">{fullScaleUtilization}%</span>
+                        <span className="text-sm text-slate-500">95% (max)</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-500 mt-2">
+                      Most organizations reach 75-85% at maturity
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               {/* Scaling Options */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                 {(["measured", "steady", "aggressive"] as const).map((pace) => (
