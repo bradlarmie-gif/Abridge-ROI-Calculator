@@ -24,17 +24,22 @@ interface BrandedLoadingOverlayProps {
   duration?: number;
 }
 
-// Scattered geometric shapes - tetris-style screensaver building effect
-// 8 shapes with randomized positions and movements - very soft appearance
-const geometricShapes = [
-  { id: 1, shapeIdx: 3, size: 195, startX: -620, startY: -280, endX: -480, endY: -350, opacity: 0.10, delay: 0, rotation: 28 },
-  { id: 2, shapeIdx: 7, size: 168, startX: 540, startY: -420, endX: 620, endY: -310, opacity: 0.10, delay: 0.18, rotation: -42 },
-  { id: 3, shapeIdx: 1, size: 220, startX: -480, startY: 380, endX: -550, endY: 280, opacity: 0.10, delay: 0.08, rotation: -18 },
-  { id: 4, shapeIdx: 9, size: 145, startX: 680, startY: 220, endX: 520, endY: 340, opacity: 0.10, delay: 0.32, rotation: 55 },
-  { id: 5, shapeIdx: 5, size: 178, startX: -700, startY: 60, endX: -540, endY: -40, opacity: 0.10, delay: 0.12, rotation: -65 },
-  { id: 6, shapeIdx: 11, size: 135, startX: 120, startY: -520, endX: -60, endY: -420, opacity: 0.10, delay: 0.25, rotation: 38 },
-  { id: 7, shapeIdx: 2, size: 188, startX: 600, startY: -80, endX: 480, endY: 60, opacity: 0.10, delay: 0.4, rotation: -32 },
-  { id: 8, shapeIdx: 8, size: 155, startX: -180, startY: 520, endX: -280, endY: 400, opacity: 0.10, delay: 0.22, rotation: 72 },
+// Parallax depth layers with subtle rotation
+// depth: 1 = far (slow, faded), 2 = mid, 3 = near (fast, slightly more visible)
+const parallaxShapes = [
+  // Far layer - slowest, most faded
+  { id: 1, shapeIdx: 3, size: 240, x: -550, y: -320, depth: 1, opacity: 0.06, rotateDir: 1 },
+  { id: 2, shapeIdx: 7, size: 200, x: 480, y: -380, depth: 1, opacity: 0.06, rotateDir: -1 },
+  { id: 3, shapeIdx: 11, size: 180, x: -420, y: 350, depth: 1, opacity: 0.06, rotateDir: 1 },
+  
+  // Mid layer - medium speed
+  { id: 4, shapeIdx: 1, size: 160, x: 520, y: 280, depth: 2, opacity: 0.08, rotateDir: -1 },
+  { id: 5, shapeIdx: 5, size: 145, x: -620, y: 80, depth: 2, opacity: 0.08, rotateDir: 1 },
+  { id: 6, shapeIdx: 9, size: 155, x: 180, y: -450, depth: 2, opacity: 0.08, rotateDir: -1 },
+  
+  // Near layer - fastest, slightly more visible
+  { id: 7, shapeIdx: 2, size: 130, x: 580, y: -120, depth: 3, opacity: 0.10, rotateDir: 1 },
+  { id: 8, shapeIdx: 8, size: 120, x: -200, y: 420, depth: 3, opacity: 0.10, rotateDir: -1 },
 ];
 
 export function BrandedLoadingOverlay({ 
@@ -90,23 +95,28 @@ export function BrandedLoadingOverlay({
       className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden animate-in fade-in duration-300"
       style={{ backgroundColor: '#FFFFFF' }}
     >
-      {/* Geometric shapes building animation - tetris-style screensaver */}
+      {/* Parallax depth layers with subtle rotation */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        {geometricShapes.map((shape) => (
-          <img
-            key={shape.id}
-            src={shapes[shape.shapeIdx]}
-            alt=""
-            className="absolute"
-            style={{
-              width: shape.size,
-              height: shape.size,
-              objectFit: 'contain',
-              opacity: 0,
-              animation: `shapeAssemble-${shape.id} 2.5s ease-out ${shape.delay}s forwards`,
-            }}
-          />
-        ))}
+        {parallaxShapes.map((shape) => {
+          // Speed based on depth: far=slow, near=fast
+          const animSpeed = shape.depth === 1 ? 12 : shape.depth === 2 ? 8 : 5;
+          
+          return (
+            <img
+              key={shape.id}
+              src={shapes[shape.shapeIdx]}
+              alt=""
+              className="absolute"
+              style={{
+                width: shape.size,
+                height: shape.size,
+                objectFit: 'contain',
+                opacity: shape.opacity,
+                animation: `parallaxFloat-${shape.id} ${animSpeed}s ease-in-out infinite`,
+              }}
+            />
+          );
+        })}
       </div>
 
       <div className="relative flex flex-col items-center justify-center z-10">
@@ -131,23 +141,31 @@ export function BrandedLoadingOverlay({
         </div>
       </div>
 
-      {/* Keyframe animations for geometric shapes */}
+      {/* Keyframe animations for parallax depth effect with subtle rotation */}
       <style>{`
-        ${geometricShapes.map(shape => `
-          @keyframes shapeAssemble-${shape.id} {
-            0% {
-              opacity: 0;
-              transform: translate(${shape.startX}px, ${shape.startY}px) rotate(0deg) scale(0.8);
+        ${parallaxShapes.map(shape => {
+          // Drift distance based on depth: far moves less, near moves more
+          const driftX = shape.depth === 1 ? 12 : shape.depth === 2 ? 20 : 30;
+          const driftY = shape.depth === 1 ? 8 : shape.depth === 2 ? 14 : 22;
+          const rotateAmount = 6 * shape.rotateDir; // Very subtle rotation
+          
+          return `
+            @keyframes parallaxFloat-${shape.id} {
+              0%, 100% {
+                transform: translate(${shape.x}px, ${shape.y}px) rotate(0deg);
+              }
+              25% {
+                transform: translate(${shape.x + driftX}px, ${shape.y - driftY * 0.5}px) rotate(${rotateAmount * 0.5}deg);
+              }
+              50% {
+                transform: translate(${shape.x + driftX * 0.3}px, ${shape.y - driftY}px) rotate(${rotateAmount}deg);
+              }
+              75% {
+                transform: translate(${shape.x - driftX * 0.5}px, ${shape.y - driftY * 0.3}px) rotate(${rotateAmount * 0.5}deg);
+              }
             }
-            15% {
-              opacity: ${shape.opacity};
-            }
-            100% {
-              opacity: ${shape.opacity};
-              transform: translate(${shape.endX}px, ${shape.endY}px) rotate(${shape.rotation}deg) scale(1);
-            }
-          }
-        `).join('')}
+          `;
+        }).join('')}
       `}</style>
     </div>
   );
