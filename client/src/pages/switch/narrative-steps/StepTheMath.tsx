@@ -195,7 +195,7 @@ export default function StepTheMath({
           cx={cx} 
           cy={cy} 
           r={isTop ? 6 : 5} 
-          fill={isTop ? "#10b981" : "#94a3b8"}
+          fill={isTop ? "#EA2C00" : "#94a3b8"}
           stroke="white" 
           strokeWidth={2}
         />
@@ -479,8 +479,8 @@ export default function StepTheMath({
               <AreaChart data={chartData} margin={{ top: 30, right: 20, left: 10, bottom: 20 }}>
                 <defs>
                   <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.08} />
+                    <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.20} />
+                    <stop offset="100%" stopColor="#EA2C00" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
                 <XAxis 
@@ -536,7 +536,7 @@ export default function StepTheMath({
                 <Area 
                   type="monotone" 
                   dataKey="potential" 
-                  stroke="#10b981" 
+                  stroke="#EA2C00" 
                   strokeWidth={3}
                   fill="none"
                   name="potential"
@@ -573,7 +573,7 @@ export default function StepTheMath({
             <span className="text-xs text-[#6B7280]">Continue as-is</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />
             <span className="text-xs text-[#6B7280]">Optimized</span>
           </div>
           <div className="flex items-center gap-2">
@@ -583,15 +583,15 @@ export default function StepTheMath({
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-3">
-          <div className="relative bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-4 border-2 border-emerald-300">
+          <div className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFEBE6] rounded-xl p-4 border-2 border-[#EA2C00]/30">
             <div className="absolute -top-2.5 left-4">
-              <span className="bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+              <span className="bg-[#EA2C00] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                 Start Now
               </span>
             </div>
             <div className="mt-2">
-              <p className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(recalculatedValues.switchNowValue)}</p>
-              <p className="text-xs text-emerald-700 mt-1">3-year value captured</p>
+              <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.switchNowValue)}</p>
+              <p className="text-xs text-[#B02200] mt-1">3-year value captured</p>
             </div>
           </div>
 
