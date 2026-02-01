@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Users, Clock, BarChart3, Building2, AlertTriangle, DollarSign, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Users, Clock, BarChart3, Building2, AlertTriangle, DollarSign, Sparkles, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -13,78 +13,64 @@ interface ExploreReviewProps {
 }
 
 const WRVU_CONVERSION = 40;
+const WRVU_REALIZATION = 0.75;
 const HCC_VALUE_PER_CONDITION = 800;
+const HCC_REALIZATION = 0.60;
 const DENIAL_AVG_VALUE = 250;
+const DENIAL_REALIZATION = 0.70;
 
 export default function ExploreReview({ state, totalHoursSaved, onContinueToInvestment, onBack, onHome }: ExploreReviewProps) {
   
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   
   const calculateWrvuValue = () => {
+    if (!state.docDrivers.wrvu.enabled) return 0;
     const baseWrvu = 1.5;
-    const wrvuLift = baseWrvu * (state.wrvuPctIncrease / 100);
-    return Math.round(wrvuLift * eligibleEncounters * WRVU_CONVERSION);
+    const wrvuLift = baseWrvu * (state.docDrivers.wrvu.value / 100);
+    const rawValue = wrvuLift * eligibleEncounters * WRVU_CONVERSION;
+    return Math.round(rawValue * WRVU_REALIZATION);
   };
 
   const calculateHccValue = () => {
+    if (!state.docDrivers.hcc.enabled) return 0;
     const avgConditionsPerMember = 3;
     const maPatients = eligibleEncounters * 0.3;
-    const conditionsCaptured = maPatients * avgConditionsPerMember * (state.hccPctRecaptured / 100);
-    return Math.round(conditionsCaptured * HCC_VALUE_PER_CONDITION);
+    const conditionsCaptured = maPatients * avgConditionsPerMember * (state.docDrivers.hcc.value / 100);
+    const rawValue = conditionsCaptured * HCC_VALUE_PER_CONDITION;
+    return Math.round(rawValue * HCC_REALIZATION);
   };
 
   const calculateDenialValue = () => {
+    if (!state.docDrivers.denials.enabled) return 0;
     const baselineDenialRate = 0.08;
     const denials = eligibleEncounters * baselineDenialRate;
     const denialsFromDoc = denials * 0.5;
-    const denialsRecovered = denialsFromDoc * (state.denialsPctReduced / 100);
-    return Math.round(denialsRecovered * DENIAL_AVG_VALUE);
+    const denialsRecovered = denialsFromDoc * (state.docDrivers.denials.value / 100);
+    const rawValue = denialsRecovered * DENIAL_AVG_VALUE;
+    return Math.round(rawValue * DENIAL_REALIZATION);
   };
 
-  const getDocValue = () => {
-    switch (state.docPathFocus) {
-      case 'wrvu': return calculateWrvuValue();
-      case 'hcc': return calculateHccValue();
-      case 'denials': return calculateDenialValue();
-      default: return 0;
-    }
-  };
+  const wrvuValue = calculateWrvuValue();
+  const hccValue = calculateHccValue();
+  const denialValue = calculateDenialValue();
+  const totalDocValue = wrvuValue + hccValue + denialValue;
 
   const calculateTimeValue = () => {
     const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
     const visitsEnabled = patientAccessHours / 0.5;
-    const patientAccessValue = visitsEnabled * 200;
+    const patientAccessValue = visitsEnabled * 200 * 0.20; // 20% realization
 
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
-    const locumValue = locumHours * 150;
+    const locumValue = locumHours * 150 * 0.60; // 60% realization
 
     const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
-    const retentionValue = state.numberOfProviders * 0.15 * wellbeingPct * 0.2 * 250000;
+    const retentionValue = state.numberOfProviders * 0.15 * wellbeingPct * 0.20 * 250000; // 20% realization
 
     return Math.round(patientAccessValue + locumValue + retentionValue);
   };
 
-  const docValue = getDocValue();
   const timeValue = calculateTimeValue();
-  const totalValue = docValue + timeValue;
-
-  const getDocFocusLabel = () => {
-    switch (state.docPathFocus) {
-      case 'wrvu': return 'Level of Service (wRVU)';
-      case 'hcc': return 'HCC Capture';
-      case 'denials': return 'Denial Prevention';
-      default: return '';
-    }
-  };
-
-  const getDocFocusIcon = () => {
-    switch (state.docPathFocus) {
-      case 'wrvu': return BarChart3;
-      case 'hcc': return Building2;
-      case 'denials': return AlertTriangle;
-      default: return BarChart3;
-    }
-  };
+  const totalValue = totalDocValue + timeValue;
 
   const getTimePathLabel = () => {
     switch (state.timePathScenario) {
@@ -94,7 +80,23 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     }
   };
 
-  const DocIcon = getDocFocusIcon();
+  const getEnabledDriversLabel = () => {
+    const enabled = [];
+    if (state.docDrivers.wrvu.enabled) enabled.push('wRVU');
+    if (state.docDrivers.hcc.enabled) enabled.push('HCC');
+    if (state.docDrivers.denials.enabled) enabled.push('Denials');
+    if (enabled.length === 0) return 'None selected';
+    return enabled.join(', ');
+  };
+
+  const getDocIcon = () => {
+    if (state.docDrivers.wrvu.enabled) return BarChart3;
+    if (state.docDrivers.hcc.enabled) return Building2;
+    if (state.docDrivers.denials.enabled) return AlertTriangle;
+    return FileText;
+  };
+
+  const DocIcon = getDocIcon();
 
   const summaryItems = [
     {
@@ -112,10 +114,30 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     {
       icon: DocIcon,
       label: 'Documentation Focus',
-      value: getDocFocusLabel(),
-      subvalue: `$${docValue.toLocaleString()} projected value`,
+      value: getEnabledDriversLabel(),
+      subvalue: `$${totalDocValue.toLocaleString()} projected value`,
     },
   ];
+
+  const enabledDriverDetails = [];
+  if (state.docDrivers.wrvu.enabled) {
+    enabledDriverDetails.push({
+      label: `wRVU (${state.docDrivers.wrvu.value}% improvement)`,
+      value: wrvuValue,
+    });
+  }
+  if (state.docDrivers.hcc.enabled) {
+    enabledDriverDetails.push({
+      label: `HCC Capture (${state.docDrivers.hcc.value}% recapture)`,
+      value: hccValue,
+    });
+  }
+  if (state.docDrivers.denials.enabled) {
+    enabledDriverDetails.push({
+      label: `Denial Prevention (${state.docDrivers.denials.value}% reduction)`,
+      value: denialValue,
+    });
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -209,10 +231,21 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
               <span className="text-slate-600">Time Savings Value</span>
               <span className="font-bold text-black">${timeValue.toLocaleString()}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">{getDocFocusLabel()} Value</span>
-              <span className="font-bold text-black">${docValue.toLocaleString()}</span>
-            </div>
+            
+            {enabledDriverDetails.length > 0 ? (
+              enabledDriverDetails.map((driver) => (
+                <div key={driver.label} className="flex items-center justify-between">
+                  <span className="text-slate-600">{driver.label}</span>
+                  <span className="font-bold text-black">${driver.value.toLocaleString()}</span>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 italic">No documentation drivers selected</span>
+                <span className="font-bold text-slate-400">$0</span>
+              </div>
+            )}
+            
             <div className="flex items-center justify-between pt-3 border-t border-slate-200">
               <span className="font-semibold text-black">Total Annual Value</span>
               <span className="text-xl font-bold text-[#EA2C00]">${totalValue.toLocaleString()}</span>
