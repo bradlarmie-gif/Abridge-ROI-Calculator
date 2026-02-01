@@ -87,10 +87,11 @@ const styles = StyleSheet.create({
   },
   
   logoText: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.white,
-    letterSpacing: 4,
-    fontWeight: "bold",
+    letterSpacing: 6,
+    fontWeight: "normal",
+    fontFamily: "Helvetica",
   },
   
   preparedByContainer: {
