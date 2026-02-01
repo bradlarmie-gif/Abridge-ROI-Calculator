@@ -23,6 +23,62 @@ export default function StepTheGap({
 }: StepTheGapProps) {
   const gapPercentage = Math.max(0, 100 - calculations.realizationScore);
   
+  // Dynamic messaging based on realization score
+  const getPerformanceTier = (score: number) => {
+    if (score >= 85) return 'strong';
+    if (score >= 70) return 'moderate';
+    if (score >= 55) return 'developing';
+    return 'emerging';
+  };
+  
+  const performanceTier = getPerformanceTier(calculations.realizationScore);
+  
+  const dynamicMessaging = useMemo(() => {
+    const tier = performanceTier;
+    
+    return {
+      // Header messaging
+      headerSubtitle: tier === 'strong' 
+        ? "You're already performing well — let's see where to fine-tune."
+        : tier === 'moderate'
+        ? "You've built a solid foundation. Here's where to level up."
+        : tier === 'developing'
+        ? "There's meaningful opportunity here. Let's break it down."
+        : "Based on what you shared, here's what we see.",
+      
+      // Time card
+      timeTitle: tier === 'strong' ? "Time You Could Reclaim" : tier === 'moderate' ? "Time Still on the Table" : "Time That Disappears",
+      timeSubtitle: tier === 'strong' ? "Room for further optimization" : tier === 'moderate' ? "Hours that could go back to your team" : "Hours your team isn't getting back",
+      
+      // Utilization card  
+      utilizationTitle: tier === 'strong' ? "Utilization Fine-Tuning" : tier === 'moderate' ? "Utilization Opportunity" : "Encounters Left Behind",
+      utilizationSubtitle: tier === 'strong' ? "Nearly there — small gains available" : tier === 'moderate' ? "Visits that could benefit from AI" : "Patient visits without AI assistance",
+      utilizationContext: tier === 'strong'
+        ? "You're close to benchmark. A small push could close this gap entirely."
+        : tier === 'moderate'
+        ? "Solid utilization, but there's room to extend coverage to more encounters."
+        : "Moving to higher utilization means more consistent documentation across all visits.",
+      
+      // wRVU card
+      wrvuTitle: tier === 'strong' ? "Capture Optimization" : tier === 'moderate' ? "Documentation Quality" : "Documentation Quality",
+      wrvuSubtitle: tier === 'strong' ? "Fine-tuning capture accuracy" : "The gap in capture accuracy",
+      wrvuContext: tier === 'strong'
+        ? "You're seeing solid lift. Specialty-specific tuning could unlock the last bit of value."
+        : tier === 'moderate'
+        ? "Good capture, but refinement could mean more complete documentation of the care you're already providing."
+        : "Better documentation means more complete capture of the care you're already providing.",
+      
+      // Satisfaction card
+      satisfactionTitle: tier === 'strong' ? "Provider Experience" : tier === 'moderate' ? "The Provider Experience" : "The Provider Experience",
+      satisfactionSubtitle: tier === 'strong' ? "Keeping your team engaged" : "How your team feels about documentation",
+      satisfactionContext: tier === 'strong'
+        ? "Strong satisfaction drives sustained adoption. Keep building on this momentum."
+        : tier === 'moderate'
+        ? "Satisfaction is growing. Continued optimization will help cement adoption."
+        : "Satisfaction isn't just a feeling — it's a leading indicator of retention, burnout risk, and willingness to embrace new workflows.",
+    };
+  }, [performanceTier]);
+  
   const storyMetrics = useMemo(() => {
     const providers = inputs.providers || 1;
     const encounters = inputs.annualEncounters || 0;
@@ -62,7 +118,7 @@ export default function StepTheGap({
           The Gap
         </h1>
         <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          Based on what you shared, here's what we see.
+          {dynamicMessaging.headerSubtitle}
         </p>
       </div>
 
@@ -119,8 +175,8 @@ export default function StepTheGap({
                   <Clock className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#111827]">Time That Disappears</h3>
-                  <p className="text-sm text-[#6B7280]">Hours your team isn't getting back</p>
+                  <h3 className="font-bold text-[#111827]">{dynamicMessaging.timeTitle}</h3>
+                  <p className="text-sm text-[#6B7280]">{dynamicMessaging.timeSubtitle}</p>
                 </div>
               </div>
               
@@ -158,8 +214,8 @@ export default function StepTheGap({
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#111827]">Encounters Left Behind</h3>
-                  <p className="text-sm text-[#6B7280]">Patient visits without AI assistance</p>
+                  <h3 className="font-bold text-[#111827]">{dynamicMessaging.utilizationTitle}</h3>
+                  <p className="text-sm text-[#6B7280]">{dynamicMessaging.utilizationSubtitle}</p>
                 </div>
               </div>
               
@@ -178,7 +234,7 @@ export default function StepTheGap({
                   <p className="text-sm text-blue-800">
                     You're at <span className="font-semibold">{inputs.utilization}% utilization</span>. 
                     Top performers reach <span className="font-semibold">{ABRIDGE_BENCHMARKS.utilization}%</span>.
-                    That's <span className="font-semibold">{ABRIDGE_BENCHMARKS.utilization - (inputs.utilization || 0)} additional points</span> of potential.
+                    {' '}{dynamicMessaging.utilizationContext}
                   </p>
                 </div>
               </div>
@@ -195,8 +251,8 @@ export default function StepTheGap({
                   <TrendingUp className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#111827]">Documentation Quality</h3>
-                  <p className="text-sm text-[#6B7280]">The gap in capture accuracy</p>
+                  <h3 className="font-bold text-[#111827]">{dynamicMessaging.wrvuTitle}</h3>
+                  <p className="text-sm text-[#6B7280]">{dynamicMessaging.wrvuSubtitle}</p>
                 </div>
               </div>
               
@@ -213,8 +269,8 @@ export default function StepTheGap({
                 
                 <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
                   <p className="text-sm text-emerald-800">
-                    Better documentation means more complete capture of the care you're already providing. 
-                    The <span className="font-semibold">{storyMetrics.wrvuGapPercent} percentage point gap</span> represents 
+                    {dynamicMessaging.wrvuContext}
+                    {' '}The <span className="font-semibold">{storyMetrics.wrvuGapPercent} percentage point gap</span> represents 
                     services rendered but not fully captured.
                   </p>
                 </div>
@@ -232,8 +288,8 @@ export default function StepTheGap({
                   <Coffee className="w-6 h-6 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#111827]">The Provider Experience</h3>
-                  <p className="text-sm text-[#6B7280]">How your team feels about documentation</p>
+                  <h3 className="font-bold text-[#111827]">{dynamicMessaging.satisfactionTitle}</h3>
+                  <p className="text-sm text-[#6B7280]">{dynamicMessaging.satisfactionSubtitle}</p>
                 </div>
               </div>
               
@@ -250,8 +306,7 @@ export default function StepTheGap({
                 
                 <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
                   <p className="text-sm text-amber-800">
-                    Satisfaction isn't just a feeling — it's a leading indicator of retention, 
-                    burnout risk, and willingness to embrace new workflows.
+                    {dynamicMessaging.satisfactionContext}
                   </p>
                 </div>
               </div>
