@@ -158,21 +158,21 @@ export function PDFCoverPage({
             />
           ))}
           
-          {/* Curved growth line - smooth exponential curve */}
+          {/* Simple exponential growth curve - single quadratic bezier */}
           <Path
-            d="M 100 810 C 180 805 280 785 360 720 S 480 520 530 350 S 570 120 585 20"
+            d="M 60 820 Q 400 800 580 0"
             stroke="#FFFFFF"
             strokeWidth={1.5}
             strokeOpacity={0.35}
             fill="none"
           />
           
-          {/* 5 Data points positioned ON the curve */}
-          <Circle cx={150} cy={805} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={320} cy={755} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={450} cy={585} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={540} cy={310} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={580} cy={80} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          {/* 5 Data points along the quadratic curve */}
+          <Circle cx={120} cy={810} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={250} cy={770} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={380} cy={650} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={480} cy={420} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={560} cy={120} r={4} fill="#FFFFFF" fillOpacity={0.45} />
         </Svg>
       </View>
       
