@@ -224,58 +224,58 @@ export default function StepTheGap({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Time/Efficiency Card */}
         {storyMetrics.efficiencyGapHours > 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-[#EA2C00]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-black">{dynamicMessaging.timeTitle}</h3>
-                  <p className="text-sm text-slate-500">{dynamicMessaging.timeSubtitle}</p>
-                </div>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-black text-sm">{dynamicMessaging.timeTitle}</h3>
+                <p className="text-xs text-slate-500">{dynamicMessaging.timeSubtitle}</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-[#EA2C00]">{storyMetrics.efficiencyGapHours.toLocaleString()}</span>
-              <span className="text-lg text-slate-500 ml-2">hours/year</span>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-[#EA2C00] tracking-tight">{storyMetrics.efficiencyGapHours.toLocaleString()}</span>
+                <span className="text-base text-slate-500">hours/year</span>
+              </div>
               <p className="text-sm text-slate-600 mt-2">
                 That's <span className="font-semibold text-black">{storyMetrics.workWeeksLost} full work weeks</span> of provider time
               </p>
             </div>
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
-              <p className="text-sm text-slate-700">
+            <div className="mt-auto pt-4 border-t border-slate-100">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {dynamicMessaging.timeContext}
-                {storyMetrics.hoursPerProviderPerWeek > 0 && (
-                  <span className="block mt-2 font-semibold text-black">
-                    For your {storyMetrics.providers} providers: ~{storyMetrics.hoursPerProviderPerWeek} hours/week each.
-                  </span>
-                )}
               </p>
+              {storyMetrics.hoursPerProviderPerWeek > 0 && (
+                <p className="text-sm font-semibold text-[#EA2C00] mt-3">
+                  For your {storyMetrics.providers} providers: ~{storyMetrics.hoursPerProviderPerWeek} hours/week each.
+                </p>
+              )}
             </div>
           </div>
         ) : (
-          <div className="bg-black rounded-xl p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">Time Efficiency</h3>
-                  <p className="text-sm text-white/60">At benchmark performance</p>
-                </div>
+          <div className="bg-black rounded-2xl p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Time Efficiency</h3>
+                <p className="text-xs text-white/60">At benchmark performance</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-white">{inputs.timeSavedPerEncounter}</span>
-              <span className="text-lg text-white/60 ml-2">min saved/encounter</span>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">{inputs.timeSavedPerEncounter}</span>
+                <span className="text-base text-white/60">min saved/encounter</span>
+              </div>
               <p className="text-sm text-white/70 mt-2">
                 At or above benchmark of {ABRIDGE_BENCHMARKS.timeSavedAvg} min
               </p>
             </div>
-            <div className="p-4 bg-white/10 rounded-lg">
-              <p className="text-sm text-white/80">
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <p className="text-sm text-white/70 leading-relaxed">
                 <span className="font-semibold text-white">Strong performance.</span> Your time efficiency is competitive with top performers.
               </p>
             </div>
@@ -284,55 +284,58 @@ export default function StepTheGap({
 
         {/* Utilization Card */}
         {storyMetrics.utilizationGapEncounters > 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                  <Users className="w-6 h-6 text-[#EA2C00]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-black">{dynamicMessaging.utilizationTitle}</h3>
-                  <p className="text-sm text-slate-500">{dynamicMessaging.utilizationSubtitle}</p>
-                </div>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-black text-sm">{dynamicMessaging.utilizationTitle}</h3>
+                <p className="text-xs text-slate-500">{dynamicMessaging.utilizationSubtitle}</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-[#EA2C00]">{storyMetrics.utilizationGapEncounters.toLocaleString()}</span>
-              <span className="text-lg text-slate-500 ml-2">encounters/year</span>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-[#EA2C00] tracking-tight">{storyMetrics.utilizationGapEncounters.toLocaleString()}</span>
+                <span className="text-base text-slate-500">encounters/year</span>
+              </div>
               <p className="text-sm text-slate-600 mt-2">
                 where there's <span className="font-semibold text-black">opportunity for AI assistance</span>
               </p>
             </div>
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
-              <p className="text-sm text-slate-700">
-                You're at <span className="font-semibold text-black">{inputs.utilization}% utilization</span>. 
-                Top performers reach <span className="font-semibold text-black">{ABRIDGE_BENCHMARKS.utilization}%</span>.
-                {' '}{dynamicMessaging.utilizationContext}
+            <div className="mt-auto pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-semibold text-[#EA2C00] bg-[#FFF5F2] px-2 py-1 rounded">{inputs.utilization}% current</span>
+                <span className="text-xs text-slate-400">vs.</span>
+                <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded">{ABRIDGE_BENCHMARKS.utilization}% benchmark</span>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {dynamicMessaging.utilizationContext}
               </p>
             </div>
           </div>
         ) : (
-          <div className="bg-black rounded-xl p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">Utilization</h3>
-                  <p className="text-sm text-white/60">At benchmark performance</p>
-                </div>
+          <div className="bg-black rounded-2xl p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Utilization</h3>
+                <p className="text-xs text-white/60">At benchmark performance</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-white">{inputs.utilization}%</span>
-              <span className="text-lg text-white/60 ml-2">utilization</span>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">{inputs.utilization}%</span>
+                <span className="text-base text-white/60">utilization</span>
+              </div>
               <p className="text-sm text-white/70 mt-2">
                 At or above benchmark of {ABRIDGE_BENCHMARKS.utilization}%
               </p>
             </div>
-            <div className="p-4 bg-white/10 rounded-lg">
-              <p className="text-sm text-white/80">
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <p className="text-sm text-white/70 leading-relaxed">
                 <span className="font-semibold text-white">Excellent adoption.</span> Your utilization matches or exceeds top performers.
               </p>
             </div>
@@ -341,55 +344,58 @@ export default function StepTheGap({
 
         {/* wRVU/Quality Card */}
         {storyMetrics.wrvuGapPercent > 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-[#EA2C00]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-black">{dynamicMessaging.wrvuTitle}</h3>
-                  <p className="text-sm text-slate-500">{dynamicMessaging.wrvuSubtitle}</p>
-                </div>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-black text-sm">{dynamicMessaging.wrvuTitle}</h3>
+                <p className="text-xs text-slate-500">{dynamicMessaging.wrvuSubtitle}</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-[#EA2C00]">+{inputs.wrvuLift || 0}%</span>
-              <span className="text-lg text-slate-500 ml-2">wRVU lift</span>
-              <p className="text-sm text-slate-600 mt-2">
-                vs. <span className="font-semibold text-black">+{ABRIDGE_BENCHMARKS.wrvuLift}%</span> for top performers
-              </p>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-[#EA2C00] tracking-tight">+{inputs.wrvuLift || 0}%</span>
+                <span className="text-base text-slate-500">wRVU lift</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xs text-slate-500">vs.</span>
+                <span className="text-sm font-semibold text-black">+{ABRIDGE_BENCHMARKS.wrvuLift}%</span>
+                <span className="text-xs text-slate-500">for top performers</span>
+              </div>
             </div>
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
-              <p className="text-sm text-slate-700">
+            <div className="mt-auto pt-4 border-t border-slate-100">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {dynamicMessaging.wrvuContext}
-                {' '}The <span className="font-semibold text-black">{storyMetrics.wrvuGapPercent} percentage point gap</span> represents 
-                services rendered but not fully captured.
+              </p>
+              <p className="text-sm font-semibold text-[#EA2C00] mt-3">
+                The {storyMetrics.wrvuGapPercent} percentage point gap represents services rendered but not fully captured.
               </p>
             </div>
           </div>
         ) : (
-          <div className="bg-black rounded-xl p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">Revenue Capture</h3>
-                  <p className="text-sm text-white/60">At benchmark performance</p>
-                </div>
+          <div className="bg-black rounded-2xl p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Revenue Capture</h3>
+                <p className="text-xs text-white/60">At benchmark performance</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-white">+{inputs.wrvuLift || 0}%</span>
-              <span className="text-lg text-white/60 ml-2">wRVU lift</span>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">+{inputs.wrvuLift || 0}%</span>
+                <span className="text-base text-white/60">wRVU lift</span>
+              </div>
               <p className="text-sm text-white/70 mt-2">
                 At or above benchmark of +{ABRIDGE_BENCHMARKS.wrvuLift}%
               </p>
             </div>
-            <div className="p-4 bg-white/10 rounded-lg">
-              <p className="text-sm text-white/80">
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <p className="text-sm text-white/70 leading-relaxed">
                 <span className="font-semibold text-white">Strong revenue capture.</span> Your documentation is driving wRVU lift at or above benchmark levels.
               </p>
             </div>
@@ -398,53 +404,55 @@ export default function StepTheGap({
 
         {/* Satisfaction Card */}
         {storyMetrics.satisfactionGap > 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                  <Coffee className="w-6 h-6 text-[#EA2C00]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-black">{dynamicMessaging.satisfactionTitle}</h3>
-                  <p className="text-sm text-slate-500">{dynamicMessaging.satisfactionSubtitle}</p>
-                </div>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                <Coffee className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-black text-sm">{dynamicMessaging.satisfactionTitle}</h3>
+                <p className="text-xs text-slate-500">{dynamicMessaging.satisfactionSubtitle}</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-[#EA2C00]">{inputs.satisfaction || 0}%</span>
-              <span className="text-lg text-slate-500 ml-2">satisfaction</span>
-              <p className="text-sm text-slate-600 mt-2">
-                vs. <span className="font-semibold text-black">{ABRIDGE_BENCHMARKS.satisfaction}%</span> at top-performing organizations
-              </p>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-[#EA2C00] tracking-tight">{inputs.satisfaction || 0}%</span>
+                <span className="text-base text-slate-500">satisfaction</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xs text-slate-500">vs.</span>
+                <span className="text-sm font-semibold text-black">{ABRIDGE_BENCHMARKS.satisfaction}%</span>
+                <span className="text-xs text-slate-500">at top-performing organizations</span>
+              </div>
             </div>
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
-              <p className="text-sm text-slate-700">
+            <div className="mt-auto pt-4 border-t border-slate-100">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {dynamicMessaging.satisfactionContext}
               </p>
             </div>
           </div>
         ) : (
-          <div className="bg-black rounded-xl p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Coffee className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">Provider Satisfaction</h3>
-                  <p className="text-sm text-white/60">At benchmark performance</p>
-                </div>
+          <div className="bg-black rounded-2xl p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <Coffee className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Provider Satisfaction</h3>
+                <p className="text-xs text-white/60">At benchmark performance</p>
               </div>
             </div>
-            <div className="mb-4">
-              <span className="text-5xl font-bold text-white">{inputs.satisfaction || 0}%</span>
-              <span className="text-lg text-white/60 ml-2">satisfaction</span>
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl md:text-5xl font-bold text-white tracking-tight">{inputs.satisfaction || 0}%</span>
+                <span className="text-base text-white/60">satisfaction</span>
+              </div>
               <p className="text-sm text-white/70 mt-2">
                 At or above benchmark of {ABRIDGE_BENCHMARKS.satisfaction}%
               </p>
             </div>
-            <div className="p-4 bg-white/10 rounded-lg">
-              <p className="text-sm text-white/80">
+            <div className="mt-auto pt-4 border-t border-white/10">
+              <p className="text-sm text-white/70 leading-relaxed">
                 <span className="font-semibold text-white">Providers are happy.</span> High satisfaction drives sustained adoption and protects against turnover.
               </p>
             </div>
