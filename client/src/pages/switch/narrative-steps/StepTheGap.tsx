@@ -208,11 +208,11 @@ export default function StepTheGap({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {storyMetrics.efficiencyGapHours > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#EA2C00]/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 rounded-xl bg-[#EA2C00]/10 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-[#EA2C00]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111827]">{dynamicMessaging.timeTitle}</h3>
@@ -223,7 +223,7 @@ export default function StepTheGap({
               <div className="space-y-4">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-purple-600">{storyMetrics.efficiencyGapHours.toLocaleString()}</span>
+                    <span className="text-4xl font-bold text-[#EA2C00]">{storyMetrics.efficiencyGapHours.toLocaleString()}</span>
                     <span className="text-lg text-[#6B7280]">hours per year</span>
                   </div>
                   <p className="text-sm text-[#6B7280] mt-1">
@@ -232,8 +232,8 @@ export default function StepTheGap({
                 </div>
                 
                 {storyMetrics.hoursPerProviderPerWeek > 0 && (
-                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                    <p className="text-sm text-purple-800">
+                  <div className="p-3 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
+                    <p className="text-sm text-[#7f1d1d]">
                       For each of your <span className="font-semibold">{storyMetrics.providers} providers</span>, that's roughly 
                       <span className="font-semibold"> {storyMetrics.hoursPerProviderPerWeek} extra hours per week</span> still 
                       spent on documentation instead of patients — or life.
@@ -247,11 +247,11 @@ export default function StepTheGap({
 
         {storyMetrics.utilizationGapEncounters > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#F07B5F]/15 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-xl bg-[#F07B5F]/15 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-[#EA2C00]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111827]">{dynamicMessaging.utilizationTitle}</h3>
@@ -262,7 +262,7 @@ export default function StepTheGap({
               <div className="space-y-4">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-blue-600">{storyMetrics.utilizationGapEncounters.toLocaleString()}</span>
+                    <span className="text-4xl font-bold text-[#EA2C00]">{storyMetrics.utilizationGapEncounters.toLocaleString()}</span>
                     <span className="text-lg text-[#6B7280]">encounters per year</span>
                   </div>
                   <p className="text-sm text-[#6B7280] mt-1">
@@ -270,8 +270,8 @@ export default function StepTheGap({
                   </p>
                 </div>
                 
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                  <p className="text-sm text-blue-800">
+                <div className="p-3 bg-[#F07B5F]/10 rounded-lg border border-[#F07B5F]/25">
+                  <p className="text-sm text-[#7f1d1d]">
                     You're at <span className="font-semibold">{inputs.utilization}% utilization</span>. 
                     Top performers reach <span className="font-semibold">{ABRIDGE_BENCHMARKS.utilization}%</span>.
                     {' '}{dynamicMessaging.utilizationContext}
@@ -284,11 +284,11 @@ export default function StepTheGap({
 
         {storyMetrics.wrvuGapPercent > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#EA2C00]/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 rounded-xl bg-[#EA2C00]/10 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-[#EA2C00]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111827]">{dynamicMessaging.wrvuTitle}</h3>
@@ -299,7 +299,7 @@ export default function StepTheGap({
               <div className="space-y-4">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-emerald-600">+{inputs.wrvuLift || 0}%</span>
+                    <span className="text-4xl font-bold text-[#EA2C00]">+{inputs.wrvuLift || 0}%</span>
                     <span className="text-lg text-[#6B7280]">wRVU lift</span>
                   </div>
                   <p className="text-sm text-[#6B7280] mt-1">
@@ -307,8 +307,8 @@ export default function StepTheGap({
                   </p>
                 </div>
                 
-                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                  <p className="text-sm text-emerald-800">
+                <div className="p-3 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
+                  <p className="text-sm text-[#7f1d1d]">
                     {dynamicMessaging.wrvuContext}
                     {' '}The <span className="font-semibold">{storyMetrics.wrvuGapPercent} percentage point gap</span> represents 
                     services rendered but not fully captured.
@@ -321,11 +321,11 @@ export default function StepTheGap({
 
         {storyMetrics.satisfactionGap > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-100 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#F07B5F]/15 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                  <Coffee className="w-6 h-6 text-amber-600" />
+                <div className="w-12 h-12 rounded-xl bg-[#F07B5F]/15 flex items-center justify-center">
+                  <Coffee className="w-6 h-6 text-[#EA2C00]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111827]">{dynamicMessaging.satisfactionTitle}</h3>
@@ -336,7 +336,7 @@ export default function StepTheGap({
               <div className="space-y-4">
                 <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-amber-600">{inputs.satisfaction || 0}%</span>
+                    <span className="text-4xl font-bold text-[#EA2C00]">{inputs.satisfaction || 0}%</span>
                     <span className="text-lg text-[#6B7280]">satisfaction</span>
                   </div>
                   <p className="text-sm text-[#6B7280] mt-1">
@@ -344,8 +344,8 @@ export default function StepTheGap({
                   </p>
                 </div>
                 
-                <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
-                  <p className="text-sm text-amber-800">
+                <div className="p-3 bg-[#F07B5F]/10 rounded-lg border border-[#F07B5F]/25">
+                  <p className="text-sm text-[#7f1d1d]">
                     {dynamicMessaging.satisfactionContext}
                   </p>
                 </div>
@@ -356,14 +356,14 @@ export default function StepTheGap({
       </div>
 
       {storyMetrics.afterHoursTotal > 0 && (
-        <div className="bg-gradient-to-r from-indigo-900 to-indigo-800 rounded-xl p-6 text-white">
+        <div className="bg-black rounded-xl p-6 text-white">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-              <Moon className="w-7 h-7 text-indigo-300" />
+              <Moon className="w-7 h-7 text-white/70" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg mb-1">After-Hours Documentation</h3>
-              <p className="text-indigo-200">
+              <p className="text-white/80">
                 Your providers are currently spending <span className="font-semibold text-white">{inputs.afterHoursPerWeek} hours per week</span> charting 
                 after hours. That's <span className="font-semibold text-white">{storyMetrics.afterHoursTotal} hours per year</span> of 
                 documentation time that could be reduced — time that could be returned to your providers.
