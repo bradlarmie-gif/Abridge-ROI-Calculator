@@ -16,6 +16,7 @@ interface MeasureAllocateProps {
   updateState: (updates: Partial<MeasureState>) => void;
   onNext: () => void;
   onBack: () => void;
+  onHome: () => void;
 }
 
 interface AllocationPreset {
@@ -75,7 +76,8 @@ const PRESETS: AllocationPreset[] = [
 export default function MeasureAllocate({ 
   state, 
   updateState,
-  onNext, 
+  onNext,
+  onHome, 
   onBack,
 }: MeasureAllocateProps) {
   const results = useMemo(() => calculateMeasureResults(state), [state]);
@@ -122,6 +124,7 @@ export default function MeasureAllocate({
         totalSteps={4}
         stepName="The Impact"
         onBack={onBack}
+        onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 

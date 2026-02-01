@@ -49,9 +49,10 @@ interface MeasureWelcomeProps {
   onSelectSetting: (setting: MeasureCareSetting) => void;
   onNext: () => void;
   onBack: () => void;
+  onHome: () => void;
 }
 
-export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNext, onBack }: MeasureWelcomeProps) {
+export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNext, onBack, onHome }: MeasureWelcomeProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleShowMe = () => {
@@ -75,6 +76,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
         totalSteps={4}
         stepName="Set the Stage"
         onBack={onBack}
+        onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 

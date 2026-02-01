@@ -58,6 +58,7 @@ export default function MeasureFlow() {
           onSelectSetting={handleSelectCareSetting}
           onNext={() => navigate('effect')}
           onBack={goHome}
+          onHome={goHome}
         />
       );
     
@@ -69,6 +70,7 @@ export default function MeasureFlow() {
           onNext={() => navigate('allocate')}
           onBack={() => navigate('welcome')}
           onViewTrends={() => navigate('trends')}
+          onHome={goHome}
         />
       );
     
@@ -79,6 +81,7 @@ export default function MeasureFlow() {
           updateState={updateState}
           onNext={() => navigate('story')}
           onBack={() => navigate('effect')}
+          onHome={goHome}
         />
       );
     
@@ -96,6 +99,7 @@ export default function MeasureFlow() {
         <MeasureTrends
           state={state}
           onBack={() => navigate('effect')}
+          onHome={goHome}
         />
       );
     

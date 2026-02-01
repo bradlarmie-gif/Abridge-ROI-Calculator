@@ -24,6 +24,7 @@ interface MeasureEffectProps {
   onNext: () => void;
   onBack: () => void;
   onViewTrends: () => void;
+  onHome: () => void;
 }
 
 function EMDistributionChart({ 
@@ -118,6 +119,7 @@ export default function MeasureEffect({
   onNext, 
   onBack,
   onViewTrends,
+  onHome,
 }: MeasureEffectProps) {
   const [configExpanded, setConfigExpanded] = useState(true);
   const [trendDataExpanded, setTrendDataExpanded] = useState(false);
@@ -189,6 +191,7 @@ export default function MeasureEffect({
         totalSteps={4}
         stepName="The Evidence"
         onBack={onBack}
+        onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 

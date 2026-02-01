@@ -10,6 +10,7 @@ import { type MeasureState, generateTrendData } from "@/lib/measureCalculator";
 interface MeasureTrendsProps {
   state: MeasureState;
   onBack: () => void;
+  onHome: () => void;
 }
 
 const METRIC_OPTIONS = [
@@ -19,7 +20,7 @@ const METRIC_OPTIONS = [
   { value: 'sameDayClosure', label: 'Same-day Closure' },
 ];
 
-export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
+export default function MeasureTrends({ state, onBack, onHome }: MeasureTrendsProps) {
   const [selectedMetric, setSelectedMetric] = useState('wrvu');
   
   const trendData = useMemo(() => 
@@ -47,6 +48,7 @@ export default function MeasureTrends({ state, onBack }: MeasureTrendsProps) {
         totalSteps={4}
         stepName="Your Journey (Trends)"
         onBack={onBack}
+        onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
