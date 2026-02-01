@@ -217,7 +217,7 @@ export default function StepTheGap({
           <div className="max-w-2xl mx-auto mt-10">
             <div className="relative h-3 bg-slate-700/50 rounded-full overflow-hidden">
               <div 
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-1000 ease-out rounded-full"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] transition-all duration-1000 ease-out rounded-full"
                 style={{ width: `${calculations.realizationScore}%` }}
               />
             </div>
