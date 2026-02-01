@@ -597,13 +597,7 @@ export default function SummaryCommandCenter({
                 </div>
                 <div className="relative inline-block">
                   <div 
-                    className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight"
-                    style={{ 
-                      background: 'linear-gradient(135deg, #FFFFFF 0%, #F07B5F 50%, #EA2C00 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
+                    className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight text-[#EA2C00]"
                     data-testid="summary-net-value"
                   >
                     {formatCurrency(netValue)}
