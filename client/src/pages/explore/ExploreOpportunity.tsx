@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { ArrowRight, Users, Calendar, Percent } from "lucide-react";
+import { useCallback, useState } from "react";
+import { ArrowRight, Users, Calendar, Percent, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -13,17 +13,75 @@ interface ExploreOpportunityProps {
   onHome: () => void;
 }
 
-const ENCOUNTERS_PER_PROVIDER_PER_YEAR = 3500;
+const ENCOUNTERS_PER_PROVIDER_OUTPATIENT = 3500;
+const ENCOUNTERS_PER_PROVIDER_SPECIALTY = 2800;
+
+const UTILIZATION_OPTIONS = [
+  { label: "Conservative", value: 50, description: "Cautious rollout" },
+  { label: "Typical", value: 70, description: "Standard adoption" },
+  { label: "Aggressive", value: 80, description: "High adoption" },
+];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
-  
+  const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders.toString());
+  const [encounterInputValue, setEncounterInputValue] = useState(state.annualEncounters.toString());
+
   const handleProvidersChange = useCallback((value: number) => {
-    const annualEncounters = value * ENCOUNTERS_PER_PROVIDER_PER_YEAR;
+    const clampedValue = Math.max(1, Math.min(1000, value));
+    const annualEncounters = clampedValue * ENCOUNTERS_PER_PROVIDER_OUTPATIENT;
+    setProviderInputValue(clampedValue.toString());
+    setEncounterInputValue(annualEncounters.toString());
     updateState({ 
-      numberOfProviders: value,
+      numberOfProviders: clampedValue,
       annualEncounters,
     });
   }, [updateState]);
+
+  const handleProviderInputChange = useCallback((inputVal: string) => {
+    setProviderInputValue(inputVal);
+    const numValue = parseInt(inputVal, 10);
+    if (!isNaN(numValue) && numValue > 0) {
+      const clampedValue = Math.max(1, Math.min(1000, numValue));
+      const annualEncounters = clampedValue * ENCOUNTERS_PER_PROVIDER_OUTPATIENT;
+      setEncounterInputValue(annualEncounters.toString());
+      updateState({ 
+        numberOfProviders: clampedValue,
+        annualEncounters,
+      });
+    }
+  }, [updateState]);
+
+  const handleProviderInputBlur = useCallback(() => {
+    const numValue = parseInt(providerInputValue, 10);
+    if (isNaN(numValue) || numValue < 1) {
+      setProviderInputValue(state.numberOfProviders.toString());
+    } else {
+      const clampedValue = Math.max(1, Math.min(1000, numValue));
+      setProviderInputValue(clampedValue.toString());
+    }
+  }, [providerInputValue, state.numberOfProviders]);
+
+  const handleEncountersChange = useCallback((value: number) => {
+    const clampedValue = Math.max(1000, Math.min(5000000, value));
+    setEncounterInputValue(clampedValue.toString());
+    updateState({ annualEncounters: clampedValue });
+  }, [updateState]);
+
+  const handleEncounterInputChange = useCallback((inputVal: string) => {
+    const cleanedValue = inputVal.replace(/,/g, '');
+    setEncounterInputValue(cleanedValue);
+    const numValue = parseInt(cleanedValue, 10);
+    if (!isNaN(numValue) && numValue > 0) {
+      updateState({ annualEncounters: numValue });
+    }
+  }, [updateState]);
+
+  const handleEncounterInputBlur = useCallback(() => {
+    const numValue = parseInt(encounterInputValue.replace(/,/g, ''), 10);
+    if (isNaN(numValue) || numValue < 1000) {
+      setEncounterInputValue(state.annualEncounters.toString());
+    }
+  }, [encounterInputValue, state.annualEncounters]);
 
   const handleUtilizationChange = useCallback((value: number) => {
     updateState({ utilizationPercent: value });
@@ -33,7 +91,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
   const formatNumber = (n: number) => n.toLocaleString();
 
-  const isValid = state.numberOfProviders > 0 && state.utilizationPercent > 0;
+  const isValid = state.numberOfProviders > 0 && state.annualEncounters > 0 && state.utilizationPercent > 0;
+
+  const getSelectedUtilization = () => {
+    return UTILIZATION_OPTIONS.find(opt => opt.value === state.utilizationPercent) || null;
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -68,6 +130,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
         </motion.div>
 
         <div className="space-y-6 max-w-2xl mx-auto">
+          {/* Number of Providers */}
           <motion.div
             className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8"
             initial={{ opacity: 0, y: 20 }}
@@ -91,14 +154,20 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   min="10"
                   max="500"
                   step="10"
-                  value={state.numberOfProviders}
+                  value={Math.min(500, state.numberOfProviders)}
                   onChange={(e) => handleProvidersChange(Number(e.target.value))}
                   className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
                   data-testid="slider-providers"
                 />
-                <div className="w-20 text-right">
-                  <span className="text-2xl font-bold text-black">{state.numberOfProviders}</span>
-                </div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={providerInputValue}
+                  onChange={(e) => handleProviderInputChange(e.target.value)}
+                  onBlur={handleProviderInputBlur}
+                  className="w-20 text-right text-2xl font-bold text-black bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-[#EA2C00] focus:outline-none transition-colors"
+                  data-testid="input-providers"
+                />
               </div>
               
               <div className="flex items-center justify-between text-xs text-slate-400">
@@ -108,6 +177,62 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
             </div>
           </motion.div>
 
+          {/* Annual Encounters */}
+          <motion.div
+            className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                <FileText className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-black">Annual Encounters</h2>
+                <p className="text-sm text-slate-500">Total patient encounters per year</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="10000"
+                  max="2000000"
+                  step="10000"
+                  value={Math.min(2000000, state.annualEncounters)}
+                  onChange={(e) => handleEncountersChange(Number(e.target.value))}
+                  className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                  data-testid="slider-encounters"
+                />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formatNumber(state.annualEncounters)}
+                  onChange={(e) => handleEncounterInputChange(e.target.value)}
+                  onBlur={handleEncounterInputBlur}
+                  className="w-28 text-right text-2xl font-bold text-black bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-[#EA2C00] focus:outline-none transition-colors"
+                  data-testid="input-encounters"
+                />
+              </div>
+              
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span>10K</span>
+                <span>2M+</span>
+              </div>
+
+              <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <p className="text-xs text-slate-500">
+                  <span className="font-medium text-slate-600">Typical benchmarks:</span>{" "}
+                  ~{formatNumber(ENCOUNTERS_PER_PROVIDER_OUTPATIENT)} encounters/provider/year (primary care) • 
+                  ~{formatNumber(ENCOUNTERS_PER_PROVIDER_SPECIALTY)} encounters/provider/year (specialty)
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Expected Utilization */}
           <motion.div
             className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8"
             initial={{ opacity: 0, y: 20 }}
@@ -124,7 +249,43 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               </div>
             </div>
 
-            <div className="space-y-4">
+            {/* Utilization Quick Buttons */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {UTILIZATION_OPTIONS.map((option) => {
+                const isSelected = state.utilizationPercent === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => handleUtilizationChange(option.value)}
+                    className={`
+                      relative p-4 rounded-xl border-2 transition-all duration-200 text-left
+                      ${isSelected 
+                        ? 'bg-black border-black text-white' 
+                        : 'bg-white border-slate-200 text-black hover:border-slate-300'
+                      }
+                    `}
+                    data-testid={`button-utilization-${option.label.toLowerCase()}`}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#EA2C00] flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                    <p className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-black'}`}>
+                      {option.value}%
+                    </p>
+                    <p className={`text-xs font-medium ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
+                      {option.label}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom slider for fine-tuning */}
+            <div className="space-y-2">
               <div className="flex items-center gap-4">
                 <input
                   type="range"
@@ -136,8 +297,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
                   data-testid="slider-utilization"
                 />
-                <div className="w-20 text-right">
-                  <span className="text-2xl font-bold text-black">{state.utilizationPercent}%</span>
+                <div className="w-16 text-right">
+                  <span className="text-lg font-bold text-black">{state.utilizationPercent}%</span>
                 </div>
               </div>
               
@@ -148,6 +309,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
             </div>
           </motion.div>
 
+          {/* Your Baseline Summary */}
           <motion.div
             className="bg-black rounded-2xl p-6 md:p-8 text-white"
             initial={{ opacity: 0, y: 20 }}
@@ -164,14 +326,18 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-white/60 mb-1">Providers</p>
+                <p className="text-2xl md:text-3xl font-bold">{formatNumber(state.numberOfProviders)}</p>
+              </div>
               <div>
                 <p className="text-sm text-white/60 mb-1">Annual Encounters</p>
-                <p className="text-3xl font-bold">{formatNumber(state.annualEncounters)}</p>
+                <p className="text-2xl md:text-3xl font-bold">{formatNumber(state.annualEncounters)}</p>
               </div>
               <div>
                 <p className="text-sm text-white/60 mb-1">Eligible Encounters</p>
-                <p className="text-3xl font-bold text-[#F07B5F]">{formatNumber(eligibleEncounters)}</p>
+                <p className="text-2xl md:text-3xl font-bold text-[#F07B5F]">{formatNumber(eligibleEncounters)}</p>
               </div>
             </div>
           </motion.div>
