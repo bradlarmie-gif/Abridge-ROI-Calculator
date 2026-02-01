@@ -22,7 +22,7 @@ interface ScenarioOption {
   recommended?: boolean;
 }
 
-const SCENARIOS: ScenarioOption[] = [
+const OUTPATIENT_SCENARIOS: ScenarioOption[] = [
   {
     id: 'conservative',
     label: 'Conservative',
@@ -50,7 +50,37 @@ const SCENARIOS: ScenarioOption[] = [
   },
 ];
 
+const ED_SCENARIOS: ScenarioOption[] = [
+  {
+    id: 'conservative',
+    label: 'Conservative',
+    tagline: 'Play it safe',
+    description: 'Accounts for ED workflow complexity. Start here for skeptical stakeholders.',
+    minutes: 2,
+    icon: Shield,
+  },
+  {
+    id: 'typical',
+    label: 'Typical',
+    tagline: 'Most EDs start here',
+    description: 'Based on real ED implementations. Balances throughput improvement with adoption reality.',
+    minutes: 4,
+    icon: Target,
+    recommended: true,
+  },
+  {
+    id: 'aggressive',
+    label: 'Aggressive',
+    tagline: 'Maximize throughput',
+    description: 'For high-volume EDs with strong physician buy-in and optimized workflows.',
+    minutes: 6,
+    icon: Zap,
+  },
+];
+
 export default function ExploreTimePath({ state, updateState, onNext, onBack, onHome }: ExploreTimePathProps) {
+  const isED = state.careSetting === 'ed';
+  const SCENARIOS = isED ? ED_SCENARIOS : OUTPATIENT_SCENARIOS;
   
   const handleSelectScenario = (scenario: ScenarioOption) => {
     updateState({ 
@@ -88,17 +118,23 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                Model Time Savings
+                {isED ? "Model ED Efficiency" : "Model Time Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                Choose your modeling approach
+                {isED ? "How much time per encounter?" : "Choose your modeling approach"}
               </h1>
               <p className="text-slate-600 mb-4">
-                Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations.
+                {isED 
+                  ? "ED documentation is fast-paced but still time-consuming. Pick the scenario that matches your expectations for per-encounter time savings."
+                  : "Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations."
+                }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">How to choose:</span> Use "Conservative" for CFO presentations or skeptical stakeholders. "Typical" reflects average outcomes. "Aggressive" suits high-adoption organizations with strong change management. All assumptions can be adjusted later.
+                  <span className="font-semibold text-slate-700">How to choose:</span> {isED 
+                    ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
+                    : "Use \"Conservative\" for CFO presentations or skeptical stakeholders. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
+                  }
                 </p>
               </div>
             </motion.div>
