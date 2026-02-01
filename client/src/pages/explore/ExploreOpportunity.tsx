@@ -16,19 +16,18 @@ interface ExploreOpportunityProps {
 interface BusynessPreset {
   label: string;
   value: number;
-  description: string;
 }
 
 const BUSYNESS_PRESETS: BusynessPreset[] = [
-  { label: "Lighter", value: 1500, description: "More time per patient" },
-  { label: "Typical", value: 2100, description: "Standard volume" },
-  { label: "Busy", value: 2500, description: "High throughput" },
+  { label: "Lighter", value: 1500 },
+  { label: "Typical", value: 2100 },
+  { label: "Busy", value: 2500 },
 ];
 
 const UTILIZATION_PRESETS = [
-  { label: "Conservative", value: 50, description: "Cautious rollout" },
-  { label: "Typical", value: 70, description: "Standard adoption" },
-  { label: "Aggressive", value: 85, description: "Full commitment" },
+  { label: "Conservative", value: 50 },
+  { label: "Typical", value: 70 },
+  { label: "Aggressive", value: 85 },
 ];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
@@ -133,7 +132,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
-          <div className="flex-1 lg:max-w-2xl">
+          <div className="flex-1 lg:max-w-xl">
             <motion.div 
               className="mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -146,62 +145,61 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
                 Tell us about your practice
               </h1>
-              <p className="text-slate-600">
+              <p className="text-slate-600 text-sm">
                 We'll calculate your baseline to show potential value.
               </p>
             </motion.div>
 
-            <div className="space-y-6">
-              {/* Number of Providers */}
+            <div className="space-y-4">
+              {/* Number of Providers - Compact */}
               <motion.div
-                className="bg-white rounded-2xl border border-slate-200 p-6"
+                className="bg-white rounded-xl border border-slate-200 p-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
               >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                    <Users className="w-5 h-5 text-[#EA2C00]" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                      <Users className="w-4 h-4 text-[#EA2C00]" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-black">Providers</h2>
+                      <p className="text-xs text-slate-400">Clinicians using Abridge</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-black">Number of Providers</h2>
-                    <p className="text-sm text-slate-500">How many clinicians will use Abridge?</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center">
                   <input
                     type="text"
                     inputMode="numeric"
-                    placeholder="Enter number"
+                    placeholder="0"
                     value={providerInputValue}
                     onChange={(e) => handleProvidersChange(e.target.value)}
                     onBlur={handleProviderInputBlur}
-                    className="w-40 py-3 px-4 text-center text-2xl font-bold text-slate-900 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 transition-all"
+                    className="w-24 py-2 px-3 text-right text-lg font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-1 focus:ring-[#EA2C00]/20 transition-all placeholder:text-slate-300"
                     data-testid="input-providers"
                   />
                 </div>
               </motion.div>
 
-              {/* Clinic Busyness */}
+              {/* Clinic Busyness - Compact */}
               <motion.div
-                className="bg-white rounded-2xl border border-slate-200 p-6"
+                className="bg-white rounded-xl border border-slate-200 p-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.5 }}
               >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-[#EA2C00]" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-black">Clinic Busyness</h2>
-                    <p className="text-sm text-slate-500">Annual encounters per provider</p>
+                    <h2 className="text-sm font-semibold text-black">Clinic Busyness</h2>
+                    <p className="text-xs text-slate-400">Annual encounters per provider</p>
                   </div>
                 </div>
 
-                {/* Preset buttons */}
-                <div className="flex items-center gap-2 mb-4">
+                {/* Preset buttons - Smaller */}
+                <div className="flex items-center gap-2 mb-3">
                   {BUSYNESS_PRESETS.map((preset) => {
                     const isSelected = isPresetSelected(preset.value);
                     return (
@@ -209,65 +207,59 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         key={preset.value}
                         type="button"
                         onClick={() => handleBusynessChange(preset.value)}
-                        className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        className={`flex-1 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                           isSelected
                             ? 'bg-[#EA2C00] text-white shadow-sm'
-                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
                         }`}
                         data-testid={`preset-busyness-${preset.label.toLowerCase()}`}
                       >
-                        <div className="text-center">
-                          <span className="block font-semibold">{preset.label}</span>
-                          <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
-                            {preset.value.toLocaleString()}/yr
-                          </span>
-                        </div>
+                        <span className="block font-semibold">{preset.label}</span>
+                        <span className={`block text-[10px] ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                          {preset.value.toLocaleString()}/yr
+                        </span>
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Custom value input */}
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-sm text-slate-500">or enter custom:</span>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min={1000}
-                      max={4000}
-                      placeholder={encountersPerProvider.toString()}
-                      value={customEncountersInput}
-                      onChange={(e) => handleCustomEncountersChange(e.target.value)}
-                      className="w-24 py-2 px-3 text-center text-lg font-semibold text-slate-900 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 transition-all"
-                      data-testid="input-encounters-per-provider"
-                    />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">
-                      /yr
-                    </span>
-                  </div>
+                {/* Custom input - Inline */}
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-slate-400">or custom:</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1000}
+                    max={4000}
+                    placeholder={encountersPerProvider.toString()}
+                    value={customEncountersInput}
+                    onChange={(e) => handleCustomEncountersChange(e.target.value)}
+                    className="w-16 py-1 px-2 text-center text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-[#EA2C00] transition-all"
+                    data-testid="input-encounters-per-provider"
+                  />
+                  <span className="text-slate-400">/yr</span>
                 </div>
               </motion.div>
 
-              {/* Expected Utilization */}
+              {/* Expected Utilization - Compact */}
               <motion.div
-                className="bg-white rounded-2xl border border-slate-200 p-6"
+                className="bg-white rounded-xl border border-slate-200 p-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                    <Percent className="w-5 h-5 text-[#EA2C00]" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                    <Percent className="w-4 h-4 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-black">Expected Utilization</h2>
-                    <p className="text-sm text-slate-500">What percentage of encounters will use Abridge?</p>
+                    <h2 className="text-sm font-semibold text-black">Expected Utilization</h2>
+                    <p className="text-xs text-slate-400">% of encounters using Abridge</p>
                   </div>
                 </div>
 
-                {/* Preset buttons */}
-                <div className="flex items-center gap-2 mb-4">
+                {/* Preset buttons - Smaller */}
+                <div className="flex items-center gap-2 mb-3">
                   {UTILIZATION_PRESETS.map((preset) => {
                     const isSelected = isUtilizationPresetSelected(preset.value);
                     return (
@@ -275,42 +267,36 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         key={preset.value}
                         type="button"
                         onClick={() => handleUtilizationChange(preset.value)}
-                        className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        className={`flex-1 py-2 px-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                           isSelected
                             ? 'bg-[#EA2C00] text-white shadow-sm'
-                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
                         }`}
                         data-testid={`preset-utilization-${preset.label.toLowerCase()}`}
                       >
-                        <div className="text-center">
-                          <span className="block font-semibold">{preset.label}</span>
-                          <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
-                            {preset.value}%
-                          </span>
-                        </div>
+                        <span className="block font-semibold">{preset.label}</span>
+                        <span className={`block text-[10px] ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                          {preset.value}%
+                        </span>
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Custom value input */}
-                <div className="flex items-center justify-center gap-3">
-                  <span className="text-sm text-slate-500">or enter custom:</span>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min={10}
-                      max={100}
-                      value={state.utilizationPercent}
-                      onChange={(e) => handleCustomUtilizationChange(e.target.value)}
-                      className="w-20 py-2 px-3 text-center text-lg font-semibold text-slate-900 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 transition-all"
-                      data-testid="input-utilization"
-                    />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">
-                      %
-                    </span>
-                  </div>
+                {/* Custom input - Inline */}
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-slate-400">or custom:</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={10}
+                    max={100}
+                    value={state.utilizationPercent}
+                    onChange={(e) => handleCustomUtilizationChange(e.target.value)}
+                    className="w-14 py-1 px-2 text-center text-sm font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-[#EA2C00] transition-all"
+                    data-testid="input-utilization"
+                  />
+                  <span className="text-slate-400">%</span>
                 </div>
               </motion.div>
 
@@ -325,7 +311,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   onClick={onNext}
                   disabled={!isValid}
                   className={`
-                    w-full h-12 font-semibold rounded-full transition-all duration-200
+                    w-full h-11 font-semibold rounded-full transition-all duration-200
                     ${isValid 
                       ? 'bg-black hover:bg-black/90 text-white' 
                       : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -333,7 +319,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   `}
                   data-testid="button-continue-mobile"
                 >
-                  Continue to Time Savings
+                  Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
@@ -342,83 +328,81 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
           {/* Live Receipt Sidebar */}
           <motion.div
-            className="hidden lg:block lg:w-80"
+            className="hidden lg:block lg:w-72"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.25, duration: 0.5 }}
           >
             <div className="sticky top-24">
-              <div className="bg-slate-900 rounded-2xl p-6 text-white">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                    <Receipt className="w-4 h-4 text-white" />
+              <div className="bg-slate-900 rounded-xl overflow-hidden">
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <Receipt className="w-4 h-4 text-white/60" />
+                    <h3 className="text-sm font-semibold text-white">Your Baseline</h3>
                   </div>
-                  <h3 className="font-semibold text-white/90">Your Baseline</h3>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Providers */}
-                  <div className="flex justify-between items-center py-3 border-b border-white/10">
-                    <span className="text-sm text-white/60">Providers</span>
-                    <span className="text-lg font-bold">
+                {/* Content */}
+                <div className="px-5 py-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Providers</span>
+                    <span className="text-sm font-semibold text-white">
                       {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
                     </span>
                   </div>
 
-                  {/* Encounters per Provider */}
-                  <div className="flex justify-between items-center py-3 border-b border-white/10">
-                    <span className="text-sm text-white/60">Encounters/Provider</span>
-                    <span className="text-lg font-bold">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Encounters/Provider</span>
+                    <span className="text-sm font-semibold text-white">
                       {formatNumber(encountersPerProvider)}
                     </span>
                   </div>
 
-                  {/* Total Annual Encounters */}
-                  <div className="flex justify-between items-center py-3 border-b border-white/10">
-                    <span className="text-sm text-white/60">Annual Encounters</span>
-                    <span className="text-lg font-bold">
+                  <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                    <span className="text-xs text-white/50">Annual Encounters</span>
+                    <span className="text-sm font-semibold text-white">
                       {state.numberOfProviders > 0 ? formatNumber(annualEncounters) : '—'}
                     </span>
                   </div>
 
-                  {/* Utilization */}
-                  <div className="flex justify-between items-center py-3 border-b border-white/10">
-                    <span className="text-sm text-white/60">Utilization</span>
-                    <span className="text-lg font-bold">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Utilization</span>
+                    <span className="text-sm font-semibold text-white">
                       {state.utilizationPercent}%
                     </span>
                   </div>
 
                   {/* Eligible Encounters - Highlighted */}
-                  <div className="pt-2">
+                  <div className="pt-3 border-t border-white/10">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-white/80">Eligible Encounters</span>
-                      <span className="text-2xl font-bold text-[#F07B5F]">
+                      <span className="text-xs font-medium text-white/70">Eligible Encounters</span>
+                      <span className="text-lg font-bold text-[#F07B5F]">
                         {state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—'}
                       </span>
                     </div>
-                    <p className="text-xs text-white/40 mt-1">
+                    <p className="text-[10px] text-white/30 mt-1">
                       Encounters that will use Abridge
                     </p>
                   </div>
                 </div>
 
                 {/* Continue Button */}
-                <div className="mt-6 pt-4 border-t border-white/10">
+                <div className="px-5 pb-5">
                   <Button
                     onClick={onNext}
                     disabled={!isValid}
                     className={`
-                      w-full h-11 font-semibold rounded-full transition-all duration-200
+                      w-full h-10 text-sm font-semibold rounded-full transition-all duration-200
                       ${isValid 
                         ? 'bg-white hover:bg-white/90 text-black' 
-                        : 'bg-white/20 text-white/40 cursor-not-allowed'
+                        : 'bg-white/10 text-white/30 cursor-not-allowed'
                       }
                     `}
                     data-testid="button-continue"
                   >
                     Continue
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
                 </div>
               </div>
