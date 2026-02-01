@@ -25,13 +25,16 @@ export default function StepTheGap({
   
   // Dynamic messaging based on realization score
   const getPerformanceTier = (score: number) => {
-    if (score >= 85) return 'strong';
-    if (score >= 70) return 'moderate';
-    if (score >= 55) return 'developing';
-    return 'emerging';
+    if (score >= 95) return { tier: 'benchmark', label: 'Benchmark Level', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' };
+    if (score >= 85) return { tier: 'strong', label: 'Strong Performance', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' };
+    if (score >= 70) return { tier: 'moderate', label: 'Opportunity Ahead', color: 'text-blue-400', bgColor: 'bg-blue-500/20' };
+    if (score >= 55) return { tier: 'developing', label: 'Untapped Potential', color: 'text-amber-400', bgColor: 'bg-amber-500/20' };
+    if (score >= 40) return { tier: 'emerging', label: 'Value Left Behind', color: 'text-orange-400', bgColor: 'bg-orange-500/20' };
+    return { tier: 'explore', label: 'Explore Your Options', color: 'text-red-400', bgColor: 'bg-red-500/20' };
   };
   
-  const performanceTier = getPerformanceTier(calculations.realizationScore);
+  const performanceInfo = getPerformanceTier(calculations.realizationScore);
+  const performanceTier = performanceInfo.tier;
   
   const dynamicMessaging = useMemo(() => {
     const tier = performanceTier;
@@ -128,7 +131,7 @@ export default function StepTheGap({
         <div className="relative">
           <div className="text-center mb-10">
             <p className="text-slate-400 text-sm uppercase tracking-wider mb-4">You're capturing</p>
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-4 mb-3">
               <span className="text-7xl md:text-8xl font-bold text-white" data-testid="text-realization-score">
                 {calculations.realizationScore}%
               </span>
@@ -136,7 +139,18 @@ export default function StepTheGap({
                 of 100%
               </span>
             </div>
-            <p className="text-xl md:text-2xl text-slate-300">
+            
+            {/* Maturity Label Badge */}
+            <div className="flex justify-center mb-4">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${performanceInfo.bgColor} border border-white/10`}>
+                <div className={`w-2 h-2 rounded-full ${performanceInfo.color.replace('text-', 'bg-')}`} />
+                <span className={`text-sm font-semibold uppercase tracking-wider ${performanceInfo.color}`}>
+                  {performanceInfo.label}
+                </span>
+              </div>
+            </div>
+            
+            <p className="text-lg md:text-xl text-slate-400">
               of what top-performing organizations achieve
             </p>
           </div>
