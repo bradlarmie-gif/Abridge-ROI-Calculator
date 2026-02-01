@@ -159,15 +159,22 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
                   data-testid="slider-providers"
                 />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={providerInputValue}
-                  onChange={(e) => handleProviderInputChange(e.target.value)}
-                  onBlur={handleProviderInputBlur}
-                  className="w-20 text-right text-2xl font-bold text-black bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-[#EA2C00] focus:outline-none transition-colors"
-                  data-testid="input-providers"
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={providerInputValue}
+                    onChange={(e) => handleProviderInputChange(e.target.value)}
+                    onBlur={handleProviderInputBlur}
+                    className="w-24 text-right text-2xl font-bold text-black bg-slate-50 hover:bg-slate-100 focus:bg-white px-3 py-1 rounded-lg border-2 border-slate-200 hover:border-slate-300 focus:border-[#EA2C00] focus:outline-none transition-all cursor-text"
+                    data-testid="input-providers"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:opacity-60 group-focus-within:opacity-0 transition-opacity">
+                    <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               <div className="flex items-center justify-between text-xs text-slate-400">
@@ -206,15 +213,22 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
                   data-testid="slider-encounters"
                 />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={formatNumber(state.annualEncounters)}
-                  onChange={(e) => handleEncounterInputChange(e.target.value)}
-                  onBlur={handleEncounterInputBlur}
-                  className="w-28 text-right text-2xl font-bold text-black bg-transparent border-b-2 border-transparent hover:border-slate-200 focus:border-[#EA2C00] focus:outline-none transition-colors"
-                  data-testid="input-encounters"
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatNumber(state.annualEncounters)}
+                    onChange={(e) => handleEncounterInputChange(e.target.value)}
+                    onBlur={handleEncounterInputBlur}
+                    className="w-32 text-right text-2xl font-bold text-black bg-slate-50 hover:bg-slate-100 focus:bg-white px-3 py-1 rounded-lg border-2 border-slate-200 hover:border-slate-300 focus:border-[#EA2C00] focus:outline-none transition-all cursor-text"
+                    data-testid="input-encounters"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 group-hover:opacity-60 group-focus-within:opacity-0 transition-opacity">
+                    <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               <div className="flex items-center justify-between text-xs text-slate-400">
