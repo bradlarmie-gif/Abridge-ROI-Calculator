@@ -231,10 +231,10 @@ export default function StepTheMath({
           <GapAccordion
             id="utilization"
             icon={BarChart3}
-            iconBg="bg-blue-100"
-            iconColor="text-blue-600"
-            accentBg="bg-blue-50"
-            accentBorder="border-blue-100"
+            iconBg="bg-[#EA2C00]/10"
+            iconColor="text-[#EA2C00]"
+            accentBg="bg-[#EA2C00]/5"
+            accentBorder="border-[#EA2C00]/20"
             title="Utilization Gap"
             subtitle={`${inputs.utilization}% → ${ABRIDGE_BENCHMARKS.utilization}%`}
             value={recalculatedValues.utilizationGapValue}
@@ -292,7 +292,7 @@ export default function StepTheMath({
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-blue-600 pt-1">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -301,10 +301,10 @@ export default function StepTheMath({
           <GapAccordion
             id="efficiency"
             icon={Clock}
-            iconBg="bg-purple-100"
-            iconColor="text-purple-600"
-            accentBg="bg-purple-50"
-            accentBorder="border-purple-100"
+            iconBg="bg-[#F07B5F]/15"
+            iconColor="text-[#EA2C00]"
+            accentBg="bg-[#F07B5F]/10"
+            accentBorder="border-[#F07B5F]/25"
             title="Efficiency Gap"
             subtitle={`${inputs.timeSavedPerEncounter} min → ${ABRIDGE_BENCHMARKS.timeSavedAvg} min saved`}
             value={recalculatedValues.efficiencyGapValue}
@@ -364,7 +364,7 @@ export default function StepTheMath({
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-purple-600 pt-1">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -373,10 +373,10 @@ export default function StepTheMath({
           <GapAccordion
             id="quality"
             icon={DollarSign}
-            iconBg="bg-emerald-100"
-            iconColor="text-emerald-600"
-            accentBg="bg-emerald-50"
-            accentBorder="border-emerald-100"
+            iconBg="bg-[#EA2C00]/10"
+            iconColor="text-[#EA2C00]"
+            accentBg="bg-[#EA2C00]/5"
+            accentBorder="border-[#EA2C00]/20"
             title="Quality Gap (wRVU)"
             subtitle={`+${inputs.wrvuLift}% → +${ABRIDGE_BENCHMARKS.wrvuLift}% lift`}
             value={recalculatedValues.wrvuGapValue}
@@ -436,7 +436,7 @@ export default function StepTheMath({
                     />
                     attribution
                   </p>
-                  <p className="font-bold text-emerald-600 pt-1">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
                 </div>
               </div>
               
@@ -448,9 +448,9 @@ export default function StepTheMath({
           </GapAccordion>
         </div>
 
-        <div className="mt-4 bg-slate-900 text-white rounded-lg p-4 flex items-center justify-between">
+        <div className="mt-4 bg-black text-white rounded-lg p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <TrendingUp className="w-5 h-5 text-[#F07B5F]" />
             <span className="font-semibold">Total Annual Gap</span>
           </div>
           <span className="text-2xl font-bold text-emerald-400">{formatCurrency(recalculatedValues.annualGap)}</span>
