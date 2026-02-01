@@ -70,7 +70,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
       <UnifiedHeader
         pathType="explore"
         currentStep={3}
-        totalSteps={7}
+        totalSteps={6}
         stepName="Time Path"
         onBack={onBack}
         onHome={onHome}

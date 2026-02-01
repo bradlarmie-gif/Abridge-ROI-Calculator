@@ -4,7 +4,6 @@ import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimePath from "./ExploreTimePath";
 import ExploreTimeAllocation from "./ExploreTimeAllocation";
 import ExploreDocDrivers from "./ExploreDocDrivers";
-import ExploreReview from "./ExploreReview";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -79,8 +78,7 @@ type ExplorePhase =
   | 'opportunity' 
   | 'timePath' 
   | 'timeAllocation' 
-  | 'docDrivers' 
-  | 'review';
+  | 'docDrivers';
 
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
@@ -172,19 +170,8 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
           state={state}
           updateState={updateState}
           totalHoursSaved={calculateTotalHoursSaved()}
-          onNext={() => navigate('review')}
+          onNext={handleContinueToInvestment}
           onBack={() => navigate('timeAllocation')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'review':
-      return (
-        <ExploreReview
-          state={state}
-          totalHoursSaved={calculateTotalHoursSaved()}
-          onContinueToInvestment={handleContinueToInvestment}
-          onBack={() => navigate('docDrivers')}
           onHome={goHome}
         />
       );

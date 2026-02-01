@@ -764,7 +764,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
             className="h-12 px-8 font-semibold rounded-full bg-black hover:bg-black/90 text-white"
             data-testid="button-continue"
           >
-            Review Your Model
+            Continue to Investment
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           

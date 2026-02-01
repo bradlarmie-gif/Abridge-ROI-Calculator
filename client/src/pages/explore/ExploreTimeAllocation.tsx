@@ -397,7 +397,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       <UnifiedHeader
         pathType="explore"
         currentStep={4}
-        totalSteps={7}
+        totalSteps={6}
         stepName="Time Allocation"
         onBack={onBack}
         onHome={onHome}
