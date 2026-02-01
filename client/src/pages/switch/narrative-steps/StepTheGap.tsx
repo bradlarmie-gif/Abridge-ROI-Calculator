@@ -129,46 +129,39 @@ export default function StepTheGap({
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         
         <div className="relative">
-          <div className="text-center mb-10">
-            <p className="text-slate-400 text-sm uppercase tracking-wider mb-4">You're capturing</p>
-            <div className="flex items-center justify-center gap-4 mb-3">
-              <span className="text-7xl md:text-8xl font-bold text-white" data-testid="text-realization-score">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Left: Score */}
+            <div className="text-center md:text-right md:pr-8 md:border-r md:border-white/10">
+              <p className="text-slate-500 text-xs uppercase tracking-widest mb-3">Value Realization</p>
+              <div className="text-8xl md:text-9xl font-bold text-white leading-none" data-testid="text-realization-score">
                 {calculations.realizationScore}%
-              </span>
-              <span className="text-3xl md:text-4xl font-light text-slate-500">
-                of 100%
-              </span>
-            </div>
-            
-            {/* Maturity Label Badge */}
-            <div className="flex justify-center mb-4">
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${performanceInfo.bgColor} border border-white/10`}>
-                <div className={`w-2 h-2 rounded-full ${performanceInfo.color.replace('text-', 'bg-')}`} />
-                <span className={`text-sm font-semibold uppercase tracking-wider ${performanceInfo.color}`}>
-                  {performanceInfo.label}
-                </span>
               </div>
             </div>
             
-            <p className="text-lg md:text-xl text-slate-400">
-              of what top-performing organizations achieve
-            </p>
+            {/* Right: Label & Context */}
+            <div className="text-center md:text-left md:pl-8">
+              <div className={`inline-block px-3 py-1.5 rounded-md ${performanceInfo.bgColor} mb-3`}>
+                <span className={`text-xs font-bold uppercase tracking-wider ${performanceInfo.color}`}>
+                  {performanceInfo.label}
+                </span>
+              </div>
+              <p className="text-slate-300 text-lg leading-relaxed">
+                of what top-performing<br className="hidden md:block" /> organizations achieve
+              </p>
+            </div>
           </div>
           
-          <div className="max-w-xl mx-auto">
-            <div className="relative h-4 bg-slate-700 rounded-full overflow-hidden">
+          {/* Progress bar */}
+          <div className="max-w-2xl mx-auto mt-10">
+            <div className="relative h-3 bg-slate-700/50 rounded-full overflow-hidden">
               <div 
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-1000 ease-out"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-1000 ease-out rounded-full"
                 style={{ width: `${calculations.realizationScore}%` }}
               />
-              <div 
-                className="absolute inset-y-0 bg-gradient-to-r from-red-500/50 to-red-400/30 transition-all duration-1000 ease-out"
-                style={{ left: `${calculations.realizationScore}%`, right: '0' }}
-              />
             </div>
-            <div className="flex justify-between mt-2 text-sm">
-              <span className="text-emerald-400">What you're getting</span>
-              <span className="text-amber-400">Opportunity: {gapPercentage}%</span>
+            <div className="flex justify-between mt-3 text-xs text-slate-500">
+              <span>Current</span>
+              <span className="text-amber-400/80">{gapPercentage}% opportunity</span>
             </div>
           </div>
         </div>
