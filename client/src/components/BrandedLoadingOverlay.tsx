@@ -25,31 +25,16 @@ interface BrandedLoadingOverlayProps {
 }
 
 // Scattered geometric shapes - tetris-style screensaver building effect
-// 16 shapes (50% fewer), 33% opacity (50% more faded), 2x size
+// 8 shapes with randomized positions and movements
 const geometricShapes = [
-  // Far corners - large scattered pieces
-  { id: 1, shapeIdx: 0, size: 210, startX: -550, startY: -400, endX: -420, endY: -300, opacity: 0.33, delay: 0, rotation: 15 },
-  { id: 2, shapeIdx: 1, size: 158, startX: 580, startY: -360, endX: 440, endY: -270, opacity: 0.33, delay: 0.1, rotation: -20 },
-  { id: 3, shapeIdx: 2, size: 192, startX: -520, startY: 420, endX: -400, endY: 320, opacity: 0.33, delay: 0.05, rotation: 25 },
-  { id: 4, shapeIdx: 3, size: 176, startX: 560, startY: 380, endX: 420, endY: 290, opacity: 0.33, delay: 0.15, rotation: -15 },
-  
-  // Mid-distance pieces
-  { id: 5, shapeIdx: 4, size: 140, startX: -420, startY: -260, endX: -320, endY: -190, opacity: 0.33, delay: 0.2, rotation: 30 },
-  { id: 6, shapeIdx: 5, size: 122, startX: 450, startY: -300, endX: 340, endY: -220, opacity: 0.33, delay: 0.25, rotation: -35 },
-  { id: 7, shapeIdx: 6, size: 148, startX: -380, startY: 320, endX: -290, endY: 240, opacity: 0.33, delay: 0.18, rotation: -25 },
-  { id: 8, shapeIdx: 7, size: 134, startX: 400, startY: 340, endX: 310, endY: 260, opacity: 0.33, delay: 0.22, rotation: 20 },
-  
-  // Side edges
-  { id: 9, shapeIdx: 8, size: 112, startX: -600, startY: -80, endX: -480, endY: -60, opacity: 0.33, delay: 0.3, rotation: 45 },
-  { id: 10, shapeIdx: 9, size: 98, startX: 620, startY: 100, endX: 500, endY: 80, opacity: 0.33, delay: 0.35, rotation: -40 },
-  { id: 11, shapeIdx: 10, size: 126, startX: -580, startY: 150, endX: -460, endY: 120, opacity: 0.33, delay: 0.28, rotation: -50 },
-  { id: 12, shapeIdx: 11, size: 106, startX: 600, startY: -130, endX: 480, endY: -100, opacity: 0.33, delay: 0.32, rotation: 35 },
-  
-  // Top and bottom edges
-  { id: 13, shapeIdx: 0, size: 120, startX: -200, startY: -460, endX: -160, endY: -360, opacity: 0.33, delay: 0.12, rotation: -10 },
-  { id: 14, shapeIdx: 1, size: 134, startX: 230, startY: -440, endX: 180, endY: -340, opacity: 0.33, delay: 0.08, rotation: 12 },
-  { id: 15, shapeIdx: 2, size: 112, startX: -170, startY: 480, endX: -140, endY: 380, opacity: 0.33, delay: 0.38, rotation: 22 },
-  { id: 16, shapeIdx: 3, size: 126, startX: 190, startY: 460, endX: 150, endY: 360, opacity: 0.33, delay: 0.4, rotation: -18 },
+  { id: 1, shapeIdx: 3, size: 195, startX: -620, startY: -280, endX: -480, endY: -350, opacity: 0.33, delay: 0, rotation: 28 },
+  { id: 2, shapeIdx: 7, size: 168, startX: 540, startY: -420, endX: 620, endY: -310, opacity: 0.33, delay: 0.18, rotation: -42 },
+  { id: 3, shapeIdx: 1, size: 220, startX: -480, startY: 380, endX: -550, endY: 280, opacity: 0.33, delay: 0.08, rotation: -18 },
+  { id: 4, shapeIdx: 9, size: 145, startX: 680, startY: 220, endX: 520, endY: 340, opacity: 0.33, delay: 0.32, rotation: 55 },
+  { id: 5, shapeIdx: 5, size: 178, startX: -700, startY: 60, endX: -540, endY: -40, opacity: 0.33, delay: 0.12, rotation: -65 },
+  { id: 6, shapeIdx: 11, size: 135, startX: 120, startY: -520, endX: -60, endY: -420, opacity: 0.33, delay: 0.25, rotation: 38 },
+  { id: 7, shapeIdx: 2, size: 188, startX: 600, startY: -80, endX: 480, endY: 60, opacity: 0.33, delay: 0.4, rotation: -32 },
+  { id: 8, shapeIdx: 8, size: 155, startX: -180, startY: 520, endX: -280, endY: 400, opacity: 0.33, delay: 0.22, rotation: 72 },
 ];
 
 export function BrandedLoadingOverlay({ 
