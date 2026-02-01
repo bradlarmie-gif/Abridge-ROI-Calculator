@@ -166,11 +166,8 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center mb-10 md:mb-14"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 md:mb-6 tracking-tight px-2 uppercase">
-            Model the Impact of
-          </h1>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-4 md:mb-6 tracking-wide px-2 font-abridge uppercase">
-            Abridge
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
+            Model the Impact of<br />Abridge
           </h1>
           <button
             onClick={onSelectLearn}
