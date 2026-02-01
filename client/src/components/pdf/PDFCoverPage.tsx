@@ -79,17 +79,17 @@ const styles = StyleSheet.create({
   
   footer: {
     position: "absolute",
-    bottom: 50,
-    left: 60,
-    right: 60,
+    bottom: 40,
+    left: 45,
+    right: 45,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
   
   logo: {
-    width: 100,
-    height: 20,
+    width: 80,
+    height: 16,
   },
   
   preparedByContainer: {
@@ -158,21 +158,21 @@ export function PDFCoverPage({
             />
           ))}
           
-          {/* Curved growth line - soft white, parabolic/exponential shape */}
+          {/* Curved growth line - smooth exponential curve */}
           <Path
-            d="M 80 800 Q 200 780 320 680 Q 440 540 520 320 Q 560 180 580 40"
+            d="M 100 810 C 180 805 280 785 360 720 S 480 520 530 350 S 570 120 585 20"
             stroke="#FFFFFF"
             strokeWidth={1.5}
-            strokeOpacity={0.4}
+            strokeOpacity={0.35}
             fill="none"
           />
           
           {/* 5 Data points positioned ON the curve */}
-          <Circle cx={140} cy={790} r={4} fill="#FFFFFF" fillOpacity={0.5} />
-          <Circle cx={280} cy={710} r={4} fill="#FFFFFF" fillOpacity={0.5} />
-          <Circle cx={400} cy={580} r={4} fill="#FFFFFF" fillOpacity={0.5} />
-          <Circle cx={500} cy={380} r={4} fill="#FFFFFF" fillOpacity={0.5} />
-          <Circle cx={565} cy={120} r={4} fill="#FFFFFF" fillOpacity={0.5} />
+          <Circle cx={150} cy={805} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={320} cy={755} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={450} cy={585} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={540} cy={310} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          <Circle cx={580} cy={80} r={4} fill="#FFFFFF" fillOpacity={0.45} />
         </Svg>
       </View>
       
