@@ -95,9 +95,15 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
             Where Will You Deploy Abridge?
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-xl mx-auto mb-6">
             Select your care setting to begin modeling the impact.
           </p>
+          
+          <div className="bg-slate-100 rounded-lg p-4 max-w-xl mx-auto text-left">
+            <p className="text-slate-500 text-sm">
+              <span className="font-semibold text-slate-700">Why this matters:</span> Each care setting has distinct workflows, reimbursement models, and documentation challenges. Outpatient visits are shorter with E&M-driven revenue. EDs face high-acuity, high-volume throughput pressure. Selecting your setting ensures the model uses appropriate benchmarks, time savings, and value drivers.
+            </p>
+          </div>
         </motion.div>
 
         <motion.div

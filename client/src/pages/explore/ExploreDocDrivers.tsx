@@ -540,10 +540,18 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
             }
           </p>
 
-          <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left">
+          <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left mb-3">
             <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-slate-700">How this works:</span> {isED 
-                ? "ED documentation quality impacts Level of Service capture and denial prevention. For risk adjustment (HCC), see the Inpatient flow which connects to ED admissions."
+              <span className="font-semibold text-slate-700">Why this matters:</span> {isED 
+                ? "ED visits are high-acuity but often under-documented due to pace. When notes don't capture complexity, Level of Service codes lower than warranted, and claims get denied for insufficient documentation. These are recoverable dollars—not new procedures, just capturing what you're already doing."
+                : "Clinicians do thorough work, but documentation often lags behind. When notes don't capture complexity, you leave money on the table—lower E&M levels, missed chronic conditions, and preventable denials. This isn't about doing more; it's about capturing what you're already doing."
+              }
+            </p>
+          </div>
+          <div className="bg-[#FFF5F2] rounded-xl p-4 max-w-2xl mx-auto text-left">
+            <p className="text-slate-500 text-sm">
+              <span className="font-semibold text-[#EA2C00]">How this works:</span> {isED 
+                ? "Each driver calculates value based on your ED volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
                 : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
               }
             </p>

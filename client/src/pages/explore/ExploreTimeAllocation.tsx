@@ -199,9 +199,24 @@ function EditableValue({
   );
 }
 
+// Educational context for time allocation
+const TIME_ALLOCATION_CONTEXT = {
+  outpatient: {
+    title: "Where should recovered time go?",
+    subtitle: "Not all time savings translate equally to financial value.",
+    whyItMatters: "Organizations realize time savings differently. Some reinvest in seeing more patients. Others reduce expensive locum coverage. Still others prioritize clinician wellbeing to improve retention. Your allocation reflects your strategic priorities and directly shapes the financial model.",
+  },
+  ed: {
+    title: "How will your ED use recovered time?",
+    subtitle: "ED time savings flow through different value channels.",
+    whyItMatters: "In the ED, recovered documentation time can reduce LWBS rates (seeing more patients), improve physician retention (reducing the $500K+ replacement cost), or enhance work-life balance. Your allocation tells us which outcomes matter most to your leadership.",
+  },
+};
+
 export default function ExploreTimeAllocation({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreTimeAllocationProps) {
   const isED = state.careSetting === 'ed';
   const ALLOCATION_OPTIONS = isED ? ED_ALLOCATION_OPTIONS : OUTPATIENT_ALLOCATION_OPTIONS;
+  const context = isED ? TIME_ALLOCATION_CONTEXT.ed : TIME_ALLOCATION_CONTEXT.outpatient;
   
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [includeLocums, setIncludeLocums] = useState(isED ? true : false);
@@ -455,16 +470,18 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 {isED ? "How will you use this time?" : "Where does this time go?"}
               </h1>
               <p className="text-slate-600 mb-4">
-                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. {isED 
-                  ? "Allocate these gains across throughput, retention, and wellbeing priorities."
-                  : "Now decide how to convert that time into measurable value."
-                }
+                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. {context.subtitle}
               </p>
-              <div className="bg-slate-100 rounded-lg p-3">
+              <div className="bg-slate-100 rounded-lg p-3 mb-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">The realization concept:</span> {isED 
-                    ? "ED time savings convert to value through throughput improvements, reduced physician attrition, and improved wellbeing. Each driver includes a realization rate reflecting real-world constraints."
-                    : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and other real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
+                  <span className="font-semibold text-slate-700">Why this matters:</span> {context.whyItMatters}
+                </p>
+              </div>
+              <div className="bg-[#FFF5F2] rounded-lg p-3">
+                <p className="text-slate-500 text-xs">
+                  <span className="font-semibold text-[#EA2C00]">Realization rates:</span> {isED 
+                    ? "Not every saved hour converts to dollars. ED constraints like staffing minimums and throughput caps mean only a portion of time savings realizes as value. Each driver shows its realization rate—tap \"See the math\" to adjust."
+                    : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
                   }
                 </p>
               </div>
