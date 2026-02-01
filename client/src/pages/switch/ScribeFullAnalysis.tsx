@@ -110,14 +110,14 @@ export default function ScribeFullAnalysis({
                     initial={{ width: 0 }}
                     animate={{ width: `${calculations.coveragePercent}%` }}
                     transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="h-full bg-emerald-500 rounded-lg"
+                    className="h-full bg-slate-800 rounded-lg"
                   />
                   <div className="absolute inset-0 flex items-center justify-end pr-3">
                     <span className="text-xs font-semibold text-[#111827]">{formatCurrency(calculations.totalScribeCost)}</span>
                   </div>
                 </div>
                 <div className="w-16">
-                  <span className="text-xs text-emerald-600 font-medium">Today</span>
+                  <span className="text-xs text-slate-600 font-medium">Today</span>
                 </div>
               </div>
 

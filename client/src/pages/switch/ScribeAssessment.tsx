@@ -231,7 +231,7 @@ export default function ScribeAssessment({
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.max(calculations.coveragePercent, 2)}%` }}
                     transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="absolute top-0 left-0 h-full bg-emerald-500 flex items-center"
+                    className="absolute top-0 left-0 h-full bg-slate-800 flex items-center"
                   />
                   {calculations.coveragePercent >= 15 && (
                     <span className="absolute top-1/2 -translate-y-1/2 left-4 text-sm font-semibold text-white z-10">
