@@ -123,16 +123,8 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     <div className={`
                       p-6 
                       ${isSelected ? 'bg-white' : 'bg-white border border-slate-200'}
+                      ${scenario.recommended && !isSelected ? 'border-[#EA2C00]/30' : ''}
                     `}>
-                      {/* Recommended badge */}
-                      {scenario.recommended && (
-                        <div className="absolute top-4 right-4">
-                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-[#EA2C00] text-white rounded-full">
-                            Recommended
-                          </span>
-                        </div>
-                      )}
-
                       <div className="flex items-start gap-5">
                         {/* Icon with selection indicator */}
                         <div className="relative flex-shrink-0">
@@ -156,10 +148,15 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
 
                         {/* Content */}
                         <div className="flex-1 min-w-0 pt-1">
-                          <div className="flex items-center gap-3 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h3 className="text-lg font-bold text-black">
                               {scenario.label}
                             </h3>
+                            {scenario.recommended && (
+                              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-[#EA2C00]/10 text-[#EA2C00] rounded">
+                                Recommended
+                              </span>
+                            )}
                             <span className="text-sm text-slate-400">
                               {scenario.tagline}
                             </span>
