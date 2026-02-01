@@ -85,35 +85,35 @@ export interface OutpatientPDFData {
 // ============================================================================
 
 const brand = {
-  // Primary brand colors
+  // Primary brand colors - Abridge Pentagram identity
   cadmiumRed: "#EA2C00",
   coral: "#F07B5F",
   
-  // Dark backgrounds (premium)
-  slate900: "#0f172a",
-  slate800: "#1e293b",
-  slate700: "#334155",
+  // Dark backgrounds - TRUE BLACK for premium Abridge look
+  black: "#000000",
+  darkBg: "#000000",
+  charcoal: "#111111",
   
-  // Text colors
+  // Text colors on dark
   white: "#FFFFFF",
-  slate100: "#f1f5f9",
-  slate200: "#e2e8f0",
-  slate300: "#cbd5e1",
-  slate400: "#94a3b8",
-  slate500: "#64748b",
+  offWhite: "#FAFAFA",
+  lightGray: "#E5E5E5",
+  mediumGray: "#A3A3A3",
+  mutedGray: "#737373",
   
   // Functional colors
   emerald: "#10b981",
   emeraldLight: "#d1fae5",
   emeraldDark: "#059669",
   
-  // Light backgrounds
-  paleGray: "#F8FAFC",
-  borderGray: "#E2E8F0",
+  // Light page backgrounds
+  pageWhite: "#FFFFFF",
+  warmWhite: "#FAFAF9",
+  borderLight: "#E5E5E5",
   
-  // Accent combinations
+  // Accent
   redLight: "#FEF2F0",
-  black: "#0f172a",
+  coralLight: "#FFF5F3",
 };
 
 // ============================================================================
@@ -121,112 +121,114 @@ const brand = {
 // ============================================================================
 
 const styles = StyleSheet.create({
-  // Base page
+  // Base page - white background for content
   page: {
     padding: 0,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: brand.black,
-    backgroundColor: brand.white,
+    backgroundColor: brand.pageWhite,
   },
 
   // ==========================================
-  // COVER PAGE - Dark Premium Hero
+  // COVER PAGE - TRUE BLACK Premium Hero
   // ==========================================
   coverPage: {
-    backgroundColor: brand.slate900,
+    backgroundColor: brand.black,
     padding: 0,
     height: "100%",
   },
   coverHeader: {
-    padding: 40,
+    padding: 48,
     paddingBottom: 0,
   },
   coverLogoContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 60,
+    marginBottom: 80,
   },
   coverLogo: {
-    width: 100,
-    height: 20,
+    width: 120,
+    height: 24,
   },
   coverDate: {
-    fontSize: 9,
-    color: brand.slate400,
+    fontSize: 10,
+    color: brand.mediumGray,
     letterSpacing: 0.5,
   },
   coverContent: {
-    padding: 40,
+    padding: 48,
     paddingTop: 0,
     flex: 1,
     justifyContent: "center",
   },
   coverLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: brand.coral,
     textTransform: "uppercase",
-    letterSpacing: 2,
-    marginBottom: 16,
+    letterSpacing: 3,
+    marginBottom: 20,
     fontWeight: "bold",
   },
   coverTitle: {
-    fontSize: 42,
+    fontSize: 48,
     fontWeight: "bold",
     color: brand.white,
-    marginBottom: 12,
+    marginBottom: 16,
     lineHeight: 1.1,
   },
   coverSubtitle: {
-    fontSize: 18,
-    color: brand.slate300,
-    marginBottom: 40,
-    lineHeight: 1.4,
+    fontSize: 16,
+    color: brand.lightGray,
+    marginBottom: 50,
+    lineHeight: 1.5,
+    maxWidth: 420,
   },
   coverMetrics: {
     flexDirection: "row",
-    marginTop: 20,
+    marginTop: 30,
   },
   coverMetricBox: {
-    marginRight: 40,
+    marginRight: 50,
   },
   coverMetricValue: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: "bold",
     color: brand.emerald,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   coverMetricLabel: {
-    fontSize: 10,
-    color: brand.slate400,
+    fontSize: 9,
+    color: brand.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   coverFooter: {
-    padding: 40,
+    padding: 48,
     paddingTop: 0,
   },
   coverFooterText: {
-    fontSize: 9,
-    color: brand.slate500,
+    fontSize: 10,
+    color: brand.mutedGray,
     lineHeight: 1.5,
   },
 
   // ==========================================
-  // CONTENT PAGES - Light Premium
+  // CONTENT PAGES - Clean white with black header
   // ==========================================
   contentPage: {
     padding: 0,
     paddingBottom: 50,
+    backgroundColor: brand.pageWhite,
   },
   
-  // Page header strip
+  // Page header strip - TRUE BLACK
   pageHeader: {
-    backgroundColor: brand.slate900,
-    padding: 24,
-    paddingTop: 20,
-    paddingBottom: 20,
+    backgroundColor: brand.black,
+    padding: 28,
+    paddingTop: 24,
+    paddingBottom: 24,
     marginBottom: 0,
   },
   pageHeaderRow: {
@@ -235,84 +237,86 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pageHeaderLogo: {
-    width: 80,
-    height: 16,
+    width: 90,
+    height: 18,
   },
   pageHeaderTitle: {
-    fontSize: 11,
+    fontSize: 12,
     color: brand.white,
     fontWeight: "bold",
   },
   pageHeaderClient: {
-    fontSize: 9,
-    color: brand.slate400,
+    fontSize: 10,
+    color: brand.mediumGray,
     marginTop: 2,
   },
 
   // Content area
   contentArea: {
-    padding: 40,
-    paddingTop: 28,
-    paddingBottom: 20,
+    padding: 44,
+    paddingTop: 32,
+    paddingBottom: 24,
   },
 
   // Section styling
   sectionLabel: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: "bold",
     color: brand.cadmiumRed,
     textTransform: "uppercase",
-    letterSpacing: 1.5,
-    marginBottom: 8,
+    letterSpacing: 2,
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: brand.black,
-    marginBottom: 6,
+    marginBottom: 8,
     lineHeight: 1.2,
   },
   sectionSubtitle: {
-    fontSize: 10,
-    color: brand.slate500,
-    marginBottom: 20,
+    fontSize: 11,
+    color: brand.mutedGray,
+    marginBottom: 24,
     lineHeight: 1.5,
   },
 
   // Educational callouts (matching wizard)
   educationalBox: {
-    backgroundColor: brand.paleGray,
-    padding: 16,
+    backgroundColor: brand.warmWhite,
+    padding: 18,
     borderRadius: 6,
-    marginBottom: 20,
+    marginBottom: 24,
     borderLeftWidth: 4,
     borderLeftColor: brand.cadmiumRed,
   },
   educationalLabel: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: "bold",
-    color: brand.slate700,
-    marginBottom: 6,
+    color: brand.charcoal,
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   educationalText: {
-    fontSize: 9,
-    color: brand.slate500,
+    fontSize: 10,
+    color: brand.mutedGray,
     lineHeight: 1.6,
   },
 
   // Metrics grid
   metricsGrid: {
     flexDirection: "row",
-    marginBottom: 24,
+    marginBottom: 28,
   },
   metricCard: {
     flex: 1,
-    backgroundColor: brand.white,
+    backgroundColor: brand.pageWhite,
     borderWidth: 1,
-    borderColor: brand.borderGray,
+    borderColor: brand.borderLight,
     borderRadius: 8,
-    padding: 16,
-    marginRight: 12,
+    padding: 18,
+    marginRight: 14,
     alignItems: "center",
   },
   metricCardLast: {
@@ -324,33 +328,33 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: brand.emerald,
     borderRadius: 8,
-    padding: 16,
-    marginRight: 12,
+    padding: 18,
+    marginRight: 14,
     alignItems: "center",
   },
   metricValue: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   metricValueGreen: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     color: brand.emerald,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   metricLabel: {
     fontSize: 8,
     fontWeight: "bold",
-    color: brand.slate500,
+    color: brand.mutedGray,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     textAlign: "center",
   },
   metricSublabel: {
-    fontSize: 7,
-    color: brand.slate400,
+    fontSize: 8,
+    color: brand.mediumGray,
     marginTop: 4,
     textAlign: "center",
   },
@@ -358,13 +362,13 @@ const styles = StyleSheet.create({
   // Value breakdown cards
   twoColumn: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   valueCard: {
     flex: 1,
     borderRadius: 8,
-    padding: 16,
-    marginRight: 12,
+    padding: 18,
+    marginRight: 14,
   },
   valueCardLast: {
     marginRight: 0,
@@ -380,40 +384,40 @@ const styles = StyleSheet.create({
     borderColor: brand.emerald,
   },
   valueCardTitle: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: "bold",
     color: brand.black,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 4,
+    letterSpacing: 0.8,
+    marginBottom: 6,
   },
   valueCardPct: {
-    fontSize: 8,
-    color: brand.slate500,
-    marginBottom: 10,
+    fontSize: 9,
+    color: brand.mutedGray,
+    marginBottom: 12,
   },
   valueCardAmount: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: brand.black,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   valueCardDriver: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.06)",
+    borderBottomColor: "rgba(0,0,0,0.08)",
   },
   valueCardDriverLast: {
     borderBottomWidth: 0,
   },
   valueCardDriverName: {
-    fontSize: 9,
-    color: brand.slate700,
+    fontSize: 10,
+    color: brand.charcoal,
   },
   valueCardDriverValue: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: "bold",
     color: brand.emeraldDark,
   },
@@ -421,18 +425,18 @@ const styles = StyleSheet.create({
   // Tables
   table: {
     borderWidth: 1,
-    borderColor: brand.borderGray,
+    borderColor: brand.borderLight,
     borderRadius: 6,
     overflow: "hidden",
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: brand.slate900,
+    backgroundColor: brand.black,
   },
   tableHeaderCell: {
     flex: 1,
-    padding: 10,
-    fontSize: 8,
+    padding: 12,
+    fontSize: 9,
     fontWeight: "bold",
     color: brand.white,
     textAlign: "center",
@@ -440,42 +444,42 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: brand.borderGray,
+    borderBottomColor: brand.borderLight,
   },
   tableRowLast: {
     borderBottomWidth: 0,
   },
   tableRowAlt: {
-    backgroundColor: brand.paleGray,
+    backgroundColor: brand.warmWhite,
   },
   tableCell: {
     flex: 1,
-    padding: 10,
-    fontSize: 9,
-    color: brand.slate700,
+    padding: 12,
+    fontSize: 10,
+    color: brand.charcoal,
     textAlign: "center",
   },
   tableCellBold: {
     flex: 1,
-    padding: 10,
-    fontSize: 9,
+    padding: 12,
+    fontSize: 10,
     fontWeight: "bold",
     color: brand.black,
     textAlign: "center",
   },
   tableCellGreen: {
     flex: 1,
-    padding: 10,
-    fontSize: 9,
+    padding: 12,
+    fontSize: 10,
     fontWeight: "bold",
     color: brand.emerald,
     textAlign: "center",
   },
 
-  // Driver pages
+  // Driver pages - TRUE BLACK hero
   driverHero: {
-    backgroundColor: brand.slate900,
-    padding: 28,
+    backgroundColor: brand.black,
+    padding: 32,
     marginBottom: 0,
   },
   driverHeroRow: {
@@ -484,44 +488,44 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   driverHeroTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
     color: brand.white,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   driverHeroSubtitle: {
-    fontSize: 10,
-    color: brand.slate400,
+    fontSize: 11,
+    color: brand.lightGray,
     lineHeight: 1.5,
-    maxWidth: 320,
+    maxWidth: 340,
   },
   driverHeroValue: {
     alignItems: "flex-end",
   },
   driverHeroValueLabel: {
-    fontSize: 8,
-    color: brand.slate400,
+    fontSize: 9,
+    color: brand.mediumGray,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 4,
+    letterSpacing: 1.5,
+    marginBottom: 6,
   },
   driverHeroValueAmount: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
     color: brand.emerald,
   },
 
   // Theory box (educational)
   theoryBox: {
-    backgroundColor: brand.paleGray,
-    padding: 16,
+    backgroundColor: brand.warmWhite,
+    padding: 18,
     borderRadius: 6,
-    marginBottom: 20,
+    marginBottom: 24,
     borderLeftWidth: 4,
     borderLeftColor: brand.coral,
   },
   theoryLabel: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: "bold",
     color: brand.coral,
     textTransform: "uppercase",
@@ -529,28 +533,28 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   theoryText: {
-    fontSize: 9,
-    color: brand.slate700,
+    fontSize: 10,
+    color: brand.charcoal,
     lineHeight: 1.6,
   },
 
   // Calculation steps
   calcSection: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   calcTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "bold",
     color: brand.black,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 16,
+    letterSpacing: 1,
+    marginBottom: 18,
   },
   stepBox: {
-    marginBottom: 16,
-    paddingBottom: 14,
+    marginBottom: 18,
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: brand.borderGray,
+    borderBottomColor: brand.borderLight,
   },
   stepBoxLast: {
     borderBottomWidth: 0,
@@ -558,62 +562,62 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   stepLabel: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: "bold",
-    color: brand.slate500,
+    color: brand.mutedGray,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 4,
+    letterSpacing: 1,
+    marginBottom: 6,
   },
   stepQuestion: {
-    fontSize: 9,
-    color: brand.slate700,
+    fontSize: 10,
+    color: brand.charcoal,
     fontStyle: "italic",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   stepMath: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    marginBottom: 6,
+    marginBottom: 8,
   },
   stepInput: {
-    backgroundColor: brand.white,
+    backgroundColor: brand.pageWhite,
     borderWidth: 1,
-    borderColor: brand.borderGray,
+    borderColor: brand.borderLight,
     borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    marginRight: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 6,
   },
   stepInputText: {
-    fontSize: 9,
-    fontFamily: "Courier",
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
     color: brand.black,
   },
   stepOperator: {
-    fontSize: 10,
-    color: brand.slate400,
-    marginHorizontal: 6,
+    fontSize: 11,
+    color: brand.mediumGray,
+    marginHorizontal: 8,
   },
   stepResult: {
     backgroundColor: brand.emeraldLight,
     borderRadius: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginLeft: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginLeft: 8,
   },
   stepResultText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: "bold",
-    fontFamily: "Courier-Bold",
+    fontFamily: "Helvetica-Bold",
     color: brand.emeraldDark,
   },
   stepNote: {
-    fontSize: 8,
-    color: brand.slate400,
+    fontSize: 9,
+    color: brand.mediumGray,
     fontStyle: "italic",
-    marginTop: 4,
+    marginTop: 6,
   },
 
   // Final value box
@@ -622,109 +626,109 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: brand.emerald,
     borderRadius: 8,
-    padding: 16,
+    padding: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
   },
   finalValueLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "bold",
     color: brand.black,
   },
   finalValueFormula: {
-    fontSize: 8,
-    color: brand.slate500,
-    marginTop: 2,
+    fontSize: 9,
+    color: brand.mutedGray,
+    marginTop: 4,
   },
   finalValueAmount: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: brand.emerald,
   },
 
   // Implication box
   implicationBox: {
-    backgroundColor: brand.paleGray,
-    padding: 14,
+    backgroundColor: brand.warmWhite,
+    padding: 18,
     borderRadius: 6,
-    marginTop: 16,
+    marginTop: 20,
     borderLeftWidth: 4,
     borderLeftColor: brand.emerald,
   },
   implicationTitle: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: "bold",
     color: brand.emeraldDark,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 6,
+    letterSpacing: 1,
+    marginBottom: 8,
   },
   implicationText: {
-    fontSize: 9,
-    color: brand.slate700,
+    fontSize: 10,
+    color: brand.charcoal,
     lineHeight: 1.6,
   },
 
   // Journey/Scaling page
   journeyChart: {
-    backgroundColor: brand.paleGray,
+    backgroundColor: brand.warmWhite,
     borderRadius: 8,
-    padding: 20,
-    marginBottom: 20,
+    padding: 24,
+    marginBottom: 24,
     minHeight: 140,
   },
   journeyScenario: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   journeyCard: {
     flex: 1,
-    backgroundColor: brand.white,
+    backgroundColor: brand.pageWhite,
     borderWidth: 1,
-    borderColor: brand.borderGray,
+    borderColor: brand.borderLight,
     borderRadius: 8,
-    padding: 16,
-    marginRight: 12,
+    padding: 18,
+    marginRight: 14,
   },
   journeyCardHighlight: {
     flex: 1,
-    backgroundColor: brand.white,
+    backgroundColor: brand.pageWhite,
     borderWidth: 2,
     borderColor: brand.cadmiumRed,
     borderRadius: 8,
-    padding: 16,
+    padding: 18,
   },
   journeyCardTitle: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: "bold",
-    color: brand.slate700,
+    color: brand.charcoal,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 12,
+    letterSpacing: 0.8,
+    marginBottom: 14,
   },
   journeyCardTitleHighlight: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: "bold",
     color: brand.cadmiumRed,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 12,
+    letterSpacing: 0.8,
+    marginBottom: 14,
   },
   journeyCardRow: {
     flexDirection: "row",
-    marginBottom: 6,
+    marginBottom: 8,
   },
   journeyCardBullet: {
-    fontSize: 9,
-    color: brand.slate400,
-    marginRight: 8,
-    width: 12,
+    fontSize: 10,
+    color: brand.mediumGray,
+    marginRight: 10,
+    width: 14,
   },
   journeyCardText: {
-    fontSize: 9,
-    color: brand.slate700,
+    fontSize: 10,
+    color: brand.charcoal,
     flex: 1,
   },
   journeyCardValue: {
@@ -778,35 +782,35 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   methodologyTitle: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: "bold",
-    color: brand.slate700,
+    color: brand.charcoal,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
+    letterSpacing: 0.8,
+    marginBottom: 12,
   },
   methodologyItem: {
-    fontSize: 8,
-    color: brand.slate500,
-    lineHeight: 1.6,
-    marginBottom: 4,
+    fontSize: 9,
+    color: brand.mutedGray,
+    lineHeight: 1.7,
+    marginBottom: 5,
   },
 
   // Footer
   footer: {
     position: "absolute",
-    bottom: 20,
-    left: 40,
-    right: 40,
+    bottom: 24,
+    left: 44,
+    right: 44,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: 12,
+    paddingTop: 14,
     borderTopWidth: 1,
-    borderTopColor: brand.borderGray,
+    borderTopColor: brand.borderLight,
   },
   footerText: {
-    fontSize: 8,
-    color: brand.slate400,
+    fontSize: 9,
+    color: brand.mediumGray,
   },
 
   // Utility
@@ -1204,7 +1208,7 @@ const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
   const valuePerProvider = Math.round(data.netGain / data.providers);
 
   return (
-    <Page size="A4" style={styles.coverPage}>
+    <Page size="A4" style={styles.coverPage} wrap={false}>
       <View style={styles.coverHeader}>
         <View style={styles.coverLogoContainer}>
           <Image src={abridgeLogoPath} style={styles.coverLogo} />
@@ -1250,7 +1254,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
   const valuePerProvider = Math.round(data.netGain / data.providers);
 
   return (
-    <Page size="A4" style={styles.contentPage}>
+    <Page size="A4" style={styles.contentPage} wrap={false}>
       <View style={styles.pageHeader}>
         <View style={styles.pageHeaderRow}>
           <Image src={abridgeLogoPath} style={styles.pageHeaderLogo} />
@@ -1312,7 +1316,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
               </View>
             ))}
             {laborDrivers.length === 0 && (
-              <Text style={{ fontSize: 8, color: brand.slate400, fontStyle: "italic" }}>No labor drivers selected</Text>
+              <Text style={{ fontSize: 8, color: brand.mediumGray, fontStyle: "italic" }}>No labor drivers selected</Text>
             )}
           </View>
 
@@ -1327,7 +1331,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
               </View>
             ))}
             {revenueDrivers.length === 0 && (
-              <Text style={{ fontSize: 8, color: brand.slate400, fontStyle: "italic" }}>No revenue drivers selected</Text>
+              <Text style={{ fontSize: 8, color: brand.mediumGray, fontStyle: "italic" }}>No revenue drivers selected</Text>
             )}
           </View>
         </View>
@@ -1365,7 +1369,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
           </View>
         </View>
 
-        <Text style={{ fontSize: 7, color: brand.slate400, marginTop: 8, fontStyle: "italic" }}>
+        <Text style={{ fontSize: 7, color: brand.mediumGray, marginTop: 8, fontStyle: "italic" }}>
           Projection assumes 10% annual value growth with increased adoption and workflow maturity.
         </Text>
       </View>
@@ -1436,7 +1440,7 @@ const DriverDetailPage = ({
                       <Text style={styles.stepInputText}>{input.value}</Text>
                     </View>
                     {input.label && (
-                      <Text style={{ fontSize: 7, color: brand.slate400, marginLeft: 3 }}>{input.label}</Text>
+                      <Text style={{ fontSize: 7, color: brand.mediumGray, marginLeft: 3 }}>{input.label}</Text>
                     )}
                   </View>
                 ))}
@@ -1483,7 +1487,7 @@ const ScalingJourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDF
   };
 
   return (
-    <Page size="A4" style={styles.contentPage}>
+    <Page size="A4" style={styles.contentPage} wrap={false}>
       <View style={styles.pageHeader}>
         <View style={styles.pageHeaderRow}>
           <Image src={abridgeLogoPath} style={styles.pageHeaderLogo} />
@@ -1511,20 +1515,20 @@ const ScalingJourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDF
         <View style={styles.journeyChart}>
           <View style={{ flexDirection: "row", marginBottom: 12 }}>
             <View style={{ width: 60, justifyContent: "space-between", paddingVertical: 4, height: 100 }}>
-              <Text style={{ fontSize: 7, color: brand.slate500, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
-              <Text style={{ fontSize: 7, color: brand.slate500, textAlign: "right" }}>{formatCurrency(Math.round(journey.fullScaleValue / 2))}</Text>
-              <Text style={{ fontSize: 7, color: brand.slate500, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
-              <Text style={{ fontSize: 7, color: brand.slate500, textAlign: "right" }}>$0</Text>
+              <Text style={{ fontSize: 7, color: brand.mutedGray, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
+              <Text style={{ fontSize: 7, color: brand.mutedGray, textAlign: "right" }}>{formatCurrency(Math.round(journey.fullScaleValue / 2))}</Text>
+              <Text style={{ fontSize: 7, color: brand.mutedGray, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
+              <Text style={{ fontSize: 7, color: brand.mutedGray, textAlign: "right" }}>$0</Text>
             </View>
             
             <View style={{ flex: 1, marginLeft: 10, height: 100, position: "relative" }}>
               <Svg width="400" height="100" viewBox="0 0 400 100">
-                <Line x1="0" y1="25" x2="400" y2="25" stroke={brand.borderGray} strokeWidth="0.5" />
-                <Line x1="0" y1="50" x2="400" y2="50" stroke={brand.borderGray} strokeWidth="0.5" />
-                <Line x1="0" y1="75" x2="400" y2="75" stroke={brand.borderGray} strokeWidth="0.5" />
-                <Line x1="0" y1="100" x2="400" y2="100" stroke={brand.slate300} strokeWidth="1" />
+                <Line x1="0" y1="25" x2="400" y2="25" stroke={brand.borderLight} strokeWidth="0.5" />
+                <Line x1="0" y1="50" x2="400" y2="50" stroke={brand.borderLight} strokeWidth="0.5" />
+                <Line x1="0" y1="75" x2="400" y2="75" stroke={brand.borderLight} strokeWidth="0.5" />
+                <Line x1="0" y1="100" x2="400" y2="100" stroke={brand.lightGray} strokeWidth="1" />
                 
-                <Line x1="20" y1="85" x2="380" y2="15" stroke={brand.slate300} strokeWidth="2" strokeDasharray="6,4" />
+                <Line x1="20" y1="85" x2="380" y2="15" stroke={brand.lightGray} strokeWidth="2" strokeDasharray="6,4" />
                 <Path d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15" stroke={brand.emerald} strokeWidth="3" fill="none" />
                 
                 <Circle cx="20" cy="85" r="6" fill={brand.cadmiumRed} stroke={brand.white} strokeWidth="2" />
@@ -1544,11 +1548,11 @@ const ScalingJourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDF
           <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 70, paddingRight: 10 }}>
             <View style={{ alignItems: "center" }}>
               <Text style={{ fontSize: 8, color: brand.cadmiumRed, fontWeight: "bold" }}>Pilot</Text>
-              <Text style={{ fontSize: 7, color: brand.slate500 }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
+              <Text style={{ fontSize: 7, color: brand.mutedGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
             </View>
             <View style={{ alignItems: "center" }}>
               <Text style={{ fontSize: 8, color: brand.emerald, fontWeight: "bold" }}>{paceLabels[journey.scalingPace]}</Text>
-              <Text style={{ fontSize: 7, color: brand.slate500 }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
+              <Text style={{ fontSize: 7, color: brand.mutedGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
             </View>
           </View>
         </View>
@@ -1615,7 +1619,7 @@ const ScalingJourneyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDF
 
 const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
   return (
-    <Page size="A4" style={styles.contentPage}>
+    <Page size="A4" style={styles.contentPage} wrap={false}>
       <View style={styles.pageHeader}>
         <View style={styles.pageHeaderRow}>
           <Image src={abridgeLogoPath} style={styles.pageHeaderLogo} />
@@ -1676,24 +1680,24 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
           </Text>
         </View>
 
-        <View style={{ backgroundColor: brand.paleGray, padding: 16, borderRadius: 8, marginTop: 12 }}>
+        <View style={{ backgroundColor: brand.warmWhite, padding: 16, borderRadius: 8, marginTop: 12 }}>
           <Text style={{ fontSize: 10, fontWeight: "bold", color: brand.black, marginBottom: 8 }}>Investment Summary</Text>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-            <Text style={{ fontSize: 9, color: brand.slate700 }}>Annual Investment</Text>
+            <Text style={{ fontSize: 9, color: brand.charcoal }}>Annual Investment</Text>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: brand.black }}>{formatCurrency(data.investment)}</Text>
           </View>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
-            <Text style={{ fontSize: 9, color: brand.slate700 }}>Projected Annual Value</Text>
+            <Text style={{ fontSize: 9, color: brand.charcoal }}>Projected Annual Value</Text>
             <Text style={{ fontSize: 9, fontWeight: "bold", color: brand.emerald }}>{formatCurrency(data.totalValue)}</Text>
           </View>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", paddingTop: 8, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", paddingTop: 8, borderTopWidth: 1, borderTopColor: brand.borderLight }}>
             <Text style={{ fontSize: 10, fontWeight: "bold", color: brand.black }}>Net Annual Value</Text>
             <Text style={{ fontSize: 10, fontWeight: "bold", color: brand.emerald }}>{formatCurrency(data.netGain)}</Text>
           </View>
         </View>
 
-        <View style={{ marginTop: 20, padding: 16, backgroundColor: brand.slate900, borderRadius: 8 }}>
-          <Text style={{ fontSize: 9, color: brand.slate300, lineHeight: 1.6 }}>
+        <View style={{ marginTop: 20, padding: 16, backgroundColor: brand.black, borderRadius: 8 }}>
+          <Text style={{ fontSize: 9, color: brand.lightGray, lineHeight: 1.6 }}>
             This assessment is for strategic planning purposes. Actual results will vary based on implementation, adoption, and organizational factors. We recommend validating key assumptions with your finance and operations teams before using these projections for budgeting or business cases.
           </Text>
         </View>
