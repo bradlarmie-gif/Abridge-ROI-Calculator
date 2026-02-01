@@ -231,7 +231,7 @@ export default function StepWhatGoodLooksLike({
             <div className="bg-white/5 rounded-xl p-5 border border-white/10">
               <p className="text-slate-400 text-sm mb-2">Dimensions in range</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-emerald-400">{inRangeCount}</span>
+                <span className={`text-4xl font-bold ${inRangeCount > 0 ? 'text-emerald-400' : 'text-[#EA2C00]'}`}>{inRangeCount}</span>
                 <span className="text-slate-400">of 4</span>
               </div>
             </div>
