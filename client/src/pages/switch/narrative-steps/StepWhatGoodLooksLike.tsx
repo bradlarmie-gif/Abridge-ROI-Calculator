@@ -214,15 +214,46 @@ export default function StepWhatGoodLooksLike({
         </p>
       </div>
 
-      <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-200 p-5 md:p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <Target className="w-5 h-5 text-emerald-600" />
-          <span className="font-semibold text-[#111827]">Your position vs. top performers</span>
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden">
+        {/* Top section - Stats */}
+        <div className="p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+              <Target className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white text-lg">Your Position vs. Top Performers</h3>
+              <p className="text-slate-400 text-sm">See where you stand — and what's within reach</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+              <p className="text-slate-400 text-sm mb-2">Dimensions in range</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-emerald-400">{inRangeCount}</span>
+                <span className="text-slate-400">of 4</span>
+              </div>
+            </div>
+            
+            {belowRangeCount > 0 && (
+              <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                <p className="text-slate-400 text-sm mb-2">Opportunity areas</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-amber-400">{belowRangeCount}</span>
+                  <span className="text-slate-400">dimension{belowRangeCount > 1 ? 's' : ''} below benchmark</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <p className="text-[#6B7280]">
-          The highlighted zones show where mature implementations land. 
-          <span className="font-medium text-[#111827]"> See where you stand — and what's within reach.</span>
-        </p>
+        
+        {/* Bottom section - Context */}
+        <div className="bg-gradient-to-r from-emerald-600/20 to-emerald-500/10 px-6 md:px-8 py-4 border-t border-white/10">
+          <p className="text-emerald-300 text-sm">
+            <span className="font-medium">The highlighted zones</span> show where mature implementations land. These aren't aspirational — they're achievable.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -258,25 +289,6 @@ export default function StepWhatGoodLooksLike({
               ))}
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white rounded-xl p-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <p className="text-slate-300 text-sm mb-1">Your current position</p>
-            <p className="text-2xl font-bold">
-              {inRangeCount} of 4 dimensions in range
-            </p>
-          </div>
-          {belowRangeCount > 0 && (
-            <div className="text-right">
-              <p className="text-slate-300 text-sm mb-1">Opportunity areas</p>
-              <p className="text-2xl font-bold text-amber-400">
-                {belowRangeCount} dimension{belowRangeCount > 1 ? 's' : ''} below benchmark
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
