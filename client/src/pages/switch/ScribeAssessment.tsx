@@ -78,8 +78,8 @@ export default function ScribeAssessment({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputCard
-                icon={<Users className="w-4 h-4 text-violet-600" />}
-                iconBg="bg-violet-50"
+                icon={<Users className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Number of scribes"
                 value={inputs.scribeCount}
                 onChange={(v) => updateInput("scribeCount", v)}
@@ -90,8 +90,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<DollarSign className="w-4 h-4 text-emerald-600" />}
-                iconBg="bg-emerald-50"
+                icon={<DollarSign className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Cost per scribe"
                 value={inputs.scribeCostPerHour}
                 onChange={(v) => updateInput("scribeCostPerHour", v)}
@@ -102,8 +102,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<Clock className="w-4 h-4 text-sky-600" />}
-                iconBg="bg-sky-50"
+                icon={<Clock className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Hours per week"
                 value={inputs.scribeHoursPerWeek}
                 onChange={(v) => updateInput("scribeHoursPerWeek", v)}
@@ -114,8 +114,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<UserCheck className="w-4 h-4 text-amber-600" />}
-                iconBg="bg-amber-50"
+                icon={<UserCheck className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Providers with scribes"
                 value={inputs.providersWithScribes}
                 onChange={(v) => updateInput("providersWithScribes", v)}
@@ -126,8 +126,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<Building2 className="w-4 h-4 text-rose-600" />}
-                iconBg="bg-rose-50"
+                icon={<Building2 className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Total providers"
                 value={inputs.totalProviders}
                 onChange={(v) => updateInput("totalProviders", v)}
@@ -138,8 +138,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<Calendar className="w-4 h-4 text-indigo-600" />}
-                iconBg="bg-indigo-50"
+                icon={<Calendar className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Annual encounters"
                 value={inputs.annualEncounters}
                 onChange={(v) => updateInput("annualEncounters", v)}
@@ -150,8 +150,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<FileEdit className="w-4 h-4 text-violet-600" />}
-                iconBg="bg-violet-50"
+                icon={<FileEdit className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Doc time per encounter"
                 value={inputs.minutesPerEncounter}
                 onChange={(v) => updateInput("minutesPerEncounter", v)}
@@ -162,8 +162,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<RefreshCw className="w-4 h-4 text-amber-600" />}
-                iconBg="bg-amber-50"
+                icon={<RefreshCw className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Scribe turnover rate"
                 value={inputs.turnoverRate}
                 onChange={(v) => updateInput("turnoverRate", v)}
@@ -174,8 +174,8 @@ export default function ScribeAssessment({
               />
 
               <InputCard
-                icon={<GraduationCap className="w-4 h-4 text-teal-600" />}
-                iconBg="bg-teal-50"
+                icon={<GraduationCap className="w-4 h-4 text-[#EA2C00]" />}
+                iconBg="bg-[#FFF5F2]"
                 label="Training cost per scribe"
                 value={inputs.trainingCostPerScribe}
                 onChange={(v) => updateInput("trainingCostPerScribe", v)}
@@ -187,8 +187,8 @@ export default function ScribeAssessment({
             </div>
 
             <div className="lg:col-span-1">
-              <div className="bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9] border border-[#E2E8F0] rounded-xl p-5 lg:sticky lg:top-24">
-                <div className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-4">
+              <div className="bg-[#FFF5F2] border border-[#EA2C00]/10 rounded-xl p-5 lg:sticky lg:top-24">
+                <div className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
                   Your Current State
                 </div>
                 
@@ -233,8 +233,8 @@ export default function ScribeAssessment({
                       exit={{ opacity: 0 }}
                       className="text-center py-6"
                     >
-                      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                        <Lightbulb className="w-5 h-5 text-slate-400" />
+                      <div className="w-12 h-12 rounded-full bg-white/50 flex items-center justify-center mx-auto mb-3">
+                        <Lightbulb className="w-5 h-5 text-[#EA2C00]/50" />
                       </div>
                       <p className="text-sm text-[#9CA3AF]">
                         Enter your scribe program details to see your current state
@@ -259,7 +259,7 @@ export default function ScribeAssessment({
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-base md:text-lg font-bold text-[#111827]">The Coverage Gap</h2>
                 {calculations.providersWithoutSupport > 0 && (
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">
+                  <span className="px-2 py-0.5 bg-[#FFF5F2] text-[#EA2C00] text-xs font-semibold rounded-full">
                     {calculations.providersWithoutSupport} providers without support
                   </span>
                 )}
@@ -272,7 +272,7 @@ export default function ScribeAssessment({
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.max(calculations.coveragePercent, 2)}%` }}
                     transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="absolute top-0 left-0 h-full bg-slate-800 flex items-center"
+                    className="absolute top-0 left-0 h-full bg-black flex items-center"
                   />
                   {calculations.coveragePercent >= 15 && (
                     <span className="absolute top-1/2 -translate-y-1/2 left-4 text-sm font-semibold text-white z-10">
@@ -304,8 +304,8 @@ export default function ScribeAssessment({
                   className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5"
                 >
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                      <AlertTriangle className="w-4 h-4 text-slate-500" />
+                    <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                      <AlertTriangle className="w-4 h-4 text-[#EA2C00]" />
                     </div>
                     <div>
                       <div className="font-semibold text-[#111827] mb-1">The documentation burden</div>
@@ -499,7 +499,7 @@ export default function ScribeAssessment({
                 
                 <Button
                   onClick={onNext}
-                  className="h-12 px-8 bg-[#EA2C00] hover:bg-[#d12700] text-white font-semibold shadow-lg"
+                  className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full"
                   data-testid="button-see-full-analysis"
                 >
                   See How
@@ -514,10 +514,10 @@ export default function ScribeAssessment({
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center"
+            className="bg-[#FFF5F2] border border-[#EA2C00]/10 rounded-xl p-6 text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-              <Lightbulb className="w-5 h-5 text-slate-400" />
+            <div className="w-10 h-10 rounded-full bg-[#FFF5F2] flex items-center justify-center mx-auto mb-3">
+              <Lightbulb className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <p className="text-[#6B7280] text-sm">
               Complete the inputs above to see your full analysis

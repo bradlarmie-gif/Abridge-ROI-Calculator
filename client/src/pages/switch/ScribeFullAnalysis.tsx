@@ -148,7 +148,7 @@ export default function ScribeFullAnalysis({
                   className="bg-white/5 backdrop-blur-sm border border-[#EA2C00]/30 rounded-xl p-4"
                 >
                   <div className="text-xs text-slate-400 mb-1">Hidden Costs</div>
-                  <div className="text-2xl md:text-3xl font-bold text-[#F07B5F]">+{formatCurrency(totalHiddenCosts)}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-[#EA2C00]">+{formatCurrency(totalHiddenCosts)}</div>
                   <div className="text-xs text-slate-500 mt-1">Turnover & overhead</div>
                 </motion.div>
                 <motion.div 
@@ -172,7 +172,7 @@ export default function ScribeFullAnalysis({
                 <strong className="text-white">The bottom line:</strong> Your scribe program costs{" "}
                 <span className="text-white font-semibold">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/provider/year</span> when you include hidden costs. 
                 Scaling to 100% coverage would require an additional{" "}
-                <span className="text-[#F07B5F] font-semibold">{formatCurrency(calculations.costToScale)}/year</span>.
+                <span className="text-[#EA2C00] font-semibold">{formatCurrency(calculations.costToScale)}/year</span>.
               </motion.div>
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function ScribeFullAnalysis({
                     initial={{ width: 0 }}
                     animate={{ width: `${calculations.coveragePercent}%` }}
                     transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="h-full bg-slate-800 rounded-lg"
+                    className="h-full bg-black rounded-lg"
                   />
                   <div className="absolute inset-0 flex items-center justify-end pr-3">
                     <span className="text-xs font-semibold text-[#111827]">{formatCurrency(calculations.totalScribeCost)}</span>
@@ -228,7 +228,7 @@ export default function ScribeFullAnalysis({
                     initial={{ width: 0 }}
                     animate={{ width: "50%" }}
                     transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="h-full bg-slate-300 rounded-lg"
+                    className="h-full bg-slate-200 rounded-lg"
                   />
                   <div className="absolute inset-0 flex items-center justify-end pr-3">
                     <span className="text-xs font-semibold text-[#111827]">{formatCurrency(calculations.fullScribeCost * 0.5)}</span>
@@ -246,7 +246,7 @@ export default function ScribeFullAnalysis({
                     initial={{ width: 0 }}
                     animate={{ width: "100%" }}
                     transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="h-full bg-slate-400 rounded-lg"
+                    className="h-full bg-[#EA2C00] rounded-lg"
                   />
                   <div className="absolute inset-0 flex items-center justify-end pr-3">
                     <span className="text-xs font-semibold text-white">{formatCurrency(calculations.fullScribeCost)}</span>
@@ -282,8 +282,8 @@ export default function ScribeFullAnalysis({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <RefreshCw className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div>
                   <div className="font-semibold text-[#111827]">Turnover & Training</div>
@@ -298,8 +298,8 @@ export default function ScribeFullAnalysis({
 
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                  <Users className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div>
                   <div className="font-semibold text-[#111827]">Management Overhead</div>
@@ -363,7 +363,7 @@ export default function ScribeFullAnalysis({
 
               <Button
                 onClick={() => onExploreAmbientAI(inputs.totalProviders, inputs.annualEncounters)}
-                className="h-12 px-8 bg-[#EA2C00] hover:bg-[#d12700] text-white font-semibold shadow-lg"
+                className="h-12 px-8 bg-white hover:bg-slate-100 text-black font-semibold rounded-full"
                 data-testid="button-explore-ambient"
               >
                 Explore Ambient AI
