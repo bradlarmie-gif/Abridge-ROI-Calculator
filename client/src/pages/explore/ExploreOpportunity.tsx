@@ -37,7 +37,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
       ? Math.round(state.annualEncounters / state.numberOfProviders) 
       : 2100
   );
-  const [customEncountersInput, setCustomEncountersInput] = useState('');
+  const [totalEncountersInput, setTotalEncountersInput] = useState('');
+  const [usingTotalInput, setUsingTotalInput] = useState(false);
 
   const handleProvidersChange = useCallback((inputVal: string) => {
     setProviderInputValue(inputVal);
@@ -48,13 +49,20 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     const numValue = parseInt(inputVal, 10);
     if (!isNaN(numValue) && numValue > 0) {
       const clampedValue = Math.max(1, Math.min(10000, numValue));
-      const annualEncounters = clampedValue * encountersPerProvider;
-      updateState({ 
-        numberOfProviders: clampedValue,
-        annualEncounters,
-      });
+      // If using total input, recalculate per-provider based on total
+      if (usingTotalInput && state.annualEncounters > 0) {
+        const newPerProvider = Math.round(state.annualEncounters / clampedValue);
+        setEncountersPerProvider(newPerProvider);
+        updateState({ numberOfProviders: clampedValue });
+      } else {
+        const annualEncounters = clampedValue * encountersPerProvider;
+        updateState({ 
+          numberOfProviders: clampedValue,
+          annualEncounters,
+        });
+      }
     }
-  }, [updateState, encountersPerProvider]);
+  }, [updateState, encountersPerProvider, usingTotalInput, state.annualEncounters]);
 
   const handleProviderInputBlur = useCallback(() => {
     const numValue = parseInt(providerInputValue, 10);
@@ -72,21 +80,23 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
   const handleBusynessChange = useCallback((value: number) => {
     setEncountersPerProvider(value);
-    setCustomEncountersInput('');
+    setTotalEncountersInput('');
+    setUsingTotalInput(false);
     if (state.numberOfProviders > 0) {
       const annualEncounters = state.numberOfProviders * value;
       updateState({ annualEncounters });
     }
   }, [updateState, state.numberOfProviders]);
 
-  const handleCustomEncountersChange = useCallback((inputVal: string) => {
-    setCustomEncountersInput(inputVal);
-    const numValue = parseInt(inputVal, 10);
-    if (!isNaN(numValue) && numValue >= 1000 && numValue <= 4000) {
-      setEncountersPerProvider(numValue);
+  const handleTotalEncountersChange = useCallback((inputVal: string) => {
+    setTotalEncountersInput(inputVal);
+    const numValue = parseInt(inputVal.replace(/,/g, ''), 10);
+    if (!isNaN(numValue) && numValue >= 1000) {
+      setUsingTotalInput(true);
+      updateState({ annualEncounters: numValue });
+      // Update per-provider calculation for display
       if (state.numberOfProviders > 0) {
-        const annualEncounters = state.numberOfProviders * numValue;
-        updateState({ annualEncounters });
+        setEncountersPerProvider(Math.round(numValue / state.numberOfProviders));
       }
     }
   }, [updateState, state.numberOfProviders]);
@@ -110,7 +120,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const isValid = state.numberOfProviders > 0 && state.utilizationPercent > 0;
 
   const isPresetSelected = (presetValue: number) => {
-    return encountersPerProvider === presetValue && customEncountersInput === '';
+    return encountersPerProvider === presetValue && !usingTotalInput;
   };
 
   const isUtilizationPresetSelected = (presetValue: number) => {
@@ -181,7 +191,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
               </motion.div>
 
-              {/* Clinic Busyness */}
+              {/* Annual Encounters */}
               <motion.div
                 className="bg-white rounded-2xl border border-slate-200 p-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -193,12 +203,12 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <Activity className="w-6 h-6 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black">Clinic Busyness</h2>
-                    <p className="text-sm text-slate-500">Annual encounters per provider</p>
+                    <h2 className="text-base font-bold text-black">Annual Encounters</h2>
+                    <p className="text-sm text-slate-500">How busy is your practice?</p>
                   </div>
                 </div>
 
-                {/* Preset buttons */}
+                {/* Preset buttons - quick select by clinic type */}
                 <div className="flex items-center gap-3 mb-4">
                   {BUSYNESS_PRESETS.map((preset) => {
                     const isSelected = isPresetSelected(preset.value);
@@ -216,28 +226,33 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       >
                         <span className="block font-semibold">{preset.label}</span>
                         <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                          {preset.value.toLocaleString()}/yr
+                          {preset.value.toLocaleString()}/provider
                         </span>
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Custom input */}
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="text-slate-400">or enter custom:</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={1000}
-                    max={4000}
-                    placeholder={encountersPerProvider.toString()}
-                    value={customEncountersInput}
-                    onChange={(e) => handleCustomEncountersChange(e.target.value)}
-                    className="w-24 py-2 px-3 text-center font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#EA2C00] transition-all"
-                    data-testid="input-encounters-per-provider"
-                  />
-                  <span className="text-slate-400">/yr</span>
+                {/* Total encounters input */}
+                <div className="pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-600 font-medium">Or enter your total practice volume</p>
+                      <p className="text-xs text-slate-400">Total encounters your practice sees per year</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder={annualEncounters > 0 ? annualEncounters.toLocaleString() : "e.g. 150,000"}
+                        value={totalEncountersInput}
+                        onChange={(e) => handleTotalEncountersChange(e.target.value)}
+                        className="w-32 py-2 px-3 text-right font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#EA2C00] transition-all placeholder:text-slate-300"
+                        data-testid="input-total-encounters"
+                      />
+                      <span className="text-sm text-slate-400">/yr</span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
