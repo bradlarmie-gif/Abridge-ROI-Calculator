@@ -80,7 +80,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   locumHourlyCost: 150,
   turnoverCost: 250000,
   atRiskRate: 15,
-  patientAccessRealization: 35,
+  patientAccessRealization: 20,
   locumRealization: 60,
   wellbeingRealization: 20,
 };

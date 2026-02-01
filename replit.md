@@ -30,7 +30,7 @@ The application supports multiple distinct user journeys:
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings.
 -   **Defensible Math with Realization Rates**: All ROI calculations include conservative realization rates for defensible estimates:
-    - Patient Access: 35% (scheduling constraints, room availability)
+    - Patient Access: 20% (scheduling constraints, room availability)
     - Locum Reduction: 60% (minimum shift requirements)
     - Clinician Wellbeing: 20% (burnout-to-retention conversion)
     - wRVU: 75% (payer mix, fee schedules)
