@@ -11,7 +11,7 @@ interface BrandedLoadingOverlayProps {
 export function BrandedLoadingOverlay({ 
   isVisible, 
   onComplete, 
-  duration = 3200
+  duration = 4500
 }: BrandedLoadingOverlayProps) {
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -30,7 +30,8 @@ export function BrandedLoadingOverlay({
       });
     }
 
-    const increment = 1.2;
+    // Slower progress to match video duration
+    const increment = 0.8;
     const interval = 35;
 
     const progressInterval = setInterval(() => {
@@ -68,18 +69,15 @@ export function BrandedLoadingOverlay({
             muted
             playsInline
             className="w-48 md:w-64 lg:w-80"
-            style={{
-              filter: 'drop-shadow(0 0 40px rgba(234, 44, 0, 0.15))'
-            }}
           />
         </div>
 
-        <div className="w-48 md:w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="w-48 md:w-64 h-1 bg-slate-100 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-100 ease-out"
             style={{ 
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, #EA2C00, #F07B5F, #EA2C00)'
+              backgroundColor: '#EA2C00'
             }}
           />
         </div>
