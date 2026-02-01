@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Download, TrendingUp, Users, DollarSign, RefreshCw, Clock, Sparkles, AlertCircle, Loader2, ChevronRight } from "lucide-react";
+import { ArrowRight, Download, TrendingUp, Users, DollarSign, RefreshCw, Clock, Sparkles, AlertCircle, Loader2, ChevronRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -35,11 +35,10 @@ export default function ScribeFullAnalysis({
   const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
 
-  // Calculate hidden costs (use inputs or defaults)
   const turnoverRate = (inputs.turnoverRate > 0 ? inputs.turnoverRate : 40) / 100;
   const trainingCostPerScribe = inputs.trainingCostPerScribe > 0 ? inputs.trainingCostPerScribe : 5000;
   const annualTurnoverCost = Math.round(inputs.scribeCount * turnoverRate * trainingCostPerScribe);
-  const managementOverhead = Math.round(calculations.totalScribeCost * 0.15); // 15% management overhead
+  const managementOverhead = Math.round(calculations.totalScribeCost * 0.15);
   const totalHiddenCosts = annualTurnoverCost + managementOverhead;
   const trueTotalCost = calculations.totalScribeCost + totalHiddenCosts;
 
@@ -78,29 +77,128 @@ export default function ScribeFullAnalysis({
 
       <main className="py-6 md:py-8 pb-8 px-4 md:px-6 lg:px-8 max-w-5xl mx-auto">
         
-        {/* CHAPTER 1: The Scaling Reality */}
+        {/* HERO: Your Scribe Program Summary */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="relative mb-10 overflow-hidden"
+        >
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-10 shadow-xl relative">
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+              <img src={patternV} alt="" className="absolute w-32 -top-8 -left-8 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternCorner} alt="" className="absolute w-40 -top-10 right-4 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternQuarter} alt="" className="absolute w-44 -bottom-12 -left-10 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternSemicircle} alt="" className="absolute w-28 top-1/3 -right-8 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            </div>
+
+            <div className="relative">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-bold text-white">Your Scribe Program Analysis</h1>
+                      <p className="text-slate-400 text-sm">Complete evaluation of your documentation investment</p>
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setShowExportModal(true)}
+                  disabled={isExporting}
+                  className="bg-white hover:bg-slate-100 text-slate-900 gap-2 h-12 px-6 font-semibold shadow-lg"
+                  data-testid="button-export-pdf-hero"
+                >
+                  {isExporting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  {isExporting ? 'Generating...' : 'Export PDF'}
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4"
+                >
+                  <div className="text-xs text-slate-400 mb-1">Annual Investment</div>
+                  <div className="text-2xl md:text-3xl font-bold text-white">{formatCurrency(calculations.totalScribeCost)}</div>
+                  <div className="text-xs text-slate-500 mt-1">{inputs.scribeCount} scribes</div>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4"
+                >
+                  <div className="text-xs text-slate-400 mb-1">Provider Coverage</div>
+                  <div className="text-2xl md:text-3xl font-bold text-white">{calculations.coveragePercent}%</div>
+                  <div className="text-xs text-slate-500 mt-1">{inputs.providersWithScribes} of {inputs.totalProviders}</div>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white/5 backdrop-blur-sm border border-[#EA2C00]/30 rounded-xl p-4"
+                >
+                  <div className="text-xs text-slate-400 mb-1">Hidden Costs</div>
+                  <div className="text-2xl md:text-3xl font-bold text-[#F07B5F]">+{formatCurrency(totalHiddenCosts)}</div>
+                  <div className="text-xs text-slate-500 mt-1">Turnover & overhead</div>
+                </motion.div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4"
+                >
+                  <div className="text-xs text-slate-400 mb-1">True Total Cost</div>
+                  <div className="text-2xl md:text-3xl font-bold text-white">{formatCurrency(trueTotalCost)}</div>
+                  <div className="text-xs text-slate-500 mt-1">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/provider</div>
+                </motion.div>
+              </div>
+
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-slate-300"
+              >
+                <strong className="text-white">The bottom line:</strong> Your scribe program costs{" "}
+                <span className="text-white font-semibold">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/provider/year</span> when you include hidden costs. 
+                Scaling to 100% coverage would require an additional{" "}
+                <span className="text-[#F07B5F] font-semibold">{formatCurrency(calculations.costToScale)}/year</span>.
+              </motion.div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* ANALYSIS: The Scaling Reality */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="mb-8"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-3">
+          <div className="text-center mb-6">
+            <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">
               The Problem With Scaling Scribes
-            </h1>
-            <p className="text-sm md:text-base text-[#6B7280] max-w-2xl mx-auto">
+            </h2>
+            <p className="text-sm text-[#6B7280] max-w-2xl mx-auto">
               You're spending {formatCurrency(calculations.totalScribeCost)}/year to cover {calculations.coveragePercent}% of your providers. Here's why that math never gets better.
             </p>
           </div>
 
-          {/* The Linear Scaling Visual */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-8 shadow-sm">
-            <h2 className="text-base md:text-lg font-bold text-[#111827] mb-2">Scribe programs scale linearly</h2>
+            <h3 className="text-base font-bold text-[#111827] mb-2">Scribe programs scale linearly</h3>
             <p className="text-sm text-[#6B7280] mb-6">Double the coverage = double the cost. There are no economies of scale.</p>
 
             <div className="space-y-4 mb-6">
-              {/* Current State */}
               <div className="flex items-center gap-4">
                 <div className="w-20 text-right">
                   <span className="text-sm font-semibold text-[#111827]">{calculations.coveragePercent}%</span>
@@ -121,7 +219,6 @@ export default function ScribeFullAnalysis({
                 </div>
               </div>
 
-              {/* 50% coverage */}
               <div className="flex items-center gap-4">
                 <div className="w-20 text-right">
                   <span className="text-sm font-semibold text-[#6B7280]">50%</span>
@@ -140,7 +237,6 @@ export default function ScribeFullAnalysis({
                 <div className="w-16" />
               </div>
 
-              {/* 100% coverage */}
               <div className="flex items-center gap-4">
                 <div className="w-20 text-right">
                   <span className="text-sm font-semibold text-[#6B7280]">100%</span>
@@ -173,11 +269,11 @@ export default function ScribeFullAnalysis({
           </div>
         </motion.section>
 
-        {/* CHAPTER 2: What You're Not Seeing */}
+        {/* ANALYSIS: Hidden Costs */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.4, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-8 mb-8 shadow-sm"
         >
           <h2 className="text-base md:text-lg font-bold text-[#111827] mb-2">The costs you're not seeing</h2>
@@ -217,7 +313,6 @@ export default function ScribeFullAnalysis({
             </div>
           </div>
 
-          {/* True Cost Reveal */}
           <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-5 text-white">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
@@ -235,37 +330,37 @@ export default function ScribeFullAnalysis({
           </div>
         </motion.section>
 
-        {/* CHAPTER 3: The Question */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-xl p-6 md:p-10 mb-8 text-center relative overflow-hidden"
-        >
-          <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
-            <img src={patternV} alt="" className="absolute w-20 md:w-28 -top-4 -left-4 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternCorner} alt="" className="absolute w-24 md:w-32 -top-6 right-8 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternQuarter} alt="" className="absolute w-28 md:w-36 -bottom-8 -left-6 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternSemicircle} alt="" className="absolute w-16 md:w-24 top-1/4 -right-4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternCorner} alt="" className="absolute w-20 md:w-28 -bottom-4 right-1/4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-            <img src={patternV} alt="" className="absolute w-24 md:w-32 bottom-1/3 -right-8 rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-          </div>
-
-          <div className="relative">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 rounded-full bg-[#EA2C00]/20 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-[#EA2C00]" />
-              </div>
+        {/* CTA: Explore Abridge */}
+        {onExploreAmbientAI && (
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-xl p-6 md:p-10 text-center relative overflow-hidden"
+          >
+            <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
+              <img src={patternV} alt="" className="absolute w-20 md:w-28 -top-4 -left-4 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternCorner} alt="" className="absolute w-24 md:w-32 -top-6 right-8 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternQuarter} alt="" className="absolute w-28 md:w-36 -bottom-8 -left-6 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternSemicircle} alt="" className="absolute w-16 md:w-24 top-1/4 -right-4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternCorner} alt="" className="absolute w-20 md:w-28 -bottom-4 right-1/4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+              <img src={patternV} alt="" className="absolute w-24 md:w-32 bottom-1/3 -right-8 rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
             </div>
 
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-3">
-              What if documentation support didn't scale this way?
-            </h2>
-            <p className="text-slate-400 text-sm md:text-base mb-6 max-w-xl mx-auto">
-              Abridge can support every provider without the linear cost curve.
-            </p>
+            <div className="relative">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-[#EA2C00]/20 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-[#EA2C00]" />
+                </div>
+              </div>
 
-            {onExploreAmbientAI && (
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-3">
+                What if documentation support didn't scale this way?
+              </h2>
+              <p className="text-slate-400 text-sm md:text-base mb-6 max-w-xl mx-auto">
+                Abridge can support every provider without the linear cost curve.
+              </p>
+
               <Button
                 onClick={() => onExploreAmbientAI(inputs.totalProviders, inputs.annualEncounters)}
                 className="h-12 px-8 bg-[#EA2C00] hover:bg-[#d12700] text-white font-semibold shadow-lg"
@@ -274,63 +369,9 @@ export default function ScribeFullAnalysis({
                 Explore Ambient AI
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            )}
-          </div>
-        </motion.section>
-
-        {/* CHAPTER 4: Your Summary (Exportable) */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-8 shadow-sm"
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-base md:text-lg font-bold text-[#111827]">Your Scribe Program Summary</h2>
-              <p className="text-sm text-[#6B7280]">Take this with you</p>
             </div>
-            <Button 
-              onClick={() => setShowExportModal(true)}
-              disabled={isExporting}
-              className="bg-[#EA2C00] hover:bg-[#d12700] text-white gap-2"
-              data-testid="button-export-pdf"
-            >
-              {isExporting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              {isExporting ? 'Generating...' : 'Export PDF'}
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-[#F9FAFB] rounded-lg p-4 text-center">
-              <div className="text-xs text-[#6B7280] mb-1">Annual Investment</div>
-              <div className="text-xl font-bold text-[#111827]">{formatCurrency(calculations.totalScribeCost)}</div>
-            </div>
-            <div className="bg-[#F9FAFB] rounded-lg p-4 text-center">
-              <div className="text-xs text-[#6B7280] mb-1">Coverage</div>
-              <div className="text-xl font-bold text-[#111827]">{calculations.coveragePercent}%</div>
-            </div>
-            <div className="bg-[#F9FAFB] rounded-lg p-4 text-center">
-              <div className="text-xs text-[#6B7280] mb-1">Hidden Costs</div>
-              <div className="text-xl font-bold text-[#EA2C00]">+{formatCurrency(totalHiddenCosts)}</div>
-            </div>
-            <div className="bg-[#F9FAFB] rounded-lg p-4 text-center">
-              <div className="text-xs text-[#6B7280] mb-1">Cost to Scale</div>
-              <div className="text-xl font-bold text-[#111827]">{formatCurrency(calculations.costToScale)}</div>
-            </div>
-          </div>
-
-          <div className="bg-[#F8FAFC] rounded-lg p-4 text-sm text-[#6B7280]">
-            <strong className="text-[#111827]">Bottom line:</strong> Your scribe program costs{" "}
-            <span className="text-[#111827] font-semibold">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/provider/year</span> when you include hidden costs. 
-            Scaling to 100% coverage would require an additional{" "}
-            <span className="text-[#111827] font-semibold">{formatCurrency(calculations.costToScale)}/year</span>.
-          </div>
-        </motion.section>
+          </motion.section>
+        )}
 
       </main>
 
