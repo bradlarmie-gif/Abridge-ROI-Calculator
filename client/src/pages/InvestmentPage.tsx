@@ -413,7 +413,7 @@ export default function InvestmentPage({
             >
               <div className="sticky top-24">
                 {/* Premium ROI Card */}
-                <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
                   {/* Header with subtle gradient accent */}
                   <div className="relative px-6 pt-6 pb-4">
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#EA2C00] via-[#F07B5F] to-[#EA2C00]" />
