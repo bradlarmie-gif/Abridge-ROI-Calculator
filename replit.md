@@ -12,7 +12,16 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Application Flows
 The application supports multiple distinct user journeys:
--   **Explore Path**: A 6-step sales-led flow for new prospects covering care setting selection, strategic priorities, baseline setup, value drivers, investment configuration, and a summary of ROI results.
+-   **Explore Path**: A 7-step commitment-modeling wizard for new prospects:
+    1. **Care Setting** (ExploreCareSettings.tsx) - Select Outpatient/ED/Nursing/Inpatient
+    2. **Opportunity Size** (ExploreOpportunity.tsx) - Configure providers and utilization
+    3. **Time Path** (ExploreTimePath.tsx) - Choose Conservative (1.5 min), Typical (3 min), or Aggressive (4.5 min) time savings scenario
+    4. **Time Allocation** (ExploreTimeAllocation.tsx) - Distribute saved hours across Patient Access, Reducing Locums, and Clinician Wellbeing
+    5. **Documentation Path** (ExploreDocPath.tsx) - Focus on wRVU improvement, HCC capture, or Denial prevention
+    6. **Documentation Drivers** (ExploreDocDrivers.tsx) - Fine-tune assumptions with live receipt calculations
+    7. **Review** (ExploreReview.tsx) - Summary with projected annual value before investment configuration
+    - Orchestrated by ExploreFlow.tsx with ExploreState for cross-step state management
+    - Leads into Investment page with pre-calculated ValueResults
 -   **Switch Path**: Designed for prospects currently using other solutions.
     -   **Ambient AI Path**: A 6-step narrative wizard focused on educating users about value gaps when switching from other ambient AI solutions, culminating in transparent calculations and an invitation for next steps.
     -   **Human Scribes Path**: An educational flow for analyzing current scribe program costs and coverage gaps, without Abridge-specific pricing or savings claims.
