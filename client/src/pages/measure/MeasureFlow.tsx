@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from "react";
-import { useLocation } from "wouter";
 import { 
   type MeasureState,
   type MeasureCareSetting,
@@ -15,7 +14,6 @@ import MeasureTrends from "./MeasureTrends";
 type MeasurePhase = 'welcome' | 'effect' | 'allocate' | 'story' | 'trends';
 
 export default function MeasureFlow() {
-  const [, setLocation] = useLocation();
   const [phase, setPhase] = useState<MeasurePhase>('welcome');
   const [state, setState] = useState<MeasureState>(DEFAULT_MEASURE_STATE);
   const [isLoadedFromUrl, setIsLoadedFromUrl] = useState(false);
@@ -42,8 +40,8 @@ export default function MeasureFlow() {
   }, [updateState]);
 
   const goHome = useCallback(() => {
-    setLocation('/');
-  }, [setLocation]);
+    window.location.href = '/';
+  }, []);
 
   const navigate = useCallback((nextPhase: MeasurePhase) => {
     setPhase(nextPhase);
