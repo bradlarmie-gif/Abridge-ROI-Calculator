@@ -39,6 +39,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
   const handleProviderInputChange = useCallback((inputVal: string) => {
     setProviderInputValue(inputVal);
+    if (inputVal === '') {
+      setEncounterInputValue('');
+      updateState({ numberOfProviders: 0, annualEncounters: 0 });
+      return;
+    }
     const numValue = parseInt(inputVal, 10);
     if (!isNaN(numValue) && numValue > 0) {
       const clampedValue = Math.max(1, Math.min(10000, numValue));
@@ -74,6 +79,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const handleEncounterInputChange = useCallback((inputVal: string) => {
     const cleanedValue = inputVal.replace(/,/g, '');
     setEncounterInputValue(cleanedValue);
+    if (cleanedValue === '') {
+      updateState({ annualEncounters: 0 });
+      return;
+    }
     const numValue = parseInt(cleanedValue, 10);
     if (!isNaN(numValue) && numValue > 0) {
       updateState({ annualEncounters: numValue });
