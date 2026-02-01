@@ -241,7 +241,7 @@ export default function App() {
             )}
 
             {currentView === "measure" && (
-              <MeasureFlow />
+              <MeasureFlow onBackToJourney={() => navigateTo("journey")} />
             )}
             </PageTransition>
           </TooltipProvider>

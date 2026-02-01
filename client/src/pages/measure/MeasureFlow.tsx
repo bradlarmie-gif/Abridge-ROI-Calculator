@@ -13,7 +13,11 @@ import MeasureTrends from "./MeasureTrends";
 
 type MeasurePhase = 'welcome' | 'effect' | 'allocate' | 'story' | 'trends';
 
-export default function MeasureFlow() {
+interface MeasureFlowProps {
+  onBackToJourney?: () => void;
+}
+
+export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const [phase, setPhase] = useState<MeasurePhase>('welcome');
   const [state, setState] = useState<MeasureState>(DEFAULT_MEASURE_STATE);
   const [isLoadedFromUrl, setIsLoadedFromUrl] = useState(false);
@@ -40,8 +44,12 @@ export default function MeasureFlow() {
   }, [updateState]);
 
   const goHome = useCallback(() => {
-    window.location.href = '/';
-  }, []);
+    if (onBackToJourney) {
+      onBackToJourney();
+    } else {
+      window.location.href = '/';
+    }
+  }, [onBackToJourney]);
 
   const navigate = useCallback((nextPhase: MeasurePhase) => {
     setPhase(nextPhase);
