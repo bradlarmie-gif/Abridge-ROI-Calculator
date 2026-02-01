@@ -265,28 +265,57 @@ export default function StepWhatGoodLooksLike({
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-            <Award className="w-6 h-6 text-emerald-600" />
-          </div>
-          <div>
-            <h3 className="font-bold text-[#111827] mb-2">What makes the difference</h3>
-            <p className="text-[#6B7280] mb-4">
-              Organizations in these ranges share common traits: dedicated implementation support, 
-              specialty-specific customization, continuous optimization, and technology purpose-built 
-              for clinical workflows.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {["90-day guided onboarding", "Specialty customization", "Ongoing success support", "Real-time analytics"].map((trait) => (
-                <span 
-                  key={trait}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-full"
-                >
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  {trait}
-                </span>
-              ))}
+      <div className="relative overflow-hidden rounded-2xl border border-[#EA2C00]/20 bg-gradient-to-br from-[#FFF8F6] via-white to-[#FFF5F2]">
+        {/* Subtle Abridge pattern overlay */}
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 60H0L50 0Z' fill='%23EA2C00'/%3E%3Cpath d='M50 15L75 52H25L50 15Z' fill='white'/%3E%3C/svg%3E")`,
+          backgroundSize: '200px',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center'
+        }} />
+        
+        <div className="relative p-6 md:p-8">
+          <div className="flex items-start gap-5">
+            {/* Abridge A logo */}
+            <div className="flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-[#EA2C00] flex items-center justify-center shadow-lg shadow-[#EA2C00]/20">
+                <svg viewBox="0 0 100 60" className="w-8 h-8">
+                  <path d="M50 0L100 60H80L50 12L20 60H0L50 0Z" fill="white"/>
+                  <path d="M30 45H70L65 55H35L30 45Z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-bold text-[#111827] text-lg">The Abridge Difference</h3>
+              </div>
+              <p className="text-[#6B7280] mb-5 leading-relaxed">
+                Top-performing organizations share something in common — technology built specifically for clinical 
+                workflows, backed by dedicated implementation support and continuous optimization.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { trait: "90-day guided onboarding", desc: "Dedicated success team" },
+                  { trait: "Specialty customization", desc: "Tailored to your workflows" },
+                  { trait: "Ongoing optimization", desc: "Continuous improvement" },
+                  { trait: "Real-time analytics", desc: "Measure what matters" }
+                ].map(({ trait, desc }) => (
+                  <div 
+                    key={trait}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white border border-[#EA2C00]/10 hover:border-[#EA2C00]/30 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#EA2C00]/10 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 text-[#EA2C00]" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#111827] text-sm">{trait}</p>
+                      <p className="text-xs text-[#6B7280]">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
