@@ -512,7 +512,17 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + index * 0.05, duration: 0.5 }}
                 >
-                  <div className="p-5">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleDriver(driver.id)}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleToggleDriver(driver.id);
+                    }}
+                    className="w-full p-5 text-left touch-manipulation cursor-pointer"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    data-testid={`card-${driver.id}`}
+                  >
                     {/* Header with toggle */}
                     <div className="flex items-start gap-4 mb-4">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -523,20 +533,8 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <h3 className={`font-bold ${isEnabled ? 'text-black' : 'text-slate-500'}`}>{driver.label}</h3>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleToggleDriver(driver.id);
-                            }}
-                            onTouchEnd={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleToggleDriver(driver.id);
-                            }}
-                            className="flex items-center justify-center min-h-[48px] min-w-[48px] p-2 touch-manipulation"
-                            style={{ WebkitTapHighlightColor: 'transparent' }}
+                          <div
+                            className="flex items-center justify-center min-h-[48px] min-w-[48px] p-2"
                             data-testid={`toggle-${driver.id}`}
                           >
                             {isEnabled ? (
@@ -544,23 +542,24 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                             ) : (
                               <ToggleLeft className="w-10 h-10 text-slate-300" />
                             )}
-                          </button>
+                          </div>
                         </div>
                         <p className={`text-sm ${isEnabled ? 'text-slate-600' : 'text-slate-400'}`}>{driver.description}</p>
                         <p className={`text-xs mt-1 ${isEnabled ? 'text-slate-400' : 'text-slate-300'}`}>{driver.detail}</p>
                       </div>
                     </div>
+                  </button>
 
-                    {/* Slider and value - only when enabled */}
-                    <AnimatePresence>
-                      {isEnabled && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <div className="pt-2 border-t border-slate-100">
+                  {/* Slider and value - only when enabled */}
+                  <AnimatePresence>
+                    {isEnabled && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="px-5 pt-2 border-t border-slate-100">
                             <div className="flex items-center gap-4 mb-3">
                               <input
                                 type="range"
@@ -602,8 +601,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                           </div>
                         </motion.div>
                       )}
-                    </AnimatePresence>
-                  </div>
+                  </AnimatePresence>
 
                   {/* Expandable math breakdown */}
                   <AnimatePresence>
