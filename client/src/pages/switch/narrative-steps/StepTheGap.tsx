@@ -38,80 +38,109 @@ export default function StepTheGap({
   
   const dynamicMessaging = useMemo(() => {
     const tier = performanceTier;
-    const score = calculations.realizationScore;
+    const gapSize = 100 - calculations.realizationScore;
     
     return {
-      // Header messaging - strategic framing
+      // Header messaging - set the strategic frame
       headerSubtitle: tier === 'benchmark' || tier === 'strong'
-        ? "Your implementation is mature. This analysis identifies where marginal gains compound."
+        ? "At your maturity level, the remaining opportunity lies in edge cases and compounding micro-efficiencies."
         : tier === 'moderate'
-        ? "You've established a baseline. The question now: what's preventing the next jump?"
+        ? "Your foundation is solid. The path forward requires identifying which specific levers are underperforming."
         : tier === 'developing'
-        ? "This score reveals structural gaps — addressable, but requiring intentional focus."
-        : "At this stage, every percentage point recovered represents significant unrealized value.",
+        ? "This gap is common at your stage. Understanding what's driving it is the first step to closing it."
+        : "A gap this size typically signals systemic issues — but also significant upside when addressed.",
       
-      // Time card - insight-driven
+      // Section header - tier-specific framing
+      sectionTitle: tier === 'benchmark' || tier === 'strong'
+        ? "Where the remaining opportunity lives"
+        : tier === 'moderate'
+        ? "Breaking down your performance gap"
+        : "What this opportunity looks like in practice",
+      sectionSubtitle: tier === 'benchmark' || tier === 'strong'
+        ? "Small percentages, but meaningful when multiplied across your organization."
+        : tier === 'moderate'
+        ? "Four dimensions worth examining more closely."
+        : "These aren't abstract numbers — they translate directly to hours, encounters, and revenue.",
+      
+      // Time card - practical education on documentation burden
       timeTitle: tier === 'strong' || tier === 'benchmark' 
-        ? "Efficiency Refinement" 
+        ? "Residual Time Cost" 
         : tier === 'moderate' 
-        ? "Hidden Time Drain" 
-        : "Documentation Overhead",
+        ? "Time Leakage" 
+        : "Documentation Burden",
       timeSubtitle: tier === 'strong' || tier === 'benchmark'
-        ? "Micro-optimizations that compound"
+        ? "Hours that could still be recovered"
         : tier === 'moderate'
-        ? "Time that's bleeding out unnoticed"
-        : "Where your providers' hours actually go",
+        ? "Time slipping through workflow gaps"
+        : "The hidden cost of incomplete automation",
+      timeContext: tier === 'strong' || tier === 'benchmark'
+        ? "Even optimized workflows have friction points. Common culprits: pre-charting, order entry, and result follow-up."
+        : tier === 'moderate'
+        ? "Mid-range efficiency often means AI handles the note, but ancillary tasks still eat time. Look at what happens before and after the visit."
+        : "Documentation burden compounds. Every extra minute per visit becomes hours per week, weeks per year. This is where burnout starts.",
       
-      // Utilization card - strategic framing
+      // Utilization card - educate on what drives adoption gaps
       utilizationTitle: tier === 'strong' || tier === 'benchmark'
-        ? "Coverage Gaps"
+        ? "Coverage Edge Cases"
         : tier === 'moderate'
-        ? "Adoption Inconsistency"
+        ? "Adoption Variability"
         : "Utilization Gap",
       utilizationSubtitle: tier === 'strong' || tier === 'benchmark'
-        ? "Edge cases without AI support"
+        ? "Encounters still falling through"
         : tier === 'moderate'
-        ? "Uneven adoption across your organization"
-        : "Encounters without AI documentation",
+        ? "Why some providers use it more than others"
+        : "Where AI isn't being used",
       utilizationContext: tier === 'strong' || tier === 'benchmark'
-        ? "Even at high utilization, every unassisted encounter represents documentation variance and provider burden."
+        ? "High performers still see gaps in specific scenarios: same-day add-ons, procedures, or cross-coverage. Worth auditing."
         : tier === 'moderate'
-        ? "Inconsistent utilization often signals workflow friction or specialty-specific barriers worth investigating."
-        : "Low utilization typically points to adoption blockers — training gaps, workflow misalignment, or tool limitations.",
+        ? "Variability usually clusters by specialty, site, or tenure. Newer providers and procedural specialties often lag. Targeted support helps."
+        : "Low utilization rarely means the tool doesn't work — it usually means workflow friction, training gaps, or specialty-specific barriers.",
       
-      // wRVU card - ROI focused
+      // wRVU card - educate on revenue capture mechanics
       wrvuTitle: tier === 'strong' || tier === 'benchmark'
         ? "Capture Precision"
         : tier === 'moderate'
-        ? "Revenue Left on the Table"
+        ? "Revenue Gap"
         : "Coding Leakage",
       wrvuSubtitle: tier === 'strong' || tier === 'benchmark'
-        ? "Specialty-level optimization"
+        ? "Fine-tuning documentation accuracy"
         : tier === 'moderate'
-        ? "Documentation completeness gap"
-        : "Services rendered but not captured",
+        ? "Value not making it to the claim"
+        : "Work done but not captured",
       wrvuContext: tier === 'strong' || tier === 'benchmark'
-        ? "At your level, the remaining lift often requires specialty-specific prompt tuning and workflow integration."
+        ? "At high lift levels, remaining gains come from E&M leveling accuracy and capturing time-based billing. Specialty-specific tuning pays off here."
         : tier === 'moderate'
-        ? "This gap often indicates incomplete capture of complexity, procedures, or time-based codes."
-        : "Each percentage point in wRVU lift represents care you've already delivered but aren't being credited for.",
+        ? "Common patterns: under-documented complexity, missed chronic conditions, incomplete procedure details. Review denials for clues."
+        : "Every 1% wRVU lift gap means you're providing care that isn't being credited. This isn't about upcoding — it's about documentation completeness.",
       
-      // Satisfaction card - retention/burnout framing
+      // Satisfaction card - educate on the burnout-retention link
       satisfactionTitle: tier === 'strong' || tier === 'benchmark'
-        ? "Team Sentiment"
+        ? "Provider Sentiment"
         : tier === 'moderate'
-        ? "Provider Friction"
-        : "Burnout Risk Indicator",
+        ? "Experience Friction"
+        : "Burnout Signal",
       satisfactionSubtitle: tier === 'strong' || tier === 'benchmark'
-        ? "Adoption sustainability"
+        ? "Sustaining long-term adoption"
         : tier === 'moderate'
-        ? "Friction points in daily workflow"
-        : "Leading indicator of retention risk",
+        ? "What's creating resistance"
+        : "A leading indicator worth watching",
       satisfactionContext: tier === 'strong' || tier === 'benchmark'
-        ? "High satisfaction correlates with sustained adoption. Monitor for regression as workflows evolve."
+        ? "Satisfaction above 80% typically sustains itself. Below that, regression risk increases — especially during workflow changes or new EHR updates."
         : tier === 'moderate'
-        ? "Mid-range satisfaction often masks specific pain points — worth drilling into by specialty or site."
-        : "Documentation burden is a top-3 driver of physician burnout. This metric predicts turnover intent.",
+        ? "60-79% satisfaction usually means the tool works, but something's off. Common issues: note formatting preferences, specialty fit, or trust in accuracy."
+        : "Satisfaction below 60% correlates with higher turnover intent. Documentation burden is consistently a top-3 driver of physician burnout.",
+      
+      // Footer - tier-specific next step framing
+      footerPrimary: tier === 'benchmark' || tier === 'strong'
+        ? "Even at high performance, understanding root causes helps protect against regression."
+        : tier === 'moderate'
+        ? "The question isn't whether there's opportunity — it's which levers will move the needle most."
+        : "These patterns don't happen by accident. Understanding the drivers is the first step to closing the gap.",
+      footerSecondary: tier === 'benchmark' || tier === 'strong'
+        ? "Let's look at what's behind your current performance."
+        : tier === 'moderate'
+        ? "Let's examine what's behind these numbers."
+        : "Let's explore what's creating these outcomes.",
     };
   }, [performanceTier, calculations.realizationScore]);
   
@@ -201,8 +230,8 @@ export default function StepTheGap({
       </div>
 
       <div className="text-center">
-        <h2 className="text-xl font-bold text-[#111827] mb-2">What this opportunity looks like in practice</h2>
-        <p className="text-[#6B7280]">These aren't abstract numbers — they're real hours, real encounters, real experiences.</p>
+        <h2 className="text-xl font-bold text-[#111827] mb-2">{dynamicMessaging.sectionTitle}</h2>
+        <p className="text-[#6B7280]">{dynamicMessaging.sectionSubtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -231,15 +260,16 @@ export default function StepTheGap({
                   </p>
                 </div>
                 
-                {storyMetrics.hoursPerProviderPerWeek > 0 && (
-                  <div className="p-3 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
-                    <p className="text-sm text-[#7f1d1d]">
-                      For each of your <span className="font-semibold">{storyMetrics.providers} providers</span>, that's roughly 
-                      <span className="font-semibold"> {storyMetrics.hoursPerProviderPerWeek} extra hours per week</span> still 
-                      spent on documentation instead of patients — or life.
-                    </p>
-                  </div>
-                )}
+                <div className="p-3 bg-[#EA2C00]/5 rounded-lg border border-[#EA2C00]/20">
+                  <p className="text-sm text-[#7f1d1d]">
+                    {dynamicMessaging.timeContext}
+                    {storyMetrics.hoursPerProviderPerWeek > 0 && (
+                      <span className="block mt-2 font-medium">
+                        For your {storyMetrics.providers} providers: ~{storyMetrics.hoursPerProviderPerWeek} hours/week each.
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -375,9 +405,9 @@ export default function StepTheGap({
 
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
         <p className="text-[#374151]">
-          <span className="font-semibold">These patterns are common across the industry.</span>
+          <span className="font-semibold">{dynamicMessaging.footerPrimary}</span>
           <br className="hidden md:block" />
-          <span className="text-[#6B7280]">Most organizations experience similar challenges. Let's explore what's driving these outcomes.</span>
+          <span className="text-[#6B7280]">{dynamicMessaging.footerSecondary}</span>
         </p>
       </div>
 
