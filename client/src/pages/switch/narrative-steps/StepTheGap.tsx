@@ -98,14 +98,14 @@ export default function StepTheGap({
             </div>
             <div className="flex justify-between mt-2 text-sm">
               <span className="text-emerald-400">What you're getting</span>
-              <span className="text-red-400">Room to grow: {gapPercentage}%</span>
+              <span className="text-amber-400">Opportunity: {gapPercentage}%</span>
             </div>
           </div>
         </div>
       </div>
 
       <div className="text-center">
-        <h2 className="text-xl font-bold text-[#111827] mb-2">What that gap looks like in practice</h2>
+        <h2 className="text-xl font-bold text-[#111827] mb-2">What this opportunity looks like in practice</h2>
         <p className="text-[#6B7280]">These aren't abstract numbers — they're real hours, real encounters, real experiences.</p>
       </div>
 
@@ -170,7 +170,7 @@ export default function StepTheGap({
                     <span className="text-lg text-[#6B7280]">encounters per year</span>
                   </div>
                   <p className="text-sm text-[#6B7280] mt-1">
-                    where the technology you're paying for <span className="font-semibold text-[#111827]">isn't being used</span>
+                    where there's <span className="font-semibold text-[#111827]">opportunity for AI assistance</span>
                   </p>
                 </div>
                 
@@ -178,7 +178,7 @@ export default function StepTheGap({
                   <p className="text-sm text-blue-800">
                     You're at <span className="font-semibold">{inputs.utilization}% utilization</span>. 
                     Top performers reach <span className="font-semibold">{ABRIDGE_BENCHMARKS.utilization}%</span>.
-                    That's a <span className="font-semibold">{ABRIDGE_BENCHMARKS.utilization - (inputs.utilization || 0)} point gap</span>.
+                    That's <span className="font-semibold">{ABRIDGE_BENCHMARKS.utilization - (inputs.utilization || 0)} additional points</span> of potential.
                   </p>
                 </div>
               </div>
@@ -267,11 +267,11 @@ export default function StepTheGap({
               <Moon className="w-7 h-7 text-indigo-300" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-lg mb-1">The Pajama Time Problem</h3>
+              <h3 className="font-bold text-lg mb-1">After-Hours Documentation</h3>
               <p className="text-indigo-200">
-                Your providers are still spending <span className="font-semibold text-white">{inputs.afterHoursPerWeek} hours per week</span> charting 
+                Your providers are currently spending <span className="font-semibold text-white">{inputs.afterHoursPerWeek} hours per week</span> charting 
                 after hours. That's <span className="font-semibold text-white">{storyMetrics.afterHoursTotal} hours per year</span> of 
-                personal time consumed by documentation — time that should be spent with family, resting, or recovering.
+                documentation time that could be reduced — time that could be returned to your providers.
               </p>
             </div>
           </div>
@@ -280,9 +280,9 @@ export default function StepTheGap({
 
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
         <p className="text-[#374151]">
-          <span className="font-semibold">None of this is your fault.</span>
+          <span className="font-semibold">These patterns are common across the industry.</span>
           <br className="hidden md:block" />
-          <span className="text-[#6B7280]">Most organizations face these exact challenges. The question is: why does this happen?</span>
+          <span className="text-[#6B7280]">Most organizations experience similar challenges. Let's explore what's driving these outcomes.</span>
         </p>
       </div>
 
