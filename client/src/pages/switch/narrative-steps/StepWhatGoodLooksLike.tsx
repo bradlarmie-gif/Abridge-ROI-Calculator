@@ -84,9 +84,7 @@ function DimensionMeter({
           />
           
           <div 
-            className={`absolute top-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md transition-all z-10 ${
-              isBelowRange ? 'bg-[#EA2C00]' : 'bg-black'
-            }`}
+            className="absolute top-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md transition-all z-10 bg-black"
             style={{ left: `${currentPercent}%`, transform: 'translate(-50%, -50%)' }}
           />
         </div>
