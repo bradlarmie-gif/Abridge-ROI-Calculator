@@ -65,11 +65,11 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
   const projectedTimeValue = results.timeReallocatedTotal * (whatIfProviders / state.deployment.providers);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={4}
-        totalSteps={4}
+        currentStep={5}
+        totalSteps={5}
         stepName="Your Value Story"
         onBack={onBack}
         onHome={onHome}

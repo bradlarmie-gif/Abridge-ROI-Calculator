@@ -117,30 +117,31 @@ export default function MeasureAllocate({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={3}
-        totalSteps={4}
+        currentStep={4}
+        totalSteps={5}
         stepName="The Impact"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-xl mx-auto px-4 md:px-6 py-8">
+      <div className="max-w-xl mx-auto px-4 md:px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-10"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3" data-testid="text-allocate-title">
-            WHERE DID THE TIME GO?
+          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
+            Where the Time Landed
+          </p>
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-3" data-testid="text-allocate-title">
+            Your Providers Reclaimed Hours
           </h1>
           <p className="text-slate-600">
-            Your providers reclaimed precious hours.
-            <br />
-            <span className="text-slate-500">Help us understand where that time landed.</span>
+            Help us understand how that time was used.
           </p>
         </motion.div>
 

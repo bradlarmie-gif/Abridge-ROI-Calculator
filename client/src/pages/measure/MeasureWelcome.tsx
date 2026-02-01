@@ -73,7 +73,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
       <UnifiedHeader
         pathType="measure"
         currentStep={1}
-        totalSteps={4}
+        totalSteps={5}
         stepName="Set the Stage"
         onBack={onBack}
         onHome={onHome}
