@@ -2491,8 +2491,8 @@ export default function ObjectiveSelectionScreen({
             <div className="max-w-5xl mx-auto">
               {/* Page Header */}
               <div className="text-center mb-10">
-                <h2 className="text-3xl sm:text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
-                  Select a care setting
+                <h2 className="text-3xl sm:text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4 font-abridge uppercase">
+                  Select a Care Setting
                 </h2>
                 <p className="text-base sm:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
                   Each setting has unique documentation workflows and value drivers that shape your ROI model.

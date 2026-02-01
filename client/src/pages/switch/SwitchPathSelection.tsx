@@ -38,8 +38,8 @@ export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPath
             Value Realization Assessment
           </div>
           
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-            What are you using today?
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 tracking-tight font-abridge uppercase">
+            What Are You Using Today?
           </h1>
           
           <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">

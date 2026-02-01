@@ -166,8 +166,8 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center mb-10 md:mb-14"
         >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 md:mb-4 tracking-tight px-2">
-            Model the impact of ambient documentation
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 md:mb-4 tracking-tight px-2 font-abridge uppercase">
+            Model the Impact of Ambient Documentation
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-slate-500 max-w-2xl mx-auto px-2 leading-relaxed mb-4">
             Understand where the value actually comes from.

@@ -99,14 +99,14 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
           </motion.div>
 
           <motion.h1 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 tracking-tight font-abridge uppercase"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            Every transformation{" "}
+            Every Transformation{" "}
             <span className="bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] bg-clip-text text-transparent">
-              deserves proof.
+              Deserves Proof.
             </span>
           </motion.h1>
 
