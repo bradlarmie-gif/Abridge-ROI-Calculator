@@ -25,16 +25,16 @@ interface BrandedLoadingOverlayProps {
 }
 
 // Scattered geometric shapes - tetris-style screensaver building effect
-// 8 shapes with randomized positions and movements - softer appearance
+// 8 shapes with randomized positions and movements - very soft appearance
 const geometricShapes = [
-  { id: 1, shapeIdx: 3, size: 195, startX: -620, startY: -280, endX: -480, endY: -350, opacity: 0.17, delay: 0, rotation: 28 },
-  { id: 2, shapeIdx: 7, size: 168, startX: 540, startY: -420, endX: 620, endY: -310, opacity: 0.17, delay: 0.18, rotation: -42 },
-  { id: 3, shapeIdx: 1, size: 220, startX: -480, startY: 380, endX: -550, endY: 280, opacity: 0.17, delay: 0.08, rotation: -18 },
-  { id: 4, shapeIdx: 9, size: 145, startX: 680, startY: 220, endX: 520, endY: 340, opacity: 0.17, delay: 0.32, rotation: 55 },
-  { id: 5, shapeIdx: 5, size: 178, startX: -700, startY: 60, endX: -540, endY: -40, opacity: 0.17, delay: 0.12, rotation: -65 },
-  { id: 6, shapeIdx: 11, size: 135, startX: 120, startY: -520, endX: -60, endY: -420, opacity: 0.17, delay: 0.25, rotation: 38 },
-  { id: 7, shapeIdx: 2, size: 188, startX: 600, startY: -80, endX: 480, endY: 60, opacity: 0.17, delay: 0.4, rotation: -32 },
-  { id: 8, shapeIdx: 8, size: 155, startX: -180, startY: 520, endX: -280, endY: 400, opacity: 0.17, delay: 0.22, rotation: 72 },
+  { id: 1, shapeIdx: 3, size: 195, startX: -620, startY: -280, endX: -480, endY: -350, opacity: 0.10, delay: 0, rotation: 28 },
+  { id: 2, shapeIdx: 7, size: 168, startX: 540, startY: -420, endX: 620, endY: -310, opacity: 0.10, delay: 0.18, rotation: -42 },
+  { id: 3, shapeIdx: 1, size: 220, startX: -480, startY: 380, endX: -550, endY: 280, opacity: 0.10, delay: 0.08, rotation: -18 },
+  { id: 4, shapeIdx: 9, size: 145, startX: 680, startY: 220, endX: 520, endY: 340, opacity: 0.10, delay: 0.32, rotation: 55 },
+  { id: 5, shapeIdx: 5, size: 178, startX: -700, startY: 60, endX: -540, endY: -40, opacity: 0.10, delay: 0.12, rotation: -65 },
+  { id: 6, shapeIdx: 11, size: 135, startX: 120, startY: -520, endX: -60, endY: -420, opacity: 0.10, delay: 0.25, rotation: 38 },
+  { id: 7, shapeIdx: 2, size: 188, startX: 600, startY: -80, endX: 480, endY: 60, opacity: 0.10, delay: 0.4, rotation: -32 },
+  { id: 8, shapeIdx: 8, size: 155, startX: -180, startY: 520, endX: -280, endY: 400, opacity: 0.10, delay: 0.22, rotation: 72 },
 ];
 
 export function BrandedLoadingOverlay({ 
@@ -103,7 +103,7 @@ export function BrandedLoadingOverlay({
               height: shape.size,
               objectFit: 'contain',
               opacity: 0,
-              animation: `shapeAssemble-${shape.id} 5s ease-out ${shape.delay}s forwards`,
+              animation: `shapeAssemble-${shape.id} 2.5s ease-out ${shape.delay}s forwards`,
             }}
           />
         ))}
