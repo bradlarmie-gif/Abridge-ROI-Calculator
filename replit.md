@@ -65,6 +65,15 @@ The application supports multiple distinct user journeys:
 -   **Keyboard Navigation**: Enables navigation using Enter and Escape keys.
 -   **Input Debouncing**: Reusable hook for delayed input processing.
 
+### Summary Page Design (SummaryCommandCenter.tsx)
+Premium restructured layout matching Abridge's Pentagram-designed brand identity:
+1. **Hero Section**: Dark gradient background (slate-900 to slate-800) with large bold net value using gradient text (white → coral → cadmium red). Three glassmorphism key metrics cards (ROI, Payback Months, Value Drivers).
+2. **Value Breakdown**: Two-column layout with Labor & Efficiency (slate themed) and Revenue & Quality (red themed) cards. Simplified stacked bar visualization.
+3. **Scaling Journey**: Full-width section with premium Recharts chart, clean pace selector (Measured/Steady/Aggressive), pilot vs full scale comparison cards, compounding effect explanation.
+4. **Investment Summary**: Clean 3-year projection table showing value, investment, and net value.
+5. **Actions Section**: Dark background CTA with Download PDF and Edit Model buttons.
+6. **Key Assumptions**: Collapsible section showing model configuration.
+
 ### Security & Privacy
 -   **Session Security Provider**: Manages automatic session clearing on tab close.
 -   **Privacy Notice**: Informs users about client-side processing and data handling.
