@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, Share2, Clock, FileText, TrendingUp, Users, ChevronDown, ChevronUp, ArrowRight, Sparkles, DollarSign, Heart, Loader2 } from "lucide-react";
+import { Download, Clock, FileText, TrendingUp, Users, ChevronDown, ChevronUp, ArrowRight, Sparkles, DollarSign, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -34,11 +34,6 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     }
   };
 
-  const handleShare = () => {
-    const summary = `Abridge Value Story: ${formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed across ${state.deployment.providers} providers in ${state.deployment.monthsOnAbridge} months.`;
-    navigator.clipboard.writeText(summary);
-    alert('Summary copied to clipboard!');
-  };
 
   // Calculate documentation value range (conservative to optimistic)
   // Conservative: 50% attribution, Optimistic: 75% attribution
@@ -307,7 +302,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           </div>
         </motion.div>
 
-        {/* Export / Share Section */}
+        {/* Export Section */}
         <motion.div 
           className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-lg"
           initial={{ opacity: 0 }}
@@ -316,37 +311,26 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
         >
           <h3 className="font-bold text-slate-900 mb-3">Share This Story</h3>
           <p className="text-sm text-slate-600 mb-5">
-            Export a polished summary for leadership, or copy a quick version to share.
+            Export a polished summary to share with leadership.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="h-12 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90 disabled:opacity-70"
-              data-testid="button-export"
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export PDF
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handleShare}
-              variant="outline"
-              className="h-12 px-6"
-              data-testid="button-share"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Copy Summary
-            </Button>
-          </div>
+          <Button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="w-full sm:w-auto h-12 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90 disabled:opacity-70"
+            data-testid="button-export"
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 mr-2" />
+                Export PDF
+              </>
+            )}
+          </Button>
         </motion.div>
 
         {/* Methodology */}

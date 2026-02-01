@@ -536,13 +536,13 @@ export default function MeasureEffect({
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100 p-5">
-              <h3 className="text-sm font-semibold text-slate-700 mb-4">E/M Level Distribution</h3>
-              <p className="text-xs text-slate-500 mb-4">
+            <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100 p-4 md:p-5">
+              <h3 className="text-sm font-semibold text-slate-700 mb-3 md:mb-4">E/M Level Distribution</h3>
+              <p className="text-xs text-slate-500 mb-3 md:mb-4">
                 Enter the percentage of encounters at each E/M level. Click the values to edit.
               </p>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="p-3 md:p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <EMDistributionChart 
                     data={getEMDistributionArray(state.emDistribution.without)} 
                     label="Without Abridge"
@@ -561,7 +561,7 @@ export default function MeasureEffect({
                     }}
                   />
                 </div>
-                <div className="p-4 rounded-xl bg-gradient-to-br from-[#EA2C00]/5 to-[#F07B5F]/5 border border-[#EA2C00]/20">
+                <div className="p-3 md:p-4 rounded-xl bg-gradient-to-br from-[#EA2C00]/5 to-[#F07B5F]/5 border border-[#EA2C00]/20">
                   <EMDistributionChart 
                     data={getEMDistributionArray(state.emDistribution.with)} 
                     label="With Abridge"
@@ -581,7 +581,7 @@ export default function MeasureEffect({
                   />
                 </div>
               </div>
-              <p className="text-xs text-slate-500 text-center mt-4">
+              <p className="text-xs text-slate-500 text-center mt-3 md:mt-4">
                 The distribution shifts right. Complexity that was being missed is now captured.
               </p>
             </div>
