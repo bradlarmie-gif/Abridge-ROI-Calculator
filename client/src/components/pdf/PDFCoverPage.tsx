@@ -123,16 +123,16 @@ export function PDFCoverPage({
   // A4 dimensions in points: 595 x 842
   const pageWidth = 595;
   const pageHeight = 842;
-  const gridSpacingX = 66; // ~9 columns
-  const gridSpacingY = 76; // ~11 rows
+  const gridSpacingX = 85; // ~7 columns, more spaced out
+  const gridSpacingY = 105; // ~8 rows, more spaced out
   
   return (
     <Page size="A4" style={styles.page}>
       {/* Grid Pattern Background */}
       <View style={styles.gridContainer}>
         <Svg width={pageWidth} height={pageHeight} viewBox={`0 0 ${pageWidth} ${pageHeight}`}>
-          {/* Vertical grid lines - white, thin */}
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+          {/* Vertical grid lines - subtle white */}
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
             <Line
               key={`v-${i}`}
               x1={gridSpacingX * i}
@@ -141,11 +141,11 @@ export function PDFCoverPage({
               y2={pageHeight}
               stroke="#FFFFFF"
               strokeWidth={0.5}
-              strokeOpacity={0.3}
+              strokeOpacity={0.15}
             />
           ))}
-          {/* Horizontal grid lines - white, thin */}
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
+          {/* Horizontal grid lines - subtle white */}
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Line
               key={`h-${i}`}
               x1={0}
@@ -154,7 +154,7 @@ export function PDFCoverPage({
               y2={gridSpacingY * i}
               stroke="#FFFFFF"
               strokeWidth={0.5}
-              strokeOpacity={0.3}
+              strokeOpacity={0.15}
             />
           ))}
           
