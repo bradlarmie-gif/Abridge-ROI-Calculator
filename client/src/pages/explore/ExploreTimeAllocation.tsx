@@ -93,6 +93,7 @@ function EditableValue({
   min = 0,
   max = 999999,
   step = 1,
+  label = '',
 }: { 
   value: number; 
   onChange: (v: number) => void;
@@ -101,9 +102,15 @@ function EditableValue({
   min?: number;
   max?: number;
   step?: number;
+  label?: string;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value.toString());
+
+  const handleStartEdit = () => {
+    setInputValue(value.toString());
+    setIsEditing(true);
+  };
 
   const handleBlur = () => {
     setIsEditing(false);
@@ -126,10 +133,11 @@ function EditableValue({
 
   if (isEditing) {
     return (
-      <span className="inline-flex items-center">
+      <span className="inline-flex items-center gap-1">
         {prefix}
         <input
           type="number"
+          inputMode="decimal"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onBlur={handleBlur}
@@ -137,7 +145,7 @@ function EditableValue({
           min={min}
           max={max}
           step={step}
-          className="w-20 px-1 py-0.5 text-sm font-semibold text-[#EA2C00] bg-white border border-[#EA2C00] rounded focus:outline-none focus:ring-1 focus:ring-[#EA2C00]"
+          className="w-24 px-2 py-1.5 text-base font-semibold text-[#EA2C00] bg-white border-2 border-[#EA2C00] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
           autoFocus
           data-testid="input-editable-value"
         />
@@ -148,15 +156,16 @@ function EditableValue({
 
   return (
     <button
-      onClick={() => {
-        setInputValue(value.toString());
-        setIsEditing(true);
+      onClick={handleStartEdit}
+      onTouchEnd={(e) => {
+        e.preventDefault();
+        handleStartEdit();
       }}
-      className="inline-flex items-center gap-1 text-sm font-semibold text-[#EA2C00] hover:bg-[#EA2C00]/10 px-1.5 py-0.5 rounded transition-colors group"
+      className="inline-flex items-center gap-1.5 text-base font-semibold text-[#EA2C00] bg-[#EA2C00]/5 hover:bg-[#EA2C00]/15 active:bg-[#EA2C00]/20 px-3 py-2 rounded-lg transition-colors min-h-[44px]"
       data-testid="button-edit-value"
     >
       {prefix}{value.toLocaleString()}{suffix}
-      <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Pencil className="w-4 h-4" />
     </button>
   );
 }
