@@ -81,8 +81,12 @@ export default function App() {
 
   const handleExploreComplete = useCallback((state: ExploreState) => {
     setExploreState(state);
+    // Map the ExploreState careSetting to CareSettingType for selectedSettings
+    const careSetting = state.careSetting === 'ed' ? 'ed' : 
+                        state.careSetting === 'nursing' ? 'nursing' : 
+                        state.careSetting === 'inpatient' ? 'inpatient' : 'outpatient';
     setSelectionState({ 
-      selectedSettings: ['outpatient'], 
+      selectedSettings: [careSetting] as CareSettingType[], 
       selectedLevers: [] 
     });
     setSeedInputs({
@@ -115,7 +119,8 @@ export default function App() {
       wrvuValue = Math.round(wrvuLift * eligibleEncounters * 40 * 0.75);
     }
     
-    if (state.docDrivers.hcc.enabled) {
+    // HCC not applicable for ED
+    if (state.careSetting !== 'ed' && state.docDrivers.hcc.enabled) {
       const maPatients = eligibleEncounters * 0.3;
       const conditionsCaptured = maPatients * 3 * (state.docDrivers.hcc.value / 100);
       hccValue = Math.round(conditionsCaptured * 800 * 0.60);
@@ -170,7 +175,8 @@ export default function App() {
       };
     }
     
-    if (state.docDrivers.hcc.enabled && hccValue > 0) {
+    // HCC not applicable for ED
+    if (state.careSetting !== 'ed' && state.docDrivers.hcc.enabled && hccValue > 0) {
       driverResults['hcc'] = {
         id: 'hcc',
         name: 'HCC Capture',
