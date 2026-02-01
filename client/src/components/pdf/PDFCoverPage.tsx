@@ -182,13 +182,6 @@ export function PDFCoverPage({
         <Text style={styles.title}>{title}</Text>
       </View>
       
-      {/* Subtitle Area */}
-      <View style={styles.subtitleContainer}>
-        <Text style={styles.subtitle}>{subtitle}</Text>
-        {displayClientName && (
-          <Text style={styles.clientName}>{displayClientName}</Text>
-        )}
-      </View>
       
       {/* Footer */}
       <View style={styles.footer}>
