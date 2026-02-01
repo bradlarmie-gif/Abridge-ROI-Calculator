@@ -1,11 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-import patternA from "@assets/pattern-9-a_1769391110218.png";
-import patternBridge from "@assets/pattern-10-bridge_1769391110219.png";
-import patternV from "@assets/pattern-3-v_1769391110218.png";
-import patternSemicircle from "@assets/pattern-4-semicircle_1769391110218.png";
-import patternQuarter from "@assets/pattern-8-quartercircle_1769391110218.png";
-import patternCorner from "@assets/pattern-2-corner_1769391110218.png";
+import logoRevealVideo from "@assets/abridge-logo-reveal.mp4";
 
 interface BrandedLoadingOverlayProps {
   isVisible: boolean;
@@ -19,11 +14,20 @@ export function BrandedLoadingOverlay({
   duration = 3200
 }: BrandedLoadingOverlayProps) {
   const [progress, setProgress] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!isVisible) {
       setProgress(0);
       return;
+    }
+
+    // Start video playback
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {
+        // Video autoplay may be blocked, continue anyway
+      });
     }
 
     const increment = 1.2;
@@ -52,219 +56,34 @@ export function BrandedLoadingOverlay({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden animate-in fade-in duration-300" style={{ backgroundColor: '#f8f9fa' }}>
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Top left area */}
-        <img 
-          src={patternV} 
-          alt="" 
-          className="absolute w-16 md:w-24"
-          style={{ 
-            top: '8%', 
-            left: '-5%',
-            animation: 'floatRight 3s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.08
-          }}
-        />
-        <img 
-          src={patternCorner} 
-          alt="" 
-          className="absolute w-12 md:w-20"
-          style={{ 
-            top: '20%', 
-            left: '8%',
-            animation: 'floatRight 3.5s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.06,
-            transform: 'rotate(45deg)'
-          }}
-        />
-        
-        {/* Top right area */}
-        <img 
-          src={patternCorner} 
-          alt="" 
-          className="absolute w-20 md:w-32"
-          style={{ 
-            top: '5%', 
-            right: '-10%',
-            animation: 'floatLeft 3.5s ease-in-out forwards',
-            transform: 'rotate(180deg)',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.07
-          }}
-        />
-        <img 
-          src={patternSemicircle} 
-          alt="" 
-          className="absolute w-14 md:w-24"
-          style={{ 
-            top: '18%', 
-            right: '12%',
-            animation: 'floatLeft 4s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.05
-          }}
-        />
-        
-        {/* Middle left */}
-        <img 
-          src={patternBridge} 
-          alt="" 
-          className="absolute w-32 md:w-48"
-          style={{ 
-            top: '40%', 
-            left: '-20%',
-            animation: 'slideFromLeft 2s ease-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.06
-          }}
-        />
-        <img 
-          src={patternQuarter} 
-          alt="" 
-          className="absolute w-16 md:w-28"
-          style={{ 
-            top: '55%', 
-            left: '5%',
-            animation: 'floatRight 3.8s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.05,
-            transform: 'rotate(90deg)'
-          }}
-        />
-        
-        {/* Middle right */}
-        <img 
-          src={patternBridge} 
-          alt="" 
-          className="absolute w-32 md:w-48"
-          style={{ 
-            top: '40%', 
-            right: '-20%',
-            transform: 'scaleX(-1)',
-            animation: 'slideFromRight 2s ease-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.06
-          }}
-        />
-        <img 
-          src={patternV} 
-          alt="" 
-          className="absolute w-14 md:w-22"
-          style={{ 
-            top: '58%', 
-            right: '8%',
-            animation: 'floatLeft 3.2s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.05,
-            transform: 'rotate(-30deg)'
-          }}
-        />
-        
-        {/* Bottom left */}
-        <img 
-          src={patternQuarter} 
-          alt="" 
-          className="absolute w-24 md:w-40"
-          style={{ 
-            bottom: '5%', 
-            left: '5%',
-            animation: 'floatUp 2.8s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.08
-          }}
-        />
-        <img 
-          src={patternCorner} 
-          alt="" 
-          className="absolute w-12 md:w-20"
-          style={{ 
-            bottom: '22%', 
-            left: '15%',
-            animation: 'floatUp 3.5s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.05
-          }}
-        />
-        
-        {/* Bottom right */}
-        <img 
-          src={patternSemicircle} 
-          alt="" 
-          className="absolute w-20 md:w-32"
-          style={{ 
-            bottom: '10%', 
-            right: '10%',
-            animation: 'floatUp 3.2s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.07
-          }}
-        />
-        <img 
-          src={patternV} 
-          alt="" 
-          className="absolute w-10 md:w-18"
-          style={{ 
-            bottom: '25%', 
-            right: '20%',
-            animation: 'floatUp 4s ease-in-out forwards',
-            filter: 'grayscale(100%) brightness(0.7)',
-            opacity: 0.04,
-            transform: 'rotate(15deg)'
-          }}
-        />
-      </div>
-
-      <div className="relative max-w-lg mx-4 text-center animate-in slide-in-from-bottom-4 duration-500 z-10">
-        <div className="relative mb-10 flex justify-center">
-          <img 
-            src={patternA} 
-            alt="Abridge" 
-            className="w-28 md:w-36 animate-pulse"
-            style={{ 
-              filter: 'drop-shadow(0 0 30px rgba(234, 44, 0, 0.3))'
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden animate-in fade-in duration-300"
+      style={{ backgroundColor: '#FFFFFF' }}
+    >
+      <div className="relative flex flex-col items-center justify-center z-10">
+        <div className="relative mb-8 flex justify-center items-center">
+          <video
+            ref={videoRef}
+            src={logoRevealVideo}
+            muted
+            playsInline
+            className="w-48 md:w-64 lg:w-80"
+            style={{
+              filter: 'drop-shadow(0 0 40px rgba(234, 44, 0, 0.15))'
             }}
           />
         </div>
 
-        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div className="w-48 md:w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-100 ease-out"
             style={{ 
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, #EA2C00, #ff4d1a, #EA2C00)'
+              background: 'linear-gradient(90deg, #EA2C00, #F07B5F, #EA2C00)'
             }}
           />
         </div>
       </div>
-
-      <style>{`
-        @keyframes floatRight {
-          0% { transform: translateX(0) rotate(0deg); opacity: 0; }
-          20% { opacity: 0.15; }
-          100% { transform: translateX(120px) rotate(5deg); opacity: 0.2; }
-        }
-        @keyframes floatLeft {
-          0% { transform: translateX(0) rotate(180deg); opacity: 0; }
-          20% { opacity: 0.12; }
-          100% { transform: translateX(-100px) rotate(175deg); opacity: 0.15; }
-        }
-        @keyframes floatUp {
-          0% { transform: translateY(0); opacity: 0; }
-          20% { opacity: 0.15; }
-          100% { transform: translateY(-60px); opacity: 0.18; }
-        }
-        @keyframes slideFromLeft {
-          0% { transform: translateX(-100%); opacity: 0; }
-          100% { transform: translateX(80px); opacity: 0.12; }
-        }
-        @keyframes slideFromRight {
-          0% { transform: translateX(100%) scaleX(-1); opacity: 0; }
-          100% { transform: translateX(-80px) scaleX(-1); opacity: 0.12; }
-        }
-      `}</style>
     </div>
   );
 }
