@@ -418,11 +418,16 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 Allocate Your Savings
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                How will you use this time?
+                Where does this time go?
               </h1>
-              <p className="text-slate-600">
-                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Model where the value lands.
+              <p className="text-slate-600 mb-4">
+                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Now decide how to convert that time into measurable value.
               </p>
+              <div className="bg-slate-100 rounded-lg p-3">
+                <p className="text-slate-500 text-xs">
+                  <span className="font-semibold text-slate-700">The realization concept:</span> Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and other real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap "See the math" to understand and adjust these assumptions.
+                </p>
+              </div>
             </motion.div>
 
             {/* Controls Row */}

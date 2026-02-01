@@ -153,11 +153,16 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 Size Your Opportunity
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                Tell us about your practice
+                Let's understand your practice
               </h1>
-              <p className="text-slate-600">
-                We'll calculate your baseline to show potential value.
+              <p className="text-slate-600 mb-4">
+                These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers.
               </p>
+              <div className="bg-slate-100 rounded-lg p-3">
+                <p className="text-slate-500 text-xs">
+                  <span className="font-semibold text-slate-700">Why we ask:</span> Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement.
+                </p>
+              </div>
             </motion.div>
 
             <div className="space-y-5">
@@ -263,7 +268,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-4 mb-3">
                   <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
                     <Percent className="w-6 h-6 text-[#EA2C00]" />
                   </div>
@@ -272,6 +277,9 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <p className="text-sm text-slate-500">Percentage of encounters using Abridge</p>
                   </div>
                 </div>
+                <p className="text-xs text-slate-400 mb-4 ml-16">
+                  Utilization often starts at 50-60% and grows to 75-85% as workflows mature. Start conservatively—you can always adjust.
+                </p>
 
                 {/* Preset buttons */}
                 <div className="flex items-center gap-3 mb-4">
@@ -403,7 +411,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </span>
                   </div>
                   <p className="text-xs text-white/30">
-                    Encounters that will use Abridge
+                    This is your value multiplier—every driver calculation uses this number
                   </p>
                 </div>
 

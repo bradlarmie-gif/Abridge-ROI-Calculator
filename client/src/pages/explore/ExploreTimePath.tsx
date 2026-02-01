@@ -88,14 +88,19 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                Choose Your Path
+                Model Time Savings
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                How would you like to model time savings?
+                Choose your modeling approach
               </h1>
-              <p className="text-slate-600">
-                Select the scenario that best reflects how you want to present this to stakeholders.
+              <p className="text-slate-600 mb-4">
+                Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations.
               </p>
+              <div className="bg-slate-100 rounded-lg p-3">
+                <p className="text-slate-500 text-xs">
+                  <span className="font-semibold text-slate-700">How to choose:</span> Use "Conservative" for CFO presentations or skeptical stakeholders. "Typical" reflects average outcomes. "Aggressive" suits high-adoption organizations with strong change management. All assumptions can be adjusted later.
+                </p>
+              </div>
             </motion.div>
 
             {/* Scenario Cards */}
@@ -257,6 +262,13 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                       {formatNumber(Math.round(eligibleEncounters))}
                     </span>
                   </div>
+                </div>
+
+                {/* Context */}
+                <div className="px-6 pb-4">
+                  <p className="text-xs text-white/30">
+                    Raw time savings don't equal cash. Next, you'll decide how this time converts to value.
+                  </p>
                 </div>
 
                 {/* Continue Button */}

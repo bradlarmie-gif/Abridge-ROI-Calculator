@@ -41,13 +41,13 @@ const DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     id: 'wrvu',
     label: 'Level of Service (wRVU)',
     shortLabel: 'wRVU',
-    description: 'Improve coding accuracy and capture appropriate complexity',
+    description: 'Capture the complexity you are already delivering',
     icon: BarChart3,
     min: 0.5,
     max: 5,
     step: 0.5,
     suffix: '%',
-    detail: 'Best for organizations with E&M coding opportunities',
+    detail: 'When notes fully reflect visit complexity, E&M levels often code higher',
     presets: [
       { label: 'Conservative', value: 1 },
       { label: 'Typical', value: 2 },
@@ -58,13 +58,13 @@ const DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     id: 'hcc',
     label: 'HCC & Chronic Conditions',
     shortLabel: 'HCC',
-    description: 'Better capture of chronic conditions for risk adjustment',
+    description: 'Document chronic conditions that affect risk adjustment',
     icon: Building2,
     min: 5,
     max: 30,
     step: 5,
     suffix: '%',
-    detail: 'Best for Medicare Advantage or ACO populations',
+    detail: 'Most relevant for Medicare Advantage and ACO populations',
     presets: [
       { label: 'Conservative', value: 10 },
       { label: 'Typical', value: 15 },
@@ -75,13 +75,13 @@ const DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     id: 'denials',
     label: 'Denial Prevention',
     shortLabel: 'Denials',
-    description: 'Reduce documentation-related claim denials',
+    description: 'Reduce rework from documentation-related denials',
     icon: AlertTriangle,
     min: 10,
     max: 40,
     step: 5,
     suffix: '%',
-    detail: 'Best for organizations with high denial rates',
+    detail: 'About half of claim denials stem from documentation issues',
     presets: [
       { label: 'Conservative', value: 15 },
       { label: 'Typical', value: 25 },
@@ -246,6 +246,11 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           value: Math.round(realizedValue),
           editableInputs: (
             <div className="space-y-3">
+              <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                <p className="text-xs text-slate-500">
+                  <span className="font-medium text-slate-700">The logic:</span> When documentation captures the full clinical complexity, coders can assign appropriate E&M levels. A small wRVU improvement per visit compounds across your volume.
+                </p>
+              </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-slate-600">Eligible encounters</span>
                 <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
@@ -308,6 +313,11 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           value: Math.round(realizedValue),
           editableInputs: (
             <div className="space-y-3">
+              <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                <p className="text-xs text-slate-500">
+                  <span className="font-medium text-slate-700">The logic:</span> Risk adjustment pays based on documented conditions. When clinicians discuss conditions but don't document them, that value is lost. Better notes recapture missed HCCs.
+                </p>
+              </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-slate-600">Eligible encounters</span>
                 <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
@@ -386,6 +396,11 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           value: Math.round(realizedValue),
           editableInputs: (
             <div className="space-y-3">
+              <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                <p className="text-xs text-slate-500">
+                  <span className="font-medium text-slate-700">The logic:</span> Documentation gaps drive about half of claim denials. Each denial costs staff time to appeal and delays payment. Preventing denials upfront is more efficient than winning appeals.
+                </p>
+              </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-slate-600">Eligible encounters</span>
                 <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
@@ -509,12 +524,18 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            How Will Documentation Improve Your Bottom Line?
+            Capture value beyond time savings
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Beyond time savings, Abridge improves note quality. Toggle on the drivers that apply to your organization and adjust targets.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
+            Better documentation creates downstream value. Toggle the drivers that match your organization's priorities.
           </p>
+
+          <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left">
+            <p className="text-slate-500 text-sm">
+              <span className="font-semibold text-slate-700">How this works:</span> Each driver calculates value differently based on your encounter volume. Tap "See the math" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
