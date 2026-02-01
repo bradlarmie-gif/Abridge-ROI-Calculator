@@ -237,11 +237,11 @@ export default function StepWhatGoodLooksLike({
             </div>
             
             {belowRangeCount > 0 && (
-              <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                <p className="text-slate-400 text-sm mb-2">Opportunity areas</p>
+              <div className="bg-[#EA2C00]/10 rounded-xl p-5 border border-[#EA2C00]/30">
+                <p className="text-[#F07B5F] text-sm mb-2">Opportunity areas</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-[#EA2C00]">{belowRangeCount}</span>
-                  <span className="text-slate-400">dimension{belowRangeCount > 1 ? 's' : ''} below benchmark</span>
+                  <span className="text-[#F07B5F]">dimension{belowRangeCount > 1 ? 's' : ''} below benchmark</span>
                 </div>
               </div>
             )}
