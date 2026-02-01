@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, Check, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowRight, Clock, Check, Shield, Target, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -15,36 +15,38 @@ interface ExploreTimePathProps {
 interface ScenarioOption {
   id: TimePathScenario;
   label: string;
+  tagline: string;
   description: string;
   minutes: number;
-  icon: typeof TrendingDown;
-  detail: string;
+  icon: typeof Shield;
+  recommended?: boolean;
 }
 
 const SCENARIOS: ScenarioOption[] = [
   {
     id: 'conservative',
     label: 'Conservative',
-    description: 'A careful, low-risk estimate',
+    tagline: 'Play it safe',
+    description: 'A careful estimate for skeptical stakeholders. Under-promise to over-deliver.',
     minutes: 1.5,
-    icon: TrendingDown,
-    detail: 'Best for skeptical stakeholders',
+    icon: Shield,
   },
   {
     id: 'typical',
     label: 'Typical',
-    description: 'Based on average customer outcomes',
+    tagline: 'Most customers start here',
+    description: 'Based on real outcomes from similar implementations. The balanced approach.',
     minutes: 3,
-    icon: Minus,
-    detail: 'Recommended starting point',
+    icon: Target,
+    recommended: true,
   },
   {
     id: 'aggressive',
     label: 'Aggressive',
-    description: 'Optimistic but achievable',
+    tagline: 'Maximize potential',
+    description: 'For high-adoption organizations ready to fully embrace documentation AI.',
     minutes: 4.5,
-    icon: TrendingUp,
-    detail: 'For high-adoption organizations',
+    icon: Zap,
   },
 ];
 
@@ -96,7 +98,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               </p>
             </motion.div>
 
-            {/* Scenario Cards - Larger */}
+            {/* Scenario Cards */}
             <div className="space-y-4">
               {SCENARIOS.map((scenario, index) => {
                 const Icon = scenario.icon;
@@ -107,10 +109,10 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     key={scenario.id}
                     onClick={() => handleSelectScenario(scenario)}
                     className={`
-                      relative w-full flex items-center gap-5 p-5 rounded-2xl transition-all duration-200 text-left
+                      relative w-full text-left rounded-2xl transition-all duration-200 overflow-hidden
                       ${isSelected 
-                        ? 'bg-black text-white shadow-lg' 
-                        : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                        ? 'ring-2 ring-[#EA2C00] shadow-lg' 
+                        : 'hover:shadow-md'
                       }
                     `}
                     initial={{ opacity: 0, y: 20 }}
@@ -118,51 +120,66 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
                     data-testid={`card-scenario-${scenario.id}`}
                   >
-                    {/* Icon */}
                     <div className={`
-                      w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0
-                      ${isSelected ? 'bg-white/10' : 'bg-[#FFF5F2]'}
+                      p-6 
+                      ${isSelected ? 'bg-white' : 'bg-white border border-slate-200'}
                     `}>
-                      <Icon className={`w-7 h-7 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
-                    </div>
+                      {/* Recommended badge */}
+                      {scenario.recommended && (
+                        <div className="absolute top-4 right-4">
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-[#EA2C00] text-white rounded-full">
+                            Recommended
+                          </span>
+                        </div>
+                      )}
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className={`text-lg font-bold mb-1 ${isSelected ? 'text-white' : 'text-black'}`}>
-                        {scenario.label}
-                      </h3>
-                      <p className={`text-sm mb-1 ${isSelected ? 'text-white/70' : 'text-slate-600'}`}>
-                        {scenario.description}
-                      </p>
-                      <p className={`text-xs ${isSelected ? 'text-white/50' : 'text-slate-400'}`}>
-                        {scenario.detail}
-                      </p>
-                    </div>
+                      <div className="flex items-start gap-5">
+                        {/* Icon with selection indicator */}
+                        <div className="relative flex-shrink-0">
+                          <div className={`
+                            w-14 h-14 rounded-xl flex items-center justify-center transition-colors
+                            ${isSelected ? 'bg-[#EA2C00]' : 'bg-[#FFF5F2]'}
+                          `}>
+                            <Icon className={`w-7 h-7 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
+                          </div>
+                          {isSelected && (
+                            <motion.div 
+                              className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            >
+                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                            </motion.div>
+                          )}
+                        </div>
 
-                    {/* Time Value */}
-                    <div className="text-right flex-shrink-0 pr-2">
-                      <div className={`
-                        text-3xl font-bold
-                        ${isSelected ? 'text-[#F07B5F]' : 'text-[#EA2C00]'}
-                      `}>
-                        {scenario.minutes} min
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 pt-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-lg font-bold text-black">
+                              {scenario.label}
+                            </h3>
+                            <span className="text-sm text-slate-400">
+                              {scenario.tagline}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-600 leading-relaxed">
+                            {scenario.description}
+                          </p>
+                        </div>
+
+                        {/* Time Value */}
+                        <div className="text-right flex-shrink-0 pt-1">
+                          <div className="text-3xl font-bold text-[#EA2C00]">
+                            {scenario.minutes}
+                          </div>
+                          <p className="text-xs text-slate-400 font-medium">
+                            min saved
+                          </p>
+                        </div>
                       </div>
-                      <p className={`text-xs ${isSelected ? 'text-white/50' : 'text-slate-400'}`}>
-                        saved per encounter
-                      </p>
                     </div>
-
-                    {/* Checkmark */}
-                    {isSelected && (
-                      <motion.div 
-                        className="absolute top-4 right-4 w-7 h-7 bg-[#EA2C00] rounded-full flex items-center justify-center"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      >
-                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                      </motion.div>
-                    )}
                   </motion.button>
                 );
               })}
@@ -186,7 +203,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
             </motion.div>
           </div>
 
-          {/* Time Savings Sidebar - Larger */}
+          {/* Time Savings Sidebar */}
           <motion.div
             className="hidden lg:block lg:w-80"
             initial={{ opacity: 0, x: 20 }}
