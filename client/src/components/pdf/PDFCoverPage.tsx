@@ -167,12 +167,12 @@ export function PDFCoverPage({
             fill="none"
           />
           
-          {/* 5 Data points along the quadratic curve */}
-          <Circle cx={120} cy={810} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={250} cy={770} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={380} cy={650} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={480} cy={420} r={4} fill="#FFFFFF" fillOpacity={0.45} />
-          <Circle cx={560} cy={120} r={4} fill="#FFFFFF" fillOpacity={0.45} />
+          {/* 5 Data points exactly on the quadratic curve (calculated from bezier formula) */}
+          <Circle cx={126} cy={808} r={5} fill="#FFFFFF" fillOpacity={0.6} />
+          <Circle cx={250} cy={738} r={5} fill="#FFFFFF" fillOpacity={0.6} />
+          <Circle cx={360} cy={605} r={5} fill="#FFFFFF" fillOpacity={0.6} />
+          <Circle cx={458} cy={410} r={5} fill="#FFFFFF" fillOpacity={0.6} />
+          <Circle cx={542} cy={152} r={5} fill="#FFFFFF" fillOpacity={0.6} />
         </Svg>
       </View>
       
