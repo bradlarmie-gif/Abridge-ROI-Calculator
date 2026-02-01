@@ -305,7 +305,7 @@ export default function StepWhereYouAre({
           </div>
           
           {afterHoursPerWeek > 0 && inputs.providers > 0 && (
-            <div className="mt-4 p-4 bg-[#F07B5F] rounded-xl">
+            <div className="mt-4 p-4 bg-[#EA2C00] rounded-xl">
               <p className="text-sm text-white">
                 That's <span className="font-bold">{(Math.round(afterHoursPerWeek * 52) * inputs.providers).toLocaleString()} hours/year</span> across your {inputs.providers} providers 
                 spent charting instead of living their lives.
