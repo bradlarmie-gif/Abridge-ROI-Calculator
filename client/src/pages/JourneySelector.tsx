@@ -169,23 +169,31 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
             Model the Impact of
             <span 
-              className="block mt-3 md:mt-4 tracking-normal cursor-default transition-all duration-500 hover:text-[#EA2C00] hover:tracking-wide"
-              style={{ 
-                background: 'linear-gradient(90deg, #EA2C00 50%, currentColor 50%)',
-                backgroundSize: '200% 100%',
-                backgroundPosition: '100% 0',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                transition: 'background-position 0.4s ease, letter-spacing 0.4s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundPosition = '0% 0';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundPosition = '100% 0';
-              }}
-            >Abridge</span>
+              className="block mt-3 md:mt-4 tracking-normal cursor-default relative group"
+              style={{ color: '#EA2C00' }}
+            >
+              <span className="relative z-10">Abridge</span>
+              {/* Geometric pattern overlay on hover */}
+              <span 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden"
+                style={{
+                  background: `
+                    linear-gradient(45deg, transparent 40%, rgba(234, 44, 0, 0.08) 40%, rgba(234, 44, 0, 0.08) 60%, transparent 60%),
+                    linear-gradient(-45deg, transparent 40%, rgba(234, 44, 0, 0.08) 40%, rgba(234, 44, 0, 0.08) 60%, transparent 60%)
+                  `,
+                  backgroundSize: '20px 20px',
+                  animation: 'geometricShift 2s linear infinite',
+                }}
+              />
+              {/* Subtle glow effect on hover */}
+              <span 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none blur-lg"
+                style={{ 
+                  background: 'linear-gradient(90deg, transparent, rgba(234, 44, 0, 0.2), transparent)',
+                  animation: 'glowSweep 1.5s ease-in-out infinite',
+                }}
+              />
+            </span>
           </h1>
           <button
             onClick={onSelectLearn}
