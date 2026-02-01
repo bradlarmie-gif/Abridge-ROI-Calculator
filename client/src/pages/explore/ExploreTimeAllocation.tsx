@@ -349,20 +349,21 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     data-testid={`slider-${option.id}`}
                   />
 
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-400">{option.valueLabel}</span>
-                      <span className="text-sm font-semibold text-[#EA2C00]">{hours.toLocaleString()} hours</span>
+                  {/* Value display row */}
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                    <div>
+                      <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours → Annual Value</p>
+                      <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
                     </div>
                     
                     {/* Expandable math button */}
                     <button
                       onClick={() => toggleExpand(option.id)}
-                      className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-[#EA2C00] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
                       data-testid={`button-expand-${option.id}`}
                     >
                       <Calculator className="w-3.5 h-3.5" />
-                      <span>See the math</span>
+                      <span>{isExpanded ? 'Hide details' : 'See the math'}</span>
                       {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
                   </div>
@@ -420,27 +421,38 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         </div>
 
         {/* Total summary */}
-        <motion.div
-          className="bg-black rounded-2xl p-6 text-white text-center max-w-2xl mx-auto mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.5 }}
-        >
-          <p className="text-sm text-white/60 mb-2">Total Allocation</p>
-          <div className="flex items-center justify-center gap-4">
-            <div className="flex-1 text-right">
-              <span className="text-4xl font-bold">{totalHoursSaved.toLocaleString()}</span>
-              <span className="text-white/60 ml-2">hours</span>
-            </div>
-            <div className="w-px h-10 bg-white/20" />
-            <div className="flex-1 text-left">
-              <span className={`text-4xl font-bold ${totalAllocated === 100 ? 'text-[#F07B5F]' : 'text-yellow-400'}`}>
-                {totalAllocated}%
-              </span>
-              <span className="text-white/60 ml-2">allocated</span>
-            </div>
-          </div>
-        </motion.div>
+        {(() => {
+          const totalTimeValue = visibleOptions.reduce((sum, opt) => {
+            const calc = calculateDriverValue(opt.id);
+            return sum + (calc?.value || 0);
+          }, 0);
+          
+          return (
+            <motion.div
+              className="bg-black rounded-2xl p-6 text-white max-w-2xl mx-auto mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-white/60">Time Savings Summary</p>
+                <span className={`text-sm font-medium ${totalAllocated === 100 ? 'text-green-400' : 'text-yellow-400'}`}>
+                  {totalAllocated}% allocated
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white/60 text-sm">Total Hours</p>
+                  <p className="text-2xl font-bold">{totalHoursSaved.toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-white/60 text-sm">Annual Value</p>
+                  <p className="text-3xl font-bold text-[#F07B5F]">${totalTimeValue.toLocaleString()}</p>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })()}
 
         <motion.div 
           className="flex flex-col items-center"
