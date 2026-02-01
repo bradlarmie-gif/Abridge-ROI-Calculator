@@ -169,7 +169,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
             Model the Impact of
             <span 
-              className="block mt-3 md:mt-4 tracking-wide cursor-default transition-all duration-500 hover:text-[#EA2C00] hover:tracking-wider"
+              className="block mt-3 md:mt-4 tracking-normal cursor-default transition-all duration-500 hover:text-[#EA2C00] hover:tracking-wide"
               style={{ 
                 background: 'linear-gradient(90deg, #EA2C00 50%, currentColor 50%)',
                 backgroundSize: '200% 100%',
