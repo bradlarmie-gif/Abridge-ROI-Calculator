@@ -55,7 +55,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
   numberOfProviders: 0,
   annualEncounters: 0,
-  utilizationPercent: 75,
+  utilizationPercent: 70,
   timePathScenario: 'typical',
   minutesSavedPerEncounter: 3,
   timeAllocation: {
