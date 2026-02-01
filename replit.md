@@ -29,7 +29,15 @@ The application supports multiple distinct user journeys:
 
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings.
--   **Defensible Pathway Toggle System**: ROI drivers include togglable value pathways with real-time recalculation, structured with "Your Gap" and "How This Creates Value" sections.
+-   **Defensible Math with Realization Rates**: All ROI calculations include conservative realization rates for defensible estimates:
+    - Patient Access: 35% (scheduling constraints, room availability)
+    - Locum Reduction: 60% (minimum shift requirements)
+    - Clinician Wellbeing: 20% (burnout-to-retention conversion)
+    - wRVU: 75% (payer mix, fee schedules)
+    - HCC: 60% (RAF adjustments, audit risk)
+    - Denials: 70% (appeals success rate)
+-   **Expandable Math Breakdowns**: "See the math" buttons on Time Allocation and Doc Drivers pages reveal step-by-step calculations with highlighted realization rates and explanatory text.
+-   **Optional Locums Toggle**: Time Allocation page allows users to disable locum savings if not relevant; when disabled, allocation redistributes to Patient Access and Wellbeing, and "Cost Focus" preset disappears.
 -   **Level of Service Calculation**: Simplified wRVU-based approach with transparent UI breakdowns.
 -   **Component-Driven UI**: Utilizes `PathwayCard` components for progressive disclosure of driver pathways.
 
