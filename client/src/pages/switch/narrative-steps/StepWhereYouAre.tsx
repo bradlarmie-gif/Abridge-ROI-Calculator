@@ -199,13 +199,13 @@ export default function StepWhereYouAre({
     const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     const filledDimensions = scores.length;
     
-    // Critical assessment labels - for prospects evaluating their current solution
-    const maturity = avgScore >= 95 ? { label: "Near Benchmark", color: "text-emerald-600", bg: "bg-emerald-500" }
-      : avgScore >= 85 ? { label: "Above Average", color: "text-emerald-600", bg: "bg-emerald-500" }
-      : avgScore >= 70 ? { label: "Room to Grow", color: "text-amber-600", bg: "bg-amber-500" }
-      : avgScore >= 55 ? { label: "Underperforming", color: "text-orange-600", bg: "bg-orange-500" }
-      : avgScore >= 40 ? { label: "Significant Gap", color: "text-red-600", bg: "bg-red-500" }
-      : avgScore > 0 ? { label: "Critical Gap", color: "text-red-700", bg: "bg-red-600" }
+    // Professional assessment labels - analytical but respectful
+    const maturity = avgScore >= 95 ? { label: "Benchmark Level", color: "text-emerald-600", bg: "bg-emerald-500" }
+      : avgScore >= 85 ? { label: "Strong Performance", color: "text-emerald-600", bg: "bg-emerald-500" }
+      : avgScore >= 70 ? { label: "Opportunity Ahead", color: "text-amber-600", bg: "bg-amber-500" }
+      : avgScore >= 55 ? { label: "Untapped Potential", color: "text-orange-600", bg: "bg-orange-500" }
+      : avgScore >= 40 ? { label: "Value Left Behind", color: "text-orange-600", bg: "bg-orange-500" }
+      : avgScore > 0 ? { label: "Explore Your Options", color: "text-slate-600", bg: "bg-slate-500" }
       : { label: "Not Yet Measured", color: "text-slate-400", bg: "bg-slate-300" };
     
     return { avgScore, filledDimensions, maturity };
