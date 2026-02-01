@@ -453,18 +453,18 @@ export default function StepTheGap({
       </div>
 
       {storyMetrics.afterHoursTotal > 0 && (
-        <div className="bg-black rounded-xl p-6">
+        <div className="bg-slate-100 rounded-xl p-6 border border-slate-200">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-              <Moon className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+              <Moon className="w-7 h-7 text-[#EA2C00]" />
             </div>
             <div className="flex-1">
-              <p className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-1">After-Hours Documentation</p>
-              <p className="text-white text-lg">
-                <span className="font-bold">{inputs.afterHoursPerWeek} hours/week</span> charting after hours
-                <span className="text-white/70"> — that's </span>
-                <span className="font-bold">{storyMetrics.afterHoursTotal} hours/year</span>
-                <span className="text-white/70"> that could be reduced.</span>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">After-Hours Documentation</p>
+              <p className="text-slate-700 text-lg">
+                <span className="font-bold text-[#EA2C00]">{inputs.afterHoursPerWeek} hours/week</span> charting after hours
+                <span className="text-slate-500"> — that's </span>
+                <span className="font-bold text-[#EA2C00]">{storyMetrics.afterHoursTotal.toLocaleString()} hours/year</span>
+                <span className="text-slate-500"> that could be reduced.</span>
               </p>
             </div>
           </div>
