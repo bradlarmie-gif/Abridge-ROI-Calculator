@@ -23,11 +23,11 @@ const UTILIZATION_OPTIONS = [
 ];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
-  const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders.toString());
-  const [encounterInputValue, setEncounterInputValue] = useState(state.annualEncounters.toString());
+  const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders > 0 ? state.numberOfProviders.toString() : '');
+  const [encounterInputValue, setEncounterInputValue] = useState(state.annualEncounters > 0 ? state.annualEncounters.toString() : '');
 
   const handleProvidersChange = useCallback((value: number) => {
-    const clampedValue = Math.max(1, Math.min(1000, value));
+    const clampedValue = Math.max(1, Math.min(10000, value));
     const annualEncounters = clampedValue * ENCOUNTERS_PER_PROVIDER_OUTPATIENT;
     setProviderInputValue(clampedValue.toString());
     setEncounterInputValue(annualEncounters.toString());
@@ -41,7 +41,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     setProviderInputValue(inputVal);
     const numValue = parseInt(inputVal, 10);
     if (!isNaN(numValue) && numValue > 0) {
-      const clampedValue = Math.max(1, Math.min(1000, numValue));
+      const clampedValue = Math.max(1, Math.min(10000, numValue));
       const annualEncounters = clampedValue * ENCOUNTERS_PER_PROVIDER_OUTPATIENT;
       setEncounterInputValue(annualEncounters.toString());
       updateState({ 
@@ -54,9 +54,13 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const handleProviderInputBlur = useCallback(() => {
     const numValue = parseInt(providerInputValue, 10);
     if (isNaN(numValue) || numValue < 1) {
-      setProviderInputValue(state.numberOfProviders.toString());
+      if (state.numberOfProviders > 0) {
+        setProviderInputValue(state.numberOfProviders.toString());
+      } else {
+        setProviderInputValue('');
+      }
     } else {
-      const clampedValue = Math.max(1, Math.min(1000, numValue));
+      const clampedValue = Math.max(1, Math.min(10000, numValue));
       setProviderInputValue(clampedValue.toString());
     }
   }, [providerInputValue, state.numberOfProviders]);

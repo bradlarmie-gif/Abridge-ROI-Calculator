@@ -42,7 +42,7 @@ export interface ExploreState {
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
-  numberOfProviders: 100,
+  numberOfProviders: 0,
   annualEncounters: 0,
   utilizationPercent: 75,
   timePathScenario: 'typical',
