@@ -19,6 +19,65 @@ interface StepWhereYouAreProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
+// Animated Circular Progress Ring Component
+function CircularProgressRing({ 
+  score, 
+  size = 56, 
+  strokeWidth = 5,
+  maturityColor,
+  maturityLabel 
+}: { 
+  score: number; 
+  size?: number; 
+  strokeWidth?: number;
+  maturityColor: string;
+  maturityLabel: string;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (Math.min(100, score) / 100) * circumference;
+  
+  // Map maturity colors to stroke colors
+  const getStrokeColor = () => {
+    if (maturityColor.includes('emerald')) return '#10b981';
+    if (maturityColor.includes('amber')) return '#f59e0b';
+    if (maturityColor.includes('orange')) return '#f97316';
+    return '#94a3b8';
+  };
+
+  return (
+    <div className="relative flex items-center justify-center">
+      <svg width={size} height={size} className="transform -rotate-90">
+        {/* Background circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#e2e8f0"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        {/* Progress circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={getStrokeColor()}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-sm font-bold text-slate-800">{score}%</span>
+      </div>
+    </div>
+  );
+}
+
 interface DimensionSliderProps {
   icon: React.ReactNode;
   iconBg: string;
@@ -327,16 +386,21 @@ export default function StepWhereYouAre({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div 
-                  className="flex items-center gap-3 px-4 py-2.5 bg-slate-100 rounded-xl cursor-help border border-slate-200"
+                  className="flex items-center gap-3 px-3 py-2 bg-white rounded-xl cursor-help border-2 border-slate-200 shadow-sm hover:shadow-md transition-shadow"
                   data-testid="realization-indicator"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${realizationData.maturity.bg}`} />
-                    <span className="text-base font-semibold text-slate-800">
-                      {realizationData.avgScore}% realized
+                  <CircularProgressRing 
+                    score={realizationData.avgScore}
+                    maturityColor={realizationData.maturity.color}
+                    maturityLabel={realizationData.maturity.label}
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-500 uppercase tracking-wide font-medium">Value Realized</span>
+                    <span className={`text-sm font-semibold ${realizationData.maturity.color}`}>
+                      {realizationData.maturity.label}
                     </span>
                   </div>
-                  <Info className="w-4 h-4 text-slate-400" />
+                  <Info className="w-4 h-4 text-slate-400 ml-1" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-xs p-3">
