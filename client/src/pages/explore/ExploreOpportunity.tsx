@@ -13,8 +13,8 @@ interface ExploreOpportunityProps {
   onHome: () => void;
 }
 
-const ENCOUNTERS_PER_PROVIDER_OUTPATIENT = 3500;
-const ENCOUNTERS_PER_PROVIDER_SPECIALTY = 2800;
+const ENCOUNTERS_PER_PROVIDER_OUTPATIENT = 2800;
+const ENCOUNTERS_PER_PROVIDER_SPECIALTY = 2100;
 
 const UTILIZATION_OPTIONS = [
   { label: "Conservative", value: 50, description: "Cautious rollout" },
