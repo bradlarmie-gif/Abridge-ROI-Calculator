@@ -224,30 +224,6 @@ export default function StepTheInvitation({
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-4">
-        <Button 
-          variant="ghost" 
-          onClick={onBack}
-          className="gap-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-        
-        {onBackToJourney && (
-          <Button
-            variant="outline"
-            onClick={onBackToJourney}
-            className="gap-2 rounded-full px-6"
-            data-testid="button-start-over"
-          >
-            Start New Analysis
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
-
       <PDFExportModal
         open={showExportModal}
         onClose={() => setShowExportModal(false)}
