@@ -5,8 +5,11 @@ import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
+  ArrowRight,
   ChevronRight,
   Clock,
   TrendingUp,
@@ -16,6 +19,7 @@ import {
   Info,
   Zap,
   CheckCircle,
+  Calculator,
 } from "lucide-react";
 
 interface InvestmentPageProps {
@@ -299,110 +303,37 @@ export default function InvestmentPage({
 
       <div className="py-8 sm:py-12 pb-16">
         {/* Centered Page Header */}
-        <div className="text-center max-w-[700px] mx-auto px-6 mb-12">
-          <div className="inline-block text-[13px] font-semibold text-[#EA2C00] uppercase tracking-[0.1em] bg-[rgba(234,44,0,0.08)] px-3 py-1.5 rounded-md mb-6">
-            Step 5 of 6
-          </div>
-          <h1 className="text-4xl md:text-[48px] font-bold text-[#111827] leading-[1.1] tracking-[-0.02em] mb-4">
-            Your Return on Investment
+        <motion.div 
+          className="text-center max-w-[700px] mx-auto px-6 mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+            Configure Your Investment
           </h1>
-          <p className="text-[17px] leading-relaxed text-[#6B7280]">
-            Align cost with value realization. Configure your investment and see the net impact.
+          <p className="text-lg text-slate-600">
+            Enter your pricing to see the complete picture
           </p>
-        </div>
+        </motion.div>
 
-        {/* ROI Hero Section */}
-        <div className="max-w-6xl mx-auto px-6 mb-12">
-          {!showReturnCard ? (
-            // Placeholder state - dashed border box
-            <div className="border-2 border-dashed border-[#E5E7EB] rounded-2xl p-16 bg-[#F9FAFB]">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#F3F4F6] flex items-center justify-center">
-                  <DollarSign className="w-8 h-8 text-[#9CA3AF]" />
-                </div>
-                <p className="text-[16px] font-medium text-[#9CA3AF]">
-                  Select a pricing model and enter your cost to see your return
-                </p>
-              </div>
-            </div>
-          ) : (
-            // Animated return card
-            <div 
-              className={`bg-[#111827] rounded-2xl p-8 md:p-10 transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                animateCard 
-                  ? "opacity-100 translate-y-0 scale-100" 
-                  : "opacity-0 -translate-y-5 scale-[0.95]"
-              }`}
-            >
-              <div className="text-center mb-8">
-                <span className="text-[13px] font-semibold text-white/60 uppercase tracking-[0.1em]">Your Return</span>
-              </div>
-
-              {/* ROI Visual Bar */}
-              <div className="max-w-2xl mx-auto mb-8">
-                <div className="relative h-16 bg-white/10 rounded-xl overflow-hidden">
-                  <div 
-                    className="absolute inset-y-0 left-0 bg-[#EA2C00] flex items-center justify-center transition-all duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-                    style={{ 
-                      width: animateBars ? `${investmentBarWidth}%` : '0%',
-                      transitionDelay: '400ms'
-                    }}
-                  >
-                    <div className="text-center">
-                      <div className="text-[11px] font-medium text-white/80 uppercase">Investment</div>
-                      <div className="text-lg font-bold text-white">{formatCurrencyCompact(annualInvestment)}</div>
-                    </div>
-                  </div>
-                  <div 
-                    className="absolute inset-y-0 right-0 bg-emerald-500 flex items-center justify-center transition-all duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-                    style={{ 
-                      width: animateBars ? `${100 - investmentBarWidth}%` : '0%',
-                      transitionDelay: '500ms'
-                    }}
-                  >
-                    <div className="text-center">
-                      <div className="text-[11px] font-medium text-white/80 uppercase">Annual Value</div>
-                      <div className="text-lg font-bold text-white">{formatCurrencyCompact(totalAnnualValue)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ROI Multiplier */}
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-4 bg-white/10 rounded-2xl px-8 py-5">
-                  <span className="font-mono text-5xl md:text-6xl font-bold text-white tabular-nums" data-testid="roi-multiple">
-                    {roiMultiple.toFixed(1)}×
-                  </span>
-                  <span className="text-lg text-white/80 font-medium">Return on<br/>Investment</span>
-                </div>
-              </div>
-
-              {/* Net Annual Gain */}
-              <div className="text-center">
-                <span className="text-sm text-white/60 block mb-1">Net Annual Gain</span>
-                <span className="font-mono text-3xl font-bold text-emerald-400 tabular-nums" data-testid="net-gain">
-                  +{formatCurrency(Math.round(animatedNetGain))}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Two Column Layout */}
+        {/* 5-Column Grid Layout matching Explore flow */}
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             
-            {/* Left Column - Configure Your Investment */}
-            <div className="bg-white rounded-2xl border border-[#E5E7EB] p-8">
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold text-[#111827] mb-1">Configure Your Investment</h2>
-                <p className="text-[15px] text-[#6B7280]">Adjust pricing model and contract terms</p>
-              </div>
+            {/* Left Column - Configuration */}
+            <motion.div 
+              className="lg:col-span-3 space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
+              <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold text-slate-900 mb-1">Pricing Model</h2>
+                  <p className="text-sm text-slate-500">Choose how you'll pay for Abridge</p>
+                </div>
 
-              {/* Pricing Model */}
-              <div className="mb-8">
-                <label className="text-[15px] font-semibold text-[#111827] block mb-4">Pricing Model</label>
                 <div className="space-y-3">
                   {/* Per Provider Option */}
                   <button
@@ -648,151 +579,143 @@ export default function InvestmentPage({
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Right Column - Value Breakdown */}
-            <div className="space-y-6">
-              <div className="mb-2">
-                <h2 className="text-xl font-semibold text-[#111827] mb-1">Value Breakdown</h2>
-                <p className="text-[15px] text-[#6B7280]">Where your return comes from</p>
-              </div>
-
-              {/* Value Categories */}
-              {laborTotal > 0 && (
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="text-base font-semibold text-[#111827]">Labor & Efficiency</h4>
-                          <p className="text-[13px] text-[#6B7280]">{laborPercent}% of total value</p>
-                        </div>
-                        <span className="font-mono text-lg font-bold text-emerald-600">{formatCurrency(laborTotal)}</span>
-                      </div>
-                    </div>
+            {/* Live Receipt Sidebar */}
+            <motion.div
+              className="lg:col-span-2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.25, duration: 0.5 }}
+            >
+              <div className="bg-black rounded-2xl p-6 text-white sticky top-24">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                    <Calculator className="w-5 h-5 text-white" />
                   </div>
-                  <div className="space-y-2 pl-13">
-                    {valueBreakdown.filter(v => v.category === "labor").map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-[14px]">
-                        <span className="text-[#6B7280]">{item.name}</span>
-                        <span className="font-mono text-emerald-600">{formatCurrency(item.value)}</span>
-                      </div>
-                    ))}
+                  <div>
+                    <h2 className="text-lg font-bold">Your ROI</h2>
+                    <p className="text-sm text-white/60">Investment analysis</p>
                   </div>
                 </div>
-              )}
 
-              {revenueTotal > 0 && (
-                <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                      <TrendingUp className="w-5 h-5 text-emerald-600" />
+                {/* Value Breakdown */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between py-2 border-b border-white/10">
+                    <span className="text-white/70">Annual Value</span>
+                    <span className="font-semibold text-emerald-400">${totalAnnualValue.toLocaleString()}</span>
+                  </div>
+                  
+                  {laborTotal > 0 && (
+                    <div className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
+                      <span className="text-white/50 pl-3">Labor & Efficiency</span>
+                      <span className="text-white/70">${laborTotal.toLocaleString()}</span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="text-base font-semibold text-[#111827]">Revenue & Quality</h4>
-                          <p className="text-[13px] text-[#6B7280]">{revenuePercent}% of total value</p>
-                        </div>
-                        <span className="font-mono text-lg font-bold text-emerald-600">{formatCurrency(revenueTotal)}</span>
+                  )}
+                  {revenueTotal > 0 && (
+                    <div className="flex items-center justify-between py-2 border-b border-white/10 text-sm">
+                      <span className="text-white/50 pl-3">Revenue & Quality</span>
+                      <span className="text-white/70">${revenueTotal.toLocaleString()}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-white/10">
+                    <span className="text-white/70">Your Investment</span>
+                    <span className={`font-semibold ${hasPricingEntered ? 'text-[#EA2C00]' : 'text-white/40'}`}>
+                      {hasPricingEntered ? `-$${annualInvestment.toLocaleString()}` : '—'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* ROI Result */}
+                {hasPricingEntered ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="pt-4 border-t border-white/20 mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white/70">Net Annual Gain</span>
+                        <span className="text-2xl font-bold text-emerald-400">
+                          +${netGainAnnual.toLocaleString()}
+                        </span>
                       </div>
                     </div>
-                  </div>
-                  <div className="space-y-2 pl-13">
-                    {valueBreakdown.filter(v => v.category === "revenue").map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-[14px]">
-                        <span className="text-[#6B7280]">{item.name}</span>
-                        <span className="font-mono text-emerald-600">{formatCurrency(item.value)}</span>
+
+                    {/* ROI Multiplier - Clean and subtle */}
+                    <div className="bg-white/10 rounded-xl p-4 text-center">
+                      <div className="text-sm text-white/60 mb-1">Return on Investment</div>
+                      <div className="font-mono text-4xl font-bold text-white" data-testid="roi-multiple">
+                        {roiMultiple.toFixed(1)}×
                       </div>
-                    ))}
+                      <div className="text-sm text-white/50 mt-1">
+                        Payback in ~{monthsToPayback} month{monthsToPayback !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+
+                    {/* Simple value bar */}
+                    <div className="mt-4">
+                      <div className="h-2 rounded-full overflow-hidden flex bg-white/10">
+                        <div 
+                          className="bg-[#EA2C00] transition-all duration-500"
+                          style={{ width: `${Math.min((annualInvestment / totalAnnualValue) * 100, 100)}%` }}
+                        />
+                        <div 
+                          className="bg-emerald-500 transition-all duration-500 flex-1"
+                        />
+                      </div>
+                      <div className="flex justify-between mt-2 text-xs text-white/50">
+                        <span>Investment</span>
+                        <span>Value created</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="pt-4 border-t border-white/20">
+                    <div className="text-center py-6">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+                        <DollarSign className="w-6 h-6 text-white/30" />
+                      </div>
+                      <p className="text-sm text-white/50">
+                        Select a pricing model and enter your cost to see your return
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Value Distribution Chart */}
-              <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-                <div className="text-[13px] font-medium text-[#6B7280] mb-3">Value Distribution</div>
-                <div className="h-6 rounded-lg overflow-hidden flex">
-                  {laborPercent > 0 && (
-                    <div 
-                      className="bg-blue-500 flex items-center justify-center transition-all duration-500"
-                      style={{ width: `${laborPercent}%` }}
-                    >
-                      {laborPercent > 15 && <span className="text-white text-xs font-semibold">{laborPercent}%</span>}
-                    </div>
-                  )}
-                  {revenuePercent > 0 && (
-                    <div 
-                      className="bg-emerald-500 flex items-center justify-center transition-all duration-500"
-                      style={{ width: `${revenuePercent}%` }}
-                    >
-                      {revenuePercent > 15 && <span className="text-white text-xs font-semibold">{revenuePercent}%</span>}
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-4 mt-3">
-                  {laborPercent > 0 && (
-                    <div className="flex items-center gap-2 text-[13px]">
-                      <div className="w-3 h-3 rounded bg-blue-500" />
-                      <span className="text-[#6B7280]">Labor & Efficiency</span>
-                    </div>
-                  )}
-                  {revenuePercent > 0 && (
-                    <div className="flex items-center gap-2 text-[13px]">
-                      <div className="w-3 h-3 rounded bg-emerald-500" />
-                      <span className="text-[#6B7280]">Revenue & Quality</span>
-                    </div>
-                  )}
+                <div className="mt-6 p-4 bg-white/5 rounded-xl">
+                  <p className="text-xs text-white/50">
+                    All values include realization rates for conservative, defensible estimates.
+                  </p>
                 </div>
               </div>
-
-              {/* Total Annual Value */}
-              <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-6">
-                <div className="text-[13px] font-medium text-emerald-700 mb-1">Total Annual Value</div>
-                <div className="font-mono text-4xl font-bold text-emerald-700" data-testid="total-annual-value">
-                  {formatCurrency(totalAnnualValue)}
-                </div>
-                <p className="text-[14px] text-emerald-600 mt-1">From {valueBreakdown.length} value driver{valueBreakdown.length !== 1 ? "s" : ""}</p>
-              </div>
-
-              {/* Net Gain Card */}
-              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
-                <div className="flex items-center gap-2 mb-3">
-                  <Zap className="w-5 h-5" />
-                  <span className="text-sm font-semibold uppercase tracking-wide opacity-90">Net Annual Gain</span>
-                </div>
-                <div className="font-mono text-4xl font-bold mb-2">
-                  +{formatCurrency(netGainAnnual)}
-                </div>
-                <p className="text-sm opacity-80">
-                  That's {formatCurrency(Math.round(netGainAnnual / 12))}/month in realized value
-                </p>
-              </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Footer Actions */}
-          <div className="mt-12 max-w-md mx-auto space-y-4">
-            <button
+          <motion.div 
+            className="flex flex-col items-center mt-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.35, duration: 0.5 }}
+          >
+            <Button
               onClick={handleComplete}
-              className="w-full inline-flex items-center justify-center gap-2 px-8 py-5 rounded-xl font-semibold text-[17px] bg-[#EA2C00] text-white hover:bg-[#d12700] transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+              disabled={!canComplete}
+              className="h-12 px-8 font-semibold rounded-full bg-black hover:bg-black/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="button-view-summary"
             >
               View Full Summary
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
             
-            <button
-              onClick={onBack}
-              className="w-full text-center text-[15px] text-[#6B7280] hover:text-[#EA2C00] transition-colors py-2"
-              data-testid="button-edit-value"
-            >
-              ← Edit value drivers
-            </button>
-          </div>
+            {!hasPricingEntered && (
+              <p className="text-sm text-slate-400 mt-3">
+                Enter pricing to continue
+              </p>
+            )}
+          </motion.div>
         </div>
       </div>
     </div>
