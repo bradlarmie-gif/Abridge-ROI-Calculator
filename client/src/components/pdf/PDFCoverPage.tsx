@@ -1,4 +1,5 @@
-import { Page, View, Text, StyleSheet, Svg, Path, Circle, Line } from "@react-pdf/renderer";
+import { Page, View, Text, StyleSheet, Svg, Path, Circle, Line, Image } from "@react-pdf/renderer";
+import abridgeLogoWhite from "@assets/abridge-logo-wordmark-white_1769912213277.png";
 
 interface PDFCoverPageProps {
   reportLabel: string;
@@ -86,12 +87,9 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   
-  logoText: {
-    fontSize: 16,
-    color: colors.white,
-    letterSpacing: 6,
-    fontWeight: "normal",
-    fontFamily: "Helvetica",
+  logo: {
+    width: 100,
+    height: 20,
   },
   
   preparedByContainer: {
@@ -195,7 +193,7 @@ export function PDFCoverPage({
       
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.logoText}>ABRIDGE</Text>
+        <Image src={abridgeLogoWhite} style={styles.logo} />
         
         {displayPreparedBy && (
           <View style={styles.preparedByContainer}>
