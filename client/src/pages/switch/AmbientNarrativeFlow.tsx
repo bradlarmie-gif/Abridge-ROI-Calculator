@@ -72,7 +72,8 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 1) {
+    // Show loading overlay before the final step
+    if (currentStep === 5) {
       setShowLoadingOverlay(true);
     } else {
       setCompletedSteps(prev => {
@@ -88,10 +89,10 @@ export default function AmbientNarrativeFlow({
     setShowLoadingOverlay(false);
     setCompletedSteps(prev => {
       const newSet = new Set(prev);
-      newSet.add(1);
+      newSet.add(5);
       return newSet;
     });
-    setCurrentStep(2);
+    setCurrentStep(6);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
