@@ -500,13 +500,14 @@ export default function StepTheMath({
                 />
                 <Tooltip 
                   formatter={(value: number | number[], name: string) => {
-                    if (name === 'gap') return null;
+                    if (name === 'gap') return [null, null];
                     const displayValue = Array.isArray(value) ? value[0] : value;
                     return [
                       formatCurrency(displayValue),
                       name === 'current' ? 'Continue as-is' : 'Optimized'
                     ];
                   }}
+                  filterNull={true}
                   labelFormatter={(label) => label % 12 === 0 ? `Year ${label / 12}` : `Month ${label}`}
                   contentStyle={{ 
                     borderRadius: '8px', 
