@@ -168,7 +168,24 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
             Model the Impact of
-            <span className="block mt-3 md:mt-4">Abridge</span>
+            <span 
+              className="block mt-3 md:mt-4 tracking-wide cursor-default transition-all duration-500 hover:text-[#EA2C00] hover:tracking-wider"
+              style={{ 
+                background: 'linear-gradient(90deg, #EA2C00 50%, currentColor 50%)',
+                backgroundSize: '200% 100%',
+                backgroundPosition: '100% 0',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                transition: 'background-position 0.4s ease, letter-spacing 0.4s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundPosition = '0% 0';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundPosition = '100% 0';
+              }}
+            >Abridge</span>
           </h1>
           <button
             onClick={onSelectLearn}
