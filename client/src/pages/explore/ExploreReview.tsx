@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Users, Clock, BarChart3, Building2, AlertTriangle, DollarSign, Sparkles, FileText } from "lucide-react";
+import { ArrowRight, Check, Users, Clock, BarChart3, Building2, AlertTriangle, DollarSign, Sparkles, FileText, TrendingUp, FileCheck, Stethoscope, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -20,7 +20,7 @@ const DENIAL_AVG_VALUE = 250;
 const DENIAL_REALIZATION = 0.70;
 
 export default function ExploreReview({ state, totalHoursSaved, onContinueToInvestment, onBack, onHome }: ExploreReviewProps) {
-  
+  const isED = state.careSetting === 'ed';
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   
   const calculateWrvuValue = () => {
@@ -32,7 +32,8 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   };
 
   const calculateHccValue = () => {
-    if (!state.docDrivers.hcc.enabled) return 0;
+    // HCC not applicable for ED
+    if (isED || !state.docDrivers.hcc.enabled) return 0;
     const avgConditionsPerMember = 3;
     const maPatients = eligibleEncounters * 0.3;
     const conditionsCaptured = maPatients * avgConditionsPerMember * (state.docDrivers.hcc.value / 100);
@@ -73,6 +74,13 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const totalValue = totalDocValue + timeValue;
 
   const getTimePathLabel = () => {
+    if (isED) {
+      switch (state.timePathScenario) {
+        case 'conservative': return 'Conservative (2 min)';
+        case 'typical': return 'Typical (4 min)';
+        case 'aggressive': return 'Aggressive (6 min)';
+      }
+    }
     switch (state.timePathScenario) {
       case 'conservative': return 'Conservative (1.5 min)';
       case 'typical': return 'Typical (3 min)';
@@ -83,7 +91,8 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const getEnabledDriversLabel = () => {
     const enabled = [];
     if (state.docDrivers.wrvu.enabled) enabled.push('wRVU');
-    if (state.docDrivers.hcc.enabled) enabled.push('HCC');
+    // HCC not applicable for ED
+    if (!isED && state.docDrivers.hcc.enabled) enabled.push('HCC');
     if (state.docDrivers.denials.enabled) enabled.push('Denials');
     if (enabled.length === 0) return 'None selected';
     return enabled.join(', ');
@@ -91,7 +100,8 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
 
   const getDocIcon = () => {
     if (state.docDrivers.wrvu.enabled) return BarChart3;
-    if (state.docDrivers.hcc.enabled) return Building2;
+    // HCC not applicable for ED
+    if (!isED && state.docDrivers.hcc.enabled) return Building2;
     if (state.docDrivers.denials.enabled) return AlertTriangle;
     return FileText;
   };
@@ -126,7 +136,8 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
       value: wrvuValue,
     });
   }
-  if (state.docDrivers.hcc.enabled) {
+  // HCC not applicable for ED
+  if (!isED && state.docDrivers.hcc.enabled) {
     enabledDriverDetails.push({
       label: `HCC Capture (${state.docDrivers.hcc.value}% recapture)`,
       value: hccValue,
@@ -253,11 +264,73 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
           </div>
         </motion.div>
 
+        {/* ED-specific Downstream Value section */}
+        {isED && (
+          <motion.div
+            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 mb-10 text-white"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-[#F07B5F]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Downstream Value Potential</h3>
+                <p className="text-sm text-white/60">ED documentation connects to Inpatient value</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-white/80 mb-5">
+              ED encounters that result in admissions create additional documentation value opportunities. 
+              These are captured in the Inpatient flow and represent significant potential beyond direct ED metrics.
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileCheck className="w-4 h-4 text-[#F07B5F]" />
+                  <span className="text-xs font-medium text-white/60">DRG/CMI Capture</span>
+                </div>
+                <p className="text-sm text-white/80">Accurate ED documentation supports proper DRG assignment for admitted patients</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Stethoscope className="w-4 h-4 text-[#F07B5F]" />
+                  <span className="text-xs font-medium text-white/60">Medical Necessity</span>
+                </div>
+                <p className="text-sm text-white/80">Complete documentation establishes medical necessity for admission decisions</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="w-4 h-4 text-[#F07B5F]" />
+                  <span className="text-xs font-medium text-white/60">CDI Efficiency</span>
+                </div>
+                <p className="text-sm text-white/80">Reduces Clinical Documentation Improvement queries and rework</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Link className="w-4 h-4 text-[#F07B5F]" />
+                  <span className="text-xs font-medium text-white/60">Inpatient Connection</span>
+                </div>
+                <p className="text-sm text-white/80">ED documentation flows into inpatient records, enabling end-to-end value capture</p>
+              </div>
+            </div>
+            
+            <div className="mt-5 pt-4 border-t border-white/10">
+              <p className="text-xs text-white/50 text-center">
+                To model inpatient value from ED admissions, explore the Inpatient care setting
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         <motion.div 
           className="flex flex-col items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          transition={{ delay: isED ? 0.5 : 0.4, duration: 0.5 }}
         >
           <Button
             onClick={onContinueToInvestment}

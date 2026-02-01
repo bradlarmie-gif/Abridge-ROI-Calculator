@@ -142,7 +142,20 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
       return (
         <ExploreCareSettings
           selectedSetting={state.careSetting}
-          onSelectSetting={(setting: ExploreCareSetting) => updateState({ careSetting: setting })}
+          onSelectSetting={(setting: ExploreCareSetting) => {
+            // When switching to ED, disable HCC since it's not applicable
+            if (setting === 'ed') {
+              updateState({ 
+                careSetting: setting,
+                docDrivers: {
+                  ...state.docDrivers,
+                  hcc: { enabled: false, value: state.docDrivers.hcc.value }
+                }
+              });
+            } else {
+              updateState({ careSetting: setting });
+            }
+          }}
           onNext={() => navigate('opportunity')}
           onBack={goHome}
           onHome={goHome}

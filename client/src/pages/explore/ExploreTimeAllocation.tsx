@@ -23,7 +23,7 @@ interface AllocationOption {
   isOptional?: boolean;
 }
 
-const ALLOCATION_OPTIONS: AllocationOption[] = [
+const OUTPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
   {
     id: 'patientAccess',
     label: 'Patient Access',
@@ -48,6 +48,30 @@ const ALLOCATION_OPTIONS: AllocationOption[] = [
   },
 ];
 
+const ED_ALLOCATION_OPTIONS: AllocationOption[] = [
+  {
+    id: 'patientAccess',
+    label: 'Throughput & LWBS Reduction',
+    description: 'Reduce left-without-being-seen rates and increase patient throughput',
+    icon: Users,
+    valueLabel: 'Additional patients seen',
+  },
+  {
+    id: 'reducingLocums',
+    label: 'Physician Retention',
+    description: 'Reduce burnout-driven attrition and recruitment costs',
+    icon: Clock,
+    valueLabel: 'Retention improvement',
+  },
+  {
+    id: 'clinicianWellbeing',
+    label: 'Clinician Wellbeing',
+    description: 'Improve work-life balance and job satisfaction',
+    icon: Heart,
+    valueLabel: 'Satisfaction improvement',
+  },
+];
+
 const getPresetsForLocums = (includeLocums: boolean) => {
   if (includeLocums) {
     return [
@@ -64,6 +88,13 @@ const getPresetsForLocums = (includeLocums: boolean) => {
     ];
   }
 };
+
+const ED_PRESETS = [
+  { label: 'Balanced', allocation: { patientAccess: 40, reducingLocums: 30, clinicianWellbeing: 30 } },
+  { label: 'Throughput Focus', allocation: { patientAccess: 60, reducingLocums: 20, clinicianWellbeing: 20 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 25, reducingLocums: 45, clinicianWellbeing: 30 } },
+  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
+];
 
 interface EditableAssumptions {
   visitValue: number;
@@ -169,8 +200,11 @@ function EditableValue({
 }
 
 export default function ExploreTimeAllocation({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreTimeAllocationProps) {
+  const isED = state.careSetting === 'ed';
+  const ALLOCATION_OPTIONS = isED ? ED_ALLOCATION_OPTIONS : OUTPATIENT_ALLOCATION_OPTIONS;
+  
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
-  const [includeLocums, setIncludeLocums] = useState(false);
+  const [includeLocums, setIncludeLocums] = useState(isED ? true : false);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
@@ -381,8 +415,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     setExpandedDriver(expandedDriver === id ? null : id);
   };
 
-  const presets = getPresetsForLocums(includeLocums);
-  const visibleOptions = ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
+  const presets = isED ? ED_PRESETS : getPresetsForLocums(includeLocums);
+  const visibleOptions = isED ? ALLOCATION_OPTIONS : ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
 
   const totalAllocated = visibleOptions.reduce((sum, opt) => sum + state.timeAllocation[opt.id], 0);
   const totalTimeValue = visibleOptions.reduce((sum, opt) => {
@@ -415,17 +449,23 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                Allocate Your Savings
+                {isED ? "Allocate ED Efficiency Gains" : "Allocate Your Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                Where does this time go?
+                {isED ? "How will you use this time?" : "Where does this time go?"}
               </h1>
               <p className="text-slate-600 mb-4">
-                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Now decide how to convert that time into measurable value.
+                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. {isED 
+                  ? "Allocate these gains across throughput, retention, and wellbeing priorities."
+                  : "Now decide how to convert that time into measurable value."
+                }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">The realization concept:</span> Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and other real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap "See the math" to understand and adjust these assumptions.
+                  <span className="font-semibold text-slate-700">The realization concept:</span> {isED 
+                    ? "ED time savings convert to value through throughput improvements, reduced physician attrition, and improved wellbeing. Each driver includes a realization rate reflecting real-world constraints."
+                    : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and other real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
+                  }
                 </p>
               </div>
             </motion.div>
@@ -463,21 +503,23 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 );
               })}
 
-              {/* Locums Toggle */}
-              <button
-                onClick={handleToggleLocums}
-                className={`
-                  flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                  ${includeLocums 
-                    ? 'bg-[#EA2C00] text-white' 
-                    : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-                  }
-                `}
-                data-testid="button-toggle-locums"
-              >
-                {includeLocums ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-                {includeLocums ? 'Locums on' : '+ Locums'}
-              </button>
+              {/* Locums Toggle - Only show for Outpatient */}
+              {!isED && (
+                <button
+                  onClick={handleToggleLocums}
+                  className={`
+                    flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    ${includeLocums 
+                      ? 'bg-[#EA2C00] text-white' 
+                      : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+                    }
+                  `}
+                  data-testid="button-toggle-locums"
+                >
+                  {includeLocums ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                  {includeLocums ? 'Locums on' : '+ Locums'}
+                </button>
+              )}
             </motion.div>
 
             {/* Allocation Cards */}

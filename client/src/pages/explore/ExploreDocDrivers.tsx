@@ -208,10 +208,16 @@ const DEFAULT_DOC_DRIVERS = {
 };
 
 export default function ExploreDocDrivers({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreDocDriversProps) {
+  const isED = state.careSetting === 'ed';
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
 
   const docDrivers = state.docDrivers || DEFAULT_DOC_DRIVERS;
+  
+  // Filter out HCC for ED (ED doesn't benefit from HCC capture the same way outpatient does)
+  const availableDriverConfigs = isED 
+    ? DOC_DRIVER_CONFIGS.filter(d => d.id !== 'hcc')
+    : DOC_DRIVER_CONFIGS;
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
@@ -488,7 +494,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     return Math.round(patientAccessValue + locumValue + retentionValue);
   };
 
-  const enabledDrivers = DOC_DRIVER_CONFIGS.filter(d => docDrivers[d.id]?.enabled);
+  const enabledDrivers = availableDriverConfigs.filter(d => docDrivers[d.id]?.enabled);
   const timeValue = calculateTimeValue();
   const docValue = enabledDrivers.reduce((sum, driver) => {
     const calc = calculateDriverValue(driver.id);
@@ -520,27 +526,33 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           transition={{ duration: 0.5 }}
         >
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            Documentation Quality
+            {isED ? "ED Documentation Quality" : "Documentation Quality"}
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            Capture value beyond time savings
+            {isED ? "Capture ED documentation value" : "Capture value beyond time savings"}
           </h1>
 
           <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
-            Better documentation creates downstream value. Toggle the drivers that match your organization's priorities.
+            {isED 
+              ? "ED documentation drives revenue capture and denial prevention. Toggle the drivers that match your organization's priorities."
+              : "Better documentation creates downstream value. Toggle the drivers that match your organization's priorities."
+            }
           </p>
 
           <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left">
             <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-slate-700">How this works:</span> Each driver calculates value differently based on your encounter volume. Tap "See the math" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality.
+              <span className="font-semibold text-slate-700">How this works:</span> {isED 
+                ? "ED documentation quality impacts Level of Service capture and denial prevention. For risk adjustment (HCC), see the Inpatient flow which connects to ED admissions."
+                : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
+              }
             </p>
           </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3 space-y-4">
-            {DOC_DRIVER_CONFIGS.map((driver, index) => {
+            {availableDriverConfigs.map((driver, index) => {
               const Icon = driver.icon;
               const isEnabled = docDrivers[driver.id]?.enabled || false;
               const driverCalc = calculateDriverValue(driver.id);
@@ -741,7 +753,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                   <span className="text-white/70">Time Savings</span>
                   <span className="font-semibold">${timeValue.toLocaleString()}</span>
                 </div>
-                {DOC_DRIVER_CONFIGS.map(driver => {
+                {availableDriverConfigs.map(driver => {
                   const isEnabled = docDrivers[driver.id]?.enabled || false;
                   const calc = calculateDriverValue(driver.id);
                   return (
