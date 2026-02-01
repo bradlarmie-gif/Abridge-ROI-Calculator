@@ -6,10 +6,6 @@ import {
   StyleSheet,
   Image,
   pdf,
-  Svg,
-  Path,
-  Line,
-  Circle,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
@@ -80,524 +76,301 @@ export interface EDPDFData {
 }
 
 // ============================================================================
-// COLORS
+// ABRIDGE BRAND - STRICT 3-COLOR PENTAGRAM PALETTE
+// Primary: Black, White, Cadmium Red, Coral
+// Grays are neutral tints of black for text hierarchy (industry standard)
 // ============================================================================
 
-const colors = {
-  primary: "#EA2C00",
-  primaryLight: "#FEF2F0",
-  primaryDark: "#C42400",
-  green: "#059669",
-  greenLight: "#ECFDF5",
-  greenDark: "#047857",
-  emerald: "#10b981",
-  emeraldLight: "#d1fae5",
-  emeraldDark: "#065f46",
-  black: "#111827",
-  darkGray: "#374151",
-  mediumGray: "#6B7280",
-  lightGray: "#9CA3AF",
-  paleGray: "#F9FAFB",
-  borderGray: "#E5E7EB",
+const brand = {
+  // Primary brand colors
+  black: "#000000",
   white: "#FFFFFF",
-  amber: "#F59E0B",
-  amberLight: "#FEF3C7",
-  amberDark: "#92400E",
-  blue: "#3B82F6",
-  blueLight: "#EFF6FF",
-  slate: "#1e293b",
-  slateLight: "#334155",
+  red: "#EA2C00",
+  coral: "#F07B5F",
+  
+  // Neutral grays (tints of black for text hierarchy)
+  warmGray: "#F8F7F6",    // Very subtle warm white for backgrounds
+  textSecondary: "#666666", // Secondary text on white
+  textTertiary: "#999999",  // Tertiary text, notes
 };
 
 // ============================================================================
-// STYLES - God Tier Premium Storytelling Format
+// PREMIUM EDITORIAL STYLES - SHARED WITH OUTPATIENT
 // ============================================================================
 
 const styles = StyleSheet.create({
   page: {
     padding: 0,
-    paddingBottom: 50,
     fontFamily: "Helvetica",
-    fontSize: 9,
-    color: colors.black,
-    backgroundColor: colors.white,
+    fontSize: 10,
+    color: brand.black,
+    backgroundColor: brand.white,
   },
 
-  // Dark Hero Section (Page 1)
-  heroSection: {
-    backgroundColor: colors.slate,
-    padding: 40,
-    paddingTop: 30,
-    paddingBottom: 35,
-    marginBottom: 0,
+  coverPage: {
+    backgroundColor: brand.black,
+    height: "100%",
+    padding: 60,
+    justifyContent: "space-between",
   },
-  heroMeta: {
+  coverHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  coverLogo: {
+    width: 100,
+    height: 20,
+  },
+  coverDate: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    letterSpacing: 1,
+  },
+  coverHero: {
+    flex: 1,
+    justifyContent: "center",
+    paddingVertical: 60,
+  },
+  coverLabel: {
+    fontSize: 11,
+    color: brand.coral,
+    textTransform: "uppercase",
+    letterSpacing: 4,
     marginBottom: 24,
   },
-  heroMetaText: {
-    fontSize: 8,
-    color: colors.lightGray,
-  },
-  heroClientName: {
-    fontSize: 28,
+  coverTitle: {
+    fontSize: 52,
     fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 8,
-    letterSpacing: 0.5,
+    color: brand.white,
+    marginBottom: 20,
+    lineHeight: 1.0,
   },
-  heroTagline: {
-    fontSize: 12,
-    color: colors.lightGray,
+  coverSubtitle: {
+    fontSize: 14,
+    color: brand.textSecondary,
     lineHeight: 1.6,
+    maxWidth: 380,
   },
-
-  // Compact Hero for driver pages
-  heroCompact: {
-    backgroundColor: colors.slate,
-    padding: 24,
-    paddingTop: 20,
-    paddingBottom: 20,
+  coverMetrics: {
+    flexDirection: "row",
+    marginTop: 50,
+    gap: 60,
   },
-  heroCompactTitle: {
-    fontSize: 20,
+  coverMetric: {
+    marginRight: 60,
+  },
+  coverMetricValue: {
+    fontSize: 44,
     fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 4,
+    color: brand.coral,
+    marginBottom: 8,
   },
-  heroCompactSubtitle: {
+  coverMetricLabel: {
     fontSize: 10,
-    color: colors.lightGray,
-  },
-  heroCompactValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.emerald,
-    marginTop: 8,
-  },
-
-  // Content section below hero
-  contentSection: {
-    padding: 40,
-    paddingTop: 24,
-    paddingBottom: 20,
-  },
-
-  // Chapter labels
-  chapterLabel: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.primary,
+    color: brand.textSecondary,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 6,
+    letterSpacing: 2,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
+  coverFooter: {
+    borderTopWidth: 1,
+    borderTopColor: brand.black,
+    paddingTop: 20,
   },
-  sectionSubtitle: {
-    fontSize: 9,
-    color: colors.mediumGray,
-    marginBottom: 16,
+  coverFooterText: {
+    fontSize: 10,
+    color: brand.textSecondary,
   },
 
-  header: {
+  contentPage: {
+    padding: 0,
+    paddingBottom: 60,
+    backgroundColor: brand.white,
+  },
+  pageHeader: {
+    backgroundColor: brand.black,
+    padding: 24,
+    paddingHorizontal: 50,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
   },
-  logo: {
-    width: 85,
-    height: 17,
-  },
-  headerRight: {
-    textAlign: "right",
+  headerLogo: {
+    width: 80,
+    height: 16,
   },
   headerTitle: {
     fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    letterSpacing: 0.3,
+    color: brand.white,
+    letterSpacing: 1,
   },
-  headerSubtitle: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-
-  footer: {
-    position: "absolute",
-    bottom: 25,
-    left: 40,
-    right: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-  },
-  footerText: {
-    fontSize: 7,
-    color: colors.lightGray,
+  
+  content: {
+    padding: 50,
+    paddingTop: 40,
   },
 
-  sectionTitleOld: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
+  sectionLabel: {
+    fontSize: 11,
+    color: brand.red,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    marginTop: 16,
+    letterSpacing: 3,
+    marginBottom: 12,
   },
-  sectionTitlePrimary: {
-    fontSize: 10,
+  sectionTitle: {
+    fontSize: 32,
     fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    marginTop: 16,
+    color: brand.black,
+    marginBottom: 12,
+    lineHeight: 1.1,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+    marginBottom: 40,
+    maxWidth: 420,
   },
 
   narrativeBox: {
-    backgroundColor: colors.paleGray,
-    padding: 14,
-    borderRadius: 4,
+    backgroundColor: brand.warmGray,
+    padding: 28,
+    marginBottom: 36,
+  },
+  narrativeLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: brand.red,
+    textTransform: "uppercase",
+    letterSpacing: 2,
     marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
   },
   narrativeText: {
-    fontSize: 8.5,
-    color: colors.darkGray,
-    lineHeight: 1.55,
-  },
-  narrativeBold: {
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  narrativeHighlight: {
-    fontWeight: "bold",
-    color: colors.green,
+    fontSize: 11,
+    color: brand.black,
+    lineHeight: 1.7,
   },
 
   metricsRow: {
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 40,
   },
   metricBox: {
     flex: 1,
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
-    alignItems: "center",
-  },
-  metricBoxLast: {
-    marginRight: 0,
-  },
-  metricBoxHighlight: {
-    flex: 1,
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
-    alignItems: "center",
+    paddingRight: 30,
   },
   metricValue: {
-    fontSize: 18,
+    fontSize: 36,
     fontWeight: "bold",
-    color: colors.black,
-    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 6,
   },
-  metricValueGreen: {
-    fontSize: 18,
+  metricValueRed: {
+    fontSize: 36,
     fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
+    color: brand.red,
+    marginBottom: 6,
   },
   metricLabel: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
+    fontSize: 9,
+    color: brand.textSecondary,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginTop: 3,
-    textAlign: "center",
+    letterSpacing: 1.5,
   },
-  metricSublabel: {
-    fontSize: 6,
-    color: colors.lightGray,
-    marginTop: 2,
-    textAlign: "center",
-  },
-
-  twoColumn: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  column: {
-    flex: 1,
-    marginRight: 8,
-  },
-  columnLast: {
-    flex: 1,
-    marginRight: 0,
-  },
-
-  card: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  cardRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  cardLabel: {
-    fontSize: 8,
-    color: colors.darkGray,
-  },
-  cardValue: {
-    fontSize: 8,
-    color: colors.black,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-  },
-  cardTotal: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
+  metricNote: {
+    fontSize: 9,
+    color: brand.textSecondary,
     marginTop: 4,
   },
-  cardTotalLabel: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  cardTotalValue: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    fontFamily: "Helvetica-Bold",
-  },
 
-  valueBreakdownCard: {
-    flex: 1,
-    borderRadius: 4,
-    padding: 12,
-    marginRight: 8,
+  valueSection: {
+    marginBottom: 40,
   },
-  valueBreakdownCardLast: {
-    marginRight: 0,
-  },
-  laborCard: {
-    backgroundColor: colors.blueLight,
-    borderWidth: 1,
-    borderColor: colors.blue,
-  },
-  revenueCard: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-  },
-  valueBreakdownTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 2,
-  },
-  valueBreakdownPct: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    marginBottom: 6,
-  },
-  valueBreakdownAmount: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.black,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 8,
-  },
-  valueBreakdownDriver: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 3,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.08)",
-  },
-  valueBreakdownDriverLast: {
-    borderBottomWidth: 0,
-  },
-  valueBreakdownDriverName: {
-    fontSize: 7.5,
-    color: colors.darkGray,
-  },
-  valueBreakdownDriverValue: {
-    fontSize: 7.5,
-    fontWeight: "bold",
-    color: colors.green,
-  },
-
-  progressBar: {
-    height: 10,
-    flexDirection: "row",
-    borderRadius: 5,
-    overflow: "hidden",
-    marginTop: 8,
-    marginBottom: 6,
-  },
-  progressSegment: {
-    height: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  progressLabel: {
-    fontSize: 6,
-    color: colors.white,
-    fontWeight: "bold",
-  },
-
-  table: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: colors.paleGray,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  tableHeaderCell: {
-    flex: 1,
-    padding: 6,
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textAlign: "center",
-  },
-  tableRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  tableRowLast: {
-    borderBottomWidth: 0,
-  },
-  tableCell: {
-    flex: 1,
-    padding: 6,
-    fontSize: 8,
-    color: colors.darkGray,
-    textAlign: "center",
-  },
-  tableCellBold: {
-    flex: 1,
-    padding: 6,
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textAlign: "center",
-  },
-  tableCellGreen: {
-    flex: 1,
-    padding: 6,
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.green,
-    textAlign: "center",
-  },
-
-  driverHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  driverName: {
+  valueSectionTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: colors.black,
+    color: brand.black,
+    marginBottom: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: brand.black,
   },
-  driverValue: {
-    fontSize: 18,
+  valueRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.warmGray,
+  },
+  valueRowLast: {
+    borderBottomWidth: 0,
+  },
+  valueLabel: {
+    fontSize: 11,
+    color: brand.black,
+  },
+  valueAmount: {
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
+    color: brand.red,
   },
 
-  theoryBox: {
-    backgroundColor: colors.paleGray,
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 14,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.amber,
+  driverHero: {
+    backgroundColor: brand.black,
+    padding: 50,
+    paddingTop: 30,
+    paddingBottom: 40,
   },
-  theoryLabel: {
-    fontSize: 7,
+  driverHeroContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginTop: 30,
+  },
+  driverTitle: {
+    fontSize: 28,
     fontWeight: "bold",
-    color: colors.amber,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 6,
+    color: brand.white,
+    marginBottom: 12,
   },
-  theoryText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
+  driverSubtitle: {
+    fontSize: 12,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+    maxWidth: 320,
+  },
+  driverValue: {
+    alignItems: "flex-end",
+  },
+  driverValueLabel: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  driverValueAmount: {
+    fontSize: 40,
+    fontWeight: "bold",
+    color: brand.coral,
   },
 
   calcSection: {
-    marginBottom: 14,
+    marginBottom: 32,
   },
-  calcSectionTitle: {
-    fontSize: 8,
+  calcTitle: {
+    fontSize: 12,
     fontWeight: "bold",
-    color: colors.black,
+    color: brand.black,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
+    letterSpacing: 1,
+    marginBottom: 20,
   },
   stepBox: {
-    marginBottom: 12,
-    paddingBottom: 10,
+    marginBottom: 24,
+    paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
+    borderBottomColor: brand.warmGray,
   },
   stepBoxLast: {
     borderBottomWidth: 0,
@@ -605,401 +378,198 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   stepLabel: {
-    fontSize: 7,
+    fontSize: 9,
     fontWeight: "bold",
-    color: colors.mediumGray,
+    color: brand.red,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 3,
+    letterSpacing: 1,
+    marginBottom: 8,
   },
   stepQuestion: {
-    fontSize: 8,
-    color: colors.darkGray,
+    fontSize: 11,
+    color: brand.black,
     fontStyle: "italic",
-    marginBottom: 6,
+    marginBottom: 12,
   },
   stepMath: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    marginBottom: 4,
   },
   stepInput: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    marginRight: 4,
-  },
-  stepInputText: {
-    fontSize: 8,
-    fontFamily: "Courier",
-    color: colors.black,
-  },
-  stepOperator: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginHorizontal: 4,
-  },
-  stepResult: {
-    backgroundColor: colors.paleGray,
-    borderRadius: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 4,
-  },
-  stepResultText: {
-    fontSize: 8,
-    fontWeight: "bold",
-    fontFamily: "Courier-Bold",
-    color: colors.black,
-  },
-  stepNote: {
-    fontSize: 7,
-    color: colors.lightGray,
-    fontStyle: "italic",
-    marginTop: 4,
-  },
-  stepNoteHighlight: {
-    fontSize: 7,
-    color: colors.primary,
-    marginTop: 4,
-  },
-
-  calloutBox: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 1,
-    borderColor: colors.amber,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 12,
-  },
-  calloutTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.amberDark,
-    marginBottom: 4,
-  },
-  calloutText: {
-    fontSize: 7,
-    color: colors.amberDark,
-    lineHeight: 1.4,
-  },
-
-  benchmarkBox: {
-    backgroundColor: colors.paleGray,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 12,
-  },
-  benchmarkTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 6,
-  },
-  benchmarkRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 3,
-  },
-  benchmarkLabel: {
-    fontSize: 7,
-    color: colors.darkGray,
-  },
-  benchmarkValue: {
-    fontSize: 7,
-    color: colors.black,
-    fontWeight: "bold",
-  },
-  benchmarkNote: {
-    fontSize: 6,
-    color: colors.lightGray,
-    fontStyle: "italic",
-    marginTop: 4,
-  },
-
-  finalValueBox: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  finalValueLabel: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  finalValueAmount: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
-  },
-  finalValueFormula: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-
-  implicationBox: {
-    backgroundColor: colors.paleGray,
-    padding: 10,
-    borderRadius: 4,
-    marginTop: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.green,
-  },
-  implicationTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.green,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 4,
-  },
-  implicationText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-  },
-
-  journeyIntro: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 14,
-  },
-  journeyChart: {
-    backgroundColor: colors.paleGray,
-    borderRadius: 4,
-    padding: 16,
-    marginBottom: 14,
-    minHeight: 120,
-  },
-  journeyScenario: {
-    flexDirection: "row",
-    marginBottom: 14,
-  },
-  journeyScenarioCard: {
-    flex: 1,
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 12,
+    backgroundColor: brand.warmGray,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     marginRight: 8,
   },
-  journeyScenarioCardHighlight: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    borderRadius: 4,
-    padding: 12,
-  },
-  journeyScenarioTitle: {
-    fontSize: 8,
+  stepInputText: {
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 8,
+    color: brand.black,
   },
-  journeyScenarioTitleHighlight: {
-    fontSize: 8,
+  stepOperator: {
+    fontSize: 12,
+    color: brand.textSecondary,
+    marginHorizontal: 8,
+  },
+  stepResult: {
+    backgroundColor: brand.black,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginLeft: 8,
+  },
+  stepResultText: {
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 8,
+    color: brand.coral,
   },
-  journeyScenarioRow: {
+  stepNote: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    fontStyle: "italic",
+    marginTop: 10,
+  },
+
+  finalBox: {
+    backgroundColor: brand.black,
+    padding: 28,
+    marginTop: 20,
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
   },
-  journeyScenarioCheck: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginRight: 6,
-  },
-  journeyScenarioText: {
-    fontSize: 8,
-    color: colors.darkGray,
-  },
-  journeyScenarioValue: {
+  finalLabel: {
+    fontSize: 12,
     fontWeight: "bold",
-    color: colors.black,
+    color: brand.white,
   },
-  journeyScenarioValueGreen: {
+  finalFormula: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    marginTop: 4,
+  },
+  finalValue: {
+    fontSize: 32,
     fontWeight: "bold",
-    color: colors.green,
+    color: brand.coral,
   },
 
-  compoundingBox: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 14,
-    marginBottom: 14,
+  insightBox: {
+    backgroundColor: brand.warmGray,
+    padding: 24,
+    marginTop: 24,
   },
-  compoundingTitle: {
+  insightLabel: {
     fontSize: 9,
     fontWeight: "bold",
-    color: colors.greenDark,
+    color: brand.red,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 8,
+    letterSpacing: 1.5,
+    marginBottom: 10,
   },
-  compoundingValue: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 4,
-  },
-  compoundingSubtext: {
-    fontSize: 8,
-    color: colors.greenDark,
-  },
-
-  methodologyGrid: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  methodologyColumn: {
-    flex: 1,
-    marginRight: 12,
-  },
-  methodologyColumnLast: {
-    marginRight: 0,
-  },
-  methodologyTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 6,
-  },
-  methodologyItem: {
-    fontSize: 7,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 2,
-  },
-  methodologyNote: {
-    fontSize: 7,
-    color: colors.lightGray,
-    lineHeight: 1.5,
-    fontStyle: "italic",
-    marginTop: 8,
-  },
-
-  closingBox: {
-    backgroundColor: colors.paleGray,
-    padding: 14,
-    borderRadius: 4,
-    marginTop: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-  },
-  closingText: {
-    fontSize: 9,
-    color: colors.darkGray,
+  insightText: {
+    fontSize: 10,
+    color: brand.black,
     lineHeight: 1.6,
-    fontStyle: "italic",
-  },
-  closingHighlight: {
-    fontWeight: "bold",
-    color: colors.black,
-    fontStyle: "normal",
   },
 
-  bold: {
-    fontWeight: "bold",
+  table: {
+    marginBottom: 30,
   },
-  mono: {
-    fontFamily: "Courier",
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.black,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  tableHeaderCell: {
+    flex: 1,
+    fontSize: 9,
+    fontWeight: "bold",
+    color: brand.white,
+    textAlign: "center",
+  },
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.warmGray,
+  },
+  tableCell: {
+    flex: 1,
+    fontSize: 10,
+    color: brand.black,
+    textAlign: "center",
+  },
+  tableCellBold: {
+    flex: 1,
+    fontSize: 10,
+    fontWeight: "bold",
+    color: brand.black,
+    textAlign: "center",
+  },
+  tableCellRed: {
+    flex: 1,
+    fontSize: 10,
+    fontWeight: "bold",
+    color: brand.red,
+    textAlign: "center",
+  },
+
+  footer: {
+    position: "absolute",
+    bottom: 24,
+    left: 50,
+    right: 50,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  footerText: {
+    fontSize: 8,
+    color: brand.textSecondary,
   },
 
   downstreamSection: {
-    marginBottom: 20,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.lightGray,
-    paddingLeft: 12,
+    backgroundColor: brand.black,
+    padding: 40,
+    marginTop: 30,
   },
   downstreamTitle: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: "bold",
-    color: colors.black,
-    letterSpacing: 1,
-    marginBottom: 2,
+    color: brand.white,
+    marginBottom: 16,
   },
-  downstreamSubtitle: {
-    fontSize: 9,
-    color: colors.darkGray,
-    fontStyle: "italic",
-    marginBottom: 10,
-  },
-  downstreamIntro: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-    marginBottom: 10,
-  },
-  downstreamSubheader: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 8,
+  downstreamText: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+    marginBottom: 20,
   },
   downstreamGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+  },
+  downstreamCard: {
+    width: "48%",
+    backgroundColor: brand.black,
+    borderWidth: 1,
+    borderColor: brand.textSecondary,
+    padding: 16,
     marginBottom: 12,
+    marginRight: "2%",
   },
-  downstreamItem: {
-    width: "47%",
-    backgroundColor: colors.paleGray,
-    padding: 8,
-    borderRadius: 3,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  downstreamItemTitle: {
-    fontSize: 8,
+  downstreamCardTitle: {
+    fontSize: 10,
     fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 3,
+    color: brand.coral,
+    marginBottom: 6,
   },
-  downstreamItemText: {
-    fontSize: 7,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-  },
-  downstreamCallout: {
-    backgroundColor: "#3B82F6",
-    padding: 10,
-    borderRadius: 4,
-  },
-  downstreamCalloutText: {
-    fontSize: 8,
-    color: "#FFFFFF",
+  downstreamCardText: {
+    fontSize: 9,
+    color: brand.textSecondary,
     lineHeight: 1.5,
-  },
-  downstreamCalloutBold: {
-    fontWeight: "bold",
   },
 });
 
@@ -1017,74 +587,91 @@ const formatCurrency = (value: number): string => {
   return `$${value.toLocaleString()}`;
 };
 
-const formatNumber = (value: number): string => {
-  return value.toLocaleString();
+const formatNumber = (value: number): string => value.toLocaleString();
+
+// ============================================================================
+// ED-SPECIFIC NARRATIVE CONTENT - THE SOUL
+// ============================================================================
+
+const narrativeContent = {
+  cover: {
+    subtitle: "This document explores how ambient AI documentation could create value in your Emergency Department—built on transparent methodology you can challenge and adapt.",
+  },
+  
+  executive: {
+    intro: "Every number in this model traces back to editable inputs. The ED operates under unique pressures—high acuity, time sensitivity, throughput demands. This framework accounts for those realities with conservative assumptions you can stress-test.",
+  },
+  
+  timeValue: {
+    theory: "ED documentation typically adds 10-15 minutes per patient. When ambient AI handles this burden, physicians can see more patients, reduce LWBS rates, and reclaim work-life balance. But time savings only create value when converted to action.",
+    why: "Time savings in the ED directly impact throughput, LWBS rates, and physician satisfaction. Each driver includes conservative realization rates reflecting ED-specific constraints.",
+  },
+  
+  docValue: {
+    theory: "ED documentation drives accurate level-of-service coding and denial prevention. High-acuity encounters with complex medical decision-making are often under-documented due to time pressure, leaving value on the table.",
+    why: "ED encounters are high-acuity and time-sensitive. Documentation that captures the full clinical picture supports accurate E&M coding and reduces documentation-related denials.",
+  },
+  
+  downstream: {
+    intro: "ED encounters that result in admissions create additional documentation value opportunities. These are captured in the Inpatient flow and represent significant potential beyond direct ED metrics.",
+    cards: [
+      { title: "DRG/CMI Capture", text: "Accurate ED documentation supports proper DRG assignment for admitted patients, capturing the full complexity of the case." },
+      { title: "Medical Necessity", text: "Complete documentation establishes medical necessity for admission decisions, reducing retrospective denials." },
+      { title: "CDI Efficiency", text: "Reduces Clinical Documentation Improvement queries and rework by capturing detail upfront." },
+      { title: "Inpatient Connection", text: "ED documentation flows into inpatient records, enabling end-to-end value capture across the care continuum." },
+    ],
+  },
+  
+  drivers: {
+    patientAccess: {
+      theory: "In the ED, reduced documentation time means improved throughput and lower LWBS rates. Each additional patient seen represents both revenue and better community access to emergency care.",
+      implication: (value: number, pct: number) => `At ${formatCurrency(value)}, throughput improvement represents ${pct}% of your projected value. EDs with high LWBS rates often see this number grow as workflows mature.`,
+    },
+    overtime: {
+      theory: "ED physician retention is heavily influenced by work-life balance. Documentation that extends shifts creates burnout, driving attrition. Reducing burnout-driven departures avoids substantial recruitment and ramp-up costs.",
+      implication: (value: number) => `The ${formatCurrency(value)} in retention value represents avoided recruitment costs and maintained productivity. This materializes over 12+ months as turnover patterns emerge.`,
+    },
+    workforce: {
+      theory: "ED physician burnout leads to departures, and each departure costs $500K-$1M+ in recruiting, onboarding, and lost productivity. Documentation burden is a leading driver of ED physician burnout.",
+      implication: (value: number, providers: number) => `With ${providers} ED physicians, even fractional retention improvement creates substantial value. This is probabilistic and materializes over time.`,
+    },
+    wrvu: {
+      theory: "ED encounters often involve complex medical decision-making that isn't fully documented. When notes capture the complete picture, E&M coding can reflect the actual work performed.",
+      implication: (value: number) => `This ${formatCurrency(value)} represents level-of-service accuracy—capturing complexity that's already being delivered. Highly defensible because it's not about doing more.`,
+    },
+    denials: {
+      theory: "ED claims are frequently denied for documentation gaps—missing clinical information, insufficient medical necessity, incomplete MDM. Preventing denials upfront is more efficient than appeals.",
+      implication: (value: number) => `Denial prevention at ${formatCurrency(value)} is highly measurable—you can track ED-specific denials before and after with clear attribution to documentation improvement.`,
+    },
+  },
+  
+  scaling: {
+    intro: "Value doesn't scale linearly. As utilization improves and workflows adapt, each ED physician may generate more value at maturity than at pilot. These projections assume adoption patterns we've observed—your experience could differ.",
+  },
+  
+  methodology: {
+    approach: "This model prioritizes transparency over precision. We use conservative assumptions informed by ED-specific realities, show our work step-by-step, and make every input editable. The goal isn't to prove a number—it's to give you a framework for thinking about ED value.",
+  },
 };
 
 // ============================================================================
-// ED-SPECIFIC DRIVER EDUCATIONAL CONTENT
+// ED-SPECIFIC DRIVER LABELS
 // ============================================================================
 
-const driverTheories: Record<string, string> = {
-  edThroughput: `When patients leave without being seen (LWBS), the ED loses revenue and—more importantly—fails its core mission. LWBS happens for many reasons: long wait times, staffing constraints, perceived non-urgency. But documentation delays play a role too.
-
-When physicians can complete documentation faster, disposition happens sooner. Patients move through the department more quickly. Wait times compress. And fewer patients give up and leave.
-
-We model this conservatively: only 40% of LWBS is attributable to documentation-driven bottlenecks, and Abridge can address about half of that. The rest is driven by factors outside documentation—true capacity constraints, triage decisions, patient behavior.`,
-  
-  edRetention: `ED physicians face unique burnout pressures: shift work, high acuity, unpredictable volume, and—yes—documentation burden. The charting follows them home. The cognitive load compounds across shifts.
-
-Replacing an ED physician is expensive: $500K+ when you factor recruiting, credentialing, lost revenue during vacancy, and the 6-12 months it takes to reach full productivity in a new environment.
-
-We use the same "Rule of Thirds" as outpatient: documentation burden contributes to roughly half of burnout, Abridge reduces that burden by ~70%, yielding ~35% theoretical impact. We round to 30% for conservatism.`,
-  
-  edLevelOfService: `ED visits are often complex—multiple problems, rapid assessment, time-sensitive decisions. But documentation doesn't always reflect that complexity. Under time pressure, notes get truncated. MDM is summarized rather than detailed. The result: visits that should code at 99285 get billed as 99284.
-
-Abridge captures the clinical narrative as it happens. When the note includes the full reasoning—why you ordered that CT, what differential you were considering, how the patient's presentation evolved—coding can be more accurate.
-
-We model a 5% wRVU improvement, consistent with what we see across ED deployments. Your results depend on current documentation quality and specialty complexity.`,
-  
-  edDenials: `ED claims face unique denial challenges. The acuity that justified the visit isn't always clear in the note. The medical necessity for a procedure gets questioned. The MDM that seemed obvious in the moment doesn't translate to paper.
-
-These denials are often recoverable—you appeal, you win. But the rework is expensive, and some claims get written off because the cost of appeal exceeds the value.
-
-Abridge captures the clinical reasoning in real time. When that reasoning is in the note, denials are less likely—and when they happen, appeals are more defensible.`,
-
-  edScribe: `Scribes exist because ED documentation is intensive—high volume, high acuity, time pressure. They're effective, but expensive: $20-30/hr fully loaded, often with scheduling overhead and training costs on top.
-
-When ambient documentation handles the bulk of note generation, the role of scribes shifts. Some organizations eliminate them entirely. Others reduce to a small team for complex cases or training purposes. Either way, the cost structure changes significantly.
-
-We model a 75% reduction in scribe hours. This assumes some organizations will maintain minimal scribe presence for edge cases. If you're comfortable going to zero, actual savings may be higher.`,
+const ED_DRIVER_LABELS: Record<string, string> = {
+  patientAccess: "Throughput & LWBS Reduction",
+  overtime: "Physician Retention",
+  workforce: "Clinician Wellbeing",
+  wrvu: "Level of Service Accuracy",
+  denials: "Denial Prevention",
 };
 
-const driverImplications: Record<string, (value: number, data: EDPDFData) => string> = {
-  edThroughput: (value, data) => {
-    const patientsRetained = Math.round(value / 350);
-    return `Based on these inputs, the model suggests potential value of ${formatCurrency(value)} annually. This would represent approximately ${patientsRetained} patients retained who might otherwise leave. Of course, actual results depend on your specific patient population, acuity mix, and operational factors. The clinical benefit—ensuring patients receive care—may be as significant as the financial impact.`;
-  },
-  
-  edRetention: (value, data) => {
-    const departures = value / 500000;
-    const yearsPerDeparture = departures > 0 ? (1 / departures).toFixed(1) : "N/A";
-    return `The calculation suggests potential value of ${formatCurrency(value)} annually, representing approximately ${departures.toFixed(2)} avoided departures per year—or roughly one retained physician every ${yearsPerDeparture} years. This is a long-term metric; benefits would materialize over 12+ months as burnout patterns shift. Your actual experience may vary based on existing culture, workload, and other retention factors.`;
-  },
-  
-  edLevelOfService: (value, data) => {
-    return `Based on these assumptions, the model suggests ${formatCurrency(value)} in potential annual value from more accurate documentation. This reflects the hypothesis that comprehensive notes capture complexity that might otherwise be under-documented. Results depend significantly on your current documentation quality—if notes are already thorough, improvement may be less.`;
-  },
-  
-  edDenials: (value, data) => {
-    const claimsRecovered = Math.round(value / 350);
-    return `The calculation suggests potential value of ${formatCurrency(value)} annually, representing approximately ${claimsRecovered} claims that might otherwise be lost. This assumes Abridge captures clinical reasoning that strengthens documentation. Actual denial rates and recovery success depend on payer mix, claim complexity, and current documentation practices.`;
-  },
-
-  edScribe: (value, data) => {
-    return `At ${formatCurrency(value)}, scribe cost reduction could be a significant driver if applicable to your situation. This represents direct cost displacement. Implementation note: many organizations transition gradually over 3-6 months, allowing time for workflow adjustment. Your timeline and approach would depend on current scribe coverage and provider preferences.`;
-  },
-};
+function getEDDriverName(driverId: string, defaultName: string): string {
+  return ED_DRIVER_LABELS[driverId] || defaultName;
+}
 
 // ============================================================================
-// ED-SPECIFIC CALCULATION STEP GENERATORS
+// CALCULATION STEPS
 // ============================================================================
 
 interface CalculationStep {
@@ -1094,233 +681,187 @@ interface CalculationStep {
   operators?: string[];
   result: string;
   note?: string;
-  noteHighlight?: boolean;
-  subCalculation?: {
-    title: string;
-    rows: { label: string; value: string }[];
-    note?: string;
-  };
 }
 
 function getDriverSteps(driver: DriverCalculation, data: EDPDFData): CalculationStep[] {
   const inputs = driver.inputs;
   
   switch (driver.id) {
-    case "edThroughput":
+    case "patientAccess":
       return [
         {
-          label: "Step 1: LWBS Patients",
-          question: "How many patients leave without being seen?",
+          label: "Step 1",
+          question: "How much documentation time does Abridge return?",
           inputs: [
-            { value: formatNumber(inputs.annualEdVisits as number || data.eligibleEncounters), label: "ED visits" },
-            { value: `${inputs.lwbsRate || 4}%`, label: "LWBS rate" },
+            { value: formatNumber(data.eligibleEncounters), label: "encounters" },
+            { value: `${data.timeSavedPerEncounter} min` },
           ],
-          operators: ["x"],
-          result: `${formatNumber(inputs.lwbsPatients as number || 0)} patients leaving`,
-          note: "Industry LWBS rates vary from 2-5%. High-volume urban EDs often run higher.",
+          operators: ["×"],
+          result: `${formatNumber(data.hoursReturned)} hours`,
         },
         {
-          label: "Step 2: Patients Retained",
-          question: "How many can be retained with faster throughput?",
+          label: "Step 2",
+          question: "How much time converts to additional throughput?",
           inputs: [
-            { value: formatNumber(inputs.lwbsPatients as number || 0), label: "LWBS" },
-            { value: `${inputs.improvementRate || 50}%`, label: "improvement" },
+            { value: formatNumber(data.hoursReturned), label: "hours" },
+            { value: `${inputs.timeToAccessPct || 40}%` },
           ],
-          operators: ["x"],
-          result: `${formatNumber(inputs.patientsRetained as number || 0)} retained`,
-          note: "With faster documentation, staff can see waiting patients before they leave.",
+          operators: ["×"],
+          result: `${formatNumber(inputs.accessHours as number || 0)} hours`,
+          note: "ED throughput conversion is typically higher than outpatient due to patient flow demands.",
         },
         {
-          label: "Step 3: Abridge Attribution",
-          question: "How many are attributable to Abridge?",
+          label: "Step 3",
+          question: "How many hours become additional patients?",
           inputs: [
-            { value: formatNumber(inputs.patientsRetained as number || 0), label: "retained" },
-            { value: `${inputs.abridgeAttributionPercent || 100}%`, label: "attribution" },
+            { value: formatNumber(inputs.accessHours as number || 0), label: "hours" },
+            { value: `${inputs.conversionRate || 35}%`, label: "realization" },
           ],
-          operators: ["x"],
-          result: `${formatNumber(inputs.patientsRecovered as number || 0)} attributed`,
-          note: "Portion of improvement directly tied to Abridge documentation efficiency.",
+          operators: ["×"],
+          result: `${formatNumber(inputs.additionalVisits as number || 0)} patients`,
+          note: "Realization accounts for ED capacity constraints and patient arrival patterns.",
         },
         {
-          label: "Step 4: Revenue Impact",
-          question: "What's the financial impact?",
+          label: "Step 4",
+          question: "What's the revenue impact?",
           inputs: [
-            { value: formatNumber(inputs.patientsRecovered as number || 0), label: "patients" },
-            { value: formatCurrency(inputs.avgEdVisitRevenue as number || 350), label: "per visit" },
+            { value: formatNumber(inputs.additionalVisits as number || 0), label: "patients" },
+            { value: `$${inputs.revenuePerVisit || 350}` },
           ],
-          operators: ["x"],
+          operators: ["×"],
           result: formatCurrency(driver.value),
-          note: inputs.includeAdmissions 
-            ? `Includes ${inputs.admissionPercent || 15}% admission rate at ${formatCurrency(inputs.avgAdmissionRevenue as number || 8500)} per admission.`
-            : "Average ED revenue per visit. Adjust based on your payer mix and acuity.",
         },
       ];
 
-    case "edRetention":
+    case "wrvu":
       return [
         {
-          label: "Step 1: Expected Turnover",
-          question: "How many departures occur annually?",
-          inputs: [
-            { value: formatNumber(inputs.providers as number || data.providers), label: "ED providers" },
-            { value: `${inputs.turnoverRate || 10}%` },
-          ],
-          operators: ["x"],
-          result: `${(inputs.annualDepartures as number || 0).toFixed(1)} departures`,
-          note: "ED turnover often runs higher than outpatient—8-12% is common.",
-        },
-        {
-          label: "Step 2: Burnout-Related",
-          question: "How many are tied to burnout?",
-          inputs: [
-            { value: (inputs.annualDepartures as number || 0).toFixed(1), label: "departures" },
-            { value: `${inputs.burnoutAttribution || 50}%` },
-          ],
-          operators: ["x"],
-          result: `${(inputs.burnoutDepartures as number || 0).toFixed(2)} burnout-related`,
-          note: "Burnout is particularly prevalent in emergency medicine.",
-        },
-        {
-          label: "Step 3: Abridge Impact",
-          question: "How many can Abridge help prevent?",
-          inputs: [
-            { value: (inputs.burnoutDepartures as number || 0).toFixed(2), label: "at-risk" },
-            { value: `${inputs.abridgeImpact || 30}%` },
-          ],
-          operators: ["x"],
-          result: `${(inputs.departuresAvoided as number || 0).toFixed(2)} prevented`,
-          note: "The Rule of Thirds: 50% of burnout x 70% doc reduction = 35%, rounded to 30%.",
-        },
-        {
-          label: "Step 4: Value",
-          question: "What's the savings?",
-          inputs: [
-            { value: (inputs.departuresAvoided as number || 0).toFixed(2), label: "prevented" },
-            { value: formatCurrency(inputs.replacementCost as number || 500000) },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "ED replacement cost is typically higher than outpatient due to specialized credentialing and shift coverage complexity.",
-        },
-      ];
-
-    case "edLevelOfService":
-      return [
-        {
-          label: "Step 1: Baseline wRVUs",
+          label: "Step 1",
           question: "What's your current wRVU generation?",
           inputs: [
-            { value: formatNumber(inputs.eligibleEncounters as number || data.eligibleEncounters), label: "visits" },
-            { value: `${inputs.avgWrvuPerEncounter || 2.2}` },
+            { value: formatNumber(data.eligibleEncounters), label: "encounters" },
+            { value: `${inputs.avgWrvuPerEncounter || 2.5}`, label: "wRVU/enc" },
           ],
-          operators: ["x"],
+          operators: ["×"],
           result: `${formatNumber(inputs.baselineWrvus as number || 0)} wRVUs`,
+          note: "ED wRVU per encounter is typically higher than outpatient due to acuity.",
         },
         {
-          label: "Step 2: wRVU Improvement",
-          question: "How much lift does better documentation create?",
+          label: "Step 2",
+          question: "How much improvement does better documentation create?",
           inputs: [
             { value: formatNumber(inputs.baselineWrvus as number || 0), label: "wRVUs" },
-            { value: `${inputs.wrvuImprovementRate || 5}%` },
+            { value: `${inputs.wrvuImprovementRate || 3}%` },
           ],
-          operators: ["x"],
+          operators: ["×"],
           result: `${formatNumber(inputs.wrvuGain as number || 0)} wRVU gain`,
-          note: "5% improvement assumes meaningful under-documentation today. If your notes are already comprehensive, improvement may be less.",
+          note: "Lift from capturing complexity in high-acuity encounters.",
         },
         {
-          label: "Step 3: Revenue",
-          question: "What's the dollar value?",
+          label: "Step 3",
+          question: "What's the financial impact?",
           inputs: [
             { value: formatNumber(inputs.wrvuGain as number || 0), label: "wRVUs" },
-            { value: `$${inputs.conversionFactor || 33}` },
+            { value: `$${inputs.conversionFactor || 40}`, label: "CF" },
+            { value: `${inputs.realizationRate || 75}%` },
           ],
-          operators: ["x"],
+          operators: ["×", "×"],
           result: formatCurrency(driver.value),
-          note: "Medicare conversion factor. Commercial rates run $45-65.",
         },
       ];
 
-    case "edDenials":
+    case "overtime":
+    case "workforce":
       return [
         {
-          label: "Step 1: Total Denials",
-          question: "How many claims are denied today?",
+          label: "Step 1",
+          question: "How many departures occur annually?",
           inputs: [
-            { value: formatNumber(inputs.eligibleEncounters as number || data.eligibleEncounters), label: "visits" },
+            { value: formatNumber(data.providers), label: "ED physicians" },
+            { value: `${inputs.turnoverRate || 10}%` },
+          ],
+          operators: ["×"],
+          result: `${(inputs.annualDepartures as number || 0).toFixed(1)} departures`,
+          note: "ED physician turnover is typically higher than outpatient.",
+        },
+        {
+          label: "Step 2",
+          question: "How many are tied to burnout?",
+          inputs: [
+            { value: (inputs.annualDepartures as number || 0).toFixed(1) },
+            { value: `${inputs.burnoutAttribution || 60}%` },
+          ],
+          operators: ["×"],
+          result: `${(inputs.burnoutDepartures as number || 0).toFixed(2)} burnout-related`,
+        },
+        {
+          label: "Step 3",
+          question: "How many can improved documentation help prevent?",
+          inputs: [
+            { value: (inputs.burnoutDepartures as number || 0).toFixed(2) },
+            { value: `${inputs.abridgeImpact || 25}%` },
+          ],
+          operators: ["×"],
+          result: `${(inputs.departuresAvoided as number || 0).toFixed(2)} prevented`,
+          note: "Conservative—documentation is a major driver but not the only one.",
+        },
+        {
+          label: "Step 4",
+          question: "What's the cost savings?",
+          inputs: [
+            { value: (inputs.departuresAvoided as number || 0).toFixed(2) },
+            { value: formatCurrency(inputs.replacementCost as number || 500000) },
+          ],
+          operators: ["×"],
+          result: formatCurrency(driver.value),
+          note: "ED physician replacement costs typically exceed $500K.",
+        },
+      ];
+
+    case "denials":
+      return [
+        {
+          label: "Step 1",
+          question: "How many ED claims are denied today?",
+          inputs: [
+            { value: formatNumber(data.eligibleEncounters) },
             { value: `${inputs.denialRate || 10}%` },
           ],
-          operators: ["x"],
+          operators: ["×"],
           result: `${formatNumber(inputs.totalDenials as number || 0)} denials`,
-          note: "ED denial rates often run 8-12%—higher than outpatient due to complexity.",
+          note: "ED denial rates are typically higher than outpatient.",
         },
         {
-          label: "Step 2: Documentation-Related",
-          question: "How many are caused by documentation gaps?",
+          label: "Step 2",
+          question: "How many stem from documentation gaps?",
           inputs: [
-            { value: formatNumber(inputs.totalDenials as number || 0), label: "denials" },
-            { value: `${inputs.docRelatedPercent || 35}%` },
+            { value: formatNumber(inputs.totalDenials as number || 0) },
+            { value: `${inputs.docRelatedPercent || 55}%` },
           ],
-          operators: ["x"],
-          result: `${formatNumber(inputs.docRelatedDenials as number || 0)} doc denials`,
-          note: "35% of ED denials are documentation-related: missing MDM, unclear necessity, incomplete notes.",
+          operators: ["×"],
+          result: `${formatNumber(inputs.docRelatedDenials as number || 0)} doc-related`,
         },
         {
-          label: "Step 3: Written Off",
+          label: "Step 3",
           question: "How many are lost without appeal?",
           inputs: [
-            { value: formatNumber(inputs.docRelatedDenials as number || 0), label: "doc denials" },
-            { value: `${inputs.writtenOffPercent || 60}%` },
+            { value: formatNumber(inputs.docRelatedDenials as number || 0) },
+            { value: `${inputs.writtenOffPercent || 50}%` },
           ],
-          operators: ["x"],
+          operators: ["×"],
           result: `${formatNumber(inputs.writtenOffDenials as number || 0)} written off`,
-          note: "These are claims abandoned without appeal.",
         },
         {
-          label: "Step 4: Abridge Recovery",
-          question: "How many can Abridge save?",
+          label: "Step 4",
+          question: "What can Abridge save?",
           inputs: [
-            { value: formatNumber(inputs.writtenOffDenials as number || 0), label: "written off" },
-            { value: `${inputs.abridgeCaptureRate || 75}%` },
+            { value: formatNumber(inputs.writtenOffDenials as number || 0) },
+            { value: `${inputs.abridgeCaptureRate || 70}%` },
+            { value: `$${inputs.avgClaimValue || 400}` },
           ],
-          operators: ["x"],
-          result: `${formatNumber(inputs.claimsRecovered as number || 0)} recovered`,
-          note: "75% recovery when the clinical reasoning exists but wasn't documented.",
-        },
-        {
-          label: "Step 5: Value",
-          question: "What's the dollar impact?",
-          inputs: [
-            { value: formatNumber(inputs.claimsRecovered as number || 0), label: "claims" },
-            { value: `$${inputs.avgClaimValue || 350}` },
-          ],
-          operators: ["x"],
+          operators: ["×", "×"],
           result: formatCurrency(driver.value),
-          note: "ED claims average higher than outpatient due to acuity.",
-        },
-      ];
-
-    case "edScribe":
-      return [
-        {
-          label: "Step 1: Current Scribe Investment",
-          question: "What's your annual scribe spend?",
-          inputs: [
-            { value: formatCurrency(inputs.annualScribeCost as number || 0) },
-          ],
-          operators: [],
-          result: formatCurrency(inputs.annualScribeCost as number || 0),
-          note: "Your current scribe investment. Include all costs: wages, benefits, scheduling overhead.",
-        },
-        {
-          label: "Step 2: Abridge Reduction",
-          question: "How much can be eliminated with Abridge?",
-          inputs: [
-            { value: formatCurrency(inputs.annualScribeCost as number || 0), label: "scribe cost" },
-            { value: `${inputs.scribeReductionRate || 75}%` },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "75% reduction is typical. Some organizations eliminate scribes entirely; others keep a small team for complex cases.",
+          note: "ED claim values are typically higher than outpatient.",
         },
       ];
 
@@ -1329,272 +870,260 @@ function getDriverSteps(driver: DriverCalculation, data: EDPDFData): Calculation
   }
 }
 
-// ============================================================================
-// ED-SPECIFIC BENCHMARKS & WARNINGS
-// ============================================================================
-
-interface Benchmark {
-  title: string;
-  rows: { label: string; value: string }[];
-  note?: string;
-}
-
-function getDriverBenchmarks(driverId: string): Benchmark | null {
-  switch (driverId) {
-    case "edThroughput":
-      return {
-        title: "ED Revenue Per Visit",
-        rows: [
-          { label: "Low Acuity (ESI 4-5)", value: "$150 - $250" },
-          { label: "Medium Acuity (ESI 3)", value: "$300 - $450" },
-          { label: "High Acuity (ESI 1-2)", value: "$600 - $1,200+" },
-          { label: "Blended Average", value: "~$350" },
-        ],
-        note: "Your input reflects a blended average across your acuity mix.",
-      };
-
-    case "edLevelOfService":
-      return {
-        title: "ED wRVU Per Encounter",
-        rows: [
-          { label: "Low Acuity (ESI 4-5)", value: "1.2 - 1.6" },
-          { label: "Medium Acuity (ESI 3)", value: "2.0 - 2.5" },
-          { label: "High Acuity (ESI 1-2)", value: "3.0 - 5.0+" },
-          { label: "Blended Average", value: "~2.2" },
-        ],
-        note: "ED wRVUs vary by acuity mix. 2.0-2.5 per encounter is typical.",
-      };
-
-    case "edDenials":
-      return {
-        title: "Average ED Claim Value",
-        rows: [
-          { label: "Low Complexity", value: "$175 - $250" },
-          { label: "Medium Complexity", value: "$300 - $450" },
-          { label: "High Complexity", value: "$500 - $800+" },
-          { label: "Blended Average", value: "~$350" },
-        ],
-      };
-
-    case "edRetention":
-      return {
-        title: "ED Physician Replacement Cost",
-        rows: [
-          { label: "Recruiting & Credentialing", value: "$50K - $100K" },
-          { label: "Lost Revenue (vacancy)", value: "$200K - $400K" },
-          { label: "Onboarding & Ramp-up", value: "$100K - $150K" },
-          { label: "Total Cost", value: "$400K - $650K+" },
-        ],
-        note: "ED replacement typically higher than outpatient due to shift coverage complexity.",
-      };
-
-    default:
-      return null;
-  }
-}
-
-interface Warning {
-  title: string;
-  text: string;
-}
-
-function getDriverWarnings(driver: DriverCalculation, data: EDPDFData): Warning | null {
-  if (driver.id === "edRetention" && data.providers < 50) {
-    return {
-      title: "Small Provider Count",
-      text: "With fewer than 50 ED providers, retention math is probabilistic over multi-year periods. Over a 3-4 year period, the cumulative effect is equivalent to retaining one additional physician. The value is real—it just materializes over time.",
-    };
-  }
-
-  return null;
-}
-
 function getFinalFormula(driver: DriverCalculation): string {
   const inputs = driver.inputs;
   switch (driver.id) {
-    case "edThroughput":
-      return `${formatNumber((inputs.patientsRecovered as number) || 0)} recovered x $${inputs.avgEdRevenue || 350}/visit`;
-    case "edRetention":
-      return `${((inputs.departuresAvoided as number) || 0).toFixed(2)} avoided x ${formatCurrency((inputs.replacementCost as number) || 500000)}`;
-    case "edLevelOfService":
-      return `${formatNumber((inputs.wrvuGain as number) || 0)} wRVU gain x $${inputs.conversionFactor || 33}`;
-    case "edDenials":
-      return `${formatNumber((inputs.claimsRecovered as number) || 0)} claims x $${inputs.avgClaimValue || 350}`;
-    case "edScribe":
-      return `${formatCurrency((inputs.annualScribeCost as number) || 0)} x ${inputs.scribeReductionRate || 100}%`;
+    case "patientAccess":
+      return `${formatNumber((inputs.additionalVisits as number) || 0)} patients × $${inputs.revenuePerVisit || 350}`;
+    case "wrvu":
+      return `${formatNumber((inputs.wrvuGain as number) || 0)} wRVU × $${inputs.conversionFactor || 40} × ${inputs.realizationRate || 75}%`;
+    case "workforce":
+    case "overtime":
+      return `${((inputs.departuresAvoided as number) || 0).toFixed(2)} prevented × ${formatCurrency((inputs.replacementCost as number) || 500000)}`;
+    case "denials":
+      return `${formatNumber((inputs.claimsRecovered as number) || 0)} claims × $${inputs.avgClaimValue || 400}`;
     default:
       return "";
   }
+}
+
+function getDriverNarrative(driverId: string): { theory: string; implication: (value: number, data: EDPDFData) => string } {
+  const content = narrativeContent.drivers[driverId as keyof typeof narrativeContent.drivers];
+  if (!content) {
+    return {
+      theory: "This driver represents measurable value from improved documentation quality in the ED.",
+      implication: (value) => `At ${formatCurrency(value)}, this contributes meaningfully to your projected ROI.`,
+    };
+  }
+  return {
+    theory: content.theory,
+    implication: (value, data) => {
+      if (typeof content.implication === "function") {
+        if (driverId === "patientAccess") {
+          const pct = Math.round((value / data.totalValue) * 100);
+          return (content.implication as (v: number, p: number) => string)(value, pct);
+        }
+        if (driverId === "workforce" || driverId === "overtime") {
+          return (content.implication as (v: number, p: number) => string)(value, data.providers);
+        }
+        return (content.implication as (v: number) => string)(value);
+      }
+      return `At ${formatCurrency(value)}, this contributes meaningfully to your projected ED ROI.`;
+    },
+  };
 }
 
 // ============================================================================
 // PAGE COMPONENTS
 // ============================================================================
 
-const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+const CoverPage = ({ data }: { data: EDPDFData }) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-
-  const laborDrivers = data.drivers.filter(d => d.category === "labor");
-  const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
-  const valuePerProvider = Math.round(data.netGain / data.providers);
-  const displayClientName = data.clientName || data.organizationName || "Your Organization";
-  const displayPreparedBy = data.preparedBy || "Abridge";
-
-  // Personalized opening narrative based on their context - ED-specific
-  const getOpeningNarrative = () => {
-    if (data.drivers.length >= 4) {
-      return `Emergency departments face unique pressures—high acuity, unpredictable volume, time-sensitive decisions, and documentation that follows providers home. With ${data.drivers.length} value drivers selected, this model explores multiple pathways where better documentation could create value. Each page walks through the math step-by-step.`;
-    } else if (data.drivers.length >= 2) {
-      return `In the ED, every minute counts—for patients waiting, for providers charting, for throughput metrics. This assessment explores ${data.drivers.length} key areas: ${data.drivers.map(d => d.name).join(" and ")}. Each driver page breaks down the calculation so you can stress-test the assumptions.`;
-    }
-    return `ED workflows are unforgiving—high volume, rapid decisions, and notes that need to capture complexity in real time. This focused assessment explores ${data.drivers[0]?.name || "your selected driver"} in depth, showing exactly how we arrived at each number.`;
-  };
-
-  // ED-specific personalized tagline based on ROI and drivers
-  const getHeroTagline = () => {
-    const hasLWBS = data.drivers.some(d => d.id === "edThroughput");
-    const hasRetention = data.drivers.some(d => d.id === "edRetention");
-    
-    if (data.roi >= 5 && hasLWBS) {
-      return "Strong potential to reduce walkouts and capture lost revenue";
-    } else if (data.roi >= 5 && hasRetention) {
-      return "Addressing the documentation burden that drives ED burnout";
-    } else if (data.roi >= 5) {
-      return "Significant opportunity across your ED value drivers";
-    } else if (data.roi >= 3) {
-      return "Meaningful pathways to efficiency and revenue recovery";
-    } else if (data.roi >= 2) {
-      return "A solid foundation worth exploring for your ED";
-    }
-    return "Understanding your ED documentation value landscape";
-  };
+  const displayName = data.clientName || data.organizationName || "Your Organization";
 
   return (
-    <Page size="A4" style={styles.page}>
-      {/* Dark Hero Section */}
-      <View style={styles.heroSection}>
-        <View style={styles.heroMeta}>
-          <Text style={styles.heroMetaText}>{today}</Text>
-          <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
-        </View>
-        <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
-        <Text style={styles.heroClientName}>{displayClientName}</Text>
-        <Text style={styles.heroTagline}>
-          {getHeroTagline()}
-        </Text>
-        <Text style={{ fontSize: 9, color: colors.lightGray, marginTop: 8, lineHeight: 1.5 }}>
-          Emergency Department ROI Assessment — An exploratory model built from your inputs and industry benchmarks.
-        </Text>
+    <Page size="A4" style={styles.coverPage} wrap={false}>
+      <View style={styles.coverHeader}>
+        <Image src={abridgeLogoPath} style={styles.coverLogo} />
+        <Text style={styles.coverDate}>{today}</Text>
       </View>
 
-      {/* Content Section */}
-      <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>The Overview</Text>
-        <Text style={styles.sectionTitle}>What We're Exploring Together</Text>
-        
-        <Text style={{ fontSize: 9, color: colors.darkGray, lineHeight: 1.6, marginBottom: 16 }}>
-          {getOpeningNarrative()}
+      <View style={styles.coverHero}>
+        <Text style={styles.coverLabel}>Emergency Department</Text>
+        <Text style={styles.coverTitle}>{displayName}</Text>
+        <Text style={styles.coverSubtitle}>
+          {narrativeContent.cover.subtitle}
         </Text>
 
-        {/* Key Metrics Grid */}
+        <View style={styles.coverMetrics}>
+          <View style={styles.coverMetric}>
+            <Text style={styles.coverMetricValue}>{formatCurrency(data.netGain)}</Text>
+            <Text style={styles.coverMetricLabel}>Net Annual Value</Text>
+          </View>
+          <View style={styles.coverMetric}>
+            <Text style={[styles.coverMetricValue, { color: brand.white }]}>{data.roi.toFixed(1)}x</Text>
+            <Text style={styles.coverMetricLabel}>Return on Investment</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.coverFooter}>
+        <Text style={styles.coverFooterText}>
+          Emergency Department • {data.providers} ED physicians • {formatNumber(data.encounters)} encounters
+        </Text>
+      </View>
+    </Page>
+  );
+};
+
+const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  const laborDrivers = data.drivers.filter(d => d.category === "labor");
+  const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
+
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Emergency Department Value Assessment</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Executive Summary</Text>
+        <Text style={styles.sectionTitle}>The ED Value Story</Text>
+        <Text style={styles.sectionSubtitle}>
+          {data.providers} ED physicians • {formatNumber(data.encounters)} annual encounters • {data.drivers.length} value drivers
+        </Text>
+
+        <View style={styles.narrativeBox}>
+          <Text style={styles.narrativeLabel}>ED-Specific Context</Text>
+          <Text style={styles.narrativeText}>
+            {narrativeContent.executive.intro}
+          </Text>
+        </View>
+
         <View style={styles.metricsRow}>
-          <View style={styles.metricBoxHighlight}>
-            <Text style={styles.metricValueGreen}>+{formatCurrency(data.netGain)}</Text>
-            <Text style={styles.metricLabel}>Potential Net Gain</Text>
-            <Text style={styles.metricSublabel}>{formatCurrency(data.totalValue)} value - {formatCurrency(data.investment)} cost</Text>
+          <View style={styles.metricBox}>
+            <Text style={styles.metricValueRed}>{formatCurrency(data.netGain)}</Text>
+            <Text style={styles.metricLabel}>Net Annual Value</Text>
+            <Text style={styles.metricNote}>{formatCurrency(data.totalValue)} − {formatCurrency(data.investment)}</Text>
           </View>
           <View style={styles.metricBox}>
             <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
-            <Text style={styles.metricLabel}>Projected ROI</Text>
-            <Text style={styles.metricSublabel}>Based on selected drivers</Text>
+            <Text style={styles.metricLabel}>Return on Investment</Text>
+            <Text style={styles.metricNote}>Every $1 returns ${data.roi.toFixed(2)}</Text>
           </View>
           <View style={styles.metricBox}>
-            <Text style={styles.metricValue}>{formatCurrency(valuePerProvider)}</Text>
-            <Text style={styles.metricLabel}>Per {data.unitName}</Text>
-            <Text style={styles.metricSublabel}>Annual value estimate</Text>
-          </View>
-          <View style={[styles.metricBox, styles.metricBoxLast]}>
             <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
             <Text style={styles.metricLabel}>Hours Returned</Text>
-            <Text style={styles.metricSublabel}>Documentation time</Text>
+            <Text style={styles.metricNote}>{data.timeSavedPerEncounter} min per encounter</Text>
           </View>
         </View>
 
-        <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.black, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10, marginTop: 12 }}>Where Value Could Come From</Text>
-        
-        <View style={styles.twoColumn}>
-          <View style={[styles.valueBreakdownCard, styles.laborCard]}>
-            <Text style={styles.valueBreakdownTitle}>Labor & Efficiency</Text>
-            <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
-            <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
-            {laborDrivers.map((driver, i) => (
-              <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
-                <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
-                <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-            {laborDrivers.length === 0 && (
-              <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No labor drivers selected</Text>
-            )}
-          </View>
-
-          <View style={[styles.valueBreakdownCard, styles.revenueCard, styles.valueBreakdownCardLast]}>
-            <Text style={styles.valueBreakdownTitle}>Revenue & Quality</Text>
-            <Text style={styles.valueBreakdownPct}>{data.revenuePct}% of total value</Text>
-            <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.revenueTotal)}</Text>
-            {revenueDrivers.map((driver, i) => (
-              <View key={driver.id} style={[styles.valueBreakdownDriver, i === revenueDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
-                <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
-                <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-            {revenueDrivers.length === 0 && (
-              <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No revenue drivers selected</Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.progressBar}>
-          {data.laborPct > 0 && (
-            <View style={[styles.progressSegment, { flex: data.laborPct, backgroundColor: colors.blue }]}>
-              {data.laborPct > 20 && <Text style={styles.progressLabel}>Labor {data.laborPct}%</Text>}
+        <View style={styles.valueSection}>
+          <Text style={styles.valueSectionTitle}>Time Back Value • {formatCurrency(data.laborTotal)}</Text>
+          {laborDrivers.map((driver, i) => (
+            <View key={driver.id} style={[styles.valueRow, i === laborDrivers.length - 1 ? styles.valueRowLast : {}]}>
+              <Text style={styles.valueLabel}>{getEDDriverName(driver.id, driver.name)}</Text>
+              <Text style={styles.valueAmount}>{formatCurrency(driver.value)}</Text>
             </View>
-          )}
-          {data.revenuePct > 0 && (
-            <View style={[styles.progressSegment, { flex: data.revenuePct, backgroundColor: colors.green }]}>
-              {data.revenuePct > 20 && <Text style={styles.progressLabel}>Revenue {data.revenuePct}%</Text>}
-            </View>
+          ))}
+          {laborDrivers.length === 0 && (
+            <Text style={{ fontSize: 10, color: brand.textSecondary, fontStyle: "italic", paddingVertical: 12 }}>No time-based drivers selected</Text>
           )}
         </View>
 
-        {/* What's Inside This Report */}
-        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginTop: 12, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Inside This Report</Text>
-          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
-            Each of the following pages explores one driver in depth—showing the theory, the step-by-step calculation, industry benchmarks, and what the numbers might suggest for your ED. Review, adjust assumptions, and see what resonates.
-          </Text>
+        <View style={styles.valueSection}>
+          <Text style={styles.valueSectionTitle}>Documentation Quality • {formatCurrency(data.revenueTotal)}</Text>
+          {revenueDrivers.map((driver, i) => (
+            <View key={driver.id} style={[styles.valueRow, i === revenueDrivers.length - 1 ? styles.valueRowLast : {}]}>
+              <Text style={styles.valueLabel}>{getEDDriverName(driver.id, driver.name)}</Text>
+              <Text style={styles.valueAmount}>{formatCurrency(driver.value)}</Text>
+            </View>
+          ))}
+          {revenueDrivers.length === 0 && (
+            <Text style={{ fontSize: 10, color: brand.textSecondary, fontStyle: "italic", paddingVertical: 12 }}>No documentation drivers selected</Text>
+          )}
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
+        <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-// Driver-specific hero taglines (exploratory tone)
-const driverHeroTaglines: Record<string, string> = {
-  edThroughput: "Exploring how faster throughput could reduce patient walkouts",
-  edRetention: "Understanding the connection between documentation burden and retention",
-  edLevelOfService: "Examining patterns in documentation complexity capture",
-  edDenials: "Exploring how complete documentation could reduce denial rates",
-  edScribe: "Analyzing potential shifts in your scribe cost structure",
+const ProjectionPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Emergency Department Value Assessment</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Multi-Year View</Text>
+        <Text style={styles.sectionTitle}>Investment & Return</Text>
+        <Text style={styles.sectionSubtitle}>
+          How value compounds as adoption matures and ED workflows improve.
+        </Text>
+
+        <View style={styles.narrativeBox}>
+          <Text style={styles.narrativeLabel}>The compounding effect</Text>
+          <Text style={styles.narrativeText}>
+            {narrativeContent.scaling.intro}
+          </Text>
+        </View>
+
+        <View style={styles.table}>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.tableHeaderCell, { flex: 0.8, textAlign: "left" }]}></Text>
+            <Text style={styles.tableHeaderCell}>Year 1</Text>
+            <Text style={styles.tableHeaderCell}>Year 2</Text>
+            <Text style={styles.tableHeaderCell}>Year 3</Text>
+            <Text style={styles.tableHeaderCell}>Total</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left", fontWeight: "bold" }]}>Value</Text>
+            <Text style={styles.tableCell}>{formatCurrency(data.year1Value)}</Text>
+            <Text style={styles.tableCell}>{formatCurrency(data.year2Value)}</Text>
+            <Text style={styles.tableCell}>{formatCurrency(data.year3Value)}</Text>
+            <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearValue)}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left", fontWeight: "bold" }]}>Investment</Text>
+            <Text style={styles.tableCell}>{formatCurrency(data.year1Cost)}</Text>
+            <Text style={styles.tableCell}>{formatCurrency(data.year2Cost)}</Text>
+            <Text style={styles.tableCell}>{formatCurrency(data.year3Cost)}</Text>
+            <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearCost)}</Text>
+          </View>
+          <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+            <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left", fontWeight: "bold" }]}>Net Value</Text>
+            <Text style={styles.tableCellRed}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+            <Text style={styles.tableCellRed}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
+            <Text style={styles.tableCellRed}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
+            <Text style={styles.tableCellRed}>{formatCurrency(data.threeYearNet)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.metricsRow}>
+          <View style={styles.metricBox}>
+            <Text style={styles.metricValueRed}>{formatCurrency(data.threeYearNet)}</Text>
+            <Text style={styles.metricLabel}>3-Year Net Value</Text>
+          </View>
+          <View style={styles.metricBox}>
+            <Text style={styles.metricValue}>{formatCurrency(Math.round(data.netGain / data.providers))}</Text>
+            <Text style={styles.metricLabel}>Per ED Physician Annual</Text>
+          </View>
+        </View>
+
+        <View style={styles.downstreamSection}>
+          <Text style={styles.downstreamTitle}>Downstream Value Potential</Text>
+          <Text style={styles.downstreamText}>
+            {narrativeContent.downstream.intro}
+          </Text>
+          <View style={styles.downstreamGrid}>
+            {narrativeContent.downstream.cards.map((card, i) => (
+              <View key={i} style={styles.downstreamCard}>
+                <Text style={styles.downstreamCardTitle}>{card.title}</Text>
+                <Text style={styles.downstreamCardText}>{card.text}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
 };
 
 const DriverDetailPage = ({ 
@@ -1608,62 +1137,51 @@ const DriverDetailPage = ({
   pageNum: number; 
   totalPages: number;
 }) => {
-  const theory = driverTheories[driver.id] || "This driver explores potential value through improved documentation workflows.";
-  const implicationFn = driverImplications[driver.id];
-  const implication = implicationFn ? implicationFn(driver.value, data) : `Based on the inputs above, this driver suggests potential annual value of ${formatCurrency(driver.value)}.`;
-
+  const narrative = getDriverNarrative(driver.id);
   const steps = getDriverSteps(driver, data);
-  const benchmarks = getDriverBenchmarks(driver.id);
-  const warnings = getDriverWarnings(driver, data);
-  const heroTagline = driverHeroTaglines[driver.id] || "Exploring potential value pathways";
+  const displayName = getEDDriverName(driver.id, driver.name);
 
   return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      {/* Compact Dark Hero */}
-      <View style={styles.heroCompact}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <View style={{ flex: 1 }}>
-            <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
-            <Text style={styles.heroCompactTitle}>{driver.name}</Text>
-            <Text style={styles.heroCompactSubtitle}>{heroTagline}</Text>
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.driverHero}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        </View>
+        <View style={styles.driverHeroContent}>
+          <View style={{ flex: 1, paddingRight: 40 }}>
+            <Text style={styles.driverTitle}>{displayName}</Text>
+            <Text style={styles.driverSubtitle}>
+              {narrative.theory.substring(0, 180)}...
+            </Text>
           </View>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ fontSize: 8, color: colors.lightGray, marginBottom: 4 }}>Potential Value</Text>
-            <Text style={styles.heroCompactValue}>{formatCurrency(driver.value)}</Text>
+          <View style={styles.driverValue}>
+            <Text style={styles.driverValueLabel}>Annual Value</Text>
+            <Text style={styles.driverValueAmount}>{formatCurrency(driver.value)}</Text>
           </View>
         </View>
       </View>
 
-      {/* Content Section */}
-      <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>The Opportunity</Text>
-        <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginBottom: 14 }}>{theory}</Text>
-
-        {warnings && (
-          <View style={styles.calloutBox}>
-            <Text style={styles.calloutTitle}>{warnings.title}</Text>
-            <Text style={styles.calloutText}>{warnings.text}</Text>
-          </View>
-        )}
+      <View style={styles.content}>
+        <View style={styles.narrativeBox}>
+          <Text style={styles.narrativeLabel}>The Logic</Text>
+          <Text style={styles.narrativeText}>{narrative.theory}</Text>
+        </View>
 
         <View style={styles.calcSection}>
-          <Text style={styles.calcSectionTitle}>Your Calculation</Text>
+          <Text style={styles.calcTitle}>Your Calculation</Text>
           
           {steps.map((step, index) => (
-            <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]} wrap={false}>
+            <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]}>
               <Text style={styles.stepLabel}>{step.label}</Text>
               <Text style={styles.stepQuestion}>{step.question}</Text>
               
               <View style={styles.stepMath}>
                 {step.inputs.map((input, i) => (
                   <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-                    {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
+                    {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "×"}</Text>}
                     <View style={styles.stepInput}>
                       <Text style={styles.stepInputText}>{input.value}</Text>
                     </View>
-                    {input.label && (
-                      <Text style={{ fontSize: 7, color: colors.lightGray, marginLeft: 2 }}>{input.label}</Text>
-                    )}
                   </View>
                 ))}
                 <Text style={styles.stepOperator}>=</Text>
@@ -1672,236 +1190,27 @@ const DriverDetailPage = ({
                 </View>
               </View>
               
-              {step.note && (
-                <Text style={step.noteHighlight ? styles.stepNoteHighlight : styles.stepNote}>{step.note}</Text>
-              )}
+              {step.note && <Text style={styles.stepNote}>{step.note}</Text>}
             </View>
           ))}
         </View>
 
-        {benchmarks && (
-          <View style={styles.benchmarkBox} wrap={false}>
-            <Text style={styles.benchmarkTitle}>Benchmark: {benchmarks.title}</Text>
-            {benchmarks.rows.map((row, i) => (
-              <View key={i} style={styles.benchmarkRow}>
-                <Text style={styles.benchmarkLabel}>{row.label}</Text>
-                <Text style={styles.benchmarkValue}>{row.value}</Text>
-              </View>
-            ))}
-            {benchmarks.note && (
-              <Text style={styles.benchmarkNote}>{benchmarks.note}</Text>
-            )}
-          </View>
-        )}
-
-        <View style={styles.finalValueBox} wrap={false}>
+        <View style={styles.finalBox}>
           <View>
-            <Text style={styles.finalValueLabel}>Estimated Annual Value</Text>
-            <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
+            <Text style={styles.finalLabel}>Annual {displayName} Value</Text>
+            <Text style={styles.finalFormula}>{getFinalFormula(driver)}</Text>
           </View>
-          <Text style={styles.finalValueAmount}>{formatCurrency(driver.value)}</Text>
+          <Text style={styles.finalValue}>{formatCurrency(driver.value)}</Text>
         </View>
 
-        <View style={styles.implicationBox} wrap={false}>
-          <Text style={styles.implicationTitle}>What This Suggests</Text>
-          <Text style={styles.implicationText}>{implication}</Text>
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>What This Means</Text>
+          <Text style={styles.insightText}>{narrative.implication(driver.value, data)}</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
-  const { journey } = data;
-  const valueMultiple = (journey.fullScaleValue / journey.pilotValue).toFixed(1);
-  const paceLabels: Record<string, string> = {
-    measured: "36 months",
-    steady: "24 months",
-    aggressive: "18 months",
-  };
-
-  return (
-    <Page size="A4" style={styles.page}>
-      {/* Compact Hero */}
-      <View style={styles.heroCompact}>
-        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
-        <Text style={styles.heroCompactTitle}>Scaling in the ED Environment</Text>
-        <Text style={styles.heroCompactSubtitle}>How value could compound as adoption grows across shifts and providers</Text>
-      </View>
-
-      <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>The ED Scaling Model</Text>
-        <Text style={styles.sectionTitle}>From Pilot to Full Deployment</Text>
-
-        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginBottom: 16, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
-            ED scaling has unique dynamics: shift-based coverage, variable volume patterns, and the critical mass needed for workflow consistency. 
-            Starting with {journey.pilotProviders} {data.unitNamePlural} at {journey.pilotUtilization}% utilization, value could grow as adoption 
-            spreads across shifts and throughput improvements compound.
-          </Text>
-          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5, marginTop: 6 }}>
-            At full scale with {journey.fullScaleProviders} {data.unitNamePlural}, projected annual value reaches approximately{" "}
-            <Text style={{ fontWeight: "bold", color: colors.green }}>{formatCurrency(journey.fullScaleValue)}</Text>—roughly{" "}
-            <Text style={{ fontWeight: "bold" }}>{valueMultiple}x</Text> the pilot projection. Actual results depend on adoption consistency across all shifts.
-          </Text>
-        </View>
-
-      <View style={styles.journeyChart}>
-        <View style={{ flexDirection: "row", marginBottom: 8 }}>
-          <View style={{ width: 55, justifyContent: "space-between", paddingVertical: 4, height: 100 }}>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(Math.round((journey.fullScaleValue + journey.pilotValue) / 2))}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
-          </View>
-          
-          <View style={{ flex: 1, marginLeft: 8, height: 100, position: "relative" }}>
-            <Svg width={400} height={100} viewBox="0 0 400 100">
-              <Line x1="0" y1="25" x2="400" y2="25" stroke={colors.borderGray} strokeWidth="0.5" />
-              <Line x1="0" y1="50" x2="400" y2="50" stroke={colors.borderGray} strokeWidth="0.5" />
-              <Line x1="0" y1="75" x2="400" y2="75" stroke={colors.borderGray} strokeWidth="0.5" />
-              <Line x1="0" y1="100" x2="400" y2="100" stroke={colors.borderGray} strokeWidth="1" />
-              <Line x1="0" y1="0" x2="0" y2="100" stroke={colors.borderGray} strokeWidth="1" />
-              
-              <Line 
-                x1="20" 
-                y1="85" 
-                x2="380" 
-                y2="15" 
-                stroke={colors.lightGray} 
-                strokeWidth="2" 
-                strokeDasharray="6,4" 
-              />
-              
-              <Path 
-                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15" 
-                stroke={colors.green} 
-                strokeWidth="2.5" 
-                fill="none" 
-              />
-              
-              <Path 
-                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15 L 380 15 L 20 85 Z" 
-                fill={colors.greenLight} 
-                opacity="0.5" 
-              />
-              
-              <Circle cx="20" cy="85" r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
-              <Circle cx="380" cy="10" r="6" fill={colors.green} stroke={colors.white} strokeWidth="2" />
-            </Svg>
-            
-            <Text style={{ position: "absolute", bottom: 2, left: 4, fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
-            <Text style={{ position: "absolute", top: -2, right: 4, fontSize: 7, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
-            
-            <View style={{ position: "absolute", top: 35, left: 160, backgroundColor: colors.greenLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, borderWidth: 1, borderColor: colors.green }}>
-              <Text style={{ fontSize: 8, color: colors.green, fontWeight: "bold", textAlign: "center" }}>+{formatCurrency(journey.networkEffect)}</Text>
-              <Text style={{ fontSize: 6, color: colors.greenDark, textAlign: "center" }}>compounding bonus</Text>
-            </View>
-          </View>
-        </View>
-        
-        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 63, paddingRight: 10, marginBottom: 4 }}>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.pilotProviders} {data.unitNamePlural}</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>6 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>12 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>18 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold" }}>{paceLabels[journey.scalingPace]}</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.fullScaleProviders} {data.unitNamePlural}</Text>
-          </View>
-        </View>
-        
-        <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.borderGray }}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary, marginRight: 4 }} />
-            <Text style={{ fontSize: 7, color: colors.black }}>Pilot: {formatCurrency(journey.pilotValue)}</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.green, marginRight: 4 }} />
-            <Text style={{ fontSize: 7, color: colors.black }}>Full Scale: {formatCurrency(journey.fullScaleValue)}</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 16 }}>
-            <View style={{ width: 14, height: 2, backgroundColor: colors.green, marginRight: 4 }} />
-            <Text style={{ fontSize: 7, color: colors.black }}>With compounding</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 14, height: 0, borderTopWidth: 2, borderTopColor: colors.lightGray, borderStyle: "dashed", marginRight: 4 }} />
-            <Text style={{ fontSize: 7, color: colors.black }}>Linear projection</Text>
-          </View>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitlePrimary}>Model Your Scenario</Text>
-
-      <View style={styles.journeyScenario}>
-        <View style={styles.journeyScenarioCard}>
-          <Text style={styles.journeyScenarioTitle}>Your Starting Point</Text>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotProviders}</Text> {data.unitNamePlural}</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{formatNumber(journey.pilotEncounters)}</Text> patient visits</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotUtilization}%</Text> utilization</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValueGreen}>{formatCurrency(journey.pilotValue)}</Text> /year</Text>
-          </View>
-        </View>
-
-        <View style={styles.journeyScenarioCardHighlight}>
-          <Text style={styles.journeyScenarioTitleHighlight}>Your Full Scale Potential</Text>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.fullScaleProviders}</Text> {data.unitNamePlural}</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.fullScaleUtilization}%</Text> utilization</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}>Scaling: <Text style={styles.journeyScenarioValue}>{paceLabels[journey.scalingPace]}</Text></Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValueGreen}>{formatCurrency(journey.fullScaleValue)}</Text> /year</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.compoundingBox}>
-        <Text style={styles.compoundingTitle}>Why ED Value Could Compound</Text>
-        <Text style={styles.compoundingValue}>{valueMultiple}x</Text>
-        <Text style={styles.compoundingSubtext}>
-          In the ED, network effects may be particularly strong. When all shifts use Abridge, throughput improvements become consistent. 
-          Door-to-doc times stabilize. LWBS patterns shift across the board—not just during peak hours. As utilization grows from{" "}
-          {journey.pilotUtilization}% to {journey.fullScaleUtilization}%, each provider could generate more value at maturity than at pilot.
-        </Text>
-      </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
+        <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1909,115 +1218,83 @@ const JourneyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: 
 };
 
 const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
-  const displayClientName = data.clientName || data.organizationName || "Your Organization";
-  const valuePerProvider = Math.round(data.netGain / data.providers);
-
-  // Personalized closing based on their numbers
-  const getClosingMessage = () => {
-    if (data.roi > 5) {
-      return "The model suggests strong potential ROI. As always, actual results will depend on implementation, adoption patterns, and operational factors specific to your ED.";
-    } else if (data.roi > 2) {
-      return "The projections indicate solid potential value. We're happy to discuss which drivers resonate most with your situation and where assumptions might need adjustment.";
-    }
-    return "Every ED is different. These projections give us a starting point for discussion—we can refine assumptions based on your specific context and priorities.";
-  };
-
   return (
-    <Page size="A4" style={styles.page}>
-      {/* Compact Hero */}
-      <View style={styles.heroCompact}>
-        <Image src={abridgeLogoPath} style={{ width: 70, height: 14, marginBottom: 10 }} />
-        <Text style={styles.heroCompactTitle}>ED Model Summary</Text>
-        <Text style={styles.heroCompactSubtitle}>How we built this assessment—and what's worth discussing further</Text>
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Emergency Department Value Assessment</Text>
       </View>
 
-      <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>Your ED Assessment</Text>
-        <Text style={styles.sectionTitle}>Summary at a Glance</Text>
-
-        {/* Summary metrics */}
-        <View style={{ flexDirection: "row", marginBottom: 16 }}>
-          <View style={{ flex: 1, backgroundColor: colors.greenLight, padding: 12, borderRadius: 4, marginRight: 8, borderWidth: 1, borderColor: colors.green }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.green }}>{formatCurrency(data.netGain)}</Text>
-            <Text style={{ fontSize: 7, color: colors.greenDark, textTransform: "uppercase" }}>Potential Net Gain</Text>
-          </View>
-          <View style={{ flex: 1, backgroundColor: colors.paleGray, padding: 12, borderRadius: 4, marginRight: 8 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.black }}>{data.roi.toFixed(1)}x</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase" }}>Projected ROI</Text>
-          </View>
-          <View style={{ flex: 1, backgroundColor: colors.paleGray, padding: 12, borderRadius: 4 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.black }}>{formatCurrency(valuePerProvider)}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textTransform: "uppercase" }}>Per Provider</Text>
-          </View>
-        </View>
-
-        <Text style={styles.chapterLabel}>Methodology</Text>
-        <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.black, marginBottom: 10 }}>How We Built This Model</Text>
-
-        <View style={styles.methodologyGrid}>
-          <View style={styles.methodologyColumn}>
-            <Text style={styles.methodologyTitle}>Your Inputs</Text>
-            <Text style={styles.methodologyItem}>{data.providers} {data.unitNamePlural}</Text>
-            <Text style={styles.methodologyItem}>{formatNumber(data.encounters)} annual visits</Text>
-            <Text style={styles.methodologyItem}>{data.utilization}% utilization</Text>
-            <Text style={styles.methodologyItem}>${data.costPerProvider}/{data.unitName}/mo</Text>
-          </View>
-          
-          <View style={styles.methodologyColumn}>
-            <Text style={styles.methodologyTitle}>ED Benchmarks</Text>
-            <Text style={styles.methodologyItem}>wRVU/encounter: 2.0-2.5</Text>
-            <Text style={styles.methodologyItem}>Replacement: $500K+</Text>
-            <Text style={styles.methodologyItem}>Claim value: ~$350</Text>
-            <Text style={styles.methodologyItem}>Turnover: 8-12%</Text>
-          </View>
-          
-          <View style={[styles.methodologyColumn, styles.methodologyColumnLast]}>
-            <Text style={styles.methodologyTitle}>Our Approach</Text>
-            <Text style={styles.methodologyItem}>Conservative estimates</Text>
-            <Text style={styles.methodologyItem}>Medicare rates used</Text>
-            <Text style={styles.methodologyItem}>Transparent logic</Text>
-            <Text style={styles.methodologyItem}>Adjustable inputs</Text>
-          </View>
-        </View>
-
-        <Text style={{ fontSize: 7, color: colors.lightGray, fontStyle: "italic", marginTop: 8, marginBottom: 12 }}>
-          ED benchmarks reflect aggregate data from emergency departments nationwide. Your results may vary based on acuity mix, boarding patterns, payer mix, and shift coverage.
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Methodology</Text>
+        <Text style={styles.sectionTitle}>How We Built This</Text>
+        <Text style={styles.sectionSubtitle}>
+          The inputs, benchmarks, and ED-specific principles behind these projections.
         </Text>
 
-        {/* ED-Specific Strategic Considerations */}
-        <View style={{ backgroundColor: colors.blueLight, padding: 12, borderRadius: 4, marginBottom: 12 }}>
-          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>ED-Specific Considerations</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-            <View style={{ width: "48%", marginRight: "2%", marginBottom: 6 }}>
-              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Shift Coverage</Text>
-              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Value compounds when all shifts adopt—not just days.</Text>
-            </View>
-            <View style={{ width: "48%", marginBottom: 6 }}>
-              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Volume Variability</Text>
-              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Peak hours benefit most from documentation speed.</Text>
-            </View>
-            <View style={{ width: "48%", marginRight: "2%" }}>
-              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Boarding Impact</Text>
-              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Faster disposition could reduce boarding pressure.</Text>
-            </View>
-            <View style={{ width: "48%" }}>
-              <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.darkGray }}>Inpatient Connection</Text>
-              <Text style={{ fontSize: 7, color: colors.darkGray, lineHeight: 1.4 }}>Quality ED notes could strengthen admission documentation.</Text>
-            </View>
+        <View style={styles.narrativeBox}>
+          <Text style={styles.narrativeLabel}>Our Approach</Text>
+          <Text style={styles.narrativeText}>
+            {narrativeContent.methodology.approach}
+          </Text>
+        </View>
+
+        <View style={styles.valueSection}>
+          <Text style={styles.valueSectionTitle}>Your Inputs</Text>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>ED physicians</Text>
+            <Text style={styles.valueAmount}>{data.providers}</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Annual ED encounters</Text>
+            <Text style={styles.valueAmount}>{formatNumber(data.encounters)}</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Utilization rate</Text>
+            <Text style={styles.valueAmount}>{data.utilization}%</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Time saved per encounter</Text>
+            <Text style={styles.valueAmount}>{data.timeSavedPerEncounter} min</Text>
+          </View>
+          <View style={[styles.valueRow, styles.valueRowLast]}>
+            <Text style={styles.valueLabel}>Investment per ED physician</Text>
+            <Text style={styles.valueAmount}>{formatCurrency(data.costPerProvider)}/mo</Text>
           </View>
         </View>
 
-        {/* Closing message */}
-        <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Next</Text>
-          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
-            {getClosingMessage()} This document is meant to start a conversation—not end one. We're here to help you stress-test these numbers and understand what makes sense for {displayClientName}'s emergency department.
+        <View style={styles.valueSection}>
+          <Text style={styles.valueSectionTitle}>ED-Specific Assumptions</Text>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Throughput realization</Text>
+            <Text style={styles.valueAmount}>35%</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>Retention improvement realization</Text>
+            <Text style={styles.valueAmount}>25%</Text>
+          </View>
+          <View style={styles.valueRow}>
+            <Text style={styles.valueLabel}>wRVU realization (payer mix)</Text>
+            <Text style={styles.valueAmount}>75%</Text>
+          </View>
+          <View style={[styles.valueRow, styles.valueRowLast]}>
+            <Text style={styles.valueLabel}>Denial prevention realization</Text>
+            <Text style={styles.valueAmount}>70%</Text>
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>A note on ED-specific conservatism</Text>
+          <Text style={styles.insightText}>
+            ED environments are fast-paced with unique constraints. Our realization rates account for 
+            patient arrival unpredictability, capacity constraints, and the high-stress nature of emergency 
+            care. Organizations that execute well often exceed these conservative projections.
           </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge ED ROI Assessment</Text>
+        <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
         <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -2025,55 +1302,46 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
 };
 
 // ============================================================================
-// MAIN DOCUMENT COMPONENT
+// DOCUMENT COMPONENT
 // ============================================================================
 
-const EDROIDocument = ({ data }: { data: EDPDFData }) => {
-  const totalPages = 2 + data.drivers.length + 1;
-  let currentPage = 1;
+const EDPDFDocument = ({ data }: { data: EDPDFData }) => {
+  const totalPages = 3 + data.drivers.length + 1;
+  let pageNum = 1;
 
   return (
     <Document>
-      <ExecutiveSummaryPage data={data} pageNum={currentPage++} totalPages={totalPages} />
-
+      <CoverPage data={data} />
+      <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
-        <DriverDetailPage
-          key={driver.id}
-          driver={driver}
-          data={data}
-          pageNum={currentPage++}
+        <DriverDetailPage 
+          key={driver.id} 
+          driver={driver} 
+          data={data} 
+          pageNum={++pageNum} 
           totalPages={totalPages}
         />
       ))}
-
-      <JourneyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
-
-      <MethodologyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
+      <MethodologyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
   );
 };
 
 // ============================================================================
-// EXPORT FUNCTION
+// EXPORT FUNCTIONS
 // ============================================================================
 
-export async function generateEDROIPDFBlob(data: EDPDFData): Promise<{ blob: Blob; filename: string }> {
-  const blob = await pdf(<EDROIDocument data={data} />).toBlob();
-
-  const today = new Date().toISOString().split("T")[0];
-  const orgSlug = data.organizationName
-    ? data.organizationName.replace(/\s+/g, "-").toLowerCase().substring(0, 20)
-    : "";
-  const filename = orgSlug
-    ? `abridge-ed-roi-${orgSlug}-${today}.pdf`
-    : `abridge-ed-roi-${today}.pdf`;
-
-  return { blob, filename };
-}
-
 export async function generateEDROIPDF(data: EDPDFData): Promise<void> {
-  const { blob, filename } = await generateEDROIPDFBlob(data);
-  saveAs(blob, filename);
+  const blob = await pdf(<EDPDFDocument data={data} />).toBlob();
+  const fileName = data.clientName 
+    ? `Abridge_ED_Value_Assessment_${data.clientName.replace(/\s+/g, "_")}.pdf`
+    : "Abridge_ED_Value_Assessment.pdf";
+  saveAs(blob, fileName);
 }
 
-export default EDROIDocument;
+export async function generateEDROIPDFBlob(data: EDPDFData): Promise<Blob> {
+  return await pdf(<EDPDFDocument data={data} />).toBlob();
+}
+
+export { EDPDFDocument };
