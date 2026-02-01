@@ -3,7 +3,6 @@ import ExploreCareSettings from "./ExploreCareSettings";
 import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimePath from "./ExploreTimePath";
 import ExploreTimeAllocation from "./ExploreTimeAllocation";
-import ExploreDocPath from "./ExploreDocPath";
 import ExploreDocDrivers from "./ExploreDocDrivers";
 import ExploreReview from "./ExploreReview";
 
@@ -80,7 +79,6 @@ type ExplorePhase =
   | 'opportunity' 
   | 'timePath' 
   | 'timeAllocation' 
-  | 'docPath' 
   | 'docDrivers' 
   | 'review';
 
@@ -162,19 +160,8 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
           state={state}
           updateState={updateState}
           totalHoursSaved={calculateTotalHoursSaved()}
-          onNext={() => navigate('docPath')}
-          onBack={() => navigate('timePath')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'docPath':
-      return (
-        <ExploreDocPath
-          state={state}
-          updateState={updateState}
           onNext={() => navigate('docDrivers')}
-          onBack={() => navigate('timeAllocation')}
+          onBack={() => navigate('timePath')}
           onHome={goHome}
         />
       );
@@ -186,7 +173,7 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
           updateState={updateState}
           totalHoursSaved={calculateTotalHoursSaved()}
           onNext={() => navigate('review')}
-          onBack={() => navigate('docPath')}
+          onBack={() => navigate('timeAllocation')}
           onHome={goHome}
         />
       );

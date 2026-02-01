@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, BarChart3, Building2, AlertTriangle, DollarSign, Calculator, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { ArrowRight, BarChart3, Building2, AlertTriangle, DollarSign, Calculator, ChevronDown, ChevronUp, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -17,44 +17,52 @@ interface ExploreDocDriversProps {
 interface DocDriverConfig {
   id: DocPathFocus;
   label: string;
+  shortLabel: string;
   description: string;
   icon: typeof BarChart3;
   min: number;
   max: number;
   step: number;
   suffix: string;
+  detail: string;
 }
 
 const DOC_DRIVER_CONFIGS: DocDriverConfig[] = [
   {
     id: 'wrvu',
-    label: 'wRVU Improvement',
-    description: 'Percentage improvement in wRVU capture per encounter',
+    label: 'Level of Service (wRVU)',
+    shortLabel: 'wRVU',
+    description: 'Improve coding accuracy and capture appropriate complexity',
     icon: BarChart3,
     min: 0.5,
     max: 5,
     step: 0.5,
     suffix: '%',
+    detail: 'Best for organizations with E&M coding opportunities',
   },
   {
     id: 'hcc',
-    label: 'HCC Recapture Rate',
-    description: 'Percentage of previously missed conditions now captured',
+    label: 'HCC & Chronic Conditions',
+    shortLabel: 'HCC',
+    description: 'Better capture of chronic conditions for risk adjustment',
     icon: Building2,
     min: 5,
     max: 30,
     step: 5,
     suffix: '%',
+    detail: 'Best for Medicare Advantage or ACO populations',
   },
   {
     id: 'denials',
-    label: 'Denial Reduction',
-    description: 'Reduction in documentation-related claim denials',
+    label: 'Denial Prevention',
+    shortLabel: 'Denials',
+    description: 'Reduce documentation-related claim denials',
     icon: AlertTriangle,
     min: 10,
     max: 40,
     step: 5,
     suffix: '%',
+    detail: 'Best for organizations with high denial rates',
   },
 ];
 
@@ -179,6 +187,12 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
 
   const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
 
+  const handleToggleDriver = (driverId: DocPathFocus) => {
+    const newDocDrivers = { ...state.docDrivers };
+    newDocDrivers[driverId] = { ...newDocDrivers[driverId], enabled: !newDocDrivers[driverId].enabled };
+    updateState({ docDrivers: newDocDrivers });
+  };
+
   const handleDriverValueChange = (driverId: DocPathFocus, newValue: number) => {
     const newDocDrivers = { ...state.docDrivers };
     newDocDrivers[driverId] = { ...newDocDrivers[driverId], value: newValue };
@@ -186,7 +200,9 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
   };
 
   const calculateDriverValue = (driverId: DocPathFocus) => {
-    const driverValue = state.docDrivers[driverId].value;
+    const driver = state.docDrivers[driverId];
+    if (!driver.enabled) return { value: 0, editableInputs: null };
+    const driverValue = driver.value;
 
     switch (driverId) {
       case 'wrvu': {
@@ -441,9 +457,9 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="explore"
-        currentStep={6}
-        totalSteps={7}
-        stepName="Configure Drivers"
+        currentStep={5}
+        totalSteps={6}
+        stepName="Documentation Quality"
         onBack={onBack}
         onHome={onHome}
       />
@@ -457,22 +473,23 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           transition={{ duration: 0.5 }}
         >
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            Fine-Tune Your Model
+            Documentation Quality
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            Adjust Your Assumptions
+            How Will Documentation Improve Your Bottom Line?
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-xl mx-auto">
-            Configure the drivers to match your organization's expectations.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Beyond time savings, Abridge improves note quality. Toggle on the drivers that apply to your organization and adjust targets.
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3 space-y-4">
-            {enabledDrivers.map((driver, index) => {
+            {DOC_DRIVER_CONFIGS.map((driver, index) => {
               const Icon = driver.icon;
+              const isEnabled = state.docDrivers[driver.id].enabled;
               const driverCalc = calculateDriverValue(driver.id);
               const isExpanded = expandedDriver === driver.id;
               const currentValue = state.docDrivers[driver.id].value;
@@ -480,65 +497,98 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
               return (
                 <motion.div
                   key={driver.id}
-                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+                  className={`bg-white rounded-2xl border-2 overflow-hidden transition-all duration-200 ${
+                    isEnabled ? 'border-[#EA2C00]/30' : 'border-slate-200'
+                  }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + index * 0.05, duration: 0.5 }}
                 >
                   <div className="p-5">
+                    {/* Header with toggle */}
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-5 h-5 text-[#EA2C00]" />
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isEnabled ? 'bg-[#EA2C00]' : 'bg-slate-100'
+                      }`}>
+                        <Icon className={`w-5 h-5 ${isEnabled ? 'text-white' : 'text-slate-400'}`} />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-black">{driver.label}</h3>
-                        <p className="text-sm text-slate-500">{driver.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className={`font-bold ${isEnabled ? 'text-black' : 'text-slate-500'}`}>{driver.label}</h3>
+                          <button
+                            onClick={() => handleToggleDriver(driver.id)}
+                            className="flex items-center gap-2 min-h-[44px] px-2"
+                            data-testid={`toggle-${driver.id}`}
+                          >
+                            {isEnabled ? (
+                              <ToggleRight className="w-8 h-8 text-[#EA2C00]" />
+                            ) : (
+                              <ToggleLeft className="w-8 h-8 text-slate-300" />
+                            )}
+                          </button>
+                        </div>
+                        <p className={`text-sm ${isEnabled ? 'text-slate-600' : 'text-slate-400'}`}>{driver.description}</p>
+                        <p className={`text-xs mt-1 ${isEnabled ? 'text-slate-400' : 'text-slate-300'}`}>{driver.detail}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mb-4">
-                      <input
-                        type="range"
-                        min={driver.min}
-                        max={driver.max}
-                        step={driver.step}
-                        value={currentValue}
-                        onChange={(e) => handleDriverValueChange(driver.id, Number(e.target.value))}
-                        className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
-                        data-testid={`slider-${driver.id}`}
-                      />
-                      <div className="w-16 text-right">
-                        <span className="text-2xl font-bold text-[#EA2C00]">{currentValue}{driver.suffix}</span>
-                      </div>
-                    </div>
+                    {/* Slider and value - only when enabled */}
+                    <AnimatePresence>
+                      {isEnabled && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="pt-2 border-t border-slate-100">
+                            <div className="flex items-center gap-4 mb-3">
+                              <input
+                                type="range"
+                                min={driver.min}
+                                max={driver.max}
+                                step={driver.step}
+                                value={currentValue}
+                                onChange={(e) => handleDriverValueChange(driver.id, Number(e.target.value))}
+                                className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                                data-testid={`slider-${driver.id}`}
+                              />
+                              <div className="w-16 text-right">
+                                <span className="text-2xl font-bold text-[#EA2C00]">{currentValue}{driver.suffix}</span>
+                              </div>
+                            </div>
 
-                    <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
-                      <span>Conservative ({driver.min}{driver.suffix})</span>
-                      <span>Aggressive ({driver.max}{driver.suffix})</span>
-                    </div>
+                            <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
+                              <span>Conservative ({driver.min}{driver.suffix})</span>
+                              <span>Aggressive ({driver.max}{driver.suffix})</span>
+                            </div>
 
-                    {/* Value display row */}
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                      <div>
-                        <p className="text-xs text-slate-400 mb-0.5">Annual Value</p>
-                        <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
-                      </div>
-                      
-                      <button
-                        onClick={() => toggleExpand(driver.id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
-                        data-testid={`button-expand-${driver.id}`}
-                      >
-                        <Calculator className="w-3.5 h-3.5" />
-                        <span>{isExpanded ? 'Hide details' : 'See the math'}</span>
-                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
+                            {/* Value display row */}
+                            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                              <div>
+                                <p className="text-xs text-slate-400 mb-0.5">Annual Value</p>
+                                <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
+                              </div>
+                              
+                              <button
+                                onClick={() => toggleExpand(driver.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors min-h-[44px]"
+                                data-testid={`button-expand-${driver.id}`}
+                              >
+                                <Calculator className="w-3.5 h-3.5" />
+                                <span>{isExpanded ? 'Hide details' : 'See the math'}</span>
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Expandable math breakdown */}
                   <AnimatePresence>
-                    {isExpanded && driverCalc && (
+                    {isExpanded && isEnabled && driverCalc && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -593,12 +643,18 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                   <span className="text-white/70">Time Savings</span>
                   <span className="font-semibold">${timeValue.toLocaleString()}</span>
                 </div>
-                {enabledDrivers.map(driver => {
+                {DOC_DRIVER_CONFIGS.map(driver => {
+                  const isEnabled = state.docDrivers[driver.id].enabled;
                   const calc = calculateDriverValue(driver.id);
                   return (
-                    <div key={driver.id} className="flex items-center justify-between py-2 border-b border-white/10">
-                      <span className="text-white/70">{driver.label}</span>
-                      <span className="font-semibold">${calc?.value.toLocaleString() || 0}</span>
+                    <div 
+                      key={driver.id} 
+                      className={`flex items-center justify-between py-2 border-b border-white/10 transition-opacity ${
+                        isEnabled ? 'opacity-100' : 'opacity-30'
+                      }`}
+                    >
+                      <span className="text-white/70">{driver.shortLabel}</span>
+                      <span className="font-semibold">{isEnabled ? `$${calc?.value.toLocaleString() || 0}` : '—'}</span>
                     </div>
                   );
                 })}
@@ -634,6 +690,12 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
             Review Your Model
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
+          
+          {enabledDrivers.length === 0 && (
+            <p className="text-sm text-slate-400 mt-3">
+              You can continue without documentation drivers
+            </p>
+          )}
         </motion.div>
       </div>
     </div>
