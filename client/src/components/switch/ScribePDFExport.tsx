@@ -571,7 +571,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
           <View style={styles.opportunityBox}>
             <Text style={styles.opportunityTitle}>There's Another Way</Text>
             <Text style={styles.opportunityText}>
-              AI-powered ambient documentation can support every provider—without the linear cost curve. No turnover. No training gaps. No coverage limits.{"\n"}{"\n"}
+              Abridge can support every provider without the linear cost curve.{"\n"}{"\n"}
               Imagine giving all {inputs.totalProviders} providers documentation support tomorrow—without hiring a single additional scribe.
             </Text>
           </View>

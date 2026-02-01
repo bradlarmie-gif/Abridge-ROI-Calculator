@@ -262,7 +262,7 @@ export default function ScribeFullAnalysis({
               What if documentation support didn't scale this way?
             </h2>
             <p className="text-slate-400 text-sm md:text-base mb-6 max-w-xl mx-auto">
-              AI-powered ambient documentation can support every provider without the linear cost curve. No turnover. No training. No coverage gaps.
+              Abridge can support every provider without the linear cost curve.
             </p>
 
             {onExploreAmbientAI && (
