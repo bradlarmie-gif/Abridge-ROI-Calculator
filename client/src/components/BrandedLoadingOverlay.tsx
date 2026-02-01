@@ -25,6 +25,7 @@ interface BrandedLoadingOverlayProps {
 }
 
 // Scattered geometric shapes - tetris-style screensaver building effect
+// 31 shapes total (30% more than original 24)
 const geometricShapes = [
   // Far corners - large scattered pieces
   { id: 1, shapeIdx: 0, size: 60, startX: -450, startY: -320, endX: -280, endY: -180, opacity: 0.12, delay: 0, rotation: 15 },
@@ -61,6 +62,15 @@ const geometricShapes = [
   { id: 22, shapeIdx: 9, size: 32, startX: 400, startY: 200, endX: 240, endY: 110, opacity: 0.07, delay: 0.26, rotation: 40 },
   { id: 23, shapeIdx: 10, size: 25, startX: 50, startY: -400, endX: 30, endY: -250, opacity: 0.05, delay: 0.55, rotation: 8 },
   { id: 24, shapeIdx: 11, size: 30, startX: -60, startY: 420, endX: -35, endY: 260, opacity: 0.06, delay: 0.52, rotation: -12 },
+  
+  // Additional 7 shapes for 30% more density
+  { id: 25, shapeIdx: 0, size: 35, startX: -550, startY: -150, endX: -360, endY: -80, opacity: 0.08, delay: 0.07, rotation: 18 },
+  { id: 26, shapeIdx: 2, size: 42, startX: 550, startY: 150, endX: 360, endY: 90, opacity: 0.09, delay: 0.14, rotation: -22 },
+  { id: 27, shapeIdx: 4, size: 28, startX: -250, startY: -350, endX: -140, endY: -200, opacity: 0.06, delay: 0.33, rotation: 42 },
+  { id: 28, shapeIdx: 6, size: 33, startX: 280, startY: 350, endX: 160, endY: 200, opacity: 0.07, delay: 0.36, rotation: -38 },
+  { id: 29, shapeIdx: 8, size: 48, startX: 0, startY: -450, endX: 0, endY: -280, opacity: 0.08, delay: 0.03, rotation: 5 },
+  { id: 30, shapeIdx: 10, size: 38, startX: -600, startY: 50, endX: -400, endY: 30, opacity: 0.07, delay: 0.44, rotation: -55 },
+  { id: 31, shapeIdx: 11, size: 44, startX: 600, startY: -50, endX: 400, endY: -25, opacity: 0.08, delay: 0.4, rotation: 48 },
 ];
 
 export function BrandedLoadingOverlay({ 
@@ -129,6 +139,7 @@ export function BrandedLoadingOverlay({
               height: shape.size,
               objectFit: 'contain',
               opacity: 0,
+              filter: 'hue-rotate(-10deg) saturate(1.4)',
               animation: `shapeAssemble-${shape.id} 2.8s ease-out ${shape.delay}s forwards`,
             }}
           />
