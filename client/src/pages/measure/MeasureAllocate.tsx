@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, DollarSign, TrendingUp, Sunset, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, DollarSign, TrendingUp, Heart, Sparkles, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -26,8 +26,7 @@ interface AllocationPreset {
   hardSavings: number;
   capacity: number;
   qualityOfLife: number;
-  icon: React.ReactNode;
-  gradient: string;
+  icon: typeof TrendingUp;
 }
 
 const PRESETS: AllocationPreset[] = [
@@ -38,8 +37,7 @@ const PRESETS: AllocationPreset[] = [
     hardSavings: 15,
     capacity: 60,
     qualityOfLife: 25,
-    icon: <TrendingUp className="w-5 h-5" />,
-    gradient: 'from-[#EA2C00] to-[#F07B5F]',
+    icon: TrendingUp,
   },
   {
     id: 'savings',
@@ -48,8 +46,7 @@ const PRESETS: AllocationPreset[] = [
     hardSavings: 55,
     capacity: 20,
     qualityOfLife: 25,
-    icon: <DollarSign className="w-5 h-5" />,
-    gradient: 'from-emerald-500 to-emerald-400',
+    icon: DollarSign,
   },
   {
     id: 'wellbeing',
@@ -58,8 +55,7 @@ const PRESETS: AllocationPreset[] = [
     hardSavings: 10,
     capacity: 20,
     qualityOfLife: 70,
-    icon: <Sunset className="w-5 h-5" />,
-    gradient: 'from-amber-500 to-amber-400',
+    icon: Heart,
   },
   {
     id: 'balanced',
@@ -68,8 +64,7 @@ const PRESETS: AllocationPreset[] = [
     hardSavings: 33,
     capacity: 34,
     qualityOfLife: 33,
-    icon: <Sparkles className="w-5 h-5" />,
-    gradient: 'from-violet-500 to-purple-400',
+    icon: Sparkles,
   },
 ];
 
@@ -83,7 +78,6 @@ export default function MeasureAllocate({
   const results = useMemo(() => calculateMeasureResults(state), [state]);
   const { hardSavingsPercent, capacityPercent, qualityOfLifePercent } = state.allocation;
   const totalAllocation = hardSavingsPercent + capacityPercent + qualityOfLifePercent;
-  const remaining = 100 - totalAllocation;
   const isValid = totalAllocation === 100;
   const hasStarted = totalAllocation > 0;
   
@@ -128,262 +122,230 @@ export default function MeasureAllocate({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-xl mx-auto px-4 md:px-6 py-12">
-        <motion.div
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <motion.div 
+          className="text-center mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
         >
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-            Where the Time Landed
+            Understanding Impact
           </p>
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-3" data-testid="text-allocate-title">
-            Your Providers Reclaimed Hours
+
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-3">
+            Where Did the Time Go?
           </h1>
+
           <p className="text-slate-600">
-            Help us understand how that time was used.
+            Your providers reclaimed <span className="font-semibold text-black">{formatNumber(Math.round(results.totalHoursSaved))} hours</span>. What happened with it?
           </p>
         </motion.div>
 
-        {/* The Time Pool */}
-        <motion.div 
-          className="bg-white rounded-2xl border-2 border-slate-200 p-6 mb-8 text-center relative overflow-hidden"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div className="flex items-center justify-center gap-8">
-            <div>
-              <p className="text-4xl md:text-5xl font-bold text-slate-900">
-                {formatNumber(Math.round(results.totalHoursSaved))}
-              </p>
-              <p className="text-sm text-slate-500 font-medium">hours saved</p>
-            </div>
-            
-            <div className="text-3xl text-slate-300 font-light">/</div>
-            
-            <div>
-              <motion.p 
-                className={`text-4xl md:text-5xl font-bold ${remaining === 0 ? 'text-emerald-600' : remaining < 0 ? 'text-red-500' : 'text-amber-500'}`}
-                key={remaining}
-                initial={{ scale: 1.05 }}
-                animate={{ scale: 1 }}
-              >
-                {remaining}%
-              </motion.p>
-              <p className="text-sm text-slate-500 font-medium">
-                {remaining === 0 ? 'fully allocated' : remaining < 0 ? 'over-allocated' : 'remaining'}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Preset Selection */}
+        {/* Preset Selection Card */}
         <motion.div
+          className="bg-white rounded-2xl border border-slate-200 p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-6"
+          transition={{ delay: 0.1 }}
         >
-          <p className="text-sm font-medium text-slate-700 mb-3 text-center">
-            {hasStarted ? 'Selected pattern:' : 'What best describes your experience?'}
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">
+            Select Your Story
           </p>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {PRESETS.map((preset, index) => (
-              <motion.button
-                key={preset.id}
-                onClick={() => applyPreset(preset)}
-                className={`relative p-4 rounded-xl border-2 text-left transition-all ${
-                  selectedPreset === preset.id 
-                    ? 'border-[#EA2C00] bg-[#EA2C00]/5 shadow-md' 
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
-                }`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-                data-testid={`button-preset-${preset.id}`}
-              >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${preset.gradient} flex items-center justify-center text-white mb-2`}>
-                  {preset.icon}
-                </div>
-                <p className="font-semibold text-slate-900 text-sm leading-tight">{preset.label}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{preset.subtext}</p>
-                
-                {selectedPreset === preset.id && (
-                  <motion.div 
-                    className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#EA2C00]"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                  />
-                )}
-              </motion.button>
-            ))}
+          <h2 className="text-base font-bold text-black mb-5">
+            What best describes your experience?
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {PRESETS.map((preset, index) => {
+              const Icon = preset.icon;
+              const isSelected = selectedPreset === preset.id;
+              
+              return (
+                <motion.button
+                  key={preset.id}
+                  onClick={() => applyPreset(preset)}
+                  className={`
+                    relative flex items-start gap-3 p-4 rounded-xl text-left transition-all duration-200
+                    ${isSelected 
+                      ? 'bg-black text-white' 
+                      : 'bg-white border border-slate-200 hover:border-slate-300'
+                    }
+                  `}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + index * 0.05 }}
+                  data-testid={`button-preset-${preset.id}`}
+                >
+                  {isSelected && (
+                    <div className="absolute top-3 right-3 w-5 h-5 bg-[#EA2C00] rounded-full flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    </div>
+                  )}
+                  
+                  <div className={`
+                    w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                    ${isSelected ? 'bg-white/10' : 'bg-[#FFF5F2]'}
+                  `}>
+                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
+                  </div>
+                  
+                  <div className="min-w-0">
+                    <p className={`font-semibold text-sm ${isSelected ? 'text-white' : 'text-black'}`}>
+                      {preset.label}
+                    </p>
+                    <p className={`text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
+                      {preset.subtext}
+                    </p>
+                  </div>
+                </motion.button>
+              );
+            })}
           </div>
         </motion.div>
 
-        {/* Gentle Framing */}
-        <AnimatePresence>
-          {hasStarted && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-sm text-slate-500 text-center mb-4 italic"
-            >
-              Here's what that choice means for your organization:
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-        {/* Visual Allocation Breakdown - The Math */}
+        {/* Results Breakdown - shows after selection */}
         <AnimatePresence>
           {hasStarted && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6 space-y-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4 mb-6"
             >
-              {/* Hard Savings Card */}
-              {hardSavingsPercent > 0 && (
-                <motion.div 
-                  className="bg-white rounded-xl border border-emerald-200 p-4 shadow-sm"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                        <DollarSign className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-900">Hard Savings</h3>
-                          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{hardSavingsPercent}%</span>
-                        </div>
-                        <p className="text-sm text-slate-600 mt-1">
-                          <span className="font-semibold">{formatNumber(Math.round(results.hardSavingsHours))} hours</span> of overtime avoided or locum costs eliminated
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1 font-mono">
-                          {formatNumber(Math.round(results.hardSavingsHours))}h × ${state.calibration.otHourlyRate}/hr
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-emerald-600">{formatCurrency(results.hardSavingsValue)}</p>
-                      <p className="text-xs text-slate-500">direct savings</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center">
+                Here's What That Means
+              </p>
 
-              {/* Capacity Card */}
-              {capacityPercent > 0 && (
-                <motion.div 
-                  className="bg-white rounded-xl border border-[#EA2C00]/30 p-4 shadow-sm"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-[#EA2C00]/10 flex items-center justify-center flex-shrink-0">
-                        <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-900">Capacity Unlocked</h3>
-                          <span className="text-xs font-semibold text-[#EA2C00] bg-[#EA2C00]/10 px-2 py-0.5 rounded-full">{capacityPercent}%</span>
-                        </div>
-                        <p className="text-sm text-slate-600 mt-1">
-                          <span className="font-semibold">{formatNumber(Math.round(results.capacityVisits))} additional visits</span> your providers can now see
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1 font-mono">
-                          {formatNumber(Math.round(results.capacityHours))}h ÷ {state.calibration.minutesPerVisit}min × ${state.calibration.revenuePerVisit}/visit
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(results.capacityValue)}</p>
-                      <p className="text-xs text-slate-500">revenue opportunity</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Quality of Life Card */}
-              {qualityOfLifePercent > 0 && (
-                <motion.div 
-                  className="bg-white rounded-xl border border-amber-200 p-4 shadow-sm"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <Sunset className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-900">Quality of Life</h3>
-                          <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">{qualityOfLifePercent}%</span>
-                        </div>
-                        <p className="text-sm text-slate-600 mt-1">
-                          <span className="font-semibold">{results.qualityHoursPerWeek.toFixed(1)} hours/week</span> back per provider
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          That's {formatNumber(Math.round(results.qualityHours))} hours total going back to your people
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-amber-600">Retention</p>
-                      <p className="text-xs text-slate-500 max-w-[120px]">If this prevents 1 departure: $300-500K saved</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Stacked summary bar */}
-              <div className="bg-slate-50 rounded-xl p-3">
-                <div className="h-4 bg-slate-200 rounded-full overflow-hidden flex">
+              {/* Stacked allocation bar */}
+              <div className="bg-slate-50 rounded-xl p-4">
+                <div className="h-3 bg-slate-200 rounded-full overflow-hidden flex mb-3">
                   <motion.div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400" 
-                    animate={{ width: `${hardSavingsPercent}%` }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                  />
-                  <motion.div 
-                    className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F]" 
+                    className="h-full bg-[#EA2C00]" 
                     animate={{ width: `${capacityPercent}%` }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
                   />
                   <motion.div 
-                    className="h-full bg-gradient-to-r from-amber-500 to-amber-400" 
+                    className="h-full bg-black" 
+                    animate={{ width: `${hardSavingsPercent}%` }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                  <motion.div 
+                    className="h-full bg-slate-400" 
                     animate={{ width: `${qualityOfLifePercent}%` }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
                   />
                 </div>
+                <div className="flex items-center justify-center gap-4 text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]"></span>
+                    <span className="text-slate-600">Capacity {capacityPercent}%</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
+                    <span className="text-slate-600">Savings {hardSavingsPercent}%</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span className="text-slate-600">Wellbeing {qualityOfLifePercent}%</span>
+                  </span>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Fine-tune Section */}
-        <AnimatePresence>
-          {hasStarted && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mb-6"
-            >
+              {/* Value Cards */}
+              <div className="grid gap-3">
+                {/* Capacity Card */}
+                {capacityPercent > 0 && (
+                  <motion.div 
+                    className="bg-[#FFF5F2] rounded-xl p-4"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#EA2C00] flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-black">Additional Capacity</p>
+                          <p className="text-sm text-slate-600">
+                            {formatNumber(Math.round(results.capacityVisits))} more visits possible
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.capacityValue)}</p>
+                        <p className="text-xs text-slate-500">revenue opportunity</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Hard Savings Card */}
+                {hardSavingsPercent > 0 && (
+                  <motion.div 
+                    className="bg-slate-100 rounded-xl p-4"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-black">Hard Savings</p>
+                          <p className="text-sm text-slate-600">
+                            {formatNumber(Math.round(results.hardSavingsHours))} hours of overtime avoided
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-black">{formatCurrency(results.hardSavingsValue)}</p>
+                        <p className="text-xs text-slate-500">direct savings</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Quality of Life Card */}
+                {qualityOfLifePercent > 0 && (
+                  <motion.div 
+                    className="bg-white border border-slate-200 rounded-xl p-4"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center">
+                          <Heart className="w-5 h-5 text-slate-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-black">Quality of Life</p>
+                          <p className="text-sm text-slate-600">
+                            {results.qualityHoursPerWeek.toFixed(1)} hrs/week back per provider
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-slate-600">Retention Value</p>
+                        <p className="text-xs text-slate-500">1 kept = $300-500K saved</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Fine-tune toggle */}
               <button
                 onClick={() => setShowFineTune(!showFineTune)}
-                className="w-full flex items-center justify-center gap-2 py-3 text-sm text-slate-600 hover:text-slate-800 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
                 data-testid="button-toggle-fine-tune"
               >
-                <span>{showFineTune ? 'Hide' : 'Fine-tune'} exact percentages</span>
+                <span>{showFineTune ? 'Hide' : 'Fine-tune'} percentages</span>
                 {showFineTune ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               
@@ -393,24 +355,12 @@ export default function MeasureAllocate({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-white rounded-xl border border-slate-200 p-4 space-y-4"
+                    className="bg-white rounded-xl border border-slate-200 p-4 space-y-4 overflow-hidden"
                   >
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-emerald-700 flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                          Hard Savings %
-                        </label>
-                        <FormattedNumberInput
-                          value={hardSavingsPercent}
-                          onChange={(v: number) => updateAllocation('hardSavingsPercent', v)}
-                          className="h-10 text-center font-semibold"
-                          data-testid="input-hard-savings"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-[#EA2C00] flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                        <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#EA2C00]"></span>
                           Capacity %
                         </label>
                         <FormattedNumberInput
@@ -421,9 +371,21 @@ export default function MeasureAllocate({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-amber-700 flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-amber-500" />
-                          Quality of Life %
+                        <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-black"></span>
+                          Savings %
+                        </label>
+                        <FormattedNumberInput
+                          value={hardSavingsPercent}
+                          onChange={(v: number) => updateAllocation('hardSavingsPercent', v)}
+                          className="h-10 text-center font-semibold"
+                          data-testid="input-hard-savings"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                          Wellbeing %
                         </label>
                         <FormattedNumberInput
                           value={qualityOfLifePercent}
@@ -435,8 +397,8 @@ export default function MeasureAllocate({
                     </div>
                     
                     {!isValid && (
-                      <p className={`text-xs font-medium text-center ${remaining < 0 ? 'text-red-500' : 'text-amber-600'}`}>
-                        {remaining < 0 ? `Over by ${Math.abs(remaining)}%` : `${remaining}% remaining to allocate`}
+                      <p className="text-xs font-medium text-center text-[#EA2C00]">
+                        Total must equal 100% (currently {totalAllocation}%)
                       </p>
                     )}
                     
@@ -477,49 +439,26 @@ export default function MeasureAllocate({
           )}
         </AnimatePresence>
 
-        {/* Insight callout - only when Quality of Life is dominant */}
-        <AnimatePresence>
-          {hasStarted && qualityOfLifePercent >= 50 && (
-            <motion.div 
-              className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <p className="text-sm text-amber-900">
-                <span className="font-semibold">This is the story most organizations tell us.</span> The biggest impact isn't always in the spreadsheet—it's in providers going home on time, staying in the profession, and showing up energized for patients.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Empty state prompt */}
-        {!hasStarted && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center py-8"
-          >
-            <p className="text-slate-400 text-sm">
-              Select a pattern above to begin
-            </p>
-          </motion.div>
-        )}
-
-        {/* Continue Button */}
+        {/* CTA */}
         <motion.div 
+          className="flex justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
         >
           <Button
             onClick={onNext}
             disabled={!isValid}
-            className="w-full bg-[#EA2C00] hover:bg-[#d42800] text-white h-12 text-base font-semibold shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
+            className={`
+              h-12 px-8 font-semibold rounded-full transition-all duration-200
+              ${isValid 
+                ? 'bg-black hover:bg-black/90 text-white' 
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }
+            `}
             data-testid="button-see-story"
           >
-            {!hasStarted ? 'Select a pattern to continue' : isValid ? 'See Your Story' : `Allocate remaining ${remaining}%`}
+            {!hasStarted ? 'Select a story to continue' : isValid ? 'See Your Value Story' : `Allocate remaining ${100 - totalAllocation}%`}
             {isValid && <ArrowRight className="w-4 h-4 ml-2" />}
           </Button>
         </motion.div>
