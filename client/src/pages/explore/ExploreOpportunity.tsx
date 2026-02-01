@@ -309,10 +309,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   value={state.utilizationPercent}
                   onChange={(e) => handleUtilizationChange(Number(e.target.value))}
                   className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                  style={{ accentColor: '#EA2C00' }}
                   data-testid="slider-utilization"
                 />
                 <div className="w-16 text-right">
-                  <span className="text-lg font-bold text-black">{state.utilizationPercent}%</span>
+                  <span className="text-lg font-bold text-[#EA2C00]">{state.utilizationPercent}%</span>
                 </div>
               </div>
               
