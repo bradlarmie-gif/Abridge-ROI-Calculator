@@ -38,49 +38,82 @@ export default function StepTheGap({
   
   const dynamicMessaging = useMemo(() => {
     const tier = performanceTier;
+    const score = calculations.realizationScore;
     
     return {
-      // Header messaging
-      headerSubtitle: tier === 'strong' 
-        ? "You're already performing well — let's see where to fine-tune."
+      // Header messaging - strategic framing
+      headerSubtitle: tier === 'benchmark' || tier === 'strong'
+        ? "Your implementation is mature. This analysis identifies where marginal gains compound."
         : tier === 'moderate'
-        ? "You've built a solid foundation. Here's where to level up."
+        ? "You've established a baseline. The question now: what's preventing the next jump?"
         : tier === 'developing'
-        ? "There's meaningful opportunity here. Let's break it down."
-        : "Based on what you shared, here's what we see.",
+        ? "This score reveals structural gaps — addressable, but requiring intentional focus."
+        : "At this stage, every percentage point recovered represents significant unrealized value.",
       
-      // Time card
-      timeTitle: tier === 'strong' ? "Time You Could Reclaim" : tier === 'moderate' ? "Time Still on the Table" : "Time That Disappears",
-      timeSubtitle: tier === 'strong' ? "Room for further optimization" : tier === 'moderate' ? "Hours that could go back to your team" : "Hours your team isn't getting back",
-      
-      // Utilization card  
-      utilizationTitle: tier === 'strong' ? "Utilization Fine-Tuning" : tier === 'moderate' ? "Utilization Opportunity" : "Encounters Left Behind",
-      utilizationSubtitle: tier === 'strong' ? "Nearly there — small gains available" : tier === 'moderate' ? "Visits that could benefit from AI" : "Patient visits without AI assistance",
-      utilizationContext: tier === 'strong'
-        ? "You're close to benchmark. A small push could close this gap entirely."
+      // Time card - insight-driven
+      timeTitle: tier === 'strong' || tier === 'benchmark' 
+        ? "Efficiency Refinement" 
+        : tier === 'moderate' 
+        ? "Hidden Time Drain" 
+        : "Documentation Overhead",
+      timeSubtitle: tier === 'strong' || tier === 'benchmark'
+        ? "Micro-optimizations that compound"
         : tier === 'moderate'
-        ? "Solid utilization, but there's room to extend coverage to more encounters."
-        : "Moving to higher utilization means more consistent documentation across all visits.",
+        ? "Time that's bleeding out unnoticed"
+        : "Where your providers' hours actually go",
       
-      // wRVU card
-      wrvuTitle: tier === 'strong' ? "Capture Optimization" : tier === 'moderate' ? "Documentation Quality" : "Documentation Quality",
-      wrvuSubtitle: tier === 'strong' ? "Fine-tuning capture accuracy" : "The gap in capture accuracy",
-      wrvuContext: tier === 'strong'
-        ? "You're seeing solid lift. Specialty-specific tuning could unlock the last bit of value."
+      // Utilization card - strategic framing
+      utilizationTitle: tier === 'strong' || tier === 'benchmark'
+        ? "Coverage Gaps"
         : tier === 'moderate'
-        ? "Good capture, but refinement could mean more complete documentation of the care you're already providing."
-        : "Better documentation means more complete capture of the care you're already providing.",
+        ? "Adoption Inconsistency"
+        : "Utilization Gap",
+      utilizationSubtitle: tier === 'strong' || tier === 'benchmark'
+        ? "Edge cases without AI support"
+        : tier === 'moderate'
+        ? "Uneven adoption across your organization"
+        : "Encounters without AI documentation",
+      utilizationContext: tier === 'strong' || tier === 'benchmark'
+        ? "Even at high utilization, every unassisted encounter represents documentation variance and provider burden."
+        : tier === 'moderate'
+        ? "Inconsistent utilization often signals workflow friction or specialty-specific barriers worth investigating."
+        : "Low utilization typically points to adoption blockers — training gaps, workflow misalignment, or tool limitations.",
       
-      // Satisfaction card
-      satisfactionTitle: tier === 'strong' ? "Provider Experience" : tier === 'moderate' ? "The Provider Experience" : "The Provider Experience",
-      satisfactionSubtitle: tier === 'strong' ? "Keeping your team engaged" : "How your team feels about documentation",
-      satisfactionContext: tier === 'strong'
-        ? "Strong satisfaction drives sustained adoption. Keep building on this momentum."
+      // wRVU card - ROI focused
+      wrvuTitle: tier === 'strong' || tier === 'benchmark'
+        ? "Capture Precision"
         : tier === 'moderate'
-        ? "Satisfaction is growing. Continued optimization will help cement adoption."
-        : "Satisfaction isn't just a feeling — it's a leading indicator of retention, burnout risk, and willingness to embrace new workflows.",
+        ? "Revenue Left on the Table"
+        : "Coding Leakage",
+      wrvuSubtitle: tier === 'strong' || tier === 'benchmark'
+        ? "Specialty-level optimization"
+        : tier === 'moderate'
+        ? "Documentation completeness gap"
+        : "Services rendered but not captured",
+      wrvuContext: tier === 'strong' || tier === 'benchmark'
+        ? "At your level, the remaining lift often requires specialty-specific prompt tuning and workflow integration."
+        : tier === 'moderate'
+        ? "This gap often indicates incomplete capture of complexity, procedures, or time-based codes."
+        : "Each percentage point in wRVU lift represents care you've already delivered but aren't being credited for.",
+      
+      // Satisfaction card - retention/burnout framing
+      satisfactionTitle: tier === 'strong' || tier === 'benchmark'
+        ? "Team Sentiment"
+        : tier === 'moderate'
+        ? "Provider Friction"
+        : "Burnout Risk Indicator",
+      satisfactionSubtitle: tier === 'strong' || tier === 'benchmark'
+        ? "Adoption sustainability"
+        : tier === 'moderate'
+        ? "Friction points in daily workflow"
+        : "Leading indicator of retention risk",
+      satisfactionContext: tier === 'strong' || tier === 'benchmark'
+        ? "High satisfaction correlates with sustained adoption. Monitor for regression as workflows evolve."
+        : tier === 'moderate'
+        ? "Mid-range satisfaction often masks specific pain points — worth drilling into by specialty or site."
+        : "Documentation burden is a top-3 driver of physician burnout. This metric predicts turnover intent.",
     };
-  }, [performanceTier]);
+  }, [performanceTier, calculations.realizationScore]);
   
   const storyMetrics = useMemo(() => {
     const providers = inputs.providers || 1;
