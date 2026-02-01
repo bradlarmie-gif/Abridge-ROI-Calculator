@@ -72,6 +72,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
         totalSteps={4}
         stepName="Your Value Story"
         onBack={onBack}
+        onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
