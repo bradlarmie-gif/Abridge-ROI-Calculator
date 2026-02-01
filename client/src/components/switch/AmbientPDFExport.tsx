@@ -1149,5 +1149,36 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
 export async function generateAmbientPDF(data: Omit<AmbientPDFData, 'calculations'> & { calculations: SwitchCalculations }): Promise<void> {
   const blob = await pdf(<AmbientPDFDocument data={data} />).toBlob();
   const fileName = `value-realization-assessment-${new Date().toISOString().split('T')[0]}.pdf`;
-  saveAs(blob, fileName);
+  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+  if (isMobile) {
+    // Try Web Share API first (works great on iOS for AirDrop, Messages, etc.)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const shareData = { files: [file], title: "Value Realization Assessment" };
+      
+      if (navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (err) {
+          if ((err as Error).name === 'AbortError') return;
+        }
+      }
+    }
+    
+    // Fallback: Create download link and trigger click
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  } else {
+    saveAs(blob, fileName);
+  }
 }

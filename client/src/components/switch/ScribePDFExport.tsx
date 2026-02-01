@@ -619,13 +619,36 @@ export const generateScribePDF = async (
   ).toBlob();
   
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  const fileName = `scribe-program-analysis-${new Date().toISOString().split("T")[0]}.pdf`;
   
   if (isMobile) {
+    // Try Web Share API first (works great on iOS for AirDrop, Messages, etc.)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const shareData = { files: [file], title: "Scribe Program Analysis" };
+      
+      if (navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (err) {
+          if ((err as Error).name === 'AbortError') return;
+        }
+      }
+    }
+    
+    // Fallback: Create download link and trigger click
     const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, '_blank');
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
   } else {
-    saveAs(blob, `scribe-program-analysis-${new Date().toISOString().split("T")[0]}.pdf`);
+    saveAs(blob, fileName);
   }
 };
 
