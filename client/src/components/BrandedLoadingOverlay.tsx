@@ -98,8 +98,8 @@ export function BrandedLoadingOverlay({
       {/* Parallax depth layers with subtle rotation */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
         {parallaxShapes.map((shape) => {
-          // Speed based on depth: far=slow, near=fast
-          const animSpeed = shape.depth === 1 ? 12 : shape.depth === 2 ? 8 : 5;
+          // Speed based on depth: far=slow, near=fast - faster to feel the motion
+          const animSpeed = shape.depth === 1 ? 6 : shape.depth === 2 ? 4 : 2.5;
           
           return (
             <img
@@ -144,10 +144,10 @@ export function BrandedLoadingOverlay({
       {/* Keyframe animations for parallax depth effect with subtle rotation */}
       <style>{`
         ${parallaxShapes.map(shape => {
-          // Drift distance based on depth: far moves less, near moves more
-          const driftX = shape.depth === 1 ? 12 : shape.depth === 2 ? 20 : 30;
-          const driftY = shape.depth === 1 ? 8 : shape.depth === 2 ? 14 : 22;
-          const rotateAmount = 6 * shape.rotateDir; // Very subtle rotation
+          // Drift distance based on depth: far moves less, near moves more - BIGGER movement
+          const driftX = shape.depth === 1 ? 35 : shape.depth === 2 ? 60 : 90;
+          const driftY = shape.depth === 1 ? 25 : shape.depth === 2 ? 45 : 70;
+          const rotateAmount = 10 * shape.rotateDir; // Subtle rotation
           
           return `
             @keyframes parallaxFloat-${shape.id} {
@@ -155,13 +155,13 @@ export function BrandedLoadingOverlay({
                 transform: translate(${shape.x}px, ${shape.y}px) rotate(0deg);
               }
               25% {
-                transform: translate(${shape.x + driftX}px, ${shape.y - driftY * 0.5}px) rotate(${rotateAmount * 0.5}deg);
+                transform: translate(${shape.x + driftX}px, ${shape.y - driftY * 0.6}px) rotate(${rotateAmount * 0.4}deg);
               }
               50% {
-                transform: translate(${shape.x + driftX * 0.3}px, ${shape.y - driftY}px) rotate(${rotateAmount}deg);
+                transform: translate(${shape.x + driftX * 0.4}px, ${shape.y - driftY}px) rotate(${rotateAmount}deg);
               }
               75% {
-                transform: translate(${shape.x - driftX * 0.5}px, ${shape.y - driftY * 0.3}px) rotate(${rotateAmount * 0.5}deg);
+                transform: translate(${shape.x - driftX * 0.6}px, ${shape.y - driftY * 0.4}px) rotate(${rotateAmount * 0.6}deg);
               }
             }
           `;
