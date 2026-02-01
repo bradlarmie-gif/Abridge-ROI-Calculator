@@ -647,6 +647,18 @@ export default function SummaryCommandCenter({
                   </div>
                 );
               })()}
+              
+              {/* Strategic Context */}
+              <div className="mt-8 text-center">
+                <p className="text-white/40 text-sm max-w-xl mx-auto">
+                  {roiMultiple >= 5 
+                    ? "This model projects strong returns based on your inputs. The assumptions behind these numbers are detailed in the Methodology section below."
+                    : roiMultiple >= 3
+                    ? "This model projects solid returns based on your configuration. Scroll down to explore the drivers and assumptions."
+                    : "These projections reflect conservative assumptions. As utilization increases, ROI typically improves. See Methodology for details."
+                  }
+                </p>
+              </div>
             </div>
           </section>
 
@@ -655,10 +667,10 @@ export default function SummaryCommandCenter({
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
-                  Your Value Story
+                  Where the Value Comes From
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                  Abridge gives clinicians time back and ensures every note captures the full clinical picture
+                  Ambient AI creates value through two distinct mechanisms—each with its own drivers and assumptions
                 </p>
               </div>
               
@@ -691,10 +703,15 @@ export default function SummaryCommandCenter({
                       </div>
                     </div>
                     
-                    <p className="text-slate-600 mb-8 leading-relaxed">
-                      By automating documentation, your clinicians reclaim hours each week. 
-                      This time translates to more patients seen, reduced burnout, and lower reliance on costly locums.
+                    <p className="text-slate-600 mb-6 leading-relaxed">
+                      Documentation consumes 1-2 hours per clinician daily. Ambient AI eliminates most of this burden, 
+                      creating capacity that organizations can strategically reinvest.
                     </p>
+                    <div className="bg-slate-50 rounded-lg p-3 mb-6">
+                      <p className="text-slate-500 text-xs">
+                        <span className="font-semibold text-slate-700">Why this matters:</span> Time savings only create financial value when converted to action—whether that's seeing additional patients, reducing expensive contract labor, or improving retention through better work-life balance.
+                      </p>
+                    </div>
                     
                     {timeDrivers.length > 0 ? (
                       <div className="space-y-4">
@@ -740,10 +757,15 @@ export default function SummaryCommandCenter({
                       </div>
                     </div>
                     
-                    <p className="text-slate-600 mb-8 leading-relaxed">
-                      AI-generated notes capture the complete clinical narrative—improving coding accuracy, 
-                      capturing missed conditions, and reducing costly claim denials.
+                    <p className="text-slate-600 mb-6 leading-relaxed">
+                      When documentation is complete and accurate, downstream revenue follows. AI-generated notes 
+                      capture clinical details that busy clinicians often omit.
                     </p>
+                    <div className="bg-[#EA2C00]/5 rounded-lg p-3 mb-6">
+                      <p className="text-slate-500 text-xs">
+                        <span className="font-semibold text-[#EA2C00]">Why this matters:</span> Industry research suggests meaningful portions of billable complexity go undocumented. Better notes support better coding, fewer denials, and more accurate risk adjustment. See Methodology for our assumptions.
+                      </p>
+                    </div>
                     
                     {docDrivers.length > 0 ? (
                       <div className="space-y-4">
@@ -769,10 +791,13 @@ export default function SummaryCommandCenter({
               
               {/* Combined Impact Bar */}
               <div className="mt-12 bg-slate-50 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-semibold text-slate-700">Combined Annual Impact</span>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-slate-700">Combined Annual Value</span>
                   <span className="text-2xl font-bold text-slate-900">{formatCurrency(totalAnnualValue)}</span>
                 </div>
+                <p className="text-slate-500 text-xs mb-4">
+                  This total reflects the sum of all active drivers. Each includes conservative realization rates to account for real-world constraints.
+                </p>
                 <div className="h-3 flex rounded-full overflow-hidden bg-slate-200">
                   {timePercent > 0 && (
                     <div 
@@ -806,10 +831,17 @@ export default function SummaryCommandCenter({
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
-                  Scale Your Impact
+                  The Expansion Opportunity
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                  See how your value grows as you expand across your organization
+                  A successful pilot proves value. Strategic expansion multiplies it.
+                </p>
+              </div>
+              
+              {/* Strategic Context */}
+              <div className="bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
+                <p className="text-slate-600 text-sm text-center">
+                  <span className="font-semibold text-slate-800">The expansion case:</span> Your per-{config.unitName} economics ({formatCurrency(Math.round(totalAnnualValue / pilotUnits))}/year value) tend to remain consistent at scale, while operational learning often improves utilization as workflows mature. Adjust the full-scale assumptions below to model your organization's trajectory.
                 </p>
               </div>
               
@@ -925,10 +957,13 @@ export default function SummaryCommandCenter({
                 
                 {/* Compact Investment Summary - inside scaling card */}
                 <div className="mt-8 bg-white/5 rounded-xl p-5 border border-white/10">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-white/60 text-sm font-medium">3-Year Investment Summary</span>
-                    <span className="text-white/40 text-xs">10% annual growth assumed</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white/60 text-sm font-medium">3-Year Investment Projection</span>
+                    <span className="text-white/40 text-xs">Net value after investment costs</span>
                   </div>
+                  <p className="text-white/30 text-xs mb-4">
+                    Assumes 10% annual value growth as utilization and workflows improve.
+                  </p>
                   <div className="grid grid-cols-4 gap-3 text-center">
                     <div>
                       <div className="text-white/40 text-xs mb-1">Year 1</div>
@@ -1107,7 +1142,10 @@ export default function SummaryCommandCenter({
                 onClick={() => setShowDetails(!showDetails)}
                 className="w-full flex items-center justify-between py-4"
               >
-                <span className="font-semibold text-slate-900">Key Assumptions</span>
+                <div>
+                  <span className="font-semibold text-slate-900">Methodology & Assumptions</span>
+                  <span className="text-slate-400 text-sm ml-2">— understand how we calculated these projections</span>
+                </div>
                 {showDetails ? (
                   <ChevronUp className="w-5 h-5 text-slate-400" />
                 ) : (
