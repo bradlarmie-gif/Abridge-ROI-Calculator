@@ -170,7 +170,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             alt="Abridge" 
             className="w-24 md:w-32"
             style={{ 
-              filter: 'drop-shadow(0 0 60px rgba(234, 44, 0, 0.5))',
               animation: 'splashPulse 3s ease-in-out infinite'
             }}
           />
@@ -178,7 +177,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
 
         <h1 
           className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight font-abridge uppercase"
-          style={{ textShadow: '0 0 40px rgba(234, 44, 0, 0.3)' }}
         >
           Build Your Value Story
         </h1>
@@ -301,11 +299,11 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         @keyframes splashPulse {
           0%, 100% { 
             opacity: 1; 
-            filter: drop-shadow(0 0 60px rgba(234, 44, 0, 0.5));
+            transform: scale(1);
           }
           50% { 
             opacity: 0.85; 
-            filter: drop-shadow(0 0 80px rgba(234, 44, 0, 0.7));
+            transform: scale(1.02);
           }
         }
       `}</style>
