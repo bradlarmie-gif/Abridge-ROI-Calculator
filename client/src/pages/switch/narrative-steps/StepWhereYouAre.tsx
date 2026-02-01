@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, Users, Clock, TrendingUp, Heart, Moon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, Clock, TrendingUp, Heart, Moon, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   ABRIDGE_BENCHMARKS,
   type SwitchInputs,
@@ -176,9 +177,21 @@ export default function StepWhereYouAre({
         {hasAnyDimensionValue && (
           <div className="px-6 md:px-8 py-4 bg-[#FFF5F2]">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-700">
-                <span className="font-semibold text-black">Value Realization Score:</span>
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-black">Ambient Assessment Score</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                      <Info className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-sm">
+                      This score measures how much value you're capturing from your ambient AI investment compared to top-performing organizations. Based on utilization, efficiency, wRVU lift, and satisfaction benchmarks.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <div className="flex items-center gap-2">
                 <div className="w-24 h-2 bg-white rounded-full overflow-hidden">
                   <div 
