@@ -221,9 +221,9 @@ export default function StepTheGap({
                 style={{ width: `${calculations.realizationScore}%` }}
               />
             </div>
-            <div className="flex justify-between mt-3 text-xs text-slate-500">
+            <div className="flex justify-between mt-3 text-sm text-slate-500">
               <span>Current</span>
-              <span className="text-amber-400/80">{gapPercentage}% opportunity</span>
+              <span>{gapPercentage}% <span className="text-[#EA2C00] font-medium">opportunity</span></span>
             </div>
           </div>
         </div>
