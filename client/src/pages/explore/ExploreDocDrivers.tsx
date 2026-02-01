@@ -524,14 +524,25 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                         <div className="flex items-center justify-between">
                           <h3 className={`font-bold ${isEnabled ? 'text-black' : 'text-slate-500'}`}>{driver.label}</h3>
                           <button
-                            onClick={() => handleToggleDriver(driver.id)}
-                            className="flex items-center gap-2 min-h-[44px] px-2"
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleDriver(driver.id);
+                            }}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleDriver(driver.id);
+                            }}
+                            className="flex items-center justify-center min-h-[48px] min-w-[48px] p-2 touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
                             data-testid={`toggle-${driver.id}`}
                           >
                             {isEnabled ? (
-                              <ToggleRight className="w-8 h-8 text-[#EA2C00]" />
+                              <ToggleRight className="w-10 h-10 text-[#EA2C00]" />
                             ) : (
-                              <ToggleLeft className="w-8 h-8 text-slate-300" />
+                              <ToggleLeft className="w-10 h-10 text-slate-300" />
                             )}
                           </button>
                         </div>
