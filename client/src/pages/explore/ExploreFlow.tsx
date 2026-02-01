@@ -48,9 +48,9 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   timePathScenario: 'typical',
   minutesSavedPerEncounter: 3,
   timeAllocation: {
-    patientAccess: 40,
-    reducingLocums: 30,
-    clinicianWellbeing: 30,
+    patientAccess: 50,
+    reducingLocums: 0,
+    clinicianWellbeing: 50,
   },
   docPathFocus: null,
   wrvuPctIncrease: 2,

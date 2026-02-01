@@ -80,7 +80,7 @@ const VALUE_PER_UNIT = {
 
 export default function ExploreTimeAllocation({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreTimeAllocationProps) {
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
-  const [includeLocums, setIncludeLocums] = useState(state.timeAllocation.reducingLocums > 0);
+  const [includeLocums, setIncludeLocums] = useState(false);
 
   const handleToggleLocums = () => {
     const newIncludeLocums = !includeLocums;
