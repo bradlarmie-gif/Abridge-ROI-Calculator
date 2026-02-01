@@ -73,7 +73,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
         pathType="measure"
         currentStep={1}
         totalSteps={4}
-        stepName="Welcome"
+        stepName="Set the Stage"
         onBack={onBack}
       />
       <UnifiedHeaderSpacer />
@@ -102,9 +102,9 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            Let's look at what{" "}
+            Every transformation{" "}
             <span className="bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] bg-clip-text text-transparent">
-              you built.
+              deserves proof.
             </span>
           </motion.h1>
 
@@ -114,7 +114,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            Your providers have been using Abridge. The data tells a powerful story.
+            You've lived the change. Now let's measure it—and give you a story worth sharing.
           </motion.p>
         </motion.div>
 

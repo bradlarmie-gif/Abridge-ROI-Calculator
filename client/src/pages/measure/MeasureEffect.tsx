@@ -187,7 +187,7 @@ export default function MeasureEffect({
         pathType="measure"
         currentStep={2}
         totalSteps={4}
-        stepName="The Abridge Effect"
+        stepName="The Evidence"
         onBack={onBack}
       />
       <UnifiedHeaderSpacer />
@@ -198,13 +198,23 @@ export default function MeasureEffect({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-sm text-slate-600 mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <span className="font-medium">Step 2 of 4</span>
+            <span className="text-slate-400">|</span>
+            <span>The Natural Experiment</span>
+          </motion.div>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3" data-testid="text-effect-title">
-            THE ABRIDGE EFFECT
+            Before & After
           </h1>
-          <p className="text-lg text-slate-600">
-            Same providers. Same patients. Different documentation.
+          <p className="text-lg text-slate-600 max-w-xl mx-auto">
+            Same providers. Same patients. Different outcomes.
             <br />
-            <span className="text-slate-500">Here's what we see.</span>
+            <span className="text-slate-500">This is your natural experiment.</span>
           </p>
         </motion.div>
 
@@ -629,6 +639,170 @@ export default function MeasureEffect({
           </div>
         </motion.div>
 
+        {/* The Transformation Summary - Hero Metrics with Context */}
+        <motion.div
+          className="bg-gradient-to-br from-white to-slate-50 rounded-2xl border border-slate-200 shadow-lg p-6 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EA2C00] to-[#F07B5F] flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">THE TRANSFORMATION</h2>
+              <p className="text-sm text-slate-500">What the data reveals</p>
+            </div>
+          </div>
+
+          {/* Insight Headlines with Shift Visualizations */}
+          {(() => {
+            // Safe calculations with guards for division by zero and negative values
+            const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
+            const timeAfterWidth = state.timeEfficiency.timeInNotesWithout > 0 
+              ? Math.min(100, Math.max(0, (state.timeEfficiency.timeInNotesWith / state.timeEfficiency.timeInNotesWithout) * 100))
+              : 100;
+            const closureImproved = results.sameDayClosureDelta > 0;
+            const wrvuMax = Math.max(state.documentationQuality.wrvuWith, state.documentationQuality.wrvuWithout, 0.1);
+            const wrvuBeforeWidth = (state.documentationQuality.wrvuWithout / wrvuMax) * 100;
+            const wrvuAfterWidth = (state.documentationQuality.wrvuWith / wrvuMax) * 100;
+            const workLifeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
+            const workAfterWidth = state.timeEfficiency.workOutsideWithout > 0
+              ? Math.min(100, Math.max(0, (state.timeEfficiency.workOutsideWith / state.timeEfficiency.workOutsideWithout) * 100))
+              : 100;
+
+            return (
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Time Reclaimed */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold text-slate-900">{timeReclaimed}</span>
+                    <span className="text-lg text-slate-600">min/note</span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Documentation time reclaimed</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">Before</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-slate-400 rounded-full" style={{ width: '100%' }} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-600 w-12 text-right">{state.timeEfficiency.timeInNotesWithout}m</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">After</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-700"
+                          style={{ width: `${timeAfterWidth}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-[#EA2C00] w-12 text-right">{state.timeEfficiency.timeInNotesWith}m</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3 italic">
+                    {timeReclaimed > 0 ? `That's ${formatPercent(results.timeInNotesDeltaPercent)} less time per encounter` : 'Enter your before/after data above'}
+                  </p>
+                </div>
+
+                {/* Closure Rate */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold text-slate-900">{state.timeEfficiency.sameDayClosureWith}%</span>
+                    {closureImproved && <span className="text-lg text-[#EA2C00] font-semibold">+{results.sameDayClosureDelta} pts</span>}
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Notes close the same day</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">Before</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-slate-400 rounded-full" style={{ width: `${Math.min(100, state.timeEfficiency.sameDayClosureWithout)}%` }} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-600 w-12 text-right">{state.timeEfficiency.sameDayClosureWithout}%</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">After</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-700"
+                          style={{ width: `${Math.min(100, state.timeEfficiency.sameDayClosureWith)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-[#EA2C00] w-12 text-right">{state.timeEfficiency.sameDayClosureWith}%</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3 italic">
+                    {closureImproved ? 'No more late-night charting' : 'Enter your before/after data above'}
+                  </p>
+                </div>
+
+                {/* wRVU Lift */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold text-slate-900">{results.wrvuDelta > 0 ? '+' : ''}{results.wrvuDelta.toFixed(2)}</span>
+                    <span className="text-lg text-slate-600">wRVU/encounter</span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Complexity now captured</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">Before</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-slate-400 rounded-full" style={{ width: `${wrvuBeforeWidth}%` }} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-600 w-12 text-right">{state.documentationQuality.wrvuWithout}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">After</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-700"
+                          style={{ width: `${wrvuAfterWidth}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-[#EA2C00] w-12 text-right">{state.documentationQuality.wrvuWith}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3 italic">
+                    {results.wrvuDelta > 0 ? `That's ${formatPercent(results.wrvuDeltaPercent, true)} more per encounter` : 'Enter your before/after data above'}
+                  </p>
+                </div>
+
+                {/* Work-Life Balance */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold text-slate-900">{workLifeSaved.toFixed(1)}</span>
+                    <span className="text-lg text-slate-600">hrs/day saved</span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Time given back to life</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">Before</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-slate-400 rounded-full" style={{ width: '100%' }} />
+                      </div>
+                      <span className="text-xs font-medium text-slate-600 w-12 text-right">{state.timeEfficiency.workOutsideWithout}h</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16">After</span>
+                      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] rounded-full transition-all duration-700"
+                          style={{ width: `${workAfterWidth}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-[#EA2C00] w-12 text-right">{state.timeEfficiency.workOutsideWith}h</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3 italic">
+                    {workLifeSaved > 0 ? 'Providers are going home on time' : 'Enter your before/after data above'}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+        </motion.div>
+
+        {/* Context Strip */}
         <motion.div
           className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-xl p-4 flex items-center justify-around mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -651,18 +825,6 @@ export default function MeasureEffect({
             <p className="text-2xl font-bold text-slate-900">{state.deployment.monthsOnAbridge} mo</p>
             <p className="text-xs text-slate-500">on Abridge</p>
           </div>
-        </motion.div>
-
-        <motion.div
-          className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800">
-            <strong>This is a natural experiment.</strong> Same providers, documenting similar patients, with and without Abridge. The difference is the documentation.
-          </p>
         </motion.div>
 
         <motion.div

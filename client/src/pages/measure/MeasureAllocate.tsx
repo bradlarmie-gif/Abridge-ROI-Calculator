@@ -120,7 +120,7 @@ export default function MeasureAllocate({
         pathType="measure"
         currentStep={3}
         totalSteps={4}
-        stepName="Where Did The Time Go?"
+        stepName="The Impact"
         onBack={onBack}
       />
       <UnifiedHeaderSpacer />
