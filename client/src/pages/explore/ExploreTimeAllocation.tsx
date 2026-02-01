@@ -93,7 +93,6 @@ function EditableValue({
   min = 0,
   max = 999999,
   step = 1,
-  label = '',
 }: { 
   value: number; 
   onChange: (v: number) => void;
@@ -102,7 +101,6 @@ function EditableValue({
   min?: number;
   max?: number;
   step?: number;
-  label?: string;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value.toString());
@@ -145,7 +143,7 @@ function EditableValue({
           min={min}
           max={max}
           step={step}
-          className="w-24 px-2 py-1.5 text-base font-semibold text-[#EA2C00] bg-white border-2 border-[#EA2C00] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
+          className="w-20 px-2 py-1 text-sm font-semibold text-[#EA2C00] bg-white border-2 border-[#EA2C00] rounded-lg focus:outline-none"
           autoFocus
           data-testid="input-editable-value"
         />
@@ -161,11 +159,11 @@ function EditableValue({
         e.preventDefault();
         handleStartEdit();
       }}
-      className="inline-flex items-center gap-1.5 text-base font-semibold text-[#EA2C00] bg-[#EA2C00]/5 hover:bg-[#EA2C00]/15 active:bg-[#EA2C00]/20 px-3 py-2 rounded-lg transition-colors min-h-[44px]"
+      className="inline-flex items-center gap-1 text-sm font-semibold text-[#EA2C00] bg-[#EA2C00]/5 hover:bg-[#EA2C00]/15 px-2 py-1 rounded-lg transition-colors"
       data-testid="button-edit-value"
     >
       {prefix}{value.toLocaleString()}{suffix}
-      <Pencil className="w-4 h-4" />
+      <Pencil className="w-3 h-3" />
     </button>
   );
 }
@@ -255,24 +253,17 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         return {
           value: Math.round(value),
           editableInputs: (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Hours allocated</span>
-                <span className="text-sm font-semibold text-black">{hours.toLocaleString()} hours</span>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Hours allocated</span>
+                <span className="font-semibold text-black">{hours.toLocaleString()} hrs</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Avg visit length</span>
-                <span className="text-sm font-semibold text-black">30 min</span>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Potential visits (30 min avg)</span>
+                <span className="font-semibold text-black">{Math.round(potentialVisits).toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Potential new visits</span>
-                <span className="text-sm font-semibold text-black">{Math.round(potentialVisits).toLocaleString()} visits</span>
-              </div>
-              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
-                <div>
-                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
-                  <p className="text-xs text-slate-500 mt-0.5">Scheduling, room availability, demand limits</p>
-                </div>
+              <div className="flex items-center justify-between py-1 bg-[#FFF5F2] -mx-3 px-3 rounded">
+                <span className="font-medium text-[#EA2C00]">Realization rate</span>
                 <EditableValue 
                   value={assumptions.patientAccessRealization} 
                   onChange={(v) => updateAssumption('patientAccessRealization', v)}
@@ -281,12 +272,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   max={100}
                 />
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Realized new visits</span>
-                <span className="text-sm font-semibold text-black">{Math.round(realizedVisits).toLocaleString()} visits</span>
-              </div>
-              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Revenue per visit</span>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Revenue per visit</span>
                 <EditableValue 
                   value={assumptions.visitValue} 
                   onChange={(v) => updateAssumption('visitValue', v)}
@@ -295,9 +282,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   max={1000}
                 />
               </div>
-              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
-                <span className="text-sm font-bold text-black">Annual value</span>
-                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
+              <div className="flex items-center justify-between py-2 border-t border-[#EA2C00]/20 mt-1">
+                <span className="font-bold text-black">Annual value</span>
+                <span className="font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
               </div>
             </div>
           ),
@@ -310,16 +297,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         return {
           value: Math.round(value),
           editableInputs: (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Hours allocated</span>
-                <span className="text-sm font-semibold text-black">{hours.toLocaleString()} hours</span>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Hours allocated</span>
+                <span className="font-semibold text-black">{hours.toLocaleString()} hrs</span>
               </div>
-              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
-                <div>
-                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
-                  <p className="text-xs text-slate-500 mt-0.5">Minimum shift requirements, scheduling</p>
-                </div>
+              <div className="flex items-center justify-between py-1 bg-[#FFF5F2] -mx-3 px-3 rounded">
+                <span className="font-medium text-[#EA2C00]">Realization rate</span>
                 <EditableValue 
                   value={assumptions.locumRealization} 
                   onChange={(v) => updateAssumption('locumRealization', v)}
@@ -328,12 +312,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   max={100}
                 />
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Locum hours avoided</span>
-                <span className="text-sm font-semibold text-black">{Math.round(realizedHours).toLocaleString()} hours</span>
-              </div>
-              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Locum hourly cost</span>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Locum hourly cost</span>
                 <EditableValue 
                   value={assumptions.locumHourlyCost} 
                   onChange={(v) => updateAssumption('locumHourlyCost', v)}
@@ -342,9 +322,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   max={500}
                 />
               </div>
-              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
-                <span className="text-sm font-bold text-black">Annual savings</span>
-                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
+              <div className="flex items-center justify-between py-2 border-t border-[#EA2C00]/20 mt-1">
+                <span className="font-bold text-black">Annual savings</span>
+                <span className="font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
               </div>
             </div>
           ),
@@ -360,34 +340,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         return {
           value: Math.round(value),
           editableInputs: (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Total providers</span>
-                <span className="text-sm font-semibold text-black">{state.numberOfProviders.toLocaleString()} providers</span>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Providers at risk ({assumptions.atRiskRate}%)</span>
+                <span className="font-semibold text-black">{Math.round(providersAtRisk).toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">At-risk rate (industry avg)</span>
-                <EditableValue 
-                  value={assumptions.atRiskRate} 
-                  onChange={(v) => updateAssumption('atRiskRate', v)}
-                  suffix="%"
-                  min={5}
-                  max={50}
-                />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Providers at risk</span>
-                <span className="text-sm font-semibold text-black">{Math.round(providersAtRisk).toLocaleString()} providers</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Wellbeing allocation</span>
-                <span className="text-sm font-semibold text-black">{state.timeAllocation.clinicianWellbeing}%</span>
-              </div>
-              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
-                <div>
-                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
-                  <p className="text-xs text-slate-500 mt-0.5">Burnout-to-retention conversion</p>
-                </div>
+              <div className="flex items-center justify-between py-1 bg-[#FFF5F2] -mx-3 px-3 rounded">
+                <span className="font-medium text-[#EA2C00]">Realization rate</span>
                 <EditableValue 
                   value={assumptions.wellbeingRealization} 
                   onChange={(v) => updateAssumption('wellbeingRealization', v)}
@@ -396,12 +355,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   max={50}
                 />
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Providers retained</span>
-                <span className="text-sm font-semibold text-black">{providersRetained.toFixed(1)} providers</span>
-              </div>
-              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Turnover cost avoided</span>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-600">Turnover cost per provider</span>
                 <EditableValue 
                   value={assumptions.turnoverCost} 
                   onChange={(v) => updateAssumption('turnoverCost', v)}
@@ -410,11 +365,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   max={1000000}
                   step={10000}
                 />
-                <span className="text-xs text-slate-400">/provider</span>
               </div>
-              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
-                <span className="text-sm font-bold text-black">Annual value</span>
-                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
+              <div className="flex items-center justify-between py-2 border-t border-[#EA2C00]/20 mt-1">
+                <span className="font-bold text-black">Annual value</span>
+                <span className="font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
               </div>
             </div>
           ),
@@ -431,9 +385,15 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const visibleOptions = ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
 
   const totalAllocated = visibleOptions.reduce((sum, opt) => sum + state.timeAllocation[opt.id], 0);
+  const totalTimeValue = visibleOptions.reduce((sum, opt) => {
+    const calc = calculateDriverValue(opt.id);
+    return sum + (calc?.value || 0);
+  }, 0);
+
+  const formatNumber = (n: number) => n.toLocaleString();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       <UnifiedHeader
         pathType="explore"
         currentStep={4}
@@ -444,240 +404,273 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <motion.div 
-          className="text-center mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            Allocate Your Savings
-          </p>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            How Will Your Organization Use This Time?
-          </h1>
-
-          <p className="text-lg text-slate-600 max-w-xl mx-auto">
-            You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span> of clinician capacity. 
-            How would you like to model its impact?
-          </p>
-        </motion.div>
-
-        {/* Locums Toggle */}
-        <motion.div
-          className="flex items-center justify-center gap-3 mb-6"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.4 }}
-        >
-          <button
-            onClick={handleToggleLocums}
-            className={`
-              flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-              ${includeLocums 
-                ? 'bg-[#EA2C00] text-white' 
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }
-            `}
-            data-testid="button-toggle-locums"
-          >
-            {includeLocums ? (
-              <ToggleRight className="w-4 h-4" />
-            ) : (
-              <ToggleLeft className="w-4 h-4" />
-            )}
-            {includeLocums ? 'Locums included' : 'Add locum/overtime savings'}
-          </button>
-        </motion.div>
-
-        {/* Presets */}
-        <motion.div
-          className="flex flex-wrap justify-center gap-2 mb-8"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-        >
-          {presets.map((preset) => {
-            const isActive = 
-              state.timeAllocation.patientAccess === preset.allocation.patientAccess &&
-              state.timeAllocation.reducingLocums === preset.allocation.reducingLocums &&
-              state.timeAllocation.clinicianWellbeing === preset.allocation.clinicianWellbeing;
-            
-            return (
-              <button
-                key={preset.label}
-                onClick={() => handlePreset(preset)}
-                className={`
-                  px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-                  ${isActive 
-                    ? 'bg-black text-white' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }
-                `}
-                data-testid={`button-preset-${preset.label.toLowerCase().replace(' ', '-')}`}
-              >
-                {preset.label}
-                {isActive && <Check className="w-3.5 h-3.5 ml-1.5 inline" />}
-              </button>
-            );
-          })}
-        </motion.div>
-
-        <div className="space-y-4 max-w-2xl mx-auto mb-8">
-          {visibleOptions.map((option, index) => {
-            const Icon = option.icon;
-            const value = state.timeAllocation[option.id];
-            const hours = getHoursForCategory(option.id);
-            const driverCalc = calculateDriverValue(option.id);
-            const isExpanded = expandedDriver === option.id;
-            
-            return (
-              <motion.div
-                key={option.id}
-                className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + index * 0.05, duration: 0.4 }}
-              >
-                <div className="p-5">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-5 h-5 text-[#EA2C00]" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-black">{option.label}</h3>
-                        <div className="text-right">
-                          <span className="text-2xl font-bold text-black">{value}%</span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-slate-500">{option.description}</p>
-                    </div>
-                  </div>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={value}
-                    onChange={(e) => handleSliderChange(option.id, Number(e.target.value))}
-                    className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
-                    data-testid={`slider-${option.id}`}
-                  />
-
-                  {/* Value display row */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                    <div>
-                      <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours → Annual Value</p>
-                      <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
-                    </div>
-                    
-                    {/* Expandable math button */}
-                    <button
-                      onClick={() => toggleExpand(option.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
-                      data-testid={`button-expand-${option.id}`}
-                    >
-                      <Calculator className="w-3.5 h-3.5" />
-                      <span>{isExpanded ? 'Hide details' : 'See the math'}</span>
-                      {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Expandable math breakdown */}
-                <AnimatePresence>
-                  {isExpanded && driverCalc && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 pb-5">
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                              <Calculator className="w-4 h-4 text-[#EA2C00]" />
-                              <h4 className="text-sm font-bold text-black">How We Calculate This</h4>
-                            </div>
-                            <span className="text-xs text-slate-400 flex items-center gap-1">
-                              <Pencil className="w-3 h-3" />
-                              Click values to edit
-                            </span>
-                          </div>
-                          
-                          {driverCalc.editableInputs}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Total summary */}
-        {(() => {
-          const totalTimeValue = visibleOptions.reduce((sum, opt) => {
-            const calc = calculateDriverValue(opt.id);
-            return sum + (calc?.value || 0);
-          }, 0);
-          
-          return (
-            <motion.div
-              className="bg-black rounded-2xl p-6 text-white max-w-2xl mx-auto mb-8"
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content */}
+          <div className="flex-1">
+            <motion.div 
+              className="mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.5 }}
+              transition={{ duration: 0.5 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-white/60">Time Savings Summary</p>
-                <span className={`text-sm font-medium ${totalAllocated === 100 ? 'text-green-400' : 'text-yellow-400'}`}>
-                  {totalAllocated}% allocated
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/60 text-sm">Total Hours</p>
-                  <p className="text-2xl font-bold">{totalHoursSaved.toLocaleString()}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white/60 text-sm">Annual Value</p>
-                  <p className="text-3xl font-bold text-[#F07B5F]">${totalTimeValue.toLocaleString()}</p>
-                </div>
-              </div>
+              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
+                Allocate Your Savings
+              </p>
+              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
+                How will you use this time?
+              </h1>
+              <p className="text-slate-600">
+                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Model where the value lands.
+              </p>
             </motion.div>
-          );
-        })()}
 
-        <motion.div 
-          className="flex flex-col items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          <Button
-            onClick={onNext}
-            disabled={totalAllocated !== 100}
-            className={`
-              h-12 px-8 font-semibold rounded-full transition-all duration-200
-              ${totalAllocated === 100
-                ? 'bg-black hover:bg-black/90 text-white'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              }
-            `}
-            data-testid="button-continue"
+            {/* Controls Row */}
+            <motion.div
+              className="flex flex-wrap items-center gap-2 mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05, duration: 0.4 }}
+            >
+              {/* Presets */}
+              {presets.map((preset) => {
+                const isActive = 
+                  state.timeAllocation.patientAccess === preset.allocation.patientAccess &&
+                  state.timeAllocation.reducingLocums === preset.allocation.reducingLocums &&
+                  state.timeAllocation.clinicianWellbeing === preset.allocation.clinicianWellbeing;
+                
+                return (
+                  <button
+                    key={preset.label}
+                    onClick={() => handlePreset(preset)}
+                    className={`
+                      px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                      ${isActive 
+                        ? 'bg-black text-white' 
+                        : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                      }
+                    `}
+                    data-testid={`button-preset-${preset.label.toLowerCase().replace(' ', '-')}`}
+                  >
+                    {preset.label}
+                    {isActive && <Check className="w-3.5 h-3.5 ml-1.5 inline" />}
+                  </button>
+                );
+              })}
+
+              {/* Locums Toggle */}
+              <button
+                onClick={handleToggleLocums}
+                className={`
+                  flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  ${includeLocums 
+                    ? 'bg-[#EA2C00] text-white' 
+                    : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+                  }
+                `}
+                data-testid="button-toggle-locums"
+              >
+                {includeLocums ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                {includeLocums ? 'Locums on' : '+ Locums'}
+              </button>
+            </motion.div>
+
+            {/* Allocation Cards */}
+            <div className="space-y-4">
+              {visibleOptions.map((option, index) => {
+                const Icon = option.icon;
+                const value = state.timeAllocation[option.id];
+                const hours = getHoursForCategory(option.id);
+                const driverCalc = calculateDriverValue(option.id);
+                const isExpanded = expandedDriver === option.id;
+                
+                return (
+                  <motion.div
+                    key={option.id}
+                    className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
+                  >
+                    <div className="p-5">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-5 h-5 text-[#EA2C00]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-bold text-black">{option.label}</h3>
+                            <span className="text-2xl font-bold text-black">{value}%</span>
+                          </div>
+                          <p className="text-sm text-slate-500">{option.description}</p>
+                        </div>
+                      </div>
+
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={value}
+                        onChange={(e) => handleSliderChange(option.id, Number(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                        data-testid={`slider-${option.id}`}
+                      />
+
+                      {/* Value row */}
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                        <div>
+                          <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours → Annual Value</p>
+                          <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
+                        </div>
+                        
+                        <button
+                          onClick={() => toggleExpand(option.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+                          data-testid={`button-expand-${option.id}`}
+                        >
+                          <Calculator className="w-3.5 h-3.5" />
+                          <span>{isExpanded ? 'Hide' : 'See the math'}</span>
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Expandable math */}
+                    <AnimatePresence>
+                      {isExpanded && driverCalc && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-5">
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                              {driverCalc.editableInputs}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Continue Button - Mobile */}
+            <motion.div 
+              className="lg:hidden pt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <Button
+                onClick={onNext}
+                disabled={totalAllocated !== 100}
+                className={`
+                  w-full h-12 font-semibold rounded-full transition-all duration-200
+                  ${totalAllocated === 100
+                    ? 'bg-black hover:bg-black/90 text-white'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  }
+                `}
+                data-testid="button-continue-mobile"
+              >
+                Continue
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Time Savings Sidebar */}
+          <motion.div
+            className="hidden lg:block lg:w-80"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.25, duration: 0.5 }}
           >
-            Continue to Documentation Quality
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </motion.div>
+            <div className="sticky top-24">
+              <div className="bg-slate-900 rounded-2xl overflow-hidden">
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-white/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-white">Time Savings</h3>
+                        <p className="text-xs text-white/50">Value summary</p>
+                      </div>
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                      totalAllocated === 100 ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {totalAllocated}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Big Number */}
+                <div className="px-6 py-5 border-b border-white/10">
+                  <p className="text-sm text-white/50 mb-1">Annual Value</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-[#F07B5F]">
+                      ${formatNumber(totalTimeValue)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/40 mt-2">
+                    From {formatNumber(totalHoursSaved)} hours saved
+                  </p>
+                </div>
+
+                {/* Breakdown */}
+                <div className="px-6 py-5 space-y-3">
+                  {visibleOptions.map((option) => {
+                    const Icon = option.icon;
+                    const value = state.timeAllocation[option.id];
+                    const hours = getHoursForCategory(option.id);
+                    const driverCalc = calculateDriverValue(option.id);
+                    
+                    return (
+                      <div key={option.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4 text-white/50" />
+                          <span className="text-sm text-white/70">{option.label}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold text-white">${formatNumber(driverCalc?.value || 0)}</span>
+                          <span className="text-xs text-white/40 ml-1">({value}%)</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Continue Button */}
+                <div className="px-6 pb-6">
+                  <Button
+                    onClick={onNext}
+                    disabled={totalAllocated !== 100}
+                    className={`
+                      w-full h-12 text-sm font-semibold rounded-full transition-all duration-200
+                      ${totalAllocated === 100
+                        ? 'bg-white hover:bg-white/90 text-black'
+                        : 'bg-white/10 text-white/30 cursor-not-allowed'
+                      }
+                    `}
+                    data-testid="button-continue"
+                  >
+                    Continue
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
