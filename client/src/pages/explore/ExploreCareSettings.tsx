@@ -26,7 +26,7 @@ const CARE_SETTINGS: CareSettingOption[] = [
     label: 'Emergency',
     shortDesc: 'Emergency Department',
     icon: AlertCircle,
-    available: false,
+    available: true,
   },
   {
     id: 'nursing',

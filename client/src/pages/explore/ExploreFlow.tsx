@@ -11,11 +11,21 @@ export type TimePathScenario = 'conservative' | 'typical' | 'aggressive';
 
 export type TimeAllocationFocus = 'patientAccess' | 'reducingLocums' | 'clinicianWellbeing';
 
+// ED-specific time allocation types
+export type EDTimeAllocationFocus = 'throughput' | 'retention' | 'clinicianWellbeing';
+
 export type DocPathFocus = 'wrvu' | 'hcc' | 'denials';
 
 export interface TimeAllocation {
   patientAccess: number;
   reducingLocums: number;
+  clinicianWellbeing: number;
+}
+
+// ED-specific time allocation
+export interface EDTimeAllocation {
+  throughput: number;  // LWBS reduction / patient throughput
+  retention: number;   // Physician retention
   clinicianWellbeing: number;
 }
 
@@ -40,7 +50,11 @@ export interface ExploreState {
   timePathScenario: TimePathScenario;
   minutesSavedPerEncounter: number;
   
+  // Outpatient time allocation
   timeAllocation: TimeAllocation;
+  
+  // ED-specific time allocation
+  edTimeAllocation: EDTimeAllocation;
   
   docPathFocus: DocPathFocus | null; // Keep for backwards compat
   docDrivers: DocDriversState;
@@ -61,6 +75,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     patientAccess: 50,
     reducingLocums: 0,
     clinicianWellbeing: 50,
+  },
+  edTimeAllocation: {
+    throughput: 50,
+    retention: 25,
+    clinicianWellbeing: 25,
   },
   docPathFocus: null,
   docDrivers: {
