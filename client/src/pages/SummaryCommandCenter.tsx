@@ -167,11 +167,11 @@ function CustomTooltip({ active, payload, unitName = "beds", encountersPerUnit =
             <span className="text-[#94A3B8] text-sm font-mono">{formatCurrency(data.linearValue)}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-emerald-400 text-xs flex items-center gap-2">
-              <span className="w-4 h-0.5 bg-emerald-500 rounded-full"></span>
+            <span className="text-[#F07B5F] text-xs flex items-center gap-2">
+              <span className="w-4 h-0.5 bg-[#EA2C00] rounded-full"></span>
               Projected Value
             </span>
-            <span className="text-emerald-400 font-semibold text-sm font-mono">{formatCurrency(data.actualValue)}</span>
+            <span className="text-[#F07B5F] font-semibold text-sm font-mono">{formatCurrency(data.actualValue)}</span>
           </div>
           {compoundingEffect > 0 && (
             <div className="flex items-center justify-between gap-4">
@@ -187,7 +187,7 @@ function CustomTooltip({ active, payload, unitName = "beds", encountersPerUnit =
         {/* ROI */}
         <div className="flex items-center justify-between">
           <span className="text-[#64748B] text-xs">ROI</span>
-          <span className="text-emerald-400 font-bold text-sm">{data.roi}x</span>
+          <span className="text-[#F07B5F] font-bold text-sm">{data.roi}x</span>
         </div>
       </div>
     );
@@ -763,16 +763,16 @@ export default function SummaryCommandCenter({
             <span className="text-[#D1D5DB]">•</span>
             <span className="text-[#6B7280] flex-shrink-0">{pilotUnits} {config.unitNamePlural}</span>
             <span className="text-[#D1D5DB]">•</span>
-            <span className="font-semibold text-emerald-600 flex-shrink-0">{formatCurrency(netValue)} net value</span>
+            <span className="font-semibold text-[#EA2C00] flex-shrink-0">{formatCurrency(netValue)} net value</span>
             <span className="text-[#D1D5DB]">•</span>
-            <span className="font-semibold text-emerald-600 flex-shrink-0">{roiMultiple.toFixed(1)}x ROI</span>
+            <span className="font-semibold text-[#EA2C00] flex-shrink-0">{roiMultiple.toFixed(1)}x ROI</span>
           </div>
           
           {/* Mobile summary */}
           <div className="flex md:hidden items-center gap-2 text-[13px] min-w-0 flex-1">
-            <span className="font-semibold text-emerald-600">{formatCurrency(netValue)}</span>
+            <span className="font-semibold text-[#EA2C00]">{formatCurrency(netValue)}</span>
             <span className="text-[#D1D5DB]">•</span>
-            <span className="font-semibold text-emerald-600">{roiMultiple.toFixed(1)}x</span>
+            <span className="font-semibold text-[#EA2C00]">{roiMultiple.toFixed(1)}x</span>
           </div>
           
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -780,7 +780,7 @@ export default function SummaryCommandCenter({
               variant="outline"
               size="sm"
               onClick={() => setManageModelSheetOpen(true)}
-              className="gap-1.5 border-[#E5E7EB] hover:border-[#EA2C00] hover:text-[#EA2C00]"
+              className="gap-1.5"
               data-testid="button-manage-model"
             >
               <Pencil className="w-4 h-4" />
@@ -839,7 +839,7 @@ export default function SummaryCommandCenter({
             {/* Net Annual Gain */}
             <div className="text-center md:border-r md:border-white/20 md:pr-8">
               <div className="text-sm text-white/60 mb-2">Net Annual Gain</div>
-              <div className="font-mono text-5xl md:text-6xl font-bold text-emerald-400 mb-2" data-testid="summary-net-value">
+              <div className="font-mono text-5xl md:text-6xl font-bold text-[#F07B5F] mb-2" data-testid="summary-net-value">
                 +{formatCurrency(netValue)}
               </div>
               <div className="text-sm text-white/50">
@@ -925,7 +925,7 @@ export default function SummaryCommandCenter({
                 {laborDrivers.map((driver, i) => (
                   <div key={i} className="flex justify-between items-center py-2 border-b border-blue-100 last:border-0">
                     <span className="text-[14px] text-[#111827]">{driver.name}</span>
-                    <span className="font-mono font-semibold text-emerald-600">{formatCurrency(driver.value)}</span>
+                    <span className="font-mono font-semibold text-blue-600">{formatCurrency(driver.value)}</span>
                   </div>
                 ))}
                 {laborDrivers.length === 0 && (
@@ -935,10 +935,10 @@ export default function SummaryCommandCenter({
             </div>
             
             {/* Revenue & Quality */}
-            <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-100">
+            <div className="p-6 bg-[#FFF5F2] rounded-xl border border-[#FECACA]">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-emerald-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
+                <div className="p-3 bg-[#FEE2E2] rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-[#EA2C00]" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#111827] uppercase tracking-wide">Revenue & Quality</h3>
@@ -948,9 +948,9 @@ export default function SummaryCommandCenter({
               <div className="font-mono text-3xl font-bold text-[#111827] mb-4">{formatCurrency(revenueValue)}</div>
               <div className="space-y-2">
                 {revenueDrivers.map((driver, i) => (
-                  <div key={i} className="flex justify-between items-center py-2 border-b border-emerald-100 last:border-0">
+                  <div key={i} className="flex justify-between items-center py-2 border-b border-[#FECACA] last:border-0">
                     <span className="text-[14px] text-[#111827]">{driver.name}</span>
-                    <span className="font-mono font-semibold text-emerald-600">{formatCurrency(driver.value)}</span>
+                    <span className="font-mono font-semibold text-[#EA2C00]">{formatCurrency(driver.value)}</span>
                   </div>
                 ))}
                 {revenueDrivers.length === 0 && (
@@ -972,7 +972,7 @@ export default function SummaryCommandCenter({
             )}
             {revenuePercent > 0 && (
               <div 
-                className="bg-emerald-500 flex items-center justify-center text-sm font-semibold text-white transition-all"
+                className="bg-[#EA2C00] flex items-center justify-center text-sm font-semibold text-white transition-all"
                 style={{ width: `${revenuePercent}%` }}
               >
                 {revenuePercent > 20 && `Revenue & Quality (${revenuePercent}%)`}
@@ -1196,10 +1196,10 @@ export default function SummaryCommandCenter({
                     </tr>
                     <tr className="border-t border-[#E5E7EB]">
                       <td className="py-3 font-semibold text-[#111827]">Net</td>
-                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year1 - year1Cost)}</td>
-                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year2 - year2Cost)}</td>
-                      <td className="py-3 text-right font-mono font-semibold text-emerald-600">{formatCompactCurrency(year3 - year3Cost)}</td>
-                      <td className="py-3 text-right font-mono font-bold text-emerald-600">{formatCompactCurrency(threeYearNet)}</td>
+                      <td className="py-3 text-right font-mono font-semibold text-[#EA2C00]">{formatCompactCurrency(year1 - year1Cost)}</td>
+                      <td className="py-3 text-right font-mono font-semibold text-[#EA2C00]">{formatCompactCurrency(year2 - year2Cost)}</td>
+                      <td className="py-3 text-right font-mono font-semibold text-[#EA2C00]">{formatCompactCurrency(year3 - year3Cost)}</td>
+                      <td className="py-3 text-right font-mono font-bold text-[#EA2C00]">{formatCompactCurrency(threeYearNet)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1226,8 +1226,8 @@ export default function SummaryCommandCenter({
                 <ComposedChart data={chartData} margin={{ top: 20, right: 50, left: 10, bottom: 50 }}>
                   <defs>
                     <linearGradient id="actualValueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.30} />
-                      <stop offset="100%" stopColor="#10B981" stopOpacity={0.05} />
+                      <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#F07B5F" stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
                   
@@ -1299,7 +1299,7 @@ export default function SummaryCommandCenter({
                 <Line 
                   type="monotone" 
                   dataKey="actualValue" 
-                  stroke="#10B981" 
+                  stroke="#EA2C00" 
                   strokeWidth={3}
                   dot={false}
                 />
@@ -1317,7 +1317,7 @@ export default function SummaryCommandCenter({
                   x={currentPace.months} 
                   y={fullScale.actualValue} 
                   r={10} 
-                  fill="#10B981" 
+                  fill="#EA2C00" 
                   stroke="white"
                   strokeWidth={3}
                 />
@@ -1333,7 +1333,7 @@ export default function SummaryCommandCenter({
               <span className="text-xs sm:text-sm text-[#64748B]">Pilot (Today)</span>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="w-5 sm:w-6 h-0.5 bg-[#10B981]" />
+              <div className="w-5 sm:w-6 h-0.5 bg-[#EA2C00]" />
               <span className="text-xs sm:text-sm text-[#64748B]">Projected value</span>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -1341,7 +1341,7 @@ export default function SummaryCommandCenter({
               <span className="text-xs sm:text-sm text-[#64748B]">Linear projection</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#10B981]" />
+              <div className="w-3 h-3 rounded-full bg-[#EA2C00]" />
               <span className="text-sm text-[#64748B]">Full Scale</span>
             </div>
           </div>
@@ -1392,7 +1392,7 @@ export default function SummaryCommandCenter({
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-1.5 text-xs text-[#10B981]">
+                <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
                   <CheckCircle className="w-3.5 h-3.5" />
                   <span>Locked from your model</span>
                 </div>
@@ -1401,8 +1401,8 @@ export default function SummaryCommandCenter({
               {/* RIGHT: Your Full Scale Potential (Editable) */}
               <div className="bg-white rounded-xl p-6 border-2 border-[#E2E8F0]">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <Target className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 bg-[#FEE2E2] rounded-lg">
+                    <Target className="w-5 h-5 text-[#EA2C00]" />
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#1E293B] uppercase tracking-wide">Your Full Scale Potential</h4>
@@ -1535,7 +1535,7 @@ export default function SummaryCommandCenter({
                 <div className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-3">Pilot (Today)</div>
                 <div className="font-mono font-bold text-2xl md:text-3xl text-[#1E293B] mb-1">{formatCurrency(pilot.value)}</div>
                 <div className="text-xs text-[#64748B] mb-3">annual value</div>
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#FEE2E2] text-[#EA2C00] text-sm font-semibold">
                   {pilot.roi}x ROI
                 </div>
               </div>
@@ -1551,15 +1551,15 @@ export default function SummaryCommandCenter({
               {/* Full Scale */}
               <div className="bg-[#F8FAFC] rounded-xl p-6 text-center border border-[#E2E8F0]">
                 <div className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-3">Full Scale</div>
-                <div className="font-mono font-bold text-2xl md:text-3xl text-[#10B981] mb-1">{formatCurrency(fullScale.value)}</div>
+                <div className="font-mono font-bold text-2xl md:text-3xl text-[#EA2C00] mb-1">{formatCurrency(fullScale.value)}</div>
                 <div className="text-xs text-[#64748B] mb-3">annual value</div>
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#FEE2E2] text-[#EA2C00] text-sm font-semibold">
                   {fullScale.roi}x ROI
                 </div>
               </div>
               
               {/* Compounding Bonus */}
-              <div className="md:col-span-3 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-6 text-center text-white">
+              <div className="md:col-span-3 bg-gradient-to-br from-[#EA2C00] to-[#F07B5F] rounded-xl p-6 text-center text-white">
                 <div className="text-xs font-semibold uppercase tracking-wider mb-3 opacity-90">Compounding Bonus</div>
                 <div className="font-mono font-bold text-3xl md:text-4xl mb-1">+{formatCurrency(networkEffect)}</div>
                 <div className="text-sm opacity-80 mb-1">over {currentPace.months} months</div>
@@ -1579,19 +1579,19 @@ export default function SummaryCommandCenter({
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <TrendingUp className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                <TrendingUp className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
                 <p className="text-sm text-[#475569]">
                   <span className="font-semibold text-[#1E293B]">Utilization:</span> {pilotUtilization}% → {fullScaleUtilization}% as adoption matures
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Users className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                <Users className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
                 <p className="text-sm text-[#475569]">
                   <span className="font-semibold text-[#1E293B]">Retention:</span> Benefits materialize after 6-12 months
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Rocket className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+                <Rocket className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
                 <p className="text-sm text-[#475569]">
                   <span className="font-semibold text-[#1E293B]">Efficiency:</span> Shared learnings, optimized workflows
                 </p>
@@ -1623,23 +1623,23 @@ export default function SummaryCommandCenter({
             <div className="px-6 pb-6">
               <ul className="space-y-3 text-[15px] text-[#6B7280]">
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-[#EA2C00] mt-0.5 flex-shrink-0" />
                   <span>{pilotUnits} {config.unitNamePlural} in pilot with {(pilotUnits * encountersPerUnit).toLocaleString()} total {config.encounterName}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-[#EA2C00] mt-0.5 flex-shrink-0" />
                   <span>{pilotUtilization}% utilization rate = {Math.round(pilotEncounters).toLocaleString()} Abridge-documented {config.encounterName}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-[#EA2C00] mt-0.5 flex-shrink-0" />
                   <span>Investment of {formatCurrency(annualInvestment)} annually at ${pricePerUnit}/{config.unitName}/month</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-[#EA2C00] mt-0.5 flex-shrink-0" />
                   <span>Value scales linearly with {config.unitNamePlural} and utilization</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-[#EA2C00] mt-0.5 flex-shrink-0" />
                   <span>10% annual value growth assumed for multi-year projection</span>
                 </li>
               </ul>
@@ -1668,7 +1668,7 @@ export default function SummaryCommandCenter({
       {/* PDF Export Modal */}
       <PDFExportModal
         open={showExportModal}
-        onOpenChange={(open) => setShowExportModal(open)}
+        onClose={() => setShowExportModal(false)}
         onExport={async (name, preparer) => {
           setClientName(name);
           setPreparedBy(preparer);
@@ -1690,7 +1690,7 @@ export default function SummaryCommandCenter({
             setIsExporting(false);
           }
         }}
-        isGenerating={isExporting}
+        isExporting={isExporting}
       />
     </div>
   );
