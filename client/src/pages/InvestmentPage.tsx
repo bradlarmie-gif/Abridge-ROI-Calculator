@@ -649,9 +649,6 @@ export default function InvestmentPage({
                       <div className="font-mono text-4xl font-bold text-white" data-testid="roi-multiple">
                         {roiMultiple.toFixed(1)}×
                       </div>
-                      <div className="text-sm text-white/50 mt-1">
-                        Payback in ~{monthsToPayback} month{monthsToPayback !== 1 ? 's' : ''}
-                      </div>
                     </div>
 
                     {/* Simple value bar */}
