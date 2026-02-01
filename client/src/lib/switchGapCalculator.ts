@@ -192,24 +192,29 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const currentTrajectory: { month: number; value: number }[] = [];
   const abridgeTrajectory: { month: number; value: number }[] = [];
   
+  const currentMonthlyValue = yourAnnualValue / 12;
+  const abridgeMonthlyValue = abridgeAnnualValue / 12;
+  
   for (let month = 0; month <= 36; month++) {
-    const currentMonthlyValue = yourAnnualValue / 12;
+    // Current trajectory: simple linear accumulation
     currentTrajectory.push({
       month,
       value: Math.round(month * currentMonthlyValue),
     });
     
+    // Abridge trajectory: linear accumulation at optimized rate
+    // (with slight ramp-up adjustment for first 3 months)
     let abridgeValue = 0;
     if (month === 0) {
       abridgeValue = 0;
     } else if (month <= IMPLEMENTATION_TIMELINE.rampMonths) {
-      const rampFraction = month / IMPLEMENTATION_TIMELINE.rampMonths;
-      abridgeValue = currentTrajectory[month - 1]?.value || 0;
-      abridgeValue += (abridgeAnnualValue / 12) * rampFraction;
+      // During ramp: partial value capture (average 50% efficiency during ramp)
+      abridgeValue = month * abridgeMonthlyValue * 0.5;
     } else {
+      // After ramp: full value from ramp period + full months after
+      const rampValue = IMPLEMENTATION_TIMELINE.rampMonths * abridgeMonthlyValue * 0.5;
       const fullMonths = month - IMPLEMENTATION_TIMELINE.rampMonths;
-      const rampValue = (abridgeAnnualValue / 12) * (0.25 + 0.5 + 0.75);
-      abridgeValue = rampValue + fullMonths * (abridgeAnnualValue / 12);
+      abridgeValue = rampValue + (fullMonths * abridgeMonthlyValue);
     }
     
     abridgeTrajectory.push({
