@@ -177,9 +177,17 @@ function EditableValue({
   );
 }
 
+const DEFAULT_DOC_DRIVERS = {
+  wrvu: { enabled: false, value: 2 },
+  hcc: { enabled: false, value: 15 },
+  denials: { enabled: false, value: 25 },
+};
+
 export default function ExploreDocDrivers({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreDocDriversProps) {
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
+
+  const docDrivers = state.docDrivers || DEFAULT_DOC_DRIVERS;
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
@@ -188,20 +196,20 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
   const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
 
   const handleToggleDriver = (driverId: DocPathFocus) => {
-    const newDocDrivers = { ...state.docDrivers };
+    const newDocDrivers = { ...docDrivers };
     newDocDrivers[driverId] = { ...newDocDrivers[driverId], enabled: !newDocDrivers[driverId].enabled };
     updateState({ docDrivers: newDocDrivers });
   };
 
   const handleDriverValueChange = (driverId: DocPathFocus, newValue: number) => {
-    const newDocDrivers = { ...state.docDrivers };
+    const newDocDrivers = { ...docDrivers };
     newDocDrivers[driverId] = { ...newDocDrivers[driverId], value: newValue };
     updateState({ docDrivers: newDocDrivers });
   };
 
   const calculateDriverValue = (driverId: DocPathFocus) => {
-    const driver = state.docDrivers[driverId];
-    if (!driver.enabled) return { value: 0, editableInputs: null };
+    const driver = docDrivers[driverId];
+    if (!driver || !driver.enabled) return { value: 0, editableInputs: null };
     const driverValue = driver.value;
 
     switch (driverId) {
@@ -441,7 +449,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     return Math.round(patientAccessValue + locumValue + retentionValue);
   };
 
-  const enabledDrivers = DOC_DRIVER_CONFIGS.filter(d => state.docDrivers[d.id].enabled);
+  const enabledDrivers = DOC_DRIVER_CONFIGS.filter(d => docDrivers[d.id]?.enabled);
   const timeValue = calculateTimeValue();
   const docValue = enabledDrivers.reduce((sum, driver) => {
     const calc = calculateDriverValue(driver.id);
@@ -489,10 +497,10 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           <div className="lg:col-span-3 space-y-4">
             {DOC_DRIVER_CONFIGS.map((driver, index) => {
               const Icon = driver.icon;
-              const isEnabled = state.docDrivers[driver.id].enabled;
+              const isEnabled = docDrivers[driver.id]?.enabled || false;
               const driverCalc = calculateDriverValue(driver.id);
               const isExpanded = expandedDriver === driver.id;
-              const currentValue = state.docDrivers[driver.id].value;
+              const currentValue = docDrivers[driver.id]?.value || 0;
 
               return (
                 <motion.div
@@ -644,7 +652,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                   <span className="font-semibold">${timeValue.toLocaleString()}</span>
                 </div>
                 {DOC_DRIVER_CONFIGS.map(driver => {
-                  const isEnabled = state.docDrivers[driver.id].enabled;
+                  const isEnabled = docDrivers[driver.id]?.enabled || false;
                   const calc = calculateDriverValue(driver.id);
                   return (
                     <div 
