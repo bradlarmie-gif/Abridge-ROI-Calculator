@@ -81,7 +81,7 @@ function DimensionMeter({
           
           <div 
             className={`absolute top-1/2 w-5 h-5 rounded-full border-[3px] border-white shadow-lg transition-all z-10 ${
-              isBelowRange ? 'bg-amber-500' : 'bg-[#EA2C00]'
+              isBelowRange ? 'bg-amber-500' : 'bg-emerald-500'
             }`}
             style={{ left: `${currentPercent}%`, transform: 'translate(-50%, -50%)' }}
           />
@@ -89,7 +89,7 @@ function DimensionMeter({
         
         <div 
           className={`absolute -bottom-6 text-sm font-bold whitespace-nowrap ${
-            isBelowRange ? 'text-amber-600' : 'text-[#EA2C00]'
+            isBelowRange ? 'text-amber-600' : 'text-emerald-600'
           }`}
           style={{ 
             left: `${currentPercent}%`, 
@@ -100,10 +100,8 @@ function DimensionMeter({
         </div>
         
         <div 
-          className="absolute -top-6 px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap"
+          className="absolute -top-6 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded whitespace-nowrap"
           style={{ 
-            backgroundColor: 'rgba(234, 44, 0, 0.1)', 
-            color: '#EA2C00',
             left: `${(rangeMinPercent + rangeMaxPercent) / 2}%`, 
             transform: 'translateX(-50%)' 
           }}
@@ -122,8 +120,8 @@ function DimensionMeter({
         )}
         
         {isInRange && (
-          <div className="p-3 rounded-lg border" style={{ backgroundColor: 'rgba(234, 44, 0, 0.05)', borderColor: 'rgba(234, 44, 0, 0.2)' }}>
-            <p className="text-sm" style={{ color: '#b91c1c' }}>
+          <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+            <p className="text-sm text-emerald-800">
               <span className="font-semibold">You're in the zone.</span> This dimension is performing well.
             </p>
           </div>
@@ -174,8 +172,8 @@ export default function StepWhatGoodLooksLike({
     },
     {
       icon: DollarSign,
-      iconBg: "bg-[#EA2C00]/10",
-      iconColor: "text-[#EA2C00]",
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
       label: "wRVU Lift",
       currentValue: inputs.wrvuLift || 0,
       rangeMin: 4.5,
@@ -216,9 +214,9 @@ export default function StepWhatGoodLooksLike({
         </p>
       </div>
 
-      <div className="rounded-xl border p-5 md:p-6" style={{ background: 'linear-gradient(to bottom right, rgba(234, 44, 0, 0.05), white)', borderColor: 'rgba(234, 44, 0, 0.2)' }}>
+      <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-200 p-5 md:p-6">
         <div className="flex items-center gap-3 mb-3">
-          <Target className="w-5 h-5 text-[#EA2C00]" />
+          <Target className="w-5 h-5 text-emerald-600" />
           <span className="font-semibold text-[#111827]">Your position vs. top performers</span>
         </div>
         <p className="text-[#6B7280]">
@@ -238,8 +236,8 @@ export default function StepWhatGoodLooksLike({
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(234, 44, 0, 0.1)' }}>
-            <Award className="w-6 h-6 text-[#EA2C00]" />
+          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <Award className="w-6 h-6 text-emerald-600" />
           </div>
           <div>
             <h3 className="font-bold text-[#111827] mb-2">What makes the difference</h3>
@@ -252,8 +250,7 @@ export default function StepWhatGoodLooksLike({
               {["90-day guided onboarding", "Specialty customization", "Ongoing success support", "Real-time analytics"].map((trait) => (
                 <span 
                   key={trait}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full"
-                  style={{ backgroundColor: 'rgba(234, 44, 0, 0.1)', color: '#EA2C00' }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-full"
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
                   {trait}
