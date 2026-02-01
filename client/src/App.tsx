@@ -36,6 +36,7 @@ import { ExpandFlow } from "@/pages/expand";
 import { SwitchFlow } from "@/pages/switch";
 import LearnPath from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
+import { ExploreFlow, type ExploreState } from "@/pages/explore";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
@@ -66,6 +67,7 @@ export default function App() {
   const [baselineInfo, setBaselineInfo] = useState<BaselineInfo | null>(null);
   const [valueResults, setValueResults] = useState<ValueResults | null>(null);
   const [modelResults, setModelResults] = useState<ModelResults | null>(null);
+  const [exploreState, setExploreState] = useState<ExploreState | null>(null);
 
   const handleSessionClear = useCallback(() => {
     setSelectionState({ selectedSettings: [], selectedLevers: [] });
@@ -73,7 +75,116 @@ export default function App() {
     setBaselineInfo(null);
     setValueResults(null);
     setModelResults(null);
+    setExploreState(null);
     setCurrentView("splash");
+  }, []);
+
+  const handleExploreComplete = useCallback((state: ExploreState) => {
+    setExploreState(state);
+    setSelectionState({ 
+      selectedSettings: ['outpatient'], 
+      selectedLevers: [] 
+    });
+    setSeedInputs({
+      numberOfProviders: state.numberOfProviders,
+      annualOutpatientEncounters: state.annualEncounters,
+      abridgeUtilizationPct: state.utilizationPercent,
+      minutesSavedPerEncounter: state.minutesSavedPerEncounter,
+    });
+    
+    const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
+    const totalHoursSaved = Math.round((eligibleEncounters * state.minutesSavedPerEncounter) / 60);
+    
+    const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
+    const visitsEnabled = patientAccessHours / 0.5;
+    const patientAccessValue = Math.round(visitsEnabled * 200);
+
+    const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
+    const locumValue = Math.round(locumHours * 150);
+
+    const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
+    const retentionValue = Math.round(state.numberOfProviders * 0.15 * wellbeingPct * 0.2 * 250000);
+
+    let docValue = 0;
+    const baseWrvu = 1.5;
+    if (state.docPathFocus === 'wrvu') {
+      const wrvuLift = baseWrvu * (state.wrvuPctIncrease / 100);
+      docValue = Math.round(wrvuLift * eligibleEncounters * 40);
+    } else if (state.docPathFocus === 'hcc') {
+      const maPatients = eligibleEncounters * 0.3;
+      const conditionsCaptured = maPatients * 3 * (state.hccPctRecaptured / 100);
+      docValue = Math.round(conditionsCaptured * 800);
+    } else if (state.docPathFocus === 'denials') {
+      const denials = eligibleEncounters * 0.08;
+      const denialsFromDoc = denials * 0.5;
+      const denialsRecovered = denialsFromDoc * (state.denialsPctReduced / 100);
+      docValue = Math.round(denialsRecovered * 250);
+    }
+
+    const totalBenefit = patientAccessValue + locumValue + retentionValue + docValue;
+
+    const driverResults: Record<string, { id: string; name: string; value: number; inputs: Record<string, number | string | boolean> }> = {};
+    
+    if (state.timeAllocation.patientAccess > 0) {
+      driverResults['patientAccess'] = {
+        id: 'patientAccess',
+        name: 'Patient Access',
+        value: patientAccessValue,
+        inputs: { allocatedHours: patientAccessHours },
+      };
+    }
+    
+    if (state.timeAllocation.reducingLocums > 0) {
+      driverResults['overtime'] = {
+        id: 'overtime',
+        name: 'Locum Cost Reduction',
+        value: locumValue,
+        inputs: { allocatedHours: locumHours },
+      };
+    }
+    
+    if (state.timeAllocation.clinicianWellbeing > 0) {
+      driverResults['workforce'] = {
+        id: 'workforce',
+        name: 'Clinician Retention',
+        value: retentionValue,
+        inputs: { wellbeingPct },
+      };
+    }
+
+    if (state.docPathFocus === 'wrvu') {
+      driverResults['wrvu'] = {
+        id: 'wrvu',
+        name: 'Level of Service (wRVU)',
+        value: docValue,
+        inputs: { pctIncrease: state.wrvuPctIncrease },
+      };
+    } else if (state.docPathFocus === 'hcc') {
+      driverResults['hcc'] = {
+        id: 'hcc',
+        name: 'HCC Capture',
+        value: docValue,
+        inputs: { pctRecaptured: state.hccPctRecaptured },
+      };
+    } else if (state.docPathFocus === 'denials') {
+      driverResults['denials'] = {
+        id: 'denials',
+        name: 'Denial Prevention',
+        value: docValue,
+        inputs: { pctReduced: state.denialsPctReduced },
+      };
+    }
+
+    setValueResults({
+      providers: state.numberOfProviders,
+      encounters: state.annualEncounters,
+      utilizationRate: state.utilizationPercent,
+      eligibleEncounters,
+      driverResults,
+      totalBenefit,
+    });
+
+    navigateTo("investment");
   }, []);
 
   const handleSelectionComplete = (
@@ -157,12 +268,9 @@ export default function App() {
             )}
 
             {currentView === "explore" && (
-              <ObjectiveSelectionScreen
-                onComplete={handleSelectionComplete}
-                initialSelectedSettings={selectionState.selectedSettings}
-                initialSelectedLevers={selectionState.selectedLevers}
+              <ExploreFlow
                 onBackToJourney={handleBackToJourney}
-                initialSeedInputs={seedInputs}
+                onContinueToInvestment={handleExploreComplete}
               />
             )}
 
