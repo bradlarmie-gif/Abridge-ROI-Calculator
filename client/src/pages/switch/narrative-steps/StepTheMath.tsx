@@ -583,15 +583,15 @@ export default function StepTheMath({
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-3">
-          <div className="relative bg-gradient-to-br from-[#FFF5F2] to-[#FFEBE6] rounded-xl p-4 border-2 border-[#EA2C00]/30">
+          <div className="relative bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-4 border-2 border-emerald-500/30">
             <div className="absolute -top-2.5 left-4">
-              <span className="bg-[#EA2C00] text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+              <span className="bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                 Start Now
               </span>
             </div>
             <div className="mt-2">
-              <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.switchNowValue)}</p>
-              <p className="text-xs text-[#B02200] mt-1">3-year value captured</p>
+              <p className="text-2xl md:text-3xl font-bold text-emerald-600">{formatCurrency(recalculatedValues.switchNowValue)}</p>
+              <p className="text-xs text-emerald-700 mt-1">3-year value captured</p>
             </div>
           </div>
 
