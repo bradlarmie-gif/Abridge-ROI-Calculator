@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info } from "lucide-react";
+import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -147,6 +147,18 @@ export default function ScribeAssessment({
                 placeholder="e.g. 100K-1M"
                 hint="Org-wide volume"
                 testId="input-annual-encounters"
+              />
+
+              <InputCard
+                icon={<FileEdit className="w-4 h-4 text-violet-600" />}
+                iconBg="bg-violet-50"
+                label="Doc time per encounter"
+                value={inputs.minutesPerEncounter}
+                onChange={(v) => updateInput("minutesPerEncounter", v)}
+                unit="minutes"
+                placeholder="e.g. 8-15"
+                hint="Without scribe support"
+                testId="input-minutes-per-encounter"
               />
             </div>
 
@@ -299,8 +311,8 @@ export default function ScribeAssessment({
                       <TooltipContent side="bottom" className="max-w-xs p-3">
                         <div className="text-sm space-y-2">
                           <p className="font-semibold">How we calculate this:</p>
-                          <p>{calculations.providersWithoutSupport} unsupported providers × {calculations.encountersPerProvider} encounters each × 12 min per encounter ÷ 60</p>
-                          <p className="text-xs text-muted-foreground">Based on 12 minutes of documentation time per patient encounter without scribe support.</p>
+                          <p>{calculations.providersWithoutSupport} unsupported providers × {calculations.encountersPerProvider} encounters each × {inputs.minutesPerEncounter} min per encounter ÷ 60</p>
+                          <p className="text-xs text-muted-foreground">Based on {inputs.minutesPerEncounter} minutes of documentation time per patient encounter without scribe support.</p>
                         </div>
                       </TooltipContent>
                     </Tooltip>

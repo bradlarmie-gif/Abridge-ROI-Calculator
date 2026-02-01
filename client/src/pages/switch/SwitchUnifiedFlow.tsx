@@ -39,6 +39,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     providersWithScribes: 0,
     totalProviders: 0,
     annualEncounters: 0,
+    minutesPerEncounter: 10,
   });
 
   const handleSelectPath = (path: "ambient-ai" | "human-scribes") => {

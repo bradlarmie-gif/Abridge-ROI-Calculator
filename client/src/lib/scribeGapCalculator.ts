@@ -5,6 +5,7 @@ export interface ScribeInputs {
   providersWithScribes: number;
   totalProviders: number;
   annualEncounters: number;
+  minutesPerEncounter: number;
 }
 
 export interface ScribeCalculations {
@@ -27,7 +28,7 @@ export interface ScribeCalculations {
 export const SCRIBE_ASSUMPTIONS = {
   scribeToProviderRatio: 1.5,
   weeksPerYear: 50,
-  minutesPerEncounterWithoutScribe: 12,
+  minutesPerEncounterDefault: 10,
   pajamaTimePercent: 0.25,
 };
 
@@ -68,8 +69,12 @@ export function calculateScribeGap(inputs: ScribeInputs): ScribeCalculations {
     ? Math.round(annualEncounters * (providersWithoutSupport / totalProviders))
     : 0;
 
+  const minutesPerEncounter = inputs.minutesPerEncounter > 0 
+    ? inputs.minutesPerEncounter 
+    : SCRIBE_ASSUMPTIONS.minutesPerEncounterDefault;
+
   const unsupportedDocTimeHours = Math.round(
-    (unsupportedEncounters * SCRIBE_ASSUMPTIONS.minutesPerEncounterWithoutScribe) / 60
+    (unsupportedEncounters * minutesPerEncounter) / 60
   );
 
   const pajamaTimeHours = Math.round(unsupportedDocTimeHours * SCRIBE_ASSUMPTIONS.pajamaTimePercent);
