@@ -43,6 +43,7 @@ function CircularProgressRing({
     if (maturityColor.includes('teal')) return '#14b8a6';
     if (maturityColor.includes('amber')) return '#f59e0b';
     if (maturityColor.includes('orange')) return '#f97316';
+    if (maturityColor.includes('red')) return '#dc2626';
     return '#94a3b8';
   };
 
@@ -198,13 +199,13 @@ export default function StepWhereYouAre({
     const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     const filledDimensions = scores.length;
     
-    // Premium maturity labels with refined thresholds
-    const maturity = avgScore >= 95 ? { label: "Fully Optimized", color: "text-emerald-600", bg: "bg-emerald-500" }
-      : avgScore >= 85 ? { label: "High Performer", color: "text-emerald-600", bg: "bg-emerald-500" }
-      : avgScore >= 70 ? { label: "Strong Progress", color: "text-teal-600", bg: "bg-teal-500" }
-      : avgScore >= 55 ? { label: "Building Momentum", color: "text-amber-600", bg: "bg-amber-500" }
-      : avgScore >= 40 ? { label: "Early Adoption", color: "text-orange-600", bg: "bg-orange-500" }
-      : avgScore > 0 ? { label: "Getting Started", color: "text-slate-500", bg: "bg-slate-400" }
+    // Critical assessment labels - for prospects evaluating their current solution
+    const maturity = avgScore >= 95 ? { label: "Near Benchmark", color: "text-emerald-600", bg: "bg-emerald-500" }
+      : avgScore >= 85 ? { label: "Above Average", color: "text-emerald-600", bg: "bg-emerald-500" }
+      : avgScore >= 70 ? { label: "Room to Grow", color: "text-amber-600", bg: "bg-amber-500" }
+      : avgScore >= 55 ? { label: "Underperforming", color: "text-orange-600", bg: "bg-orange-500" }
+      : avgScore >= 40 ? { label: "Significant Gap", color: "text-red-600", bg: "bg-red-500" }
+      : avgScore > 0 ? { label: "Critical Gap", color: "text-red-700", bg: "bg-red-600" }
       : { label: "Not Yet Measured", color: "text-slate-400", bg: "bg-slate-300" };
     
     return { avgScore, filledDimensions, maturity };
