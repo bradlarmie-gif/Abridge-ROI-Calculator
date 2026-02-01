@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info, FileEdit, RefreshCw, GraduationCap } from "lucide-react";
+import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info, FileEdit, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -173,18 +173,7 @@ export default function ScribeAssessment({
                 testId="input-turnover-rate"
               />
 
-              <InputCard
-                icon={<GraduationCap className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Training cost per scribe"
-                value={inputs.trainingCostPerScribe}
-                onChange={(v) => updateInput("trainingCostPerScribe", v)}
-                unit="$"
-                placeholder="e.g. 3000-7000"
-                hint="Onboarding & training"
-                testId="input-training-cost"
-              />
-            </div>
+                          </div>
 
             <div className="lg:col-span-1">
               <div className="bg-[#FFF5F2] border border-[#EA2C00]/10 rounded-xl p-5 lg:sticky lg:top-24">
