@@ -1085,7 +1085,7 @@ export default function SummaryCommandCenter({
                 </div>
                 <div className="h-56 md:h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 40 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 50, left: 10, bottom: 40 }}>
                       <defs>
                         <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.15} />
@@ -1103,12 +1103,13 @@ export default function SummaryCommandCenter({
                           const { x, y, payload } = props;
                           const point = chartData.find(d => d.month === payload.value);
                           if (!point) return <g />;
+                          const anchor = point.isFullScale ? "end" : point.isPilot ? "start" : "middle";
                           return (
                             <g transform={`translate(${x},${y})`}>
                               <text 
                                 x={0} 
                                 y={16} 
-                                textAnchor="middle" 
+                                textAnchor={anchor} 
                                 fill={point.isPilot || point.isFullScale ? "#EA2C00" : "#64748B"}
                                 fontSize={11}
                                 fontWeight={point.isPilot || point.isFullScale ? 700 : 500}
