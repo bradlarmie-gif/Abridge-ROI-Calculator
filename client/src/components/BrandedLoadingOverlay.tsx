@@ -25,52 +25,52 @@ interface BrandedLoadingOverlayProps {
 }
 
 // Scattered geometric shapes - tetris-style screensaver building effect
-// 31 shapes total (30% more than original 24)
+// 31 shapes total (30% more than original 24) - full cadmium red opacity
 const geometricShapes = [
   // Far corners - large scattered pieces
-  { id: 1, shapeIdx: 0, size: 60, startX: -450, startY: -320, endX: -280, endY: -180, opacity: 0.12, delay: 0, rotation: 15 },
-  { id: 2, shapeIdx: 1, size: 45, startX: 480, startY: -280, endX: 300, endY: -160, opacity: 0.10, delay: 0.1, rotation: -20 },
-  { id: 3, shapeIdx: 2, size: 55, startX: -420, startY: 350, endX: -260, endY: 200, opacity: 0.11, delay: 0.05, rotation: 25 },
-  { id: 4, shapeIdx: 3, size: 50, startX: 460, startY: 300, endX: 280, endY: 170, opacity: 0.10, delay: 0.15, rotation: -15 },
+  { id: 1, shapeIdx: 0, size: 60, startX: -450, startY: -320, endX: -280, endY: -180, opacity: 1, delay: 0, rotation: 15 },
+  { id: 2, shapeIdx: 1, size: 45, startX: 480, startY: -280, endX: 300, endY: -160, opacity: 1, delay: 0.1, rotation: -20 },
+  { id: 3, shapeIdx: 2, size: 55, startX: -420, startY: 350, endX: -260, endY: 200, opacity: 1, delay: 0.05, rotation: 25 },
+  { id: 4, shapeIdx: 3, size: 50, startX: 460, startY: 300, endX: 280, endY: 170, opacity: 1, delay: 0.15, rotation: -15 },
   
   // Mid-distance pieces
-  { id: 5, shapeIdx: 4, size: 40, startX: -320, startY: -180, endX: -180, endY: -90, opacity: 0.09, delay: 0.2, rotation: 30 },
-  { id: 6, shapeIdx: 5, size: 35, startX: 350, startY: -220, endX: 200, endY: -100, opacity: 0.08, delay: 0.25, rotation: -35 },
-  { id: 7, shapeIdx: 6, size: 42, startX: -280, startY: 240, endX: -150, endY: 120, opacity: 0.09, delay: 0.18, rotation: -25 },
-  { id: 8, shapeIdx: 7, size: 38, startX: 300, startY: 260, endX: 170, endY: 130, opacity: 0.08, delay: 0.22, rotation: 20 },
+  { id: 5, shapeIdx: 4, size: 40, startX: -320, startY: -180, endX: -180, endY: -90, opacity: 1, delay: 0.2, rotation: 30 },
+  { id: 6, shapeIdx: 5, size: 35, startX: 350, startY: -220, endX: 200, endY: -100, opacity: 1, delay: 0.25, rotation: -35 },
+  { id: 7, shapeIdx: 6, size: 42, startX: -280, startY: 240, endX: -150, endY: 120, opacity: 1, delay: 0.18, rotation: -25 },
+  { id: 8, shapeIdx: 7, size: 38, startX: 300, startY: 260, endX: 170, endY: 130, opacity: 1, delay: 0.22, rotation: 20 },
   
   // Side edges
-  { id: 9, shapeIdx: 8, size: 32, startX: -500, startY: -50, endX: -320, endY: -30, opacity: 0.07, delay: 0.3, rotation: 45 },
-  { id: 10, shapeIdx: 9, size: 28, startX: 520, startY: 80, endX: 340, endY: 50, opacity: 0.06, delay: 0.35, rotation: -40 },
-  { id: 11, shapeIdx: 10, size: 36, startX: -480, startY: 120, endX: -300, endY: 70, opacity: 0.07, delay: 0.28, rotation: -50 },
-  { id: 12, shapeIdx: 11, size: 30, startX: 500, startY: -100, endX: 320, endY: -60, opacity: 0.06, delay: 0.32, rotation: 35 },
+  { id: 9, shapeIdx: 8, size: 32, startX: -500, startY: -50, endX: -320, endY: -30, opacity: 1, delay: 0.3, rotation: 45 },
+  { id: 10, shapeIdx: 9, size: 28, startX: 520, startY: 80, endX: 340, endY: 50, opacity: 1, delay: 0.35, rotation: -40 },
+  { id: 11, shapeIdx: 10, size: 36, startX: -480, startY: 120, endX: -300, endY: 70, opacity: 1, delay: 0.28, rotation: -50 },
+  { id: 12, shapeIdx: 11, size: 30, startX: 500, startY: -100, endX: 320, endY: -60, opacity: 1, delay: 0.32, rotation: 35 },
   
   // Top and bottom edges
-  { id: 13, shapeIdx: 0, size: 34, startX: -150, startY: -380, endX: -80, endY: -220, opacity: 0.08, delay: 0.12, rotation: -10 },
-  { id: 14, shapeIdx: 1, size: 38, startX: 180, startY: -360, endX: 100, endY: -200, opacity: 0.09, delay: 0.08, rotation: 12 },
-  { id: 15, shapeIdx: 2, size: 32, startX: -120, startY: 400, endX: -70, endY: 240, opacity: 0.07, delay: 0.38, rotation: 22 },
-  { id: 16, shapeIdx: 3, size: 36, startX: 140, startY: 380, endX: 80, endY: 220, opacity: 0.08, delay: 0.4, rotation: -18 },
+  { id: 13, shapeIdx: 0, size: 34, startX: -150, startY: -380, endX: -80, endY: -220, opacity: 1, delay: 0.12, rotation: -10 },
+  { id: 14, shapeIdx: 1, size: 38, startX: 180, startY: -360, endX: 100, endY: -200, opacity: 1, delay: 0.08, rotation: 12 },
+  { id: 15, shapeIdx: 2, size: 32, startX: -120, startY: 400, endX: -70, endY: 240, opacity: 1, delay: 0.38, rotation: 22 },
+  { id: 16, shapeIdx: 3, size: 36, startX: 140, startY: 380, endX: 80, endY: 220, opacity: 1, delay: 0.4, rotation: -18 },
   
   // Closer pieces - smaller, faster
-  { id: 17, shapeIdx: 4, size: 24, startX: -200, startY: -120, endX: -100, endY: -50, opacity: 0.06, delay: 0.45, rotation: 55 },
-  { id: 18, shapeIdx: 5, size: 22, startX: 220, startY: -140, endX: 110, endY: -60, opacity: 0.05, delay: 0.48, rotation: -60 },
-  { id: 19, shapeIdx: 6, size: 26, startX: -180, startY: 150, endX: -90, endY: 70, opacity: 0.06, delay: 0.42, rotation: -45 },
-  { id: 20, shapeIdx: 7, size: 20, startX: 200, startY: 160, endX: 100, endY: 80, opacity: 0.05, delay: 0.5, rotation: 50 },
+  { id: 17, shapeIdx: 4, size: 24, startX: -200, startY: -120, endX: -100, endY: -50, opacity: 1, delay: 0.45, rotation: 55 },
+  { id: 18, shapeIdx: 5, size: 22, startX: 220, startY: -140, endX: 110, endY: -60, opacity: 1, delay: 0.48, rotation: -60 },
+  { id: 19, shapeIdx: 6, size: 26, startX: -180, startY: 150, endX: -90, endY: 70, opacity: 1, delay: 0.42, rotation: -45 },
+  { id: 20, shapeIdx: 7, size: 20, startX: 200, startY: 160, endX: 100, endY: 80, opacity: 1, delay: 0.5, rotation: 50 },
   
   // Extra scattered pieces for density
-  { id: 21, shapeIdx: 8, size: 28, startX: -380, startY: -250, endX: -220, endY: -140, opacity: 0.06, delay: 0.16, rotation: -30 },
-  { id: 22, shapeIdx: 9, size: 32, startX: 400, startY: 200, endX: 240, endY: 110, opacity: 0.07, delay: 0.26, rotation: 40 },
-  { id: 23, shapeIdx: 10, size: 25, startX: 50, startY: -400, endX: 30, endY: -250, opacity: 0.05, delay: 0.55, rotation: 8 },
-  { id: 24, shapeIdx: 11, size: 30, startX: -60, startY: 420, endX: -35, endY: 260, opacity: 0.06, delay: 0.52, rotation: -12 },
+  { id: 21, shapeIdx: 8, size: 28, startX: -380, startY: -250, endX: -220, endY: -140, opacity: 1, delay: 0.16, rotation: -30 },
+  { id: 22, shapeIdx: 9, size: 32, startX: 400, startY: 200, endX: 240, endY: 110, opacity: 1, delay: 0.26, rotation: 40 },
+  { id: 23, shapeIdx: 10, size: 25, startX: 50, startY: -400, endX: 30, endY: -250, opacity: 1, delay: 0.55, rotation: 8 },
+  { id: 24, shapeIdx: 11, size: 30, startX: -60, startY: 420, endX: -35, endY: 260, opacity: 1, delay: 0.52, rotation: -12 },
   
   // Additional 7 shapes for 30% more density
-  { id: 25, shapeIdx: 0, size: 35, startX: -550, startY: -150, endX: -360, endY: -80, opacity: 0.08, delay: 0.07, rotation: 18 },
-  { id: 26, shapeIdx: 2, size: 42, startX: 550, startY: 150, endX: 360, endY: 90, opacity: 0.09, delay: 0.14, rotation: -22 },
-  { id: 27, shapeIdx: 4, size: 28, startX: -250, startY: -350, endX: -140, endY: -200, opacity: 0.06, delay: 0.33, rotation: 42 },
-  { id: 28, shapeIdx: 6, size: 33, startX: 280, startY: 350, endX: 160, endY: 200, opacity: 0.07, delay: 0.36, rotation: -38 },
-  { id: 29, shapeIdx: 8, size: 48, startX: 0, startY: -450, endX: 0, endY: -280, opacity: 0.08, delay: 0.03, rotation: 5 },
-  { id: 30, shapeIdx: 10, size: 38, startX: -600, startY: 50, endX: -400, endY: 30, opacity: 0.07, delay: 0.44, rotation: -55 },
-  { id: 31, shapeIdx: 11, size: 44, startX: 600, startY: -50, endX: 400, endY: -25, opacity: 0.08, delay: 0.4, rotation: 48 },
+  { id: 25, shapeIdx: 0, size: 35, startX: -550, startY: -150, endX: -360, endY: -80, opacity: 1, delay: 0.07, rotation: 18 },
+  { id: 26, shapeIdx: 2, size: 42, startX: 550, startY: 150, endX: 360, endY: 90, opacity: 1, delay: 0.14, rotation: -22 },
+  { id: 27, shapeIdx: 4, size: 28, startX: -250, startY: -350, endX: -140, endY: -200, opacity: 1, delay: 0.33, rotation: 42 },
+  { id: 28, shapeIdx: 6, size: 33, startX: 280, startY: 350, endX: 160, endY: 200, opacity: 1, delay: 0.36, rotation: -38 },
+  { id: 29, shapeIdx: 8, size: 48, startX: 0, startY: -450, endX: 0, endY: -280, opacity: 1, delay: 0.03, rotation: 5 },
+  { id: 30, shapeIdx: 10, size: 38, startX: -600, startY: 50, endX: -400, endY: 30, opacity: 1, delay: 0.44, rotation: -55 },
+  { id: 31, shapeIdx: 11, size: 44, startX: 600, startY: -50, endX: 400, endY: -25, opacity: 1, delay: 0.4, rotation: 48 },
 ];
 
 export function BrandedLoadingOverlay({ 
@@ -139,7 +139,6 @@ export function BrandedLoadingOverlay({
               height: shape.size,
               objectFit: 'contain',
               opacity: 0,
-              filter: 'hue-rotate(-10deg) saturate(1.4)',
               animation: `shapeAssemble-${shape.id} 2.8s ease-out ${shape.delay}s forwards`,
             }}
           />
