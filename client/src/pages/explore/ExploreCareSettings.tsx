@@ -113,7 +113,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
             Select Your Care Setting
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
               const isSelected = selectedSetting === setting.id;
@@ -125,12 +125,12 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   onClick={() => handleSelectSetting(setting)}
                   disabled={isDisabled}
                   className={`
-                    relative flex flex-col items-center text-center p-5 rounded-xl transition-all duration-200
+                    relative flex flex-col items-center text-center p-8 rounded-2xl transition-all duration-200
                     ${isSelected 
-                      ? 'bg-black text-white' 
+                      ? 'bg-black text-white shadow-xl' 
                       : isDisabled
                         ? 'bg-slate-50 cursor-not-allowed'
-                        : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                        : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
                     }
                   `}
                   initial={{ opacity: 0, y: 10 }}
@@ -140,23 +140,23 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                 >
                   {isSelected && (
                     <motion.div 
-                      className="absolute top-2 right-2 w-5 h-5 bg-[#EA2C00] rounded-full flex items-center justify-center"
+                      className="absolute top-3 right-3 w-6 h-6 bg-[#EA2C00] rounded-full flex items-center justify-center"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     >
-                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                      <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                     </motion.div>
                   )}
 
                   {isDisabled && (
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-slate-200 rounded text-[9px] font-semibold text-slate-500 uppercase">
+                    <div className="absolute top-3 right-3 px-2 py-1 bg-slate-200 rounded-md text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                       Soon
                     </div>
                   )}
 
                   <div className={`
-                    w-11 h-11 rounded-xl flex items-center justify-center mb-3
+                    w-14 h-14 rounded-xl flex items-center justify-center mb-4
                     ${isSelected 
                       ? 'bg-white/10' 
                       : isDisabled
@@ -164,14 +164,14 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                         : 'bg-[#FFF5F2]'
                     }
                   `}>
-                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-7 h-7 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
                   </div>
                   
-                  <h3 className={`text-sm font-semibold mb-0.5 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
+                  <h3 className={`text-base font-bold mb-1 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
                     {setting.label}
                   </h3>
                   
-                  <p className={`text-xs ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-sm ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
                     {setting.shortDesc}
                   </p>
                 </motion.button>
