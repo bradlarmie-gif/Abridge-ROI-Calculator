@@ -12,6 +12,7 @@ import {
 import { saveAs } from "file-saver";
 import type { ScribeInputs, ScribeCalculations } from "@/lib/scribeGapCalculator";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 
 const colors = {
   primary: "#EA2C00",
@@ -422,6 +423,15 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
 
   return (
     <Document>
+      {/* COVER PAGE */}
+      <PDFCoverPage
+        reportLabel="SCRIBE ANALYSIS:"
+        title="PROGRAM EVALUATION"
+        subtitle="Understanding Your Documentation Investment"
+        clientName={displayClientName}
+        preparedBy={displayPreparedBy}
+      />
+
       {/* PAGE 1: YOUR STORY TODAY */}
       <Page size="A4" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>

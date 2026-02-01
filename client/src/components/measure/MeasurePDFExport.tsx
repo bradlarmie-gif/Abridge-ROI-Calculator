@@ -14,6 +14,7 @@ import { saveAs } from "file-saver";
 import type { MeasureState } from "@/lib/measureCalculator";
 import { calculateMeasureResults, generateTrendData } from "@/lib/measureCalculator";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 
 const colors = {
   primary: "#EA2C00",
@@ -804,6 +805,15 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
 
   return (
     <Document>
+      {/* COVER PAGE */}
+      <PDFCoverPage
+        reportLabel="VALUE STORY:"
+        title="DOCUMENTING SUCCESS"
+        subtitle="Measuring the Impact of Your Abridge Investment"
+        clientName={clientName}
+        preparedBy={displayPreparedBy}
+      />
+
       {/* PAGE 1: EXECUTIVE SUMMARY */}
       <Page size="A4" style={styles.page} wrap={false}>
         <View style={styles.fullHero}>

@@ -14,6 +14,7 @@ import { saveAs } from "file-saver";
 import type { SwitchInputs, SwitchCalculations } from "@/lib/switchGapCalculator";
 import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 
 const colors = {
   primary: "#EA2C00",
@@ -544,6 +545,15 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
   
   return (
     <Document>
+      {/* COVER PAGE */}
+      <PDFCoverPage
+        reportLabel="VALUE ASSESSMENT:"
+        title="REALIZATION & OPPORTUNITY"
+        subtitle="Understanding Your Ambient AI Investment"
+        clientName={data.clientName}
+        preparedBy={data.preparedBy}
+      />
+
       {/* ================================================================ */}
       {/* PAGE 1: YOUR STORY */}
       {/* ================================================================ */}
