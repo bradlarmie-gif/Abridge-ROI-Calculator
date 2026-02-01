@@ -10,6 +10,8 @@ import {
   formatNumber,
 } from "@/lib/measureCalculator";
 import { generateMeasurePDF } from "@/components/measure/MeasurePDFExport";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface MeasureStoryProps {
   state: MeasureState;
@@ -22,13 +24,25 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
   const [methodologyExpanded, setMethodologyExpanded] = useState(false);
   const [whatIfProviders, setWhatIfProviders] = useState(state.deployment.providers * 2);
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const { toast } = useToast();
 
-  const handleExport = async () => {
+  const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      await generateMeasurePDF(state);
+      await generateMeasurePDF(state, clientName, preparedBy);
+      setShowExportModal(false);
+      toast({
+        title: "PDF Downloaded",
+        description: "Your Value Story has been saved.",
+      });
     } catch (error) {
       console.error('PDF export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "Unable to generate PDF. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsExporting(false);
     }
@@ -314,24 +328,22 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             Export a polished summary to share with leadership.
           </p>
           <Button
-            onClick={handleExport}
-            disabled={isExporting}
-            className="w-full sm:w-auto h-12 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90 disabled:opacity-70"
+            onClick={() => setShowExportModal(true)}
+            className="w-full sm:w-auto h-12 px-6 bg-[#EA2C00] hover:bg-[#EA2C00]/90"
             data-testid="button-export"
           >
-            {isExporting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4 mr-2" />
-                Export PDF
-              </>
-            )}
+            <Download className="w-4 h-4 mr-2" />
+            Export PDF
           </Button>
         </motion.div>
+
+        <PDFExportModal
+          open={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          onExport={handleExportPDF}
+          isExporting={isExporting}
+          documentType="value story"
+        />
 
         {/* Methodology */}
         <motion.div 

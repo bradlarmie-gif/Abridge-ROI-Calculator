@@ -7,6 +7,8 @@ import {
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
 import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
+import { PDFExportModal } from "@/components/switch/PDFExportModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface StepTheInvitationProps {
   inputs: SwitchInputs;
@@ -32,6 +34,8 @@ export default function StepTheInvitation({
 }: StepTheInvitationProps) {
   const [copied, setCopied] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const { toast } = useToast();
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -39,17 +43,27 @@ export default function StepTheInvitation({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsGeneratingPDF(true);
     try {
       await generateAmbientPDF({
         inputs,
         calculations,
-        clientName: "Value Analysis",
-        preparedBy: "Abridge ROI Calculator"
+        clientName,
+        preparedBy
+      });
+      setShowExportModal(false);
+      toast({
+        title: "PDF Downloaded",
+        description: "Your Value Realization Assessment has been saved.",
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
+      toast({
+        title: "Export Failed",
+        description: "Unable to generate PDF. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -167,21 +181,16 @@ export default function StepTheInvitation({
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
-            onClick={handleExportPDF}
-            disabled={isGeneratingPDF}
-            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-[#EA2C00] hover:shadow-md transition-all text-left disabled:opacity-50 group"
+            onClick={() => setShowExportModal(true)}
+            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-[#EA2C00] hover:shadow-md transition-all text-left group"
             data-testid="button-export-pdf"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EA2C00] to-[#d12700] flex items-center justify-center flex-shrink-0">
-              {isGeneratingPDF ? (
-                <Loader2 className="w-5 h-5 text-white animate-spin" />
-              ) : (
-                <Download className="w-5 h-5 text-white" />
-              )}
+              <Download className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="font-semibold text-[#111827] group-hover:text-[#EA2C00] transition-colors">
-                {isGeneratingPDF ? 'Generating...' : 'Export PDF'}
+                Export PDF
               </p>
               <p className="text-xs text-[#6B7280]">Download full report</p>
             </div>
@@ -249,6 +258,13 @@ export default function StepTheInvitation({
         )}
       </div>
 
+      <PDFExportModal
+        open={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExportPDF}
+        isExporting={isGeneratingPDF}
+        documentType="value analysis"
+      />
     </div>
   );
 }
