@@ -18,10 +18,16 @@ interface BusynessPreset {
   value: number;
 }
 
-const BUSYNESS_PRESETS: BusynessPreset[] = [
+const OUTPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
   { label: "Lighter", value: 1500 },
   { label: "Typical", value: 2100 },
   { label: "Busy", value: 2500 },
+];
+
+const ED_BUSYNESS_PRESETS: BusynessPreset[] = [
+  { label: "Lighter", value: 1400 },
+  { label: "Typical", value: 1800 },
+  { label: "Busy", value: 2200 },
 ];
 
 const UTILIZATION_PRESETS = [
@@ -31,11 +37,15 @@ const UTILIZATION_PRESETS = [
 ];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
+  const isED = state.careSetting === 'ed';
+  const BUSYNESS_PRESETS = isED ? ED_BUSYNESS_PRESETS : OUTPATIENT_BUSYNESS_PRESETS;
+  const defaultEncountersPerProvider = isED ? 1800 : 2100;
+  
   const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders > 0 ? state.numberOfProviders.toString() : '');
   const [encountersPerProvider, setEncountersPerProvider] = useState(
     state.numberOfProviders > 0 && state.annualEncounters > 0 
       ? Math.round(state.annualEncounters / state.numberOfProviders) 
-      : 2100
+      : defaultEncountersPerProvider
   );
   const [totalEncountersInput, setTotalEncountersInput] = useState('');
   const [usingTotalInput, setUsingTotalInput] = useState(false);
@@ -153,14 +163,20 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 Size Your Opportunity
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                Let's understand your practice
+                {isED ? "Let's understand your ED" : "Let's understand your practice"}
               </h1>
               <p className="text-slate-600 mb-4">
-                These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers.
+                {isED 
+                  ? "These inputs establish the baseline for your value model. Every ED physician and encounter contributes to the opportunity."
+                  : "These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers."
+                }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">Why we ask:</span> Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement.
+                  <span className="font-semibold text-slate-700">Why we ask:</span> {isED 
+                    ? "ED value scales with volume and complexity. More providers and higher utilization mean more eligible encounters—and more opportunity for throughput, retention, and documentation quality."
+                    : "Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement."
+                  }
                 </p>
               </div>
             </motion.div>
@@ -179,8 +195,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <Users className="w-6 h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">Number of Providers</h2>
-                      <p className="text-sm text-slate-500">Clinicians using Abridge</p>
+                      <h2 className="text-base font-bold text-black">{isED ? "ED Physicians" : "Number of Providers"}</h2>
+                      <p className="text-sm text-slate-500">{isED ? "Physicians using Abridge in the ED" : "Clinicians using Abridge"}</p>
                     </div>
                   </div>
                   <input
