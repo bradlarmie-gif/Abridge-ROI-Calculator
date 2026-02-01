@@ -581,29 +581,29 @@ export default function SummaryCommandCenter({
             <div className="absolute inset-0 bg-black" />
             <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
             
-            <div className="relative max-w-5xl mx-auto px-6 py-16 md:py-24">
+            <div className="relative max-w-5xl mx-auto px-6 py-10 md:py-14">
               {/* Header Badge */}
-              <div className="flex justify-center mb-10">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-[#EA2C00] animate-pulse" />
+              <div className="flex justify-center mb-6">
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
                   {CARE_SETTING_LABELS[activeSetting]} • {pilotUnits} {config.unitNamePlural}
                 </span>
               </div>
               
               {/* Main ROI Display */}
-              <div className="text-center mb-16">
-                <div className="text-white/40 text-sm uppercase tracking-[0.2em] mb-4">
+              <div className="text-center mb-10">
+                <div className="text-white/40 text-xs uppercase tracking-[0.2em] mb-3">
                   Annual Net Value
                 </div>
                 <div className="relative inline-block">
                   <div 
-                    className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight text-[#EA2C00]"
+                    className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[#EA2C00]"
                     data-testid="summary-net-value"
                   >
                     {formatCurrency(netValue)}
                   </div>
                 </div>
-                <div className="mt-6 text-white/50 text-lg">
+                <div className="mt-4 text-white/50 text-sm">
                   {formatCurrency(totalAnnualValue)} value − {formatCurrency(annualInvestment)} investment
                 </div>
               </div>
@@ -617,31 +617,31 @@ export default function SummaryCommandCenter({
                 const valuePerProvider = Math.round(totalAnnualValue / pilotUnits);
                 
                 return (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-roi">
+                  <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="summary-roi">
                         {roiMultiple.toFixed(1)}×
                       </div>
-                      <div className="text-white/40 text-sm uppercase tracking-wider">
-                        Return on Investment
+                      <div className="text-white/40 text-xs uppercase tracking-wider">
+                        ROI
                       </div>
                     </div>
                     
-                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-value-per-provider">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="summary-value-per-provider">
                         {formatCurrency(valuePerProvider)}
                       </div>
-                      <div className="text-white/40 text-sm uppercase tracking-wider">
-                        Value per {config.unitName}
+                      <div className="text-white/40 text-xs uppercase tracking-wider">
+                        per {config.unitName}
                       </div>
                     </div>
                     
-                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-hours-saved">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 text-center">
+                      <div className="text-2xl md:text-3xl font-bold text-white mb-1" data-testid="summary-hours-saved">
                         {totalHoursSaved.toLocaleString()}
                       </div>
-                      <div className="text-white/40 text-sm uppercase tracking-wider">
-                        Hours Saved Annually
+                      <div className="text-white/40 text-xs uppercase tracking-wider">
+                        Hours Saved
                       </div>
                     </div>
                   </div>
@@ -1063,43 +1063,39 @@ export default function SummaryCommandCenter({
           </section>
 
           {/* ========== ACTIONS SECTION ========== */}
-          <section className="py-12 md:py-16 px-6 bg-black">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Ready to Move Forward?
-              </h2>
-              <p className="text-slate-400 text-lg mb-10">
-                Export your analysis or refine your model
-              </p>
-              
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button
-                  size="lg"
-                  onClick={() => setShowExportModal(true)}
-                  disabled={isExporting}
-                  className="bg-[#EA2C00] text-white px-8"
-                  data-testid="button-export-pdf"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  {isExporting ? "Exporting..." : "Download PDF"}
-                </Button>
+          <section className="py-10 md:py-12 px-6 bg-slate-50 border-y border-slate-100">
+            <div className="max-w-3xl mx-auto">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                    Your Analysis
+                  </h3>
+                  <p className="text-slate-500 text-sm">
+                    {CARE_SETTING_LABELS[activeSetting]} • {pilotUnits} {config.unitNamePlural} • ${pricePerUnit}/{config.unitName}/mo
+                  </p>
+                </div>
                 
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => setManageModelSheetOpen(true)}
-                  className="border-white/20 text-white bg-transparent"
-                  data-testid="button-manage-model"
-                >
-                  <Pencil className="w-5 h-5 mr-2" />
-                  Edit Model
-                </Button>
-              </div>
-              
-              <div className="mt-8 pt-8 border-t border-white/10">
-                <p className="text-slate-500 text-sm">
-                  Your model: {CARE_SETTING_LABELS[activeSetting]} • {pilotUnits} {config.unitNamePlural} • ${pricePerUnit}/{config.unitName}/month
-                </p>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setManageModelSheetOpen(true)}
+                    className="border-slate-200"
+                    data-testid="button-manage-model"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit Model
+                  </Button>
+                  
+                  <Button
+                    onClick={() => setShowExportModal(true)}
+                    disabled={isExporting}
+                    className="bg-[#EA2C00] text-white"
+                    data-testid="button-export-pdf"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {isExporting ? "Exporting..." : "Download PDF"}
+                  </Button>
+                </div>
               </div>
             </div>
           </section>
