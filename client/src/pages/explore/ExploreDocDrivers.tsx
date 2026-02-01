@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, BarChart3, Building2, AlertTriangle, TrendingUp, DollarSign, Calculator, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, BarChart3, Building2, AlertTriangle, DollarSign, Calculator, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState } from "./ExploreFlow";
+import { type ExploreState, type DocPathFocus } from "./ExploreFlow";
 
 interface ExploreDocDriversProps {
   state: ExploreState;
@@ -14,182 +14,428 @@ interface ExploreDocDriversProps {
   onHome: () => void;
 }
 
-const WRVU_CONVERSION = 40;
-const HCC_VALUE_PER_CONDITION = 800;
-const DENIAL_AVG_VALUE = 250;
+interface DocDriverConfig {
+  id: DocPathFocus;
+  label: string;
+  description: string;
+  icon: typeof BarChart3;
+  min: number;
+  max: number;
+  step: number;
+  suffix: string;
+}
+
+const DOC_DRIVER_CONFIGS: DocDriverConfig[] = [
+  {
+    id: 'wrvu',
+    label: 'wRVU Improvement',
+    description: 'Percentage improvement in wRVU capture per encounter',
+    icon: BarChart3,
+    min: 0.5,
+    max: 5,
+    step: 0.5,
+    suffix: '%',
+  },
+  {
+    id: 'hcc',
+    label: 'HCC Recapture Rate',
+    description: 'Percentage of previously missed conditions now captured',
+    icon: Building2,
+    min: 5,
+    max: 30,
+    step: 5,
+    suffix: '%',
+  },
+  {
+    id: 'denials',
+    label: 'Denial Reduction',
+    description: 'Reduction in documentation-related claim denials',
+    icon: AlertTriangle,
+    min: 10,
+    max: 40,
+    step: 5,
+    suffix: '%',
+  },
+];
+
+interface EditableAssumptions {
+  wrvuConversion: number;
+  wrvuRealization: number;
+  hccValuePerCondition: number;
+  hccRealization: number;
+  denialAvgValue: number;
+  denialRealization: number;
+  maPatientPct: number;
+  baselineDenialRate: number;
+}
+
+const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
+  wrvuConversion: 40,
+  wrvuRealization: 75,
+  hccValuePerCondition: 800,
+  hccRealization: 60,
+  denialAvgValue: 250,
+  denialRealization: 70,
+  maPatientPct: 30,
+  baselineDenialRate: 8,
+};
 
 const REALIZATION_RATES = {
   patientAccess: 0.35,
   reducingLocums: 0.60,
   clinicianWellbeing: 0.20,
-  wrvu: 0.75,
-  hcc: 0.60,
-  denials: 0.70,
 };
 
+function EditableValue({ 
+  value, 
+  onChange, 
+  prefix = '', 
+  suffix = '',
+  min = 0,
+  max = 999999,
+  step = 1,
+}: { 
+  value: number; 
+  onChange: (v: number) => void;
+  prefix?: string;
+  suffix?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value.toString());
+
+  const handleStartEdit = () => {
+    setInputValue(value.toString());
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    const num = parseFloat(inputValue);
+    if (!isNaN(num) && num >= min && num <= max) {
+      onChange(num);
+    } else {
+      setInputValue(value.toString());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    } else if (e.key === 'Escape') {
+      setInputValue(value.toString());
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <span className="inline-flex items-center gap-1">
+        {prefix}
+        <input
+          type="number"
+          inputMode="decimal"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          min={min}
+          max={max}
+          step={step}
+          className="w-24 px-2 py-1.5 text-base font-semibold text-[#EA2C00] bg-white border-2 border-[#EA2C00] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]"
+          autoFocus
+          data-testid="input-editable-value"
+        />
+        {suffix}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleStartEdit}
+      onTouchEnd={(e) => {
+        e.preventDefault();
+        handleStartEdit();
+      }}
+      className="inline-flex items-center gap-1.5 text-base font-semibold text-[#EA2C00] bg-[#EA2C00]/5 hover:bg-[#EA2C00]/15 active:bg-[#EA2C00]/20 px-3 py-2 rounded-lg transition-colors min-h-[44px]"
+      data-testid="button-edit-value"
+    >
+      {prefix}{value.toLocaleString()}{suffix}
+      <Pencil className="w-4 h-4" />
+    </button>
+  );
+}
+
 export default function ExploreDocDrivers({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreDocDriversProps) {
-  const [showDocMath, setShowDocMath] = useState(false);
-  const [showTimeMath, setShowTimeMath] = useState(false);
+  const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
+  const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
+
+  const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
+    setAssumptions(prev => ({ ...prev, [key]: value }));
+  };
 
   const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
-  
-  const calculateWrvuValue = () => {
-    const baseWrvu = 1.5;
-    const wrvuLift = baseWrvu * (state.wrvuPctIncrease / 100);
-    const grossValue = wrvuLift * eligibleEncounters * WRVU_CONVERSION;
-    const realizedValue = grossValue * REALIZATION_RATES.wrvu;
-    return {
-      value: Math.round(realizedValue),
-      steps: [
-        { label: 'Eligible encounters', value: eligibleEncounters.toLocaleString(), unit: 'visits' },
-        { label: 'Base wRVU per visit', value: baseWrvu.toString(), unit: 'wRVU' },
-        { label: 'Your improvement target', value: `${state.wrvuPctIncrease}%`, unit: '' },
-        { label: 'wRVU lift per visit', value: wrvuLift.toFixed(3), unit: 'wRVU' },
-        { label: 'Total additional wRVUs', value: Math.round(wrvuLift * eligibleEncounters).toLocaleString(), unit: 'wRVU' },
-        { label: 'Conversion rate', value: `$${WRVU_CONVERSION}`, unit: '/wRVU' },
-        { label: 'Gross value', value: `$${Math.round(grossValue).toLocaleString()}`, unit: '' },
-        { label: 'Realization rate', value: `${Math.round(REALIZATION_RATES.wrvu * 100)}%`, unit: '', highlight: true, explanation: 'Accounts for payer mix, fee schedule variations, and coding accuracy' },
-        { label: 'Net annual value', value: `$${Math.round(realizedValue).toLocaleString()}`, unit: '', isFinal: true },
-      ],
-    };
+
+  const handleDriverValueChange = (driverId: DocPathFocus, newValue: number) => {
+    const newDocDrivers = { ...state.docDrivers };
+    newDocDrivers[driverId] = { ...newDocDrivers[driverId], value: newValue };
+    updateState({ docDrivers: newDocDrivers });
   };
 
-  const calculateHccValue = () => {
-    const avgConditionsPerMember = 3;
-    const maPatientPct = 0.3;
-    const maPatients = eligibleEncounters * maPatientPct;
-    const conditionsCaptured = maPatients * avgConditionsPerMember * (state.hccPctRecaptured / 100);
-    const grossValue = conditionsCaptured * HCC_VALUE_PER_CONDITION;
-    const realizedValue = grossValue * REALIZATION_RATES.hcc;
-    return {
-      value: Math.round(realizedValue),
-      steps: [
-        { label: 'Eligible encounters', value: eligibleEncounters.toLocaleString(), unit: 'visits' },
-        { label: 'Medicare Advantage patients', value: `${Math.round(maPatientPct * 100)}%`, unit: '' },
-        { label: 'MA patient encounters', value: Math.round(maPatients).toLocaleString(), unit: 'visits' },
-        { label: 'Avg conditions per member', value: avgConditionsPerMember.toString(), unit: 'HCCs' },
-        { label: 'Your recapture target', value: `${state.hccPctRecaptured}%`, unit: '' },
-        { label: 'Conditions recaptured', value: Math.round(conditionsCaptured).toLocaleString(), unit: 'HCCs' },
-        { label: 'Value per HCC', value: `$${HCC_VALUE_PER_CONDITION}`, unit: '' },
-        { label: 'Gross value', value: `$${Math.round(grossValue).toLocaleString()}`, unit: '' },
-        { label: 'Realization rate', value: `${Math.round(REALIZATION_RATES.hcc * 100)}%`, unit: '', highlight: true, explanation: 'Accounts for RAF score adjustments, RADV audits, and payment timing' },
-        { label: 'Net annual value', value: `$${Math.round(realizedValue).toLocaleString()}`, unit: '', isFinal: true },
-      ],
-    };
-  };
+  const calculateDriverValue = (driverId: DocPathFocus) => {
+    const driverValue = state.docDrivers[driverId].value;
 
-  const calculateDenialValue = () => {
-    const baselineDenialRate = 0.08;
-    const docRelatedPct = 0.5;
-    const denials = eligibleEncounters * baselineDenialRate;
-    const denialsFromDoc = denials * docRelatedPct;
-    const denialsRecovered = denialsFromDoc * (state.denialsPctReduced / 100);
-    const grossValue = denialsRecovered * DENIAL_AVG_VALUE;
-    const realizedValue = grossValue * REALIZATION_RATES.denials;
-    return {
-      value: Math.round(realizedValue),
-      steps: [
-        { label: 'Eligible encounters', value: eligibleEncounters.toLocaleString(), unit: 'visits' },
-        { label: 'Baseline denial rate', value: `${Math.round(baselineDenialRate * 100)}%`, unit: '' },
-        { label: 'Total denials', value: Math.round(denials).toLocaleString(), unit: 'claims' },
-        { label: 'Documentation-related', value: `${Math.round(docRelatedPct * 100)}%`, unit: '' },
-        { label: 'Doc-related denials', value: Math.round(denialsFromDoc).toLocaleString(), unit: 'claims' },
-        { label: 'Your reduction target', value: `${state.denialsPctReduced}%`, unit: '' },
-        { label: 'Denials prevented', value: Math.round(denialsRecovered).toLocaleString(), unit: 'claims' },
-        { label: 'Avg denial value', value: `$${DENIAL_AVG_VALUE}`, unit: '' },
-        { label: 'Gross value', value: `$${Math.round(grossValue).toLocaleString()}`, unit: '' },
-        { label: 'Realization rate', value: `${Math.round(REALIZATION_RATES.denials * 100)}%`, unit: '', highlight: true, explanation: 'Accounts for appeals success rate and collection timing' },
-        { label: 'Net annual value', value: `$${Math.round(realizedValue).toLocaleString()}`, unit: '', isFinal: true },
-      ],
-    };
-  };
-
-  const getDocValueCalc = () => {
-    switch (state.docPathFocus) {
-      case 'wrvu': return calculateWrvuValue();
-      case 'hcc': return calculateHccValue();
-      case 'denials': return calculateDenialValue();
-      default: return { value: 0, steps: [] };
+    switch (driverId) {
+      case 'wrvu': {
+        const baseWrvu = 1.5;
+        const wrvuLift = baseWrvu * (driverValue / 100);
+        const grossValue = wrvuLift * eligibleEncounters * assumptions.wrvuConversion;
+        const realizedValue = grossValue * (assumptions.wrvuRealization / 100);
+        return {
+          value: Math.round(realizedValue),
+          editableInputs: (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Eligible encounters</span>
+                <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Base wRVU per visit</span>
+                <span className="text-sm font-semibold text-black">{baseWrvu} wRVU</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Your improvement target</span>
+                <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">wRVU lift per visit</span>
+                <span className="text-sm font-semibold text-black">{wrvuLift.toFixed(3)} wRVU</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Conversion rate</span>
+                <EditableValue 
+                  value={assumptions.wrvuConversion} 
+                  onChange={(v) => updateAssumption('wrvuConversion', v)}
+                  prefix="$"
+                  suffix="/wRVU"
+                  min={20}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Gross value</span>
+                <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Payer mix, fee schedule variations</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.wrvuRealization} 
+                  onChange={(v) => updateAssumption('wrvuRealization', v)}
+                  suffix="%"
+                  min={25}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                <span className="text-sm font-bold text-black">Net annual value</span>
+                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
+              </div>
+            </div>
+          ),
+        };
+      }
+      case 'hcc': {
+        const avgConditionsPerMember = 3;
+        const maPatients = eligibleEncounters * (assumptions.maPatientPct / 100);
+        const conditionsCaptured = maPatients * avgConditionsPerMember * (driverValue / 100);
+        const grossValue = conditionsCaptured * assumptions.hccValuePerCondition;
+        const realizedValue = grossValue * (assumptions.hccRealization / 100);
+        return {
+          value: Math.round(realizedValue),
+          editableInputs: (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Eligible encounters</span>
+                <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Medicare Advantage %</span>
+                <EditableValue 
+                  value={assumptions.maPatientPct} 
+                  onChange={(v) => updateAssumption('maPatientPct', v)}
+                  suffix="%"
+                  min={5}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">MA patient encounters</span>
+                <span className="text-sm font-semibold text-black">{Math.round(maPatients).toLocaleString()} visits</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Avg conditions per member</span>
+                <span className="text-sm font-semibold text-black">{avgConditionsPerMember} HCCs</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Your recapture target</span>
+                <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Conditions recaptured</span>
+                <span className="text-sm font-semibold text-black">{Math.round(conditionsCaptured).toLocaleString()} HCCs</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Value per HCC</span>
+                <EditableValue 
+                  value={assumptions.hccValuePerCondition} 
+                  onChange={(v) => updateAssumption('hccValuePerCondition', v)}
+                  prefix="$"
+                  min={200}
+                  max={2000}
+                  step={50}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Gross value</span>
+                <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                  <p className="text-xs text-slate-500 mt-0.5">RAF adjustments, RADV audits</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.hccRealization} 
+                  onChange={(v) => updateAssumption('hccRealization', v)}
+                  suffix="%"
+                  min={25}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                <span className="text-sm font-bold text-black">Net annual value</span>
+                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
+              </div>
+            </div>
+          ),
+        };
+      }
+      case 'denials': {
+        const baselineDenialRate = assumptions.baselineDenialRate / 100;
+        const docRelatedPct = 0.5;
+        const denials = eligibleEncounters * baselineDenialRate;
+        const denialsFromDoc = denials * docRelatedPct;
+        const denialsRecovered = denialsFromDoc * (driverValue / 100);
+        const grossValue = denialsRecovered * assumptions.denialAvgValue;
+        const realizedValue = grossValue * (assumptions.denialRealization / 100);
+        return {
+          value: Math.round(realizedValue),
+          editableInputs: (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Eligible encounters</span>
+                <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Baseline denial rate</span>
+                <EditableValue 
+                  value={assumptions.baselineDenialRate} 
+                  onChange={(v) => updateAssumption('baselineDenialRate', v)}
+                  suffix="%"
+                  min={2}
+                  max={20}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Total denials</span>
+                <span className="text-sm font-semibold text-black">{Math.round(denials).toLocaleString()} claims</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Documentation-related</span>
+                <span className="text-sm font-semibold text-black">50%</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Doc-related denials</span>
+                <span className="text-sm font-semibold text-black">{Math.round(denialsFromDoc).toLocaleString()} claims</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Your reduction target</span>
+                <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Denials prevented</span>
+                <span className="text-sm font-semibold text-black">{Math.round(denialsRecovered).toLocaleString()} claims</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Avg denial value</span>
+                <EditableValue 
+                  value={assumptions.denialAvgValue} 
+                  onChange={(v) => updateAssumption('denialAvgValue', v)}
+                  prefix="$"
+                  min={50}
+                  max={1000}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Gross value</span>
+                <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Appeals success rate, collection timing</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.denialRealization} 
+                  onChange={(v) => updateAssumption('denialRealization', v)}
+                  suffix="%"
+                  min={25}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                <span className="text-sm font-bold text-black">Net annual value</span>
+                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
+              </div>
+            </div>
+          ),
+        };
+      }
+      default:
+        return { value: 0, editableInputs: null };
     }
   };
 
   const calculateTimeValue = () => {
     const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
-    const patientAccessGross = (patientAccessHours / 0.5) * 200;
-    const patientAccessValue = patientAccessGross * REALIZATION_RATES.patientAccess;
+    const patientAccessValue = (patientAccessHours / 0.5) * 200 * REALIZATION_RATES.patientAccess;
 
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
-    const locumGross = locumHours * 150;
-    const locumValue = locumGross * REALIZATION_RATES.reducingLocums;
+    const locumValue = locumHours * 150 * REALIZATION_RATES.reducingLocums;
 
     const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
-    const wellbeingGross = state.numberOfProviders * 0.15 * wellbeingPct * 250000;
-    const retentionValue = wellbeingGross * REALIZATION_RATES.clinicianWellbeing;
+    const retentionValue = state.numberOfProviders * 0.15 * wellbeingPct * 250000 * REALIZATION_RATES.clinicianWellbeing;
 
-    return {
-      value: Math.round(patientAccessValue + locumValue + retentionValue),
-      patientAccess: Math.round(patientAccessValue),
-      locums: Math.round(locumValue),
-      wellbeing: Math.round(retentionValue),
-      steps: [
-        { label: 'Patient Access', value: `$${Math.round(patientAccessValue).toLocaleString()}`, sublabel: `${state.timeAllocation.patientAccess}% allocation × ${REALIZATION_RATES.patientAccess * 100}% realization` },
-        ...(state.timeAllocation.reducingLocums > 0 ? [{ label: 'Locum Reduction', value: `$${Math.round(locumValue).toLocaleString()}`, sublabel: `${state.timeAllocation.reducingLocums}% allocation × ${REALIZATION_RATES.reducingLocums * 100}% realization` }] : []),
-        { label: 'Clinician Wellbeing', value: `$${Math.round(retentionValue).toLocaleString()}`, sublabel: `${state.timeAllocation.clinicianWellbeing}% allocation × ${REALIZATION_RATES.clinicianWellbeing * 100}% realization` },
-      ],
-    };
+    return Math.round(patientAccessValue + locumValue + retentionValue);
   };
 
-  const getFocusConfig = () => {
-    switch (state.docPathFocus) {
-      case 'wrvu':
-        return {
-          icon: BarChart3,
-          label: 'wRVU Improvement',
-          description: 'Percentage improvement in wRVU capture per encounter',
-          value: state.wrvuPctIncrease,
-          onChange: (v: number) => updateState({ wrvuPctIncrease: v }),
-          min: 0.5,
-          max: 5,
-          step: 0.5,
-          suffix: '%',
-        };
-      case 'hcc':
-        return {
-          icon: Building2,
-          label: 'HCC Recapture Rate',
-          description: 'Percentage of previously missed conditions now captured',
-          value: state.hccPctRecaptured,
-          onChange: (v: number) => updateState({ hccPctRecaptured: v }),
-          min: 5,
-          max: 30,
-          step: 5,
-          suffix: '%',
-        };
-      case 'denials':
-        return {
-          icon: AlertTriangle,
-          label: 'Denial Reduction',
-          description: 'Reduction in documentation-related claim denials',
-          value: state.denialsPctReduced,
-          onChange: (v: number) => updateState({ denialsPctReduced: v }),
-          min: 10,
-          max: 40,
-          step: 5,
-          suffix: '%',
-        };
-      default:
-        return null;
-    }
+  const enabledDrivers = DOC_DRIVER_CONFIGS.filter(d => state.docDrivers[d.id].enabled);
+  const timeValue = calculateTimeValue();
+  const docValue = enabledDrivers.reduce((sum, driver) => {
+    const calc = calculateDriverValue(driver.id);
+    return sum + (calc?.value || 0);
+  }, 0);
+  const totalValue = timeValue + docValue;
+
+  const toggleExpand = (id: string) => {
+    setExpandedDriver(expandedDriver === id ? null : id);
   };
-
-  const focusConfig = getFocusConfig();
-  const docCalc = getDocValueCalc();
-  const timeCalc = calculateTimeValue();
-  const totalValue = docCalc.value + timeCalc.value;
-
-  if (!focusConfig) return null;
-
-  const Icon = focusConfig.icon;
 
   return (
     <div className="min-h-screen bg-white">
@@ -224,195 +470,104 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3 space-y-6">
-            {/* Documentation Driver */}
-            <motion.div
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-            >
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-[#EA2C00]" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-black">{focusConfig.label}</h2>
-                    <p className="text-sm text-slate-500">{focusConfig.description}</p>
-                  </div>
-                </div>
+          <div className="lg:col-span-3 space-y-4">
+            {enabledDrivers.map((driver, index) => {
+              const Icon = driver.icon;
+              const driverCalc = calculateDriverValue(driver.id);
+              const isExpanded = expandedDriver === driver.id;
+              const currentValue = state.docDrivers[driver.id].value;
 
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="range"
-                      min={focusConfig.min}
-                      max={focusConfig.max}
-                      step={focusConfig.step}
-                      value={focusConfig.value}
-                      onChange={(e) => focusConfig.onChange(Number(e.target.value))}
-                      className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
-                      data-testid="slider-doc-driver"
-                    />
-                    <div className="w-20 text-right">
-                      <span className="text-2xl font-bold text-[#EA2C00]">{focusConfig.value}{focusConfig.suffix}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>Conservative ({focusConfig.min}{focusConfig.suffix})</span>
-                    <span>Aggressive ({focusConfig.max}{focusConfig.suffix})</span>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-sm text-slate-500">Projected annual value</span>
-                    <p className="text-xl font-bold text-[#EA2C00]">${docCalc.value.toLocaleString()}</p>
-                  </div>
-                  <button
-                    onClick={() => setShowDocMath(!showDocMath)}
-                    className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-[#EA2C00] transition-colors"
-                    data-testid="button-expand-doc-math"
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                    <span>See the math</span>
-                    {showDocMath ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Expandable math breakdown */}
-              <AnimatePresence>
-                {showDocMath && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-6">
-                      <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Calculator className="w-4 h-4 text-[#EA2C00]" />
-                          <h4 className="text-sm font-bold text-black">Calculation Breakdown</h4>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          {docCalc.steps.map((step, stepIndex) => (
-                            <div key={stepIndex}>
-                              <div 
-                                className={`
-                                  flex items-center justify-between py-2
-                                  ${step.isFinal ? 'border-t-2 border-[#EA2C00]/20 pt-3 mt-2' : ''}
-                                `}
-                              >
-                                <span className={`text-sm ${step.isFinal ? 'font-bold text-black' : step.highlight ? 'font-medium text-[#EA2C00]' : 'text-slate-600'}`}>
-                                  {step.label}
-                                </span>
-                                <span className={`text-sm font-semibold ${step.isFinal ? 'text-[#EA2C00] text-lg' : step.highlight ? 'text-[#EA2C00]' : 'text-black'}`}>
-                                  {step.value} {step.unit}
-                                </span>
-                              </div>
-                              {step.explanation && (
-                                <p className="text-xs text-slate-500 italic pl-2 pb-2 border-l-2 border-[#EA2C00]/20 ml-1">
-                                  {step.explanation}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+              return (
+                <motion.div
+                  key={driver.id}
+                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + index * 0.05, duration: 0.5 }}
+                >
+                  <div className="p-5">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-5 h-5 text-[#EA2C00]" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-black">{driver.label}</h3>
+                        <p className="text-sm text-slate-500">{driver.description}</p>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
 
-            {/* Time Savings Summary */}
-            <motion.div
-              className="bg-slate-50 rounded-2xl overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-slate-600" />
-                    </div>
-                    <h3 className="font-semibold text-slate-700">Time Savings Value</h3>
-                  </div>
-                  <button
-                    onClick={() => setShowTimeMath(!showTimeMath)}
-                    className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-[#EA2C00] transition-colors"
-                    data-testid="button-expand-time-math"
-                  >
-                    <Calculator className="w-3.5 h-3.5" />
-                    {showTimeMath ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-white rounded-xl p-3">
-                    <p className="text-xs text-slate-400 mb-1">Patient Access</p>
-                    <p className="text-lg font-bold text-black">${timeCalc.patientAccess.toLocaleString()}</p>
-                  </div>
-                  {state.timeAllocation.reducingLocums > 0 && (
-                    <div className="bg-white rounded-xl p-3">
-                      <p className="text-xs text-slate-400 mb-1">Locums Reduction</p>
-                      <p className="text-lg font-bold text-black">${timeCalc.locums.toLocaleString()}</p>
-                    </div>
-                  )}
-                  <div className="bg-white rounded-xl p-3">
-                    <p className="text-xs text-slate-400 mb-1">Wellbeing</p>
-                    <p className="text-lg font-bold text-black">${timeCalc.wellbeing.toLocaleString()}</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Time savings total</span>
-                    <span className="text-lg font-bold text-black">${timeCalc.value.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Time math breakdown */}
-              <AnimatePresence>
-                {showTimeMath && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-5 pb-5">
-                      <div className="bg-white rounded-xl p-4 border border-slate-200">
-                        <div className="space-y-3">
-                          {timeCalc.steps.map((step, idx) => (
-                            <div key={idx} className="flex items-center justify-between">
-                              <div>
-                                <p className="text-sm font-medium text-black">{step.label}</p>
-                                <p className="text-xs text-slate-400">{step.sublabel}</p>
-                              </div>
-                              <span className="text-sm font-semibold text-black">{step.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
-                          All values include realization rates to provide conservative, defensible estimates.
-                        </p>
+                    <div className="flex items-center gap-4 mb-4">
+                      <input
+                        type="range"
+                        min={driver.min}
+                        max={driver.max}
+                        step={driver.step}
+                        value={currentValue}
+                        onChange={(e) => handleDriverValueChange(driver.id, Number(e.target.value))}
+                        className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                        data-testid={`slider-${driver.id}`}
+                      />
+                      <div className="w-16 text-right">
+                        <span className="text-2xl font-bold text-[#EA2C00]">{currentValue}{driver.suffix}</span>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
+                      <span>Conservative ({driver.min}{driver.suffix})</span>
+                      <span>Aggressive ({driver.max}{driver.suffix})</span>
+                    </div>
+
+                    {/* Value display row */}
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                      <div>
+                        <p className="text-xs text-slate-400 mb-0.5">Annual Value</p>
+                        <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
+                      </div>
+                      
+                      <button
+                        onClick={() => toggleExpand(driver.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+                        data-testid={`button-expand-${driver.id}`}
+                      >
+                        <Calculator className="w-3.5 h-3.5" />
+                        <span>{isExpanded ? 'Hide details' : 'See the math'}</span>
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expandable math breakdown */}
+                  <AnimatePresence>
+                    {isExpanded && driverCalc && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5">
+                          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-2">
+                                <Calculator className="w-4 h-4 text-[#EA2C00]" />
+                                <h4 className="text-sm font-bold text-black">Calculation Breakdown</h4>
+                              </div>
+                              <span className="text-xs text-slate-400 flex items-center gap-1">
+                                <Pencil className="w-3 h-3" />
+                                Click values to edit
+                              </span>
+                            </div>
+                            
+                            {driverCalc.editableInputs}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Live Receipt */}
@@ -433,15 +588,20 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                 </div>
               </div>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-6">
                 <div className="flex items-center justify-between py-2 border-b border-white/10">
                   <span className="text-white/70">Time Savings</span>
-                  <span className="font-semibold">${timeCalc.value.toLocaleString()}</span>
+                  <span className="font-semibold">${timeValue.toLocaleString()}</span>
                 </div>
-                <div className="flex items-center justify-between py-2 border-b border-white/10">
-                  <span className="text-white/70">{focusConfig.label}</span>
-                  <span className="font-semibold">${docCalc.value.toLocaleString()}</span>
-                </div>
+                {enabledDrivers.map(driver => {
+                  const calc = calculateDriverValue(driver.id);
+                  return (
+                    <div key={driver.id} className="flex items-center justify-between py-2 border-b border-white/10">
+                      <span className="text-white/70">{driver.label}</span>
+                      <span className="font-semibold">${calc?.value.toLocaleString() || 0}</span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="pt-4 border-t border-white/20">

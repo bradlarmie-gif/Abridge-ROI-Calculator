@@ -21,6 +21,17 @@ export interface TimeAllocation {
   clinicianWellbeing: number;
 }
 
+export interface DocDriverSettings {
+  enabled: boolean;
+  value: number;
+}
+
+export interface DocDriversState {
+  wrvu: DocDriverSettings;
+  hcc: DocDriverSettings;
+  denials: DocDriverSettings;
+}
+
 export interface ExploreState {
   careSetting: ExploreCareSetting | null;
   
@@ -33,7 +44,8 @@ export interface ExploreState {
   
   timeAllocation: TimeAllocation;
   
-  docPathFocus: DocPathFocus | null;
+  docPathFocus: DocPathFocus | null; // Keep for backwards compat
+  docDrivers: DocDriversState;
   
   wrvuPctIncrease: number;
   hccPctRecaptured: number;
@@ -53,6 +65,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     clinicianWellbeing: 50,
   },
   docPathFocus: null,
+  docDrivers: {
+    wrvu: { enabled: false, value: 2 },
+    hcc: { enabled: false, value: 15 },
+    denials: { enabled: false, value: 25 },
+  },
   wrvuPctIncrease: 2,
   hccPctRecaptured: 15,
   denialsPctReduced: 25,

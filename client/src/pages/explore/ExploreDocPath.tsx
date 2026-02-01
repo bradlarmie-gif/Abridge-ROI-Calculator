@@ -50,11 +50,17 @@ const DOC_OPTIONS: DocOption[] = [
 
 export default function ExploreDocPath({ state, updateState, onNext, onBack, onHome }: ExploreDocPathProps) {
   
-  const handleSelectOption = (option: DocOption) => {
-    updateState({ docPathFocus: option.id });
+  const handleToggleOption = (optionId: DocPathFocus) => {
+    const newDocDrivers = { ...state.docDrivers };
+    newDocDrivers[optionId] = {
+      ...newDocDrivers[optionId],
+      enabled: !newDocDrivers[optionId].enabled,
+    };
+    updateState({ docDrivers: newDocDrivers });
   };
 
-  const isValid = state.docPathFocus !== null;
+  const selectedCount = Object.values(state.docDrivers).filter(d => d.enabled).length;
+  const isValid = selectedCount > 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -62,7 +68,7 @@ export default function ExploreDocPath({ state, updateState, onNext, onBack, onH
         pathType="explore"
         currentStep={5}
         totalSteps={7}
-        stepName="Documentation Path"
+        stepName="Documentation Quality"
         onBack={onBack}
         onHome={onHome}
       />
@@ -84,74 +90,74 @@ export default function ExploreDocPath({ state, updateState, onNext, onBack, onH
           </h1>
 
           <p className="text-lg text-slate-600 max-w-xl mx-auto">
-            Beyond time savings, Abridge improves note quality. Which area matters most to you?
+            Beyond time savings, Abridge improves note quality. Select all that apply to your organization.
           </p>
         </motion.div>
 
         <div className="space-y-4 max-w-2xl mx-auto mb-8">
           {DOC_OPTIONS.map((option, index) => {
             const Icon = option.icon;
-            const isSelected = state.docPathFocus === option.id;
+            const isSelected = state.docDrivers[option.id].enabled;
             
             return (
               <motion.button
                 key={option.id}
-                onClick={() => handleSelectOption(option)}
+                onClick={() => handleToggleOption(option.id)}
                 className={`
-                  w-full relative flex items-start gap-4 p-5 rounded-2xl transition-all duration-200 text-left
+                  w-full text-left p-5 rounded-2xl border-2 transition-all duration-200
                   ${isSelected 
-                    ? 'bg-black text-white shadow-lg' 
-                    : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm'
+                    ? 'border-[#EA2C00] bg-[#FFF5F2]' 
+                    : 'border-slate-200 bg-white hover:border-slate-300'
                   }
                 `}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
-                data-testid={`card-doc-${option.id}`}
+                data-testid={`button-doc-${option.id}`}
               >
-                {isSelected && (
-                  <motion.div 
-                    className="absolute top-4 right-4 w-6 h-6 bg-[#EA2C00] rounded-full flex items-center justify-center"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  >
-                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                  </motion.div>
-                )}
-
-                <div className={`
-                  w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-                  ${isSelected ? 'bg-white/10' : 'bg-[#FFF5F2]'}
-                `}>
-                  <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
-                </div>
-
-                <div className="flex-1 min-w-0 pr-8">
-                  <h3 className={`text-lg font-bold mb-1 ${isSelected ? 'text-white' : 'text-black'}`}>
-                    {option.label}
-                  </h3>
+                <div className="flex items-start gap-4">
+                  <div className={`
+                    w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors
+                    ${isSelected ? 'bg-[#EA2C00]' : 'bg-slate-100'}
+                  `}>
+                    <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-slate-600'}`} />
+                  </div>
                   
-                  <p className={`text-sm mb-3 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
-                    {option.description}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <span className={`text-xs ${isSelected ? 'text-white/60' : 'text-slate-400'}`}>
-                      {option.detail}
-                    </span>
-                    <span className={`
-                      text-sm font-semibold
-                      ${isSelected ? 'text-[#F07B5F]' : 'text-[#EA2C00]'}
-                    `}>
-                      {option.metric}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-bold text-black">{option.label}</h3>
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-[#EA2C00] flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 mb-2">{option.description}</p>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="text-slate-400">{option.detail}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                        {option.metric}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </motion.button>
             );
           })}
         </div>
+
+        {selectedCount > 0 && (
+          <motion.div
+            className="text-center mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFF5F2] text-[#EA2C00] text-sm font-medium">
+              <Check className="w-4 h-4" />
+              {selectedCount} driver{selectedCount > 1 ? 's' : ''} selected
+            </span>
+          </motion.div>
+        )}
 
         <motion.div 
           className="flex flex-col items-center"
@@ -164,9 +170,9 @@ export default function ExploreDocPath({ state, updateState, onNext, onBack, onH
             disabled={!isValid}
             className={`
               h-12 px-8 font-semibold rounded-full transition-all duration-200
-              ${isValid 
-                ? 'bg-black hover:bg-black/90 text-white' 
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              ${isValid
+                ? 'bg-black hover:bg-black/90 text-white'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }
             `}
             data-testid="button-continue"
@@ -175,11 +181,9 @@ export default function ExploreDocPath({ state, updateState, onNext, onBack, onH
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
           
-          {!isValid && (
-            <p className="text-sm text-slate-400 mt-3">
-              Select a documentation focus to continue
-            </p>
-          )}
+          <p className="text-xs text-slate-400 mt-3">
+            You'll be able to adjust assumptions on the next step
+          </p>
         </motion.div>
       </div>
     </div>
