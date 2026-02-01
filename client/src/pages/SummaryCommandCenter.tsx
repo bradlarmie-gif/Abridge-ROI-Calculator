@@ -80,37 +80,37 @@ const formatCompactCurrency = (value: number): string => {
   return `$${value}`;
 };
 
-const DRIVER_CATEGORIES: Record<string, { category: "labor" | "revenue"; label: string }> = {
-  overtime: { category: "labor", label: "Overtime Reduction" },
-  patient_access: { category: "revenue", label: "Patient Access" },
-  patientAccess: { category: "revenue", label: "Patient Access" },
-  retention: { category: "labor", label: "Provider Retention" },
-  workforce: { category: "labor", label: "Clinician Retention" },
-  level_of_service: { category: "revenue", label: "Level of Service" },
-  levelOfService: { category: "revenue", label: "Level of Service" },
-  wrvu: { category: "revenue", label: "Accurate Level of Service" },
-  hcc_capture: { category: "revenue", label: "HCC Capture" },
-  hcc: { category: "revenue", label: "HCC Risk Capture" },
-  denials: { category: "revenue", label: "Denial Prevention" },
-  nursingOvertime: { category: "labor", label: "Overtime Reduction" },
-  nursingRetention: { category: "labor", label: "Nurse Retention" },
-  nursingAgency: { category: "labor", label: "Agency Reduction" },
-  nursingHAPI: { category: "revenue", label: "HAPI Prevention" },
-  nursingFalls: { category: "revenue", label: "Falls Prevention" },
-  nursingSurvey: { category: "labor", label: "Survey & Compliance Readiness" },
-  nursingCareCoordination: { category: "labor", label: "Care Coordination" },
-  nursingPatientExperience: { category: "labor", label: "Patient Experience (HCAHPS)" },
-  edThroughput: { category: "labor", label: "Patient Throughput (LWBS Reduction)" },
-  edScribe: { category: "labor", label: "Scribe Cost Reduction" },
-  edRetention: { category: "labor", label: "Physician Retention" },
-  edLevelOfService: { category: "revenue", label: "Level-of-Service Accuracy" },
-  edDenials: { category: "revenue", label: "Documentation-Related Denials" },
-  edPatientExperience: { category: "labor", label: "Patient Experience" },
-  inpatientRounding: { category: "labor", label: "Rounding Efficiency" },
-  inpatientRetention: { category: "labor", label: "Hospitalist Retention" },
-  inpatientCCMCC: { category: "revenue", label: "CC/MCC Capture" },
-  inpatientCDI: { category: "labor", label: "CDI Query Reduction" },
-  inpatientDenials: { category: "revenue", label: "Documentation-Related Denials" },
+const DRIVER_CATEGORIES: Record<string, { category: "time" | "documentation"; label: string }> = {
+  overtime: { category: "time", label: "Locum & Overtime Reduction" },
+  patient_access: { category: "time", label: "Patient Access" },
+  patientAccess: { category: "time", label: "Patient Access" },
+  retention: { category: "time", label: "Clinician Retention" },
+  workforce: { category: "time", label: "Clinician Wellbeing" },
+  level_of_service: { category: "documentation", label: "Level of Service" },
+  levelOfService: { category: "documentation", label: "Level of Service" },
+  wrvu: { category: "documentation", label: "Accurate Level of Service" },
+  hcc_capture: { category: "documentation", label: "HCC Capture" },
+  hcc: { category: "documentation", label: "HCC Risk Capture" },
+  denials: { category: "documentation", label: "Denial Prevention" },
+  nursingOvertime: { category: "time", label: "Overtime Reduction" },
+  nursingRetention: { category: "time", label: "Nurse Retention" },
+  nursingAgency: { category: "time", label: "Agency Reduction" },
+  nursingHAPI: { category: "documentation", label: "HAPI Prevention" },
+  nursingFalls: { category: "documentation", label: "Falls Prevention" },
+  nursingSurvey: { category: "documentation", label: "Survey & Compliance Readiness" },
+  nursingCareCoordination: { category: "time", label: "Care Coordination" },
+  nursingPatientExperience: { category: "time", label: "Patient Experience (HCAHPS)" },
+  edThroughput: { category: "time", label: "Patient Throughput (LWBS Reduction)" },
+  edScribe: { category: "time", label: "Scribe Cost Reduction" },
+  edRetention: { category: "time", label: "Physician Retention" },
+  edLevelOfService: { category: "documentation", label: "Level-of-Service Accuracy" },
+  edDenials: { category: "documentation", label: "Documentation-Related Denials" },
+  edPatientExperience: { category: "time", label: "Patient Experience" },
+  inpatientRounding: { category: "time", label: "Rounding Efficiency" },
+  inpatientRetention: { category: "time", label: "Hospitalist Retention" },
+  inpatientCCMCC: { category: "documentation", label: "CC/MCC Capture" },
+  inpatientCDI: { category: "documentation", label: "CDI Query Reduction" },
+  inpatientDenials: { category: "documentation", label: "Documentation-Related Denials" },
 };
 
 const settingConfig: Record<string, { unitName: string; unitNamePlural: string; encounterName: string }> = {
@@ -385,7 +385,7 @@ export default function SummaryCommandCenter({
   const networkEffect = fullScale.actualValue - fullScale.linearValue;
   
   const valueBreakdown = useMemo(() => {
-    const breakdown: { id: string; name: string; value: number; category: "labor" | "revenue" }[] = [];
+    const breakdown: { id: string; name: string; value: number; category: "time" | "documentation" }[] = [];
     
     Object.entries(mergedDriverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {
@@ -394,7 +394,7 @@ export default function SummaryCommandCenter({
           id: key,
           name: result.name || meta?.label || key,
           value: result.value,
-          category: meta?.category || "revenue"
+          category: meta?.category || "documentation"
         });
       }
     });
@@ -402,12 +402,12 @@ export default function SummaryCommandCenter({
     return breakdown.sort((a, b) => b.value - a.value);
   }, [mergedDriverResults]);
   
-  const laborDrivers = valueBreakdown.filter(d => d.category === "labor");
-  const revenueDrivers = valueBreakdown.filter(d => d.category === "revenue");
-  const laborValue = laborDrivers.reduce((sum, d) => sum + d.value, 0);
-  const revenueValue = revenueDrivers.reduce((sum, d) => sum + d.value, 0);
-  const laborPercent = totalAnnualValue > 0 ? Math.round((laborValue / totalAnnualValue) * 100) : 0;
-  const revenuePercent = 100 - laborPercent;
+  const timeDrivers = valueBreakdown.filter(d => d.category === "time");
+  const docDrivers = valueBreakdown.filter(d => d.category === "documentation");
+  const timeValue = timeDrivers.reduce((sum, d) => sum + d.value, 0);
+  const docValue = docDrivers.reduce((sum, d) => sum + d.value, 0);
+  const timePercent = totalAnnualValue > 0 ? Math.round((timeValue / totalAnnualValue) * 100) : 0;
+  const docPercent = 100 - timePercent;
   
   const year1 = totalAnnualValue;
   const year2 = Math.round(totalAnnualValue * 1.10);
@@ -650,100 +650,152 @@ export default function SummaryCommandCenter({
             </div>
           </section>
 
-          {/* ========== VALUE BREAKDOWN ========== */}
+          {/* ========== YOUR VALUE STORY ========== */}
           <section className="py-16 md:py-24 px-6">
             <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-12">
+              <div className="text-center mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                  Where Your Value Comes From
+                  Your Value Story
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                  Your ROI is built on {valueBreakdown.length} distinct value drivers
+                  Abridge gives clinicians time back and ensures every note captures the full clinical picture
                 </p>
               </div>
               
-              {/* Value Bar Visualization */}
-              <div className="mb-12">
-                <div className="h-4 flex rounded-full overflow-hidden bg-slate-100">
-                  {laborPercent > 0 && (
-                    <div 
-                      className="bg-slate-700 transition-all duration-500"
-                      style={{ width: `${laborPercent}%` }}
-                    />
-                  )}
-                  {revenuePercent > 0 && (
-                    <div 
-                      className="bg-[#EA2C00] transition-all duration-500"
-                      style={{ width: `${revenuePercent}%` }}
-                    />
-                  )}
-                </div>
-                <div className="flex justify-between mt-3">
-                  <span className="text-sm text-slate-600 flex items-center gap-2">
-                    <span className="w-3 h-3 rounded bg-slate-700" />
-                    Labor & Efficiency ({laborPercent}%)
-                  </span>
-                  <span className="text-sm text-slate-600 flex items-center gap-2">
-                    <span className="w-3 h-3 rounded bg-[#EA2C00]" />
-                    Revenue & Quality ({revenuePercent}%)
-                  </span>
-                </div>
-              </div>
-              
-              {/* Driver Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Labor & Efficiency */}
-                <div className="bg-slate-50 rounded-2xl p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-slate-700 flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-lg">Labor & Efficiency</h3>
-                      <p className="text-slate-500">{laborPercent}% of total value</p>
-                    </div>
+              {/* Two Pillars */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                
+                {/* TIME BACK */}
+                <div className="relative">
+                  <div className="absolute -top-4 left-8">
+                    <span className="px-4 py-1.5 bg-black text-white text-xs font-bold uppercase tracking-wider rounded-full">
+                      Time Back
+                    </span>
                   </div>
-                  <div className="text-4xl font-bold text-slate-900 mb-6">
-                    {formatCurrency(laborValue)}
-                  </div>
-                  <div className="space-y-4">
-                    {laborDrivers.map((driver) => (
-                      <div key={driver.id} className="flex justify-between items-center py-3 border-b border-slate-200 last:border-0">
-                        <span className="text-slate-700">{driver.name}</span>
-                        <span className="font-mono font-semibold text-slate-900">{formatCurrency(driver.value)}</span>
+                  <div className="bg-white rounded-3xl p-8 pt-10 border-2 border-slate-200 h-full">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center">
+                        <Clock className="w-7 h-7 text-white" />
                       </div>
-                    ))}
-                    {laborDrivers.length === 0 && (
-                      <p className="text-slate-400 italic">No labor drivers selected</p>
+                      <div>
+                        <p className="text-slate-500 text-sm">
+                          {(() => {
+                            const timeSaved = modelResults.timeSavedPerEncounter || 3;
+                            return timeSaved <= 2 ? "Conservative" : timeSaved <= 3.5 ? "Typical" : "Aggressive";
+                          })()} time savings scenario
+                        </p>
+                        <p className="text-3xl font-bold text-slate-900">
+                          {formatCurrency(timeValue)}
+                          <span className="text-base font-normal text-slate-400 ml-2">/ year</span>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-slate-600 mb-8 leading-relaxed">
+                      By automating documentation, your clinicians reclaim hours each week. 
+                      This time translates to more patients seen, reduced burnout, and lower reliance on costly locums.
+                    </p>
+                    
+                    {timeDrivers.length > 0 ? (
+                      <div className="space-y-4">
+                        {timeDrivers.map((driver) => (
+                          <div key={driver.id} className="flex justify-between items-center py-4 border-b border-slate-100 last:border-0">
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-black" />
+                              <span className="text-slate-700 font-medium">{driver.name}</span>
+                            </div>
+                            <span className="font-mono font-bold text-slate-900">{formatCurrency(driver.value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-400">
+                        <Clock className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>No time-based drivers configured</p>
+                      </div>
                     )}
                   </div>
                 </div>
                 
-                {/* Revenue & Quality */}
-                <div className="bg-gradient-to-br from-[#FFF8F6] to-[#FFF1ED] rounded-2xl p-8 border border-[#FECACA]/30">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-[#EA2C00] flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-lg">Revenue & Quality</h3>
-                      <p className="text-slate-500">{revenuePercent}% of total value</p>
-                    </div>
+                {/* DOCUMENTATION QUALITY */}
+                <div className="relative">
+                  <div className="absolute -top-4 left-8">
+                    <span className="px-4 py-1.5 bg-[#EA2C00] text-white text-xs font-bold uppercase tracking-wider rounded-full">
+                      Documentation Quality
+                    </span>
                   </div>
-                  <div className="text-4xl font-bold text-[#EA2C00] mb-6">
-                    {formatCurrency(revenueValue)}
-                  </div>
-                  <div className="space-y-4">
-                    {revenueDrivers.map((driver) => (
-                      <div key={driver.id} className="flex justify-between items-center py-3 border-b border-[#FECACA]/30 last:border-0">
-                        <span className="text-slate-700">{driver.name}</span>
-                        <span className="font-mono font-semibold text-[#EA2C00]">{formatCurrency(driver.value)}</span>
+                  <div className="bg-white rounded-3xl p-8 pt-10 border-2 border-[#EA2C00]/20 h-full">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-14 h-14 rounded-2xl bg-[#EA2C00] flex items-center justify-center">
+                        <FileText className="w-7 h-7 text-white" />
                       </div>
-                    ))}
-                    {revenueDrivers.length === 0 && (
-                      <p className="text-slate-400 italic">No revenue drivers selected</p>
+                      <div>
+                        <p className="text-slate-500 text-sm">
+                          {docDrivers.length} documentation {docDrivers.length === 1 ? "driver" : "drivers"} active
+                        </p>
+                        <p className="text-3xl font-bold text-[#EA2C00]">
+                          {formatCurrency(docValue)}
+                          <span className="text-base font-normal text-slate-400 ml-2">/ year</span>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-slate-600 mb-8 leading-relaxed">
+                      AI-generated notes capture the complete clinical narrative—improving coding accuracy, 
+                      capturing missed conditions, and reducing costly claim denials.
+                    </p>
+                    
+                    {docDrivers.length > 0 ? (
+                      <div className="space-y-4">
+                        {docDrivers.map((driver) => (
+                          <div key={driver.id} className="flex justify-between items-center py-4 border-b border-[#EA2C00]/10 last:border-0">
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                              <span className="text-slate-700 font-medium">{driver.name}</span>
+                            </div>
+                            <span className="font-mono font-bold text-[#EA2C00]">{formatCurrency(driver.value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-400">
+                        <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>No documentation drivers configured</p>
+                      </div>
                     )}
                   </div>
+                </div>
+              </div>
+              
+              {/* Combined Impact Bar */}
+              <div className="mt-12 bg-slate-50 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-semibold text-slate-700">Combined Annual Impact</span>
+                  <span className="text-2xl font-bold text-slate-900">{formatCurrency(totalAnnualValue)}</span>
+                </div>
+                <div className="h-3 flex rounded-full overflow-hidden bg-slate-200">
+                  {timePercent > 0 && (
+                    <div 
+                      className="bg-black transition-all duration-500"
+                      style={{ width: `${timePercent}%` }}
+                    />
+                  )}
+                  {docPercent > 0 && (
+                    <div 
+                      className="bg-[#EA2C00] transition-all duration-500"
+                      style={{ width: `${docPercent}%` }}
+                    />
+                  )}
+                </div>
+                <div className="flex justify-between mt-3 text-sm">
+                  <span className="text-slate-600 flex items-center gap-2">
+                    <span className="w-3 h-3 rounded bg-black" />
+                    Time Back ({timePercent}%)
+                  </span>
+                  <span className="text-slate-600 flex items-center gap-2">
+                    <span className="w-3 h-3 rounded bg-[#EA2C00]" />
+                    Documentation Quality ({docPercent}%)
+                  </span>
                 </div>
               </div>
             </div>
