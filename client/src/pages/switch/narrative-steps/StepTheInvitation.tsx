@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { ArrowLeft, Download, Mail, Link2, CheckCircle, Sparkles, Loader2, TrendingUp, Target, Clock, DollarSign } from "lucide-react";
+import { ArrowLeft, Download, ArrowRight, Loader2, TrendingUp, Clock, DollarSign, Users, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
   type SwitchInputs,
-  type SwitchCalculations
+  type SwitchCalculations,
+  ABRIDGE_BENCHMARKS
 } from "@/lib/switchGapCalculator";
 import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -19,11 +20,23 @@ interface StepTheInvitationProps {
   onBackToJourney?: () => void;
 }
 
-function getScoreLabel(score: number): { label: string; color: string; bgColor: string } {
-  if (score >= 80) return { label: "Excellent", color: "text-emerald-600", bgColor: "bg-emerald-500" };
-  if (score >= 65) return { label: "Good", color: "text-blue-600", bgColor: "bg-blue-500" };
-  if (score >= 50) return { label: "Moderate", color: "text-amber-600", bgColor: "bg-amber-500" };
-  return { label: "Early Stage", color: "text-red-600", bgColor: "bg-red-500" };
+function getScoreContext(score: number): { status: string; message: string } {
+  if (score >= 85) return { 
+    status: "Excellent", 
+    message: "You're capturing most of the value. Fine-tune for maximum impact." 
+  };
+  if (score >= 70) return { 
+    status: "Good", 
+    message: "Solid foundation with meaningful room to grow." 
+  };
+  if (score >= 50) return { 
+    status: "Developing", 
+    message: "Significant opportunity to accelerate your value capture." 
+  };
+  return { 
+    status: "Early Stage", 
+    message: "Major opportunity exists. Let's explore the possibilities together." 
+  };
 }
 
 export default function StepTheInvitation({
@@ -32,16 +45,9 @@ export default function StepTheInvitation({
   onBack,
   onBackToJourney,
 }: StepTheInvitationProps) {
-  const [copied, setCopied] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsGeneratingPDF(true);
@@ -69,170 +75,153 @@ export default function StepTheInvitation({
     }
   };
 
-  const scoreInfo = getScoreLabel(calculations.realizationScore);
+  const scoreContext = getScoreContext(calculations.realizationScore);
+  const gapPercentage = 100 - calculations.realizationScore;
+  
+  // Year 1 accounts for 3-month ramp at 50% efficiency
+  const yearOneValue = Math.round(calculations.annualGap * 0.875);
 
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-3" data-testid="text-page-title">
-          Your Analysis
+        <p className="text-sm font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Your Analysis</p>
+        <h1 className="font-abridge uppercase text-3xl md:text-4xl font-bold text-black mb-3" data-testid="text-page-title">
+          The Opportunity
         </h1>
-        <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">
-          Here's where you stand — and what's possible.
+        <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+          Here's where you stand — and what's possible with the right partnership.
         </p>
       </div>
 
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 md:p-8 text-white">
-        <div className="flex flex-col md:flex-row gap-8 items-center">
-          <div className="flex-1 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full text-sm mb-4">
-              <Target className="w-4 h-4 text-amber-400" />
-              <span>Value Realization Score</span>
-            </div>
-            
-            <div className="flex items-baseline gap-3 justify-center md:justify-start mb-2">
-              <span className="text-5xl md:text-6xl font-bold">{calculations.realizationScore}%</span>
-              <span className={`text-lg font-medium ${scoreInfo.color.replace('text-', 'text-').replace('-600', '-400')}`}>
-                {scoreInfo.label}
-              </span>
-            </div>
-            
-            <div className="w-full max-w-xs mx-auto md:mx-0 mt-4">
-              <div className="h-3 bg-white/10 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${scoreInfo.bgColor} rounded-full transition-all duration-1000`}
-                  style={{ width: `${calculations.realizationScore}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-slate-400 mt-1">
-                <span>0%</span>
-                <span>100%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-px h-24 bg-white/20 hidden md:block" />
-
-          <div className="flex-1 text-center md:text-right">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 rounded-full text-sm mb-4">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span>Your Opportunity</span>
-            </div>
-            
-            <div className="text-4xl md:text-5xl font-bold mb-2 text-emerald-400">
-              {formatCurrency(calculations.annualGap)}
-            </div>
-            <p className="text-slate-400">annual value to unlock</p>
-          </div>
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-8 md:p-10 text-center border-b border-slate-100">
+          <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">Annual Value to Unlock</p>
+          <p className="font-abridge uppercase text-5xl md:text-6xl font-bold text-[#EA2C00] mb-2">
+            {formatCurrency(calculations.annualGap)}
+          </p>
+          <p className="text-slate-500">
+            Based on your {inputs.providers} providers across {inputs.annualEncounters.toLocaleString()} annual encounters
+          </p>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 mt-6 border-t border-white/10">
-          <div className="text-center p-3 bg-white/5 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <TrendingUp className="w-4 h-4 text-blue-400" />
-            </div>
-            <div className="text-lg font-bold text-white">{inputs.utilization}%</div>
-            <p className="text-xs text-slate-400">Your utilization</p>
-          </div>
-          <div className="text-center p-3 bg-white/5 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Clock className="w-4 h-4 text-purple-400" />
-            </div>
-            <div className="text-lg font-bold text-white">{inputs.timeSavedPerEncounter} min</div>
-            <p className="text-xs text-slate-400">Time saved/encounter</p>
-          </div>
-          <div className="text-center p-3 bg-white/5 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="text-lg font-bold text-white">+{inputs.wrvuLift}%</div>
-            <p className="text-xs text-slate-400">wRVU lift</p>
-          </div>
-          <div className="text-center p-3 bg-white/5 rounded-lg">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Target className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="text-lg font-bold text-white">{inputs.satisfaction}%</div>
-            <p className="text-xs text-slate-400">Satisfaction</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 text-center">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wide mb-1">Room to Grow</p>
-          <p className="text-2xl font-bold text-[#111827]">{100 - calculations.realizationScore}%</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 text-center">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wide mb-1">3-Year Impact</p>
-          <p className="text-2xl font-bold text-emerald-600">{formatCurrency(calculations.threeYearGap)}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 text-center">
-          <p className="text-xs text-[#6B7280] uppercase tracking-wide mb-1">Monthly Cost of Waiting</p>
-          <p className="text-2xl font-bold text-amber-600">{formatCurrency(calculations.monthlyGap)}</p>
-        </div>
-      </div>
-
-      <section className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 p-6">
-        <h2 className="text-lg font-bold text-[#111827] mb-2">Share Your Analysis</h2>
-        <p className="text-sm text-[#6B7280] mb-6">
-          Export this analysis to share with your team or stakeholders.
-        </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button
-            onClick={() => setShowExportModal(true)}
-            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-[#EA2C00] hover:shadow-md transition-all text-left group"
-            data-testid="button-export-pdf"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EA2C00] to-[#d12700] flex items-center justify-center flex-shrink-0">
-              <Download className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="font-semibold text-[#111827] group-hover:text-[#EA2C00] transition-colors">
-                Export PDF
-              </p>
-              <p className="text-xs text-[#6B7280]">Download full report</p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all text-left group"
-            data-testid="button-copy-link"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-              {copied ? <CheckCircle className="w-5 h-5 text-white" /> : <Link2 className="w-5 h-5 text-white" />}
-            </div>
-            <div>
-              <p className="font-semibold text-[#111827] group-hover:text-blue-600 transition-colors">
-                {copied ? 'Copied!' : 'Copy Link'}
-              </p>
-              <p className="text-xs text-[#6B7280]">Share this analysis</p>
-            </div>
-          </button>
-
-          <a
-            href={`mailto:?subject=Value%20Realization%20Analysis&body=Here's%20our%20ambient%20AI%20value%20analysis.%0A%0AValue%20Realization%20Score:%20${calculations.realizationScore}%25%0AAnnual%20Opportunity:%20${formatCurrency(calculations.annualGap)}`}
-            className="flex items-center gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-purple-400 hover:shadow-md transition-all text-left group"
-            data-testid="button-email"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="font-semibold text-[#111827] group-hover:text-purple-600 transition-colors">Email Report</p>
-              <p className="text-xs text-[#6B7280]">Send to your team</p>
-            </div>
-          </a>
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+          <div className="p-6 text-center">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Year 1 Impact</p>
+            <p className="text-3xl font-bold text-black">{formatCurrency(yearOneValue)}</p>
+            <p className="text-sm text-slate-500 mt-1">Accounting for ramp-up</p>
+          </div>
+          <div className="p-6 text-center">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">3-Year Impact</p>
+            <p className="text-3xl font-bold text-black">{formatCurrency(calculations.threeYearGap)}</p>
+            <p className="text-sm text-slate-500 mt-1">Compounding value</p>
+          </div>
+          <div className="p-6 text-center">
+            <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Monthly Cost of Waiting</p>
+            <p className="text-3xl font-bold text-[#EA2C00]">{formatCurrency(calculations.monthlyGap)}</p>
+            <p className="text-sm text-slate-500 mt-1">Value left on table</p>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <div className="bg-slate-50 rounded-lg p-4 text-center text-sm text-[#6B7280]">
-        <p>
-          This analysis is for informational purposes only. All calculations are based on 
-          the inputs provided and industry benchmarks. Actual results may vary.
-        </p>
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Value Realization Score</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl md:text-5xl font-bold text-black">{calculations.realizationScore}%</span>
+                <span className="text-lg font-medium text-slate-500">{scoreContext.status}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">Room to Grow</p>
+              <span className="text-2xl font-bold text-[#EA2C00]">{gapPercentage}%</span>
+            </div>
+          </div>
+          
+          <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden mb-3">
+            <div 
+              className="absolute inset-y-0 left-0 bg-black rounded-full transition-all duration-1000"
+              style={{ width: `${calculations.realizationScore}%` }}
+            />
+          </div>
+          
+          <p className="text-sm text-slate-600">{scoreContext.message}</p>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-100 border-t border-slate-100">
+          <div className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
+              <Users className="w-5 h-5 text-[#EA2C00]" />
+            </div>
+            <p className="text-xl font-bold text-black">{inputs.utilization}%</p>
+            <p className="text-xs text-slate-500">Utilization</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">vs. {ABRIDGE_BENCHMARKS.utilization}% benchmark</p>
+          </div>
+          <div className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
+              <Clock className="w-5 h-5 text-[#EA2C00]" />
+            </div>
+            <p className="text-xl font-bold text-black">{inputs.timeSavedPerEncounter} min</p>
+            <p className="text-xs text-slate-500">Time Saved</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">vs. {ABRIDGE_BENCHMARKS.timeSavedAvg} min benchmark</p>
+          </div>
+          <div className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
+              <DollarSign className="w-5 h-5 text-[#EA2C00]" />
+            </div>
+            <p className="text-xl font-bold text-black">+{inputs.wrvuLift}%</p>
+            <p className="text-xs text-slate-500">wRVU Lift</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">vs. +{ABRIDGE_BENCHMARKS.wrvuLift}% benchmark</p>
+          </div>
+          <div className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
+              <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
+            </div>
+            <p className="text-xl font-bold text-black">{inputs.satisfaction}%</p>
+            <p className="text-xs text-slate-500">Satisfaction</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">vs. {ABRIDGE_BENCHMARKS.satisfaction}% benchmark</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-black rounded-2xl p-6 md:p-8">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 text-center md:text-left">
+            <p className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-2">What Comes Next</p>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+              Let's explore this opportunity together.
+            </h2>
+            <p className="text-white/70">
+              This analysis is just the starting point. Our team can help you build a personalized implementation roadmap based on your specific context and goals.
+            </p>
+          </div>
+          
+          <div className="flex-shrink-0">
+            <Button
+              onClick={() => setShowExportModal(true)}
+              className="bg-white hover:bg-white/90 text-black gap-2 rounded-full px-6 h-12"
+              data-testid="button-export-pdf"
+            >
+              {isGeneratingPDF ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Download Report
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#FFF5F2] rounded-xl p-5 border border-[#EA2C00]/10">
+        <div className="flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-slate-700">
+            <span className="font-semibold text-black">All calculations are based on your inputs and industry benchmarks.</span>
+            {' '}Actual results depend on implementation quality, organizational readiness, and partnership approach. This analysis is for informational purposes.
+          </p>
+        </div>
       </div>
 
       <div className="flex justify-between items-center pt-4">
@@ -250,10 +239,11 @@ export default function StepTheInvitation({
           <Button
             variant="outline"
             onClick={onBackToJourney}
-            className="gap-2"
+            className="gap-2 rounded-full px-6"
             data-testid="button-start-over"
           >
             Start New Analysis
+            <ArrowRight className="w-4 h-4" />
           </Button>
         )}
       </div>
