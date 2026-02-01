@@ -27,7 +27,16 @@ interface DocDriverConfig {
   detail: string;
 }
 
-const DOC_DRIVER_CONFIGS: DocDriverConfig[] = [
+interface PresetOption {
+  label: string;
+  value: number;
+}
+
+interface DocDriverConfigWithPresets extends DocDriverConfig {
+  presets: PresetOption[];
+}
+
+const DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   {
     id: 'wrvu',
     label: 'Level of Service (wRVU)',
@@ -39,6 +48,11 @@ const DOC_DRIVER_CONFIGS: DocDriverConfig[] = [
     step: 0.5,
     suffix: '%',
     detail: 'Best for organizations with E&M coding opportunities',
+    presets: [
+      { label: 'Conservative', value: 1 },
+      { label: 'Typical', value: 2 },
+      { label: 'Aggressive', value: 4 },
+    ],
   },
   {
     id: 'hcc',
@@ -51,6 +65,11 @@ const DOC_DRIVER_CONFIGS: DocDriverConfig[] = [
     step: 5,
     suffix: '%',
     detail: 'Best for Medicare Advantage or ACO populations',
+    presets: [
+      { label: 'Conservative', value: 10 },
+      { label: 'Typical', value: 15 },
+      { label: 'Aggressive', value: 25 },
+    ],
   },
   {
     id: 'denials',
@@ -63,6 +82,11 @@ const DOC_DRIVER_CONFIGS: DocDriverConfig[] = [
     step: 5,
     suffix: '%',
     detail: 'Best for organizations with high denial rates',
+    presets: [
+      { label: 'Conservative', value: 15 },
+      { label: 'Typical', value: 25 },
+      { label: 'Aggressive', value: 35 },
+    ],
   },
 ];
 
@@ -559,30 +583,66 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="px-5 pt-2 border-t border-slate-100">
-                            <div className="flex items-center gap-4 mb-3">
-                              <input
-                                type="range"
-                                min={driver.min}
-                                max={driver.max}
-                                step={driver.step}
-                                value={currentValue}
-                                onChange={(e) => handleDriverValueChange(driver.id, Number(e.target.value))}
-                                className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
-                                data-testid={`slider-${driver.id}`}
-                              />
-                              <div className="w-16 text-right">
-                                <span className="text-2xl font-bold text-[#EA2C00]">{currentValue}{driver.suffix}</span>
+                        <div className="px-5 pt-4 pb-5 border-t border-slate-100">
+                            {/* Preset buttons */}
+                            <div className="flex items-center gap-2 mb-4">
+                              {driver.presets.map((preset) => {
+                                const isSelected = currentValue === preset.value;
+                                return (
+                                  <button
+                                    key={preset.value}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDriverValueChange(driver.id, preset.value);
+                                    }}
+                                    className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                                      isSelected
+                                        ? 'bg-[#EA2C00] text-white shadow-sm'
+                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                    data-testid={`preset-${driver.id}-${preset.label.toLowerCase()}`}
+                                  >
+                                    <div className="text-center">
+                                      <span className="block">{preset.label}</span>
+                                      <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
+                                        {preset.value}{driver.suffix}
+                                      </span>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Custom value input */}
+                            <div className="flex items-center justify-center gap-3 mb-4">
+                              <span className="text-sm text-slate-500">or enter custom:</span>
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  inputMode="decimal"
+                                  min={driver.min}
+                                  max={driver.max}
+                                  step={driver.step}
+                                  value={currentValue}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (!isNaN(val) && val >= driver.min && val <= driver.max) {
+                                      handleDriverValueChange(driver.id, val);
+                                    }
+                                  }}
+                                  className="w-20 py-2 px-3 text-center text-lg font-semibold text-slate-900 bg-white border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 transition-all"
+                                  data-testid={`input-${driver.id}`}
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">
+                                  {driver.suffix}
+                                </span>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
-                              <span>Conservative ({driver.min}{driver.suffix})</span>
-                              <span>Aggressive ({driver.max}{driver.suffix})</span>
-                            </div>
-
                             {/* Value display row */}
-                            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                               <div>
                                 <p className="text-xs text-slate-400 mb-0.5">Annual Value</p>
                                 <p className="text-xl font-bold text-[#F07B5F]">${driverCalc?.value.toLocaleString() || 0}</p>
