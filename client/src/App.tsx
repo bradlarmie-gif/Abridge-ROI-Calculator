@@ -105,21 +105,30 @@ export default function App() {
     const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
     const retentionValue = Math.round(state.numberOfProviders * 0.15 * wellbeingPct * 0.2 * 250000);
 
-    let docValue = 0;
+    let wrvuValue = 0;
+    let hccValue = 0;
+    let denialsValue = 0;
+    
     const baseWrvu = 1.5;
-    if (state.docPathFocus === 'wrvu') {
-      const wrvuLift = baseWrvu * (state.wrvuPctIncrease / 100);
-      docValue = Math.round(wrvuLift * eligibleEncounters * 40);
-    } else if (state.docPathFocus === 'hcc') {
+    if (state.docDrivers.wrvu.enabled) {
+      const wrvuLift = baseWrvu * (state.docDrivers.wrvu.value / 100);
+      wrvuValue = Math.round(wrvuLift * eligibleEncounters * 40 * 0.75);
+    }
+    
+    if (state.docDrivers.hcc.enabled) {
       const maPatients = eligibleEncounters * 0.3;
-      const conditionsCaptured = maPatients * 3 * (state.hccPctRecaptured / 100);
-      docValue = Math.round(conditionsCaptured * 800);
-    } else if (state.docPathFocus === 'denials') {
+      const conditionsCaptured = maPatients * 3 * (state.docDrivers.hcc.value / 100);
+      hccValue = Math.round(conditionsCaptured * 800 * 0.60);
+    }
+    
+    if (state.docDrivers.denials.enabled) {
       const denials = eligibleEncounters * 0.08;
       const denialsFromDoc = denials * 0.5;
-      const denialsRecovered = denialsFromDoc * (state.denialsPctReduced / 100);
-      docValue = Math.round(denialsRecovered * 250);
+      const denialsRecovered = denialsFromDoc * (state.docDrivers.denials.value / 100);
+      denialsValue = Math.round(denialsRecovered * 250 * 0.70);
     }
+    
+    const docValue = wrvuValue + hccValue + denialsValue;
 
     const totalBenefit = patientAccessValue + locumValue + retentionValue + docValue;
 
@@ -152,26 +161,30 @@ export default function App() {
       };
     }
 
-    if (state.docPathFocus === 'wrvu') {
+    if (state.docDrivers.wrvu.enabled && wrvuValue > 0) {
       driverResults['wrvu'] = {
         id: 'wrvu',
         name: 'Level of Service (wRVU)',
-        value: docValue,
-        inputs: { pctIncrease: state.wrvuPctIncrease },
+        value: wrvuValue,
+        inputs: { pctIncrease: state.docDrivers.wrvu.value },
       };
-    } else if (state.docPathFocus === 'hcc') {
+    }
+    
+    if (state.docDrivers.hcc.enabled && hccValue > 0) {
       driverResults['hcc'] = {
         id: 'hcc',
         name: 'HCC Capture',
-        value: docValue,
-        inputs: { pctRecaptured: state.hccPctRecaptured },
+        value: hccValue,
+        inputs: { pctRecaptured: state.docDrivers.hcc.value },
       };
-    } else if (state.docPathFocus === 'denials') {
+    }
+    
+    if (state.docDrivers.denials.enabled && denialsValue > 0) {
       driverResults['denials'] = {
         id: 'denials',
         name: 'Denial Prevention',
-        value: docValue,
-        inputs: { pctReduced: state.denialsPctReduced },
+        value: denialsValue,
+        inputs: { pctReduced: state.docDrivers.denials.value },
       };
     }
 
