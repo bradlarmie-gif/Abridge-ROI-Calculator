@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info, FileEdit } from "lucide-react";
+import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info, FileEdit, RefreshCw, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -159,6 +159,30 @@ export default function ScribeAssessment({
                 placeholder="e.g. 8-15"
                 hint="Without scribe support"
                 testId="input-minutes-per-encounter"
+              />
+
+              <InputCard
+                icon={<RefreshCw className="w-4 h-4 text-amber-600" />}
+                iconBg="bg-amber-50"
+                label="Scribe turnover rate"
+                value={inputs.turnoverRate}
+                onChange={(v) => updateInput("turnoverRate", v)}
+                unit="%/year"
+                placeholder="e.g. 30-50"
+                hint="Annual replacement rate"
+                testId="input-turnover-rate"
+              />
+
+              <InputCard
+                icon={<GraduationCap className="w-4 h-4 text-teal-600" />}
+                iconBg="bg-teal-50"
+                label="Training cost per scribe"
+                value={inputs.trainingCostPerScribe}
+                onChange={(v) => updateInput("trainingCostPerScribe", v)}
+                unit="$"
+                placeholder="e.g. 3000-7000"
+                hint="Onboarding & training"
+                testId="input-training-cost"
               />
             </div>
 

@@ -40,6 +40,8 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     totalProviders: 0,
     annualEncounters: 0,
     minutesPerEncounter: 10,
+    turnoverRate: 40,
+    trainingCostPerScribe: 5000,
   });
 
   const handleSelectPath = (path: "ambient-ai" | "human-scribes") => {

@@ -35,9 +35,9 @@ export default function ScribeFullAnalysis({
   const [showExportModal, setShowExportModal] = useState(false);
   const { toast } = useToast();
 
-  // Calculate hidden costs
-  const turnoverRate = 0.40; // 40% average turnover
-  const trainingCostPerScribe = 5000; // $5K to train a new scribe
+  // Calculate hidden costs (use inputs or defaults)
+  const turnoverRate = (inputs.turnoverRate > 0 ? inputs.turnoverRate : 40) / 100;
+  const trainingCostPerScribe = inputs.trainingCostPerScribe > 0 ? inputs.trainingCostPerScribe : 5000;
   const annualTurnoverCost = Math.round(inputs.scribeCount * turnoverRate * trainingCostPerScribe);
   const managementOverhead = Math.round(calculations.totalScribeCost * 0.15); // 15% management overhead
   const totalHiddenCosts = annualTurnoverCost + managementOverhead;
@@ -191,12 +191,12 @@ export default function ScribeFullAnalysis({
                 </div>
                 <div>
                   <div className="font-semibold text-[#111827]">Turnover & Training</div>
-                  <div className="text-xs text-[#6B7280]">~40% annual turnover rate</div>
+                  <div className="text-xs text-[#6B7280]">~{inputs.turnoverRate || 40}% annual turnover rate</div>
                 </div>
               </div>
               <div className="text-2xl font-bold text-[#111827] mb-1">{formatCurrency(annualTurnoverCost)}</div>
               <p className="text-xs text-[#6B7280]">
-                You'll replace ~{Math.round(inputs.scribeCount * turnoverRate)} scribes this year at ~$5K each in training costs
+                You'll replace ~{Math.round(inputs.scribeCount * turnoverRate)} scribes this year at ~${(trainingCostPerScribe / 1000).toFixed(0)}K each in training costs
               </p>
             </div>
 

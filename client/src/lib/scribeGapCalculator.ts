@@ -6,6 +6,8 @@ export interface ScribeInputs {
   totalProviders: number;
   annualEncounters: number;
   minutesPerEncounter: number;
+  turnoverRate: number;
+  trainingCostPerScribe: number;
 }
 
 export interface ScribeCalculations {
@@ -30,6 +32,8 @@ export const SCRIBE_ASSUMPTIONS = {
   weeksPerYear: 50,
   minutesPerEncounterDefault: 10,
   pajamaTimePercent: 0.25,
+  turnoverRateDefault: 40,
+  trainingCostDefault: 5000,
 };
 
 export function calculateScribeGap(inputs: ScribeInputs): ScribeCalculations {

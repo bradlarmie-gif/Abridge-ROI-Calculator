@@ -412,8 +412,8 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
   const displayClientName = clientName || "Your Organization";
   const displayPreparedBy = preparedBy || "Abridge";
 
-  const turnoverRate = 0.40;
-  const trainingCostPerScribe = 5000;
+  const turnoverRate = (inputs.turnoverRate > 0 ? inputs.turnoverRate : 40) / 100;
+  const trainingCostPerScribe = inputs.trainingCostPerScribe > 0 ? inputs.trainingCostPerScribe : 5000;
   const annualTurnoverCost = Math.round(inputs.scribeCount * turnoverRate * trainingCostPerScribe);
   const managementOverhead = Math.round(calculations.totalScribeCost * 0.15);
   const totalHiddenCosts = annualTurnoverCost + managementOverhead;
@@ -507,7 +507,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
           </View>
 
           <Text style={styles.storyText}>
-            And that's before hidden costs. When you factor in <Text style={styles.storyTextBold}>~40% annual turnover</Text> and <Text style={styles.storyTextBold}>management overhead</Text>, your true program cost is closer to <Text style={styles.storyTextBold}>{formatCurrency(trueTotalCost)}/year</Text>.
+            And that's before hidden costs. When you factor in <Text style={styles.storyTextBold}>~{inputs.turnoverRate || 40}% annual turnover</Text> and <Text style={styles.storyTextBold}>management overhead</Text>, your true program cost is closer to <Text style={styles.storyTextBold}>{formatCurrency(trueTotalCost)}/year</Text>.
           </Text>
 
           <Text style={[styles.storyText, { fontWeight: "bold", marginTop: 8 }]}>
@@ -607,7 +607,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
           <View>
             <Image src={abridgeLogoPath} style={{ width: 70, marginBottom: 6 }} />
             <Text style={[styles.methodologyText, { maxWidth: 400 }]}>
-              Based on {inputs.scribeCount} scribes at ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs/week. Hidden costs: ~40% turnover + 15% overhead.
+              Based on {inputs.scribeCount} scribes at ${inputs.scribeCostPerHour}/hr × {inputs.scribeHoursPerWeek} hrs/week. Hidden costs: ~{inputs.turnoverRate || 40}% turnover + 15% overhead.
             </Text>
           </View>
           <Text style={styles.footerText}>Page 2 of 2</Text>
