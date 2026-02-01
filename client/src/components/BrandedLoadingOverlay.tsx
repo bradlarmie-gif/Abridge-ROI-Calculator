@@ -40,7 +40,7 @@ const geometricShapes = [
 export function BrandedLoadingOverlay({ 
   isVisible, 
   onComplete, 
-  duration = 3000
+  duration = 2500
 }: BrandedLoadingOverlayProps) {
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,8 +59,8 @@ export function BrandedLoadingOverlay({
       });
     }
 
-    // Progress speed matched to 3 second duration
-    const increment = 1.2;
+    // Progress speed matched to 2.5 second duration
+    const increment = 1.4;
     const interval = 35;
 
     const progressInterval = setInterval(() => {
