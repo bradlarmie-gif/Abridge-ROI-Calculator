@@ -167,7 +167,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           className="text-center mb-10 md:mb-14"
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
-            Model the Impact of Ambient Documentation
+            Model the Impact of<br />Abridge
           </h1>
           <button
             onClick={onSelectLearn}
