@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowLeft, Target, CheckCircle, BarChart3, Clock, DollarSign, Smile, Info } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, CheckCircle, BarChart3, Clock, DollarSign, Smile, Info, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { type SwitchInputs, type SwitchCalculations } from "@/lib/switchGapCalculator";
@@ -256,11 +256,9 @@ export default function StepWhatGoodLooksLike({
         <div className="p-6 md:p-8">
           <div className="flex items-start gap-5">
             <div className="flex-shrink-0">
-              <img 
-                src="/attached_assets/abridge-logo-symbol-red_1769928015851.png" 
-                alt="Abridge" 
-                className="w-10 h-10"
-              />
+              <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-[#EA2C00]" />
+              </div>
             </div>
             
             <div className="flex-1">
