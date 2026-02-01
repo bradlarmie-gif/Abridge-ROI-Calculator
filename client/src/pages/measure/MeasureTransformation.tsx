@@ -195,7 +195,7 @@ export default function MeasureTransformation({
             afterValue={state.documentationQuality.wrvuWith.toFixed(2)}
             beforeLabel=" wRVU"
             afterLabel=" wRVU"
-            changeText={`+${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
+            changeText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
             insight="Complexity that was missed is now captured"
             delay={0.35}
           />
