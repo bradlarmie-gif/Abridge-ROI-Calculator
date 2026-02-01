@@ -159,20 +159,22 @@ export function PDFCoverPage({
             />
           ))}
           
-          {/* Curved growth line - bright lime green */}
+          {/* Curved growth line - white, parabolic/exponential shape */}
           <Path
-            d="M 0 800 Q 140 750 240 580 Q 340 420 440 220 Q 490 90 540 0"
-            stroke="#9ACD32"
-            strokeWidth={2}
+            d="M 50 820 C 100 810 200 790 280 720 C 360 650 420 520 470 380 C 520 240 550 100 570 0"
+            stroke="#FFFFFF"
+            strokeWidth={1.5}
+            strokeOpacity={0.6}
             fill="none"
           />
           
-          {/* Data points on the curve - lime green */}
-          <Circle cx={70} cy={790} r={5} fill="#9ACD32" />
-          <Circle cx={190} cy={660} r={5} fill="#9ACD32" />
-          <Circle cx={310} cy={480} r={5} fill="#9ACD32" />
-          <Circle cx={410} cy={290} r={5} fill="#9ACD32" />
-          <Circle cx={490} cy={110} r={5} fill="#9ACD32" />
+          {/* Data points on the curve - white */}
+          <Circle cx={120} cy={800} r={4} fill="#FFFFFF" fillOpacity={0.7} />
+          <Circle cx={220} cy={770} r={4} fill="#FFFFFF" fillOpacity={0.7} />
+          <Circle cx={340} cy={620} r={4} fill="#FFFFFF" fillOpacity={0.7} />
+          <Circle cx={440} cy={430} r={4} fill="#FFFFFF" fillOpacity={0.7} />
+          <Circle cx={520} cy={200} r={4} fill="#FFFFFF" fillOpacity={0.7} />
+          <Circle cx={560} cy={50} r={4} fill="#FFFFFF" fillOpacity={0.7} />
         </Svg>
       </View>
       
