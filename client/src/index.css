@@ -5,7 +5,7 @@
 /* Abridge Custom Font */
 @font-face {
   font-family: 'Abridge';
-  src: url('./assets/fonts/abridge.otf') format('opentype');
+  src: url('/attached_assets/abridge-font.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

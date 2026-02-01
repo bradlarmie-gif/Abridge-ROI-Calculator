@@ -1,5 +1,11 @@
-import { Page, View, Text, StyleSheet, Svg, Path, Circle, Line, Image } from "@react-pdf/renderer";
+import { Page, View, Text, StyleSheet, Svg, Path, Circle, Line, Image, Font } from "@react-pdf/renderer";
 import abridgeLogoWhite from "@assets/abridge-logo-wordmark-white_1769912213277.png";
+import abridgeFontPath from "@assets/abridge-font.otf";
+
+Font.register({
+  family: 'Abridge',
+  src: abridgeFontPath,
+});
 
 interface PDFCoverPageProps {
   reportLabel: string;
@@ -49,11 +55,13 @@ const styles = StyleSheet.create({
   
   title: {
     fontSize: 52,
+    fontFamily: "Abridge",
     fontWeight: "bold",
     color: colors.white,
     lineHeight: 1.1,
-    letterSpacing: -1,
+    letterSpacing: 1,
     marginBottom: 40,
+    textTransform: "uppercase",
   },
   
   subtitleContainer: {
