@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight } from "lucide-react";
+import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -65,22 +65,110 @@ const getPresetsForLocums = (includeLocums: boolean) => {
   }
 };
 
-const REALIZATION_RATES = {
-  patientAccess: 0.35,
-  reducingLocums: 0.60,
-  clinicianWellbeing: 0.20,
+interface EditableAssumptions {
+  visitValue: number;
+  locumHourlyCost: number;
+  turnoverCost: number;
+  atRiskRate: number;
+  patientAccessRealization: number;
+  locumRealization: number;
+  wellbeingRealization: number;
+}
+
+const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
+  visitValue: 200,
+  locumHourlyCost: 150,
+  turnoverCost: 250000,
+  atRiskRate: 15,
+  patientAccessRealization: 35,
+  locumRealization: 60,
+  wellbeingRealization: 20,
 };
 
-const VALUE_PER_UNIT = {
-  patientAccessVisitValue: 200,
-  locumHourlyCost: 150,
-  turnoverCostPerProvider: 250000,
-  atRiskReduction: 0.15,
-};
+function EditableValue({ 
+  value, 
+  onChange, 
+  prefix = '', 
+  suffix = '',
+  min = 0,
+  max = 999999,
+  step = 1,
+}: { 
+  value: number; 
+  onChange: (v: number) => void;
+  prefix?: string;
+  suffix?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value.toString());
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    const num = parseFloat(inputValue);
+    if (!isNaN(num) && num >= min && num <= max) {
+      onChange(num);
+    } else {
+      setInputValue(value.toString());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleBlur();
+    } else if (e.key === 'Escape') {
+      setInputValue(value.toString());
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <span className="inline-flex items-center">
+        {prefix}
+        <input
+          type="number"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          min={min}
+          max={max}
+          step={step}
+          className="w-20 px-1 py-0.5 text-sm font-semibold text-[#EA2C00] bg-white border border-[#EA2C00] rounded focus:outline-none focus:ring-1 focus:ring-[#EA2C00]"
+          autoFocus
+          data-testid="input-editable-value"
+        />
+        {suffix}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => {
+        setInputValue(value.toString());
+        setIsEditing(true);
+      }}
+      className="inline-flex items-center gap-1 text-sm font-semibold text-[#EA2C00] hover:bg-[#EA2C00]/10 px-1.5 py-0.5 rounded transition-colors group"
+      data-testid="button-edit-value"
+    >
+      {prefix}{value.toLocaleString()}{suffix}
+      <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </button>
+  );
+}
 
 export default function ExploreTimeAllocation({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreTimeAllocationProps) {
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [includeLocums, setIncludeLocums] = useState(false);
+  const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
+
+  const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
+    setAssumptions(prev => ({ ...prev, [key]: value }));
+  };
 
   const handleToggleLocums = () => {
     const newIncludeLocums = !includeLocums;
@@ -147,58 +235,180 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
 
   const calculateDriverValue = (id: keyof TimeAllocation) => {
     const hours = getHoursForCategory(id);
-    const realizationRate = REALIZATION_RATES[id];
     
     switch (id) {
       case 'patientAccess': {
+        const realizationRate = assumptions.patientAccessRealization / 100;
         const avgVisitLength = 0.5;
         const potentialVisits = hours / avgVisitLength;
         const realizedVisits = potentialVisits * realizationRate;
-        const value = realizedVisits * VALUE_PER_UNIT.patientAccessVisitValue;
+        const value = realizedVisits * assumptions.visitValue;
         return {
           value: Math.round(value),
-          steps: [
-            { label: 'Hours allocated', value: hours.toLocaleString(), unit: 'hours' },
-            { label: 'Avg visit length', value: '30', unit: 'min' },
-            { label: 'Potential new visits', value: Math.round(potentialVisits).toLocaleString(), unit: 'visits' },
-            { label: 'Realization rate', value: `${Math.round(realizationRate * 100)}%`, unit: '', highlight: true, explanation: 'Not all saved time converts to visits—scheduling, room availability, and demand limit realization' },
-            { label: 'Realized new visits', value: Math.round(realizedVisits).toLocaleString(), unit: 'visits' },
-            { label: 'Revenue per visit', value: `$${VALUE_PER_UNIT.patientAccessVisitValue}`, unit: '' },
-            { label: 'Annual value', value: `$${Math.round(value).toLocaleString()}`, unit: '', isFinal: true },
-          ],
+          editableInputs: (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Hours allocated</span>
+                <span className="text-sm font-semibold text-black">{hours.toLocaleString()} hours</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Avg visit length</span>
+                <span className="text-sm font-semibold text-black">30 min</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Potential new visits</span>
+                <span className="text-sm font-semibold text-black">{Math.round(potentialVisits).toLocaleString()} visits</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Scheduling, room availability, demand limits</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.patientAccessRealization} 
+                  onChange={(v) => updateAssumption('patientAccessRealization', v)}
+                  suffix="%"
+                  min={10}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Realized new visits</span>
+                <span className="text-sm font-semibold text-black">{Math.round(realizedVisits).toLocaleString()} visits</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Revenue per visit</span>
+                <EditableValue 
+                  value={assumptions.visitValue} 
+                  onChange={(v) => updateAssumption('visitValue', v)}
+                  prefix="$"
+                  min={50}
+                  max={1000}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                <span className="text-sm font-bold text-black">Annual value</span>
+                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
+              </div>
+            </div>
+          ),
         };
       }
       case 'reducingLocums': {
+        const realizationRate = assumptions.locumRealization / 100;
         const realizedHours = hours * realizationRate;
-        const value = realizedHours * VALUE_PER_UNIT.locumHourlyCost;
+        const value = realizedHours * assumptions.locumHourlyCost;
         return {
           value: Math.round(value),
-          steps: [
-            { label: 'Hours allocated', value: hours.toLocaleString(), unit: 'hours' },
-            { label: 'Realization rate', value: `${Math.round(realizationRate * 100)}%`, unit: '', highlight: true, explanation: 'Accounts for scheduling constraints and minimum shift requirements' },
-            { label: 'Locum hours avoided', value: Math.round(realizedHours).toLocaleString(), unit: 'hours' },
-            { label: 'Locum hourly cost', value: `$${VALUE_PER_UNIT.locumHourlyCost}`, unit: '' },
-            { label: 'Annual savings', value: `$${Math.round(value).toLocaleString()}`, unit: '', isFinal: true },
-          ],
+          editableInputs: (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Hours allocated</span>
+                <span className="text-sm font-semibold text-black">{hours.toLocaleString()} hours</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Minimum shift requirements, scheduling</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.locumRealization} 
+                  onChange={(v) => updateAssumption('locumRealization', v)}
+                  suffix="%"
+                  min={10}
+                  max={100}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Locum hours avoided</span>
+                <span className="text-sm font-semibold text-black">{Math.round(realizedHours).toLocaleString()} hours</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Locum hourly cost</span>
+                <EditableValue 
+                  value={assumptions.locumHourlyCost} 
+                  onChange={(v) => updateAssumption('locumHourlyCost', v)}
+                  prefix="$"
+                  min={50}
+                  max={500}
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                <span className="text-sm font-bold text-black">Annual savings</span>
+                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
+              </div>
+            </div>
+          ),
         };
       }
       case 'clinicianWellbeing': {
-        const providersAtRisk = state.numberOfProviders * VALUE_PER_UNIT.atRiskReduction;
+        const realizationRate = assumptions.wellbeingRealization / 100;
+        const atRiskRate = assumptions.atRiskRate / 100;
+        const providersAtRisk = state.numberOfProviders * atRiskRate;
         const retentionImprovement = (state.timeAllocation.clinicianWellbeing / 100) * realizationRate;
         const providersRetained = providersAtRisk * retentionImprovement;
-        const value = providersRetained * VALUE_PER_UNIT.turnoverCostPerProvider;
+        const value = providersRetained * assumptions.turnoverCost;
         return {
           value: Math.round(value),
-          steps: [
-            { label: 'Total providers', value: state.numberOfProviders.toLocaleString(), unit: 'providers' },
-            { label: 'At-risk rate (industry avg)', value: '15%', unit: '' },
-            { label: 'Providers at risk', value: Math.round(providersAtRisk).toLocaleString(), unit: 'providers' },
-            { label: 'Wellbeing allocation', value: `${state.timeAllocation.clinicianWellbeing}%`, unit: '' },
-            { label: 'Realization rate', value: `${Math.round(realizationRate * 100)}%`, unit: '', highlight: true, explanation: 'Conservative estimate of burnout reduction translating to retention' },
-            { label: 'Providers retained', value: providersRetained.toFixed(1), unit: 'providers' },
-            { label: 'Turnover cost avoided', value: `$${VALUE_PER_UNIT.turnoverCostPerProvider.toLocaleString()}`, unit: '/provider' },
-            { label: 'Annual value', value: `$${Math.round(value).toLocaleString()}`, unit: '', isFinal: true },
-          ],
+          editableInputs: (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Total providers</span>
+                <span className="text-sm font-semibold text-black">{state.numberOfProviders.toLocaleString()} providers</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">At-risk rate (industry avg)</span>
+                <EditableValue 
+                  value={assumptions.atRiskRate} 
+                  onChange={(v) => updateAssumption('atRiskRate', v)}
+                  suffix="%"
+                  min={5}
+                  max={50}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Providers at risk</span>
+                <span className="text-sm font-semibold text-black">{Math.round(providersAtRisk).toLocaleString()} providers</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Wellbeing allocation</span>
+                <span className="text-sm font-semibold text-black">{state.timeAllocation.clinicianWellbeing}%</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Burnout-to-retention conversion</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.wellbeingRealization} 
+                  onChange={(v) => updateAssumption('wellbeingRealization', v)}
+                  suffix="%"
+                  min={5}
+                  max={50}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Providers retained</span>
+                <span className="text-sm font-semibold text-black">{providersRetained.toFixed(1)} providers</span>
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Turnover cost avoided</span>
+                <EditableValue 
+                  value={assumptions.turnoverCost} 
+                  onChange={(v) => updateAssumption('turnoverCost', v)}
+                  prefix="$"
+                  min={50000}
+                  max={1000000}
+                  step={10000}
+                />
+                <span className="text-xs text-slate-400">/provider</span>
+              </div>
+              <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                <span className="text-sm font-bold text-black">Annual value</span>
+                <span className="text-lg font-bold text-[#F07B5F]">${Math.round(value).toLocaleString()}</span>
+              </div>
+            </div>
+          ),
         };
       }
     }
@@ -381,35 +591,18 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     >
                       <div className="px-5 pb-5">
                         <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                          <div className="flex items-center gap-2 mb-4">
-                            <Calculator className="w-4 h-4 text-[#EA2C00]" />
-                            <h4 className="text-sm font-bold text-black">How We Calculate This</h4>
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <Calculator className="w-4 h-4 text-[#EA2C00]" />
+                              <h4 className="text-sm font-bold text-black">How We Calculate This</h4>
+                            </div>
+                            <span className="text-xs text-slate-400 flex items-center gap-1">
+                              <Pencil className="w-3 h-3" />
+                              Click values to edit
+                            </span>
                           </div>
                           
-                          <div className="space-y-2">
-                            {driverCalc.steps.map((step, stepIndex) => (
-                              <div key={stepIndex}>
-                                <div 
-                                  className={`
-                                    flex items-center justify-between py-2
-                                    ${step.isFinal ? 'border-t-2 border-[#EA2C00]/20 pt-3 mt-2' : ''}
-                                  `}
-                                >
-                                  <span className={`text-sm ${step.isFinal ? 'font-bold text-black' : step.highlight ? 'font-medium text-[#EA2C00]' : 'text-slate-600'}`}>
-                                    {step.label}
-                                  </span>
-                                  <span className={`text-sm font-semibold ${step.isFinal ? 'text-[#EA2C00] text-lg' : step.highlight ? 'text-[#EA2C00]' : 'text-black'}`}>
-                                    {step.value} {step.unit}
-                                  </span>
-                                </div>
-                                {step.explanation && (
-                                  <p className="text-xs text-slate-500 italic pl-2 pb-2 border-l-2 border-[#EA2C00]/20 ml-1">
-                                    {step.explanation}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                          {driverCalc.editableInputs}
                         </div>
                       </div>
                     </motion.div>
