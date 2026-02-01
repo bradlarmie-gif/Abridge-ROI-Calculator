@@ -651,10 +651,10 @@ export default function SummaryCommandCenter({
           </section>
 
           {/* ========== YOUR VALUE STORY ========== */}
-          <section className="py-16 md:py-24 px-6">
+          <section className="py-12 md:py-16 px-6">
             <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
                   Your Value Story
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
@@ -802,10 +802,10 @@ export default function SummaryCommandCenter({
           </section>
 
           {/* ========== SCALING JOURNEY ========== */}
-          <section className="py-16 md:py-24 px-6 bg-white">
+          <section className="py-12 md:py-16 px-6 bg-white">
             <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
                   Scale Your Impact
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
@@ -814,7 +814,7 @@ export default function SummaryCommandCenter({
               </div>
               
               {/* Journey Visualization - Pilot to Full Scale */}
-              <div className="bg-black rounded-3xl p-8 md:p-12 mb-12">
+              <div className="bg-black rounded-3xl p-8 md:p-10 mb-8">
                 {/* Inline Expansion Controls */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
                   {/* Current State */}
@@ -923,19 +923,37 @@ export default function SummaryCommandCenter({
                   </div>
                 </div>
                 
-                {/* Compounding note */}
-                <div className="mt-6 flex items-center justify-center gap-4 text-center">
-                  <Sparkles className="w-4 h-4 text-[#EA2C00]" />
-                  <span className="text-white/50 text-sm">
-                    Value compounds through {pilotUtilization}% → {fullScaleUtilization}% utilization lift and organizational learning
-                  </span>
+                {/* Compact Investment Summary - inside scaling card */}
+                <div className="mt-8 bg-white/5 rounded-xl p-5 border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white/60 text-sm font-medium">3-Year Investment Summary</span>
+                    <span className="text-white/40 text-xs">10% annual growth assumed</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3 text-center">
+                    <div>
+                      <div className="text-white/40 text-xs mb-1">Year 1</div>
+                      <div className="text-white font-semibold">{formatCompactCurrency(year1 - year1Cost)}</div>
+                    </div>
+                    <div>
+                      <div className="text-white/40 text-xs mb-1">Year 2</div>
+                      <div className="text-white font-semibold">{formatCompactCurrency(year2 - year2Cost)}</div>
+                    </div>
+                    <div>
+                      <div className="text-white/40 text-xs mb-1">Year 3</div>
+                      <div className="text-white font-semibold">{formatCompactCurrency(year3 - year3Cost)}</div>
+                    </div>
+                    <div className="border-l border-white/10 pl-3">
+                      <div className="text-[#EA2C00] text-xs mb-1 font-semibold">3-Year Net</div>
+                      <div className="text-[#EA2C00] font-bold text-lg">{formatCompactCurrency(threeYearNet)}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
               {/* Growth Chart */}
-              <div className="bg-slate-50 rounded-3xl p-6 md:p-10 border border-slate-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-slate-900">Growth Trajectory</h3>
+              <div className="bg-slate-50 rounded-2xl p-5 md:p-8 border border-slate-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-slate-900 text-sm">Growth Trajectory</h3>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-0.5 bg-[#EA2C00] rounded-full" />
@@ -947,7 +965,7 @@ export default function SummaryCommandCenter({
                     </div>
                   </div>
                 </div>
-                <div className="h-64 md:h-80">
+                <div className="h-56 md:h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 40 }}>
                       <defs>
@@ -1044,63 +1062,8 @@ export default function SummaryCommandCenter({
             </div>
           </section>
 
-          {/* ========== INVESTMENT SECTION ========== */}
-          <section className="py-16 md:py-24 px-6">
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                  Investment Summary
-                </h2>
-              </div>
-              
-              <div className="bg-slate-50 rounded-3xl p-8 md:p-12">
-                {/* 3-Year Projection Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="text-left pb-4 font-medium text-slate-500"></th>
-                        <th className="text-right pb-4 font-medium text-slate-500">Year 1</th>
-                        <th className="text-right pb-4 font-medium text-slate-500">Year 2</th>
-                        <th className="text-right pb-4 font-medium text-slate-500">Year 3</th>
-                        <th className="text-right pb-4 font-bold text-slate-900">3-Year Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-lg">
-                      <tr className="border-b border-slate-100">
-                        <td className="py-4 text-slate-600">Value Created</td>
-                        <td className="py-4 text-right font-mono">{formatCompactCurrency(year1)}</td>
-                        <td className="py-4 text-right font-mono">{formatCompactCurrency(year2)}</td>
-                        <td className="py-4 text-right font-mono">{formatCompactCurrency(year3)}</td>
-                        <td className="py-4 text-right font-mono font-semibold">{formatCompactCurrency(threeYearValue)}</td>
-                      </tr>
-                      <tr className="border-b border-slate-100">
-                        <td className="py-4 text-slate-600">Investment</td>
-                        <td className="py-4 text-right font-mono text-slate-500">({formatCompactCurrency(year1Cost)})</td>
-                        <td className="py-4 text-right font-mono text-slate-500">({formatCompactCurrency(year2Cost)})</td>
-                        <td className="py-4 text-right font-mono text-slate-500">({formatCompactCurrency(year3Cost)})</td>
-                        <td className="py-4 text-right font-mono text-slate-500">({formatCompactCurrency(threeYearCost)})</td>
-                      </tr>
-                      <tr>
-                        <td className="py-4 font-bold text-slate-900">Net Value</td>
-                        <td className="py-4 text-right font-mono font-bold text-[#EA2C00]">{formatCompactCurrency(year1 - year1Cost)}</td>
-                        <td className="py-4 text-right font-mono font-bold text-[#EA2C00]">{formatCompactCurrency(year2 - year2Cost)}</td>
-                        <td className="py-4 text-right font-mono font-bold text-[#EA2C00]">{formatCompactCurrency(year3 - year3Cost)}</td>
-                        <td className="py-4 text-right font-mono font-bold text-[#EA2C00] text-xl">{formatCompactCurrency(threeYearNet)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                
-                <p className="text-slate-500 text-sm mt-6">
-                  Assumes 10% annual value growth with increased adoption
-                </p>
-              </div>
-            </div>
-          </section>
-
           {/* ========== ACTIONS SECTION ========== */}
-          <section className="py-16 md:py-24 px-6 bg-black">
+          <section className="py-12 md:py-16 px-6 bg-black">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Ready to Move Forward?
