@@ -78,7 +78,7 @@ interface EditableAssumptions {
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
-  wrvuConversion: 40,
+  wrvuConversion: 33,
   wrvuRealization: 75,
   hccValuePerCondition: 800,
   hccRealization: 60,
