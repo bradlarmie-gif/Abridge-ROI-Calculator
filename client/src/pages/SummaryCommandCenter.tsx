@@ -20,6 +20,10 @@ import {
   Sparkles,
   Share2,
   Mail,
+  FileCheck,
+  Building2,
+  Link2,
+  Stethoscope,
 } from "lucide-react";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { Button } from "@/components/ui/button";
@@ -120,6 +124,15 @@ const settingConfig: Record<string, { unitName: string; unitNamePlural: string; 
   nursing: { unitName: "staffed bed", unitNamePlural: "staffed beds", encounterName: "documentation events" },
 };
 
+// ED-specific driver label overrides - maps generic IDs to ED-specific labels
+const ED_DRIVER_LABELS: Record<string, string> = {
+  patientAccess: "Throughput & LWBS Reduction",
+  overtime: "Physician Retention",
+  workforce: "Clinician Wellbeing",
+  wrvu: "Level of Service Accuracy",
+  denials: "Denial Prevention",
+};
+
 function CustomTooltip({ active, payload, unitName = "beds", encountersPerUnit = 0, volumeUnit = "encounters" }: { active?: boolean; payload?: Array<{ payload: { providers: number; utilization: number; value: number; linearValue: number; actualValue: number; roi: string; milestoneLabel?: string | null; phase?: string; month?: number } }>; unitName?: string; encountersPerUnit?: number; volumeUnit?: string }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -185,6 +198,7 @@ export default function SummaryCommandCenter({
   const activeSetting = selectedSettings[0] || "outpatient";
   const config = settingConfig[activeSetting] || settingConfig.outpatient;
   const isNursingSetting = selectedSettings.includes("nursing");
+  const isEDSetting = selectedSettings.includes("ed");
   
   const initialUnits = isNursingSetting 
     ? (modelResults.nursingStaffedBeds || 200)
@@ -390,9 +404,13 @@ export default function SummaryCommandCenter({
     Object.entries(mergedDriverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {
         const meta = DRIVER_CATEGORIES[key];
+        // Apply ED-specific labels when applicable
+        const driverName = isEDSetting && ED_DRIVER_LABELS[key] 
+          ? ED_DRIVER_LABELS[key] 
+          : (result.name || meta?.label || key);
         breakdown.push({
           id: key,
-          name: result.name || meta?.label || key,
+          name: driverName,
           value: result.value,
           category: meta?.category || "documentation"
         });
@@ -400,7 +418,7 @@ export default function SummaryCommandCenter({
     });
     
     return breakdown.sort((a, b) => b.value - a.value);
-  }, [mergedDriverResults]);
+  }, [mergedDriverResults, isEDSetting]);
   
   const timeDrivers = valueBreakdown.filter(d => d.category === "time");
   const docDrivers = valueBreakdown.filter(d => d.category === "documentation");
@@ -704,12 +722,15 @@ export default function SummaryCommandCenter({
                     </div>
                     
                     <p className="text-slate-600 mb-6 leading-relaxed">
-                      Documentation consumes 1-2 hours per clinician daily. Ambient AI eliminates most of this burden, 
-                      creating capacity that organizations can strategically reinvest.
+                      {isEDSetting 
+                        ? "ED documentation typically adds 10-15 minutes per patient. Ambient AI eliminates this burden, improving throughput and reducing physician burnout."
+                        : "Documentation consumes 1-2 hours per clinician daily. Ambient AI eliminates most of this burden, creating capacity that organizations can strategically reinvest."}
                     </p>
                     <div className="bg-slate-50 rounded-lg p-3 mb-6">
                       <p className="text-slate-500 text-xs">
-                        <span className="font-semibold text-slate-700">Why this matters:</span> Time savings only create financial value when converted to action—whether that's seeing additional patients, reducing expensive contract labor, or improving retention through better work-life balance.
+                        <span className="font-semibold text-slate-700">Why this matters:</span> {isEDSetting 
+                          ? "Time savings in the ED directly impact throughput, LWBS rates, and physician satisfaction. Each driver includes conservative realization rates reflecting ED-specific constraints."
+                          : "Time savings only create financial value when converted to action—whether that's seeing additional patients, reducing expensive contract labor, or improving retention through better work-life balance."}
                       </p>
                     </div>
                     
@@ -758,12 +779,15 @@ export default function SummaryCommandCenter({
                     </div>
                     
                     <p className="text-slate-600 mb-6 leading-relaxed">
-                      When documentation is complete and accurate, downstream revenue follows. AI-generated notes 
-                      capture clinical details that busy clinicians often omit.
+                      {isEDSetting 
+                        ? "ED documentation drives accurate level-of-service coding and denial prevention. Complete notes capture the clinical complexity that supports appropriate reimbursement."
+                        : "When documentation is complete and accurate, downstream revenue follows. AI-generated notes capture clinical details that busy clinicians often omit."}
                     </p>
                     <div className="bg-[#EA2C00]/5 rounded-lg p-3 mb-6">
                       <p className="text-slate-500 text-xs">
-                        <span className="font-semibold text-[#EA2C00]">Why this matters:</span> Industry research suggests meaningful portions of billable complexity go undocumented. Better notes support better coding, fewer denials, and more accurate risk adjustment. See Methodology for our assumptions.
+                        <span className="font-semibold text-[#EA2C00]">Why this matters:</span> {isEDSetting 
+                          ? "ED encounters are high-acuity and time-sensitive. Documentation that captures the full clinical picture supports accurate E&M coding and reduces documentation-related denials."
+                          : "Industry research suggests meaningful portions of billable complexity go undocumented. Better notes support better coding, fewer denials, and more accurate risk adjustment. See Methodology for our assumptions."}
                       </p>
                     </div>
                     
@@ -825,6 +849,65 @@ export default function SummaryCommandCenter({
               </div>
             </div>
           </section>
+
+          {/* ========== ED DOWNSTREAM VALUE ========== */}
+          {isEDSetting && (
+            <section className="py-12 md:py-16 px-6 bg-gradient-to-b from-slate-800 to-slate-900">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-[#F07B5F]" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white">Downstream Value Potential</h2>
+                    <p className="text-white/60 text-sm">ED documentation connects to Inpatient value</p>
+                  </div>
+                </div>
+                
+                <p className="text-white/80 mb-8 max-w-3xl">
+                  ED encounters that result in admissions create additional documentation value opportunities. 
+                  These are captured in the Inpatient flow and represent significant potential beyond direct ED metrics.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <FileCheck className="w-5 h-5 text-[#F07B5F]" />
+                      <span className="font-semibold text-white">DRG/CMI Capture</span>
+                    </div>
+                    <p className="text-sm text-white/70">Accurate ED documentation supports proper DRG assignment for admitted patients, capturing the full complexity of the case.</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Stethoscope className="w-5 h-5 text-[#F07B5F]" />
+                      <span className="font-semibold text-white">Medical Necessity</span>
+                    </div>
+                    <p className="text-sm text-white/70">Complete documentation establishes medical necessity for admission decisions, reducing retrospective denials.</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Building2 className="w-5 h-5 text-[#F07B5F]" />
+                      <span className="font-semibold text-white">CDI Efficiency</span>
+                    </div>
+                    <p className="text-sm text-white/70">Reduces Clinical Documentation Improvement queries and rework by capturing detail upfront.</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Link2 className="w-5 h-5 text-[#F07B5F]" />
+                      <span className="font-semibold text-white">Inpatient Connection</span>
+                    </div>
+                    <p className="text-sm text-white/70">ED documentation flows into inpatient records, enabling end-to-end value capture across the care continuum.</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <p className="text-xs text-white/40 text-center">
+                    To model inpatient value from ED admissions, explore the Inpatient care setting when it becomes available.
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* ========== SCALING JOURNEY ========== */}
           <section className="py-12 md:py-16 px-6 bg-white">
