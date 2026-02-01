@@ -257,9 +257,9 @@ export default function StepWhatGoodLooksLike({
           <div className="flex items-start gap-5">
             <div className="flex-shrink-0">
               <img 
-                src="/attached_assets/abridge-logo-symbol-circle-redonsand_1769922423632.png" 
+                src="/attached_assets/abridge-logo-symbol-red_1769928015851.png" 
                 alt="Abridge" 
-                className="w-14 h-14 rounded-full"
+                className="w-10 h-10"
               />
             </div>
             
