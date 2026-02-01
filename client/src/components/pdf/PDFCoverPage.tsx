@@ -132,7 +132,7 @@ export function PDFCoverPage({
       {/* Grid Pattern Background */}
       <View style={styles.gridContainer}>
         <Svg width={pageWidth} height={pageHeight} viewBox={`0 0 ${pageWidth} ${pageHeight}`}>
-          {/* Vertical grid lines */}
+          {/* Vertical grid lines - white, thin */}
           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
             <Line
               key={`v-${i}`}
@@ -140,11 +140,12 @@ export function PDFCoverPage({
               y1={0}
               x2={gridSpacingX * i}
               y2={pageHeight}
-              stroke="rgba(255,255,255,0.1)"
-              strokeWidth={1}
+              stroke="#FFFFFF"
+              strokeWidth={0.5}
+              strokeOpacity={0.3}
             />
           ))}
-          {/* Horizontal grid lines */}
+          {/* Horizontal grid lines - white, thin */}
           {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
             <Line
               key={`h-${i}`}
@@ -152,25 +153,26 @@ export function PDFCoverPage({
               y1={gridSpacingY * i}
               x2={pageWidth}
               y2={gridSpacingY * i}
-              stroke="rgba(255,255,255,0.1)"
-              strokeWidth={1}
+              stroke="#FFFFFF"
+              strokeWidth={0.5}
+              strokeOpacity={0.3}
             />
           ))}
           
-          {/* Curved growth line - scaled for A4 */}
+          {/* Curved growth line - bright lime green */}
           <Path
             d="M 0 800 Q 140 750 240 580 Q 340 420 440 220 Q 490 90 540 0"
-            stroke="rgba(255,255,255,0.25)"
+            stroke="#9ACD32"
             strokeWidth={2}
             fill="none"
           />
           
-          {/* Data points on the curve */}
-          <Circle cx={70} cy={790} r={5} fill="rgba(255,255,255,0.4)" />
-          <Circle cx={190} cy={660} r={5} fill="rgba(255,255,255,0.4)" />
-          <Circle cx={310} cy={480} r={5} fill="rgba(255,255,255,0.4)" />
-          <Circle cx={410} cy={290} r={5} fill="rgba(255,255,255,0.4)" />
-          <Circle cx={490} cy={110} r={5} fill="rgba(255,255,255,0.4)" />
+          {/* Data points on the curve - lime green */}
+          <Circle cx={70} cy={790} r={5} fill="#9ACD32" />
+          <Circle cx={190} cy={660} r={5} fill="#9ACD32" />
+          <Circle cx={310} cy={480} r={5} fill="#9ACD32" />
+          <Circle cx={410} cy={290} r={5} fill="#9ACD32" />
+          <Circle cx={490} cy={110} r={5} fill="#9ACD32" />
         </Svg>
       </View>
       
