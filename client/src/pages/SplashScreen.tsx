@@ -177,7 +177,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         </div>
 
         <h1 
-          className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight font-abridge uppercase"
+          className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight font-abridge uppercase"
           style={{ textShadow: '0 0 40px rgba(234, 44, 0, 0.3)' }}
         >
           Build Your Value Story
