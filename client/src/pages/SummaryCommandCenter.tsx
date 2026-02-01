@@ -620,8 +620,7 @@ export default function SummaryCommandCenter({
                 const eligibleEncounters = Math.round(pilotUnits * encountersPerUnit * (pilotUtilization / 100));
                 const totalMinutesSaved = eligibleEncounters * timeSavedMinutesPerEncounter;
                 const totalHoursSaved = Math.round(totalMinutesSaved / 60);
-                const workingDays = 250;
-                const minutesPerDay = Math.round(totalMinutesSaved / workingDays / pilotUnits);
+                const valuePerProvider = Math.round(totalAnnualValue / pilotUnits);
                 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
@@ -635,20 +634,20 @@ export default function SummaryCommandCenter({
                     </div>
                     
                     <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
+                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-value-per-provider">
+                        {formatCurrency(valuePerProvider)}
+                      </div>
+                      <div className="text-white/40 text-sm uppercase tracking-wider">
+                        Value per {config.unitName}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
                       <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-hours-saved">
                         {totalHoursSaved.toLocaleString()}
                       </div>
                       <div className="text-white/40 text-sm uppercase tracking-wider">
                         Hours Saved Annually
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-minutes-per-day">
-                        {minutesPerDay}
-                      </div>
-                      <div className="text-white/40 text-sm uppercase tracking-wider">
-                        Minutes Saved Per Day
                       </div>
                     </div>
                   </div>
