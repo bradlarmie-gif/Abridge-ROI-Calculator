@@ -1,8 +1,13 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb } from "lucide-react";
+import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   type ScribeInputs,
   calculateScribeGap,
@@ -275,44 +280,80 @@ export default function ScribeAssessment({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
-                      <div className="flex justify-center mb-2">
-                        <Timer className="w-5 h-5 text-[#EA2C00]" />
-                      </div>
-                      <div className="text-2xl font-bold text-[#111827]">
-                        {calculations.unsupportedDocTimeHours.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-[#6B7280] mb-1">hours/year documenting</div>
-                      <div className="text-xs font-medium text-[#EA2C00]">
-                        {Math.round(calculations.unsupportedDocTimeHours / 2080)} FTEs worth of time
-                      </div>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center cursor-help relative group">
+                          <Info className="w-3.5 h-3.5 text-[#9CA3AF] absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex justify-center mb-2">
+                            <Timer className="w-5 h-5 text-[#EA2C00]" />
+                          </div>
+                          <div className="text-2xl font-bold text-[#111827]">
+                            {calculations.unsupportedDocTimeHours.toLocaleString()}
+                          </div>
+                          <div className="text-xs text-[#6B7280] mb-1">hours/year documenting</div>
+                          <div className="text-xs font-medium text-[#EA2C00]">
+                            {Math.round(calculations.unsupportedDocTimeHours / 2080)} FTEs worth of time
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs p-3">
+                        <div className="text-sm space-y-2">
+                          <p className="font-semibold">How we calculate this:</p>
+                          <p>{calculations.providersWithoutSupport} unsupported providers × {calculations.encountersPerProvider} encounters each × 12 min per encounter ÷ 60</p>
+                          <p className="text-xs text-muted-foreground">Based on 12 minutes of documentation time per patient encounter without scribe support.</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
 
-                    <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
-                      <div className="flex justify-center mb-2">
-                        <Moon className="w-5 h-5 text-[#EA2C00]" />
-                      </div>
-                      <div className="text-2xl font-bold text-[#111827]">
-                        {calculations.pajamaTimeHours.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-[#6B7280] mb-1">hours/year after hours</div>
-                      <div className="text-xs font-medium text-[#EA2C00]">
-                        Work taken home
-                      </div>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center cursor-help relative group">
+                          <Info className="w-3.5 h-3.5 text-[#9CA3AF] absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex justify-center mb-2">
+                            <Moon className="w-5 h-5 text-[#EA2C00]" />
+                          </div>
+                          <div className="text-2xl font-bold text-[#111827]">
+                            {calculations.pajamaTimeHours.toLocaleString()}
+                          </div>
+                          <div className="text-xs text-[#6B7280] mb-1">hours/year after hours</div>
+                          <div className="text-xs font-medium text-[#EA2C00]">
+                            Work taken home
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs p-3">
+                        <div className="text-sm space-y-2">
+                          <p className="font-semibold">How we calculate this:</p>
+                          <p>{calculations.unsupportedDocTimeHours.toLocaleString()} total doc hours × 25% = {calculations.pajamaTimeHours.toLocaleString()} hours</p>
+                          <p className="text-xs text-muted-foreground">Research shows ~25% of documentation work happens outside clinic hours ("pajama time").</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
 
-                    <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
-                      <div className="flex justify-center mb-2">
-                        <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
-                      </div>
-                      <div className="text-2xl font-bold text-[#111827]">
-                        {calculations.docTimePerUnsupportedProvider}
-                      </div>
-                      <div className="text-xs text-[#6B7280] mb-1">hrs/year per provider</div>
-                      <div className="text-xs font-medium text-[#EA2C00]">
-                        {Math.round(calculations.docTimePerUnsupportedProvider / 40)} weeks of their year
-                      </div>
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center cursor-help relative group">
+                          <Info className="w-3.5 h-3.5 text-[#9CA3AF] absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex justify-center mb-2">
+                            <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
+                          </div>
+                          <div className="text-2xl font-bold text-[#111827]">
+                            {calculations.docTimePerUnsupportedProvider}
+                          </div>
+                          <div className="text-xs text-[#6B7280] mb-1">hrs/year per provider</div>
+                          <div className="text-xs font-medium text-[#EA2C00]">
+                            {Math.round(calculations.docTimePerUnsupportedProvider / 40)} weeks of their year
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs p-3">
+                        <div className="text-sm space-y-2">
+                          <p className="font-semibold">How we calculate this:</p>
+                          <p>{calculations.unsupportedDocTimeHours.toLocaleString()} total hours ÷ {calculations.providersWithoutSupport} providers = {calculations.docTimePerUnsupportedProvider} hours each</p>
+                          <p className="text-xs text-muted-foreground">That's {Math.round(calculations.docTimePerUnsupportedProvider / 40)} full work weeks spent on documentation annually.</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </motion.div>
               )}
