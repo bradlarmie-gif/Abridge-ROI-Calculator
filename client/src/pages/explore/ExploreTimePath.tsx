@@ -208,7 +208,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
             transition={{ delay: 0.25, duration: 0.5 }}
           >
             <div className="sticky top-24">
-              <div className="bg-slate-900 rounded-2xl overflow-hidden">
+              <div className="bg-black rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-white/10">
                   <div className="flex items-center gap-3">
