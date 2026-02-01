@@ -278,12 +278,11 @@ export default function StepWhatGoodLooksLike({
           <div className="flex items-start gap-5">
             {/* Abridge A logo */}
             <div className="flex-shrink-0">
-              <div className="w-14 h-14 rounded-xl bg-[#EA2C00] flex items-center justify-center shadow-lg shadow-[#EA2C00]/20">
-                <svg viewBox="0 0 100 60" className="w-8 h-8">
-                  <path d="M50 0L100 60H80L50 12L20 60H0L50 0Z" fill="white"/>
-                  <path d="M30 45H70L65 55H35L30 45Z" fill="white"/>
-                </svg>
-              </div>
+              <img 
+                src="/attached_assets/abridge-logo-symbol-circle-redonsand_1769922423632.png" 
+                alt="Abridge" 
+                className="w-14 h-14 rounded-full shadow-md"
+              />
             </div>
             
             <div className="flex-1">
