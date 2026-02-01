@@ -802,25 +802,157 @@ export default function SummaryCommandCenter({
           </section>
 
           {/* ========== SCALING JOURNEY ========== */}
-          <section className="py-16 md:py-24 px-6 bg-slate-50">
+          <section className="py-16 md:py-24 px-6 bg-white">
             <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-12">
+              <div className="text-center mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                  Your Journey to Full Scale
+                  Scale Your Impact
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                  Start with a pilot. Prove the value. Scale across your organization.
+                  See how your value grows as you expand across your organization
                 </p>
               </div>
               
-              {/* Chart */}
-              <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100 mb-10">
-                <div className="h-72 md:h-96">
+              {/* Journey Visualization - Pilot to Full Scale */}
+              <div className="bg-black rounded-3xl p-8 md:p-12 mb-12">
+                {/* Inline Expansion Controls */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                  {/* Current State */}
+                  <div className="text-center lg:text-left">
+                    <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Today</div>
+                    <div className="text-4xl font-bold text-white mb-1">{pilotUnits}</div>
+                    <div className="text-white/60 text-sm">{config.unitNamePlural}</div>
+                    <div className="text-white/40 text-xs mt-2">{pilotUtilization}% utilization</div>
+                  </div>
+                  
+                  {/* Expansion Arrow + Timeline */}
+                  <div className="flex flex-col items-center justify-center py-4 lg:py-0">
+                    <div className="flex items-center gap-4 w-full max-w-xs">
+                      <div className="flex-1 h-px bg-gradient-to-r from-white/20 via-[#EA2C00] to-white/20" />
+                      <div className="flex gap-1">
+                        {(["measured", "steady", "aggressive"] as const).map((pace) => (
+                          <button
+                            key={pace}
+                            onClick={() => setSelectedPace(pace)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                              selectedPace === pace 
+                                ? "bg-[#EA2C00] text-white" 
+                                : "bg-white/10 text-white/60 hover:bg-white/20"
+                            }`}
+                            data-testid={`pace-${pace}`}
+                          >
+                            {paceConfig[pace].months}mo
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-white/20 via-[#EA2C00] to-white/20" />
+                    </div>
+                    <div className="text-white/40 text-xs mt-2">expansion timeline</div>
+                  </div>
+                  
+                  {/* Target State */}
+                  <div className="text-center lg:text-right">
+                    <div className="text-[#EA2C00] text-xs uppercase tracking-wider mb-2">Full Scale</div>
+                    <div className="flex items-center justify-center lg:justify-end gap-2 mb-1">
+                      <input 
+                        type="number" 
+                        value={fullScaleUnits}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "") {
+                            setFullScaleUnits("");
+                          } else {
+                            setFullScaleUnits(Number(val));
+                          }
+                        }}
+                        onBlur={() => {
+                          if (fullScaleUnits === "" || fullScaleUnits < pilotUnits + 1) {
+                            setFullScaleUnits(pilotUnits + 1);
+                          }
+                        }}
+                        min={pilotUnits + 1}
+                        className="w-24 bg-transparent text-4xl font-bold text-[#EA2C00] text-center lg:text-right border-b-2 border-[#EA2C00]/30 focus:border-[#EA2C00] outline-none transition-colors"
+                        data-testid="input-fullscale-units"
+                      />
+                    </div>
+                    <div className="text-white/60 text-sm">{config.unitNamePlural}</div>
+                    <div className="flex items-center justify-center lg:justify-end gap-2 mt-2">
+                      <input
+                        type="range"
+                        min={pilotUtilization}
+                        max={95}
+                        value={fullScaleUtilization}
+                        onChange={(e) => setFullScaleUtilization(Number(e.target.value))}
+                        className="w-20 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                        data-testid="slider-fullscale-utilization"
+                      />
+                      <span className="text-[#EA2C00] text-xs font-semibold">{fullScaleUtilization}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Value Comparison */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <div className="text-white/40 text-xs uppercase tracking-wider mb-4">Today's Annual Value</div>
+                    <div className="text-3xl md:text-4xl font-bold text-white mb-2">
+                      {formatCurrency(pilot.value)}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-white/60 text-sm">{pilotUnits} {config.unitNamePlural}</span>
+                      <span className="px-2 py-1 bg-white/10 text-white/80 rounded text-xs font-semibold">
+                        {pilot.roi}× ROI
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-[#EA2C00] to-[#F07B5F] rounded-2xl p-6">
+                    <div className="text-white/70 text-xs uppercase tracking-wider mb-4">Full Scale Annual Value</div>
+                    <div className="text-3xl md:text-4xl font-bold text-white mb-2">
+                      {formatCurrency(fullScale.value)}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-white/80 text-sm">{safeFullScaleUnits} {config.unitNamePlural}</span>
+                      <span className="px-2 py-1 bg-white/20 text-white rounded text-xs font-semibold">
+                        {fullScale.roi}× ROI
+                      </span>
+                      <span className="px-2 py-1 bg-white/20 text-white rounded text-xs font-semibold">
+                        {((fullScale.value / pilot.value)).toFixed(1)}× growth
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Compounding note */}
+                <div className="mt-6 flex items-center justify-center gap-4 text-center">
+                  <Sparkles className="w-4 h-4 text-[#EA2C00]" />
+                  <span className="text-white/50 text-sm">
+                    Value compounds through {pilotUtilization}% → {fullScaleUtilization}% utilization lift and organizational learning
+                  </span>
+                </div>
+              </div>
+              
+              {/* Growth Chart */}
+              <div className="bg-slate-50 rounded-3xl p-6 md:p-10 border border-slate-100">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-bold text-slate-900">Growth Trajectory</h3>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-0.5 bg-[#EA2C00] rounded-full" />
+                      <span className="text-slate-600">Projected</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-0.5 border-t-2 border-dashed border-slate-300" />
+                      <span className="text-slate-600">Linear</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-64 md:h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 30, right: 30, left: 10, bottom: 50 }}>
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 40 }}>
                       <defs>
                         <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.2} />
+                          <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.15} />
                           <stop offset="100%" stopColor="#EA2C00" stopOpacity={0} />
                         </linearGradient>
                       </defs>
@@ -842,7 +974,7 @@ export default function SummaryCommandCenter({
                                 y={16} 
                                 textAnchor="middle" 
                                 fill={point.isPilot || point.isFullScale ? "#EA2C00" : "#64748B"}
-                                fontSize={12}
+                                fontSize={11}
                                 fontWeight={point.isPilot || point.isFullScale ? 700 : 500}
                               >
                                 {point.milestoneLabel}
@@ -851,7 +983,7 @@ export default function SummaryCommandCenter({
                           );
                         }}
                         ticks={chartData.map(d => d.month)}
-                        height={50}
+                        height={40}
                       />
                     
                       <YAxis 
@@ -859,7 +991,7 @@ export default function SummaryCommandCenter({
                         tickLine={false}
                         tick={{ fill: "#94A3B8", fontSize: 11 }}
                         tickFormatter={(v) => formatCompactCurrency(v)}
-                        width={60}
+                        width={55}
                       />
                       
                       <Tooltip content={<CustomTooltip unitName={config.unitNamePlural} encountersPerUnit={encountersPerUnit} volumeUnit={config.encounterName} />} />
@@ -876,7 +1008,7 @@ export default function SummaryCommandCenter({
                         dataKey="linearValue" 
                         stroke="#CBD5E1" 
                         strokeWidth={2}
-                        strokeDasharray="8 6"
+                        strokeDasharray="6 4"
                         dot={false}
                       />
                       
@@ -891,174 +1023,22 @@ export default function SummaryCommandCenter({
                       <ReferenceDot 
                         x={0} 
                         y={pilot.actualValue} 
-                        r={8} 
+                        r={6} 
                         fill="#EA2C00" 
                         stroke="white"
-                        strokeWidth={3}
+                        strokeWidth={2}
                       />
                       
                       <ReferenceDot 
                         x={currentPace.months} 
                         y={fullScale.actualValue} 
-                        r={8} 
+                        r={6} 
                         fill="#EA2C00" 
                         stroke="white"
-                        strokeWidth={3}
+                        strokeWidth={2}
                       />
                     </ComposedChart>
                   </ResponsiveContainer>
-                </div>
-                
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 mt-6 pt-6 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-0.5 bg-[#EA2C00] rounded-full" />
-                    <span className="text-sm text-slate-600">Projected value</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-0.5 border-t-2 border-dashed border-slate-300" />
-                    <span className="text-sm text-slate-600">Linear baseline</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Full Scale Configuration */}
-              <div className="bg-white rounded-2xl p-8 border border-slate-100 mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <Target className="w-5 h-5 text-[#EA2C00]" />
-                  <span className="font-bold text-slate-900">Model Your Full Scale Potential</span>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Full Scale Providers */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Total {config.unitNamePlural} at full scale
-                    </label>
-                    <div className="relative">
-                      <input 
-                        type="number" 
-                        value={fullScaleUnits}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === "") {
-                            setFullScaleUnits("");
-                          } else {
-                            setFullScaleUnits(Number(val));
-                          }
-                        }}
-                        onBlur={() => {
-                          if (fullScaleUnits === "" || fullScaleUnits < pilotUnits + 1) {
-                            setFullScaleUnits(pilotUnits + 1);
-                          }
-                        }}
-                        min={pilotUnits + 1}
-                        className="w-full px-4 py-3 pr-28 rounded-xl border border-slate-200 font-mono text-slate-900 text-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00] transition-all"
-                        data-testid="input-fullscale-units"
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">{config.unitNamePlural}</span>
-                    </div>
-                    <p className="text-sm text-slate-500 mt-2">
-                      Starting with {pilotUnits} {config.unitNamePlural} today
-                    </p>
-                  </div>
-                  
-                  {/* Target Utilization */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Target utilization at full scale
-                    </label>
-                    <div className="space-y-3">
-                      <input
-                        type="range"
-                        min={pilotUtilization}
-                        max={95}
-                        value={fullScaleUtilization}
-                        onChange={(e) => setFullScaleUtilization(Number(e.target.value))}
-                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
-                        data-testid="slider-fullscale-utilization"
-                      />
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-500">{pilotUtilization}% (today)</span>
-                        <span className="text-2xl font-bold text-[#EA2C00]">{fullScaleUtilization}%</span>
-                        <span className="text-sm text-slate-500">95% (max)</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-slate-500 mt-2">
-                      Most organizations reach 75-85% at maturity
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Scaling Options */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                {(["measured", "steady", "aggressive"] as const).map((pace) => (
-                  <button
-                    key={pace}
-                    onClick={() => setSelectedPace(pace)}
-                    className={`relative p-6 rounded-2xl border-2 text-left transition-all ${
-                      selectedPace === pace 
-                        ? "border-[#EA2C00] bg-white shadow-lg" 
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                    data-testid={`pace-${pace}`}
-                  >
-                    {pace === "steady" && (
-                      <span className="absolute -top-3 right-4 px-3 py-1 bg-[#EA2C00] text-white text-xs font-bold uppercase rounded-full">
-                        Recommended
-                      </span>
-                    )}
-                    <div className="font-bold text-slate-900 text-lg capitalize mb-1">{pace}</div>
-                    <div className="text-slate-500 text-sm">{paceConfig[pace].months} months to full scale</div>
-                  </button>
-                ))}
-              </div>
-              
-              {/* Results Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl p-8 text-center border border-slate-100">
-                  <div className="text-sm text-slate-500 uppercase tracking-wider mb-3">Today (Pilot)</div>
-                  <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">{formatCurrency(pilot.value)}</div>
-                  <div className="text-slate-500 mb-4">annual value</div>
-                  <span className="inline-block px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold">
-                    {pilot.roi}× ROI
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-center">
-                  <ArrowRight className="w-10 h-10 text-slate-300 hidden md:block" />
-                  <ChevronDown className="w-8 h-8 text-slate-300 md:hidden" />
-                </div>
-                
-                <div className="bg-gradient-to-br from-[#EA2C00] to-[#F07B5F] rounded-2xl p-8 text-center text-white">
-                  <div className="text-sm text-white/70 uppercase tracking-wider mb-3">Full Scale</div>
-                  <div className="text-3xl md:text-4xl font-bold mb-2">{formatCurrency(fullScale.value)}</div>
-                  <div className="text-white/70 mb-4">annual value</div>
-                  <span className="inline-block px-4 py-2 bg-white/20 text-white rounded-full text-sm font-semibold">
-                    {fullScale.roi}× ROI
-                  </span>
-                </div>
-              </div>
-              
-              {/* Compounding Effect */}
-              <div className="mt-8 bg-white rounded-2xl p-8 border border-slate-100">
-                <div className="flex items-center gap-3 mb-4">
-                  <Sparkles className="w-5 h-5 text-[#EA2C00]" />
-                  <span className="font-bold text-slate-900">The Compounding Effect</span>
-                </div>
-                <p className="text-slate-600 mb-6">
-                  As you scale, value compounds through increased utilization, retention benefits, and shared learnings.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg">
-                    <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
-                    <span className="text-sm text-slate-700">Utilization: {pilotUtilization}% → {fullScaleUtilization}%</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg">
-                    <Rocket className="w-4 h-4 text-[#EA2C00]" />
-                    <span className="text-sm text-slate-700">Bonus: +{formatCurrency(networkEffect)}</span>
-                  </div>
                 </div>
               </div>
             </div>
