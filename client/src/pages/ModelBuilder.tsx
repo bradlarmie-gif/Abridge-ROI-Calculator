@@ -90,6 +90,7 @@ export interface ModelResults {
   enterpriseAnnual?: number;
   pricingModel?: "per_clinician" | "enterprise";
   contractYears?: number;
+  timeSavedPerEncounter?: number;
   // Nursing-specific fields
   nursingStaffedBeds?: number;
   nursingFTEs?: number;

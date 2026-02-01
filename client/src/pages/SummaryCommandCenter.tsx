@@ -615,34 +615,45 @@ export default function SummaryCommandCenter({
               </div>
               
               {/* Key Metrics Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-roi">
-                    {roiMultiple.toFixed(1)}×
-                  </div>
-                  <div className="text-white/40 text-sm uppercase tracking-wider">
-                    Return on Investment
-                  </div>
-                </div>
+              {(() => {
+                const timeSavedMinutesPerEncounter = modelResults.timeSavedPerEncounter || 3;
+                const eligibleEncounters = Math.round(pilotUnits * encountersPerUnit * (pilotUtilization / 100));
+                const totalMinutesSaved = eligibleEncounters * timeSavedMinutesPerEncounter;
+                const totalHoursSaved = Math.round(totalMinutesSaved / 60);
+                const workingDays = 250;
+                const minutesPerDay = Math.round(totalMinutesSaved / workingDays / pilotUnits);
                 
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                    {paybackMonths}
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
+                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-roi">
+                        {roiMultiple.toFixed(1)}×
+                      </div>
+                      <div className="text-white/40 text-sm uppercase tracking-wider">
+                        Return on Investment
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
+                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-hours-saved">
+                        {totalHoursSaved.toLocaleString()}
+                      </div>
+                      <div className="text-white/40 text-sm uppercase tracking-wider">
+                        Hours Saved Annually
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
+                      <div className="text-4xl md:text-5xl font-bold text-white mb-2" data-testid="summary-minutes-per-day">
+                        {minutesPerDay}
+                      </div>
+                      <div className="text-white/40 text-sm uppercase tracking-wider">
+                        Minutes Saved Per Day
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-white/40 text-sm uppercase tracking-wider">
-                    Months to Payback
-                  </div>
-                </div>
-                
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 text-center">
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                    {valueBreakdown.length}
-                  </div>
-                  <div className="text-white/40 text-sm uppercase tracking-wider">
-                    Value Drivers
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           </section>
 
