@@ -42,10 +42,12 @@ export function GlobalHeader({ pageName, showContext = true, currentStep, totalS
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (onLogoClick) {
       onLogoClick();
     } else {
-      setLocation("/");
+      // Force navigation to home
+      window.location.href = "/";
     }
   };
 

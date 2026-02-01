@@ -59,10 +59,12 @@ export function UnifiedHeader({
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (onHome) {
       onHome();
     } else {
-      setLocation("/");
+      // Force navigation to home
+      window.location.href = "/";
     }
   };
 
