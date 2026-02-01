@@ -425,7 +425,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
     <Document>
       {/* COVER PAGE */}
       <PDFCoverPage
-        reportLabel="SCRIBE ANALYSIS:"
+        reportLabel="HUMAN SCRIBE ANALYSIS:"
         title="PROGRAM EVALUATION"
         subtitle="Understanding Your Documentation Investment"
         clientName={displayClientName}

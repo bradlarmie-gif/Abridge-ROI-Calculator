@@ -547,7 +547,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
     <Document>
       {/* COVER PAGE */}
       <PDFCoverPage
-        reportLabel="VALUE ASSESSMENT:"
+        reportLabel="AMBIENT ASSESSMENT:"
         title="REALIZATION & OPPORTUNITY"
         subtitle="Understanding Your Ambient AI Investment"
         clientName={data.clientName}
