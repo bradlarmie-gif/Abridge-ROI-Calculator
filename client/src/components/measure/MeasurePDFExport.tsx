@@ -1464,8 +1464,31 @@ export async function generateMeasurePDF(
   const fileName = `abridge-value-story-${new Date().toISOString().split("T")[0]}.pdf`;
 
   if (isMobile) {
+    // Try Web Share API first (works great on iOS for AirDrop, Messages, etc.)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const shareData = { files: [file], title: "Abridge Value Story" };
+      
+      if (navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (err) {
+          // User cancelled or share failed, fall through to download
+          if ((err as Error).name === 'AbortError') return;
+        }
+      }
+    }
+    
+    // Fallback: Create download link and trigger click
     const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, "_blank");
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
   } else {
     saveAs(blob, fileName);
