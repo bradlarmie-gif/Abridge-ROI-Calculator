@@ -158,49 +158,43 @@ export default function StepTheGap({
         </p>
       </div>
 
-      <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl overflow-hidden">
-        {/* Main content */}
-        <div className="px-8 py-12 md:px-16 md:py-16">
-          <div className="text-center">
-            {/* Maturity badge - subtle, top */}
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${performanceInfo.bgColor} mb-8`}>
-              <div className={`w-1.5 h-1.5 rounded-full ${performanceInfo.color.replace('text-', 'bg-')}`} />
-              <span className={`text-xs font-medium uppercase tracking-wider ${performanceInfo.color}`}>
-                {performanceInfo.label}
-              </span>
-            </div>
-            
-            {/* The score - dominant */}
-            <div className="mb-6">
-              <span className="text-[120px] md:text-[160px] font-bold text-white leading-none tracking-tight" data-testid="text-realization-score">
-                {calculations.realizationScore}
-              </span>
-              <span className="text-4xl md:text-5xl font-light text-slate-500 ml-1">%</span>
-            </div>
-            
-            {/* Context line */}
-            <p className="text-slate-400 text-lg md:text-xl max-w-md mx-auto">
-              of the value top-performing organizations capture
-            </p>
-          </div>
-        </div>
+      <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 md:p-12 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         
-        {/* Bottom bar with progress */}
-        <div className="bg-slate-800/50 px-8 py-5 md:px-16">
-          <div className="max-w-xl mx-auto">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="relative h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] transition-all duration-1000 ease-out rounded-full"
-                    style={{ width: `${calculations.realizationScore}%` }}
-                  />
-                </div>
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Left: Score */}
+            <div className="text-center md:text-right md:pr-8 md:border-r md:border-white/10">
+              <p className="text-slate-500 text-xs uppercase tracking-widest mb-3">Value Realization</p>
+              <div className="text-8xl md:text-9xl font-bold text-white leading-none" data-testid="text-realization-score">
+                {calculations.realizationScore}%
               </div>
-              <div className="text-right flex-shrink-0">
-                <span className="text-amber-400 text-sm font-medium">{gapPercentage}%</span>
-                <span className="text-slate-500 text-sm ml-1">uncaptured</span>
+            </div>
+            
+            {/* Right: Label & Context */}
+            <div className="text-center md:text-left md:pl-8">
+              <div className={`inline-block px-3 py-1.5 rounded-md ${performanceInfo.bgColor} mb-3`}>
+                <span className={`text-xs font-bold uppercase tracking-wider ${performanceInfo.color}`}>
+                  {performanceInfo.label}
+                </span>
               </div>
+              <p className="text-slate-300 text-lg leading-relaxed">
+                of what top-performing<br className="hidden md:block" /> organizations achieve
+              </p>
+            </div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="max-w-2xl mx-auto mt-10">
+            <div className="relative h-3 bg-slate-700/50 rounded-full overflow-hidden">
+              <div 
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-1000 ease-out rounded-full"
+                style={{ width: `${calculations.realizationScore}%` }}
+              />
+            </div>
+            <div className="flex justify-between mt-3 text-xs text-slate-500">
+              <span>Current</span>
+              <span className="text-amber-400/80">{gapPercentage}% opportunity</span>
             </div>
           </div>
         </div>
