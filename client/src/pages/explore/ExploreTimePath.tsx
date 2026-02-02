@@ -302,7 +302,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                             {scenario.minutes}
                           </div>
                           <p className="text-xs text-slate-400 font-medium">
-                            min saved
+                            {isNursing ? 'min/shift' : 'min saved'}
                           </p>
                         </div>
                       </div>
@@ -356,12 +356,15 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                 <div className="px-6 py-6 border-b border-white/10">
                   <div className="flex items-baseline gap-2">
                     <span className="text-5xl font-bold text-[#F07B5F]">
-                      {formatNumber(totalHoursSaved)}
+                      {formatNumber(isNursing ? nursingTotalHoursSaved : totalHoursSaved)}
                     </span>
                     <span className="text-lg text-white/70">hours / year</span>
                   </div>
                   <p className="text-sm text-white/40 mt-2">
-                    {state.minutesSavedPerEncounter} min × {formatNumber(Math.round(eligibleEncounters))} {isInpatient ? 'admissions' : 'encounters'}
+                    {isNursing 
+                      ? `${state.nursingMinutesPerShift} min × ${formatNumber(nursingEligibleShifts)} shifts`
+                      : `${state.minutesSavedPerEncounter} min × ${formatNumber(Math.round(eligibleEncounters))} ${isInpatient ? 'admissions' : 'encounters'}`
+                    }
                   </p>
                 </div>
 
@@ -377,22 +380,39 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-white/50">Time Saved</span>
                     <span className="text-sm font-semibold text-white">
-                      {state.minutesSavedPerEncounter} min/encounter
+                      {isNursing 
+                        ? `${state.nursingMinutesPerShift} min/shift`
+                        : `${state.minutesSavedPerEncounter} min/encounter`
+                      }
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">{isInpatient ? 'Eligible Admissions' : 'Eligible Encounters'}</span>
+                    <span className="text-sm text-white/50">
+                      {isNursing ? 'Eligible Shifts' : isInpatient ? 'Eligible Admissions' : 'Eligible Encounters'}
+                    </span>
                     <span className="text-sm font-semibold text-white">
-                      {formatNumber(Math.round(eligibleEncounters))}
+                      {formatNumber(isNursing ? nursingEligibleShifts : Math.round(eligibleEncounters))}
                     </span>
                   </div>
+
+                  {isNursing && (
+                    <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                      <span className="text-sm text-white/50">Hours/nurse/year</span>
+                      <span className="text-sm font-semibold text-white">
+                        {nursingHoursPerNursePerYear}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Context */}
                 <div className="px-6 pb-4">
                   <p className="text-xs text-white/30">
-                    Raw time savings don't equal cash. Next, you'll decide how this time converts to value.
+                    {isNursing 
+                      ? "Time back for patient care, wellbeing, and compliance. Next, you'll allocate this time."
+                      : "Raw time savings don't equal cash. Next, you'll decide how this time converts to value."
+                    }
                   </p>
                 </div>
 

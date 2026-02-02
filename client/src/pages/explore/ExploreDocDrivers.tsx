@@ -454,6 +454,9 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     setAssumptions(prev => ({ ...prev, [key]: value }));
   };
 
+  // Nursing uses per-shift model, others use per-encounter
+  const nursingTotalShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
+  const nursingEligibleShifts = Math.round(nursingTotalShiftsPerYear * (state.utilizationPercent / 100));
   const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
 
   const handleToggleDriver = (driverId: DocPathFocus) => {

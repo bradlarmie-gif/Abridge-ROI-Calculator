@@ -159,10 +159,21 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
   }, []);
 
   const calculateTotalHoursSaved = useCallback(() => {
-    const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
-    const totalMinutes = eligibleEncounters * state.minutesSavedPerEncounter;
-    return Math.round(totalMinutes / 60);
-  }, [state.annualEncounters, state.utilizationPercent, state.minutesSavedPerEncounter]);
+    const isNursing = state.careSetting === 'nursing';
+    
+    if (isNursing) {
+      // Nursing uses per-shift model
+      const totalShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
+      const eligibleShifts = totalShiftsPerYear * (state.utilizationPercent / 100);
+      const totalMinutes = eligibleShifts * state.nursingMinutesPerShift;
+      return Math.round(totalMinutes / 60);
+    } else {
+      // Other care settings use per-encounter model
+      const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
+      const totalMinutes = eligibleEncounters * state.minutesSavedPerEncounter;
+      return Math.round(totalMinutes / 60);
+    }
+  }, [state.careSetting, state.annualEncounters, state.utilizationPercent, state.minutesSavedPerEncounter, state.numberOfProviders, state.nursingShiftsPerNurseYear, state.nursingMinutesPerShift]);
 
   const handleContinueToInvestment = useCallback((calculatedValues?: CalculatedValues) => {
     if (onContinueToInvestment) {

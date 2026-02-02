@@ -2414,7 +2414,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     </span>
                   </motion.div>
                   <p className="text-xs text-white/40 mt-2">
-                    From {formatNumber(totalHoursSaved)} hours saved
+                    {isNursing 
+                      ? `From ${formatNumber(totalHoursSaved)} hours saved (per-shift model)`
+                      : `From ${formatNumber(totalHoursSaved)} hours saved`
+                    }
                   </p>
                 </div>
 
