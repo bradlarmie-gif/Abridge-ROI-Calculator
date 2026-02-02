@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star } from "lucide-react";
+import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -525,6 +525,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
   const [patientAccessSettingsOpen, setPatientAccessSettingsOpen] = useState(false);
   const [wellbeingSettingsOpen, setWellbeingSettingsOpen] = useState(false);
+  const [activeSlider, setActiveSlider] = useState<keyof TimeAllocation | null>(null);
+  const [sliderDeltas, setSliderDeltas] = useState<Record<string, number>>({});
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
@@ -559,11 +561,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
 
   const handleSliderChange = (id: keyof TimeAllocation, newValue: number) => {
     const current = { ...state.timeAllocation };
+    const oldValues = { ...state.timeAllocation };
     const oldValue = current[id];
     const diff = newValue - oldValue;
     
+    // Filter to only adjustable keys (exclude the one being dragged and optionally locums)
     const adjustableKeys = (Object.keys(current) as (keyof TimeAllocation)[])
-      .filter(k => k !== id && (includeLocums || k !== 'reducingLocums'));
+      .filter(k => k !== id && (includeLocums || k !== 'reducingLocums') && (isOutpatient || k !== 'patientExperience'));
     const otherTotal = adjustableKeys.reduce((sum, k) => sum + current[k], 0);
     
     if (otherTotal > 0) {
@@ -589,7 +593,59 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       }
     }
     
+    // Calculate deltas for visual feedback
+    const deltas: Record<string, number> = {};
+    adjustableKeys.forEach(k => {
+      deltas[k] = current[k] - oldValues[k];
+    });
+    setSliderDeltas(deltas);
+    setActiveSlider(id);
+    
     updateState({ timeAllocation: current });
+  };
+  
+  const handleSliderEnd = () => {
+    // Clear visual feedback after a short delay
+    setTimeout(() => {
+      setActiveSlider(null);
+      setSliderDeltas({});
+    }, 800);
+  };
+  
+  const resetToBalanced = () => {
+    if (isOutpatient) {
+      if (includeLocums) {
+        updateState({
+          timeAllocation: {
+            patientAccess: 30,
+            patientExperience: 20,
+            reducingLocums: 25,
+            clinicianWellbeing: 25,
+          }
+        });
+      } else {
+        updateState({
+          timeAllocation: {
+            patientAccess: 40,
+            patientExperience: 30,
+            reducingLocums: 0,
+            clinicianWellbeing: 30,
+          }
+        });
+      }
+    } else {
+      // Non-outpatient settings
+      updateState({
+        timeAllocation: {
+          patientAccess: 35,
+          patientExperience: 0,
+          reducingLocums: 35,
+          clinicianWellbeing: 30,
+        }
+      });
+    }
+    setActiveSlider(null);
+    setSliderDeltas({});
   };
 
   const handlePreset = (preset: { allocation: TimeAllocation }) => {
@@ -1092,6 +1148,15 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   {includeLocums ? 'Locums on' : '+ Locums'}
                 </button>
               )}
+              
+              <button
+                onClick={resetToBalanced}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+                data-testid="button-reset-allocation"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset
+              </button>
             </motion.div>
 
             {/* Allocation warning */}
@@ -1147,7 +1212,22 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                 </span>
                               )}
                             </div>
-                            <span className="text-2xl font-bold text-black">{value}%</span>
+                            <div className="flex items-center gap-2">
+                              {sliderDeltas[option.id] && sliderDeltas[option.id] !== 0 && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: 10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0 }}
+                                  className={`text-sm font-bold ${sliderDeltas[option.id] > 0 ? 'text-green-600' : 'text-[#EA2C00]'}`}
+                                >
+                                  {sliderDeltas[option.id] > 0 ? '+' : ''}{sliderDeltas[option.id]}%
+                                </motion.span>
+                              )}
+                              <span className={`text-2xl font-bold transition-colors ${
+                                activeSlider === option.id ? 'text-[#EA2C00]' : 
+                                sliderDeltas[option.id] ? 'text-slate-500' : 'text-black'
+                              }`}>{value}%</span>
+                            </div>
                           </div>
                           <p className="text-sm text-slate-500">{option.description}</p>
                           {isWellbeing && (
@@ -1165,7 +1245,11 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                         step="5"
                         value={value}
                         onChange={(e) => handleSliderChange(option.id, Number(e.target.value))}
-                        className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+                        onMouseUp={handleSliderEnd}
+                        onTouchEnd={handleSliderEnd}
+                        className={`w-full h-2 rounded-full appearance-none cursor-pointer accent-[#EA2C00] transition-all ${
+                          activeSlider && activeSlider !== option.id ? 'bg-slate-100' : 'bg-slate-200'
+                        }`}
                         data-testid={`slider-${option.id}`}
                       />
 
