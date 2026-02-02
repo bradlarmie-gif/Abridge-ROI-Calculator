@@ -501,12 +501,20 @@ export default function SummaryCommandCenter({
       driverResults,
     };
 
+    let blob: Blob;
+    let fileName: string;
+    const today = new Date().toISOString().split("T")[0];
+    const clientSlug = effectiveClientName ? effectiveClientName.replace(/\s+/g, "_") : "";
+
     if (activeSetting === "ed") {
       const pdfData = transformToEDPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
-      await generateEDROIPDF(pdfData);
+      blob = await generateEDROIPDFBlob(pdfData);
+      fileName = clientSlug ? `Abridge_ED_Value_Assessment_${clientSlug}.pdf` : `Abridge_ED_Value_Assessment_${today}.pdf`;
     } else if (activeSetting === "inpatient") {
       const pdfData = transformToInpatientPDFData(modelResultsForPDF, journeyInputs, undefined, effectiveClientName, effectivePreparedBy);
-      await generateInpatientROIPDF(pdfData);
+      const result = await generateInpatientROIPDFBlob(pdfData);
+      blob = result.blob;
+      fileName = result.filename;
     } else if (activeSetting === "nursing") {
       const nursingJourneyInputs = {
         pilotBeds: pilotUnits,
@@ -531,7 +539,9 @@ export default function SummaryCommandCenter({
         driverResults,
       };
       const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs, undefined, effectiveClientName, effectivePreparedBy);
-      await generateNursingROIPDF(pdfData);
+      const result = await generateNursingROIPDFBlob(pdfData);
+      blob = result.blob;
+      fileName = result.filename;
     } else {
       const pdfData = transformToOutpatientPDFData(
         modelResultsForPDF,
@@ -540,7 +550,38 @@ export default function SummaryCommandCenter({
         effectiveClientName,
         effectivePreparedBy
       );
-      await generateOutpatientROIPDF(pdfData);
+      blob = await generateOutpatientROIPDFBlob(pdfData);
+      fileName = clientSlug ? `Abridge_Outpatient_ROI_${clientSlug}_${today}.pdf` : `Abridge_Outpatient_ROI_${today}.pdf`;
+    }
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+    if (isMobile) {
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], fileName, { type: "application/pdf" });
+        const shareData = { files: [file], title: "Abridge ROI Assessment" };
+        
+        if (navigator.canShare(shareData)) {
+          try {
+            await navigator.share(shareData);
+            return;
+          } catch (err) {
+            if ((err as Error).name === 'AbortError') return;
+          }
+        }
+      }
+      
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } else {
+      saveAs(blob, fileName);
     }
   }, [
     activeSetting,
