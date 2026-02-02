@@ -1260,10 +1260,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                {isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Savings"}
+                {isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Time Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                Allocate Your Savings
+                Allocate Your Time Savings
               </h1>
               <p className="text-slate-600">
                 You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Decide how this time creates value.
