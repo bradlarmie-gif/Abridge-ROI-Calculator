@@ -861,7 +861,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-4 h-4 text-slate-500" />
               <span className="text-xs font-semibold text-slate-700">IMPACT THRESHOLD</span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${wc.threshold.bgColor} ${wc.threshold.color}`}>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#FFF5F2] text-[#EA2C00]">
                 {wc.threshold.label}
               </span>
             </div>
@@ -874,19 +874,19 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 return (
                   <div 
                     key={t.label} 
-                    className={`flex items-center gap-2 py-1 px-2 rounded ${isCurrent ? t.bgColor : ''}`}
+                    className={`flex items-center gap-2 py-1 px-2 rounded ${isCurrent ? 'bg-[#FFF5F2]' : ''}`}
                   >
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
-                    <span className={`w-36 ${isCurrent ? t.color + ' font-bold' : 'text-slate-500'}`}>
+                    <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
                       {annualMax === null ? `${annualMin}+ hrs/yr` : `${annualMin}-${annualMax} hrs/yr`}
-                      <span className="text-slate-400 text-[10px] ml-1">
+                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
                         ({t.maxHours === Infinity ? `${t.minHours}+` : `${t.minHours}-${t.maxHours}`}/wk)
                       </span>
                     </span>
-                    <span className={`${isCurrent ? t.color + ' font-bold' : 'text-slate-500'}`}>
+                    <span className={`${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
                       {t.label} ({Math.round(t.rate * 100)}%)
                     </span>
-                    {isCurrent && <span className="text-xs ml-auto font-bold text-slate-800">← YOU ARE HERE</span>}
+                    {isCurrent && <span className="text-xs ml-auto font-bold text-[#EA2C00]">← YOU ARE HERE</span>}
                   </div>
                 );
               })}
