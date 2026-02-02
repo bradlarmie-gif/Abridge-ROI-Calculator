@@ -120,58 +120,171 @@ export default function App() {
 
     const driverResults: Record<string, { id: string; name: string; value: number; inputs: Record<string, number | string | boolean> }> = {};
     
+    // Patient Access: Calculate all intermediate values for PDF display
     if (state.timeAllocation.patientAccess > 0 && patientAccessValue > 0) {
+      const avgVisitLength = 0.5; // 30 min per visit
+      const revenuePerVisit = 200;
+      const realizationRate = 0.15;
+      const potentialVisits = patientAccessHours / avgVisitLength;
+      const additionalVisits = Math.round(potentialVisits * realizationRate);
+      
       driverResults['patientAccess'] = {
         id: 'patientAccess',
         name: 'Patient Access',
         value: patientAccessValue,
-        inputs: { allocatedHours: patientAccessHours },
+        inputs: { 
+          allocatedHours: patientAccessHours,
+          allocationPct: state.timeAllocation.patientAccess,
+          potentialVisits: Math.round(potentialVisits),
+          additionalVisits,
+          revenuePerVisit,
+          realizationRate: realizationRate * 100,
+        },
       };
     }
     
+    // Locum Cost Reduction: Calculate intermediate values
     if (state.timeAllocation.reducingLocums > 0 && locumValue > 0) {
+      const locumHourlyRate = 150;
+      const locumRealization = 0.60;
+      const realizedHours = Math.round(locumHours * locumRealization);
+      
       driverResults['overtime'] = {
         id: 'overtime',
         name: 'Locum Cost Reduction',
         value: locumValue,
-        inputs: { allocatedHours: locumHours },
+        inputs: { 
+          allocatedHours: locumHours,
+          allocationPct: state.timeAllocation.reducingLocums,
+          locumHourlyRate,
+          realizedHours,
+          realizationRate: locumRealization * 100,
+        },
       };
     }
     
+    // Clinician Retention: Calculate intermediate values matching PDF expected fields
     if (state.timeAllocation.clinicianWellbeing > 0 && retentionValue > 0) {
+      const wellbeingHours = totalHoursSaved * wellbeingPct;
+      const hoursPerProvider = wellbeingHours / Math.max(1, state.numberOfProviders);
+      const turnoverRate = 8; // 8% baseline turnover
+      const burnoutAttribution = 50; // 50% of departures are burnout-related
+      const replacementCost = 250000;
+      let retentionLift = 4; // MINIMAL (3-5%)
+      if (hoursPerProvider >= 200) retentionLift = 27.5; // MAXIMUM (25-30%)
+      else if (hoursPerProvider >= 150) retentionLift = 17.5; // SIGNIFICANT (15-20%)
+      else if (hoursPerProvider >= 100) retentionLift = 10; // MODERATE (8-12%)
+      
+      const annualDepartures = state.numberOfProviders * (turnoverRate / 100);
+      const burnoutDepartures = annualDepartures * (burnoutAttribution / 100);
+      const departuresAvoided = burnoutDepartures * (retentionLift / 100);
+      
       driverResults['workforce'] = {
         id: 'workforce',
         name: 'Clinician Retention',
         value: retentionValue,
-        inputs: { wellbeingPct },
+        inputs: { 
+          wellbeingPct: state.timeAllocation.clinicianWellbeing,
+          wellbeingHours,
+          hoursPerProvider: Math.round(hoursPerProvider),
+          providers: state.numberOfProviders,
+          turnoverRate,
+          annualDepartures,
+          burnoutAttribution,
+          burnoutDepartures,
+          retentionLift,
+          departuresAvoided,
+          replacementCost,
+        },
       };
     }
 
+    // wRVU: Calculate all intermediate values for PDF
     if (state.docDrivers.wrvu.enabled && wrvuValue > 0) {
+      const avgWrvuPerEncounter = 1.5;
+      const wrvuImprovementRate = state.docDrivers.wrvu.value;
+      const conversionFactor = 33;
+      const realizationRate = 75;
+      const baselineWrvus = Math.round(eligibleEncounters * avgWrvuPerEncounter);
+      const wrvuGain = Math.round(baselineWrvus * (wrvuImprovementRate / 100));
+      
       driverResults['wrvu'] = {
         id: 'wrvu',
         name: 'Level of Service (wRVU)',
         value: wrvuValue,
-        inputs: { pctIncrease: state.docDrivers.wrvu.value },
+        inputs: { 
+          pctIncrease: wrvuImprovementRate,
+          avgWrvuPerEncounter,
+          baselineWrvus,
+          wrvuImprovementRate,
+          wrvuGain,
+          conversionFactor,
+          realizationRate,
+        },
       };
     }
     
-    // HCC not applicable for ED
+    // HCC not applicable for ED - matching PDF expected field names
     if (state.careSetting !== 'ed' && state.docDrivers.hcc.enabled && hccValue > 0) {
+      const maPercentage = 30;
+      const gapRate = 40;
+      const avgMissedHccs = 1.5;
+      const rafImpact = 0.4;
+      const annualPayment = 12000;
+      const realizationRate = 60;
+      const captureRate = state.docDrivers.hcc.value; // User-configurable capture rate
+      const panelSize = state.numberOfProviders * 1500;
+      const patientsWithGaps = Math.round(panelSize * (maPercentage / 100) * (gapRate / 100));
+      const capturedHccs = Math.round(patientsWithGaps * avgMissedHccs * (captureRate / 100));
+      const rafValue = Math.round(rafImpact * annualPayment);
+      
       driverResults['hcc'] = {
         id: 'hcc',
         name: 'HCC Capture',
         value: hccValue,
-        inputs: { pctRecaptured: state.docDrivers.hcc.value },
+        inputs: { 
+          pctRecaptured: captureRate,
+          maPercentage,
+          gapRate,
+          patientsWithGaps,
+          avgMissedHccs,
+          captureRate,
+          capturedHccs,
+          rafValue,
+          realizationRate,
+        },
       };
     }
     
+    // Denials Prevention: Calculate intermediate values matching PDF expected fields
     if (state.docDrivers.denials.enabled && denialsValue > 0) {
+      const denialRate = 8; // 8% baseline denial rate
+      const docRelatedPercent = 50; // 50% of denials are doc-related
+      const writtenOffPercent = 45; // 45% of doc-related are written off
+      const abridgeCaptureRate = state.docDrivers.denials.value; // User-configurable
+      const avgClaimValue = 250;
+      
+      const totalDenials = Math.round(eligibleEncounters * (denialRate / 100));
+      const docRelatedDenials = Math.round(totalDenials * (docRelatedPercent / 100));
+      const writtenOffDenials = Math.round(docRelatedDenials * (writtenOffPercent / 100));
+      const claimsRecovered = Math.round(writtenOffDenials * (abridgeCaptureRate / 100));
+      
       driverResults['denials'] = {
         id: 'denials',
         name: 'Denial Prevention',
         value: denialsValue,
-        inputs: { pctReduced: state.docDrivers.denials.value },
+        inputs: { 
+          pctReduced: abridgeCaptureRate,
+          denialRate,
+          totalDenials,
+          docRelatedPercent,
+          docRelatedDenials,
+          writtenOffPercent,
+          writtenOffDenials,
+          abridgeCaptureRate,
+          avgClaimValue,
+          claimsRecovered,
+        },
       };
     }
 

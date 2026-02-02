@@ -10,6 +10,12 @@ interface ModelResults {
   costPerMonth: number;
   timeSavedPerEncounter?: number;
   driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }>;
+  timeAllocation?: {
+    patientAccess: number;
+    patientExperience: number;
+    clinicianWellbeing: number;
+    reducingLocums?: number;
+  };
 }
 
 interface JourneyInputs {
@@ -103,6 +109,26 @@ export function transformToOutpatientPDFData(
   const unitName = careSetting === "Nursing" ? "bed" : "provider";
   const unitNamePlural = careSetting === "Nursing" ? "beds" : "providers";
 
+  // Extract time allocation from driver inputs or use provided values
+  const patientAccessDriver = modelResults.driverResults['patientAccess'];
+  const overtimeDriver = modelResults.driverResults['overtime'];
+  const workforceDriver = modelResults.driverResults['workforce'];
+  
+  const timeAllocation = modelResults.timeAllocation || {
+    patientAccess: (patientAccessDriver?.inputs?.allocationPct as number) || 0,
+    patientExperience: 0,
+    clinicianWellbeing: (workforceDriver?.inputs?.wellbeingPct as number) || 0,
+    reducingLocums: (overtimeDriver?.inputs?.allocationPct as number) || 0,
+  };
+
+  // Extract time values from driver results
+  const timeValues = {
+    patientAccess: patientAccessDriver?.value || 0,
+    patientExperience: "Qualitative",
+    clinicianWellbeing: workforceDriver?.value || 0,
+    reducingLocums: overtimeDriver?.value || 0,
+  };
+
   return {
     clientName,
     preparedBy,
@@ -129,6 +155,9 @@ export function transformToOutpatientPDFData(
     revenueTotal,
     laborPct,
     revenuePct,
+
+    timeAllocation,
+    timeValues,
 
     year1Value,
     year2Value,
