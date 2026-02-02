@@ -106,10 +106,10 @@ const NURSING_ALLOCATION_OPTIONS: AllocationOption[] = [
   },
   {
     id: 'reducingLocums',
-    label: 'Bedside Care',
-    description: 'More time with patients',
+    label: 'Care Quality',
+    description: 'Falls & pressure injury prevention',
     icon: Heart,
-    valueLabel: 'Quality impact',
+    valueLabel: 'Prevention value',
   },
   {
     id: 'clinicianWellbeing',
@@ -152,7 +152,7 @@ const INPATIENT_PRESETS = [
 const NURSING_PRESETS = [
   { label: 'Balanced', allocation: { patientAccess: 40, patientExperience: 0, reducingLocums: 30, clinicianWellbeing: 30 } },
   { label: 'Efficiency Focus', allocation: { patientAccess: 60, patientExperience: 0, reducingLocums: 20, clinicianWellbeing: 20 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 0, reducingLocums: 20, clinicianWellbeing: 60 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 0, reducingLocums: 50, clinicianWellbeing: 30 } },
 ];
 
 interface EditableAssumptions {
@@ -190,8 +190,7 @@ interface EditableAssumptions {
   nursingAgencyFtes: number;
   nursingAgencyPremium: number;
   nursingRetentionDrivenReduction: number;
-  nursingModelQualityImpact: boolean;
-  nursingAnnualAdmissions: number;
+  nursingCareQualityRealization: number;
   nursingFallsRate: number;
   nursingFallsPreventablePct: number;
   nursingCostPerFall: number;
@@ -235,8 +234,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   nursingAgencyFtes: 30,
   nursingAgencyPremium: 75000,
   nursingRetentionDrivenReduction: 10,
-  nursingModelQualityImpact: false,
-  nursingAnnualAdmissions: 10000,
+  nursingCareQualityRealization: 85,
   nursingFallsRate: 3.5,
   nursingFallsPreventablePct: 5,
   nursingCostPerFall: 6500,
@@ -595,7 +593,6 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const [ipShowMetricsToTrack, setIpShowMetricsToTrack] = useState(false);
   const [nursingEfficiencySettingsOpen, setNursingEfficiencySettingsOpen] = useState(false);
   const [nursingWellbeingSettingsOpen, setNursingWellbeingSettingsOpen] = useState(false);
-  const [nursingShowBedsideMetrics, setNursingShowBedsideMetrics] = useState(false);
   
   // Editable percentage state
   const [editingCategory, setEditingCategory] = useState<keyof TimeAllocation | null>(null);
@@ -1076,47 +1073,46 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       }
       case 'reducingLocums': {
         if (isNursing) {
-          // Nursing Bedside Care (qualitative with optional quality impact)
+          // Nursing Care Quality - always calculate Falls + HAPI prevention using patient days
           const hoursPerNursePerYear = hours / Math.max(1, state.numberOfProviders);
           const hoursPerNursePerShift = (hoursPerNursePerYear / 156) * 60; // convert to minutes
           
-          if (!assumptions.nursingModelQualityImpact) {
-            return {
-              value: 0,
-              hours,
-              isQualitative: true,
-              isNursingBedsideCare: true,
-              hoursPerNursePerYear,
-              hoursPerNursePerShift,
-            };
-          }
+          // Calculate patient days from state
+          const patientDaysPerYear = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
           
-          // Falls prevention calculation
-          const fallsPerYear = (assumptions.nursingAnnualAdmissions / 1000) * assumptions.nursingFallsRate;
+          // Falls prevention calculation (rate is per 1,000 patient days)
+          const fallsPerYear = (patientDaysPerYear / 1000) * assumptions.nursingFallsRate;
           const preventableFalls = fallsPerYear * (assumptions.nursingFallsPreventablePct / 100);
-          const fallsValue = preventableFalls * assumptions.nursingCostPerFall;
+          const grossFallsValue = preventableFalls * assumptions.nursingCostPerFall;
           
-          // HAPI prevention calculation
-          const hapisPerYear = assumptions.nursingAnnualAdmissions * (assumptions.nursingHapiRate / 100);
+          // HAPI prevention calculation (rate is per 1,000 patient days)
+          const hapisPerYear = (patientDaysPerYear / 1000) * assumptions.nursingHapiRate;
           const preventableHapis = hapisPerYear * (assumptions.nursingHapiPreventablePct / 100);
-          const hapiValue = preventableHapis * assumptions.nursingCostPerHapi;
+          const grossHapiValue = preventableHapis * assumptions.nursingCostPerHapi;
           
-          const potentialValue = fallsValue + hapiValue;
+          // Apply realization rate
+          const realizationRate = assumptions.nursingCareQualityRealization / 100;
+          const fallsValue = grossFallsValue * realizationRate;
+          const hapiValue = grossHapiValue * realizationRate;
+          const preventionValue = fallsValue + hapiValue;
           
           return {
-            value: Math.round(potentialValue),
+            value: Math.round(preventionValue),
             hours,
-            isNursingBedsideCare: true,
-            isQualityModel: true,
+            isNursingCareQuality: true,
             hoursPerNursePerYear,
             hoursPerNursePerShift,
+            patientDaysPerYear: Math.round(patientDaysPerYear),
             fallsPerYear: Math.round(fallsPerYear),
             preventableFalls: Math.round(preventableFalls),
+            grossFallsValue: Math.round(grossFallsValue),
             fallsValue: Math.round(fallsValue),
             hapisPerYear: Math.round(hapisPerYear),
             preventableHapis: Math.round(preventableHapis),
+            grossHapiValue: Math.round(grossHapiValue),
             hapiValue: Math.round(hapiValue),
-            potentialValue: Math.round(potentialValue),
+            realizationRate: assumptions.nursingCareQualityRealization,
+            preventionValue: Math.round(preventionValue),
           };
         }
         
@@ -2086,221 +2082,141 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       );
     }
     
-    // Nursing Bedside Care breakdown
+    // Nursing Care Quality breakdown (always-on Falls + HAPI prevention)
     if (id === 'reducingLocums' && isNursing) {
       const hoursPerNursePerYear = calc.hours / Math.max(1, state.numberOfProviders);
       const minutesPerShift = (hoursPerNursePerYear / 156) * 60;
+      const patientDaysPerYear = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
       
       return (
         <div className="space-y-3">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-slate-800">Bedside Care Time</span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              {assumptions.nursingModelQualityImpact ? 'Potential Value' : 'Qualitative'}
+            <span className="text-sm font-semibold text-slate-800">Care Quality - Prevention Value</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#FFF5F2] text-[#EA2C00]">
+              {assumptions.nursingCareQualityRealization}% Realization
             </span>
           </div>
           
           <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
             <div className="flex justify-between">
-              <span className="text-slate-500">Hours reinvested in patient care</span>
+              <span className="text-slate-500">Hours for patient care</span>
               <span className="text-slate-900 font-semibold">{calc.hours.toLocaleString()} hrs</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Hours per nurse per year</span>
+              <span className="text-slate-500">Per nurse per year</span>
               <span className="text-slate-900">{hoursPerNursePerYear.toFixed(1)} hrs</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Minutes per nurse per shift</span>
+              <span className="text-slate-500">Per nurse per shift</span>
               <span className="text-slate-900">~{minutesPerShift.toFixed(0)} min</span>
             </div>
           </div>
           
-          <button
-            onClick={() => setNursingShowBedsideMetrics(!nursingShowBedsideMetrics)}
-            className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition-colors border border-slate-200 rounded-lg"
-            data-testid="button-nursing-bedside-metrics"
-          >
-            <span>{nursingShowBedsideMetrics ? 'Hide metrics' : 'What to track'}</span>
-            {nursingShowBedsideMetrics ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-          
-          <AnimatePresence>
-            {nursingShowBedsideMetrics && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-slate-100 rounded-lg p-3 border-l-4 border-[#EA2C00]">
-                  <p className="text-xs font-semibold text-slate-700 mb-2">METRICS TO TRACK:</p>
-                  <ul className="text-xs text-slate-600 space-y-1.5">
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
-                      Bedside time % (goal: increase by 5-10%)
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
-                      Call light response time
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
-                      Hourly rounding compliance
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
-                      Patient satisfaction scores (HCAHPS)
-                    </li>
-                  </ul>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <div className="flex items-center gap-2 py-2">
-            <button
-              onClick={() => updateAssumption('nursingModelQualityImpact', assumptions.nursingModelQualityImpact ? 0 : 1)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${
-                assumptions.nursingModelQualityImpact 
-                  ? 'bg-[#FFF5F2] border-[#EA2C00]/30 text-[#EA2C00]' 
-                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-              }`}
-              data-testid="button-nursing-quality-toggle"
-            >
-              {assumptions.nursingModelQualityImpact ? (
-                <ToggleRight className="w-4 h-4" />
-              ) : (
-                <ToggleLeft className="w-4 h-4" />
-              )}
-              <span className="text-xs font-medium">Model quality impact (experimental)</span>
-            </button>
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+            <div className="flex items-start gap-2 mb-3">
+              <Info className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-600">
+                Prevention value is calculated from patient days ({Math.round(patientDaysPerYear).toLocaleString()}/year) based on your bed count and occupancy rate.
+              </p>
+            </div>
           </div>
           
-          <AnimatePresence>
-            {assumptions.nursingModelQualityImpact && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-yellow-800">
-                      <span className="font-semibold">POTENTIAL VALUE - Indirect causal link</span><br/>
-                      Falls and HAPIs are prevented through clinical care—turning, mobility, skin checks. Documentation SUPPORTS this but doesn't REPLACE it.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
-                  <div className="text-slate-500 font-semibold mb-1">FALLS PREVENTION:</div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Annual admissions</span>
-                    <EditableValue 
-                      value={assumptions.nursingAnnualAdmissions} 
-                      onChange={(v) => updateAssumption('nursingAnnualAdmissions', v)}
-                      min={1000}
-                      max={50000}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">× Falls rate (per 1,000 pt days)</span>
-                    <EditableValue 
-                      value={assumptions.nursingFallsRate} 
-                      onChange={(v) => updateAssumption('nursingFallsRate', v)}
-                      min={1}
-                      max={10}
-                      step={0.5}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">= Falls/year</span>
-                    <span className="text-slate-900">{calc.fallsPerYear || Math.round((assumptions.nursingAnnualAdmissions / 1000) * assumptions.nursingFallsRate)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">× Documentation-preventable %</span>
-                    <EditableValue 
-                      value={assumptions.nursingFallsPreventablePct} 
-                      onChange={(v) => updateAssumption('nursingFallsPreventablePct', v)}
-                      suffix="%"
-                      min={1}
-                      max={20}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">× Cost per fall</span>
-                    <EditableValue 
-                      value={assumptions.nursingCostPerFall} 
-                      onChange={(v) => updateAssumption('nursingCostPerFall', v)}
-                      prefix="$"
-                      min={2000}
-                      max={20000}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">= Potential value</span>
-                    <span className="text-slate-900 font-semibold">${(calc.fallsValue || Math.round((assumptions.nursingAnnualAdmissions / 1000) * assumptions.nursingFallsRate * (assumptions.nursingFallsPreventablePct / 100) * assumptions.nursingCostPerFall)).toLocaleString()}</span>
-                  </div>
-                  
-                  <div className="border-t border-dashed border-slate-200 my-2" />
-                  <div className="text-slate-500 font-semibold mb-1">HAPI PREVENTION:</div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Annual admissions</span>
-                    <span className="text-slate-900">{assumptions.nursingAnnualAdmissions.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">× HAPI rate</span>
-                    <EditableValue 
-                      value={assumptions.nursingHapiRate} 
-                      onChange={(v) => updateAssumption('nursingHapiRate', v)}
-                      suffix="%"
-                      min={0.5}
-                      max={5}
-                      step={0.5}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">= HAPIs/year</span>
-                    <span className="text-slate-900">{calc.hapisPerYear || Math.round(assumptions.nursingAnnualAdmissions * (assumptions.nursingHapiRate / 100))}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">× Documentation-preventable %</span>
-                    <EditableValue 
-                      value={assumptions.nursingHapiPreventablePct} 
-                      onChange={(v) => updateAssumption('nursingHapiPreventablePct', v)}
-                      suffix="%"
-                      min={1}
-                      max={20}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">× Cost per HAPI</span>
-                    <EditableValue 
-                      value={assumptions.nursingCostPerHapi} 
-                      onChange={(v) => updateAssumption('nursingCostPerHapi', v)}
-                      prefix="$"
-                      min={5000}
-                      max={50000}
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">= Potential value</span>
-                    <span className="text-slate-900 font-semibold">${(calc.hapiValue || Math.round(assumptions.nursingAnnualAdmissions * (assumptions.nursingHapiRate / 100) * (assumptions.nursingHapiPreventablePct / 100) * assumptions.nursingCostPerHapi)).toLocaleString()}</span>
-                  </div>
-                  
-                  <div className="border-t border-slate-300 mt-2 pt-2" />
-                  <div className="flex justify-between text-sm">
-                    <span className="font-bold text-slate-800">Combined Potential</span>
-                    <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="text-slate-500 font-semibold mb-1">FALLS PREVENTION:</div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Patient days/year</span>
+              <span className="text-slate-900">{Math.round(patientDaysPerYear).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">÷ 1,000 × Falls rate</span>
+              <EditableValue 
+                value={assumptions.nursingFallsRate} 
+                onChange={(v) => updateAssumption('nursingFallsRate', v)}
+                min={1}
+                max={10}
+                step={0.5}
+              />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Falls/year</span>
+              <span className="text-slate-900">{calc.fallsPerYear || Math.round((patientDaysPerYear / 1000) * assumptions.nursingFallsRate)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Preventable %</span>
+              <EditableValue 
+                value={assumptions.nursingFallsPreventablePct} 
+                onChange={(v) => updateAssumption('nursingFallsPreventablePct', v)}
+                suffix="%"
+                min={1}
+                max={20}
+              />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Cost per fall</span>
+              <EditableValue 
+                value={assumptions.nursingCostPerFall} 
+                onChange={(v) => updateAssumption('nursingCostPerFall', v)}
+                prefix="$"
+                min={2000}
+                max={20000}
+              />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Realization ({assumptions.nursingCareQualityRealization}%)</span>
+              <span className="text-slate-900 font-semibold">${(calc.fallsValue || 0).toLocaleString()}</span>
+            </div>
+            
+            <div className="border-t border-dashed border-slate-200 my-2" />
+            <div className="text-slate-500 font-semibold mb-1">HAPI PREVENTION:</div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Patient days/year</span>
+              <span className="text-slate-900">{Math.round(patientDaysPerYear).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">÷ 1,000 × HAPI rate</span>
+              <EditableValue 
+                value={assumptions.nursingHapiRate} 
+                onChange={(v) => updateAssumption('nursingHapiRate', v)}
+                min={0.5}
+                max={10}
+                step={0.5}
+              />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= HAPIs/year</span>
+              <span className="text-slate-900">{calc.hapisPerYear || Math.round((patientDaysPerYear / 1000) * assumptions.nursingHapiRate)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Preventable %</span>
+              <EditableValue 
+                value={assumptions.nursingHapiPreventablePct} 
+                onChange={(v) => updateAssumption('nursingHapiPreventablePct', v)}
+                suffix="%"
+                min={1}
+                max={20}
+              />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Cost per HAPI</span>
+              <EditableValue 
+                value={assumptions.nursingCostPerHapi} 
+                onChange={(v) => updateAssumption('nursingCostPerHapi', v)}
+                prefix="$"
+                min={5000}
+                max={50000}
+              />
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Realization ({assumptions.nursingCareQualityRealization}%)</span>
+              <span className="text-slate-900 font-semibold">${(calc.hapiValue || 0).toLocaleString()}</span>
+            </div>
+            
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Total Prevention Value</span>
+              <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
+            </div>
+          </div>
         </div>
       );
     }
@@ -2850,9 +2766,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                       {/* Value row */}
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
                         <div>
-                          {option.id === 'patientExperience' || (isNursing && option.id === 'reducingLocums' && !assumptions.nursingModelQualityImpact) ? (
+                          {option.id === 'patientExperience' ? (
                             <>
-                              <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours {isNursing && option.id === 'reducingLocums' ? 'for bedside care' : 'invested'}</p>
+                              <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours invested</p>
                               <p className="text-xl font-bold text-[#F07B5F]">
                                 Qualitative Benefits
                               </p>
@@ -3019,11 +2935,21 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     const driverCalc = calculateDriverValue(option.id);
                     const isQualitative = option.id === 'patientExperience';
                     
+                    // For nursing: patientAccess (Staffing Efficiency) is DIRECT, others are POTENTIAL
+                    const isDirectValue = isNursing && option.id === 'patientAccess';
+                    const isPotentialValue = isNursing && (option.id === 'reducingLocums' || option.id === 'clinicianWellbeing');
+                    
                     return (
                       <div key={option.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon className="w-4 h-4 text-white/50" />
                           <span className="text-sm text-white/70">{option.label}</span>
+                          {isDirectValue && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 uppercase tracking-wider">Direct</span>
+                          )}
+                          {isPotentialValue && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 uppercase tracking-wider">Potential</span>
+                          )}
                         </div>
                         <div className="text-right">
                           {isQualitative ? (

@@ -1,0 +1,488 @@
+REDESIGN PDF EXPORT - Premium, brand-aligned Value Assessment document
+
+═══════════════════════════════════════════════════════════
+CRITICAL FIXES FIRST:
+═══════════════════════════════════════════════════════════
+
+1. FIX DATA BINDING - Numbers showing "0" in calculations but 
+   displaying correct totals. All intermediate values must trace.
+
+2. FIX TEXT WRAPPING - Set wrap: true on all text elements.
+   No truncation like "onb..." or "methodology you can challenge and adapt..."
+
+3. REMOVE BLACK HEADER BARS - Use white backgrounds with coral accents
+
+═══════════════════════════════════════════════════════════
+DESIGN SYSTEM (Match Abridge Impact Report):
+═══════════════════════════════════════════════════════════
+
+COLORS:
+- Background: White (#FFFFFF)
+- Primary text: Dark gray (#1A1A1A)
+- Secondary text: Medium gray (#6B7280)
+- Accent/Numbers: Abridge Coral (#E85A4F)
+- Subtle borders: Light gray (#E5E7EB)
+- Section backgrounds: Very light gray (#F9FAFB)
+
+TYPOGRAPHY:
+- Headlines: 28-32px, bold, dark gray
+- Section labels: 12px, uppercase, letter-spacing 1px, coral
+- Large numbers: 48-56px, light weight, coral
+- Body text: 14px, regular, dark gray
+- Captions: 12px, regular, medium gray
+
+SPACING:
+- Page margins: 60px
+- Section spacing: 48px
+- Card padding: 24px
+- Generous white space throughout
+
+═══════════════════════════════════════════════════════════
+PAGE 1: COVER
+═══════════════════════════════════════════════════════════
+
+Layout:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  ABRIDGE [logo]                    [Date: Month D, YYYY]│
+│                                                         │
+│                                                         │
+│                                                         │
+│  VALUE ASSESSMENT                  [coral, uppercase]   │
+│                                                         │
+│  [Organization Name]               [large, bold]        │
+│                                                         │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│     $207,963        2.7×           5,250                │
+│   Net Annual Value   ROI       Hours Returned          │
+│      [coral]       [dark]         [dark]               │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│                                                         │
+│  Outpatient • 50 providers • 105,000 encounters        │
+│                                                         │
+│                                                         │
+│  Prepared for: [Contact Name]                          │
+│  Prepared by: Abridge                                  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+Data to pull:
+- organizationName (from input or "Your Organization")
+- contactName (from input)
+- careSetting: "Outpatient"
+- providers: 50
+- annualEncounters: 150,000
+- eligibleEncounters: 105,000
+- netAnnualValue: $207,963
+- roi: 2.7
+- hoursSaved: 5,250
+- currentDate
+
+═══════════════════════════════════════════════════════════
+PAGE 2: EXECUTIVE SUMMARY
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│  ABRIDGE                    Outpatient Value Assessment │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  EXECUTIVE SUMMARY                 [coral, uppercase]   │
+│                                                         │
+│  The Value Framework                                    │
+│                                                         │
+│  Ambient AI documentation creates value through two     │
+│  distinct mechanisms—each with its own drivers and      │
+│  assumptions.                                           │
+│                                                         │
+│  ┌─────────────────────┐  ┌─────────────────────────┐  │
+│  │ TIME SAVINGS        │  │ DOCUMENTATION QUALITY   │  │
+│  │                     │  │                         │  │
+│  │ $250,000           │  │ $77,963                 │  │
+│  │                     │  │                         │  │
+│  │ When clinicians     │  │ Better notes capture    │  │
+│  │ document faster,    │  │ complexity that's       │  │
+│  │ they choose how     │  │ already being           │  │
+│  │ to use that time.   │  │ delivered.              │  │
+│  └─────────────────────┘  └─────────────────────────┘  │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  YOUR TIME ALLOCATION                                   │
+│                                                         │
+│  Patient Access              40%         $210,000      │
+│  Patient Experience          30%         Qualitative   │
+│  Clinician Wellbeing         30%         $40,000       │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  YOUR DOCUMENTATION DRIVERS                             │
+│                                                         │
+│  Level of Service (wRVU)                 $77,963       │
+│  HCC & Chronic Conditions                    —         │
+│  Denial Prevention                           —         │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  Page 2                                                 │
+└─────────────────────────────────────────────────────────┘
+
+Data to pull:
+- timeSavingsTotal: $250,000
+- documentationQualityTotal: $77,963
+- timeAllocation: { patientAccess: 40%, patientExperience: 30%, clinicianWellbeing: 30% }
+- timeValues: { patientAccess: $210,000, patientExperience: "Qualitative", clinicianWellbeing: $40,000 }
+- documentationDrivers: [{ name: "Level of Service (wRVU)", value: $77,963, enabled: true }]
+
+═══════════════════════════════════════════════════════════
+PAGE 3: TIME SAVINGS DETAIL
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│  ABRIDGE                    Outpatient Value Assessment │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  TIME SAVINGS                      [coral, uppercase]   │
+│                                                         │
+│  5,250 hours                       [large coral number] │
+│  returned to your clinicians                            │
+│                                                         │
+│  That's 105 hours per provider per year—                │
+│  or 2 hours per week back.                              │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  PATIENT ACCESS                              $210,000   │
+│  40% of time allocated                                  │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ Hours allocated                      3,500 hrs   │  │
+│  │ ÷ Avg visit length                      30 min   │  │
+│  │ = Potential visits                      7,000    │  │
+│  │                                                  │  │
+│  │ × Realization rate                        15%    │  │
+│  │   "Scheduling constraints, demand                │  │
+│  │    variability mean not all time converts"       │  │
+│  │ = Realized visits                       1,050    │  │
+│  │                                                  │  │
+│  │ × Revenue per visit                       $200   │  │
+│  │ = Annual value                        $210,000   │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  PATIENT EXPERIENCE                        Qualitative  │
+│  30% of time allocated                                  │
+│                                                         │
+│  2,625 hours invested in deeper conversations,          │
+│  better education, and stronger relationships.          │
+│                                                         │
+│  Track: Patient satisfaction, repeat visit rates,       │
+│  referral patterns.                                     │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  CLINICIAN WELLBEING                          $40,000   │
+│  30% of time allocated • MINIMAL threshold              │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ Hours per provider per year               53 hrs │  │
+│  │ Hours per provider per week             1.0 hrs  │  │
+│  │                                                  │  │
+│  │ Impact threshold: MINIMAL (3-5% reduction)       │  │
+│  │                                                  │  │
+│  │ Providers                                    50  │  │
+│  │ × Annual turnover rate                       8%  │  │
+│  │ = Annual departures                         4.0  │  │
+│  │ × Retention lift                             5%  │  │
+│  │ = Providers retained                       0.16  │  │
+│  │ × Replacement cost                     $250,000  │  │
+│  │ = Annual value                          $40,000  │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  Page 3                                                 │
+└─────────────────────────────────────────────────────────┘
+
+Data to pull from calculator state:
+- totalHoursSaved
+- hoursPerProvider
+- hoursPerWeek
+- For each allocation category:
+  - percentage
+  - hoursAllocated
+  - calculation steps
+  - final value
+
+═══════════════════════════════════════════════════════════
+PAGE 4: DOCUMENTATION QUALITY DETAIL (if any drivers enabled)
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│  ABRIDGE                    Outpatient Value Assessment │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  DOCUMENTATION QUALITY             [coral, uppercase]   │
+│                                                         │
+│  $77,963                           [large coral number] │
+│  from capturing what's already happening                │
+│                                                         │
+│  Better documentation doesn't mean doing more—it means  │
+│  accurately reflecting the work you're already doing.   │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  LEVEL OF SERVICE (wRVU)                     $77,963    │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ Eligible encounters                    105,000   │  │
+│  │ × Current avg wRVU/visit               1.5 wRVU  │  │
+│  │ = Baseline wRVUs                      157,500    │  │
+│  │                                                  │  │
+│  │ × Documentation improvement                 2%   │  │
+│  │ = wRVU lift per visit               0.030 wRVU   │  │
+│  │ = Total additional wRVUs                3,150    │  │
+│  │                                                  │  │
+│  │ × Conversion rate (Medicare)         $33/wRVU    │  │
+│  │ = Gross value                        $103,950    │  │
+│  │                                                  │  │
+│  │ × Realization rate                         75%   │  │
+│  │   "Accounts for payer mix, already-              │  │
+│  │    accurate coding"                              │  │
+│  │ = Net annual value                    $77,963    │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  We use Medicare conversion rates ($33/wRVU) as a       │
+│  conservative baseline. Commercial rates ($45-65)       │
+│  would yield higher results.                            │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  [Additional drivers if enabled: HCC, Denials]          │
+│                                                         │
+│  Page 4                                                 │
+└─────────────────────────────────────────────────────────┘
+
+Only include drivers that are toggled ON.
+Show full calculation breakdown for each.
+
+═══════════════════════════════════════════════════════════
+PAGE 5: INVESTMENT & RETURN
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│  ABRIDGE                    Outpatient Value Assessment │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  INVESTMENT & RETURN               [coral, uppercase]   │
+│                                                         │
+│  Your ROI Model                                         │
+│                                                         │
+│  ┌────────────┬────────────┬────────────┬───────────┐  │
+│  │            │  Year 1    │  Year 2    │  Year 3   │  │
+│  ├────────────┼────────────┼────────────┼───────────┤  │
+│  │ Value      │  $328K     │  $361K     │  $397K    │  │
+│  │ Investment │  $120K     │  $120K     │  $120K    │  │
+│  │ Net Value  │  $208K     │  $241K     │  $277K    │  │
+│  └────────────┴────────────┴────────────┴───────────┘  │
+│                                                         │
+│     $726K                    2.7×                       │
+│  3-Year Net Value             ROI                       │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  Investment Details                                     │
+│                                                         │
+│  Pricing model              Per provider / month        │
+│  Cost per provider                    $200/mo           │
+│  Providers in scope                        50           │
+│  Annual investment                   $120,000           │
+│  Contract term                         2 years          │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  The Expansion Opportunity                              │
+│                                                         │
+│  Your per-provider economics ($6,559/year) tend to      │
+│  remain consistent at scale. A full deployment to       │
+│  150 providers at 85% utilization projects to $1.4M     │
+│  annual value.                                          │
+│                                                         │
+│  Page 5                                                 │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════
+PAGE 6: YOUR ASSUMPTIONS
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│  ABRIDGE                    Outpatient Value Assessment │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  YOUR ASSUMPTIONS                  [coral, uppercase]   │
+│                                                         │
+│  Every number traces back to an input you control.      │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  PRACTICE BASELINE                                      │
+│                                                         │
+│  Providers                                         50   │
+│  Annual encounters                            150,000   │
+│  Encounters per provider                        3,000   │
+│  Abridge utilization                              70%   │
+│  Eligible encounters                          105,000   │
+│  Time saved per encounter                       5 min   │
+│  Total hours saved                             8,750    │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  TIME ALLOCATION                                        │
+│                                                         │
+│  Patient Access                                   40%   │
+│  Patient Experience                               30%   │
+│  Clinician Wellbeing                              30%   │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  REALIZATION RATES                                      │
+│                                                         │
+│  Patient access realization                       15%   │
+│  wRVU realization (payer mix)                     75%   │
+│  Retention improvement rate                     3-5%    │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  "We intentionally use conservative assumptions.        │
+│   Organizations that execute well typically             │
+│   outperform these projections."                        │
+│                                                         │
+│  Page 6                                                 │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════
+PAGE 7: METHODOLOGY & NEXT STEPS
+═══════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│  ABRIDGE                    Outpatient Value Assessment │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  METHODOLOGY                       [coral, uppercase]   │
+│                                                         │
+│  How We Built This Model                                │
+│                                                         │
+│  This model prioritizes transparency over precision.    │
+│  We use conservative assumptions, show our work         │
+│  step-by-step, and make every input adjustable.         │
+│                                                         │
+│  The goal isn't to prove a predetermined outcome—       │
+│  it's to give you a defensible framework for thinking   │
+│  about value that you can stress-test and adapt.        │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  WHAT'S NEXT                                            │
+│                                                         │
+│  Validate                                               │
+│  • Review assumptions with your finance team            │
+│  • Compare baseline metrics to your actual data         │
+│  • Adjust realization rates based on your context       │
+│                                                         │
+│  Pilot                                                  │
+│  • Start with a focused cohort (20-50 providers)        │
+│  • Measure time savings directly via EHR timestamps     │
+│  • Track satisfaction and adoption weekly               │
+│                                                         │
+│  Scale                                                  │
+│  • Expand based on pilot learnings                      │
+│  • Build internal champions                             │
+│  • Connect to existing quality initiatives              │
+│                                                         │
+│  ───────────────────────────────────────────────────── │
+│                                                         │
+│  Questions? Contact your Abridge representative.        │
+│                                                         │
+│  [Abridge Logo]                                         │
+│                                                         │
+│  Page 7                                                 │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════
+TECHNICAL REQUIREMENTS:
+═══════════════════════════════════════════════════════════
+
+1. TEXT HANDLING:
+   - Set wrap: true on all text elements
+   - Set maxWidth appropriately to prevent overflow
+   - No text truncation anywhere
+
+2. DATA BINDING:
+   - Pull all values from calculator state
+   - Ensure intermediate calculations match final values
+   - Format numbers properly (commas, decimals, currency)
+
+3. CONDITIONAL CONTENT:
+   - Only show documentation quality drivers that are enabled
+   - Only show pages that have content
+   - Adapt page count based on enabled features
+
+4. FORMATTING:
+   - Currency: $XXX,XXX (no cents unless < $1000)
+   - Percentages: XX% 
+   - Hours: X,XXX hrs
+   - Large numbers use K/M abbreviations on cover only
+
+5. PAGE SIZING:
+   - US Letter (8.5" x 11")
+   - Margins: 0.75" all sides
+   - Footer with page numbers
+
+6. BRANDING:
+   - Abridge logo on each page header
+   - Consistent coral accent color (#E85A4F)
+   - Professional, clean, minimal design
+   - Match the elegance of the Impact Report
+
+═══════════════════════════════════════════════════════════
+DATA SOURCES (from calculator state):
+═══════════════════════════════════════════════════════════
+
+From Setup:
+- providers
+- encountersPerProvider
+- annualEncounters
+- utilizationRate
+- eligibleEncounters
+
+From Time Path:
+- scenario (Conservative/Typical/Aggressive)
+- minutesSavedPerEncounter
+- totalHoursSaved
+
+From Time Allocation:
+- allocations: { patientAccess: %, patientExperience: %, clinicianWellbeing: % }
+- patientAccessValue (with calculation breakdown)
+- patientExperienceValue (qualitative)
+- clinicianWellbeingValue (with calculation breakdown)
+- wellbeingThreshold (MINIMAL/MODERATE/SIGNIFICANT)
+
+From Documentation Quality:
+- enabledDrivers: [wRVU, HCC, Denials]
+- For each driver: calculation breakdown and final value
+
+From Investment:
+- pricingModel
+- costPerProvider
+- annualInvestment
+- contractTerm
+- implementationFee
+
+Calculated:
+- totalValue
+- netValue (totalValue - investment)
+- roi
+- valuePerProvider
+- 3YearProjection

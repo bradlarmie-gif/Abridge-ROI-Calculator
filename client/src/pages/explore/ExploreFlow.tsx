@@ -276,7 +276,14 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
           state={state}
           updateState={updateState}
           totalHoursSaved={calculateTotalHoursSaved()}
-          onNext={() => navigate('docDrivers')}
+          onNext={() => {
+            // Nursing skips Documentation Quality and goes directly to Investment
+            if (state.careSetting === 'nursing') {
+              handleContinueToInvestment();
+            } else {
+              navigate('docDrivers');
+            }
+          }}
           onBack={() => navigate('timePath')}
           onHome={goHome}
         />
