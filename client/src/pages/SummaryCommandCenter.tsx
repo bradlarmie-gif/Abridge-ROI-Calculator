@@ -1092,7 +1092,7 @@ export default function SummaryCommandCenter({
                           }
                         }}
                         min={pilotUnits + 1}
-                        className="w-24 bg-transparent text-4xl font-bold text-[#EA2C00] text-center lg:text-right border-b-2 border-[#EA2C00]/30 focus:border-[#EA2C00] outline-none transition-colors"
+                        className="w-24 bg-transparent text-4xl font-bold text-[#EA2C00] text-center lg:text-right border-b-2 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:text-white outline-none transition-colors"
                         data-testid="input-fullscale-units"
                       />
                     </div>
