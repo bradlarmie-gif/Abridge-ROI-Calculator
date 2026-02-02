@@ -144,12 +144,30 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
           selectedSetting={state.careSetting}
           onSelectSetting={(setting: ExploreCareSetting) => {
             // When switching to ED, disable HCC since it's not applicable
+            // For inpatient, reset drivers to inpatient defaults
             if (setting === 'ed') {
               updateState({ 
                 careSetting: setting,
                 docDrivers: {
                   ...state.docDrivers,
                   hcc: { enabled: false, value: state.docDrivers.hcc.value }
+                }
+              });
+            } else if (setting === 'inpatient') {
+              // Inpatient uses CC/MCC (wrvu slot), CDI (hcc slot), and denials
+              updateState({ 
+                careSetting: setting,
+                // Set inpatient-appropriate default values
+                minutesSavedPerEncounter: 10, // Higher per-admission savings
+                timeAllocation: {
+                  patientAccess: 30,
+                  reducingLocums: 40,
+                  clinicianWellbeing: 30,
+                },
+                docDrivers: {
+                  wrvu: { enabled: false, value: 5 }, // CC/MCC capture
+                  hcc: { enabled: false, value: 30 },  // CDI query reduction
+                  denials: { enabled: false, value: 25 }
                 }
               });
             } else {

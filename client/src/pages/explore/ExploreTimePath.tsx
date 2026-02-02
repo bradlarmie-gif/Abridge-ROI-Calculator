@@ -78,9 +78,38 @@ const ED_SCENARIOS: ScenarioOption[] = [
   },
 ];
 
+const INPATIENT_SCENARIOS: ScenarioOption[] = [
+  {
+    id: 'conservative',
+    label: 'Conservative',
+    tagline: 'Play it safe',
+    description: 'Accounts for inpatient workflow complexity. Hospitalists document multiple patients per day with detailed notes.',
+    minutes: 5,
+    icon: Shield,
+  },
+  {
+    id: 'typical',
+    label: 'Typical',
+    tagline: 'Most hospitalist programs start here',
+    description: 'Based on real inpatient implementations. Balances documentation efficiency with adoption reality.',
+    minutes: 10,
+    icon: Target,
+    recommended: true,
+  },
+  {
+    id: 'aggressive',
+    label: 'Aggressive',
+    tagline: 'Maximize efficiency',
+    description: 'For programs with strong hospitalist buy-in and optimized rounding workflows.',
+    minutes: 15,
+    icon: Zap,
+  },
+];
+
 export default function ExploreTimePath({ state, updateState, onNext, onBack, onHome }: ExploreTimePathProps) {
   const isED = state.careSetting === 'ed';
-  const SCENARIOS = isED ? ED_SCENARIOS : OUTPATIENT_SCENARIOS;
+  const isInpatient = state.careSetting === 'inpatient';
+  const SCENARIOS = isInpatient ? INPATIENT_SCENARIOS : isED ? ED_SCENARIOS : OUTPATIENT_SCENARIOS;
   
   const handleSelectScenario = (scenario: ScenarioOption) => {
     updateState({ 
@@ -118,22 +147,26 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                {isED ? "Model ED Efficiency" : "Model Time Savings"}
+                {isInpatient ? "Model Documentation Efficiency" : isED ? "Model ED Efficiency" : "Model Time Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isED ? "How much time per encounter?" : "Choose your modeling approach"}
+                {isInpatient ? "How much time per admission?" : isED ? "How much time per encounter?" : "Choose your modeling approach"}
               </h1>
               <p className="text-slate-600 mb-4">
-                {isED 
-                  ? "ED documentation is fast-paced but still time-consuming. Pick the scenario that matches your expectations for per-encounter time savings."
-                  : "Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations."
+                {isInpatient
+                  ? "Inpatient documentation is extensive—H&Ps, progress notes, discharge summaries. Pick the scenario that matches your expectations for per-admission time savings."
+                  : isED 
+                    ? "ED documentation is fast-paced but still time-consuming. Pick the scenario that matches your expectations for per-encounter time savings."
+                    : "Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations."
                 }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">How to choose:</span> {isED 
-                    ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
-                    : "Use \"Conservative\" for CFO presentations or skeptical stakeholders. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
+                  <span className="font-semibold text-slate-700">How to choose:</span> {isInpatient
+                    ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average hospitalist implementations. \"Aggressive\" suits programs with strong physician buy-in and optimized rounding. All assumptions can be adjusted later."
+                    : isED 
+                      ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
+                      : "Use \"Conservative\" for CFO presentations or skeptical stakeholders. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
                   }
                 </p>
               </div>
@@ -272,7 +305,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     <span className="text-lg text-white/70">hours / year</span>
                   </div>
                   <p className="text-sm text-white/40 mt-2">
-                    {state.minutesSavedPerEncounter} min × {formatNumber(Math.round(eligibleEncounters))} encounters
+                    {state.minutesSavedPerEncounter} min × {formatNumber(Math.round(eligibleEncounters))} {isInpatient ? 'admissions' : 'encounters'}
                   </p>
                 </div>
 
@@ -293,7 +326,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">Eligible Encounters</span>
+                    <span className="text-sm text-white/50">{isInpatient ? 'Eligible Admissions' : 'Eligible Encounters'}</span>
                     <span className="text-sm font-semibold text-white">
                       {formatNumber(Math.round(eligibleEncounters))}
                     </span>

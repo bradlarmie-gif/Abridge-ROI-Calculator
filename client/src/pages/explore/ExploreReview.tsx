@@ -21,6 +21,7 @@ const DENIAL_REALIZATION = 0.70;
 
 export default function ExploreReview({ state, totalHoursSaved, onContinueToInvestment, onBack, onHome }: ExploreReviewProps) {
   const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   
   const calculateWrvuValue = () => {
@@ -74,6 +75,13 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const totalValue = totalDocValue + timeValue;
 
   const getTimePathLabel = () => {
+    if (isInpatient) {
+      switch (state.timePathScenario) {
+        case 'conservative': return 'Conservative (5 min)';
+        case 'typical': return 'Typical (10 min)';
+        case 'aggressive': return 'Aggressive (15 min)';
+      }
+    }
     if (isED) {
       switch (state.timePathScenario) {
         case 'conservative': return 'Conservative (2 min)';
@@ -90,9 +98,14 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
 
   const getEnabledDriversLabel = () => {
     const enabled = [];
-    if (state.docDrivers.wrvu.enabled) enabled.push('wRVU');
-    // HCC not applicable for ED
-    if (!isED && state.docDrivers.hcc.enabled) enabled.push('HCC');
+    // Use care-setting-specific labels for drivers
+    if (state.docDrivers.wrvu.enabled) {
+      enabled.push(isInpatient ? 'CC/MCC' : 'wRVU');
+    }
+    // HCC/CDI not applicable for ED
+    if (!isED && state.docDrivers.hcc.enabled) {
+      enabled.push(isInpatient ? 'CDI' : 'HCC');
+    }
     if (state.docDrivers.denials.enabled) enabled.push('Denials');
     if (enabled.length === 0) return 'None selected';
     return enabled.join(', ');
@@ -108,12 +121,16 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
 
   const DocIcon = getDocIcon();
 
+  // Use care-setting-specific terminology
+  const providerLabel = isInpatient ? 'hospitalists' : isED ? 'physicians' : 'providers';
+  const encounterLabel = isInpatient ? 'eligible admissions' : 'eligible encounters';
+
   const summaryItems = [
     {
       icon: Users,
       label: 'Deployment Size',
-      value: `${state.numberOfProviders} providers`,
-      subvalue: `${eligibleEncounters.toLocaleString()} eligible encounters`,
+      value: `${state.numberOfProviders} ${providerLabel}`,
+      subvalue: `${eligibleEncounters.toLocaleString()} ${encounterLabel}`,
     },
     {
       icon: Clock,
@@ -132,14 +149,18 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const enabledDriverDetails = [];
   if (state.docDrivers.wrvu.enabled) {
     enabledDriverDetails.push({
-      label: `wRVU (${state.docDrivers.wrvu.value}% improvement)`,
+      label: isInpatient 
+        ? `CC/MCC Capture (${state.docDrivers.wrvu.value}% improvement)`
+        : `wRVU (${state.docDrivers.wrvu.value}% improvement)`,
       value: wrvuValue,
     });
   }
-  // HCC not applicable for ED
+  // HCC/CDI not applicable for ED
   if (!isED && state.docDrivers.hcc.enabled) {
     enabledDriverDetails.push({
-      label: `HCC Capture (${state.docDrivers.hcc.value}% recapture)`,
+      label: isInpatient
+        ? `CDI Query Reduction (${state.docDrivers.hcc.value}% reduction)`
+        : `HCC Capture (${state.docDrivers.hcc.value}% recapture)`,
       value: hccValue,
     });
   }

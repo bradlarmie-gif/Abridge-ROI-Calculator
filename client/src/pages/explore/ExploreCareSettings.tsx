@@ -40,7 +40,7 @@ const CARE_SETTINGS: CareSettingOption[] = [
     label: 'Inpatient',
     shortDesc: 'Hospital & Acute Care',
     icon: Building2,
-    available: false,
+    available: true,
   },
 ];
 

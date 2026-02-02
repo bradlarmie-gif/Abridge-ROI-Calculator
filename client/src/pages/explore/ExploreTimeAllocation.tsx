@@ -72,6 +72,30 @@ const ED_ALLOCATION_OPTIONS: AllocationOption[] = [
   },
 ];
 
+const INPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
+  {
+    id: 'patientAccess',
+    label: 'Documentation Efficiency',
+    description: 'Get home earlier, finish notes during rounds instead of late at night',
+    icon: Clock,
+    valueLabel: 'Hours returned to life',
+  },
+  {
+    id: 'reducingLocums',
+    label: 'Hospitalist Retention',
+    description: 'Reduce burnout-driven departures and avoid costly replacements',
+    icon: Users,
+    valueLabel: 'Retention improvement',
+  },
+  {
+    id: 'clinicianWellbeing',
+    label: 'Clinician Wellbeing',
+    description: 'Improve work-life balance and job satisfaction',
+    icon: Heart,
+    valueLabel: 'Quality of life',
+  },
+];
+
 const getPresetsForLocums = (includeLocums: boolean) => {
   if (includeLocums) {
     return [
@@ -94,6 +118,13 @@ const ED_PRESETS = [
   { label: 'Throughput Focus', allocation: { patientAccess: 60, reducingLocums: 20, clinicianWellbeing: 20 } },
   { label: 'Retention Focus', allocation: { patientAccess: 25, reducingLocums: 45, clinicianWellbeing: 30 } },
   { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
+];
+
+const INPATIENT_PRESETS = [
+  { label: 'Balanced', allocation: { patientAccess: 30, reducingLocums: 40, clinicianWellbeing: 30 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 20, reducingLocums: 55, clinicianWellbeing: 25 } },
+  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
+  { label: 'Efficiency Focus', allocation: { patientAccess: 50, reducingLocums: 30, clinicianWellbeing: 20 } },
 ];
 
 interface EditableAssumptions {
@@ -211,15 +242,21 @@ const TIME_ALLOCATION_CONTEXT = {
     subtitle: "ED time savings flow through different value channels.",
     whyItMatters: "In the ED, recovered documentation time can reduce LWBS rates (seeing more patients), improve physician retention (reducing the $500K+ replacement cost), or enhance work-life balance. Your allocation tells us which outcomes matter most to your leadership.",
   },
+  inpatient: {
+    title: "How will your hospitalist program benefit?",
+    subtitle: "Inpatient time savings don't create more patients—but they create immense value.",
+    whyItMatters: "Hospitalists don't see more patients when they document faster—census is driven by admissions. But the value is real: physicians get their lives back (protecting your workforce), and reduced burnout drives retention (avoiding $300K+ replacement costs). Two value streams with compounding impact.",
+  },
 };
 
 export default function ExploreTimeAllocation({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreTimeAllocationProps) {
   const isED = state.careSetting === 'ed';
-  const ALLOCATION_OPTIONS = isED ? ED_ALLOCATION_OPTIONS : OUTPATIENT_ALLOCATION_OPTIONS;
-  const context = isED ? TIME_ALLOCATION_CONTEXT.ed : TIME_ALLOCATION_CONTEXT.outpatient;
+  const isInpatient = state.careSetting === 'inpatient';
+  const ALLOCATION_OPTIONS = isInpatient ? INPATIENT_ALLOCATION_OPTIONS : isED ? ED_ALLOCATION_OPTIONS : OUTPATIENT_ALLOCATION_OPTIONS;
+  const context = isInpatient ? TIME_ALLOCATION_CONTEXT.inpatient : isED ? TIME_ALLOCATION_CONTEXT.ed : TIME_ALLOCATION_CONTEXT.outpatient;
   
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
-  const [includeLocums, setIncludeLocums] = useState(isED ? true : false);
+  const [includeLocums, setIncludeLocums] = useState(isED || isInpatient ? true : false);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
@@ -430,8 +467,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     setExpandedDriver(expandedDriver === id ? null : id);
   };
 
-  const presets = isED ? ED_PRESETS : getPresetsForLocums(includeLocums);
-  const visibleOptions = isED ? ALLOCATION_OPTIONS : ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
+  const presets = isInpatient ? INPATIENT_PRESETS : isED ? ED_PRESETS : getPresetsForLocums(includeLocums);
+  const visibleOptions = (isED || isInpatient) ? ALLOCATION_OPTIONS : ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
 
   const totalAllocated = visibleOptions.reduce((sum, opt) => sum + state.timeAllocation[opt.id], 0);
   const totalTimeValue = visibleOptions.reduce((sum, opt) => {
@@ -464,10 +501,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                {isED ? "Allocate ED Efficiency Gains" : "Allocate Your Savings"}
+                {isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isED ? "How will you use this time?" : "Where does this time go?"}
+                {isInpatient ? "How will hospitalists benefit?" : isED ? "How will you use this time?" : "Where does this time go?"}
               </h1>
               <p className="text-slate-600 mb-4">
                 You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. {context.subtitle}
@@ -479,9 +516,11 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               </div>
               <div className="bg-[#FFF5F2] rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-[#EA2C00]">Realization rates:</span> {isED 
-                    ? "Not every saved hour converts to dollars. ED constraints like staffing minimums and throughput caps mean only a portion of time savings realizes as value. Each driver shows its realization rate—tap \"See the math\" to adjust."
-                    : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
+                  <span className="font-semibold text-[#EA2C00]">Realization rates:</span> {isInpatient
+                    ? "Not every hour saved translates to dollars. Inpatient constraints mean time savings primarily flow to quality of life and retention. Each driver shows its realization rate—tap \"See the math\" to adjust."
+                    : isED 
+                      ? "Not every saved hour converts to dollars. ED constraints like staffing minimums and throughput caps mean only a portion of time savings realizes as value. Each driver shows its realization rate—tap \"See the math\" to adjust."
+                      : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
                   }
                 </p>
               </div>

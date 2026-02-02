@@ -30,6 +30,12 @@ const ED_BUSYNESS_PRESETS: BusynessPreset[] = [
   { label: "Busy", value: 2200 },
 ];
 
+const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
+  { label: "Lighter", value: 300 },
+  { label: "Typical", value: 400 },
+  { label: "Busy", value: 500 },
+];
+
 const UTILIZATION_PRESETS = [
   { label: "Conservative", value: 50 },
   { label: "Typical", value: 70 },
@@ -38,8 +44,9 @@ const UTILIZATION_PRESETS = [
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
-  const BUSYNESS_PRESETS = isED ? ED_BUSYNESS_PRESETS : OUTPATIENT_BUSYNESS_PRESETS;
-  const defaultEncountersPerProvider = isED ? 1800 : 2100;
+  const isInpatient = state.careSetting === 'inpatient';
+  const BUSYNESS_PRESETS = isInpatient ? INPATIENT_BUSYNESS_PRESETS : isED ? ED_BUSYNESS_PRESETS : OUTPATIENT_BUSYNESS_PRESETS;
+  const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 2100;
   
   const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders > 0 ? state.numberOfProviders.toString() : '');
   const [encountersPerProvider, setEncountersPerProvider] = useState(
@@ -163,19 +170,23 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 Size Your Opportunity
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isED ? "Let's understand your ED" : "Let's understand your practice"}
+                {isInpatient ? "Let's understand your hospitalist program" : isED ? "Let's understand your ED" : "Let's understand your practice"}
               </h1>
               <p className="text-slate-600 mb-4">
-                {isED 
-                  ? "These inputs establish the baseline for your value model. Every ED physician and encounter contributes to the opportunity."
-                  : "These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers."
+                {isInpatient
+                  ? "These inputs establish the baseline for your value model. Inpatient value works differently—it's about retention, efficiency, and documentation quality, not seeing more patients."
+                  : isED 
+                    ? "These inputs establish the baseline for your value model. Every ED physician and encounter contributes to the opportunity."
+                    : "These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers."
                 }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">Why we ask:</span> {isED 
-                    ? "ED value scales with volume and complexity. More providers and higher utilization mean more eligible encounters—and more opportunity for throughput, retention, and documentation quality."
-                    : "Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement."
+                  <span className="font-semibold text-slate-700">Why we ask:</span> {isInpatient
+                    ? "Inpatient value scales with hospitalist count and census. More hospitalists mean more documentation burden to relieve—and greater opportunity for retention, wellbeing, and revenue integrity through better documentation."
+                    : isED 
+                      ? "ED value scales with volume and complexity. More providers and higher utilization mean more eligible encounters—and more opportunity for throughput, retention, and documentation quality."
+                      : "Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement."
                   }
                 </p>
               </div>
@@ -195,8 +206,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <Users className="w-6 h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">{isED ? "ED Physicians" : "Number of Providers"}</h2>
-                      <p className="text-sm text-slate-500">{isED ? "Physicians using Abridge in the ED" : "Clinicians using Abridge"}</p>
+                      <h2 className="text-base font-bold text-black">{isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
+                      <p className="text-sm text-slate-500">{isInpatient ? "Hospitalists using Abridge" : isED ? "Physicians using Abridge in the ED" : "Clinicians using Abridge"}</p>
                     </div>
                   </div>
                   <input
@@ -224,8 +235,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <Activity className="w-6 h-6 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black">Annual Encounters</h2>
-                    <p className="text-sm text-slate-500">How busy is your practice?</p>
+                    <h2 className="text-base font-bold text-black">{isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
+                    <p className="text-sm text-slate-500">{isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
                   </div>
                 </div>
 
@@ -247,7 +258,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       >
                         <span className="block font-semibold">{preset.label}</span>
                         <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                          {preset.value.toLocaleString()}/provider
+                          {preset.value.toLocaleString()}/{isInpatient ? 'hospitalist' : 'provider'}
                         </span>
                       </button>
                     );
@@ -258,8 +269,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 <div className="pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-slate-600 font-medium">Or enter your total practice volume</p>
-                      <p className="text-xs text-slate-400">Total encounters your practice sees per year</p>
+                      <p className="text-sm text-slate-600 font-medium">{isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
+                      <p className="text-xs text-slate-400">{isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
@@ -397,14 +408,14 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">Encounters/Provider</span>
+                    <span className="text-sm text-white/50">{isInpatient ? 'Admissions/Hospitalist' : 'Encounters/Provider'}</span>
                     <span className="text-base font-semibold text-white">
                       {formatNumber(encountersPerProvider)}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                    <span className="text-sm text-white/50">Annual Encounters</span>
+                    <span className="text-sm text-white/50">{isInpatient ? 'Annual Admissions' : 'Annual Encounters'}</span>
                     <span className="text-base font-semibold text-white">
                       {state.numberOfProviders > 0 ? formatNumber(annualEncounters) : '—'}
                     </span>
@@ -421,7 +432,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 {/* Eligible Encounters - Highlighted */}
                 <div className="px-6 py-5 border-t border-white/10">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-white/70">Eligible Encounters</span>
+                    <span className="text-sm font-medium text-white/70">{isInpatient ? 'Eligible Admissions' : 'Eligible Encounters'}</span>
                     <span className="text-2xl font-bold text-[#F07B5F]">
                       {state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—'}
                     </span>

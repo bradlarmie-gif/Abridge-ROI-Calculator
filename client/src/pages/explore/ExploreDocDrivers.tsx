@@ -36,7 +36,7 @@ interface DocDriverConfigWithPresets extends DocDriverConfig {
   presets: PresetOption[];
 }
 
-const DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
+const OUTPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   {
     id: 'wrvu',
     label: 'Level of Service (wRVU)',
@@ -82,6 +82,61 @@ const DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     step: 5,
     suffix: '%',
     detail: 'About half of claim denials stem from documentation issues',
+    presets: [
+      { label: 'Conservative', value: 15 },
+      { label: 'Typical', value: 25 },
+      { label: 'Aggressive', value: 35 },
+    ],
+  },
+];
+
+// Inpatient uses different drivers: CC/MCC capture (maps to 'wrvu' slot), CDI query reduction (maps to 'hcc' slot), Denials
+const INPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
+  {
+    id: 'wrvu',
+    label: 'CC/MCC Capture',
+    shortLabel: 'CC/MCC',
+    description: 'Improve DRG weight through complete complication/comorbidity documentation',
+    icon: DollarSign,
+    min: 1,
+    max: 10,
+    step: 1,
+    suffix: '%',
+    detail: 'Better documentation captures CCs and MCCs that drive DRG reimbursement',
+    presets: [
+      { label: 'Conservative', value: 2 },
+      { label: 'Typical', value: 5 },
+      { label: 'Aggressive', value: 8 },
+    ],
+  },
+  {
+    id: 'hcc',
+    label: 'CDI Query Reduction',
+    shortLabel: 'CDI',
+    description: 'Reduce CDI queries through more complete initial documentation',
+    icon: Building2,
+    min: 10,
+    max: 50,
+    step: 5,
+    suffix: '%',
+    detail: 'CDI teams spend less time querying when notes are complete upfront',
+    presets: [
+      { label: 'Conservative', value: 15 },
+      { label: 'Typical', value: 30 },
+      { label: 'Aggressive', value: 45 },
+    ],
+  },
+  {
+    id: 'denials',
+    label: 'Denial Prevention',
+    shortLabel: 'Denials',
+    description: 'Reduce inpatient claim denials through complete documentation',
+    icon: AlertTriangle,
+    min: 10,
+    max: 40,
+    step: 5,
+    suffix: '%',
+    detail: 'Inpatient denials are high-dollar—better notes prevent costly appeals',
     presets: [
       { label: 'Conservative', value: 15 },
       { label: 'Typical', value: 25 },
@@ -209,15 +264,21 @@ const DEFAULT_DOC_DRIVERS = {
 
 export default function ExploreDocDrivers({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreDocDriversProps) {
   const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
 
   const docDrivers = state.docDrivers || DEFAULT_DOC_DRIVERS;
   
-  // Filter out HCC for ED (ED doesn't benefit from HCC capture the same way outpatient does)
-  const availableDriverConfigs = isED 
-    ? DOC_DRIVER_CONFIGS.filter(d => d.id !== 'hcc')
-    : DOC_DRIVER_CONFIGS;
+  // Select appropriate driver configs based on care setting
+  // Inpatient uses CC/MCC, CDI, and Denials
+  // ED uses wRVU and Denials (no HCC)
+  // Outpatient uses all three
+  const availableDriverConfigs = isInpatient
+    ? INPATIENT_DOC_DRIVER_CONFIGS
+    : isED 
+      ? OUTPATIENT_DOC_DRIVER_CONFIGS.filter(d => d.id !== 'hcc')
+      : OUTPATIENT_DOC_DRIVER_CONFIGS;
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
@@ -526,33 +587,39 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           transition={{ duration: 0.5 }}
         >
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            {isED ? "ED Documentation Quality" : "Documentation Quality"}
+            {isInpatient ? "Inpatient Documentation Quality" : isED ? "ED Documentation Quality" : "Documentation Quality"}
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            {isED ? "Capture ED documentation value" : "Capture value beyond time savings"}
+            {isInpatient ? "Capture inpatient documentation value" : isED ? "Capture ED documentation value" : "Capture value beyond time savings"}
           </h1>
 
           <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
-            {isED 
-              ? "ED documentation drives revenue capture and denial prevention. Toggle the drivers that match your organization's priorities."
-              : "Better documentation creates downstream value. Toggle the drivers that match your organization's priorities."
+            {isInpatient
+              ? "Inpatient documentation directly drives DRG reimbursement and reduces costly CDI workflows. Toggle the drivers that match your organization's priorities."
+              : isED 
+                ? "ED documentation drives revenue capture and denial prevention. Toggle the drivers that match your organization's priorities."
+                : "Better documentation creates downstream value. Toggle the drivers that match your organization's priorities."
             }
           </p>
 
           <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left mb-3">
             <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-slate-700">Why this matters:</span> {isED 
-                ? "ED visits are high-acuity but often under-documented due to pace. When notes don't capture complexity, Level of Service codes lower than warranted, and claims get denied for insufficient documentation. These are recoverable dollars—not new procedures, just capturing what you're already doing."
-                : "Clinicians do thorough work, but documentation often lags behind. When notes don't capture complexity, you leave money on the table—lower E&M levels, missed chronic conditions, and preventable denials. This isn't about doing more; it's about capturing what you're already doing."
+              <span className="font-semibold text-slate-700">Why this matters:</span> {isInpatient
+                ? "Inpatient documentation directly impacts DRG assignment and CC/MCC capture. Incomplete notes mean lower DRG weights, more CDI queries, and preventable denials. Better documentation captures the clinical complexity you're already delivering—improving reimbursement without changing care."
+                : isED 
+                  ? "ED visits are high-acuity but often under-documented due to pace. When notes don't capture complexity, Level of Service codes lower than warranted, and claims get denied for insufficient documentation. These are recoverable dollars—not new procedures, just capturing what you're already doing."
+                  : "Clinicians do thorough work, but documentation often lags behind. When notes don't capture complexity, you leave money on the table—lower E&M levels, missed chronic conditions, and preventable denials. This isn't about doing more; it's about capturing what you're already doing."
               }
             </p>
           </div>
           <div className="bg-[#FFF5F2] rounded-xl p-4 max-w-2xl mx-auto text-left">
             <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-[#EA2C00]">How this works:</span> {isED 
-                ? "Each driver calculates value based on your ED volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
-                : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
+              <span className="font-semibold text-[#EA2C00]">How this works:</span> {isInpatient
+                ? "Each driver calculates value based on your admission volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
+                : isED 
+                  ? "Each driver calculates value based on your ED volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
+                  : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
               }
             </p>
           </div>
