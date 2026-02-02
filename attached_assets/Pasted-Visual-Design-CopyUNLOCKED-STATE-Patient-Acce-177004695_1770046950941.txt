@@ -1,0 +1,90 @@
+Visual Design:
+CopyUNLOCKED STATE:
+┌─────────────────────────────────────────────┐
+│ 👥 Patient Access            [40] %    🔓   │
+│                                         ↑ clickable
+└─────────────────────────────────────────────┘
+
+LOCKED STATE:
+┌─────────────────────────────────────────────┐
+│ 👥 Patient Access            [40] %    🔒   │
+│                                         ↑ locked
+│ Subtle blue tint or border to show locked   │
+└─────────────────────────────────────────────┘
+
+AUTO-CALCULATED STATE (when 2 others are locked):
+┌─────────────────────────────────────────────┐
+│ ❤️ Clinician Wellbeing       [30] %    🔢   │
+│                              ↑ grayed, not editable
+│ "Auto-calculated to reach 100%"             │
+└─────────────────────────────────────────────┘
+
+Here's the Replit Prompt:
+CopyADD LOCK FUNCTIONALITY TO TIME ALLOCATION:
+
+CURRENT PROBLEM: When users set a percentage, it moves when they 
+adjust other categories. No way to "freeze" a value.
+
+SOLUTION - Add lock toggles:
+
+1. ADD LOCK ICON next to each percentage input:
+   - Default state: 🔓 (unlocked, gray)
+   - Locked state: 🔒 (locked, Abridge red/coral)
+   - Icon is clickable/tappable
+   - Position: right side of the card header, after percentage
+
+2. LOCK BEHAVIOR:
+
+   NO LOCKS (default):
+   - When user changes any percentage, largest OTHER category adjusts
+   - All percentages remain editable
+   
+   ONE LOCKED:
+   - Locked percentage never changes
+   - When user edits unlocked categories, only THEY adjust
+   - Example: Lock Access at 40% → only Experience and Wellbeing move
+   
+   TWO LOCKED:
+   - Two percentages are frozen
+   - Third is AUTO-CALCULATED (grayed out, not editable)
+   - Show helper text: "Auto-calculated to reach 100%"
+   - Different icon: 🔢 or calculator symbol
+   
+   CAN'T LOCK ALL THREE:
+   - Disable third lock button if two are already locked
+   - Tooltip: "At least one category must adjust automatically"
+
+3. VISUAL FEEDBACK:
+
+   When locked:
+   - Lock icon changes color (gray → coral)
+   - Subtle background tint on card (5% opacity coral)
+   - Or add thin left border in Abridge red
+   
+   When auto-calculated:
+   - Input field is grayed out
+   - Shows 🔢 icon instead of lock
+   - Helper text below: "Calculated automatically"
+
+4. INTERACTION:
+
+   Click lock icon → toggles lock state
+   Click input → unlock automatically and focus input
+   (or show confirmation: "Unlock to edit?")
+
+5. PRESET BEHAVIOR:
+
+   When user clicks Balanced/Growth Focus/Retention Focus:
+   - Clear all locks first
+   - Apply preset percentages
+   - Show all as unlocked
+
+6. MOBILE:
+   - Larger tap target for lock icon (44px minimum)
+   - Clear visual distinction between locked/unlocked
+
+7. ADD TOOLTIP on lock icon:
+   Unlocked: "Lock this allocation"
+   Locked: "Unlock to edit (Click to unlock)"
+
+This gives users FULL CONTROL while maintaining the 100% constraint

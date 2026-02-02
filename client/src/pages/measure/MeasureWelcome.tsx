@@ -80,9 +80,9 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -95,25 +95,18 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
             Document Your Impact
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-12">
             You've lived the change. Now let's measure it—and give you a story worth sharing.
           </p>
         </motion.div>
 
         <motion.div
-          className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 mb-8"
+          className="mb-24"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">
-            Step 1
-          </p>
-          <h2 className="text-lg font-bold text-black mb-6">
-            Select Your Care Setting
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="flex justify-center gap-12">
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
               const isSelected = selectedSetting === setting.id;
@@ -125,12 +118,12 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                   onClick={() => handleSelectSetting(setting)}
                   disabled={isDisabled}
                   className={`
-                    relative flex flex-col items-center text-center p-5 rounded-xl transition-all duration-200
+                    relative flex flex-col items-center text-center w-[260px] py-10 px-8 rounded-2xl transition-all duration-200
                     ${isSelected 
-                      ? 'bg-black text-white' 
+                      ? 'bg-black text-white shadow-xl' 
                       : isDisabled
                         ? 'bg-slate-50 cursor-not-allowed'
-                        : 'bg-white border border-slate-200 hover:border-slate-300'
+                        : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
                     }
                   `}
                   initial={{ opacity: 0, y: 10 }}
@@ -139,19 +132,24 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                   data-testid={`card-setting-${setting.id}`}
                 >
                   {isSelected && (
-                    <div className="absolute top-2 right-2 w-5 h-5 bg-[#EA2C00] rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                    </div>
+                    <motion.div 
+                      className="absolute top-4 right-4 w-7 h-7 bg-[#EA2C00] rounded-full flex items-center justify-center"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    >
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </motion.div>
                   )}
 
                   {isDisabled && (
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-slate-200 rounded text-[9px] font-semibold text-slate-500 uppercase">
+                    <div className="absolute top-4 right-4 px-2 py-1 bg-slate-200 rounded-md text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                       Soon
                     </div>
                   )}
 
                   <div className={`
-                    w-11 h-11 rounded-xl flex items-center justify-center mb-3
+                    w-20 h-20 rounded-2xl flex items-center justify-center mb-6
                     ${isSelected 
                       ? 'bg-white/10' 
                       : isDisabled
@@ -159,14 +157,14 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                         : 'bg-[#FFF5F2]'
                     }
                   `}>
-                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-10 h-10 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
                   </div>
                   
-                  <h3 className={`text-sm font-semibold mb-0.5 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
+                  <h3 className={`text-xl font-bold mb-1 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
                     {setting.label}
                   </h3>
                   
-                  <p className={`text-xs ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-sm font-medium leading-tight ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
                     {setting.shortDesc}
                   </p>
                 </motion.button>
