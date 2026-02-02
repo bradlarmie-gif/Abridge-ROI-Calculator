@@ -804,8 +804,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </div>
           </div>
           
-          <div className="bg-[#FDF8F6] rounded-lg p-3 border border-[#F07B5F]/20">
-            <p className="text-sm font-semibold text-slate-800 mb-2">Why we don't assign a dollar value:</p>
+          <div className="bg-slate-100 rounded-lg p-3 border-l-4 border-[#EA2C00]">
+            <p className="text-sm font-semibold text-[#EA2C00] mb-2">Why we don't assign a dollar value:</p>
             <p className="text-xs text-slate-600 leading-relaxed">
               Patient experience improvements—deeper conversations, better education, stronger relationships—create real value, but assigning speculative monetary figures would undermine the credibility of this model.
             </p>
@@ -814,7 +814,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </p>
           </div>
           
-          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
             <p className="text-xs font-semibold text-slate-700 mb-1">Qualitative outcomes to track:</p>
             <ul className="text-xs text-slate-600 space-y-1">
               <li>• Patient satisfaction (HCAHPS/Press Ganey)</li>
