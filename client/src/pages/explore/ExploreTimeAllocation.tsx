@@ -562,20 +562,35 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     const oldValue = current[id];
     const diff = newValue - oldValue;
     
+    // Get adjustable sliders (not the one being dragged, and respect locums toggle)
     const adjustableKeys = (Object.keys(current) as (keyof TimeAllocation)[])
       .filter(k => k !== id && (includeLocums || k !== 'reducingLocums'));
-    const otherTotal = adjustableKeys.reduce((sum, k) => sum + current[k], 0);
     
-    if (otherTotal > 0) {
-      adjustableKeys.forEach(k => {
-        const ratio = current[k] / otherTotal;
-        current[k] = Math.max(0, Math.round(current[k] - diff * ratio));
-      });
+    // Find the slider with the LARGEST percentage to absorb the change
+    // This keeps other sliders fixed - only ONE slider adjusts
+    const largestKey = adjustableKeys.reduce((largest, k) => 
+      current[k] > current[largest] ? k : largest
+    , adjustableKeys[0]);
+    
+    if (largestKey) {
+      // Only adjust the largest slider, leave others unchanged
+      const newLargestValue = current[largestKey] - diff;
+      
+      // Clamp the adjustment to valid range
+      if (newLargestValue >= 0) {
+        current[largestKey] = newLargestValue;
+        current[id] = newValue;
+      } else {
+        // If largest can't absorb all, set it to 0 and limit the dragged slider
+        const maxIncrease = current[largestKey];
+        current[largestKey] = 0;
+        current[id] = oldValue + maxIncrease;
+      }
+    } else {
+      current[id] = newValue;
     }
     
-    current[id] = newValue;
-    
-    // Calculate total including patientExperience for Outpatient
+    // Final validation: ensure total is exactly 100
     const total = current.patientAccess + 
       (isOutpatient ? current.patientExperience : 0) +
       (includeLocums ? current.reducingLocums : 0) + 
@@ -583,9 +598,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     if (total !== 100) {
       const adjustment = 100 - total;
-      const adjustKey = adjustableKeys.find(k => current[k] > 0) || adjustableKeys[0];
-      if (adjustKey) {
-        current[adjustKey] = Math.max(0, current[adjustKey] + adjustment);
+      // Find any slider with value > 0 to absorb rounding error
+      const fixKey = adjustableKeys.find(k => current[k] > 0) || largestKey;
+      if (fixKey) {
+        current[fixKey] = Math.max(0, current[fixKey] + adjustment);
       }
     }
     
