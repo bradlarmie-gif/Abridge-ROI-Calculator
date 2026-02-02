@@ -312,7 +312,7 @@ function EditableValue({
 }
 
 const DEFAULT_DOC_DRIVERS = {
-  wrvu: { enabled: false, value: 2 },
+  wrvu: { enabled: false, value: 5 },  // Typical scenario default
   hcc: { enabled: false, value: 15 },
   denials: { enabled: false, value: 25 },
 };
