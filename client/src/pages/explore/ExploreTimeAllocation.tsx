@@ -185,7 +185,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   turnoverCost: 250000,
   baselineTurnoverRate: 8,
   atRiskMultiplier: 2,
-  patientAccessRealization: 20,
+  patientAccessRealization: 15,
   locumRealization: 60,
 };
 

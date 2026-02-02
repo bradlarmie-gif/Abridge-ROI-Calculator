@@ -223,7 +223,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
 };
 
 const REALIZATION_RATES = {
-  patientAccess: 0.35,
+  patientAccess: 0.15,
   reducingLocums: 0.60,
   clinicianWellbeing: 0.20,
 };

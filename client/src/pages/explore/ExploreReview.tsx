@@ -61,7 +61,7 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const calculateTimeValue = () => {
     const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
     const visitsEnabled = patientAccessHours / 0.5;
-    const patientAccessValue = visitsEnabled * 200 * 0.20; // 20% realization
+    const patientAccessValue = visitsEnabled * 200 * 0.15; // 15% realization
 
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
     const locumValue = locumHours * 150 * 0.60; // 60% realization
