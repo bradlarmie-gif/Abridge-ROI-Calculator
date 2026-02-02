@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, BarChart3, Building2, AlertTriangle, DollarSign, Calculator, ChevronDown, ChevronUp, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -200,6 +200,61 @@ const NURSING_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   },
 ];
 
+// ED uses: Level of Service (wRVU), Medical Necessity, CDI & Inpatient Connection
+const ED_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
+  {
+    id: 'wrvu',
+    label: 'Level of Service (wRVU)',
+    shortLabel: 'wRVU',
+    description: 'Capture the complexity you\'re delivering',
+    icon: BarChart3,
+    min: 2,
+    max: 7,
+    step: 1,
+    suffix: '%',
+    detail: 'ED notes often understate complexity during high-volume surges',
+    presets: [
+      { label: 'Conservative', value: 2 },
+      { label: 'Typical', value: 3 },
+      { label: 'Aggressive', value: 5 },
+    ],
+  },
+  {
+    id: 'hcc',
+    label: 'Medical Necessity',
+    shortLabel: 'Med Necessity',
+    description: 'Support medical decision-making documentation',
+    icon: Building2,
+    min: 25,
+    max: 60,
+    step: 5,
+    suffix: '%',
+    detail: 'Prevent denials due to insufficient medical necessity documentation',
+    presets: [
+      { label: 'Conservative', value: 25 },
+      { label: 'Typical', value: 40 },
+      { label: 'Aggressive', value: 55 },
+    ],
+  },
+  {
+    id: 'denials',
+    label: 'CDI & Inpatient Connection',
+    shortLabel: 'CDI',
+    description: 'Capture severity for admitted patients',
+    icon: AlertTriangle,
+    min: 2,
+    max: 5,
+    step: 1,
+    suffix: '%',
+    detail: 'ED documentation affects inpatient DRG assignment and CDI efficiency',
+    presets: [
+      { label: 'Conservative', value: 2 },
+      { label: 'Typical', value: 3 },
+      { label: 'Aggressive', value: 5 },
+    ],
+  },
+];
+
 interface EditableAssumptions {
   baseWrvuPerVisit: number;
   wrvuConversion: number;
@@ -218,6 +273,16 @@ interface EditableAssumptions {
   denialPreventionTarget: number;
   denialAvgValue: number;
   denialRealization: number;
+  // ED Medical Necessity assumptions
+  edDenialRate: number;
+  edMedNecessityPct: number;
+  edAvgDenialValue: number;
+  edMedNecessityRealization: number;
+  // ED CDI & Inpatient Connection assumptions
+  edAdmissionRate: number;
+  edBaseDrgWeight: number;
+  edDrgPaymentRate: number;
+  edCdiRealization: number;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
@@ -238,6 +303,16 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   denialPreventionTarget: 50,
   denialAvgValue: 250,
   denialRealization: 85,
+  // ED Medical Necessity assumptions
+  edDenialRate: 12,
+  edMedNecessityPct: 40,
+  edAvgDenialValue: 500,
+  edMedNecessityRealization: 70,
+  // ED CDI & Inpatient Connection assumptions
+  edAdmissionRate: 12,
+  edBaseDrgWeight: 1.8,
+  edDrgPaymentRate: 6000,
+  edCdiRealization: 60,
 };
 
 const REALIZATION_RATES = {
@@ -340,7 +415,19 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
-  const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
+  const [assumptions, setAssumptions] = useState<EditableAssumptions>(() => ({
+    ...DEFAULT_ASSUMPTIONS,
+    // Set ED-specific defaults
+    baseWrvuPerVisit: state.careSetting === 'ed' ? 2.5 : 1.5,
+  }));
+
+  // Reset assumptions when care setting changes (defensive)
+  useEffect(() => {
+    setAssumptions(prev => ({
+      ...prev,
+      baseWrvuPerVisit: state.careSetting === 'ed' ? 2.5 : 1.5,
+    }));
+  }, [state.careSetting]);
 
   const docDrivers = state.docDrivers || DEFAULT_DOC_DRIVERS;
   
@@ -354,7 +441,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     : isInpatient
       ? INPATIENT_DOC_DRIVER_CONFIGS
       : isED 
-        ? OUTPATIENT_DOC_DRIVER_CONFIGS.filter(d => d.id !== 'hcc')
+        ? ED_DOC_DRIVER_CONFIGS
         : OUTPATIENT_DOC_DRIVER_CONFIGS;
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
@@ -476,7 +563,116 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
         };
       }
       case 'hcc': {
-        // Panel-based HCC calculation
+        // ED uses Medical Necessity calculation, others use HCC
+        if (isED) {
+          // ED Medical Necessity: Prevent denials due to insufficient medical necessity documentation
+          const totalDenials = eligibleEncounters * (assumptions.edDenialRate / 100);
+          const medNecessityDenials = totalDenials * (assumptions.edMedNecessityPct / 100);
+          const denialsPrevented = medNecessityDenials * (driverValue / 100);
+          const grossValue = denialsPrevented * assumptions.edAvgDenialValue;
+          const realizedValue = grossValue * (assumptions.edMedNecessityRealization / 100);
+          
+          return {
+            value: Math.round(realizedValue),
+            editableInputs: (
+              <div className="space-y-3">
+                <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                  <p className="text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">The logic:</span> ED denials often stem from insufficient documentation of medical decision-making. Abridge captures the clinical reasoning in real-time, supporting medical necessity.
+                  </p>
+                </div>
+                
+                {/* Step 1: Total denials */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">Annual ED visits</span>
+                  <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
+                </div>
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <span className="text-sm text-slate-600">ED denial rate</span>
+                  <EditableValue 
+                    value={assumptions.edDenialRate} 
+                    onChange={(v) => updateAssumption('edDenialRate', v)}
+                    suffix="%"
+                    min={8}
+                    max={18}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Total ED denials</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(totalDenials).toLocaleString()} claims</span>
+                </div>
+                
+                {/* Step 2: Medical necessity denials */}
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm text-slate-600">Medical necessity %</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Denials due to MDM documentation</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.edMedNecessityPct} 
+                    onChange={(v) => updateAssumption('edMedNecessityPct', v)}
+                    suffix="%"
+                    min={30}
+                    max={60}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Med necessity denials</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(medNecessityDenials).toLocaleString()} claims</span>
+                </div>
+                
+                {/* Step 3: Prevention target */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">× Your prevention target</span>
+                  <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Denials prevented</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(denialsPrevented).toLocaleString()} claims</span>
+                </div>
+                
+                {/* Step 4: Value calculation */}
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <span className="text-sm text-slate-600">× Avg ED denial value</span>
+                  <EditableValue 
+                    value={assumptions.edAvgDenialValue} 
+                    onChange={(v) => updateAssumption('edAvgDenialValue', v)}
+                    prefix="$"
+                    min={300}
+                    max={1000}
+                    step={50}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Gross value</span>
+                  <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
+                </div>
+                
+                {/* Step 5: Realization */}
+                <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                    <p className="text-xs text-slate-500 mt-0.5">Clean claims payment rate</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.edMedNecessityRealization} 
+                    onChange={(v) => updateAssumption('edMedNecessityRealization', v)}
+                    suffix="%"
+                    min={60}
+                    max={90}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                  <span className="text-sm font-bold text-black">Net annual value</span>
+                  <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
+                </div>
+              </div>
+            ),
+          };
+        }
+        
+        // Panel-based HCC calculation (non-ED)
         const totalPatientPanel = numberOfProviders * assumptions.panelSizePerProvider;
         const maPatients = totalPatientPanel * (assumptions.maPatientPct / 100);
         const patientsWithGaps = maPatients * (assumptions.hccGapRate / 100);
@@ -638,7 +834,113 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
         };
       }
       case 'denials': {
-        // Unappealable denials calculation
+        // ED uses CDI & Inpatient Connection calculation
+        if (isED) {
+          // ED CDI: Better ED documentation improves inpatient DRG assignment
+          const admittedPatients = eligibleEncounters * (assumptions.edAdmissionRate / 100);
+          const drgWeightImprovement = driverValue / 100;
+          const additionalDrgWeight = admittedPatients * assumptions.edBaseDrgWeight * drgWeightImprovement;
+          const grossValue = additionalDrgWeight * assumptions.edDrgPaymentRate;
+          const realizedValue = grossValue * (assumptions.edCdiRealization / 100);
+          
+          return {
+            value: Math.round(realizedValue),
+            editableInputs: (
+              <div className="space-y-3">
+                <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                  <p className="text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">The logic:</span> ED notes set the foundation for inpatient documentation. Better capture of severity, comorbidities, and clinical reasoning in the ED improves DRG assignment and reduces CDI queries.
+                  </p>
+                </div>
+                
+                {/* Step 1: Admitted patients */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">Annual ED visits</span>
+                  <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
+                </div>
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <span className="text-sm text-slate-600">ED admission rate</span>
+                  <EditableValue 
+                    value={assumptions.edAdmissionRate} 
+                    onChange={(v) => updateAssumption('edAdmissionRate', v)}
+                    suffix="%"
+                    min={8}
+                    max={20}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Admitted patients</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(admittedPatients).toLocaleString()} admissions</span>
+                </div>
+                
+                {/* Step 2: DRG weight */}
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm text-slate-600">Base DRG weight</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Average case mix index</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.edBaseDrgWeight} 
+                    onChange={(v) => updateAssumption('edBaseDrgWeight', v)}
+                    suffix=""
+                    min={1.2}
+                    max={2.5}
+                    step={0.1}
+                  />
+                </div>
+                
+                {/* Step 3: Improvement target */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">× DRG weight improvement</span>
+                  <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Additional DRG weight</span>
+                  <span className="text-sm font-semibold text-black">{additionalDrgWeight.toFixed(1)} weight units</span>
+                </div>
+                
+                {/* Step 4: Value calculation */}
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <span className="text-sm text-slate-600">× DRG payment per weight</span>
+                  <EditableValue 
+                    value={assumptions.edDrgPaymentRate} 
+                    onChange={(v) => updateAssumption('edDrgPaymentRate', v)}
+                    prefix="$"
+                    min={4000}
+                    max={10000}
+                    step={500}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Gross value</span>
+                  <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
+                </div>
+                
+                {/* Step 5: Realization */}
+                <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                    <p className="text-xs text-slate-500 mt-0.5">Accounting for CDI review and coding</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.edCdiRealization} 
+                    onChange={(v) => updateAssumption('edCdiRealization', v)}
+                    suffix="%"
+                    min={40}
+                    max={80}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                  <span className="text-sm font-bold text-black">Net annual value</span>
+                  <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
+                </div>
+              </div>
+            ),
+          };
+        }
+        
+        // Unappealable denials calculation (non-ED)
         const baselineDenialRate = assumptions.baselineDenialRate / 100;
         const unappealableRate = assumptions.unappealableRate / 100;
         const preventionTarget = driverValue / 100;

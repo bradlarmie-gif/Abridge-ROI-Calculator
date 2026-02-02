@@ -58,24 +58,24 @@ const OUTPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
 const ED_ALLOCATION_OPTIONS: AllocationOption[] = [
   {
     id: 'patientAccess',
-    label: 'Throughput & LWBS Reduction',
-    description: 'Reduce left-without-being-seen rates and increase patient throughput',
-    icon: Users,
-    valueLabel: 'Additional patients seen',
+    label: 'Patient Throughput (LWBS Reduction)',
+    description: 'Reduce walkouts and capture lost revenue',
+    icon: Zap,
+    valueLabel: 'Revenue recovered',
   },
   {
-    id: 'reducingLocums',
-    label: 'Physician Retention',
-    description: 'Reduce burnout-driven attrition and recruitment costs',
-    icon: Clock,
-    valueLabel: 'Retention improvement',
+    id: 'patientExperience',
+    label: 'Patient Experience',
+    description: 'Improve satisfaction and communication',
+    icon: Star,
+    valueLabel: 'Experience impact',
   },
   {
     id: 'clinicianWellbeing',
-    label: 'Clinician Wellbeing',
-    description: 'Improve work-life balance and job satisfaction',
+    label: 'Physician Retention',
+    description: 'Reduce burnout-driven attrition and recruitment costs',
     icon: Heart,
-    valueLabel: 'Satisfaction improvement',
+    valueLabel: 'Retention improvement',
   },
 ];
 
@@ -145,10 +145,9 @@ const getPresetsForLocums = (includeLocums: boolean) => {
 };
 
 const ED_PRESETS = [
-  { label: 'Balanced', allocation: { patientAccess: 40, patientExperience: 0, reducingLocums: 30, clinicianWellbeing: 30 } },
-  { label: 'Throughput Focus', allocation: { patientAccess: 60, patientExperience: 0, reducingLocums: 20, clinicianWellbeing: 20 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 45, clinicianWellbeing: 30 } },
-  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 50 } },
+  { label: 'Balanced', allocation: { patientAccess: 30, patientExperience: 30, reducingLocums: 0, clinicianWellbeing: 40 } },
+  { label: 'Throughput Focus', allocation: { patientAccess: 60, patientExperience: 20, reducingLocums: 0, clinicianWellbeing: 20 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 20, reducingLocums: 0, clinicianWellbeing: 60 } },
 ];
 
 const INPATIENT_PRESETS = [
@@ -174,6 +173,14 @@ interface EditableAssumptions {
   baselineTurnoverRate: number;
   patientAccessRealization: number;
   locumRealization: number;
+  // ED-specific LWBS assumptions
+  edLwbsRate: number;
+  edRetentionRate: number;
+  edAbridgeAttribution: number;
+  edVisitRevenue: number;
+  edIncludeAdmissions: boolean;
+  edAdmissionRate: number;
+  edAdmissionRevenue: number;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
@@ -185,6 +192,14 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   baselineTurnoverRate: 8,
   patientAccessRealization: 15,
   locumRealization: 60,
+  // ED-specific LWBS defaults
+  edLwbsRate: 3.5,
+  edRetentionRate: 10,
+  edAbridgeAttribution: 33,
+  edVisitRevenue: 600,
+  edIncludeAdmissions: true,
+  edAdmissionRate: 12,
+  edAdmissionRevenue: 15000,
 };
 
 // Threshold-based wellbeing tiers (based on annual hours per provider)
@@ -524,6 +539,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
   const [patientAccessSettingsOpen, setPatientAccessSettingsOpen] = useState(false);
   const [wellbeingSettingsOpen, setWellbeingSettingsOpen] = useState(false);
+  const [edThroughputSettingsOpen, setEdThroughputSettingsOpen] = useState(false);
   
   // Editable percentage state
   const [editingCategory, setEditingCategory] = useState<keyof TimeAllocation | null>(null);
@@ -858,6 +874,38 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     switch (id) {
       case 'patientAccess': {
+        if (isED) {
+          // ED LWBS Throughput calculation
+          const edVisits = state.annualEncounters;
+          const patientsLeaving = edVisits * (assumptions.edLwbsRate / 100);
+          const patientsRetained = patientsLeaving * (assumptions.edRetentionRate / 100);
+          const patientsAttributed = patientsRetained * (assumptions.edAbridgeAttribution / 100);
+          const edVisitRevenue = patientsAttributed * assumptions.edVisitRevenue;
+          
+          let admissionRevenue = 0;
+          let patientsAdmitted = 0;
+          if (assumptions.edIncludeAdmissions) {
+            patientsAdmitted = patientsAttributed * (assumptions.edAdmissionRate / 100);
+            admissionRevenue = patientsAdmitted * assumptions.edAdmissionRevenue;
+          }
+          
+          const totalValue = edVisitRevenue + admissionRevenue;
+          
+          return {
+            value: Math.round(totalValue),
+            hours,
+            edVisits,
+            patientsLeaving: Math.round(patientsLeaving),
+            patientsRetained: Math.round(patientsRetained),
+            patientsAttributed: Math.round(patientsAttributed),
+            edVisitRevenue: Math.round(edVisitRevenue),
+            patientsAdmitted: Math.round(patientsAdmitted),
+            admissionRevenue: Math.round(admissionRevenue),
+            isEDThroughput: true,
+          };
+        }
+        
+        // Outpatient Patient Access calculation
         const realizationRate = assumptions.patientAccessRealization / 100;
         const avgVisitLengthHours = assumptions.visitDuration / 60;
         const potentialVisits = hours / avgVisitLengthHours;
@@ -978,6 +1026,275 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <div className="flex justify-between text-sm">
               <span className="font-bold text-slate-800">Annual Value</span>
               <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (id === 'patientAccess' && isED) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-slate-800">LWBS Revenue Recovery</span>
+            <button
+              onClick={() => setEdThroughputSettingsOpen(true)}
+              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              data-testid="button-ed-throughput-settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
+            </button>
+          </div>
+          
+          <div className="bg-slate-100 rounded-lg p-3 border-l-4 border-[#EA2C00] mb-3">
+            <p className="text-xs text-slate-600 leading-relaxed">
+              <span className="font-semibold text-slate-800">The Theory:</span> When patients leave without being seen, you lose that revenue entirely. Faster documentation means faster throughput, shorter wait times, and fewer walkouts. Some retained patients are simple ED visits—but some would have been admitted. Both represent recovered revenue.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Annual ED visits</span>
+              <span className="text-slate-900">{calc.edVisits?.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between bg-slate-50 -mx-3 px-3 py-1.5 rounded">
+              <span className="flex items-center gap-1.5 text-slate-600">
+                × LWBS rate
+                <InfoTooltip>
+                  <p className="font-semibold mb-1">Left Without Being Seen</p>
+                  <p>Industry average is 2-5%. Higher rates during surges.</p>
+                </InfoTooltip>
+              </span>
+              <span className="text-slate-900">{assumptions.edLwbsRate}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Patients leaving</span>
+              <span className="text-slate-900 font-semibold">{calc.patientsLeaving?.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between bg-slate-50 -mx-3 px-3 py-1.5 rounded">
+              <span className="flex items-center gap-1.5 text-slate-600">
+                × Retention rate
+                <InfoTooltip>
+                  <p className="font-semibold mb-1">% retained with faster throughput</p>
+                  <p>Conservative estimate of patients who stay due to reduced wait times.</p>
+                </InfoTooltip>
+              </span>
+              <span className="text-slate-900">{assumptions.edRetentionRate}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Patients retained</span>
+              <span className="text-slate-900">{calc.patientsRetained?.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
+              <span className="flex items-center gap-1.5 text-[#EA2C00]">
+                × Abridge attribution
+                <InfoTooltip>
+                  <p className="font-semibold mb-1">Why only {assumptions.edAbridgeAttribution}%?</p>
+                  <p>Faster documentation contributes to overall throughput improvements alongside other ED optimization efforts.</p>
+                </InfoTooltip>
+              </span>
+              <span className="text-[#EA2C00] font-semibold">{assumptions.edAbridgeAttribution}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Patients attributed</span>
+              <span className="text-slate-900 font-semibold">{calc.patientsAttributed?.toLocaleString()}</span>
+            </div>
+            <div className="border-t border-dashed border-slate-200 my-2" />
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Avg ED visit revenue</span>
+              <span className="text-slate-900">${assumptions.edVisitRevenue.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= ED visit revenue</span>
+              <span className="text-slate-900 font-semibold">${calc.edVisitRevenue?.toLocaleString()}</span>
+            </div>
+            
+            {assumptions.edIncludeAdmissions && (
+              <>
+                <div className="border-t border-dashed border-slate-200 my-2" />
+                <div className="flex justify-between">
+                  <span className="text-slate-500">× Admission rate</span>
+                  <span className="text-slate-900">{assumptions.edAdmissionRate}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">= Patients admitted</span>
+                  <span className="text-slate-900">{calc.patientsAdmitted}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">× Avg admission revenue</span>
+                  <span className="text-slate-900">${assumptions.edAdmissionRevenue.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">= Admission revenue</span>
+                  <span className="text-slate-900 font-semibold">${calc.admissionRevenue?.toLocaleString()}</span>
+                </div>
+              </>
+            )}
+            
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Total Annual Value</span>
+              <span className="font-bold text-[#EA2C00]">${calc.value?.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          {assumptions.edIncludeAdmissions && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-yellow-800">
+                <span className="font-semibold">Capacity consideration:</span> Turn off admission revenue in settings if your hospital is at bed capacity and cannot accept additional admissions.
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    if (id === 'patientExperience' && isED) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-slate-800">Patient Experience</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Qualitative</span>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours allocated</span>
+              <span className="text-slate-900 font-semibold">{calc.hours.toLocaleString()} hrs/year</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-400">Per physician per week</span>
+              <span className="text-slate-600">{(calc.hours / Math.max(1, state.numberOfProviders) / 52).toFixed(1)} hrs</span>
+            </div>
+          </div>
+          
+          <div className="bg-slate-100 rounded-lg p-3 border-l-4 border-[#EA2C00]">
+            <p className="text-sm font-semibold text-[#EA2C00] mb-2">Why we don't assign a dollar value:</p>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              ED patient experience improvements—better communication, reduced anxiety, clearer discharge instructions—create real value, but assigning speculative monetary figures would undermine the credibility of this model.
+            </p>
+          </div>
+          
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+            <p className="text-xs font-semibold text-slate-700 mb-1">Qualitative outcomes to track:</p>
+            <ul className="text-xs text-slate-600 space-y-1">
+              <li>• Patient satisfaction scores (Press Ganey)</li>
+              <li>• Door-to-provider communication time</li>
+              <li>• Discharge instruction clarity ratings</li>
+              <li>• Patient complaints & grievances</li>
+            </ul>
+          </div>
+        </div>
+      );
+    }
+    
+    if (id === 'clinicianWellbeing' && isED) {
+      const wc = wellbeingCalculation;
+      const showNudge = wc.nextThreshold && wc.allocationForNextThreshold && 
+        (wc.allocationForNextThreshold - state.timeAllocation.clinicianWellbeing) <= 15;
+      
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-800">Physician Retention Impact</span>
+            <button
+              onClick={() => setWellbeingSettingsOpen(true)}
+              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              data-testid="button-ed-retention-settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
+            </button>
+          </div>
+          
+          <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-600">Hours per physician per year</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 52)} hrs</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-4 h-4 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-700">IMPACT THRESHOLD</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#FFF5F2] text-[#EA2C00]">
+                {wc.threshold.label}
+              </span>
+            </div>
+            
+            <div className="space-y-1 text-xs font-mono">
+              {WELLBEING_THRESHOLDS.map((t, i) => {
+                const isCurrent = t.label === wc.threshold.label;
+                return (
+                  <div 
+                    key={t.label} 
+                    className={`flex items-center gap-2 py-1 px-2 rounded ${isCurrent ? 'bg-[#FFF5F2]' : ''}`}
+                  >
+                    <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
+                    <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
+                      {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
+                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                        ({t.description})
+                      </span>
+                    </span>
+                    <span className={`${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
+                      {t.label} ({Math.round(t.rateMin * 100)}-{Math.round(t.rateMax * 100)}% reduction)
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {showNudge && (
+            <div className="bg-[#FFF5F2] border border-[#EA2C00]/20 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Zap className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-slate-700">
+                  Add <span className="font-bold text-[#EA2C00]">{wc.allocationForNextThreshold! - state.timeAllocation.clinicianWellbeing}%</span> more to reach <span className="font-bold">{wc.nextThreshold?.label}</span> tier
+                </span>
+              </div>
+              {wc.valueAtNextThreshold && (
+                <p className="text-xs text-slate-500 mt-1 ml-6">
+                  Potential value: ${wc.valueAtNextThreshold.toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">ED physicians</span>
+              <span className="text-slate-900">{state.numberOfProviders}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Baseline turnover rate</span>
+              <span className="text-slate-900">{assumptions.baselineTurnoverRate}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Expected departures/yr</span>
+              <span className="text-slate-900">{(state.numberOfProviders * assumptions.baselineTurnoverRate / 100).toFixed(1)}</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
+              <span className="text-[#EA2C00]">× Retention lift ({wc.threshold.label})</span>
+              <span className="text-[#EA2C00] font-semibold">{Math.round(wc.retentionLift * 100)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Physicians retained</span>
+              <span className="text-slate-900">{wc.providersRetained.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Replacement cost</span>
+              <span className="text-slate-900">${assumptions.turnoverCost.toLocaleString()}</span>
+            </div>
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Annual Value</span>
+              <span className="font-bold text-[#EA2C00]">${wc.value.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -1878,6 +2195,115 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   onClick={() => setWellbeingSettingsOpen(false)}
                   className="w-full bg-black hover:bg-black/90 text-white"
                   data-testid="button-save-wellbeing-settings"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </SettingsModal>
+        )}
+      </AnimatePresence>
+
+      {/* ED Throughput Settings Modal */}
+      <AnimatePresence>
+        {edThroughputSettingsOpen && (
+          <SettingsModal
+            isOpen={edThroughputSettingsOpen}
+            onClose={() => setEdThroughputSettingsOpen(false)}
+            title="ED Throughput Settings"
+          >
+            <div className="space-y-5">
+              <ModalSlider
+                label="LWBS Rate"
+                value={assumptions.edLwbsRate}
+                onChange={(v) => updateAssumption('edLwbsRate', v)}
+                min={2}
+                max={8}
+                suffix="%"
+                hint="% of patients who leave without being seen (industry avg: 2-5%)"
+              />
+              <ModalSlider
+                label="Retention Rate with Faster Throughput"
+                value={assumptions.edRetentionRate}
+                onChange={(v) => updateAssumption('edRetentionRate', v)}
+                min={5}
+                max={15}
+                hint="% of LWBS patients retained with reduced wait times"
+              />
+              <ModalSlider
+                label="Abridge Attribution"
+                value={assumptions.edAbridgeAttribution}
+                onChange={(v) => updateAssumption('edAbridgeAttribution', v)}
+                min={20}
+                max={50}
+                hint="% of throughput improvement attributed to faster documentation"
+              />
+              <ModalInput
+                label="Average ED Visit Revenue"
+                value={assumptions.edVisitRevenue}
+                onChange={(v) => updateAssumption('edVisitRevenue', v)}
+                prefix="$"
+                min={400}
+                max={1000}
+                step={50}
+                hint="Average revenue per ED visit ($400-$1,000)"
+              />
+              
+              <div className="border-t border-slate-200 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-sm font-medium text-slate-800">Include Admission Revenue</span>
+                    <p className="text-xs text-slate-500 mt-0.5">For retained patients who get admitted</p>
+                  </div>
+                  <button
+                    onClick={() => setAssumptions(prev => ({ ...prev, edIncludeAdmissions: !prev.edIncludeAdmissions }))}
+                    className="flex items-center justify-center min-h-[48px] min-w-[48px] p-2"
+                    data-testid="toggle-include-admissions"
+                  >
+                    {assumptions.edIncludeAdmissions ? (
+                      <ToggleRight className="w-10 h-10 text-[#EA2C00]" />
+                    ) : (
+                      <ToggleLeft className="w-10 h-10 text-slate-300" />
+                    )}
+                  </button>
+                </div>
+                
+                {assumptions.edIncludeAdmissions && (
+                  <div className="space-y-4 pl-4 border-l-2 border-[#EA2C00]/20">
+                    <ModalSlider
+                      label="Admission Rate for Retained Patients"
+                      value={assumptions.edAdmissionRate}
+                      onChange={(v) => updateAssumption('edAdmissionRate', v)}
+                      min={10}
+                      max={20}
+                      hint="% of retained ED patients who get admitted"
+                    />
+                    <ModalInput
+                      label="Average Admission Revenue"
+                      value={assumptions.edAdmissionRevenue}
+                      onChange={(v) => updateAssumption('edAdmissionRevenue', v)}
+                      prefix="$"
+                      min={10000}
+                      max={25000}
+                      step={1000}
+                      hint="Average revenue per admission ($10K-$25K)"
+                    />
+                    
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-yellow-800">
+                        Turn OFF if your hospital is at bed capacity and cannot accept additional admissions.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="pt-3 border-t border-slate-100">
+                <Button
+                  onClick={() => setEdThroughputSettingsOpen(false)}
+                  className="w-full bg-black hover:bg-black/90 text-white"
+                  data-testid="button-save-ed-throughput-settings"
                 >
                   Save Changes
                 </Button>

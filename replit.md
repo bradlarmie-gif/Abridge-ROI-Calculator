@@ -29,13 +29,26 @@ The application supports multiple distinct user journeys:
 
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings.
+-   **ED-Specific Time Allocation**: Emergency Department uses distinct time allocation categories:
+    - **Patient Throughput (LWBS Reduction)**: Instead of Patient Access, calculates recovered revenue from patients who would have left without being seen. Formula: ED visits × LWBS rate (3.5%) × retention rate (10%) × Abridge attribution (33%) × visit revenue ($600). Optional admission revenue: attributed patients × admission rate (12%) × admission revenue ($15K).
+    - **Patient Experience**: Qualitative value indicator for improved patient satisfaction.
+    - **Physician Retention**: Uses wellbeing-based retention model with threshold tiers.
+    - ED Presets: Balanced (30/30/40), Throughput Focus (60/20/20), Retention Focus (20/20/60).
+    - ED Throughput Settings Modal: Configurable LWBS rate, retention rate, Abridge attribution, visit revenue, and optional admission revenue toggle with capacity warning.
+-   **ED-Specific Documentation Drivers**: Emergency Department uses three specialized drivers:
+    - **Level of Service (wRVU)**: Base wRVU 2.5 (vs 1.5 outpatient), captures complexity during high-volume surges.
+    - **Medical Necessity**: Prevents denials from insufficient medical decision-making documentation. Formula: ED visits × denial rate (12%) × med necessity % (40%) × prevention target × avg denial value ($500) × realization rate (70%).
+    - **CDI & Inpatient Connection**: Improves DRG weight for admitted patients. Formula: ED visits × admission rate (12%) × base DRG weight (1.8) × improvement % × DRG payment rate ($6K) × realization rate (60%).
 -   **Defensible Math with Realization Rates**: All ROI calculations include conservative realization rates for defensible estimates:
     - Patient Access: 15% (scheduling constraints, room availability)
+    - ED Throughput/LWBS: Configurable attribution rate (default 33%)
     - Locum Reduction: 60% (minimum shift requirements)
     - Clinician Wellbeing: Threshold-based retention lift (see below)
     - wRVU: 75% (payer mix, fee schedules)
     - HCC: 60% (RAF adjustments, audit risk)
-    - Denials: 70% (appeals success rate)
+    - Denials: 70-85% (appeals success rate)
+    - ED Medical Necessity: 70%
+    - ED CDI: 60%
 -   **Simplified Wellbeing Retention Model**: Conservative threshold-based approach:
     - 0-100 hrs/yr per provider (<2 hrs/week): MINIMAL tier, 3-5% retention lift
     - 100-150 hrs/yr (2-3 hrs/week): MODERATE tier, 8-12% retention lift

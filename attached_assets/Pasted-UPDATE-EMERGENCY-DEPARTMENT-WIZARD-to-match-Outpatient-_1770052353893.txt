@@ -1,0 +1,267 @@
+UPDATE EMERGENCY DEPARTMENT WIZARD to match Outpatient structure with ED-specific changes:
+
+PAGES TO UPDATE: Time Allocation + Documentation Quality
+
+═══════════════════════════════════════════════════════════
+PART 1: TIME ALLOCATION PAGE (Emergency Department)
+═══════════════════════════════════════════════════════════
+
+REPLACE "Patient Access" category with "Patient Throughput (LWBS Reduction)":
+
+1. UPDATE CATEGORY STRUCTURE:
+
+   THREE CATEGORIES (must sum to 100%):
+   
+   ⚡ Patient Throughput (LWBS Reduction)
+   ⭐ Patient Experience  
+   ❤️  Physician Retention
+
+2. PATIENT THROUGHPUT CARD:
+
+   Icon: ⚡ (lightning bolt - speed/urgency)
+   Title: "Patient Throughput (LWBS Reduction)"
+   Description: "Reduce walkouts and capture lost revenue"
+   
+   Value Calculation Logic:
+   
+   STEP 1: Calculate LWBS baseline
+   - Modeled ED visits (from setup): 6,500
+   - LWBS rate (editable, default 3.5%): adjustable 2-8%
+   - Patients leaving = 6,500 × 3.5% = 228 patients
+   
+   STEP 2: Calculate retention with faster throughput
+   - Hours allocated to throughput (e.g., 40% of time saved)
+   - Retention rate (editable, default 10%): adjustable 5-15%
+   - Patients retained = 228 × 10% = 23 patients
+   
+   STEP 3: Attribution to Abridge
+   - Attribution % (editable, default 33%): adjustable 20-50%
+   - Patients attributed to Abridge = 23 × 33% = 8 patients
+   - Rationale: "Faster documentation contributes to overall 
+     throughput improvements alongside other ED optimization efforts"
+   
+   STEP 4: Revenue calculation
+   - Average ED visit revenue (editable, default $600): $400-$1,000
+   - ED visit revenue = 8 × $600 = $4,800
+   
+   STEP 5: Admission revenue (TOGGLE)
+   - ☑️ Include admission revenue for attributed patients
+   - Admission rate for LWBS patients (editable, default 12%): 10-20%
+   - Patients admitted = 8 × 12% = 1 patient
+   - Average admission revenue (editable, default $15,000): $10K-$25K
+   - Admission revenue = 1 × $15,000 = $15,000
+   
+   ⚠️ Show warning if admission toggle ON and capacity constrained:
+   "Turn OFF if your hospital is at bed capacity and cannot accept 
+   additional admissions"
+   
+   Total Annual Value = $4,800 (ED visits) + $15,000 (admissions) = $19,800
+   
+   Show breakdown when expanded:
+   "The Theory: When patients leave without being seen, you lose that 
+   revenue entirely. Faster documentation means faster throughput, 
+   shorter wait times, and fewer walkouts. Some retained patients are 
+   simple ED visits—but some would have been admitted. Both represent 
+   recovered revenue."
+
+3. PATIENT EXPERIENCE CARD:
+   (Same as outpatient - qualitative)
+
+4. PHYSICIAN RETENTION CARD:
+   (Same logic as outpatient wellbeing, but copy says "Physician" 
+   instead of "Clinician")
+   
+   Update threshold display:
+   🎯 IMPACT THRESHOLD
+   ├─ 0-100 hrs/yr (<2 hrs/week):   MINIMAL (3-5% reduction)
+   ├─ 100-150 hrs/yr (2-3 hrs/week): MODERATE (8-12% reduction)
+   └─ 150+ hrs/yr (3+ hrs/week):    SIGNIFICANT (15-20% reduction)
+
+5. ADD INSTRUCTION GUIDANCE (like outpatient):
+   
+   Top of page:
+   "ALLOCATE YOUR SAVINGS
+   You're unlocking [X] hours. Decide how this time creates value."
+   
+   Add temporary hint tooltips on first load:
+   - Percentage: "← Click to edit"
+   - Lock icon: "Lock value →"
+   - Gear icon: "Adjust math →"
+
+6. PRESET SCENARIOS (ED-specific):
+
+   Balanced:
+   - Patient Throughput: 30%
+   - Patient Experience: 30%
+   - Physician Retention: 40%
+   
+   Throughput Focus:
+   - Patient Throughput: 60%
+   - Patient Experience: 20%
+   - Physician Retention: 20%
+   
+   Retention Focus:
+   - Patient Throughput: 20%
+   - Patient Experience: 20%
+   - Physician Retention: 60%
+
+═══════════════════════════════════════════════════════════
+PART 2: DOCUMENTATION QUALITY PAGE (Emergency Department)
+═══════════════════════════════════════════════════════════
+
+UPDATE to match outpatient card-based layout with ED-specific drivers:
+
+1. REMOVE current stepped layout
+
+2. ADD THREE TOGGLE CARDS (like outpatient):
+
+   ┌─────────────────────────────────────────────┐
+   │ 📊 Level of Service (wRVU)             ○    │
+   │ Capture the complexity you're delivering     │
+   └─────────────────────────────────────────────┘
+   
+   ┌─────────────────────────────────────────────┐
+   │ 📋 Medical Necessity                   ○    │
+   │ Support medical decision-making              │
+   └─────────────────────────────────────────────┘
+   
+   ┌─────────────────────────────────────────────┐
+   │ ⚠️  CDI & Inpatient Connection          ○    │
+   │ Capture severity for admitted patients       │
+   └─────────────────────────────────────────────┘
+
+3. LEVEL OF SERVICE (wRVU) - ED SPECIFIC:
+
+   When toggled ON and expanded:
+   
+   "The Theory: ED physicians under time pressure document less than 
+   the full clinical picture—especially during high-volume surges. 
+   AI-assisted documentation captures the complexity that supports 
+   accurate coding."
+   
+   CALCULATION INPUTS:
+   
+   Base wRVU per encounter (editable, default 2.5): 1.5-3.5
+   "Your current productivity"
+   
+   📊 Benchmark: ED wRVU per Encounter
+   - Low acuity (mini urgent care-like): 1.5 - 2.0
+   - Typical community ED: 2.0 - 2.5
+   - High acuity / trauma center: 2.5 - 3.5
+   - Your input: 2.5
+   
+   Documentation improvement (editable, default 3%): 2-7%
+   "How much does Abridge improve capture?"
+   
+   Context: "Abridge improves wRVU capture by 3% through more complete 
+   documentation of clinical complexity. Specifically, Abridge captures 
+   critical E&M elements—detailed HPI, comprehensive review of systems, 
+   and medical decision-making complexity—that support appropriate level 
+   coding. When documentation fully reflects the work performed, visits 
+   can be accurately coded at the appropriate E&M level (e.g., 99284 vs 
+   99283) rather than conservatively downcoded due to incomplete notes. 
+   This isn't 'upcoding'—it's accurate coding based on the clinical picture."
+   
+   Conversion rate (editable, default $33): $33-$65
+   (Keep ability to switch between Medicare baseline and Commercial)
+   
+   Realization rate (editable, default 75%): 60-90%
+   
+   CALCULATION DISPLAY:
+   Eligible encounters: [from setup]
+   × Base wRVU: 2.5
+   × Improvement: 3%
+   = Additional wRVUs
+   × Conversion rate: $33
+   = Gross value
+   × Realization rate: 75%
+   = Net annual value
+
+4. MEDICAL NECESSITY (NEW - ED SPECIFIC):
+
+   "The Theory: ED medical necessity denials occur when documentation 
+   doesn't justify the level of service or admission. Complete real-time 
+   notes capture the clinical reasoning that supports decision-making."
+   
+   CALCULATION INPUTS:
+   
+   Eligible encounters: [from setup]
+   Baseline denial rate (editable, default 6%): 4-10%
+   Unappealable rate (editable, default 35%): 30-45%
+   "Denials due to insufficient medical necessity documentation"
+   
+   Prevention target (editable, default 40%): 25-60%
+   Avg denied claim value (editable, default $800): $600-$1,200
+   "ED visits + some admissions"
+   
+   Realization rate (editable, default 80%): 70-90%
+   
+   CALCULATION DISPLAY:
+   Total denials baseline: [X] claims
+   × Unappealable rate: 35%
+   = Unrecoverable denials: [Y] claims
+   × Prevention target: 40%
+   = Denials prevented: [Z] claims
+   × Avg claim value: $800
+   = Gross value
+   × Realization rate: 80%
+   = Net annual value
+
+5. CDI & INPATIENT CONNECTION (NEW - ED SPECIFIC):
+
+   "The Theory: ED documentation follows patients who get admitted. 
+   Better ED notes capture severity/acuity that affects inpatient 
+   CMI, DRG assignment, and CDI efficiency."
+   
+   CALCULATION INPUTS:
+   
+   Eligible ED encounters: [from setup]
+   Admission rate (editable, default 18%): 15-25%
+   = Admissions: [X] patients
+   
+   CMI improvement opportunity (editable, default 3%): 2-5%
+   "% of admissions where ED documentation improves DRG capture"
+   = Admissions impacted: [Y] patients
+   
+   Average DRG payment (editable, default $12,000): $8K-$18K
+   CMI lift per admission (editable, default 5%): 3-8%
+   = Value per admission: $600
+   
+   × Admissions impacted
+   = Gross value
+   
+   Realization rate (editable, default 70%): 60-85%
+   "Conservative - depends on CDI workflow integration"
+   = Net annual value
+   
+   Add note: "This value is additional to any inpatient HCC/CDI 
+   programs you're already running. ED documentation specifically 
+   improves the starting point for inpatient coding."
+
+═══════════════════════════════════════════════════════════
+STYLING & UX CONSISTENCY
+═══════════════════════════════════════════════════════════
+
+1. Use same card layout, spacing, and interactions as outpatient
+2. Use same lock/edit/gear icon pattern for Time Allocation
+3. Use same toggle card design for Documentation Quality
+4. Use same "See the math" expandable sections
+5. Use same preset button styling
+6. Use same hint tooltip system
+7. Keep Abridge red/coral accent colors throughout
+
+═══════════════════════════════════════════════════════════
+CONTENT DIFFERENCES SUMMARY
+═══════════════════════════════════════════════════════════
+
+Time Allocation:
+- Patient Access → Patient Throughput (LWBS)
+- Add admission revenue toggle
+- Update presets for ED priorities
+
+Documentation:
+- Keep wRVU (update baseline to 2.5, copy to ED-specific)
+- HCC → Medical Necessity (denial prevention focus)
+- Add CDI & Inpatient Connection (new ED-specific driver)
+
+All other pages (Setup, Time Path, Care Setting) remain the same.
