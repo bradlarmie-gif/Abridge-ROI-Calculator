@@ -201,9 +201,9 @@ interface WellbeingThreshold {
 
 const WELLBEING_THRESHOLDS: WellbeingThreshold[] = [
   { minHours: 0, maxHours: 1, label: 'MINIMAL', rate: 0.05, color: 'text-slate-500', bgColor: 'bg-slate-100' },
-  { minHours: 1, maxHours: 2, label: 'MODERATE', rate: 0.15, color: 'text-amber-600', bgColor: 'bg-amber-50' },
-  { minHours: 2, maxHours: 3, label: 'SIGNIFICANT', rate: 0.25, color: 'text-orange-600', bgColor: 'bg-orange-50' },
-  { minHours: 3, maxHours: Infinity, label: 'MAXIMUM', rate: 0.30, color: 'text-[#EA2C00]', bgColor: 'bg-[#FFF5F2]' },
+  { minHours: 1, maxHours: 2, label: 'MODERATE', rate: 0.15, color: 'text-slate-600', bgColor: 'bg-slate-100' },
+  { minHours: 2, maxHours: 3, label: 'SIGNIFICANT', rate: 0.25, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100' },
+  { minHours: 3, maxHours: Infinity, label: 'MAXIMUM', rate: 0.30, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100' },
 ];
 
 function getWellbeingThreshold(hoursPerWeek: number): WellbeingThreshold {
@@ -898,13 +898,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-start gap-2 bg-amber-50 rounded-lg p-3 border border-amber-200"
+              className="flex items-start gap-2 bg-slate-100 rounded-lg p-3 border-l-4 border-[#EA2C00]"
             >
-              <Zap className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-800">
+              <Zap className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-700">
                 <span className="font-semibold">At {wc.allocationForNextThreshold}% allocation</span>, you'd reach the{' '}
-                <span className="font-semibold">{wc.nextThreshold?.label}</span> tier with a value of{' '}
-                <span className="font-bold">${wc.valueAtNextThreshold.toLocaleString()}</span>
+                <span className="font-semibold text-[#EA2C00]">{wc.nextThreshold?.label}</span> tier with a value of{' '}
+                <span className="font-bold text-[#EA2C00]">${wc.valueAtNextThreshold.toLocaleString()}</span>
               </p>
             </motion.div>
           )}
