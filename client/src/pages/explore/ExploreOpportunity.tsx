@@ -19,9 +19,9 @@ interface BusynessPreset {
 }
 
 const OUTPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
-  { label: "Lighter", value: 1500 },
-  { label: "Typical", value: 2100 },
-  { label: "Busy", value: 2500 },
+  { label: "Lighter", value: 2000 },
+  { label: "Typical", value: 3000 },
+  { label: "Busy", value: 4000 },
 ];
 
 const ED_BUSYNESS_PRESETS: BusynessPreset[] = [
@@ -61,7 +61,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
       : isED 
         ? ED_BUSYNESS_PRESETS 
         : OUTPATIENT_BUSYNESS_PRESETS;
-  const defaultEncountersPerProvider = isNursing ? 1500 : isInpatient ? 400 : isED ? 1800 : 2100;
+  const defaultEncountersPerProvider = isNursing ? 1500 : isInpatient ? 400 : isED ? 1800 : 3000;
   
   const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders > 0 ? state.numberOfProviders.toString() : '');
   const [encountersPerProvider, setEncountersPerProvider] = useState(
@@ -283,6 +283,13 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     );
                   })}
                 </div>
+                
+                {/* Help text for encounter estimates */}
+                {!isNursing && !isInpatient && !isED && (
+                  <p className="text-xs text-slate-400 mt-2">
+                    Based on ~220 working days per year. Typical represents blended primary care and specialty outpatient practices.
+                  </p>
+                )}
 
                 {/* Total encounters input */}
                 <div className="pt-4 border-t border-slate-100">
@@ -295,7 +302,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <input
                         type="text"
                         inputMode="numeric"
-                        placeholder={annualEncounters > 0 ? annualEncounters.toLocaleString() : "e.g. 150,000"}
+                        placeholder={annualEncounters > 0 ? annualEncounters.toLocaleString() : "e.g. 180,000"}
                         value={totalEncountersInput}
                         onChange={(e) => handleTotalEncountersChange(e.target.value)}
                         className="w-32 py-2 px-3 text-right font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#EA2C00] transition-all placeholder:text-slate-300"
