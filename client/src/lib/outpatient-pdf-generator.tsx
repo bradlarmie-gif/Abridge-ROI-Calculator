@@ -12,34 +12,11 @@ import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 // ============================================================================
-// REGISTER MANROPE FONT
+// FONT CONFIGURATION
+// Using Helvetica (built-in) as base with clean hyphenation
 // ============================================================================
 
-Font.register({
-  family: "Manrope",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggexSg.woff2",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggOxSg.woff2",
-      fontWeight: 500,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggCxSg.woff2",
-      fontWeight: 600,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggqxSg.woff2",
-      fontWeight: 700,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/manrope/v15/xn7gYHE41ni1AdIRggSxSg.woff2",
-      fontWeight: 800,
-    },
-  ],
-});
+Font.registerHyphenationCallback((word) => [word]);
 
 // ============================================================================
 // TYPES
@@ -148,7 +125,7 @@ const brand = {
 const styles = StyleSheet.create({
   // Base page styles
   page: {
-    fontFamily: "Manrope",
+    fontFamily: "Helvetica",
     fontSize: 10,
     color: brand.textPrimary,
     backgroundColor: brand.white,

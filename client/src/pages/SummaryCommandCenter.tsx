@@ -1400,9 +1400,10 @@ export default function SummaryCommandCenter({
               description: "Your ROI assessment has been saved.",
             });
           } catch (error) {
+            console.error("PDF export error:", error);
             toast({
               title: "Export Failed",
-              description: "Unable to generate PDF. Please try again.",
+              description: error instanceof Error ? error.message : "Unable to generate PDF. Please try again.",
               variant: "destructive",
             });
           } finally {
