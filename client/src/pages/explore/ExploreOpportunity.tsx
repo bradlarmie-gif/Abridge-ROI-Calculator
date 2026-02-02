@@ -236,7 +236,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     value={providerInputValue}
                     onChange={(e) => handleProvidersChange(e.target.value)}
                     onBlur={handleProviderInputBlur}
-                    className="w-28 py-3 px-4 text-right text-2xl font-bold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
+                    className="w-28 py-3 px-4 text-right text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
                     data-testid="input-providers"
                   />
                 </div>
