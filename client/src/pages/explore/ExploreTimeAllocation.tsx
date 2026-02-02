@@ -329,28 +329,31 @@ function SettingsModal({
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/50"
-        onClick={onClose}
       />
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-slate-100 z-10">
           <h3 className="font-bold text-lg text-black">{title}</h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors touch-manipulation"
             data-testid="button-close-modal"
           >
-            <X className="w-4 h-4 text-slate-600" />
+            <X className="w-5 h-5 text-slate-600" />
           </button>
         </div>
         <div className="p-6">
@@ -383,30 +386,53 @@ function ModalInput({
   step?: number;
   hint?: string;
 }) {
+  const [localValue, setLocalValue] = useState(value.toString());
+  
+  // Sync local value when prop changes
+  useEffect(() => {
+    setLocalValue(value.toString());
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    
+    // Only update parent if valid number
+    const num = parseFloat(newValue);
+    if (!isNaN(num) && num >= min && num <= max) {
+      onChange(num);
+    }
+  };
+
+  const handleBlur = () => {
+    // On blur, validate and reset if invalid
+    const num = parseFloat(localValue);
+    if (isNaN(num) || num < min || num > max) {
+      setLocalValue(value.toString());
+    }
+  };
+
   return (
     <div className="space-y-1.5">
       <label className="text-sm font-medium text-slate-700">{label}</label>
       <div className="relative">
         {prefix && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{prefix}</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">{prefix}</span>
         )}
         <input
-          type="number"
-          value={value}
-          onChange={(e) => {
-            const num = parseFloat(e.target.value);
-            if (!isNaN(num) && num >= min && num <= max) {
-              onChange(num);
-            }
-          }}
-          min={min}
-          max={max}
-          step={step}
-          className={`w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all ${prefix ? 'pl-7' : ''} ${suffix ? 'pr-10' : ''}`}
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*\.?[0-9]*"
+          value={localValue}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onFocus={(e) => e.target.select()}
+          className={`w-full px-3 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00] transition-all text-base ${prefix ? 'pl-7' : ''} ${suffix ? 'pr-12' : ''}`}
+          style={{ fontSize: '16px' }}
           data-testid="input-modal-field"
         />
         {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{suffix}</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">{suffix}</span>
         )}
       </div>
       {hint && <p className="text-xs text-slate-500">{hint}</p>}
@@ -444,7 +470,8 @@ function ModalSlider({
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
+        className="w-full h-3 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00] touch-manipulation"
+        style={{ touchAction: 'none' }}
         data-testid="slider-modal-field"
       />
       <div className="flex justify-between text-xs text-slate-400">
@@ -1168,10 +1195,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">Step-by-Step Calculation</span>
             <button
               onClick={() => setPatientAccessSettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-patient-access-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
@@ -1226,10 +1253,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">LWBS Revenue Recovery</span>
             <button
               onClick={() => setEdThroughputSettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-ed-throughput-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
@@ -1387,10 +1414,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             {assumptions.ipModelLosImpact && (
               <button
                 onClick={() => setIpOperationsSettingsOpen(true)}
-                className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
                 data-testid="button-ip-operations-settings"
               >
-                <Settings className="w-3.5 h-3.5 text-slate-600" />
+                <Settings className="w-4 h-4 text-slate-600" />
               </button>
             )}
           </div>
@@ -1592,10 +1619,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">Physician Retention Impact</span>
             <button
               onClick={() => setWellbeingSettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-ed-retention-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
@@ -1705,10 +1732,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">Physician Wellbeing Impact</span>
             <button
               onClick={() => setWellbeingSettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-ip-wellbeing-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
@@ -1859,10 +1886,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">Retention Impact Analysis</span>
             <button
               onClick={() => setWellbeingSettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-wellbeing-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
@@ -2016,10 +2043,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">Overtime Reduction Savings</span>
             <button
               onClick={() => setNursingEfficiencySettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-nursing-efficiency-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
@@ -2233,10 +2260,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <span className="text-sm font-semibold text-slate-800">Nurse Retention & Agency Reduction</span>
             <button
               onClick={() => setNursingWellbeingSettingsOpen(true)}
-              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors touch-manipulation"
               data-testid="button-nursing-wellbeing-settings"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <Settings className="w-4 h-4 text-slate-600" />
             </button>
           </div>
           
