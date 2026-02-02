@@ -2628,27 +2628,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                     aria-label={`Click to edit ${option.label} percentage, currently ${value}%`}
                                     className={`text-2xl font-bold text-black hover-elevate px-2 py-0.5 rounded-lg cursor-pointer border-b-2 border-transparent hover:border-slate-300 transition-all ${showFirstClickFeedback && editingCategory === option.id ? 'ring-2 ring-[#EA2C00]/30' : ''}`}
                                     data-testid={`button-percentage-${option.id}`}
-                                    title="Click to type exact percentage"
                                   >
                                     {value}%
                                   </button>
-                                  {/* Persistent hover tooltip */}
-                                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                    Click to type exact percentage
-                                  </div>
-                                  {/* First-time hint tooltip */}
-                                  <AnimatePresence>
-                                    {showHints && index === 0 && (
-                                      <motion.div
-                                        initial={{ opacity: 0, y: -5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        className="absolute -left-16 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-600 text-white text-xs rounded shadow-md whitespace-nowrap z-20 flex items-center gap-1"
-                                      >
-                                        Click to edit <ArrowRight className="w-3 h-3" />
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
                                 </div>
                               )}
                               
@@ -2709,24 +2691,6 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                       )}
                                     </AnimatePresence>
                                   </motion.button>
-                                  {/* Persistent hover tooltip */}
-                                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                    {isLocked(option.id) ? 'Unlock to edit' : 'Lock this allocation'}
-                                  </div>
-                                  {/* First-time hint tooltip */}
-                                  <AnimatePresence>
-                                    {showHints && index === 0 && (
-                                      <motion.div
-                                        initial={{ opacity: 0, y: -5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                        className="absolute -right-14 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-600 text-white text-xs rounded shadow-md whitespace-nowrap z-20 flex items-center gap-1"
-                                      >
-                                        <ArrowRight className="w-3 h-3 rotate-180" /> Lock value
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
                                 </div>
                               )}
                             </div>
@@ -2806,24 +2770,6 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                             <span>{isExpanded ? 'Hide' : (option.id === 'patientExperience' ? 'Learn more' : 'See the math')}</span>
                             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                           </button>
-                          {/* Persistent hover tooltip */}
-                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                            Customize assumptions
-                          </div>
-                          {/* First-time hint tooltip */}
-                          <AnimatePresence>
-                            {showHints && index === 0 && option.id !== 'patientExperience' && (
-                              <motion.div
-                                initial={{ opacity: 0, y: -5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ delay: 0.6 }}
-                                className="absolute -right-16 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-600 text-white text-xs rounded shadow-md whitespace-nowrap z-20 flex items-center gap-1"
-                              >
-                                <ArrowRight className="w-3 h-3 rotate-180" /> Adjust math
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
                         </div>
                       </div>
                     </div>
