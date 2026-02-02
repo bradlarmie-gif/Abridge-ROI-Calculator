@@ -1,0 +1,95 @@
+ADD SUBTLE ONBOARDING TO TIME ALLOCATION PAGE:
+
+CONTEXT: No backend = users see this fresh every time. Need to make 
+interaction obvious without cluttering the interface.
+
+SOLUTION - Progressive hints:
+
+1. UPDATE TOP COPY to be instructional:
+
+   "ALLOCATE YOUR SAVINGS
+   
+   You're unlocking 8,750 hours. Decide how this time creates value."
+   
+   (Remove "Why this matters" - make the one sentence actionable)
+
+2. ADD TEMPORARY HINT TOOLTIPS (first load only):
+
+   On page load, show small tooltip arrows pointing to:
+   
+   - Percentage: "← Click to edit"
+   - Lock icon: "Lock value →"
+   - Gear icon: "Adjust math →"
+   
+   Styling:
+   - Small gray boxes with white text
+   - Subtle drop shadow
+   - Fade out after 4 seconds OR on first interaction
+   - Use localStorage to not show again (even though no backend,
+     can track in session)
+
+3. ADD PERSISTENT HOVER TOOLTIPS:
+
+   Always show on hover (for repeat visitors):
+   
+   - Percentage input: "Click to type exact percentage"
+   - Lock icon (unlocked): "Lock this allocation"
+   - Lock icon (locked): "Unlock to edit"
+   - Gear icon: "Customize assumptions"
+
+4. IMPROVE VISUAL AFFORDANCES:
+
+   - Percentage has underline on hover
+   - Cursor changes to pointer on clickable elements
+   - Lock icon has subtle pulse animation (1 cycle on load)
+   - Input placeholder: "Type %" when focused
+
+5. ADD INTERACTION FEEDBACK:
+
+   - When user clicks percentage first time: 
+     Brief highlight/glow effect
+   - When user locks first category:
+     Small success checkmark appears briefly
+   - When total ≠ 100%:
+     Show inline helper: "Adjust percentages to reach 100%"
+
+6. OPTIONAL - Add "?" help icon in header:
+   
+   Time Allocation  [?]
+   
+   Clicking shows modal with:
+   - How to edit allocations
+   - What lock does
+   - How presets work
+   
+   This is backup help without cluttering main UI
+
+7. MOBILE CONSIDERATIONS:
+   - Larger tap targets (48px minimum)
+   - Tooltips appear on tap, not hover
+   - First-time hints are more persistent on mobile
+
+The goal: Make interaction discoverable through smart visual design,
+not walls of instructional text.
+
+Visual Mock (Option D):
+First Visit:
+CopyALLOCATE YOUR SAVINGS
+You're unlocking 8,750 hours. Decide how this time creates value.
+
+┌────────────────────────────────────────────────┐
+│ 👥 Patient Access        [40]% 🔓 ⚙️           │
+│                            ↑    ↑  ↑           │
+│                         Click  Lock Adjust     │
+│                         ←─┘    ←─┘  ←─┘        │
+│                    (fades after 4 sec)         │
+└────────────────────────────────────────────────┘
+After First Interaction:
+CopyALLOCATE YOUR SAVINGS
+You're unlocking 8,750 hours. Decide how this time creates value.
+
+┌────────────────────────────────────────────────┐
+│ 👥 Patient Access        [40]% 🔓 ⚙️           │
+│                            ↑                   │
+│                    (hover for tooltip)         │
+└────────────────────────────────────────────────┘

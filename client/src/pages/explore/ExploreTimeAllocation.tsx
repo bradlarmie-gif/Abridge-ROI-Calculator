@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star, AlertTriangle, Lock, LockOpen } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star, AlertTriangle, Lock, LockOpen, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -532,6 +532,42 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   
   // Lock state for each allocation category
   const [lockedCategories, setLockedCategories] = useState<Set<keyof TimeAllocation>>(new Set());
+  
+  // Onboarding hints state
+  const [showHints, setShowHints] = useState(() => {
+    // Check if user has already interacted (stored in sessionStorage for this session)
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('timeAllocationHintsShown');
+    }
+    return true;
+  });
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showFirstClickFeedback, setShowFirstClickFeedback] = useState(false);
+  const [showLockSuccessFeedback, setShowLockSuccessFeedback] = useState<keyof TimeAllocation | null>(null);
+  
+  // Auto-hide hints after 4 seconds or on first interaction
+  useEffect(() => {
+    if (showHints && !hasInteracted) {
+      const timer = setTimeout(() => {
+        setShowHints(false);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('timeAllocationHintsShown', 'true');
+        }
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showHints, hasInteracted]);
+  
+  // Dismiss hints on any interaction
+  const dismissHints = () => {
+    if (showHints) {
+      setShowHints(false);
+      setHasInteracted(true);
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('timeAllocationHintsShown', 'true');
+      }
+    }
+  };
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
@@ -539,6 +575,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
 
   // Toggle lock for a category
   const handleToggleLock = (id: keyof TimeAllocation) => {
+    dismissHints();
     setLockedCategories(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -547,6 +584,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         // Can't lock if already 2 are locked
         if (newSet.size >= 2) return prev;
         newSet.add(id);
+        // Show success feedback when locking
+        setShowLockSuccessFeedback(id);
+        setTimeout(() => setShowLockSuccessFeedback(null), 800);
       }
       return newSet;
     });
@@ -576,6 +616,12 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const handleStartEdit = (id: keyof TimeAllocation) => {
     // If auto-calculated, can't edit
     if (isAutoCalculated(id)) return;
+    dismissHints();
+    // Show first click feedback
+    if (!hasInteracted) {
+      setShowFirstClickFeedback(true);
+      setTimeout(() => setShowFirstClickFeedback(false), 500);
+    }
     // If locked, unlock first
     if (isLocked(id)) {
       handleToggleLock(id);
@@ -1199,16 +1245,11 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 {isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isInpatient ? "How will hospitalists benefit?" : isED ? "How will you use this time?" : "Where does this time go?"}
+                Allocate Your Savings
               </h1>
-              <p className="text-slate-600 mb-4">
-                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. {context.subtitle}
+              <p className="text-slate-600">
+                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Decide how this time creates value.
               </p>
-              <div className="bg-slate-100 rounded-lg p-3">
-                <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">Why this matters:</span> {context.whyItMatters}
-                </p>
-              </div>
             </motion.div>
 
             {/* Controls Row */}
@@ -1377,14 +1418,34 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                   {value}%
                                 </span>
                               ) : (
-                                <button
-                                  onClick={() => handleStartEdit(option.id)}
-                                  aria-label={`Click to edit ${option.label} percentage, currently ${value}%`}
-                                  className="text-2xl font-bold text-black hover-elevate px-2 py-0.5 rounded-lg cursor-pointer"
-                                  data-testid={`button-percentage-${option.id}`}
-                                >
-                                  {value}%
-                                </button>
+                                <div className="relative group">
+                                  <button
+                                    onClick={() => handleStartEdit(option.id)}
+                                    aria-label={`Click to edit ${option.label} percentage, currently ${value}%`}
+                                    className={`text-2xl font-bold text-black hover-elevate px-2 py-0.5 rounded-lg cursor-pointer border-b-2 border-transparent hover:border-slate-300 transition-all ${showFirstClickFeedback && editingCategory === option.id ? 'ring-2 ring-[#EA2C00]/30' : ''}`}
+                                    data-testid={`button-percentage-${option.id}`}
+                                    title="Click to type exact percentage"
+                                  >
+                                    {value}%
+                                  </button>
+                                  {/* Persistent hover tooltip */}
+                                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                    Click to type exact percentage
+                                  </div>
+                                  {/* First-time hint tooltip */}
+                                  <AnimatePresence>
+                                    {showHints && index === 0 && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0 }}
+                                        className="absolute -left-16 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-600 text-white text-xs rounded shadow-md whitespace-nowrap z-20 flex items-center gap-1"
+                                      >
+                                        Click to edit <ArrowRight className="w-3 h-3" />
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
                               )}
                               
                               {/* Increment button - hidden when auto-calculated */}
@@ -1410,24 +1471,59 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                   <Calculator className="w-4 h-4 text-slate-400" />
                                 </div>
                               ) : (
-                                <button
-                                  onClick={() => handleToggleLock(option.id)}
-                                  disabled={!canLock(option.id) && !isLocked(option.id)}
-                                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
-                                    isLocked(option.id)
-                                      ? 'bg-[#EA2C00]/10 text-[#EA2C00]'
-                                      : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                                  } ${!canLock(option.id) && !isLocked(option.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                  aria-label={isLocked(option.id) ? `Unlock ${option.label} (click to unlock)` : `Lock ${option.label} allocation`}
-                                  title={isLocked(option.id) ? 'Click to unlock' : canLock(option.id) ? 'Lock this allocation' : 'At least one category must adjust automatically'}
-                                  data-testid={`button-lock-${option.id}`}
-                                >
-                                  {isLocked(option.id) ? (
-                                    <Lock className="w-4 h-4" />
-                                  ) : (
-                                    <LockOpen className="w-4 h-4" />
-                                  )}
-                                </button>
+                                <div className="relative group">
+                                  <motion.button
+                                    onClick={() => handleToggleLock(option.id)}
+                                    disabled={!canLock(option.id) && !isLocked(option.id)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+                                      isLocked(option.id)
+                                        ? 'bg-[#EA2C00]/10 text-[#EA2C00]'
+                                        : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                    } ${!canLock(option.id) && !isLocked(option.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    aria-label={isLocked(option.id) ? `Unlock ${option.label} (click to unlock)` : `Lock ${option.label} allocation`}
+                                    data-testid={`button-lock-${option.id}`}
+                                    initial={showHints && index === 0 ? { scale: 1 } : false}
+                                    animate={showHints && index === 0 ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                                    transition={{ duration: 0.6, repeat: showHints ? 1 : 0 }}
+                                  >
+                                    {isLocked(option.id) ? (
+                                      <Lock className="w-4 h-4" />
+                                    ) : (
+                                      <LockOpen className="w-4 h-4" />
+                                    )}
+                                    {/* Success checkmark */}
+                                    <AnimatePresence>
+                                      {showLockSuccessFeedback === option.id && (
+                                        <motion.div
+                                          initial={{ opacity: 0, scale: 0.5 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          exit={{ opacity: 0 }}
+                                          className="absolute -top-1 -right-1 w-4 h-4 bg-[#EA2C00] rounded-full flex items-center justify-center"
+                                        >
+                                          <Check className="w-2.5 h-2.5 text-white" />
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </motion.button>
+                                  {/* Persistent hover tooltip */}
+                                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                    {isLocked(option.id) ? 'Unlock to edit' : 'Lock this allocation'}
+                                  </div>
+                                  {/* First-time hint tooltip */}
+                                  <AnimatePresence>
+                                    {showHints && index === 0 && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: -5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                        className="absolute -right-14 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-600 text-white text-xs rounded shadow-md whitespace-nowrap z-20 flex items-center gap-1"
+                                      >
+                                        <ArrowRight className="w-3 h-3 rotate-180" /> Lock value
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -1489,19 +1585,42 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                           )}
                         </div>
                         
-                        <button
-                          onClick={() => toggleExpand(option.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
-                          data-testid={`button-expand-${option.id}`}
-                        >
-                          {option.id === 'patientExperience' ? (
-                            <Info className="w-3.5 h-3.5" />
-                          ) : (
-                            <Calculator className="w-3.5 h-3.5" />
-                          )}
-                          <span>{isExpanded ? 'Hide' : (option.id === 'patientExperience' ? 'Learn more' : 'See the math')}</span>
-                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                        </button>
+                        <div className="relative group">
+                          <button
+                            onClick={() => {
+                              dismissHints();
+                              toggleExpand(option.id);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+                            data-testid={`button-expand-${option.id}`}
+                          >
+                            {option.id === 'patientExperience' ? (
+                              <Info className="w-3.5 h-3.5" />
+                            ) : (
+                              <Calculator className="w-3.5 h-3.5" />
+                            )}
+                            <span>{isExpanded ? 'Hide' : (option.id === 'patientExperience' ? 'Learn more' : 'See the math')}</span>
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </button>
+                          {/* Persistent hover tooltip */}
+                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                            Customize assumptions
+                          </div>
+                          {/* First-time hint tooltip */}
+                          <AnimatePresence>
+                            {showHints && index === 0 && option.id !== 'patientExperience' && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ delay: 0.6 }}
+                                className="absolute -right-16 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-600 text-white text-xs rounded shadow-md whitespace-nowrap z-20 flex items-center gap-1"
+                              >
+                                <ArrowRight className="w-3 h-3 rotate-180" /> Adjust math
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       </div>
                     </div>
 
