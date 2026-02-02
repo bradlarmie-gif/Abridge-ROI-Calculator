@@ -1187,7 +1187,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                           {option.id === 'patientExperience' ? (
                             <>
                               <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours invested</p>
-                              <p className="text-lg font-semibold text-slate-600">
+                              <p className="text-xl font-bold text-[#F07B5F]">
                                 Qualitative Benefits
                               </p>
                             </>
