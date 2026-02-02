@@ -99,24 +99,24 @@ const INPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
 const NURSING_ALLOCATION_OPTIONS: AllocationOption[] = [
   {
     id: 'patientAccess',
-    label: 'Direct Patient Care',
-    description: 'More time at the bedside, better patient relationships and outcomes',
-    icon: Heart,
-    valueLabel: 'Hours back to patients',
+    label: 'Staffing Efficiency',
+    description: 'Reduce overtime and end-of-shift charting',
+    icon: Clock,
+    valueLabel: 'Payroll savings',
   },
   {
     id: 'reducingLocums',
-    label: 'Nurse Retention',
-    description: 'Reduce turnover and avoid costly agency/travel nurse reliance',
-    icon: Users,
-    valueLabel: 'Retention improvement',
+    label: 'Bedside Care',
+    description: 'More time with patients',
+    icon: Heart,
+    valueLabel: 'Quality impact',
   },
   {
     id: 'clinicianWellbeing',
     label: 'Nurse Wellbeing',
-    description: 'Reduce burnout and improve job satisfaction',
-    icon: Clock,
-    valueLabel: 'Wellbeing improvement',
+    description: 'Reduce burnout and improve retention',
+    icon: Users,
+    valueLabel: 'Retention value',
   },
 ];
 
@@ -150,10 +150,9 @@ const INPATIENT_PRESETS = [
 ];
 
 const NURSING_PRESETS = [
-  { label: 'Balanced', allocation: { patientAccess: 35, patientExperience: 0, reducingLocums: 35, clinicianWellbeing: 30 } },
-  { label: 'Patient Care Focus', allocation: { patientAccess: 55, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 20 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 50, clinicianWellbeing: 25 } },
-  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 50 } },
+  { label: 'Balanced', allocation: { patientAccess: 40, patientExperience: 0, reducingLocums: 30, clinicianWellbeing: 30 } },
+  { label: 'Efficiency Focus', allocation: { patientAccess: 60, patientExperience: 0, reducingLocums: 20, clinicianWellbeing: 20 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 0, reducingLocums: 20, clinicianWellbeing: 60 } },
 ];
 
 interface EditableAssumptions {
@@ -180,6 +179,25 @@ interface EditableAssumptions {
   ipRevenuePerBedHour: number;
   ipLosAttributionFactor: number;
   ipModelLosImpact: boolean;
+  // Nursing-specific assumptions
+  nursingBaseHourlyRate: number;
+  nursingOtMultiplier: number;
+  nursingOtHoursPerWeek: number;
+  nursingDocDrivenOtPct: number;
+  nursingTurnoverRate: number;
+  nursingBurnoutRelatedPct: number;
+  nursingReplacementCost: number;
+  nursingAgencyFtes: number;
+  nursingAgencyPremium: number;
+  nursingRetentionDrivenReduction: number;
+  nursingModelQualityImpact: boolean;
+  nursingAnnualAdmissions: number;
+  nursingFallsRate: number;
+  nursingFallsPreventablePct: number;
+  nursingCostPerFall: number;
+  nursingHapiRate: number;
+  nursingHapiPreventablePct: number;
+  nursingCostPerHapi: number;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
@@ -206,6 +224,25 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   ipRevenuePerBedHour: 125,
   ipLosAttributionFactor: 25,
   ipModelLosImpact: false,
+  // Nursing-specific defaults
+  nursingBaseHourlyRate: 45,
+  nursingOtMultiplier: 1.5,
+  nursingOtHoursPerWeek: 4,
+  nursingDocDrivenOtPct: 33,
+  nursingTurnoverRate: 18,
+  nursingBurnoutRelatedPct: 50,
+  nursingReplacementCost: 50000,
+  nursingAgencyFtes: 30,
+  nursingAgencyPremium: 75000,
+  nursingRetentionDrivenReduction: 10,
+  nursingModelQualityImpact: false,
+  nursingAnnualAdmissions: 10000,
+  nursingFallsRate: 3.5,
+  nursingFallsPreventablePct: 5,
+  nursingCostPerFall: 6500,
+  nursingHapiRate: 2.5,
+  nursingHapiPreventablePct: 5,
+  nursingCostPerHapi: 20000,
 };
 
 // Threshold-based wellbeing tiers (based on annual hours per provider)
@@ -226,8 +263,16 @@ const WELLBEING_THRESHOLDS: WellbeingThreshold[] = [
   { minHoursAnnual: 150, maxHoursAnnual: Infinity, label: 'SIGNIFICANT', rateMin: 0.15, rateMax: 0.20, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '3+ hrs/week' },
 ];
 
-function getWellbeingThreshold(hoursPerProviderAnnual: number): WellbeingThreshold {
-  return WELLBEING_THRESHOLDS.find(t => hoursPerProviderAnnual >= t.minHoursAnnual && hoursPerProviderAnnual < t.maxHoursAnnual) || WELLBEING_THRESHOLDS[0];
+// Nursing has different thresholds (lower per-nurse hours given more nurses)
+const NURSING_WELLBEING_THRESHOLDS: WellbeingThreshold[] = [
+  { minHoursAnnual: 0, maxHoursAnnual: 25, label: 'MINIMAL', rateMin: 0.03, rateMax: 0.05, color: 'text-slate-500', bgColor: 'bg-slate-100', description: '<0.5 hrs/week' },
+  { minHoursAnnual: 25, maxHoursAnnual: 50, label: 'MODERATE', rateMin: 0.08, rateMax: 0.12, color: 'text-slate-600', bgColor: 'bg-slate-100', description: '0.5-1 hrs/week' },
+  { minHoursAnnual: 50, maxHoursAnnual: Infinity, label: 'SIGNIFICANT', rateMin: 0.15, rateMax: 0.20, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '1+ hrs/week' },
+];
+
+function getWellbeingThreshold(hoursPerProviderAnnual: number, isNursing: boolean = false): WellbeingThreshold {
+  const thresholds = isNursing ? NURSING_WELLBEING_THRESHOLDS : WELLBEING_THRESHOLDS;
+  return thresholds.find(t => hoursPerProviderAnnual >= t.minHoursAnnual && hoursPerProviderAnnual < t.maxHoursAnnual) || thresholds[0];
 }
 
 // Info Tooltip component with accessibility
@@ -548,6 +593,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const [edThroughputSettingsOpen, setEdThroughputSettingsOpen] = useState(false);
   const [ipOperationsSettingsOpen, setIpOperationsSettingsOpen] = useState(false);
   const [ipShowMetricsToTrack, setIpShowMetricsToTrack] = useState(false);
+  const [nursingEfficiencySettingsOpen, setNursingEfficiencySettingsOpen] = useState(false);
+  const [nursingWellbeingSettingsOpen, setNursingWellbeingSettingsOpen] = useState(false);
+  const [nursingShowBedsideMetrics, setNursingShowBedsideMetrics] = useState(false);
   
   // Editable percentage state
   const [editingCategory, setEditingCategory] = useState<keyof TimeAllocation | null>(null);
@@ -813,37 +861,62 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     const hoursPerProviderAnnual = hoursToWellbeing / safeProviders;
     const hoursPerProviderPerWeek = hoursPerProviderAnnual / 52;
     
-    // Get threshold based on annual hours per provider
-    const threshold = getWellbeingThreshold(hoursPerProviderAnnual);
+    // Get threshold based on annual hours per provider (nursing has different thresholds)
+    const threshold = getWellbeingThreshold(hoursPerProviderAnnual, isNursing);
+    const thresholdsToUse = isNursing ? NURSING_WELLBEING_THRESHOLDS : WELLBEING_THRESHOLDS;
     
-    const baselineTurnoverRate = assumptions.baselineTurnoverRate / 100;
+    // Nursing uses different turnover rate and replacement cost
+    const baselineTurnoverRate = isNursing 
+      ? assumptions.nursingTurnoverRate / 100 
+      : assumptions.baselineTurnoverRate / 100;
+    const replacementCost = isNursing ? assumptions.nursingReplacementCost : assumptions.turnoverCost;
     
-    // Simplified formula (no at-risk multiplier):
-    // Annual departures = Providers × Turnover rate
+    // For nursing, also factor in burnout-related %
+    const burnoutRelatedPct = isNursing ? assumptions.nursingBurnoutRelatedPct / 100 : 1;
+    
+    // Annual departures = Providers × Turnover rate (× burnout-related % for nursing)
     const annualDepartures = safeProviders * baselineTurnoverRate;
+    const burnoutDrivenDepartures = annualDepartures * burnoutRelatedPct;
     
     // Use midpoint of retention range for display, but calculate min/max for ranges
     const retentionLiftMid = (threshold.rateMin + threshold.rateMax) / 2;
     const retentionLiftMin = threshold.rateMin;
     const retentionLiftMax = threshold.rateMax;
     
-    // Providers retained = Annual departures × Retention lift %
-    const providersRetainedMid = annualDepartures * retentionLiftMid;
-    const providersRetainedMin = annualDepartures * retentionLiftMin;
-    const providersRetainedMax = annualDepartures * retentionLiftMax;
+    // Providers retained = Burnout-driven departures × Retention lift %
+    const baseDepartures = isNursing ? burnoutDrivenDepartures : annualDepartures;
+    const providersRetainedMid = baseDepartures * retentionLiftMid;
+    const providersRetainedMin = baseDepartures * retentionLiftMin;
+    const providersRetainedMax = baseDepartures * retentionLiftMax;
     
-    // Annual value = Providers retained × Replacement cost
-    const valueMid = providersRetainedMid * assumptions.turnoverCost;
-    const valueMin = providersRetainedMin * assumptions.turnoverCost;
-    const valueMax = providersRetainedMax * assumptions.turnoverCost;
+    // Retention value = Providers retained × Replacement cost
+    const retentionValueMid = providersRetainedMid * replacementCost;
+    const retentionValueMin = providersRetainedMin * replacementCost;
+    const retentionValueMax = providersRetainedMax * replacementCost;
     
-    // Check if low impact (under 100 hrs/year per provider)
-    const isLowImpact = hoursPerProviderAnnual < 100;
+    // For nursing, also calculate agency reduction value
+    let agencySavings = 0;
+    let agencyFtesConverted = 0;
+    if (isNursing) {
+      const currentAgencyFtes = assumptions.nursingAgencyFtes;
+      const retentionDrivenReduction = assumptions.nursingRetentionDrivenReduction / 100;
+      agencyFtesConverted = currentAgencyFtes * retentionDrivenReduction;
+      agencySavings = agencyFtesConverted * assumptions.nursingAgencyPremium;
+    }
+    
+    // Total value = Retention + Agency savings (for nursing)
+    const valueMid = retentionValueMid + agencySavings;
+    const valueMin = retentionValueMin + agencySavings;
+    const valueMax = retentionValueMax + agencySavings;
+    
+    // Check if low impact (thresholds differ by setting)
+    const lowImpactThreshold = isNursing ? 25 : 100;
+    const isLowImpact = hoursPerProviderAnnual < lowImpactThreshold;
     
     // Calculate next threshold info for nudge
-    const currentThresholdIndex = WELLBEING_THRESHOLDS.findIndex(t => t.label === threshold.label);
-    const nextThreshold = currentThresholdIndex < WELLBEING_THRESHOLDS.length - 1 
-      ? WELLBEING_THRESHOLDS[currentThresholdIndex + 1] 
+    const currentThresholdIndex = thresholdsToUse.findIndex(t => t.label === threshold.label);
+    const nextThreshold = currentThresholdIndex < thresholdsToUse.length - 1 
+      ? thresholdsToUse[currentThresholdIndex + 1] 
       : null;
     
     let allocationForNextThreshold: number | null = null;
@@ -853,8 +926,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       allocationForNextThreshold = Math.min(100, Math.ceil((hoursNeeded / safeTotalHours) * 100));
       
       const nextRetentionMid = (nextThreshold.rateMin + nextThreshold.rateMax) / 2;
-      const nextProvidersRetained = annualDepartures * nextRetentionMid;
-      valueAtNextThreshold = nextProvidersRetained * assumptions.turnoverCost;
+      const nextProvidersRetained = baseDepartures * nextRetentionMid;
+      valueAtNextThreshold = (nextProvidersRetained * replacementCost) + agencySavings;
     }
     
     return {
@@ -863,10 +936,14 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       hoursPerProviderPerWeek,
       threshold,
       annualDepartures,
+      burnoutDrivenDepartures,
       retentionLift: retentionLiftMid,
       retentionLiftMin,
       retentionLiftMax,
       providersRetained: providersRetainedMid,
+      retentionValue: Math.round(retentionValueMid),
+      agencySavings: Math.round(agencySavings),
+      agencyFtesConverted,
       value: Math.round(valueMid),
       valueMin: Math.round(valueMin),
       valueMax: Math.round(valueMax),
@@ -874,14 +951,38 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       nextThreshold,
       allocationForNextThreshold,
       valueAtNextThreshold,
+      isNursing,
     };
-  }, [totalHoursSaved, state.timeAllocation.clinicianWellbeing, state.numberOfProviders, assumptions]);
+  }, [totalHoursSaved, state.timeAllocation.clinicianWellbeing, state.numberOfProviders, assumptions, isNursing]);
 
   const calculateDriverValue = (id: keyof TimeAllocation) => {
     const hours = getHoursForCategory(id);
     
     switch (id) {
       case 'patientAccess': {
+        if (isNursing) {
+          // Nursing Staffing Efficiency (OT Reduction) calculation
+          const nurses = state.numberOfProviders;
+          const otHoursPerWeek = assumptions.nursingOtHoursPerWeek;
+          const weeksPerYear = 50;
+          const currentOtHoursPerYear = nurses * otHoursPerWeek * weeksPerYear;
+          const docDrivenOt = currentOtHoursPerYear * (assumptions.nursingDocDrivenOtPct / 100);
+          const hoursEliminated = Math.min(hours, docDrivenOt);
+          const otRate = assumptions.nursingBaseHourlyRate * assumptions.nursingOtMultiplier;
+          const value = hoursEliminated * otRate;
+          
+          return {
+            value: Math.round(value),
+            hours,
+            isNursingEfficiency: true,
+            nurses,
+            currentOtHoursPerYear: Math.round(currentOtHoursPerYear),
+            docDrivenOt: Math.round(docDrivenOt),
+            hoursEliminated: Math.round(hoursEliminated),
+            otRate,
+          };
+        }
+        
         if (isED) {
           // ED LWBS Throughput calculation
           const edVisits = state.annualEncounters;
@@ -974,6 +1075,51 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         };
       }
       case 'reducingLocums': {
+        if (isNursing) {
+          // Nursing Bedside Care (qualitative with optional quality impact)
+          const hoursPerNursePerYear = hours / Math.max(1, state.numberOfProviders);
+          const hoursPerNursePerShift = (hoursPerNursePerYear / 156) * 60; // convert to minutes
+          
+          if (!assumptions.nursingModelQualityImpact) {
+            return {
+              value: 0,
+              hours,
+              isQualitative: true,
+              isNursingBedsideCare: true,
+              hoursPerNursePerYear,
+              hoursPerNursePerShift,
+            };
+          }
+          
+          // Falls prevention calculation
+          const fallsPerYear = (assumptions.nursingAnnualAdmissions / 1000) * assumptions.nursingFallsRate;
+          const preventableFalls = fallsPerYear * (assumptions.nursingFallsPreventablePct / 100);
+          const fallsValue = preventableFalls * assumptions.nursingCostPerFall;
+          
+          // HAPI prevention calculation
+          const hapisPerYear = assumptions.nursingAnnualAdmissions * (assumptions.nursingHapiRate / 100);
+          const preventableHapis = hapisPerYear * (assumptions.nursingHapiPreventablePct / 100);
+          const hapiValue = preventableHapis * assumptions.nursingCostPerHapi;
+          
+          const potentialValue = fallsValue + hapiValue;
+          
+          return {
+            value: Math.round(potentialValue),
+            hours,
+            isNursingBedsideCare: true,
+            isQualityModel: true,
+            hoursPerNursePerYear,
+            hoursPerNursePerShift,
+            fallsPerYear: Math.round(fallsPerYear),
+            preventableFalls: Math.round(preventableFalls),
+            fallsValue: Math.round(fallsValue),
+            hapisPerYear: Math.round(hapisPerYear),
+            preventableHapis: Math.round(preventableHapis),
+            hapiValue: Math.round(hapiValue),
+            potentialValue: Math.round(potentialValue),
+          };
+        }
+        
         const realizationRate = assumptions.locumRealization / 100;
         const realizedHours = hours * realizationRate;
         const value = realizedHours * assumptions.locumHourlyCost;
@@ -1866,6 +2012,447 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       );
     }
     
+    // Nursing Staffing Efficiency breakdown
+    if (id === 'patientAccess' && isNursing) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-slate-800">Overtime Reduction Savings</span>
+            <button
+              onClick={() => setNursingEfficiencySettingsOpen(true)}
+              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              data-testid="button-nursing-efficiency-settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
+            </button>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours allocated to efficiency</span>
+              <span className="text-slate-900 font-semibold">{calc.hours.toLocaleString()} hrs</span>
+            </div>
+            <div className="border-t border-dashed border-slate-200 my-2" />
+            <div className="text-slate-500 font-semibold mb-1">OVERTIME REDUCTION:</div>
+            <div className="flex items-center justify-between bg-slate-50 -mx-3 px-3 py-1.5 rounded">
+              <span className="text-slate-500">Current OT hours/year</span>
+              <span className="text-slate-900">{calc.currentOtHoursPerYear?.toLocaleString()} hrs</span>
+            </div>
+            <div className="text-xs text-slate-400 -mt-1 ml-2">({state.numberOfProviders} nurses × {assumptions.nursingOtHoursPerWeek} hrs/wk × 50 weeks)</div>
+            <div className="flex items-center justify-between bg-slate-50 -mx-3 px-3 py-1.5 rounded">
+              <span className="flex items-center gap-1.5 text-slate-600">
+                × Documentation-driven %
+                <InfoTooltip>
+                  <p className="font-semibold mb-1">Why only {assumptions.nursingDocDrivenOtPct}%?</p>
+                  <p>Not all overtime is documentation-related. This captures the portion that could be eliminated with faster charting.</p>
+                </InfoTooltip>
+              </span>
+              <span className="text-slate-900">{assumptions.nursingDocDrivenOtPct}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Doc-driven OT</span>
+              <span className="text-slate-900">{calc.docDrivenOt?.toLocaleString()} hrs</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours that can be eliminated</span>
+              <span className="text-slate-900 font-semibold">{calc.hoursEliminated?.toLocaleString()} hrs</span>
+            </div>
+            <div className="text-xs text-slate-400">(capped at doc-driven OT)</div>
+            <div className="flex items-center justify-between bg-slate-50 -mx-3 px-3 py-1.5 rounded">
+              <span className="flex items-center gap-1.5 text-slate-500">
+                × OT hourly rate
+                <InfoTooltip>
+                  <p className="font-semibold mb-1">OT Rate Calculation</p>
+                  <p>${assumptions.nursingBaseHourlyRate} base × {assumptions.nursingOtMultiplier} = ${(assumptions.nursingBaseHourlyRate * assumptions.nursingOtMultiplier).toFixed(2)}</p>
+                </InfoTooltip>
+              </span>
+              <span className="text-slate-900">${calc.otRate?.toFixed(2)}</span>
+            </div>
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Annual Savings</span>
+              <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">
+            <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-green-800">
+              <span className="font-semibold">DIRECT, MEASURABLE savings</span><br/>
+              Track month-over-month in payroll data
+            </p>
+          </div>
+        </div>
+      );
+    }
+    
+    // Nursing Bedside Care breakdown
+    if (id === 'reducingLocums' && isNursing) {
+      const hoursPerNursePerYear = calc.hours / Math.max(1, state.numberOfProviders);
+      const minutesPerShift = (hoursPerNursePerYear / 156) * 60;
+      
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-slate-800">Bedside Care Time</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+              {assumptions.nursingModelQualityImpact ? 'Potential Value' : 'Qualitative'}
+            </span>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours reinvested in patient care</span>
+              <span className="text-slate-900 font-semibold">{calc.hours.toLocaleString()} hrs</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours per nurse per year</span>
+              <span className="text-slate-900">{hoursPerNursePerYear.toFixed(1)} hrs</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Minutes per nurse per shift</span>
+              <span className="text-slate-900">~{minutesPerShift.toFixed(0)} min</span>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setNursingShowBedsideMetrics(!nursingShowBedsideMetrics)}
+            className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition-colors border border-slate-200 rounded-lg"
+            data-testid="button-nursing-bedside-metrics"
+          >
+            <span>{nursingShowBedsideMetrics ? 'Hide metrics' : 'What to track'}</span>
+            {nursingShowBedsideMetrics ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+          
+          <AnimatePresence>
+            {nursingShowBedsideMetrics && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-slate-100 rounded-lg p-3 border-l-4 border-[#EA2C00]">
+                  <p className="text-xs font-semibold text-slate-700 mb-2">METRICS TO TRACK:</p>
+                  <ul className="text-xs text-slate-600 space-y-1.5">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                      Bedside time % (goal: increase by 5-10%)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                      Call light response time
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                      Hourly rounding compliance
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-[#EA2C00]" />
+                      Patient satisfaction scores (HCAHPS)
+                    </li>
+                  </ul>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          <div className="flex items-center gap-2 py-2">
+            <button
+              onClick={() => updateAssumption('nursingModelQualityImpact', assumptions.nursingModelQualityImpact ? 0 : 1)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${
+                assumptions.nursingModelQualityImpact 
+                  ? 'bg-[#FFF5F2] border-[#EA2C00]/30 text-[#EA2C00]' 
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+              }`}
+              data-testid="button-nursing-quality-toggle"
+            >
+              {assumptions.nursingModelQualityImpact ? (
+                <ToggleRight className="w-4 h-4" />
+              ) : (
+                <ToggleLeft className="w-4 h-4" />
+              )}
+              <span className="text-xs font-medium">Model quality impact (experimental)</span>
+            </button>
+          </div>
+          
+          <AnimatePresence>
+            {assumptions.nursingModelQualityImpact && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-yellow-800">
+                      <span className="font-semibold">POTENTIAL VALUE - Indirect causal link</span><br/>
+                      Falls and HAPIs are prevented through clinical care—turning, mobility, skin checks. Documentation SUPPORTS this but doesn't REPLACE it.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+                  <div className="text-slate-500 font-semibold mb-1">FALLS PREVENTION:</div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Annual admissions</span>
+                    <EditableValue 
+                      value={assumptions.nursingAnnualAdmissions} 
+                      onChange={(v) => updateAssumption('nursingAnnualAdmissions', v)}
+                      min={1000}
+                      max={50000}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">× Falls rate (per 1,000 pt days)</span>
+                    <EditableValue 
+                      value={assumptions.nursingFallsRate} 
+                      onChange={(v) => updateAssumption('nursingFallsRate', v)}
+                      min={1}
+                      max={10}
+                      step={0.5}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">= Falls/year</span>
+                    <span className="text-slate-900">{calc.fallsPerYear || Math.round((assumptions.nursingAnnualAdmissions / 1000) * assumptions.nursingFallsRate)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">× Documentation-preventable %</span>
+                    <EditableValue 
+                      value={assumptions.nursingFallsPreventablePct} 
+                      onChange={(v) => updateAssumption('nursingFallsPreventablePct', v)}
+                      suffix="%"
+                      min={1}
+                      max={20}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">× Cost per fall</span>
+                    <EditableValue 
+                      value={assumptions.nursingCostPerFall} 
+                      onChange={(v) => updateAssumption('nursingCostPerFall', v)}
+                      prefix="$"
+                      min={2000}
+                      max={20000}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">= Potential value</span>
+                    <span className="text-slate-900 font-semibold">${(calc.fallsValue || Math.round((assumptions.nursingAnnualAdmissions / 1000) * assumptions.nursingFallsRate * (assumptions.nursingFallsPreventablePct / 100) * assumptions.nursingCostPerFall)).toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="border-t border-dashed border-slate-200 my-2" />
+                  <div className="text-slate-500 font-semibold mb-1">HAPI PREVENTION:</div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Annual admissions</span>
+                    <span className="text-slate-900">{assumptions.nursingAnnualAdmissions.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">× HAPI rate</span>
+                    <EditableValue 
+                      value={assumptions.nursingHapiRate} 
+                      onChange={(v) => updateAssumption('nursingHapiRate', v)}
+                      suffix="%"
+                      min={0.5}
+                      max={5}
+                      step={0.5}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">= HAPIs/year</span>
+                    <span className="text-slate-900">{calc.hapisPerYear || Math.round(assumptions.nursingAnnualAdmissions * (assumptions.nursingHapiRate / 100))}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">× Documentation-preventable %</span>
+                    <EditableValue 
+                      value={assumptions.nursingHapiPreventablePct} 
+                      onChange={(v) => updateAssumption('nursingHapiPreventablePct', v)}
+                      suffix="%"
+                      min={1}
+                      max={20}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">× Cost per HAPI</span>
+                    <EditableValue 
+                      value={assumptions.nursingCostPerHapi} 
+                      onChange={(v) => updateAssumption('nursingCostPerHapi', v)}
+                      prefix="$"
+                      min={5000}
+                      max={50000}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">= Potential value</span>
+                    <span className="text-slate-900 font-semibold">${(calc.hapiValue || Math.round(assumptions.nursingAnnualAdmissions * (assumptions.nursingHapiRate / 100) * (assumptions.nursingHapiPreventablePct / 100) * assumptions.nursingCostPerHapi)).toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="border-t border-slate-300 mt-2 pt-2" />
+                  <div className="flex justify-between text-sm">
+                    <span className="font-bold text-slate-800">Combined Potential</span>
+                    <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      );
+    }
+    
+    // Nursing Wellbeing breakdown
+    if (id === 'clinicianWellbeing' && isNursing) {
+      const wc = wellbeingCalculation;
+      const showNudge = wc.nextThreshold && wc.allocationForNextThreshold && 
+        (wc.allocationForNextThreshold - state.timeAllocation.clinicianWellbeing) <= 15;
+      
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-800">Nurse Retention & Agency Reduction</span>
+            <button
+              onClick={() => setNursingWellbeingSettingsOpen(true)}
+              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              data-testid="button-nursing-wellbeing-settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
+            </button>
+          </div>
+          
+          <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-600">Hours per nurse per year</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderAnnual)} hrs</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-4 h-4 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-700">IMPACT THRESHOLD</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#FFF5F2] text-[#EA2C00]">
+                {wc.threshold.label}
+              </span>
+            </div>
+            
+            <div className="space-y-1 text-xs font-mono">
+              {NURSING_WELLBEING_THRESHOLDS.map((t, i) => {
+                const isCurrent = t.label === wc.threshold.label;
+                return (
+                  <div 
+                    key={t.label} 
+                    className={`flex items-center gap-2 py-1 px-2 rounded ${isCurrent ? 'bg-[#FFF5F2]' : ''}`}
+                  >
+                    <span className="text-slate-400 w-4">{i === 0 ? '├' : i === NURSING_WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
+                    <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
+                      {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
+                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                        ({t.description})
+                      </span>
+                    </span>
+                    <span className={`${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
+                      {t.label} ({Math.round(t.rateMin * 100)}-{Math.round(t.rateMax * 100)}% reduction)
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {showNudge && (
+            <div className="bg-[#FFF5F2] border border-[#EA2C00]/20 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Zap className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-slate-700">
+                  Add <span className="font-bold text-[#EA2C00]">{wc.allocationForNextThreshold! - state.timeAllocation.clinicianWellbeing}%</span> more to reach <span className="font-bold">{wc.nextThreshold?.label}</span> tier
+                </span>
+              </div>
+            </div>
+          )}
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="text-slate-500 font-semibold mb-1">RETENTION VALUE:</div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Nurse FTEs</span>
+              <span className="text-slate-900">{state.numberOfProviders}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Annual turnover rate</span>
+              <span className="text-slate-900">{assumptions.nursingTurnoverRate}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Annual departures</span>
+              <span className="text-slate-900">{wc.annualDepartures.toFixed(1)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Burnout-related %</span>
+              <span className="text-slate-900">{assumptions.nursingBurnoutRelatedPct}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Burnout-driven departures</span>
+              <span className="text-slate-900">{wc.burnoutDrivenDepartures?.toFixed(1)}</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
+              <span className="text-[#EA2C00]">× Retention lift ({wc.threshold.label})</span>
+              <span className="text-[#EA2C00] font-semibold">{Math.round(wc.retentionLift * 100)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Nurses retained</span>
+              <span className="text-slate-900">{wc.providersRetained.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Replacement cost</span>
+              <span className="text-slate-900">${assumptions.nursingReplacementCost.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Retention value</span>
+              <span className="text-slate-900 font-semibold">${wc.retentionValue?.toLocaleString()}</span>
+            </div>
+            
+            <div className="border-t border-dashed border-slate-200 my-2" />
+            <div className="text-slate-500 font-semibold mb-1">AGENCY REDUCTION (linked to retention):</div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Current agency FTEs</span>
+              <span className="text-slate-900">{assumptions.nursingAgencyFtes}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Agency premium</span>
+              <span className="text-slate-900">${assumptions.nursingAgencyPremium.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Retention-driven reduction</span>
+              <span className="text-slate-900">{assumptions.nursingRetentionDrivenReduction}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= FTEs converted</span>
+              <span className="text-slate-900">{wc.agencyFtesConverted?.toFixed(1)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Agency savings</span>
+              <span className="text-slate-900 font-semibold">${wc.agencySavings?.toLocaleString()}</span>
+            </div>
+            
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Combined Wellbeing Value</span>
+              <span className="font-bold text-[#EA2C00]">${wc.value.toLocaleString()}</span>
+            </div>
+            <div className="text-xs text-slate-400 text-right">
+              Retention: ${wc.retentionValue?.toLocaleString()} + Agency: ${wc.agencySavings?.toLocaleString()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     // Default breakdown for other drivers
     if (id === 'reducingLocums') {
       return (
@@ -1940,13 +2527,16 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                {isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Time Savings"}
+                {isNursing ? "Allocate Nursing Efficiency" : isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Time Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                Allocate Your Time Savings
+                {isNursing ? "Allocate Nursing Time Savings" : "Allocate Your Time Savings"}
               </h1>
               <p className="text-slate-600">
-                You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Decide how this time creates value.
+                {isNursing 
+                  ? <>You're saving <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span> across your nursing staff. Choose how this efficiency creates value.</>
+                  : <>You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. Decide how this time creates value.</>
+                }
               </p>
             </motion.div>
 
@@ -2260,9 +2850,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                       {/* Value row */}
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
                         <div>
-                          {option.id === 'patientExperience' ? (
+                          {option.id === 'patientExperience' || (isNursing && option.id === 'reducingLocums' && !assumptions.nursingModelQualityImpact) ? (
                             <>
-                              <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours invested</p>
+                              <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours {isNursing && option.id === 'reducingLocums' ? 'for bedside care' : 'invested'}</p>
                               <p className="text-xl font-bold text-[#F07B5F]">
                                 Qualitative Benefits
                               </p>
@@ -2670,6 +3260,148 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   onClick={() => setEdThroughputSettingsOpen(false)}
                   className="w-full bg-black hover:bg-black/90 text-white"
                   data-testid="button-save-ed-throughput-settings"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </SettingsModal>
+        )}
+      </AnimatePresence>
+
+      {/* Nursing Staffing Efficiency Settings Modal */}
+      <AnimatePresence>
+        {nursingEfficiencySettingsOpen && (
+          <SettingsModal
+            isOpen={nursingEfficiencySettingsOpen}
+            onClose={() => setNursingEfficiencySettingsOpen(false)}
+            title="Staffing Efficiency Settings"
+          >
+            <div className="space-y-5">
+              <ModalInput
+                label="Base RN Hourly Rate"
+                value={assumptions.nursingBaseHourlyRate}
+                onChange={(v) => updateAssumption('nursingBaseHourlyRate', v)}
+                prefix="$"
+                min={35}
+                max={65}
+                hint="Average base hourly rate for RNs ($40-$50 typical)"
+              />
+              <ModalSlider
+                label="OT Multiplier"
+                value={assumptions.nursingOtMultiplier}
+                onChange={(v) => updateAssumption('nursingOtMultiplier', v)}
+                min={1.5}
+                max={2}
+                suffix="×"
+                hint="Overtime pay multiplier (typically 1.5×)"
+              />
+              <ModalInput
+                label="OT Hours per Nurse per Week"
+                value={assumptions.nursingOtHoursPerWeek}
+                onChange={(v) => updateAssumption('nursingOtHoursPerWeek', v)}
+                suffix=" hrs"
+                min={1}
+                max={10}
+                hint="Average overtime hours per nurse per week"
+              />
+              <ModalSlider
+                label="Documentation-Driven OT %"
+                value={assumptions.nursingDocDrivenOtPct}
+                onChange={(v) => updateAssumption('nursingDocDrivenOtPct', v)}
+                min={20}
+                max={50}
+                hint="% of OT caused by documentation backlogs"
+              />
+              <div className="pt-3 border-t border-slate-100">
+                <Button
+                  onClick={() => setNursingEfficiencySettingsOpen(false)}
+                  className="w-full bg-black hover:bg-black/90 text-white"
+                  data-testid="button-save-nursing-efficiency-settings"
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </SettingsModal>
+        )}
+      </AnimatePresence>
+
+      {/* Nursing Wellbeing Settings Modal */}
+      <AnimatePresence>
+        {nursingWellbeingSettingsOpen && (
+          <SettingsModal
+            isOpen={nursingWellbeingSettingsOpen}
+            onClose={() => setNursingWellbeingSettingsOpen(false)}
+            title="Nurse Retention Settings"
+          >
+            <div className="space-y-5">
+              <ModalSlider
+                label="Nurse Turnover Rate"
+                value={assumptions.nursingTurnoverRate}
+                onChange={(v) => updateAssumption('nursingTurnoverRate', v)}
+                min={10}
+                max={30}
+                hint="Annual nursing turnover (industry avg: 18-22%)"
+              />
+              <ModalSlider
+                label="Burnout-Related Departures"
+                value={assumptions.nursingBurnoutRelatedPct}
+                onChange={(v) => updateAssumption('nursingBurnoutRelatedPct', v)}
+                min={30}
+                max={70}
+                hint="% of departures attributed to burnout"
+              />
+              <ModalInput
+                label="Nurse Replacement Cost"
+                value={assumptions.nursingReplacementCost}
+                onChange={(v) => updateAssumption('nursingReplacementCost', v)}
+                prefix="$"
+                min={25000}
+                max={100000}
+                step={5000}
+                hint="Full cost to replace an RN ($40K-$65K typical)"
+              />
+              
+              <div className="border-t border-slate-200 pt-4">
+                <p className="text-sm font-medium text-slate-800 mb-3">Agency Reduction</p>
+                <ModalInput
+                  label="Current Agency FTEs"
+                  value={assumptions.nursingAgencyFtes}
+                  onChange={(v) => updateAssumption('nursingAgencyFtes', v)}
+                  min={0}
+                  max={100}
+                  hint="Number of agency/travel nurse FTEs"
+                />
+                <div className="mt-4">
+                  <ModalInput
+                    label="Annual Premium per Agency FTE"
+                    value={assumptions.nursingAgencyPremium}
+                    onChange={(v) => updateAssumption('nursingAgencyPremium', v)}
+                    prefix="$"
+                    min={40000}
+                    max={120000}
+                    step={5000}
+                    hint="Cost difference: Agency vs Staff RN ($60K-$90K typical)"
+                  />
+                </div>
+                <div className="mt-4">
+                  <ModalSlider
+                    label="Retention-Driven Reduction"
+                    value={assumptions.nursingRetentionDrivenReduction}
+                    onChange={(v) => updateAssumption('nursingRetentionDrivenReduction', v)}
+                    min={5}
+                    max={25}
+                    hint="% of agency use reduced when retention improves"
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-3 border-t border-slate-100">
+                <Button
+                  onClick={() => setNursingWellbeingSettingsOpen(false)}
+                  className="w-full bg-black hover:bg-black/90 text-white"
+                  data-testid="button-save-nursing-wellbeing-settings"
                 >
                   Save Changes
                 </Button>
