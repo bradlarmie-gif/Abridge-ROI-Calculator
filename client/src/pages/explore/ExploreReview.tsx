@@ -66,8 +66,22 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
     const locumValue = locumHours * 150 * 0.60; // 60% realization
 
-    const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
-    const retentionValue = state.numberOfProviders * 0.15 * wellbeingPct * 0.20 * 250000; // 20% realization
+    // Simplified wellbeing calculation (no at-risk multiplier)
+    // Annual departures = Providers × Turnover rate
+    const annualDepartures = state.numberOfProviders * 0.08; // 8% baseline turnover
+    
+    // Get hours per provider annual to determine retention lift tier
+    const wellbeingHours = totalHoursSaved * (state.timeAllocation.clinicianWellbeing / 100);
+    const hoursPerProviderAnnual = wellbeingHours / Math.max(1, state.numberOfProviders);
+    
+    // Determine retention lift based on annual hours threshold
+    let retentionLift = 0.04; // MINIMAL (3-5%)
+    if (hoursPerProviderAnnual >= 200) retentionLift = 0.275; // MAXIMUM (25-30%)
+    else if (hoursPerProviderAnnual >= 150) retentionLift = 0.175; // SIGNIFICANT (15-20%)
+    else if (hoursPerProviderAnnual >= 100) retentionLift = 0.10; // MODERATE (8-12%)
+    
+    const providersRetained = annualDepartures * retentionLift;
+    const retentionValue = providersRetained * 250000; // Replacement cost
 
     return Math.round(patientAccessValue + locumValue + retentionValue);
   };

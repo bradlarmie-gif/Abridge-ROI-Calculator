@@ -608,8 +608,18 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
     const locumValue = locumHours * 150 * REALIZATION_RATES.reducingLocums;
 
-    const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
-    const retentionValue = state.numberOfProviders * 0.15 * wellbeingPct * 250000 * REALIZATION_RATES.clinicianWellbeing;
+    // Simplified wellbeing calculation (no at-risk multiplier)
+    const annualDepartures = state.numberOfProviders * 0.08; // 8% baseline turnover
+    const wellbeingHours = totalHoursSaved * (state.timeAllocation.clinicianWellbeing / 100);
+    const hoursPerProviderAnnual = wellbeingHours / Math.max(1, state.numberOfProviders);
+    
+    // Determine retention lift based on annual hours threshold
+    let retentionLift = 0.04; // MINIMAL (3-5%)
+    if (hoursPerProviderAnnual >= 200) retentionLift = 0.275; // MAXIMUM (25-30%)
+    else if (hoursPerProviderAnnual >= 150) retentionLift = 0.175; // SIGNIFICANT (15-20%)
+    else if (hoursPerProviderAnnual >= 100) retentionLift = 0.10; // MODERATE (8-12%)
+    
+    const retentionValue = annualDepartures * retentionLift * 250000;
 
     return Math.round(patientAccessValue + locumValue + retentionValue);
   };

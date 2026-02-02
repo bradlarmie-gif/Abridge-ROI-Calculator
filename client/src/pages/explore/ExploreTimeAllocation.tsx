@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star } from "lucide-react";
+import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -172,7 +172,6 @@ interface EditableAssumptions {
   locumHourlyCost: number;
   turnoverCost: number;
   baselineTurnoverRate: number;
-  atRiskMultiplier: number;
   patientAccessRealization: number;
   locumRealization: number;
 }
@@ -184,30 +183,31 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   locumHourlyCost: 150,
   turnoverCost: 250000,
   baselineTurnoverRate: 8,
-  atRiskMultiplier: 2,
   patientAccessRealization: 15,
   locumRealization: 60,
 };
 
-// Threshold-based wellbeing tiers
+// Threshold-based wellbeing tiers (based on annual hours per provider)
 interface WellbeingThreshold {
-  minHours: number;
-  maxHours: number;
+  minHoursAnnual: number;
+  maxHoursAnnual: number;
   label: string;
-  rate: number;
+  rateMin: number;
+  rateMax: number;
   color: string;
   bgColor: string;
+  description: string;
 }
 
 const WELLBEING_THRESHOLDS: WellbeingThreshold[] = [
-  { minHours: 0, maxHours: 1, label: 'MINIMAL', rate: 0.05, color: 'text-slate-500', bgColor: 'bg-slate-100' },
-  { minHours: 1, maxHours: 2, label: 'MODERATE', rate: 0.15, color: 'text-slate-600', bgColor: 'bg-slate-100' },
-  { minHours: 2, maxHours: 3, label: 'SIGNIFICANT', rate: 0.25, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100' },
-  { minHours: 3, maxHours: Infinity, label: 'MAXIMUM', rate: 0.30, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100' },
+  { minHoursAnnual: 0, maxHoursAnnual: 100, label: 'MINIMAL', rateMin: 0.03, rateMax: 0.05, color: 'text-slate-500', bgColor: 'bg-slate-100', description: '<2 hrs/week' },
+  { minHoursAnnual: 100, maxHoursAnnual: 150, label: 'MODERATE', rateMin: 0.08, rateMax: 0.12, color: 'text-slate-600', bgColor: 'bg-slate-100', description: '2-3 hrs/week' },
+  { minHoursAnnual: 150, maxHoursAnnual: 200, label: 'SIGNIFICANT', rateMin: 0.15, rateMax: 0.20, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '3-4 hrs/week' },
+  { minHoursAnnual: 200, maxHoursAnnual: Infinity, label: 'MAXIMUM', rateMin: 0.25, rateMax: 0.30, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '4+ hrs/week' },
 ];
 
-function getWellbeingThreshold(hoursPerWeek: number): WellbeingThreshold {
-  return WELLBEING_THRESHOLDS.find(t => hoursPerWeek >= t.minHours && hoursPerWeek < t.maxHours) || WELLBEING_THRESHOLDS[0];
+function getWellbeingThreshold(hoursPerProviderAnnual: number): WellbeingThreshold {
+  return WELLBEING_THRESHOLDS.find(t => hoursPerProviderAnnual >= t.minHoursAnnual && hoursPerProviderAnnual < t.maxHoursAnnual) || WELLBEING_THRESHOLDS[0];
 }
 
 // Info Tooltip component with accessibility
@@ -668,22 +668,35 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     const safeTotalHours = Math.max(1, totalHoursSaved);
     
     const hoursToWellbeing = safeTotalHours * (state.timeAllocation.clinicianWellbeing / 100);
-    const hoursPerProviderPerWeek = (hoursToWellbeing / safeProviders) / 52;
+    const hoursPerProviderAnnual = hoursToWellbeing / safeProviders;
+    const hoursPerProviderPerWeek = hoursPerProviderAnnual / 52;
     
-    const threshold = getWellbeingThreshold(hoursPerProviderPerWeek);
-    const turnoverReductionRate = threshold.rate;
+    // Get threshold based on annual hours per provider
+    const threshold = getWellbeingThreshold(hoursPerProviderAnnual);
     
     const baselineTurnoverRate = assumptions.baselineTurnoverRate / 100;
     
-    // Corrected formula:
-    // atRiskProviders = providers who are at elevated risk of leaving (burnout, dissatisfaction)
-    // This is baseline turnover × at-risk multiplier (e.g., 8% turnover × 2 = 16% of providers at risk)
-    const atRiskProviders = safeProviders * baselineTurnoverRate * assumptions.atRiskMultiplier;
+    // Simplified formula (no at-risk multiplier):
+    // Annual departures = Providers × Turnover rate
+    const annualDepartures = safeProviders * baselineTurnoverRate;
     
-    // From the at-risk pool, the reduction rate determines how many we retain
-    // providersRetained = at-risk providers × reduction rate based on time given back
-    const providersRetained = atRiskProviders * turnoverReductionRate;
-    const value = providersRetained * assumptions.turnoverCost;
+    // Use midpoint of retention range for display, but calculate min/max for ranges
+    const retentionLiftMid = (threshold.rateMin + threshold.rateMax) / 2;
+    const retentionLiftMin = threshold.rateMin;
+    const retentionLiftMax = threshold.rateMax;
+    
+    // Providers retained = Annual departures × Retention lift %
+    const providersRetainedMid = annualDepartures * retentionLiftMid;
+    const providersRetainedMin = annualDepartures * retentionLiftMin;
+    const providersRetainedMax = annualDepartures * retentionLiftMax;
+    
+    // Annual value = Providers retained × Replacement cost
+    const valueMid = providersRetainedMid * assumptions.turnoverCost;
+    const valueMin = providersRetainedMin * assumptions.turnoverCost;
+    const valueMax = providersRetainedMax * assumptions.turnoverCost;
+    
+    // Check if low impact (under 100 hrs/year per provider)
+    const isLowImpact = hoursPerProviderAnnual < 100;
     
     // Calculate next threshold info for nudge
     const currentThresholdIndex = WELLBEING_THRESHOLDS.findIndex(t => t.label === threshold.label);
@@ -693,22 +706,29 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     let allocationForNextThreshold: number | null = null;
     let valueAtNextThreshold: number | null = null;
-    if (nextThreshold && hoursPerProviderPerWeek < nextThreshold.minHours) {
-      const hoursNeeded = nextThreshold.minHours * safeProviders * 52;
+    if (nextThreshold && hoursPerProviderAnnual < nextThreshold.minHoursAnnual) {
+      const hoursNeeded = nextThreshold.minHoursAnnual * safeProviders;
       allocationForNextThreshold = Math.min(100, Math.ceil((hoursNeeded / safeTotalHours) * 100));
       
-      const nextProvidersRetained = atRiskProviders * nextThreshold.rate;
+      const nextRetentionMid = (nextThreshold.rateMin + nextThreshold.rateMax) / 2;
+      const nextProvidersRetained = annualDepartures * nextRetentionMid;
       valueAtNextThreshold = nextProvidersRetained * assumptions.turnoverCost;
     }
     
     return {
       hoursToWellbeing,
+      hoursPerProviderAnnual,
       hoursPerProviderPerWeek,
       threshold,
-      turnoverReductionRate,
-      atRiskProviders,
-      providersRetained,
-      value: Math.round(value),
+      annualDepartures,
+      retentionLift: retentionLiftMid,
+      retentionLiftMin,
+      retentionLiftMax,
+      providersRetained: providersRetainedMid,
+      value: Math.round(valueMid),
+      valueMin: Math.round(valueMin),
+      valueMax: Math.round(valueMax),
+      isLowImpact,
       nextThreshold,
       allocationForNextThreshold,
       valueAtNextThreshold,
@@ -930,8 +950,6 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <div className="space-y-1 text-xs font-mono">
               {WELLBEING_THRESHOLDS.map((t, i) => {
                 const isCurrent = t.label === wc.threshold.label;
-                const annualMin = t.minHours * 52;
-                const annualMax = t.maxHours === Infinity ? null : t.maxHours * 52;
                 return (
                   <div 
                     key={t.label} 
@@ -939,13 +957,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   >
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
                     <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
-                      {annualMax === null ? `${annualMin}+ hrs/yr` : `${annualMin}-${annualMax} hrs/yr`}
+                      {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
                       <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
-                        ({t.maxHours === Infinity ? `${t.minHours}+` : `${t.minHours}-${t.maxHours}`}/wk)
+                        ({t.description})
                       </span>
                     </span>
                     <span className={`${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
-                      {t.label} ({Math.round(t.rate * 100)}%)
+                      {t.label} ({Math.round(t.rateMin * 100)}-{Math.round(t.rateMax * 100)}%)
                     </span>
                     {isCurrent && <span className="text-xs ml-auto font-bold text-[#EA2C00]">← YOU ARE HERE</span>}
                   </div>
@@ -970,7 +988,28 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </motion.div>
           )}
           
-          {/* Step-by-step math */}
+          {/* Low impact warning for MINIMAL tier */}
+          {wc.isLowImpact && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-2 bg-slate-50 rounded-lg p-3 border border-slate-200"
+            >
+              <AlertTriangle className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-slate-600">
+                <p className="font-semibold text-slate-700 mb-1">LOW IMPACT THRESHOLD</p>
+                <p className="mb-2">
+                  At {wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week per provider, retention impact is minimal.
+                  Consider 60%+ allocation (2+ hrs/week) for measurable benefits.
+                </p>
+                <p className="text-slate-500 italic">
+                  Current allocation supports daily stress relief but may not significantly impact annual turnover rates.
+                </p>
+              </div>
+            </motion.div>
+          )}
+          
+          {/* Step-by-step math - simplified */}
           <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
             <p className="text-xs font-semibold text-slate-600 mb-2 font-sans">Step-by-Step Calculation</p>
             
@@ -979,23 +1018,17 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               <span className="text-slate-900">{state.numberOfProviders}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-slate-500">
-                × At-risk multiplier
-                <InfoTooltip>
-                  <p className="font-semibold mb-1">Why 2× the turnover rate?</p>
-                  <p>Research shows that for every provider who leaves, approximately 2× that percentage are actively considering leaving or at high burnout risk.</p>
-                </InfoTooltip>
-              </span>
-              <span className="text-slate-900">{assumptions.atRiskMultiplier}× {assumptions.baselineTurnoverRate}%</span>
+              <span className="text-slate-500">× Annual turnover rate</span>
+              <span className="text-slate-900">{assumptions.baselineTurnoverRate}%</span>
             </div>
             <div className="border-t border-dashed border-slate-200 my-1" />
             <div className="flex justify-between">
-              <span className="text-slate-500">= Providers at risk</span>
-              <span className="text-slate-900 font-semibold">{wc.atRiskProviders.toFixed(1)}</span>
+              <span className="text-slate-500">= Annual departures</span>
+              <span className="text-slate-900 font-semibold">{wc.annualDepartures.toFixed(1)}</span>
             </div>
             <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
               <span className="text-[#EA2C00]">× Retention lift ({wc.threshold.label})</span>
-              <span className="text-[#EA2C00] font-semibold">{Math.round(wc.turnoverReductionRate * 100)}%</span>
+              <span className="text-[#EA2C00] font-semibold">{Math.round(wc.retentionLiftMin * 100)}-{Math.round(wc.retentionLiftMax * 100)}%</span>
             </div>
             <div className="border-t border-dashed border-slate-200 my-1" />
             <div className="flex justify-between">
@@ -1003,13 +1036,17 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               <span className="text-slate-900 font-semibold">{wc.providersRetained.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">× Cost per turnover</span>
+              <span className="text-slate-500">× Replacement cost</span>
               <span className="text-slate-900">${assumptions.turnoverCost.toLocaleString()}</span>
             </div>
             <div className="border-t border-slate-300 mt-2 pt-2" />
             <div className="flex justify-between text-sm">
               <span className="font-bold text-slate-800">Annual Value</span>
-              <span className="font-bold text-[#EA2C00]">${wc.value.toLocaleString()}</span>
+              {wc.threshold.label === 'MINIMAL' ? (
+                <span className="font-bold text-slate-600">${wc.valueMin.toLocaleString()} - ${wc.valueMax.toLocaleString()} <span className="text-xs font-normal">(limited)</span></span>
+              ) : (
+                <span className="font-bold text-[#EA2C00]">${wc.value.toLocaleString()}</span>
+              )}
             </div>
           </div>
         </div>
@@ -1572,15 +1609,6 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 max={1000000}
                 step={10000}
                 hint="Full cost to replace a provider (recruitment, onboarding, lost revenue)"
-              />
-              <ModalSlider
-                label="At-Risk Multiplier"
-                value={assumptions.atRiskMultiplier}
-                onChange={(v) => updateAssumption('atRiskMultiplier', v)}
-                min={1}
-                max={4}
-                suffix="×"
-                hint="Advanced: How many providers are at risk for each one who leaves"
               />
               <div className="pt-3 border-t border-slate-100">
                 <Button
