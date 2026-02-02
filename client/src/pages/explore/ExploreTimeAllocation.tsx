@@ -563,14 +563,6 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     handleSliderChange(id, newValue);
   };
 
-  // Calculate total allocation for validation display
-  const totalAllocation = useMemo(() => {
-    return state.timeAllocation.patientAccess + 
-      (isOutpatient ? state.timeAllocation.patientExperience : 0) +
-      (includeLocums ? state.timeAllocation.reducingLocums : 0) + 
-      state.timeAllocation.clinicianWellbeing;
-  }, [state.timeAllocation, isOutpatient, includeLocums]);
-
   // Find which category will be adjusted when editing
   const getAdjustingCategory = (editingId: keyof TimeAllocation): keyof TimeAllocation | null => {
     const current = { ...state.timeAllocation };
@@ -1161,6 +1153,16 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                   {includeLocums ? 'Locums on' : '+ Locums'}
                 </button>
               )}
+              
+              {/* Live total allocation display */}
+              <div className="ml-auto flex items-center gap-2">
+                <span className={`text-sm font-medium ${totalAllocated === 100 ? 'text-slate-500' : 'text-[#EA2C00]'}`}>
+                  Total: {totalAllocated}%
+                </span>
+                {totalAllocated === 100 && (
+                  <Check className="w-4 h-4 text-green-500" />
+                )}
+              </div>
             </motion.div>
 
             {/* Allocation warning */}
