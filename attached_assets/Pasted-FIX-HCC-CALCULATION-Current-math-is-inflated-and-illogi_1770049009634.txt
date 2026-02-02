@@ -1,0 +1,73 @@
+FIX HCC CALCULATION - Current math is inflated and illogical:
+
+CURRENT ISSUES:
+1. $10.2M for 50 providers is unrealistic (~$200K per provider)
+2. Logic multiplies encounters × HCCs incorrectly
+3. Missing key step: patient panel → gap analysis → recapture
+
+NEW CALCULATION LOGIC:
+
+INPUTS TO ADD:
+- Average panel size per provider (default: 1,500 patients)
+- % patients in Medicare Advantage (keep 30%, editable)
+- Documentation gap rate (default: 40% - patients with missed HCCs)
+- Avg missed HCCs per gap patient (default: 1.5)
+- Recapture target % (keep 15%, editable)
+- RAF impact per HCC (default: 0.4, editable)
+- Annual payment per RAF point (default: $12,000, editable)
+- Realization rate (keep 60%, editable)
+
+CALCULATION STEPS:
+
+1. Total patient panel
+   = Providers × Panel size per provider
+
+2. MA patient population  
+   = Total patients × MA percentage
+
+3. Patients with documentation gaps
+   = MA patients × Gap rate
+
+4. Potential HCCs to recapture
+   = Gap patients × Avg missed HCCs per patient
+
+5. HCCs you'll recapture
+   = Potential HCCs × Recapture target %
+
+6. Value per HCC
+   = RAF impact × Annual payment per RAF point
+
+7. Gross annual value
+   = HCCs recaptured × Value per HCC
+
+8. Net annual value  
+   = Gross value × Realization rate
+
+DISPLAY IN BREAKDOWN:
+
+MA patient panel                           22,500 patients
+× Documentation gap rate                   40%
+= Patients with missed HCCs                9,000
+
+× Avg missed conditions per patient        1.5 HCCs
+= Total recapture opportunity              13,500 HCCs
+
+× Your recapture target                    15%
+= HCCs you'll document                     2,025 HCCs
+
+× RAF value per HCC ($12K × 0.4 RAF)      $4,800
+= Gross value                              $9,720,000
+
+× Realization rate                         60%
+= Net annual value                         $5,832,000
+
+Add tooltip on "Realization rate":
+"Accounts for RADV audits, payment delays, and rejected 
+submissions. Conservative estimate ensures defensible ROI."
+
+REMOVE current calculation that uses:
+- "Eligible encounters" (wrong starting point)
+- "MA patient encounters" (doesn't matter for HCC)
+- "Avg conditions per member" × encounters (double counting)
+
+START FROM panel size instead of encounters.

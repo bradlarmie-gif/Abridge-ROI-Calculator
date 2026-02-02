@@ -550,6 +550,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     if (showHints && !hasInteracted) {
       const timer = setTimeout(() => {
         setShowHints(false);
+        setHasInteracted(true); // Prevent first-click feedback after passive dismissal
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('timeAllocationHintsShown', 'true');
         }
@@ -650,6 +651,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const handleIncrement = (id: keyof TimeAllocation, step: number) => {
     // Can't adjust auto-calculated category
     if (isAutoCalculated(id)) return;
+    dismissHints();
     const current = state.timeAllocation[id];
     const newValue = Math.max(0, Math.min(100, current + step));
     handleSliderChange(id, newValue);
@@ -668,6 +670,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   };
 
   const handleToggleLocums = () => {
+    dismissHints();
     const newIncludeLocums = !includeLocums;
     setIncludeLocums(newIncludeLocums);
     // Clear all locks when toggling locums
@@ -767,6 +770,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   };
 
   const handlePreset = (preset: { allocation: TimeAllocation }) => {
+    dismissHints();
     // Clear all locks when applying a preset
     setLockedCategories(new Set());
     updateState({ timeAllocation: preset.allocation });

@@ -1,0 +1,90 @@
+REFRAME DENIAL PREVENTION CALCULATION - Focus on unrecoverable denials:
+
+CURRENT ISSUE: 
+Calculation shows reduction of ALL denials, but most denials get 
+appealed and won. The real value is preventing UNAPPEALABLE denials 
+caused by missing medical necessity documentation.
+
+NEW LOGIC & MESSAGING:
+
+1. UPDATE "The logic" explanation:
+
+   "Documentation gaps drive 30-40% of denials that cannot be appealed. 
+   These represent permanent revenue loss. Abridge captures clinical 
+   reasoning and medical necessity in real-time, preventing denials 
+   before they occur."
+
+2. UPDATE CALCULATION STEPS:
+
+   Eligible encounters                        157,500 visits
+   
+   × Baseline denial rate                     8% 🔧
+   = Total denials                            12,600 claims
+   
+   × Unappealable rate                        40% 🔧
+   "Denials due to documentation gaps"
+   = Unrecoverable denials (baseline)         5,040 claims
+   
+   × Your prevention target                   50% 🔧
+   "% of preventable denials you'll capture"
+   = Denials prevented                        2,520 claims
+   
+   × Avg denied claim value                   $250 🔧
+   = Gross value                              $630,000
+   
+   × Realization rate                         85% 🔧
+   "Clean claim payment rate - high confidence"
+   = Net annual value                         $535,500
+
+3. RENAME FIELDS:
+
+   OLD → NEW
+   "Documentation-related" (50%) → "Unappealable rate" (40%)
+   "Your reduction target" (25%) → "Your prevention target" (50%)
+   "Realization rate" (70%, appeals) → "Realization rate" (85%, clean claims)
+
+4. ADD NEW INPUTS (editable with 🔧):
+
+   - Baseline denial rate: 8% (range 5-12%)
+   - Unappealable rate: 40% (range 30-50%)
+     Tooltip: "Denials that cannot be appealed due to missing 
+     documentation. Industry estimates: 30-40%"
+   - Prevention target: 50% (range 25-75%)
+     Tooltip: "% of unappealable denials you'll prevent with better 
+     real-time documentation"
+   - Avg denied claim value: $250 (range $150-$500)
+   - Realization rate: 85% (range 75-95%)
+     Tooltip: "Clean claims payment rate. Conservative to account 
+     for payer variability."
+
+5. UPDATE PRESET SCENARIOS:
+
+   Conservative: 
+   - Unappealable rate: 30%
+   - Prevention target: 25%
+   - Realization: 75%
+   
+   Typical:
+   - Unappealable rate: 40%
+   - Prevention target: 50%
+   - Realization: 85%
+   
+   Aggressive:
+   - Unappealable rate: 50%
+   - Prevention target: 75%
+   - Realization: 90%
+
+6. ADD VISUAL DISTINCTION in breakdown:
+
+   Show appealable vs unappealable denials:
+   
+   Total denials: 12,600
+   ├─ Appealable (60%): 7,560 ← Recovered through appeals
+   └─ Unappealable (40%): 5,040 ← Abridge prevents these
+      
+   Your impact: Prevent 2,520 of the 5,040 unrecoverable denials
+
+7. UPDATE BUTTON LABELS:
+
+   "Continue to Investment" → "Continue to Summary"
+   or "See Total Value →"
