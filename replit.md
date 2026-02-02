@@ -44,11 +44,14 @@ The application supports multiple distinct user journeys:
     - **Physician Wellbeing**: Hospitalist-specific labels ("hospitalists" instead of "clinicians"). Uses same threshold-based retention model.
     - Inpatient Presets: Balanced (50/50), Operations Focus (70/30), Retention Focus (30/70).
     - LOS Impact Toggle: Experimental model for length-of-stay reduction, disabled by default with clear "limited validation" warning.
--   **Nursing-Specific Time Allocation**: Nursing uses per-shift model with three specialized categories:
-    - **Staffing Efficiency (OT Reduction)**: Direct, measurable payroll savings. Formula: Current OT hours (nurses × 4 hrs/wk × 50 weeks) × doc-driven % (33%) → hours that can be eliminated (capped at doc-driven OT) × OT rate ($45 × 1.5 = $67.50). Trackable in payroll data.
-    - **Bedside Care**: Qualitative by default. Hours reinvested in patient care. Optional experimental toggle for Falls + HAPI prevention modeling (indirect causal link). When quality toggle disabled, shows "Qualitative Benefits". When enabled, calculates: Falls prevention (admissions × falls rate × preventable % × cost per fall) + HAPI prevention (admissions × HAPI rate × preventable % × cost per HAPI).
-    - **Nurse Wellbeing**: Combined retention value + agency reduction linked to retention improvements. Uses NURSING_WELLBEING_THRESHOLDS (lower than physician thresholds): 0-25 hrs/yr MINIMAL (5-8%), 25-50 hrs/yr MODERATE (10-15%), 50+ hrs/yr SIGNIFICANT (18-25%). Formula: Retention Value = (Nurses × Turnover 18% × Burnout-related 50%) × Retention Lift × Replacement Cost ($52K). Agency Reduction = Agency FTEs × Premium ($75K) × Retention-driven reduction (10%).
-    - Nursing Presets: Balanced (40/30/30), Efficiency Focus (60/20/20), Retention Focus (20/20/60).
+-   **Nursing-Specific Wizard Flow**: Nursing uses a simplified 5-step wizard (skips Documentation Quality) with per-shift model:
+    - **Setup**: Staffed Beds, Nurse FTEs, Occupancy Rate (50-100%, default 85%). Patient days calculated as: staffedBeds × occupancyRate × 365.
+    - **Time Allocation Categories**:
+        - **Staffing Efficiency (OT Reduction)**: DIRECT, measurable payroll savings. Formula: Current OT hours (nurses × 4 hrs/wk × 50 weeks) × doc-driven % (33%) → hours that can be eliminated × OT rate ($45 × 1.5 = $67.50). Trackable in payroll data.
+        - **Care Quality**: Always-on Falls + HAPI prevention calculations using patient days (not admissions). Formula: Falls = (patient days / 1000) × falls rate (3.5) × preventable % (5%) × cost per fall ($6,500) × realization (85%). HAPI = (patient days / 1000) × HAPI rate (2.5) × preventable % (5%) × cost per HAPI ($20,000) × realization (85%). Shows POTENTIAL label.
+        - **Nurse Wellbeing**: Combined retention value + agency reduction. Uses NURSING_WELLBEING_THRESHOLDS (lower than physician thresholds): 0-25 hrs/yr MINIMAL (5-8%), 25-50 hrs/yr MODERATE (10-15%), 50+ hrs/yr SIGNIFICANT (18-25%). Formula: Retention Value = (Nurses × Turnover 18% × Burnout-related 50%) × Retention Lift × Replacement Cost ($52K). Shows POTENTIAL label.
+    - Nursing Presets: Balanced (40/30/30), Efficiency Focus (60/20/20), Retention Focus (20/50/30).
+    - Receipt shows DIRECT label for Staffing Efficiency, POTENTIAL labels for Care Quality and Wellbeing.
     - Nursing Settings Modals: Configurable base RN hourly rate, OT multiplier, OT hours/week, doc-driven OT %, turnover rate, burnout-related %, replacement cost, agency FTEs, agency premium, retention-driven reduction.
 -   **Inpatient-Specific Documentation Drivers**: Inpatient uses two specialized drivers:
     - **DRG Accuracy & Revenue Protection**: Protects revenue from downcoding and denial write-offs. Formula: Admissions (6500) × at-risk rate (25%) × protection rate (25%) × DRG weight lift (0.4) × base DRG payment ($6K) × realization rate (50%). Includes nested "See benchmarks" section with DRG weight examples and revenue leakage rates.
@@ -65,6 +68,7 @@ The application supports multiple distinct user journeys:
     - ED CDI: 60%
     - Inpatient DRG Accuracy: 50% (coding lag, payer adjustments)
     - Inpatient CDI Query: Direct savings (no realization rate applied)
+    - Nursing Care Quality: 85% (indirect causal link between documentation and prevention)
 -   **Simplified Wellbeing Retention Model**: Conservative threshold-based approach:
     - 0-100 hrs/yr per provider (<2 hrs/week): MINIMAL tier, 3-5% retention lift
     - 100-150 hrs/yr (2-3 hrs/week): MODERATE tier, 8-12% retention lift
