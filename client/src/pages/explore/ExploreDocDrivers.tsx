@@ -203,22 +203,34 @@ const NURSING_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
 interface EditableAssumptions {
   wrvuConversion: number;
   wrvuRealization: number;
-  hccValuePerCondition: number;
+  // HCC panel-based assumptions
+  panelSizePerProvider: number;
+  maPatientPct: number;
+  hccGapRate: number;
+  avgMissedHccsPerPatient: number;
+  rafImpactPerHcc: number;
+  annualPaymentPerRaf: number;
   hccRealization: number;
+  // Denials
   denialAvgValue: number;
   denialRealization: number;
-  maPatientPct: number;
   baselineDenialRate: number;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   wrvuConversion: 33,
   wrvuRealization: 75,
-  hccValuePerCondition: 800,
+  // HCC panel-based defaults
+  panelSizePerProvider: 1500,
+  maPatientPct: 30,
+  hccGapRate: 40,
+  avgMissedHccsPerPatient: 1.5,
+  rafImpactPerHcc: 0.4,
+  annualPaymentPerRaf: 12000,
   hccRealization: 60,
+  // Denials
   denialAvgValue: 250,
   denialRealization: 70,
-  maPatientPct: 30,
   baselineDenialRate: 8,
 };
 
@@ -361,6 +373,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     const driver = docDrivers[driverId];
     if (!driver || !driver.enabled) return { value: 0, editableInputs: null };
     const driverValue = driver.value;
+    const numberOfProviders = state.numberOfProviders;
 
     switch (driverId) {
       case 'wrvu': {
@@ -430,24 +443,44 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
         };
       }
       case 'hcc': {
-        const avgConditionsPerMember = 3;
-        const maPatients = eligibleEncounters * (assumptions.maPatientPct / 100);
-        const conditionsCaptured = maPatients * avgConditionsPerMember * (driverValue / 100);
-        const grossValue = conditionsCaptured * assumptions.hccValuePerCondition;
+        // Panel-based HCC calculation
+        const totalPatientPanel = numberOfProviders * assumptions.panelSizePerProvider;
+        const maPatients = totalPatientPanel * (assumptions.maPatientPct / 100);
+        const patientsWithGaps = maPatients * (assumptions.hccGapRate / 100);
+        const potentialHccs = patientsWithGaps * assumptions.avgMissedHccsPerPatient;
+        const hccsRecaptured = potentialHccs * (driverValue / 100);
+        const valuePerHcc = assumptions.rafImpactPerHcc * assumptions.annualPaymentPerRaf;
+        const grossValue = hccsRecaptured * valuePerHcc;
         const realizedValue = grossValue * (assumptions.hccRealization / 100);
+        
         return {
           value: Math.round(realizedValue),
           editableInputs: (
             <div className="space-y-3">
               <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
                 <p className="text-xs text-slate-500">
-                  <span className="font-medium text-slate-700">The logic:</span> Risk adjustment pays based on documented conditions. When clinicians discuss conditions but don't document them, that value is lost. Better notes recapture missed HCCs.
+                  <span className="font-medium text-slate-700">The logic:</span> Risk adjustment pays based on documented conditions. Many MA patients have documentation gaps—conditions discussed but not captured. Better notes recapture missed HCCs.
                 </p>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Eligible encounters</span>
-                <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
+              
+              {/* Step 1: Patient panel */}
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <span className="text-sm text-slate-600">Panel size per provider</span>
+                <EditableValue 
+                  value={assumptions.panelSizePerProvider} 
+                  onChange={(v) => updateAssumption('panelSizePerProvider', v)}
+                  suffix=" pts"
+                  min={500}
+                  max={3000}
+                  step={100}
+                />
               </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">× {numberOfProviders} providers</span>
+                <span className="text-sm font-semibold text-black">{totalPatientPanel.toLocaleString()} patients</span>
+              </div>
+              
+              {/* Step 2: MA population */}
               <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
                 <span className="text-sm text-slate-600">Medicare Advantage %</span>
                 <EditableValue 
@@ -459,40 +492,101 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                 />
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">MA patient encounters</span>
-                <span className="text-sm font-semibold text-black">{Math.round(maPatients).toLocaleString()} visits</span>
+                <span className="text-sm text-slate-600">= MA patient panel</span>
+                <span className="text-sm font-semibold text-black">{Math.round(maPatients).toLocaleString()} patients</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Avg conditions per member</span>
-                <span className="text-sm font-semibold text-black">{avgConditionsPerMember} HCCs</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Your recapture target</span>
-                <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Conditions recaptured</span>
-                <span className="text-sm font-semibold text-black">{Math.round(conditionsCaptured).toLocaleString()} HCCs</span>
-              </div>
+              
+              {/* Step 3: Gap patients */}
               <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Value per HCC</span>
+                <div>
+                  <span className="text-sm text-slate-600">Documentation gap rate</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Patients with missed HCCs</p>
+                </div>
                 <EditableValue 
-                  value={assumptions.hccValuePerCondition} 
-                  onChange={(v) => updateAssumption('hccValuePerCondition', v)}
-                  prefix="$"
-                  min={200}
-                  max={2000}
-                  step={50}
+                  value={assumptions.hccGapRate} 
+                  onChange={(v) => updateAssumption('hccGapRate', v)}
+                  suffix="%"
+                  min={10}
+                  max={60}
                 />
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Gross value</span>
+                <span className="text-sm text-slate-600">= Patients with gaps</span>
+                <span className="text-sm font-semibold text-black">{Math.round(patientsWithGaps).toLocaleString()} patients</span>
+              </div>
+              
+              {/* Step 4: Potential HCCs */}
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm text-slate-600">Avg missed HCCs per patient</span>
+                </div>
+                <EditableValue 
+                  value={assumptions.avgMissedHccsPerPatient} 
+                  onChange={(v) => updateAssumption('avgMissedHccsPerPatient', v)}
+                  suffix=" HCCs"
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">= Total recapture opportunity</span>
+                <span className="text-sm font-semibold text-black">{Math.round(potentialHccs).toLocaleString()} HCCs</span>
+              </div>
+              
+              {/* Step 5: Recapture target */}
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">× Your recapture target</span>
+                <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">= HCCs you'll document</span>
+                <span className="text-sm font-semibold text-black">{Math.round(hccsRecaptured).toLocaleString()} HCCs</span>
+              </div>
+              
+              {/* Step 6: Value per HCC */}
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm text-slate-600">RAF impact per HCC</span>
+                </div>
+                <EditableValue 
+                  value={assumptions.rafImpactPerHcc} 
+                  onChange={(v) => updateAssumption('rafImpactPerHcc', v)}
+                  suffix=""
+                  min={0.1}
+                  max={1.0}
+                  step={0.05}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm text-slate-600">× Annual payment per RAF</span>
+                </div>
+                <EditableValue 
+                  value={assumptions.annualPaymentPerRaf} 
+                  onChange={(v) => updateAssumption('annualPaymentPerRaf', v)}
+                  prefix="$"
+                  min={8000}
+                  max={18000}
+                  step={500}
+                />
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">= Value per HCC</span>
+                <span className="text-sm font-semibold text-black">${valuePerHcc.toLocaleString()}</span>
+              </div>
+              
+              {/* Step 7: Gross value */}
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-slate-600">Gross annual value</span>
                 <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
               </div>
+              
+              {/* Step 8: Realization */}
               <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
                 <div>
                   <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
-                  <p className="text-xs text-slate-500 mt-0.5">RAF adjustments, RADV audits</p>
+                  <p className="text-xs text-slate-500 mt-0.5">RADV audits, payment delays, rejections</p>
                 </div>
                 <EditableValue 
                   value={assumptions.hccRealization} 
