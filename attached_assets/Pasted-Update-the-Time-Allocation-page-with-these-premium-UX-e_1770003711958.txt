@@ -1,0 +1,94 @@
+Update the Time Allocation page with these premium UX enhancements while keeping the Abridge colors and live receipt on the right:
+
+PATIENT ACCESS CARD ENHANCEMENTS:
+1. Below the slider, add an expandable "📊 Breakdown" section that shows:
+   - Potential new visit slots calculation
+   - Realization rate with info tooltip
+   - Step-by-step math to the final value
+   - Add a "See the math" toggle button
+
+2. Add an info tooltip (ⓘ) next to "Realization rate: 20%" that explains:
+   "Why only 20%? Scheduling constraints, not all slots get filled, provider preference for breathing room, and administrative requirements. Industry range: 10-40%"
+
+3. Add a settings icon button that opens a modal to adjust:
+   - Realization rate (slider 10-40%, default 20%)
+   - Revenue per visit (input field)
+   - Average visit duration (input field)
+
+CLINICIAN WELLBEING CARD ENHANCEMENTS:
+1. Add calculation display showing:
+   - Hours per provider per week (e.g., "2.3 hours per provider per week")
+   - Current impact threshold tier with visual indicator
+
+2. Add threshold visualization showing:
+   🎯 Impact Threshold: MODERATE
+   ├─ < 1 hr/week: Minimal (5% reduction)
+   ├─ 1-2 hrs/week: Moderate (15% reduction) ← YOU ARE HERE
+   ├─ 2-3 hrs/week: Significant (25% reduction)
+   └─ 3+ hrs/week: Maximum (30% reduction)
+
+3. Update the calculation to use threshold-based logic:
+   - Calculate hours per provider per week
+   - Apply threshold: <1hr = 5%, 1-2hr = 15%, 2-3hr = 25%, 3+hr = 30%
+   - Show "at risk" population (providers × turnover rate × 2)
+   - Calculate: at-risk providers × turnover rate × threshold % × cost per turnover
+
+4. Add expandable "📊 Retention Impact" breakdown showing:
+   - Providers at risk: [number] with info tooltip explaining "2× turnover rate"
+   - Expected turnover from at-risk population
+   - Turnover reduction rate based on threshold
+   - Providers retained
+   - Cost per turnover
+   - Final value calculation
+
+5. Add contextual nudge message when close to next threshold:
+   "⚠️ At 3+ hrs/week (63%+ allocation), value increases to $X"
+
+6. Add settings icon to adjust:
+   - Number of providers
+   - Current turnover rate
+   - Cost per turnover
+   - At-risk multiplier (advanced, default 2x)
+
+GENERAL UX IMPROVEMENTS:
+1. Make "See the math" buttons expand inline with step-by-step calculations in a monospace font
+2. Add smooth animations when values update from slider changes
+3. Add subtle visual feedback when crossing thresholds (color shift, small celebration)
+4. Ensure all tooltips have proper hover states and are accessible
+5. Add a small warning indicator if allocations don't sum to 100%
+
+Keep all existing:
+- Abridge brand colors (coral #FF5C5C for primary actions)
+- Black receipt card on the right
+- Current layout structure
+- Preset scenario buttons (Balanced, Growth Focus, Retention Focus)
+- Slider interaction patterns
+
+Make it feel premium and educational - like Stripe's calculator but for healthcare.
+
+If you want to be more specific about the math formula, add this:
+CopyEXACT WELLBEING CALCULATION FORMULA:
+
+const hoursToWellbeing = totalHoursSaved × wellbeingAllocation
+const hoursPerProviderPerWeek = (hoursToWellbeing / providers) / 52
+
+// Threshold logic
+let turnoverReductionRate
+if (hoursPerProviderPerWeek < 1.0) turnoverReductionRate = 0.05
+else if (hoursPerProviderPerWeek < 2.0) turnoverReductionRate = 0.15
+else if (hoursPerProviderPerWeek < 3.0) turnoverReductionRate = 0.25
+else turnoverReductionRate = 0.30
+
+const atRiskProviders = providers × baselineTurnoverRate × 2
+const expectedTurnover = atRiskProviders × baselineTurnoverRate
+const providersRetained = expectedTurnover × turnoverReductionRate
+const wellbeingValue = providersRetained × costPerTurnover
+
+Display in breakdown:
+- "Hours per provider per week: [X.X]"
+- "Impact tier: [MINIMAL/MODERATE/SIGNIFICANT/MAXIMUM]"
+- "Providers at risk: [X] (2× your [Y]% turnover rate)"
+- "Expected turnover from at-risk: [X.X]"
+- "Reduction rate at this threshold: [X]%"
+- "Providers retained: [X.X]"
+- "Savings: [X.X] × $[cost] = $[total]"
