@@ -30,12 +30,20 @@ The application supports multiple distinct user journeys:
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings.
 -   **Defensible Math with Realization Rates**: All ROI calculations include conservative realization rates for defensible estimates:
-    - Patient Access: 20% (scheduling constraints, room availability)
+    - Patient Access: 15% (scheduling constraints, room availability)
     - Locum Reduction: 60% (minimum shift requirements)
-    - Clinician Wellbeing: 20% (burnout-to-retention conversion)
+    - Clinician Wellbeing: Threshold-based retention lift (see below)
     - wRVU: 75% (payer mix, fee schedules)
     - HCC: 60% (RAF adjustments, audit risk)
     - Denials: 70% (appeals success rate)
+-   **Simplified Wellbeing Retention Model**: Conservative threshold-based approach:
+    - 0-100 hrs/yr per provider (<2 hrs/week): MINIMAL tier, 3-5% retention lift
+    - 100-150 hrs/yr (2-3 hrs/week): MODERATE tier, 8-12% retention lift
+    - 150-200 hrs/yr (3-4 hrs/week): SIGNIFICANT tier, 15-20% retention lift
+    - 200+ hrs/yr (4+ hrs/week): MAXIMUM tier, 25-30% retention lift
+    - Formula: Annual Value = (Providers × Turnover Rate) × Retention Lift × Replacement Cost
+    - LOW IMPACT warning displayed for allocations under 100 hrs/year per provider
+    - MINIMAL tier shows value ranges instead of single point estimate
 -   **Expandable Math Breakdowns**: "See the math" buttons on Time Allocation and Doc Drivers pages reveal step-by-step calculations with highlighted realization rates and explanatory text.
 -   **Optional Locums Toggle**: Time Allocation page allows users to disable locum savings if not relevant; when disabled, allocation redistributes to Patient Access and Wellbeing, and "Cost Focus" preset disappears.
 -   **Level of Service Calculation**: Simplified wRVU-based approach with transparent UI breakdowns.
