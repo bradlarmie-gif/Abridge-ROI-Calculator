@@ -197,18 +197,6 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       : "These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers."
                 }
               </p>
-              <div className="bg-slate-100 rounded-lg p-3">
-                <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">Why we ask:</span> {isNursing
-                    ? "Nursing value scales with staff count and patient load. More nurses documenting means more burden to relieve—and greater opportunity for direct patient care, retention, and regulatory compliance."
-                    : isInpatient
-                      ? "Inpatient value scales with hospitalist count and census. More hospitalists mean more documentation burden to relieve—and greater opportunity for retention, wellbeing, and revenue integrity through better documentation."
-                      : isED 
-                        ? "ED value scales with volume and complexity. More providers and higher utilization mean more eligible encounters—and more opportunity for throughput, retention, and documentation quality."
-                        : "Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement."
-                  }
-                </p>
-              </div>
             </motion.div>
 
             <div className="space-y-5">
