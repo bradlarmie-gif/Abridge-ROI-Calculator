@@ -28,7 +28,7 @@ const OUTPATIENT_SCENARIOS: ScenarioOption[] = [
     label: 'Conservative',
     tagline: 'Play it safe',
     description: 'A careful estimate for skeptical stakeholders. Under-promise to over-deliver.',
-    minutes: 1.5,
+    minutes: 3,
     icon: Shield,
   },
   {
@@ -36,7 +36,7 @@ const OUTPATIENT_SCENARIOS: ScenarioOption[] = [
     label: 'Typical',
     tagline: 'Most customers start here',
     description: 'Based on real outcomes from similar implementations. The balanced approach.',
-    minutes: 3,
+    minutes: 5,
     icon: Target,
     recommended: true,
   },
@@ -45,7 +45,7 @@ const OUTPATIENT_SCENARIOS: ScenarioOption[] = [
     label: 'Aggressive',
     tagline: 'Maximize potential',
     description: 'For high-adoption organizations ready to fully embrace documentation AI.',
-    minutes: 4.5,
+    minutes: 7,
     icon: Zap,
   },
 ];

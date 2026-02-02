@@ -1,0 +1,71 @@
+URGENT FIXES NEEDED - The math is exposing model issues:
+
+1. INCREASE "Typical" time savings from 3 min to 5 min per encounter
+   - Conservative = 3 min (currently labeled 1.5 min - wrong)
+   - Typical = 5 min (currently 3 min - too low) 
+   - Aggressive = 7 min (currently 4.5 min - reasonable)
+   
+   This will change:
+   - Total hours from 3,675 → 6,125 hours/year
+   - Per provider from 73.5 → 122.5 hours/year
+   - Per week from 1.4 → 2.4 hours/week
+   - At 60% wellbeing = 1.4 hrs/week (hits MODERATE threshold ✓)
+
+2. ADD THIRD CATEGORY: Patient Experience
+   Between Patient Access and Clinician Wellbeing, add:
+   
+   ⭐ Patient Experience
+   "Spend more time with complex patients and improve satisfaction"
+   
+   Value drivers (for now, show as qualitative):
+   - "Hours invested in patient education and relationship building"
+   - "Supports quality metrics and patient loyalty"
+   - Label: "Enhances downstream volume and retention - qualitative benefit"
+   
+   OR calculate as:
+   - Hours allocated × $50/hour "value of quality time"
+   - With tooltip: "Conservative proxy for satisfaction score improvement, 
+     reduced complaints, and reputation benefits"
+
+3. UPDATE WELLBEING THRESHOLDS to use annual hours:
+   Display the threshold chart as:
+   
+   🎯 IMPACT THRESHOLD
+   ├─ < 52 hrs/year (<1 hr/week):     MINIMAL (5% reduction)
+   ├─ 52-104 hrs/year (1-2 hrs/week): MODERATE (15% reduction)
+   ├─ 104-156 hrs/year (2-3 hrs/week): SIGNIFICANT (25% reduction)
+   └─ 156+ hrs/year (3+ hrs/week):    MAXIMUM (30% reduction)
+   
+   Show BOTH annual and weekly hours to make it feel more substantial
+
+4. FIX THE TIME PATH page labels:
+   - Conservative: 1.5 min → 3 min
+   - Typical: 3 min → 5 min  
+   - Aggressive: 4.5 min → 7 min
+
+5. UPDATE allocation page layout to accommodate 3 categories:
+   - Patient Access (top)
+   - Patient Experience (middle)
+   - Clinician Wellbeing (bottom)
+   
+   All must sum to 100%
+
+6. ADD preset scenarios for 3 categories:
+   
+   Balanced:
+   - Patient Access: 40%
+   - Patient Experience: 30%
+   - Clinician Wellbeing: 30%
+   
+   Growth Focus:
+   - Patient Access: 60%
+   - Patient Experience: 25%
+   - Clinician Wellbeing: 15%
+   
+   Retention Focus:
+   - Patient Access: 20%
+   - Patient Experience: 30%
+   - Clinician Wellbeing: 50%
+
+Please implement these changes. The key fix is bumping "Typical" to 5 min/encounter, 
+which makes the wellbeing thresholds actually achievable.

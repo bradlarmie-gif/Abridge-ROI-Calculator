@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap } from "lucide-react";
+import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -30,6 +30,13 @@ const OUTPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
     description: 'See more patients and reduce wait times',
     icon: Users,
     valueLabel: 'New visits enabled',
+  },
+  {
+    id: 'patientExperience',
+    label: 'Patient Experience',
+    description: 'Spend more time with complex patients and improve satisfaction',
+    icon: Star,
+    valueLabel: 'Quality time invested',
   },
   {
     id: 'reducingLocums',
@@ -123,44 +130,45 @@ const NURSING_ALLOCATION_OPTIONS: AllocationOption[] = [
 const getPresetsForLocums = (includeLocums: boolean) => {
   if (includeLocums) {
     return [
-      { label: 'Balanced', allocation: { patientAccess: 40, reducingLocums: 30, clinicianWellbeing: 30 } },
-      { label: 'Growth Focus', allocation: { patientAccess: 60, reducingLocums: 20, clinicianWellbeing: 20 } },
-      { label: 'Cost Focus', allocation: { patientAccess: 20, reducingLocums: 50, clinicianWellbeing: 30 } },
-      { label: 'Retention Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
+      { label: 'Balanced', allocation: { patientAccess: 30, patientExperience: 20, reducingLocums: 25, clinicianWellbeing: 25 } },
+      { label: 'Growth Focus', allocation: { patientAccess: 45, patientExperience: 20, reducingLocums: 20, clinicianWellbeing: 15 } },
+      { label: 'Cost Focus', allocation: { patientAccess: 15, patientExperience: 15, reducingLocums: 45, clinicianWellbeing: 25 } },
+      { label: 'Retention Focus', allocation: { patientAccess: 15, patientExperience: 20, reducingLocums: 20, clinicianWellbeing: 45 } },
     ];
   } else {
     return [
-      { label: 'Balanced', allocation: { patientAccess: 50, reducingLocums: 0, clinicianWellbeing: 50 } },
-      { label: 'Growth Focus', allocation: { patientAccess: 70, reducingLocums: 0, clinicianWellbeing: 30 } },
-      { label: 'Retention Focus', allocation: { patientAccess: 30, reducingLocums: 0, clinicianWellbeing: 70 } },
+      { label: 'Balanced', allocation: { patientAccess: 40, patientExperience: 30, reducingLocums: 0, clinicianWellbeing: 30 } },
+      { label: 'Growth Focus', allocation: { patientAccess: 60, patientExperience: 25, reducingLocums: 0, clinicianWellbeing: 15 } },
+      { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 30, reducingLocums: 0, clinicianWellbeing: 50 } },
     ];
   }
 };
 
 const ED_PRESETS = [
-  { label: 'Balanced', allocation: { patientAccess: 40, reducingLocums: 30, clinicianWellbeing: 30 } },
-  { label: 'Throughput Focus', allocation: { patientAccess: 60, reducingLocums: 20, clinicianWellbeing: 20 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 25, reducingLocums: 45, clinicianWellbeing: 30 } },
-  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
+  { label: 'Balanced', allocation: { patientAccess: 40, patientExperience: 0, reducingLocums: 30, clinicianWellbeing: 30 } },
+  { label: 'Throughput Focus', allocation: { patientAccess: 60, patientExperience: 0, reducingLocums: 20, clinicianWellbeing: 20 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 45, clinicianWellbeing: 30 } },
+  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 50 } },
 ];
 
 const INPATIENT_PRESETS = [
-  { label: 'Balanced', allocation: { patientAccess: 30, reducingLocums: 40, clinicianWellbeing: 30 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 20, reducingLocums: 55, clinicianWellbeing: 25 } },
-  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
-  { label: 'Efficiency Focus', allocation: { patientAccess: 50, reducingLocums: 30, clinicianWellbeing: 20 } },
+  { label: 'Balanced', allocation: { patientAccess: 30, patientExperience: 0, reducingLocums: 40, clinicianWellbeing: 30 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 0, reducingLocums: 55, clinicianWellbeing: 25 } },
+  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 50 } },
+  { label: 'Efficiency Focus', allocation: { patientAccess: 50, patientExperience: 0, reducingLocums: 30, clinicianWellbeing: 20 } },
 ];
 
 const NURSING_PRESETS = [
-  { label: 'Balanced', allocation: { patientAccess: 35, reducingLocums: 35, clinicianWellbeing: 30 } },
-  { label: 'Patient Care Focus', allocation: { patientAccess: 55, reducingLocums: 25, clinicianWellbeing: 20 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 25, reducingLocums: 50, clinicianWellbeing: 25 } },
-  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
+  { label: 'Balanced', allocation: { patientAccess: 35, patientExperience: 0, reducingLocums: 35, clinicianWellbeing: 30 } },
+  { label: 'Patient Care Focus', allocation: { patientAccess: 55, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 20 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 50, clinicianWellbeing: 25 } },
+  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 50 } },
 ];
 
 interface EditableAssumptions {
   visitValue: number;
   visitDuration: number;
+  qualityTimeValue: number;
   locumHourlyCost: number;
   turnoverCost: number;
   baselineTurnoverRate: number;
@@ -172,6 +180,7 @@ interface EditableAssumptions {
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   visitValue: 200,
   visitDuration: 30,
+  qualityTimeValue: 50,
   locumHourlyCost: 150,
   turnoverCost: 250000,
   baselineTurnoverRate: 8,
@@ -527,20 +536,22 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     if (!newIncludeLocums) {
       const currentLocums = state.timeAllocation.reducingLocums;
-      const half = Math.round(currentLocums / 2);
+      const third = Math.round(currentLocums / 3);
       updateState({
         timeAllocation: {
-          patientAccess: state.timeAllocation.patientAccess + half,
+          patientAccess: state.timeAllocation.patientAccess + third,
+          patientExperience: state.timeAllocation.patientExperience + third,
           reducingLocums: 0,
-          clinicianWellbeing: state.timeAllocation.clinicianWellbeing + (currentLocums - half),
+          clinicianWellbeing: state.timeAllocation.clinicianWellbeing + (currentLocums - third * 2),
         }
       });
     } else {
       updateState({
         timeAllocation: {
-          patientAccess: 40,
-          reducingLocums: 30,
-          clinicianWellbeing: 30,
+          patientAccess: 30,
+          patientExperience: 20,
+          reducingLocums: 25,
+          clinicianWellbeing: 25,
         }
       });
     }
@@ -657,6 +668,14 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
           realizationRate: assumptions.patientAccessRealization,
         };
       }
+      case 'patientExperience': {
+        const value = hours * assumptions.qualityTimeValue;
+        return {
+          value: Math.round(value),
+          hours,
+          qualityTimeValue: assumptions.qualityTimeValue,
+        };
+      }
       case 'reducingLocums': {
         const realizationRate = assumptions.locumRealization / 100;
         const realizedHours = hours * realizationRate;
@@ -761,6 +780,48 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       );
     }
     
+    if (id === 'patientExperience' && isOutpatient) {
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-slate-800">Quality Time Investment</span>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours allocated</span>
+              <span className="text-slate-900">{calc.hours.toLocaleString()} hrs</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
+              <span className="flex items-center gap-1.5 text-[#EA2C00]">
+                × Value per hour
+                <InfoTooltip>
+                  <p className="font-semibold mb-1">Why $50/hour?</p>
+                  <p>Conservative proxy for patient satisfaction improvements, reduced complaints, stronger relationships, and reputation benefits.</p>
+                  <p className="mt-2 text-white/70">Supports quality metrics and downstream volume.</p>
+                </InfoTooltip>
+              </span>
+              <span className="text-[#EA2C00] font-semibold">${assumptions.qualityTimeValue}/hr</span>
+            </div>
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Annual Value</span>
+              <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+            <p className="text-xs text-slate-600">
+              <span className="font-semibold text-slate-700">Qualitative benefits:</span> Hours invested in patient education, relationship building, and complex care coordination.
+            </p>
+            <p className="text-xs text-slate-500 mt-2">
+              Supports quality metrics, patient loyalty, and downstream volume retention.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    
     if (id === 'clinicianWellbeing' && isOutpatient) {
       const wc = wellbeingCalculation;
       const showNudge = wc.nextThreshold && wc.allocationForNextThreshold && 
@@ -779,15 +840,18 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </button>
           </div>
           
-          {/* Hours per provider metric */}
+          {/* Hours per provider metric - show both annual and weekly */}
           <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Hours per provider per week</span>
-              <span className="text-lg font-bold text-slate-900">{wc.hoursPerProviderPerWeek.toFixed(1)} hrs</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-600">Hours per provider per year</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 52)} hrs</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
             </div>
           </div>
           
-          {/* Threshold visualization */}
+          {/* Threshold visualization - show both annual and weekly */}
           <div className="bg-white rounded-lg p-3 border border-slate-200">
             <div className="flex items-center gap-2 mb-3">
               <Target className="w-4 h-4 text-slate-500" />
@@ -800,17 +864,22 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             <div className="space-y-1 text-xs font-mono">
               {WELLBEING_THRESHOLDS.map((t, i) => {
                 const isCurrent = t.label === wc.threshold.label;
+                const annualMin = t.minHours * 52;
+                const annualMax = t.maxHours === Infinity ? null : t.maxHours * 52;
                 return (
                   <div 
                     key={t.label} 
                     className={`flex items-center gap-2 py-1 px-2 rounded ${isCurrent ? t.bgColor : ''}`}
                   >
                     <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
-                    <span className={`w-20 ${isCurrent ? t.color + ' font-bold' : 'text-slate-500'}`}>
-                      {t.maxHours === Infinity ? `${t.minHours}+ hrs` : `${t.minHours}-${t.maxHours} hrs`}:
+                    <span className={`w-36 ${isCurrent ? t.color + ' font-bold' : 'text-slate-500'}`}>
+                      {annualMax === null ? `${annualMin}+ hrs/yr` : `${annualMin}-${annualMax} hrs/yr`}
+                      <span className="text-slate-400 text-[10px] ml-1">
+                        ({t.maxHours === Infinity ? `${t.minHours}+` : `${t.minHours}-${t.maxHours}`}/wk)
+                      </span>
                     </span>
                     <span className={`${isCurrent ? t.color + ' font-bold' : 'text-slate-500'}`}>
-                      {t.label} ({Math.round(t.rate * 100)}% reduction)
+                      {t.label} ({Math.round(t.rate * 100)}%)
                     </span>
                     {isCurrent && <span className="text-xs ml-auto font-bold text-slate-800">← YOU ARE HERE</span>}
                   </div>

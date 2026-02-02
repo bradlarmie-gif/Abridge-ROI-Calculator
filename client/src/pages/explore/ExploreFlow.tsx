@@ -18,6 +18,7 @@ export type DocPathFocus = 'wrvu' | 'hcc' | 'denials';
 
 export interface TimeAllocation {
   patientAccess: number;
+  patientExperience: number;
   reducingLocums: number;
   clinicianWellbeing: number;
 }
@@ -70,11 +71,12 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   annualEncounters: 0,
   utilizationPercent: 70,
   timePathScenario: 'typical',
-  minutesSavedPerEncounter: 3,
+  minutesSavedPerEncounter: 5,
   timeAllocation: {
-    patientAccess: 50,
+    patientAccess: 40,
+    patientExperience: 30,
     reducingLocums: 0,
-    clinicianWellbeing: 50,
+    clinicianWellbeing: 30,
   },
   edTimeAllocation: {
     throughput: 50,
@@ -161,6 +163,7 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
                 minutesSavedPerEncounter: 10, // Higher per-admission savings
                 timeAllocation: {
                   patientAccess: 30,
+                  patientExperience: 0, // Not used in inpatient
                   reducingLocums: 40,
                   clinicianWellbeing: 30,
                 },
@@ -178,6 +181,7 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
                 minutesSavedPerEncounter: 20, // Higher per-patient savings for nursing
                 timeAllocation: {
                   patientAccess: 35, // Direct Patient Care
+                  patientExperience: 0, // Not used in nursing
                   reducingLocums: 35, // Nurse Retention
                   clinicianWellbeing: 30, // Wellbeing
                 },
