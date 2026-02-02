@@ -82,24 +82,17 @@ const ED_ALLOCATION_OPTIONS: AllocationOption[] = [
 const INPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
   {
     id: 'patientAccess',
-    label: 'Documentation Efficiency',
-    description: 'Get home earlier, finish notes during rounds instead of late at night',
+    label: 'Clinical Operations',
+    description: 'Better rounding and discharge planning',
     icon: Clock,
-    valueLabel: 'Hours returned to life',
-  },
-  {
-    id: 'reducingLocums',
-    label: 'Hospitalist Retention',
-    description: 'Reduce burnout-driven departures and avoid costly replacements',
-    icon: Users,
-    valueLabel: 'Retention improvement',
+    valueLabel: 'Operations improvement',
   },
   {
     id: 'clinicianWellbeing',
-    label: 'Clinician Wellbeing',
-    description: 'Improve work-life balance and job satisfaction',
+    label: 'Physician Wellbeing',
+    description: 'Reduce after-hours charting',
     icon: Heart,
-    valueLabel: 'Quality of life',
+    valueLabel: 'Retention improvement',
   },
 ];
 
@@ -151,10 +144,9 @@ const ED_PRESETS = [
 ];
 
 const INPATIENT_PRESETS = [
-  { label: 'Balanced', allocation: { patientAccess: 30, patientExperience: 0, reducingLocums: 40, clinicianWellbeing: 30 } },
-  { label: 'Retention Focus', allocation: { patientAccess: 20, patientExperience: 0, reducingLocums: 55, clinicianWellbeing: 25 } },
-  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, patientExperience: 0, reducingLocums: 25, clinicianWellbeing: 50 } },
-  { label: 'Efficiency Focus', allocation: { patientAccess: 50, patientExperience: 0, reducingLocums: 30, clinicianWellbeing: 20 } },
+  { label: 'Balanced', allocation: { patientAccess: 50, patientExperience: 0, reducingLocums: 0, clinicianWellbeing: 50 } },
+  { label: 'Operations Focus', allocation: { patientAccess: 70, patientExperience: 0, reducingLocums: 0, clinicianWellbeing: 30 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 30, patientExperience: 0, reducingLocums: 0, clinicianWellbeing: 70 } },
 ];
 
 const NURSING_PRESETS = [
@@ -181,6 +173,13 @@ interface EditableAssumptions {
   edIncludeAdmissions: boolean;
   edAdmissionRate: number;
   edAdmissionRevenue: number;
+  // Inpatient-specific LOS assumptions
+  ipAdmissions: number;
+  ipDocDelayRate: number;
+  ipTimeRecoveredPerDischarge: number;
+  ipRevenuePerBedHour: number;
+  ipLosAttributionFactor: number;
+  ipModelLosImpact: boolean;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
@@ -200,6 +199,13 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   edIncludeAdmissions: true,
   edAdmissionRate: 12,
   edAdmissionRevenue: 15000,
+  // Inpatient-specific LOS defaults
+  ipAdmissions: 6500,
+  ipDocDelayRate: 20,
+  ipTimeRecoveredPerDischarge: 2,
+  ipRevenuePerBedHour: 125,
+  ipLosAttributionFactor: 25,
+  ipModelLosImpact: false,
 };
 
 // Threshold-based wellbeing tiers (based on annual hours per provider)
@@ -540,6 +546,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const [patientAccessSettingsOpen, setPatientAccessSettingsOpen] = useState(false);
   const [wellbeingSettingsOpen, setWellbeingSettingsOpen] = useState(false);
   const [edThroughputSettingsOpen, setEdThroughputSettingsOpen] = useState(false);
+  const [ipOperationsSettingsOpen, setIpOperationsSettingsOpen] = useState(false);
+  const [ipShowMetricsToTrack, setIpShowMetricsToTrack] = useState(false);
   
   // Editable percentage state
   const [editingCategory, setEditingCategory] = useState<keyof TimeAllocation | null>(null);
@@ -905,6 +913,43 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
           };
         }
         
+        if (isInpatient) {
+          // Inpatient Clinical Operations calculation
+          // If LOS toggle is OFF, return qualitative only
+          if (!assumptions.ipModelLosImpact) {
+            return {
+              value: 0,
+              hours,
+              isQualitative: true,
+              isInpatientOps: true,
+            };
+          }
+          
+          // LOS Impact calculation (experimental)
+          const admissions = assumptions.ipAdmissions;
+          const docDelayRate = assumptions.ipDocDelayRate / 100;
+          const delayedDischarges = admissions * docDelayRate;
+          const timeRecovered = assumptions.ipTimeRecoveredPerDischarge;
+          const revenuePerBedHour = assumptions.ipRevenuePerBedHour;
+          const grossValue = delayedDischarges * timeRecovered * revenuePerBedHour;
+          const attributionFactor = assumptions.ipLosAttributionFactor / 100;
+          const netValue = grossValue * attributionFactor;
+          
+          return {
+            value: Math.round(netValue),
+            hours,
+            isInpatientOps: true,
+            isLosModel: true,
+            admissions,
+            delayedDischarges: Math.round(delayedDischarges),
+            timeRecovered,
+            revenuePerBedHour,
+            grossValue: Math.round(grossValue),
+            attributionFactor: assumptions.ipLosAttributionFactor,
+            netValue: Math.round(netValue),
+          };
+        }
+        
         // Outpatient Patient Access calculation
         const realizationRate = assumptions.patientAccessRealization / 100;
         const avgVisitLengthHours = assumptions.visitDuration / 60;
@@ -1189,6 +1234,211 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       );
     }
     
+    // Inpatient Clinical Operations rendering
+    if (id === 'patientAccess' && isInpatient) {
+      const hoursPerWeek = calc.hours / 52 / Math.max(1, state.numberOfProviders);
+      
+      return (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-slate-800">Clinical Operations</span>
+            {assumptions.ipModelLosImpact && (
+              <button
+                onClick={() => setIpOperationsSettingsOpen(true)}
+                className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+                data-testid="button-ip-operations-settings"
+              >
+                <Settings className="w-3.5 h-3.5 text-slate-600" />
+              </button>
+            )}
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hours allocated</span>
+              <span className="text-slate-900 font-semibold">{calc.hours.toLocaleString()} hrs/year</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-400">Per hospitalist per week</span>
+              <span className="text-slate-600">{hoursPerWeek.toFixed(1)} hrs</span>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setIpShowMetricsToTrack(!ipShowMetricsToTrack)}
+            className="flex items-center gap-2 text-sm text-[#EA2C00] hover:text-[#C72400] font-medium transition-colors"
+            data-testid="button-ip-what-to-track"
+          >
+            {ipShowMetricsToTrack ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            What to track
+          </button>
+          
+          <AnimatePresence>
+            {ipShowMetricsToTrack && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-3">
+                  <p className="text-xs font-semibold text-slate-700">METRICS TO TRACK:</p>
+                  <ul className="text-xs text-slate-600 space-y-1.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-slate-400">•</span>
+                      <span>Progress note completion time</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-slate-400">•</span>
+                      <span>Discharge order timing</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-slate-400">•</span>
+                      <span>Discharge summary turnaround</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-slate-400">•</span>
+                      <span>Discharge before noon rate</span>
+                    </li>
+                  </ul>
+                  <p className="text-xs text-slate-500 italic pt-2 border-t border-slate-200">
+                    These are directly influenced by documentation speed and measurable in your EHR.
+                  </p>
+                  
+                  <div className="pt-2 border-t border-slate-200">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssumptions(prev => ({ ...prev, ipModelLosImpact: !prev.ipModelLosImpact }));
+                        }}
+                        className={`w-10 h-5 rounded-full transition-colors flex items-center ${assumptions.ipModelLosImpact ? 'bg-[#EA2C00]' : 'bg-slate-300'}`}
+                        data-testid="toggle-ip-los-model"
+                      >
+                        <span className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${assumptions.ipModelLosImpact ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      </button>
+                      <span className="text-xs text-slate-700">Model LOS impact (experimental)</span>
+                    </label>
+                  </div>
+                </div>
+                
+                {assumptions.ipModelLosImpact && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-3"
+                  >
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3 flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-yellow-800">
+                        <span className="font-semibold">EXPERIMENTAL MODEL:</span> LOS impact is notoriously difficult to attribute to documentation improvements alone.
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Admissions</span>
+                        <EditableValue 
+                          value={assumptions.ipAdmissions} 
+                          onChange={(v) => updateAssumption('ipAdmissions', v)}
+                          min={1000}
+                          max={50000}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center gap-1.5 text-slate-500">
+                          × Doc-driven discharge delays
+                          <InfoTooltip>
+                            <p className="font-semibold mb-1">Documentation-related delays</p>
+                            <p>Percentage of discharges delayed due to documentation backlogs, incomplete progress notes, or slow discharge summaries.</p>
+                            <p className="mt-2 text-white/70">Industry range: 15-30%</p>
+                          </InfoTooltip>
+                        </span>
+                        <EditableValue 
+                          value={assumptions.ipDocDelayRate} 
+                          onChange={(v) => updateAssumption('ipDocDelayRate', v)}
+                          suffix="%"
+                          min={10}
+                          max={40}
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">= Delayed discharges</span>
+                        <span className="text-slate-900 font-semibold">{calc.delayedDischarges?.toLocaleString()}</span>
+                      </div>
+                      <div className="border-t border-dashed border-slate-200 my-2" />
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">× Time recovered per discharge</span>
+                        <EditableValue 
+                          value={assumptions.ipTimeRecoveredPerDischarge} 
+                          onChange={(v) => updateAssumption('ipTimeRecoveredPerDischarge', v)}
+                          suffix=" hrs"
+                          min={0.5}
+                          max={6}
+                          step={0.5}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">× Revenue per bed-hour</span>
+                        <EditableValue 
+                          value={assumptions.ipRevenuePerBedHour} 
+                          onChange={(v) => updateAssumption('ipRevenuePerBedHour', v)}
+                          prefix="$"
+                          min={50}
+                          max={300}
+                        />
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">= Gross value</span>
+                        <span className="text-slate-900 font-semibold">${calc.grossValue?.toLocaleString()}</span>
+                      </div>
+                      <div className="border-t border-dashed border-slate-200 my-2" />
+                      <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
+                        <span className="flex items-center gap-1.5 text-[#EA2C00]">
+                          × Attribution factor
+                          <InfoTooltip>
+                            <p className="font-semibold mb-1">Why so conservative?</p>
+                            <p>"Documentation is one factor among many"—bed management, transport, pharmacy, case management all play roles.</p>
+                            <p className="mt-2 text-white/70">Industry range: 15-35%</p>
+                          </InfoTooltip>
+                        </span>
+                        <EditableValue 
+                          value={assumptions.ipLosAttributionFactor} 
+                          onChange={(v) => updateAssumption('ipLosAttributionFactor', v)}
+                          suffix="%"
+                          min={10}
+                          max={50}
+                        />
+                      </div>
+                      <div className="border-t border-slate-300 mt-2 pt-2" />
+                      <div className="flex justify-between text-sm">
+                        <span className="font-bold text-slate-800">Net Value</span>
+                        <span className="font-bold text-[#EA2C00]">${calc.netValue?.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-slate-500 mt-2 italic">
+                      Track "discharge before noon" rate to validate this model over time.
+                    </p>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {!assumptions.ipModelLosImpact && (
+            <div className="bg-slate-100 rounded-lg p-3 border-l-4 border-slate-400">
+              <p className="text-xs text-slate-600">
+                <span className="font-semibold text-slate-700">Value: Qualitative</span><br/>
+                Enable "Model LOS impact" above to estimate potential financial value.
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
     if (id === 'clinicianWellbeing' && isED) {
       const wc = wellbeingCalculation;
       const showNudge = wc.nextThreshold && wc.allocationForNextThreshold && 
@@ -1301,6 +1551,119 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       );
     }
     
+    // Inpatient Physician Wellbeing rendering
+    if (id === 'clinicianWellbeing' && isInpatient) {
+      const wc = wellbeingCalculation;
+      const showNudge = wc.nextThreshold && wc.allocationForNextThreshold && 
+        (wc.allocationForNextThreshold - state.timeAllocation.clinicianWellbeing) <= 15;
+      
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-800">Physician Wellbeing Impact</span>
+            <button
+              onClick={() => setWellbeingSettingsOpen(true)}
+              className="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
+              data-testid="button-ip-wellbeing-settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
+            </button>
+          </div>
+          
+          <div className={`rounded-lg p-3 ${wc.threshold.bgColor} border border-slate-100`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-slate-600">Hours per hospitalist per year</span>
+              <span className="text-lg font-bold text-slate-900">{Math.round(wc.hoursPerProviderPerWeek * 52)} hrs</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>({wc.hoursPerProviderPerWeek.toFixed(1)} hrs/week)</span>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-4 h-4 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-700">IMPACT THRESHOLD</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#FFF5F2] text-[#EA2C00]">
+                {wc.threshold.label}
+              </span>
+            </div>
+            
+            <div className="space-y-1 text-xs font-mono">
+              {WELLBEING_THRESHOLDS.map((t, i) => {
+                const isCurrent = t.label === wc.threshold.label;
+                return (
+                  <div 
+                    key={t.label} 
+                    className={`flex items-center gap-2 py-1 px-2 rounded ${isCurrent ? 'bg-[#FFF5F2]' : ''}`}
+                  >
+                    <span className="text-slate-400 w-4">{i === 0 ? '├' : i === WELLBEING_THRESHOLDS.length - 1 ? '└' : '├'}─</span>
+                    <span className={`w-36 ${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
+                      {t.maxHoursAnnual === Infinity ? `${t.minHoursAnnual}+ hrs/yr` : `${t.minHoursAnnual}-${t.maxHoursAnnual} hrs/yr`}
+                      <span className={`text-[10px] ml-1 ${isCurrent ? 'text-[#EA2C00]/60' : 'text-slate-400'}`}>
+                        ({t.description})
+                      </span>
+                    </span>
+                    <span className={`${isCurrent ? 'text-[#EA2C00] font-bold' : 'text-slate-500'}`}>
+                      {t.label} ({Math.round(t.rateMin * 100)}-{Math.round(t.rateMax * 100)}%)
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {showNudge && (
+            <div className="bg-[#FFF5F2] border border-[#EA2C00]/20 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Zap className="w-4 h-4 text-[#EA2C00]" />
+                <span className="text-slate-700">
+                  Add <span className="font-bold text-[#EA2C00]">{wc.allocationForNextThreshold! - state.timeAllocation.clinicianWellbeing}%</span> more to reach <span className="font-bold">{wc.nextThreshold?.label}</span> tier
+                </span>
+              </div>
+              {wc.valueAtNextThreshold && (
+                <p className="text-xs text-slate-500 mt-1 ml-6">
+                  Potential value: ${wc.valueAtNextThreshold.toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+          
+          <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Hospitalists</span>
+              <span className="text-slate-900">{state.numberOfProviders}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Annual turnover rate</span>
+              <span className="text-slate-900">{assumptions.baselineTurnoverRate}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Annual departures</span>
+              <span className="text-slate-900">{(state.numberOfProviders * assumptions.baselineTurnoverRate / 100).toFixed(1)}</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
+              <span className="text-[#EA2C00]">× Retention lift ({wc.threshold.label})</span>
+              <span className="text-[#EA2C00] font-semibold">{Math.round(wc.retentionLift * 100)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">= Physicians retained</span>
+              <span className="text-slate-900">{wc.providersRetained.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">× Replacement cost</span>
+              <span className="text-slate-900">${assumptions.turnoverCost.toLocaleString()}</span>
+            </div>
+            <div className="border-t border-slate-300 mt-2 pt-2" />
+            <div className="flex justify-between text-sm">
+              <span className="font-bold text-slate-800">Annual Value</span>
+              <span className="font-bold text-[#EA2C00]">${wc.value.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (id === 'patientExperience' && isOutpatient) {
       return (
         <div className="space-y-3">

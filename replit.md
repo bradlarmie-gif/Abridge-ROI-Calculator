@@ -39,6 +39,14 @@ The application supports multiple distinct user journeys:
     - **Level of Service (wRVU)**: Base wRVU 2.5 (vs 1.5 outpatient), captures complexity during high-volume surges.
     - **Medical Necessity**: Prevents denials from insufficient medical decision-making documentation. Formula: ED visits × denial rate (12%) × med necessity % (40%) × prevention target × avg denial value ($500) × realization rate (70%).
     - **CDI & Inpatient Connection**: Improves DRG weight for admitted patients. Formula: ED visits × admission rate (12%) × base DRG weight (1.8) × improvement % × DRG payment rate ($6K) × realization rate (60%).
+-   **Inpatient-Specific Time Allocation**: Inpatient uses simplified 2-category structure:
+    - **Clinical Operations**: Qualitative value indicator with optional experimental LOS impact toggle. Includes "What to track" section with EHR-measurable metrics (documentation completion time, late night charting, EMR time per encounter).
+    - **Physician Wellbeing**: Hospitalist-specific labels ("hospitalists" instead of "clinicians"). Uses same threshold-based retention model.
+    - Inpatient Presets: Balanced (50/50), Operations Focus (70/30), Retention Focus (30/70).
+    - LOS Impact Toggle: Experimental model for length-of-stay reduction, disabled by default with clear "limited validation" warning.
+-   **Inpatient-Specific Documentation Drivers**: Inpatient uses two specialized drivers:
+    - **DRG Accuracy & Revenue Protection**: Protects revenue from downcoding and denial write-offs. Formula: Admissions (6500) × at-risk rate (25%) × protection rate (25%) × DRG weight lift (0.4) × base DRG payment ($6K) × realization rate (50%). Includes nested "See benchmarks" section with DRG weight examples and revenue leakage rates.
+    - **CDI Query Reduction**: Reduces CDI specialist burden. Formula: Admissions × query rate (30%) × reduction rate (25%) × cost per query ($50). Includes nested "See benchmarks" section with cost breakdown.
 -   **Defensible Math with Realization Rates**: All ROI calculations include conservative realization rates for defensible estimates:
     - Patient Access: 15% (scheduling constraints, room availability)
     - ED Throughput/LWBS: Configurable attribution rate (default 33%)
@@ -49,6 +57,8 @@ The application supports multiple distinct user journeys:
     - Denials: 70-85% (appeals success rate)
     - ED Medical Necessity: 70%
     - ED CDI: 60%
+    - Inpatient DRG Accuracy: 50% (coding lag, payer adjustments)
+    - Inpatient CDI Query: Direct savings (no realization rate applied)
 -   **Simplified Wellbeing Retention Model**: Conservative threshold-based approach:
     - 0-100 hrs/yr per provider (<2 hrs/week): MINIMAL tier, 3-5% retention lift
     - 100-150 hrs/yr (2-3 hrs/week): MODERATE tier, 8-12% retention lift

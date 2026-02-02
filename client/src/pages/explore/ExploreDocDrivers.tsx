@@ -90,57 +90,40 @@ const OUTPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   },
 ];
 
-// Inpatient uses different drivers: CC/MCC capture (maps to 'wrvu' slot), CDI query reduction (maps to 'hcc' slot), Denials
+// Inpatient uses: DRG Accuracy & Revenue Protection (wrvu slot), CDI Query Reduction (hcc slot)
 const INPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   {
     id: 'wrvu',
-    label: 'CC/MCC Capture',
-    shortLabel: 'CC/MCC',
-    description: 'Improve DRG weight through complete complication/comorbidity documentation',
+    label: 'DRG Accuracy & Revenue Protection',
+    shortLabel: 'DRG',
+    description: 'Prevent downcoding and denial write-offs',
     icon: DollarSign,
-    min: 1,
-    max: 10,
-    step: 1,
+    min: 15,
+    max: 40,
+    step: 5,
     suffix: '%',
-    detail: 'Better documentation captures CCs and MCCs that drive DRG reimbursement',
+    detail: 'Better documentation captures severity that drives DRG reimbursement',
     presets: [
-      { label: 'Conservative', value: 2 },
-      { label: 'Typical', value: 5 },
-      { label: 'Aggressive', value: 8 },
+      { label: 'Conservative', value: 20 },
+      { label: 'Typical', value: 25 },
+      { label: 'Aggressive', value: 35 },
     ],
   },
   {
     id: 'hcc',
     label: 'CDI Query Reduction',
-    shortLabel: 'CDI',
-    description: 'Reduce CDI queries through more complete initial documentation',
+    shortLabel: 'CDI Queries',
+    description: 'Reduce unnecessary queries',
     icon: Building2,
-    min: 10,
-    max: 50,
+    min: 15,
+    max: 40,
     step: 5,
     suffix: '%',
     detail: 'CDI teams spend less time querying when notes are complete upfront',
     presets: [
-      { label: 'Conservative', value: 15 },
-      { label: 'Typical', value: 30 },
-      { label: 'Aggressive', value: 45 },
-    ],
-  },
-  {
-    id: 'denials',
-    label: 'Denial Prevention',
-    shortLabel: 'Denials',
-    description: 'Prevent unappealable inpatient denials from documentation gaps',
-    icon: AlertTriangle,
-    min: 25,
-    max: 75,
-    step: 5,
-    suffix: '%',
-    detail: 'High-dollar inpatient denials that cannot be appealed due to missing medical necessity',
-    presets: [
-      { label: 'Conservative', value: 25 },
-      { label: 'Typical', value: 50 },
-      { label: 'Aggressive', value: 75 },
+      { label: 'Conservative', value: 20 },
+      { label: 'Typical', value: 25 },
+      { label: 'Aggressive', value: 35 },
     ],
   },
 ];
@@ -283,6 +266,17 @@ interface EditableAssumptions {
   edBaseDrgWeight: number;
   edDrgPaymentRate: number;
   edCdiRealization: number;
+  // Inpatient DRG Accuracy assumptions
+  ipAdmissions: number;
+  ipAtRiskRate: number;
+  ipProtectionRate: number;
+  ipDrgWeightLift: number;
+  ipBaseDrgPayment: number;
+  ipDrgRealization: number;
+  // Inpatient CDI Query Reduction assumptions
+  ipQueryRate: number;
+  ipQueryReductionRate: number;
+  ipCostPerQuery: number;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
@@ -313,6 +307,17 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   edBaseDrgWeight: 1.8,
   edDrgPaymentRate: 6000,
   edCdiRealization: 60,
+  // Inpatient DRG Accuracy assumptions
+  ipAdmissions: 6500,
+  ipAtRiskRate: 25,
+  ipProtectionRate: 25,
+  ipDrgWeightLift: 0.4,
+  ipBaseDrgPayment: 6000,
+  ipDrgRealization: 50,
+  // Inpatient CDI Query Reduction assumptions
+  ipQueryRate: 30,
+  ipQueryReductionRate: 25,
+  ipCostPerQuery: 50,
 };
 
 const REALIZATION_RATES = {
@@ -415,6 +420,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
+  const [expandedBenchmarks, setExpandedBenchmarks] = useState<string | null>(null);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(() => ({
     ...DEFAULT_ASSUMPTIONS,
     // Set ED-specific defaults
@@ -470,6 +476,142 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
 
     switch (driverId) {
       case 'wrvu': {
+        // Inpatient DRG Accuracy & Revenue Protection
+        if (isInpatient) {
+          const admissions = assumptions.ipAdmissions;
+          const atRiskAdmissions = admissions * (assumptions.ipAtRiskRate / 100);
+          const protectedAdmissions = atRiskAdmissions * (assumptions.ipProtectionRate / 100);
+          const grossValue = protectedAdmissions * assumptions.ipDrgWeightLift * assumptions.ipBaseDrgPayment;
+          const netValue = grossValue * (assumptions.ipDrgRealization / 100);
+          
+          return {
+            value: Math.round(netValue),
+            editableInputs: (
+              <div className="space-y-3">
+                <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                  <p className="text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">The logic:</span> Documentation gaps lead to DRG downcoding and denial write-offs. Better capture of severity, comorbidities, and medical necessity protects earned revenue.
+                  </p>
+                </div>
+                
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">Documented admissions</span>
+                  <EditableValue 
+                    value={assumptions.ipAdmissions} 
+                    onChange={(v) => updateAssumption('ipAdmissions', v)}
+                    min={1000}
+                    max={50000}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm text-slate-600">At-risk rate</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Admissions at risk of downcoding/denial</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipAtRiskRate} 
+                    onChange={(v) => updateAssumption('ipAtRiskRate', v)}
+                    suffix="%"
+                    min={15}
+                    max={35}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Admissions at risk</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(atRiskAdmissions).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm font-medium text-[#EA2C00]">Abridge protection rate</span>
+                    <p className="text-xs text-slate-500 mt-0.5">% protected through better documentation</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipProtectionRate} 
+                    onChange={(v) => updateAssumption('ipProtectionRate', v)}
+                    suffix="%"
+                    min={15}
+                    max={40}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Admissions protected</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(protectedAdmissions).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm text-slate-600">DRG weight lift</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Avg weight protected per admission</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipDrgWeightLift} 
+                    onChange={(v) => updateAssumption('ipDrgWeightLift', v)}
+                    min={0.2}
+                    max={0.6}
+                    step={0.1}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <span className="text-sm text-slate-600">× Base DRG payment</span>
+                  <EditableValue 
+                    value={assumptions.ipBaseDrgPayment} 
+                    onChange={(v) => updateAssumption('ipBaseDrgPayment', v)}
+                    prefix="$"
+                    min={4000}
+                    max={10000}
+                    step={500}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Gross value</span>
+                  <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
+                    <p className="text-xs text-slate-500 mt-0.5">Accounts for coding lag, payer adjustments</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipDrgRealization} 
+                    onChange={(v) => updateAssumption('ipDrgRealization', v)}
+                    suffix="%"
+                    min={40}
+                    max={70}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                  <span className="text-sm font-bold text-black">Net annual value</span>
+                  <span className="text-lg font-bold text-[#F07B5F]">${Math.round(netValue).toLocaleString()}</span>
+                </div>
+              </div>
+            ),
+            benchmarks: (
+              <div className="mt-3 bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <p className="text-xs font-semibold text-slate-700 mb-3">DRG WEIGHT EXAMPLES:</p>
+                <div className="space-y-1 text-xs text-slate-600">
+                  <div className="flex justify-between"><span>Sepsis / Severe sepsis</span><span className="font-medium">+0.4 to +0.6</span></div>
+                  <div className="flex justify-between"><span>Acute respiratory failure</span><span className="font-medium">+0.3 to +0.5</span></div>
+                  <div className="flex justify-between"><span>Malnutrition</span><span className="font-medium">+0.2 to +0.4</span></div>
+                  <div className="flex justify-between"><span>Acute encephalopathy</span><span className="font-medium">+0.3 to +0.5</span></div>
+                  <div className="flex justify-between"><span>Acute kidney injury</span><span className="font-medium">+0.1 to +0.3</span></div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-200">
+                  <p className="text-xs font-semibold text-slate-700 mb-2">REVENUE LEAKAGE RATES:</p>
+                  <div className="space-y-1 text-xs text-slate-600">
+                    <div className="flex justify-between"><span>DRG downcoding</span><span className="font-medium">2-4% of IP revenue</span></div>
+                    <div className="flex justify-between"><span>Denial write-offs</span><span className="font-medium">1-2% of IP revenue</span></div>
+                    <div className="flex justify-between"><span>Combined</span><span className="font-medium">3-6% of IP revenue</span></div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3 italic">This model captures ~1% (conservative).</p>
+                </div>
+              </div>
+            ),
+          };
+        }
+        
         const baseWrvu = assumptions.baseWrvuPerVisit;
         const wrvuLift = baseWrvu * (driverValue / 100);
         const totalAdditionalWrvus = wrvuLift * eligibleEncounters;
@@ -563,6 +705,102 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
         };
       }
       case 'hcc': {
+        // Inpatient CDI Query Reduction
+        if (isInpatient) {
+          const admissions = assumptions.ipAdmissions;
+          const totalQueries = admissions * (assumptions.ipQueryRate / 100);
+          const queriesAvoided = totalQueries * (assumptions.ipQueryReductionRate / 100);
+          const savings = queriesAvoided * assumptions.ipCostPerQuery;
+          
+          return {
+            value: Math.round(savings),
+            editableInputs: (
+              <div className="space-y-3">
+                <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
+                  <p className="text-xs text-slate-500">
+                    <span className="font-medium text-slate-700">The logic:</span> CDI specialists spend significant time querying physicians for missing documentation. More complete initial notes reduce query burden and free up CDI resources.
+                  </p>
+                </div>
+                
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">Admissions</span>
+                  <EditableValue 
+                    value={assumptions.ipAdmissions} 
+                    onChange={(v) => updateAssumption('ipAdmissions', v)}
+                    min={1000}
+                    max={50000}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm text-slate-600">Query rate</span>
+                    <p className="text-xs text-slate-400 mt-0.5">% of admissions requiring CDI query</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipQueryRate} 
+                    onChange={(v) => updateAssumption('ipQueryRate', v)}
+                    suffix="%"
+                    min={20}
+                    max={40}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Total queries/year</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(totalQueries).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm font-medium text-[#EA2C00]">Reduction rate</span>
+                    <p className="text-xs text-slate-500 mt-0.5">% of queries avoided through better docs</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipQueryReductionRate} 
+                    onChange={(v) => updateAssumption('ipQueryReductionRate', v)}
+                    suffix="%"
+                    min={15}
+                    max={35}
+                  />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-600">= Queries avoided</span>
+                  <span className="text-sm font-semibold text-black">{Math.round(queriesAvoided).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                  <div>
+                    <span className="text-sm text-slate-600">Cost per query</span>
+                    <p className="text-xs text-slate-400 mt-0.5">CDI + physician time</p>
+                  </div>
+                  <EditableValue 
+                    value={assumptions.ipCostPerQuery} 
+                    onChange={(v) => updateAssumption('ipCostPerQuery', v)}
+                    prefix="$"
+                    min={25}
+                    max={100}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
+                  <span className="text-sm font-bold text-black">Annual Savings</span>
+                  <span className="text-lg font-bold text-[#F07B5F]">${Math.round(savings).toLocaleString()}</span>
+                </div>
+              </div>
+            ),
+            benchmarks: (
+              <div className="mt-3 bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <p className="text-xs font-semibold text-slate-700 mb-3">COST PER QUERY:</p>
+                <div className="space-y-1 text-xs text-slate-600">
+                  <div className="flex justify-between"><span>CDI specialist time</span><span className="font-medium">20-30 min</span></div>
+                  <div className="flex justify-between"><span>Physician time</span><span className="font-medium">5-10 min</span></div>
+                  <div className="flex justify-between"><span>Fully loaded cost</span><span className="font-medium">$50-$100</span></div>
+                </div>
+                <p className="text-xs text-slate-500 mt-3 italic">We use $50 conservatively.</p>
+              </div>
+            ),
+          };
+        }
+        
         // ED uses Medical Necessity calculation, others use HCC
         if (isED) {
           // ED Medical Necessity: Prevent denials due to insufficient medical necessity documentation
@@ -1375,6 +1613,34 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                             </div>
                             
                             {driverCalc.editableInputs}
+                            
+                            {/* See benchmarks for Inpatient drivers */}
+                            {isInpatient && driverCalc.benchmarks && (
+                              <>
+                                <button
+                                  onClick={() => setExpandedBenchmarks(expandedBenchmarks === driver.id ? null : driver.id)}
+                                  className="w-full flex items-center justify-center gap-2 py-2 mt-4 text-xs font-medium text-slate-600 hover:text-slate-800 transition-colors border-t border-slate-200"
+                                  data-testid={`button-benchmarks-${driver.id}`}
+                                >
+                                  <span>{expandedBenchmarks === driver.id ? 'Hide benchmarks' : 'See benchmarks'}</span>
+                                  {expandedBenchmarks === driver.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                </button>
+                                
+                                <AnimatePresence>
+                                  {expandedBenchmarks === driver.id && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      transition={{ duration: 0.2 }}
+                                      className="overflow-hidden"
+                                    >
+                                      {driverCalc.benchmarks}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </>
+                            )}
                           </div>
                         </div>
                       </motion.div>
