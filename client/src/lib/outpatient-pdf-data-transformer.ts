@@ -52,10 +52,10 @@ export function transformToOutpatientPDFData(
   modelResults: ModelResults,
   journeyInputs: JourneyInputs,
   careSetting: string = "Outpatient",
-  organizationName?: string,
   clientName?: string,
   preparedBy?: string
 ): OutpatientPDFData {
+  const organizationName = clientName;
   const timeSavedPerEncounter = modelResults.timeSavedPerEncounter || 2.5;
   const eligibleEncounters = Math.round(modelResults.encounters * (modelResults.utilizationRate / 100));
   const hoursReturned = Math.round((eligibleEncounters * timeSavedPerEncounter) / 60);
