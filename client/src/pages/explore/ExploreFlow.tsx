@@ -56,7 +56,7 @@ export interface CalculatedValues {
 }
 
 // Nursing-specific types
-export type NursingUnitType = 'med-surg' | 'icu' | 'mixed';
+// NursingUnitType removed - no longer used in setup
 
 export interface ExploreState {
   careSetting: ExploreCareSetting | null;
@@ -67,7 +67,7 @@ export interface ExploreState {
   
   // Nursing-specific fields (per-shift model)
   nursingStaffedBeds: number;
-  nursingUnitType: NursingUnitType;
+  nursingOccupancyRate: number; // Bed occupancy rate (default 85%)
   nursingShiftsPerNurseYear: number; // Default 156 (3 shifts/week × 52 weeks)
   nursingMinutesPerShift: number; // Time saved per shift (15/30/45)
   
@@ -98,7 +98,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   utilizationPercent: 70,
   // Nursing-specific defaults
   nursingStaffedBeds: 0,
-  nursingUnitType: 'med-surg',
+  nursingOccupancyRate: 85, // Most hospitals run 75-90%
   nursingShiftsPerNurseYear: 156, // 3 shifts/week × 52 weeks
   nursingMinutesPerShift: 30, // Typical: 30 min/shift
   timePathScenario: 'typical',

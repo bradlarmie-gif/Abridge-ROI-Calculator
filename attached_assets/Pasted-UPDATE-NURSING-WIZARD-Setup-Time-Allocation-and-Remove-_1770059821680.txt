@@ -1,0 +1,410 @@
+UPDATE NURSING WIZARD - Setup, Time Allocation, and Remove Documentation Quality page
+
+═══════════════════════════════════════════════════════════
+CHANGES OVERVIEW:
+═══════════════════════════════════════════════════════════
+
+1. UPDATE Setup page (add occupancy, remove unit type selector)
+2. UPDATE Time Allocation page (three categories with new math)
+3. REMOVE Documentation Quality page entirely (merge into Time Allocation)
+4. UPDATE wizard flow to skip Documentation Quality
+
+═══════════════════════════════════════════════════════════
+PAGE 1: SETUP (Opportunity Size)
+═══════════════════════════════════════════════════════════
+
+KEEP:
+- Staffed Beds in Scope
+- Nurse FTEs (keep helper text "~1.5 FTEs per bed is typical for med-surg, higher for ICU")
+- Expected Utilization (Conservative 50% / Typical 70% / Aggressive 85%)
+
+ADD:
+- Average bed occupancy rate: [85] %
+  Helper text: "Most hospitals run 75-90% occupancy"
+
+REMOVE:
+- "What type of unit(s)?" selector (Med-Surg / ICU / Mixed)
+- "Doc events per patient day" (no longer needed)
+
+UPDATE Live Receipt on right side to show:
+
+┌─────────────────────────────────────────────┐
+│ Your Baseline                               │
+│ Program summary                             │
+│                                             │
+│ Staffed Beds                    200         │
+│ Nurse FTEs                      300         │
+│ Occupancy Rate                  85%         │
+│ Patient Days/Year               62,050      │
+│ Shifts/Nurse/Year               156         │
+│ Total Shifts/Year               46,800      │
+│ Utilization                     70%         │
+│                                             │
+│ Eligible Shifts                 32,760      │
+│ This is your value multiplier              │
+│                                             │
+│ [Continue →]                                │
+└─────────────────────────────────────────────┘
+
+CALCULATION for Patient Days:
+patientDaysPerYear = staffedBeds × occupancyRate × 365
+// 200 × 0.85 × 365 = 62,050
+
+═══════════════════════════════════════════════════════════
+PAGE 2: MODELING APPROACH (Time Path) - NO CHANGES
+═══════════════════════════════════════════════════════════
+
+Keep as-is:
+- "How much time can nurses save per shift?"
+- Conservative: 15 min/shift
+- Typical: 30 min/shift
+- Aggressive: 45 min/shift
+
+═══════════════════════════════════════════════════════════
+PAGE 3: TIME ALLOCATION (Complete Overharound)
+═══════════════════════════════════════════════════════════
+
+HEADER:
+"ALLOCATE YOUR SAVINGS
+You're unlocking [X] hours. Decide how this time creates value."
+
+THREE CATEGORIES (must sum to 100%):
+1. 💰 Staffing Efficiency
+2. 💚 Nurse Wellbeing  
+3. 🛏️ Care Quality
+
+PRESET SCENARIOS:
+[Balanced] → 40% / 30% / 30%
+[Efficiency Focus] → 60% / 20% / 20%
+[Retention Focus] → 20% / 50% / 30%
+
+───────────────────────────────────────────────────────────
+CARD 1: STAFFING EFFICIENCY
+───────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────┐
+│ 💰 Staffing Efficiency              [40]% 🔓│
+│ Reduce overtime and labor costs             │
+│                                             │
+│ 6,552 hours allocated                       │
+│ 21.8 hours per nurse per year               │
+│                                             │
+│ Value: $441,000 (Direct)                    │
+│                                             │
+│ [See the math ▼]                    [⚙️]    │
+└─────────────────────────────────────────────┘
+
+WHEN "See the math" EXPANDED:
+
+Hours allocated                           6,552 hrs
+
+OVERTIME REDUCTION:
+
+Nurse FTEs                                300
+× OT hours per nurse per week             4 🔧
+× Weeks per year                          50
+= Current annual OT                       60,000 hrs
+
+× Documentation-driven %                  33% 🔧
+"% of OT that is end-of-shift charting"
+= Doc-driven OT                           19,800 hrs
+
+Hours eliminated                          6,552 hrs
+(capped at doc-driven OT available)
+
+× OT hourly rate                          $67.50 🔧
+($45 base × 1.5 OT multiplier)
+
+= Annual savings                          $442,260
+
+───────────────────────────────────────────────
+✓ DIRECT, MEASURABLE savings
+Track month-over-month in payroll data
+───────────────────────────────────────────────
+
+SETTINGS (⚙️) MODAL:
+- OT hours per nurse per week: 4 (range 2-6)
+- Documentation-driven %: 33% (range 25-50%)
+- Base hourly rate: $45 (range $35-$60)
+
+───────────────────────────────────────────────────────────
+CARD 2: NURSE WELLBEING
+───────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────┐
+│ 💚 Nurse Wellbeing                  [30]% 🔓│
+│ Improve retention and reduce agency         │
+│                                             │
+│ 4,914 hours allocated                       │
+│ 16.4 hours per nurse per year               │
+│                                             │
+│ 🎯 MINIMAL (3-5% reduction)                 │
+│                                             │
+│ Value: $292,500 (Direct)                    │
+│                                             │
+│ [See the math ▼]                    [⚙️]    │
+└─────────────────────────────────────────────┘
+
+WHEN "See the math" EXPANDED:
+
+Hours per nurse per year                  16.4 hrs
+Hours per nurse per week                  0.3 hrs
+
+🎯 IMPACT THRESHOLD
+├─ 0-25 hrs/yr:    MINIMAL (3-5%) ← YOU ARE HERE
+├─ 25-50 hrs/yr:   MODERATE (8-12%)
+└─ 50+ hrs/yr:     SIGNIFICANT (15-20%)
+
+───────────────────────────────────────────────
+
+RETENTION:
+
+Nurse FTEs                                300
+× Annual turnover rate                    18% 🔧
+= Annual departures                       54
+
+× Burnout-related %                       50% 🔧
+= Burnout-driven departures               27
+
+× Retention lift (MINIMAL)                5%
+= Nurses retained                         1.35
+
+× Replacement cost                        $50,000 🔧
+= Retention value                         $67,500
+
+───────────────────────────────────────────────
+
+AGENCY REDUCTION:
+
+Staffed beds                              200
+× Agency FTE ratio                        0.15 🔧
+= Current agency FTEs                     30
+
+Staff nurse salary                        $75,000 🔧
+Agency nurse cost                         $150,000 🔧
+= Premium per FTE                         $75,000
+
+× Retention-driven reduction              10% 🔧
+= FTEs converted to staff                 3
+
+× Premium saved                           $75,000
+= Agency savings                          $225,000
+
+───────────────────────────────────────────────
+
+Combined Wellbeing Value:
+Retention: $67,500 + Agency: $225,000 = $292,500
+
+───────────────────────────────────────────────
+
+SETTINGS (⚙️) MODAL:
+- Annual turnover rate: 18% (range 12-25%)
+- Burnout-related %: 50% (range 40-60%)
+- Replacement cost: $50,000 (range $40K-$60K)
+- Agency FTE ratio: 0.15 (range 0.10-0.25)
+- Staff nurse salary: $75,000 (range $60K-$90K)
+- Agency nurse cost: $150,000 (range $120K-$200K)
+
+───────────────────────────────────────────────────────────
+CARD 3: CARE QUALITY
+───────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────┐
+│ 🛏️ Care Quality                     [30]% 🔓│
+│ More bedside time = better outcomes         │
+│                                             │
+│ 4,914 hours allocated                       │
+│ 16.4 hours per nurse per year               │
+│                                             │
+│ Value: $271,575 (Potential)                 │
+│                                             │
+│ [See the math ▼]                    [⚙️]    │
+└─────────────────────────────────────────────┘
+
+WHEN "See the math" EXPANDED:
+
+Hours reinvested in bedside care          4,914 hrs
+Hours per nurse per year                  16.4 hrs
+
+This time enables better assessments, more 
+frequent rounding, and faster interventions.
+
+───────────────────────────────────────────────
+
+FALLS PREVENTION:
+
+Patient days per year                     62,050
+÷ 1,000                                   62.05
+× Falls rate (per 1,000 patient days)     3.5 🔧
+= Annual falls                            217
+
+× Documentation-preventable %             5% 🔧
+"Cases where better assessment would 
+have triggered earlier intervention"
+= Preventable falls                       11
+
+× Cost per fall                           $6,500 🔧
+= Falls prevention value                  $71,500
+
+───────────────────────────────────────────────
+
+HAPI PREVENTION:
+
+Patient days per year                     62,050
+÷ 1,000                                   62.05
+× HAPI rate (per 1,000 patient days)      4.0 🔧
+= Annual HAPIs                            248
+
+× Documentation-preventable %             5% 🔧
+"Cases where better skin assessment would 
+have triggered earlier intervention"
+= Preventable HAPIs                       12
+
+× Cost per HAPI                           $20,000 🔧
+= HAPI prevention value                   $248,000
+
+───────────────────────────────────────────────
+
+Combined Quality Value:
+Falls: $71,500 + HAPIs: $248,000 = $319,500
+
+× Realization rate                        85% 🔧
+"Confidence level when time is actually 
+reinvested in bedside care"
+
+= Net potential value                     $271,575
+
+───────────────────────────────────────────────
+
+⚠️ WHY "POTENTIAL":
+This value requires time to actually be 
+reinvested in bedside care. Falls and HAPIs 
+are prevented through clinical action—the 
+documentation enables it but doesn't replace it.
+
+Track: Falls rate, HAPI rate, bedside time %
+───────────────────────────────────────────────
+
+SETTINGS (⚙️) MODAL:
+- Falls rate (per 1,000 patient days): 3.5 (range 2.0-5.0)
+- Falls prevention %: 5% (range 3-10%)
+- Cost per fall: $6,500 (range $3,000-$15,000)
+- HAPI rate (per 1,000 patient days): 4.0 (range 2.0-6.0)
+- HAPI prevention %: 5% (range 3-10%)
+- Cost per HAPI: $20,000 (range $10,000-$40,000)
+- Realization rate: 85% (range 70-95%)
+
+───────────────────────────────────────────────────────────
+LIVE RECEIPT (right side):
+───────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────┐
+│ Time Savings                       100%     │
+│ Value summary                               │
+│                                             │
+│ Annual Value                                │
+│ $1,005,075                                  │
+│ From 16,380 hours saved                     │
+│                                             │
+│ DIRECT:                                     │
+│ 💰 Staffing Efficiency    $441,000 (40%)    │
+│ 💚 Nurse Wellbeing        $292,500 (30%)    │
+│                                             │
+│ POTENTIAL:                                  │
+│ 🛏️ Care Quality          $271,575 (30%)    │
+│                                             │
+│ [Continue →]                                │
+└─────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════
+REMOVE: DOCUMENTATION QUALITY PAGE
+═══════════════════════════════════════════════════════════
+
+DELETE the Documentation Quality page for Nursing entirely.
+
+UPDATE the wizard flow:
+1. Setup (Opportunity Size)
+2. Modeling Approach (Time Path)
+3. Time Allocation ← All value captured here
+4. Summary/Investment
+
+The "Continue" button on Time Allocation should go directly 
+to Summary, skipping any Documentation Quality step.
+
+═══════════════════════════════════════════════════════════
+FORMULAS:
+═══════════════════════════════════════════════════════════
+
+// SETUP
+patientDaysPerYear = staffedBeds × occupancyRate × 365
+totalShiftsPerYear = nurseFTEs × 156
+eligibleShifts = totalShiftsPerYear × utilizationRate
+totalHoursSaved = (eligibleShifts × minutesPerShift) / 60
+
+// STAFFING EFFICIENCY
+hoursToEfficiency = totalHoursSaved × efficiencyAllocation
+currentAnnualOT = nurseFTEs × otHoursPerWeek × 50
+docDrivenOT = currentAnnualOT × docDrivenPercent
+hoursEliminated = Math.min(hoursToEfficiency, docDrivenOT)
+efficiencyValue = hoursEliminated × otHourlyRate
+
+// NURSE WELLBEING
+hoursToWellbeing = totalHoursSaved × wellbeingAllocation
+hoursPerNursePerYear = hoursToWellbeing / nurseFTEs
+
+// Threshold logic
+if (hoursPerNursePerYear < 25) retentionLift = 0.05
+else if (hoursPerNursePerYear < 50) retentionLift = 0.10
+else retentionLift = 0.17
+
+annualDepartures = nurseFTEs × turnoverRate
+burnoutDepartures = annualDepartures × burnoutPercent
+nursesRetained = burnoutDepartures × retentionLift
+retentionValue = nursesRetained × replacementCost
+
+agencyFTEs = staffedBeds × agencyRatio
+agencyPremium = agencyCost - staffSalary
+agencyReduction = agencyFTEs × 0.10 × retentionLift × 2
+agencyValue = agencyReduction × agencyPremium
+
+wellbeingValue = retentionValue + agencyValue
+
+// CARE QUALITY
+hoursToQuality = totalHoursSaved × qualityAllocation
+
+annualFalls = (patientDaysPerYear / 1000) × fallsRate
+preventableFalls = annualFalls × fallsPreventionPercent
+fallsValue = preventableFalls × costPerFall
+
+annualHAPIs = (patientDaysPerYear / 1000) × hapiRate
+preventableHAPIs = annualHAPIs × hapiPreventionPercent
+hapiValue = preventableHAPIs × costPerHAPI
+
+qualityGross = fallsValue + hapiValue
+qualityValue = qualityGross × realizationRate
+
+// TOTAL
+directValue = efficiencyValue + wellbeingValue
+potentialValue = qualityValue
+totalValue = directValue + potentialValue
+
+═══════════════════════════════════════════════════════════
+UX REQUIREMENTS:
+═══════════════════════════════════════════════════════════
+
+1. Same card/lock/percentage UX as other settings
+2. Click percentage to edit, lock to freeze
+3. Presets clear locks and set all values
+4. Must sum to 100%
+5. Progressive disclosure (collapsed by default)
+6. Settings modal for detailed assumptions
+7. Distinguish DIRECT vs POTENTIAL value in receipt
+8. Keep Abridge brand colors
+
+═══════════════════════════════════════════════════════════
+DO NOT CHANGE:
+═══════════════════════════════════════════════════════════
+
+- Other care settings (Outpatient, ED, Inpatient)
+- Summary/Investment page structure
+- Abridge branding

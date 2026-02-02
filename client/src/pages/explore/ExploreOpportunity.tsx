@@ -3,7 +3,7 @@ import { ArrowRight, Users, Activity, Percent, Receipt, Building2 } from "lucide
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState, type NursingUnitType } from "./ExploreFlow";
+import { type ExploreState } from "./ExploreFlow";
 
 interface ExploreOpportunityProps {
   state: ExploreState;
@@ -34,13 +34,6 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
   { label: "Lighter", value: 300 },
   { label: "Typical", value: 400 },
   { label: "Busy", value: 500 },
-];
-
-// Nursing unit type options
-const NURSING_UNIT_TYPES: { id: NursingUnitType; label: string; bedsPerNurse: string }[] = [
-  { id: 'med-surg', label: 'Med-Surg', bedsPerNurse: '~1.5 FTEs/bed' },
-  { id: 'icu', label: 'ICU/Critical Care', bedsPerNurse: '~3 FTEs/bed' },
-  { id: 'mixed', label: 'Mixed', bedsPerNurse: '~2 FTEs/bed' },
 ];
 
 const UTILIZATION_PRESETS = [
@@ -84,8 +77,9 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     }
   }, [updateState]);
   
-  const handleNursingUnitTypeChange = useCallback((unitType: NursingUnitType) => {
-    updateState({ nursingUnitType: unitType });
+  // Nursing occupancy rate handler
+  const handleOccupancyChange = useCallback((value: number) => {
+    updateState({ nursingOccupancyRate: Math.max(50, Math.min(100, value)) });
   }, [updateState]);
   
   // Nursing calculations (per-shift model)
@@ -303,7 +297,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
               </motion.div>
 
-              {/* NURSING-SPECIFIC: Unit Type */}
+              {/* NURSING-SPECIFIC: Occupancy Rate */}
               {isNursing && (
                 <motion.div
                   className="bg-white rounded-2xl border border-slate-200 p-6"
@@ -313,37 +307,31 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 >
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                      <Activity className="w-6 h-6 text-[#EA2C00]" />
+                      <Percent className="w-6 h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">What type of unit(s)?</h2>
-                      <p className="text-sm text-slate-500">This helps set appropriate expectations</p>
+                      <h2 className="text-base font-bold text-black">Average Bed Occupancy Rate</h2>
+                      <p className="text-sm text-slate-500">Most hospitals run 75-90% occupancy</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    {NURSING_UNIT_TYPES.map((unit) => {
-                      const isSelected = state.nursingUnitType === unit.id;
-                      return (
-                        <button
-                          key={unit.id}
-                          type="button"
-                          onClick={() => handleNursingUnitTypeChange(unit.id)}
-                          className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            isSelected
-                              ? 'bg-[#EA2C00] text-white shadow-sm'
-                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                          }`}
-                          data-testid={`unit-type-${unit.id}`}
-                        >
-                          <span className="block font-semibold">{unit.label}</span>
-                          <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                            {unit.bedsPerNurse}
-                          </span>
-                        </button>
-                      );
-                    })}
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min={50}
+                      max={100}
+                      value={state.nursingOccupancyRate}
+                      onChange={(e) => handleOccupancyChange(Number(e.target.value))}
+                      className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                      data-testid="slider-occupancy-rate"
+                    />
+                    <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-2 min-w-[80px] justify-center">
+                      <span className="text-lg font-bold text-[#EA2C00]">{state.nursingOccupancyRate}%</span>
+                    </div>
                   </div>
+                  <p className="text-xs text-slate-500 mt-3">
+                    Patient days/year: {state.nursingStaffedBeds} beds × {state.nursingOccupancyRate}% × 365 = {Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365).toLocaleString()}
+                  </p>
                 </motion.div>
               )}
 
@@ -538,7 +526,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
                 {/* Content - Different for Nursing vs Others */}
                 {isNursing ? (
-                  <div className="px-6 py-5 space-y-4">
+                  <div className="px-6 py-5 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-white/50">Staffed Beds</span>
                       <span className="text-base font-semibold text-white">
@@ -554,14 +542,28 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-white/50">Shifts per nurse/year</span>
+                      <span className="text-sm text-white/50">Occupancy Rate</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.nursingOccupancyRate}%
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Patient Days/Year</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.nursingStaffedBeds > 0 ? formatNumber(Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365)) : '—'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                      <span className="text-sm text-white/50">Shifts/Nurse/Year</span>
                       <span className="text-base font-semibold text-white">
                         {state.nursingShiftsPerNurseYear}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                      <span className="text-sm text-white/50">Total shifts/year</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Total Shifts/Year</span>
                       <span className="text-base font-semibold text-white">
                         {state.numberOfProviders > 0 ? formatNumber(nursingTotalShiftsPerYear) : '—'}
                       </span>
