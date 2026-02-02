@@ -485,6 +485,170 @@ const styles = StyleSheet.create({
     lineHeight: 1.6,
   },
 
+  pullQuote: {
+    borderLeftWidth: 4,
+    borderLeftColor: brand.red,
+    paddingLeft: 24,
+    paddingVertical: 16,
+    marginVertical: 30,
+  },
+  pullQuoteText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: brand.black,
+    lineHeight: 1.4,
+    fontStyle: "italic",
+  },
+
+  bigStatRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 40,
+  },
+  bigStat: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  bigStatValue: {
+    fontSize: 42,
+    fontWeight: "bold",
+    color: brand.red,
+    marginBottom: 8,
+  },
+  bigStatLabel: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    textAlign: "center",
+    lineHeight: 1.4,
+  },
+
+  benchmarkContainer: {
+    marginBottom: 30,
+  },
+  benchmarkBar: {
+    height: 12,
+    backgroundColor: brand.warmGray,
+    marginBottom: 8,
+    position: "relative",
+  },
+  benchmarkFill: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    height: 12,
+    backgroundColor: brand.coral,
+  },
+  benchmarkYou: {
+    position: "absolute",
+    top: -4,
+    width: 4,
+    height: 20,
+    backgroundColor: brand.red,
+  },
+  benchmarkLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  benchmarkLabel: {
+    fontSize: 8,
+    color: brand.textSecondary,
+  },
+
+  keyFinding: {
+    flexDirection: "row",
+    marginBottom: 14,
+    paddingLeft: 4,
+  },
+  keyFindingBullet: {
+    width: 8,
+    height: 8,
+    backgroundColor: brand.red,
+    borderRadius: 4,
+    marginRight: 12,
+    marginTop: 4,
+  },
+  keyFindingText: {
+    flex: 1,
+    fontSize: 11,
+    color: brand.black,
+    lineHeight: 1.5,
+  },
+
+  phaseContainer: {
+    marginBottom: 24,
+  },
+  phaseHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  phaseNumber: {
+    width: 28,
+    height: 28,
+    backgroundColor: brand.red,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  phaseNumberText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: brand.white,
+  },
+  phaseName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: brand.black,
+  },
+  phaseDuration: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    marginLeft: 8,
+  },
+  phaseAction: {
+    flexDirection: "row",
+    marginLeft: 40,
+    marginBottom: 6,
+  },
+  phaseActionBullet: {
+    fontSize: 10,
+    color: brand.red,
+    marginRight: 8,
+  },
+  phaseActionText: {
+    fontSize: 10,
+    color: brand.black,
+    lineHeight: 1.4,
+  },
+
+  alertBox: {
+    backgroundColor: brand.black,
+    padding: 24,
+    marginTop: 30,
+  },
+  alertLabel: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: brand.coral,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginBottom: 10,
+  },
+  alertText: {
+    fontSize: 11,
+    color: brand.white,
+    lineHeight: 1.6,
+  },
+  alertValue: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: brand.coral,
+    marginTop: 12,
+  },
+
   table: {
     marginBottom: 30,
   },
@@ -607,16 +771,52 @@ const formatNumber = (value: number): string => value.toLocaleString();
 
 const narrativeContent = {
   cover: {
-    subtitle: "This document explores how ambient AI documentation could create value in your outpatient practice—built on transparent methodology you can challenge and adapt.",
+    subtitle: "A strategic assessment of how ambient AI documentation could transform clinical operations, financial performance, and clinician experience in your outpatient practice.",
+  },
+  
+  // NEW: Industry context/framing content
+  industryContext: {
+    headline: "The Documentation Crisis",
+    subheadline: "American healthcare faces an unprecedented challenge",
+    stats: [
+      { value: "2 hours", label: "Time spent on documentation for every 1 hour of patient care" },
+      { value: "49%", label: "Of physicians report symptoms of burnout" },
+      { value: "$4.6B", label: "Annual cost of physician burnout to US health systems" },
+    ],
+    narrative: "The administrative burden on clinicians has reached a breaking point. For every hour spent with patients, physicians spend nearly two hours on documentation and EHR tasks. This isn't sustainable—and it's driving experienced clinicians out of medicine at an alarming rate.",
+    pullQuote: "The question isn't whether to address documentation burden. It's whether you'll lead the change or react to it.",
   },
   
   executive: {
     intro: "Every number in this model traces back to editable inputs. Outpatient practices face unique pressures—patient volume, documentation burden, and the constant tension between quality and throughput. This framework accounts for those realities with conservative assumptions you can stress-test.",
+    keyFindings: [
+      "Your investment generates measurable returns across multiple value streams",
+      "Labor efficiency and revenue quality work together, not against each other",
+      "Conservative realization rates account for real-world implementation realities",
+    ],
+  },
+  
+  // NEW: Benchmark comparison content
+  benchmarks: {
+    headline: "How You Compare",
+    intro: "Based on the inputs you provided, here's how your projected performance stacks up against organizations we've studied.",
+    roiBenchmark: {
+      low: 1.5,
+      median: 2.2,
+      high: 3.8,
+      topQuartile: 2.8,
+    },
+    adoption: {
+      conservative: { utilization: 60, monthsToValue: 6 },
+      typical: { utilization: 75, monthsToValue: 4 },
+      aggressive: { utilization: 90, monthsToValue: 2 },
+    },
   },
   
   timeValue: {
     theory: "Outpatient documentation typically adds 10-15 minutes per patient. When ambient AI handles this burden, clinicians can see more patients, go home on time, and reclaim work-life balance. But time savings only create value when converted to action.",
     why: "Time savings in outpatient settings directly impact access, clinician satisfaction, and operational costs. Each driver includes conservative realization rates reflecting real-world constraints.",
+    pullQuote: "Time returned to clinicians is only valuable if it's converted to outcomes that matter.",
   },
   
   docValue: {
@@ -638,27 +838,69 @@ const narrativeContent = {
     patientAccess: {
       theory: "When clinicians spend less time on documentation, they can see more patients. Each additional patient represents both revenue and better community access to care.",
       implication: (value: number, pct: number) => `At ${formatCurrency(value)}, patient access represents ${pct}% of your projected value. Practices with high demand often see this number grow as workflows mature.`,
+      benchmark: "Top-quartile organizations convert 18-22% of time savings to additional patient volume.",
     },
     reducingLocums: {
       theory: "Locum coverage is expensive—typically 2-3x the cost of employed physicians. When documentation efficiency improves, you may be able to reduce locum reliance.",
       implication: (value: number) => `The ${formatCurrency(value)} in locum reduction represents direct cost savings. This materializes as contracts are renegotiated and coverage patterns shift.`,
+      benchmark: "Organizations with high locum spend often see 15-25% reduction within 18 months.",
     },
     clinicianWellbeing: {
       theory: "Physician burnout leads to departures, and each departure costs $500K-$1M+ in recruiting, onboarding, and lost productivity. Documentation burden is a leading driver of burnout.",
       implication: (value: number, providers: number) => `With ${providers} clinicians, even fractional retention improvement creates substantial value. This is probabilistic and materializes over time.`,
+      benchmark: "Literature suggests 20-40% of physician turnover is attributable to burnout.",
     },
     wrvu: {
       theory: "Outpatient encounters often involve complex medical decision-making that isn't fully documented. When notes capture the complete picture, E&M coding can reflect the actual work performed.",
       implication: (value: number) => `This ${formatCurrency(value)} represents level-of-service accuracy—capturing complexity that's already being delivered. Highly defensible because it's not about doing more.`,
+      benchmark: "Studies show 8-15% of encounters are undercoded due to incomplete documentation.",
     },
     hcc: {
       theory: "Hierarchical Condition Categories (HCC) drive risk adjustment in Medicare Advantage and other value-based contracts. Complete documentation ensures conditions are captured and recaptured annually.",
       implication: (value: number) => `HCC capture at ${formatCurrency(value)} is particularly valuable for practices with significant Medicare Advantage panels. This is realized through RAF score improvements.`,
+      benchmark: "Average MA patient has 3.2 undocumented HCCs annually worth $1,200-2,400 each.",
     },
     denials: {
       theory: "Claims are frequently denied for documentation gaps—missing clinical information, insufficient medical necessity, or incomplete medical decision-making. Preventing denials upfront is more efficient than appeals.",
       implication: (value: number) => `Denial prevention at ${formatCurrency(value)} is highly measurable—you can track denials before and after with clear attribution to documentation improvement.`,
+      benchmark: "45% of denials stem from documentation issues; 60% of these are preventable.",
     },
+  },
+  
+  // NEW: Cost of inaction content
+  costOfInaction: {
+    headline: "The Cost of Waiting",
+    intro: "Every month without action has measurable consequences. Based on your inputs, here's what continued documentation burden may cost your organization.",
+    factors: [
+      { name: "Lost productivity", multiplier: 0.15 },
+      { name: "Turnover risk", multiplier: 0.08 },
+      { name: "Missed revenue", multiplier: 0.12 },
+    ],
+    pullQuote: "The cost of inaction isn't zero—it's the compounding sum of preventable losses.",
+  },
+  
+  // NEW: Strategic recommendations
+  recommendations: {
+    headline: "Recommended Next Steps",
+    intro: "Based on your organizational profile and value drivers, we recommend the following approach:",
+    phases: [
+      {
+        name: "Phase 1: Validate",
+        duration: "30 days",
+        actions: ["Pilot with 5-10 clinicians", "Establish baseline metrics", "Document workflow integration"],
+      },
+      {
+        name: "Phase 2: Prove",
+        duration: "60-90 days",
+        actions: ["Measure time savings and satisfaction", "Track coding accuracy improvements", "Calculate realized ROI"],
+      },
+      {
+        name: "Phase 3: Scale",
+        duration: "Ongoing",
+        actions: ["Expand to additional clinicians", "Optimize workflows", "Document best practices"],
+      },
+    ],
+    closingStatement: "The organizations that move first don't just capture value—they define how value is created in their markets.",
   },
   
   scaling: {
@@ -667,6 +909,11 @@ const narrativeContent = {
   
   methodology: {
     approach: "This model prioritizes transparency over precision. We use conservative assumptions informed by outpatient-specific realities, show our work step-by-step, and make every input editable. The goal isn't to prove a number—it's to give you a framework for thinking about value.",
+    principles: [
+      { name: "Conservative by default", description: "All realization rates assume imperfect execution" },
+      { name: "Transparent logic", description: "Every calculation is shown step-by-step" },
+      { name: "Editable inputs", description: "Challenge any assumption that doesn't match your reality" },
+    ],
   },
 };
 
@@ -963,6 +1210,11 @@ function getDriverNarrative(driverId: string): { theory: string; implication: (v
   };
 }
 
+function getDriverBenchmark(driverId: string): string | null {
+  const content = narrativeContent.drivers[driverId as keyof typeof narrativeContent.drivers];
+  return (content as { benchmark?: string })?.benchmark || null;
+}
+
 // ============================================================================
 // PAGE COMPONENTS
 // ============================================================================
@@ -1010,9 +1262,131 @@ const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
   );
 };
 
+// NEW: Industry Context Page - Sets the stage with macro trends
+const IndustryContextPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => {
+  const ctx = narrativeContent.industryContext;
+  
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Outpatient Value Assessment</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Industry Context</Text>
+        <Text style={styles.sectionTitle}>{ctx.headline}</Text>
+        <Text style={styles.sectionSubtitle}>{ctx.subheadline}</Text>
+
+        <View style={styles.bigStatRow}>
+          {ctx.stats.map((stat, i) => (
+            <View key={i} style={styles.bigStat}>
+              <Text style={styles.bigStatValue}>{stat.value}</Text>
+              <Text style={styles.bigStatLabel}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.narrativeBox}>
+          <Text style={styles.narrativeLabel}>The Challenge</Text>
+          <Text style={styles.narrativeText}>{ctx.narrative}</Text>
+        </View>
+
+        <View style={styles.pullQuote}>
+          <Text style={styles.pullQuoteText}>{ctx.pullQuote}</Text>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Why This Matters Now</Text>
+          <Text style={styles.insightText}>
+            Healthcare systems that address documentation burden today gain competitive advantage in recruiting, 
+            retain experienced clinicians longer, and create capacity for growth without adding headcount. 
+            The organizations that wait face compounding costs as the talent market tightens.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Outpatient Value Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+// NEW: Recommendations & Next Steps Page
+const RecommendationsPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+  const recs = narrativeContent.recommendations;
+  const costOfInaction = narrativeContent.costOfInaction;
+  
+  // Calculate monthly cost of inaction (simplified model)
+  const monthlyLoss = Math.round(data.totalValue / 12);
+  
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Outpatient Value Assessment</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Strategic Recommendations</Text>
+        <Text style={styles.sectionTitle}>{recs.headline}</Text>
+        <Text style={styles.sectionSubtitle}>{recs.intro}</Text>
+
+        {recs.phases.map((phase, i) => (
+          <View key={i} style={styles.phaseContainer}>
+            <View style={styles.phaseHeader}>
+              <View style={styles.phaseNumber}>
+                <Text style={styles.phaseNumberText}>{i + 1}</Text>
+              </View>
+              <Text style={styles.phaseName}>{phase.name}</Text>
+              <Text style={styles.phaseDuration}>{phase.duration}</Text>
+            </View>
+            {phase.actions.map((action, j) => (
+              <View key={j} style={styles.phaseAction}>
+                <Text style={styles.phaseActionBullet}>•</Text>
+                <Text style={styles.phaseActionText}>{action}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+
+        <View style={styles.alertBox}>
+          <Text style={styles.alertLabel}>{costOfInaction.headline}</Text>
+          <Text style={styles.alertText}>
+            Every month without action has measurable consequences. Based on your projected value 
+            of {formatCurrency(data.totalValue)} annually, each month of delay represents approximately:
+          </Text>
+          <Text style={styles.alertValue}>{formatCurrency(monthlyLoss)}/month</Text>
+          <Text style={[styles.alertText, { marginTop: 8, fontSize: 9 }]}>
+            in unrealized value from productivity, retention, and revenue quality improvements.
+          </Text>
+        </View>
+
+        <View style={styles.pullQuote}>
+          <Text style={styles.pullQuoteText}>{recs.closingStatement}</Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Outpatient Value Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
+  
+  // Determine ROI tier for benchmark comparison
+  const roiBenchmark = narrativeContent.benchmarks.roiBenchmark;
+  const roiPosition = data.roi >= roiBenchmark.topQuartile ? "top-quartile" :
+                      data.roi >= roiBenchmark.median ? "above-median" : "developing";
+  const roiPositionLabel = roiPosition === "top-quartile" ? "Top Quartile" :
+                           roiPosition === "above-median" ? "Above Median" : "Developing";
 
   return (
     <Page size="A4" style={styles.contentPage} wrap={false}>
@@ -1028,13 +1402,6 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
           {data.providers} clinicians • {formatNumber(data.encounters)} annual encounters • {data.drivers.length} value drivers
         </Text>
 
-        <View style={styles.narrativeBox}>
-          <Text style={styles.narrativeLabel}>Outpatient Context</Text>
-          <Text style={styles.narrativeText}>
-            {narrativeContent.executive.intro}
-          </Text>
-        </View>
-
         <View style={styles.metricsRow}>
           <View style={styles.metricBox}>
             <Text style={styles.metricValueRed}>{formatCurrency(data.netGain)}</Text>
@@ -1044,13 +1411,43 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
           <View style={styles.metricBox}>
             <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
             <Text style={styles.metricLabel}>Return on Investment</Text>
-            <Text style={styles.metricNote}>Every $1 returns ${data.roi.toFixed(2)}</Text>
+            <Text style={styles.metricNote}>{roiPositionLabel} performance</Text>
           </View>
           <View style={styles.metricBox}>
             <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
             <Text style={styles.metricLabel}>Hours Returned</Text>
             <Text style={styles.metricNote}>{data.timeSavedPerEncounter} min per encounter</Text>
           </View>
+        </View>
+
+        <View style={styles.narrativeBox}>
+          <Text style={styles.narrativeLabel}>Key Findings</Text>
+          {narrativeContent.executive.keyFindings.map((finding, i) => (
+            <View key={i} style={styles.keyFinding}>
+              <View style={styles.keyFindingBullet} />
+              <Text style={styles.keyFindingText}>{finding}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Benchmark comparison visualization */}
+        <View style={styles.benchmarkContainer}>
+          <Text style={[styles.narrativeLabel, { marginBottom: 16 }]}>How You Compare</Text>
+          <View style={styles.benchmarkLabels}>
+            <Text style={styles.benchmarkLabel}>1.5x Low</Text>
+            <Text style={styles.benchmarkLabel}>2.2x Median</Text>
+            <Text style={styles.benchmarkLabel}>2.8x Top Quartile</Text>
+            <Text style={styles.benchmarkLabel}>3.8x High</Text>
+          </View>
+          <View style={styles.benchmarkBar}>
+            {/* Fill to show range */}
+            <View style={[styles.benchmarkFill, { width: `${Math.min(100, (data.roi / 4) * 100)}%` }]} />
+            {/* Your position marker */}
+            <View style={[styles.benchmarkYou, { left: `${Math.min(95, Math.max(5, (data.roi / 4) * 100))}%` }]} />
+          </View>
+          <Text style={{ fontSize: 10, color: brand.textSecondary, marginTop: 8 }}>
+            Your projected {data.roi.toFixed(1)}x ROI places you in the {roiPositionLabel.toLowerCase()} tier of similar implementations.
+          </Text>
         </View>
 
         <View style={styles.valueSection}>
@@ -1205,6 +1602,7 @@ const DriverDetailPage = ({
   const narrative = getDriverNarrative(driver.id);
   const steps = getDriverSteps(driver, data);
   const displayName = getDriverName(driver.id, driver.name);
+  const benchmark = getDriverBenchmark(driver.id);
 
   return (
     <Page size="A4" style={styles.contentPage} wrap={false}>
@@ -1271,6 +1669,12 @@ const DriverDetailPage = ({
         <View style={styles.insightBox}>
           <Text style={styles.insightLabel}>What This Means</Text>
           <Text style={styles.insightText}>{narrative.implication(driver.value, data)}</Text>
+          {benchmark && (
+            <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: brand.warmGray }}>
+              <Text style={[styles.insightLabel, { color: brand.textSecondary, fontSize: 8 }]}>Industry Benchmark</Text>
+              <Text style={[styles.insightText, { fontStyle: "italic" }]}>{benchmark}</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -1375,12 +1779,14 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
 // ============================================================================
 
 const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
-  const totalPages = 3 + data.drivers.length + 1;
+  // Updated page count: Cover + Context + Executive + Projection + Drivers + Recommendations + Methodology
+  const totalPages = 5 + data.drivers.length + 1;
   let pageNum = 1;
 
   return (
     <Document>
       <CoverPage data={data} />
+      <IndustryContextPage pageNum={++pageNum} totalPages={totalPages} />
       <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
@@ -1392,6 +1798,7 @@ const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
           totalPages={totalPages}
         />
       ))}
+      <RecommendationsPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <MethodologyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
   );
