@@ -3,13 +3,13 @@ import { ArrowRight, BarChart3, Building2, AlertTriangle, DollarSign, Calculator
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState, type DocPathFocus } from "./ExploreFlow";
+import { type ExploreState, type DocPathFocus, type CalculatedValues } from "./ExploreFlow";
 
 interface ExploreDocDriversProps {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
   totalHoursSaved: number;
-  onNext: () => void;
+  onNext: (calculatedValues?: CalculatedValues) => void;
   onBack: () => void;
   onHome: () => void;
 }
@@ -754,12 +754,13 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     }
   };
 
-  const calculateTimeValue = () => {
+  // Calculate individual time values for the breakdown
+  const calculateTimeValues = () => {
     const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
-    const patientAccessValue = (patientAccessHours / 0.5) * 200 * REALIZATION_RATES.patientAccess;
+    const patientAccessValue = Math.round((patientAccessHours / 0.5) * 200 * REALIZATION_RATES.patientAccess);
 
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
-    const locumValue = locumHours * 150 * REALIZATION_RATES.reducingLocums;
+    const locumValue = Math.round(locumHours * 150 * REALIZATION_RATES.reducingLocums);
 
     // Simplified wellbeing calculation (no at-risk multiplier)
     const annualDepartures = state.numberOfProviders * 0.08; // 8% baseline turnover
@@ -772,9 +773,61 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
     else if (hoursPerProviderAnnual >= 150) retentionLift = 0.175; // SIGNIFICANT (15-20%)
     else if (hoursPerProviderAnnual >= 100) retentionLift = 0.10; // MODERATE (8-12%)
     
-    const retentionValue = annualDepartures * retentionLift * 250000;
+    const retentionValue = Math.round(annualDepartures * retentionLift * 250000);
 
-    return Math.round(patientAccessValue + locumValue + retentionValue);
+    return {
+      patientAccess: patientAccessValue,
+      locums: locumValue,
+      retention: retentionValue,
+      total: patientAccessValue + locumValue + retentionValue,
+    };
+  };
+  
+  const calculateTimeValue = () => {
+    const values = calculateTimeValues();
+    return values.total;
+  };
+  
+  // Handler to save calculated values and continue
+  const handleContinue = () => {
+    const timeValues = calculateTimeValues();
+    
+    // Calculate individual doc driver values
+    let wrvuValue = 0;
+    let hccValue = 0;
+    let denialsValue = 0;
+    
+    if (docDrivers.wrvu?.enabled) {
+      const calc = calculateDriverValue('wrvu');
+      wrvuValue = calc?.value || 0;
+    }
+    if (docDrivers.hcc?.enabled) {
+      const calc = calculateDriverValue('hcc');
+      hccValue = calc?.value || 0;
+    }
+    if (docDrivers.denials?.enabled) {
+      const calc = calculateDriverValue('denials');
+      denialsValue = calc?.value || 0;
+    }
+    
+    const calculatedValues: CalculatedValues = {
+      timeValue: timeValues.total,
+      docValue: wrvuValue + hccValue + denialsValue,
+      driverBreakdown: {
+        patientAccess: timeValues.patientAccess,
+        locums: timeValues.locums,
+        retention: timeValues.retention,
+        wrvu: wrvuValue,
+        hcc: hccValue,
+        denials: denialsValue,
+      },
+    };
+    
+    // Update state with calculated values for reference
+    updateState({ calculatedValues });
+    
+    // Pass calculated values directly to onNext (don't rely on async state propagation)
+    onNext(calculatedValues);
   };
 
   const enabledDrivers = availableDriverConfigs.filter(d => docDrivers[d.id]?.enabled);
@@ -1064,7 +1117,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           transition={{ delay: 0.35, duration: 0.5 }}
         >
           <Button
-            onClick={onNext}
+            onClick={handleContinue}
             className="h-12 px-8 font-semibold rounded-full bg-black hover:bg-black/90 text-white"
             data-testid="button-continue"
           >

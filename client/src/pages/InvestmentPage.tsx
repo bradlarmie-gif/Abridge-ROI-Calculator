@@ -96,7 +96,7 @@ export default function InvestmentPage({
   const valueBreakdown = useMemo(() => {
     const breakdown: { name: string; value: number; category: "labor" | "revenue" }[] = [];
     const driverResults = valueResults.driverResults || {};
-    const laborDrivers = ["overtime", "patientAccess", "retention", "edThroughput", "edScribe", "edRetention", "inpatientRetention", "nursingOvertime", "nursingAgency", "nursingRetention"];
+    const laborDrivers = ["overtime", "patientAccess", "retention", "workforce", "edThroughput", "edScribe", "edRetention", "inpatientRetention", "nursingOvertime", "nursingAgency", "nursingRetention"];
     
     Object.entries(driverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {

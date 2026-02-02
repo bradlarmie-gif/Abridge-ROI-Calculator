@@ -41,6 +41,20 @@ export interface DocDriversState {
   denials: DocDriverSettings;
 }
 
+// Pre-calculated values from wizard steps to pass to Investment page
+export interface CalculatedValues {
+  timeValue: number;
+  docValue: number;
+  driverBreakdown: {
+    patientAccess: number;
+    locums: number;
+    retention: number;
+    wrvu: number;
+    hcc: number;
+    denials: number;
+  };
+}
+
 export interface ExploreState {
   careSetting: ExploreCareSetting | null;
   
@@ -63,6 +77,9 @@ export interface ExploreState {
   wrvuPctIncrease: number;
   hccPctRecaptured: number;
   denialsPctReduced: number;
+  
+  // Pre-calculated values from wizard (set by ExploreDocDrivers before continuing)
+  calculatedValues?: CalculatedValues;
 }
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
@@ -133,9 +150,14 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     return Math.round(totalMinutes / 60);
   }, [state.annualEncounters, state.utilizationPercent, state.minutesSavedPerEncounter]);
 
-  const handleContinueToInvestment = useCallback(() => {
+  const handleContinueToInvestment = useCallback((calculatedValues?: CalculatedValues) => {
     if (onContinueToInvestment) {
-      onContinueToInvestment(state);
+      // Pass state with calculated values merged in synchronously
+      const stateWithValues: ExploreState = {
+        ...state,
+        calculatedValues: calculatedValues || state.calculatedValues,
+      };
+      onContinueToInvestment(stateWithValues);
     }
   }, [state, onContinueToInvestment]);
 

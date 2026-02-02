@@ -99,47 +99,28 @@ export default function App() {
     const eligibleEncounters = Math.round(state.annualEncounters * (state.utilizationPercent / 100));
     const totalHoursSaved = Math.round((eligibleEncounters * state.minutesSavedPerEncounter) / 60);
     
+    // Use pre-calculated values from ExploreDocDrivers when available
+    const calc = state.calculatedValues;
+    
     const patientAccessHours = totalHoursSaved * (state.timeAllocation.patientAccess / 100);
-    const visitsEnabled = patientAccessHours / 0.5;
-    const patientAccessValue = Math.round(visitsEnabled * 200);
-
     const locumHours = totalHoursSaved * (state.timeAllocation.reducingLocums / 100);
-    const locumValue = Math.round(locumHours * 150);
-
     const wellbeingPct = state.timeAllocation.clinicianWellbeing / 100;
-    const retentionValue = Math.round(state.numberOfProviders * 0.15 * wellbeingPct * 0.2 * 250000);
-
-    let wrvuValue = 0;
-    let hccValue = 0;
-    let denialsValue = 0;
     
-    const baseWrvu = 1.5;
-    if (state.docDrivers.wrvu.enabled) {
-      const wrvuLift = baseWrvu * (state.docDrivers.wrvu.value / 100);
-      wrvuValue = Math.round(wrvuLift * eligibleEncounters * 40 * 0.75);
-    }
+    // Use pre-calculated values if available, otherwise fall back to basic calculation
+    const patientAccessValue = calc?.driverBreakdown.patientAccess ?? Math.round((patientAccessHours / 0.5) * 200 * 0.15);
+    const locumValue = calc?.driverBreakdown.locums ?? Math.round(locumHours * 150 * 0.60);
+    const retentionValue = calc?.driverBreakdown.retention ?? Math.round(state.numberOfProviders * 0.08 * 0.04 * 250000);
     
-    // HCC not applicable for ED
-    if (state.careSetting !== 'ed' && state.docDrivers.hcc.enabled) {
-      const maPatients = eligibleEncounters * 0.3;
-      const conditionsCaptured = maPatients * 3 * (state.docDrivers.hcc.value / 100);
-      hccValue = Math.round(conditionsCaptured * 800 * 0.60);
-    }
-    
-    if (state.docDrivers.denials.enabled) {
-      const denials = eligibleEncounters * 0.08;
-      const denialsFromDoc = denials * 0.5;
-      const denialsRecovered = denialsFromDoc * (state.docDrivers.denials.value / 100);
-      denialsValue = Math.round(denialsRecovered * 250 * 0.70);
-    }
+    const wrvuValue = calc?.driverBreakdown.wrvu ?? 0;
+    const hccValue = calc?.driverBreakdown.hcc ?? 0;
+    const denialsValue = calc?.driverBreakdown.denials ?? 0;
     
     const docValue = wrvuValue + hccValue + denialsValue;
-
     const totalBenefit = patientAccessValue + locumValue + retentionValue + docValue;
 
     const driverResults: Record<string, { id: string; name: string; value: number; inputs: Record<string, number | string | boolean> }> = {};
     
-    if (state.timeAllocation.patientAccess > 0) {
+    if (state.timeAllocation.patientAccess > 0 && patientAccessValue > 0) {
       driverResults['patientAccess'] = {
         id: 'patientAccess',
         name: 'Patient Access',
@@ -148,7 +129,7 @@ export default function App() {
       };
     }
     
-    if (state.timeAllocation.reducingLocums > 0) {
+    if (state.timeAllocation.reducingLocums > 0 && locumValue > 0) {
       driverResults['overtime'] = {
         id: 'overtime',
         name: 'Locum Cost Reduction',
@@ -157,7 +138,7 @@ export default function App() {
       };
     }
     
-    if (state.timeAllocation.clinicianWellbeing > 0) {
+    if (state.timeAllocation.clinicianWellbeing > 0 && retentionValue > 0) {
       driverResults['workforce'] = {
         id: 'workforce',
         name: 'Clinician Retention',
