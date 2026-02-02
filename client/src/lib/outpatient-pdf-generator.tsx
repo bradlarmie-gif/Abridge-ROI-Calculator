@@ -1155,16 +1155,31 @@ const ProjectionPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData
         <View style={styles.downstreamSection}>
           <Text style={styles.downstreamTitle}>Expansion Opportunity</Text>
           <Text style={styles.downstreamText}>
-            {narrativeContent.downstream.intro}
+            Your per-clinician economics tend to remain consistent at scale, while operational learning often improves utilization as workflows mature.
           </Text>
           <View style={styles.downstreamGrid}>
-            {narrativeContent.downstream.cards.map((card, i) => (
-              <View key={i} style={styles.downstreamCard}>
-                <Text style={styles.downstreamCardTitle}>{card.title}</Text>
-                <Text style={styles.downstreamCardText}>{card.text}</Text>
-              </View>
-            ))}
+            <View style={styles.downstreamCard}>
+              <Text style={styles.downstreamCardTitle}>Today's Model</Text>
+              <Text style={styles.downstreamCardText}>
+                {data.journey.pilotProviders} clinicians at {data.journey.pilotUtilization}% utilization
+              </Text>
+              <Text style={[styles.downstreamCardTitle, { marginTop: 8 }]}>
+                {formatCurrency(data.journey.pilotValue)}/yr
+              </Text>
+            </View>
+            <View style={styles.downstreamCard}>
+              <Text style={styles.downstreamCardTitle}>Full Scale Potential</Text>
+              <Text style={styles.downstreamCardText}>
+                {data.journey.fullScaleProviders} clinicians at {data.journey.fullScaleUtilization}% utilization
+              </Text>
+              <Text style={[styles.downstreamCardTitle, { marginTop: 8 }]}>
+                {formatCurrency(data.journey.fullScaleValue)}/yr
+              </Text>
+            </View>
           </View>
+          <Text style={[styles.downstreamText, { marginTop: 16 }]}>
+            Scaling pace: {data.journey.scalingPace === 'measured' ? '36 months' : data.journey.scalingPace === 'steady' ? '24 months' : '18 months'} to full deployment
+          </Text>
         </View>
       </View>
 
