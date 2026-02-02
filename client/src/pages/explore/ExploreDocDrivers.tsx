@@ -656,48 +656,16 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           transition={{ duration: 0.5 }}
         >
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            {isNursing ? "Nursing Documentation Quality" : isInpatient ? "Inpatient Documentation Quality" : isED ? "ED Documentation Quality" : "Documentation Quality"}
+            Documentation Quality
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            {isNursing ? "Capture nursing documentation value" : isInpatient ? "Capture inpatient documentation value" : isED ? "Capture ED documentation value" : "Capture value beyond time savings"}
+            Capture value beyond time savings
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
-            {isNursing
-              ? "Nursing documentation drives care quality, coordination, and regulatory compliance. Toggle the drivers that match your organization's priorities."
-              : isInpatient
-                ? "Inpatient documentation directly drives DRG reimbursement and reduces costly CDI workflows. Toggle the drivers that match your organization's priorities."
-                : isED 
-                  ? "ED documentation drives revenue capture and denial prevention. Toggle the drivers that match your organization's priorities."
-                  : "Better documentation creates downstream value. Toggle the drivers that match your organization's priorities."
-            }
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Better documentation creates downstream value. Select the drivers that apply to your organization.
           </p>
-
-          <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left mb-3">
-            <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-slate-700">Why this matters:</span> {isNursing
-                ? "Nursing documentation affects care continuity, patient safety, and regulatory compliance. Incomplete notes create handoff gaps, missed interventions, and audit findings. Better documentation ensures care plans are accurate, transitions are smooth, and compliance is maintained—without adding burden."
-                : isInpatient
-                  ? "Inpatient documentation directly impacts DRG assignment and CC/MCC capture. Incomplete notes mean lower DRG weights, more CDI queries, and preventable denials. Better documentation captures the clinical complexity you're already delivering—improving reimbursement without changing care."
-                  : isED 
-                    ? "ED visits are high-acuity but often under-documented due to pace. When notes don't capture complexity, Level of Service codes lower than warranted, and claims get denied for insufficient documentation. These are recoverable dollars—not new procedures, just capturing what you're already doing."
-                    : "Clinicians do thorough work, but documentation often lags behind. When notes don't capture complexity, you leave money on the table—lower E&M levels, missed chronic conditions, and preventable denials. This isn't about doing more; it's about capturing what you're already doing."
-              }
-            </p>
-          </div>
-          <div className="bg-[#FFF5F2] rounded-xl p-4 max-w-2xl mx-auto text-left">
-            <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-[#EA2C00]">How this works:</span> {isNursing
-                ? "Each driver calculates value based on your nursing encounter volume and conservative assumptions. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
-                : isInpatient
-                  ? "Each driver calculates value based on your admission volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
-                  : isED 
-                    ? "Each driver calculates value based on your ED volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
-                    : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
-              }
-            </p>
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
