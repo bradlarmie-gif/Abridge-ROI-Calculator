@@ -55,12 +55,21 @@ export interface CalculatedValues {
   };
 }
 
+// Nursing-specific types
+export type NursingUnitType = 'med-surg' | 'icu' | 'mixed';
+
 export interface ExploreState {
   careSetting: ExploreCareSetting | null;
   
   numberOfProviders: number;
   annualEncounters: number;
   utilizationPercent: number;
+  
+  // Nursing-specific fields (per-shift model)
+  nursingStaffedBeds: number;
+  nursingUnitType: NursingUnitType;
+  nursingShiftsPerNurseYear: number; // Default 156 (3 shifts/week × 52 weeks)
+  nursingMinutesPerShift: number; // Time saved per shift (15/30/45)
   
   timePathScenario: TimePathScenario;
   minutesSavedPerEncounter: number;
@@ -87,6 +96,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   numberOfProviders: 0,
   annualEncounters: 0,
   utilizationPercent: 70,
+  // Nursing-specific defaults
+  nursingStaffedBeds: 0,
+  nursingUnitType: 'med-surg',
+  nursingShiftsPerNurseYear: 156, // 3 shifts/week × 52 weeks
+  nursingMinutesPerShift: 30, // Typical: 30 min/shift
   timePathScenario: 'typical',
   minutesSavedPerEncounter: 5,
   timeAllocation: {

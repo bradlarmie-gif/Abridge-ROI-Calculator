@@ -1,0 +1,226 @@
+Time Allocation for Nursing:
+CopyALLOCATE YOUR SAVINGS
+
+You're unlocking 16,380 hours. Decide how this time creates value.
+
+[Balanced]  [Efficiency Focus]  [Retention Focus]
+
+───────────────────────────────────────────────────────────
+
+💰 Staffing Efficiency                           [40]% 🔓
+Reduce overtime and end-of-shift charting
+
+6,552 hours allocated
+21.8 hours per nurse per year
+
+Value: $441,000
+[See the math ▼]                                     [⚙️]
+
+───────────────────────────────────────────────────────────
+
+🛏️ Bedside Care                                  [30]% 🔓
+More time with patients
+
+4,914 hours allocated
+16.4 hours per nurse per year
+
+Value: Qualitative
+[What to track ▼]
+
+───────────────────────────────────────────────────────────
+
+💚 Nurse Wellbeing                               [30]% 🔓
+Reduce burnout and improve retention
+
+4,914 hours allocated
+16.4 hours per nurse per year
+
+🎯 MODERATE (8-12% reduction)
+
+Value: $202,500
+[See the math ▼]                                     [⚙️]
+
+───────────────────────────────────────────────────────────
+
+Category 1: Staffing Efficiency
+This is the HARDEST ROI for nursing - direct payroll savings.
+Copy💰 Staffing Efficiency                           40%
+
+6,552 hours allocated → Value: $441,000
+
+[See the math ▼]
+
+EXPANDED:
+
+Hours allocated to efficiency              6,552 hrs
+
+OVERTIME REDUCTION:
+Current OT hours/year                     60,000 hrs 🔧
+(300 nurses × 4 hrs/week × 50 weeks)
+
+× Documentation-driven %                      33% 🔧
+= Doc-driven OT                           19,800 hrs
+
+Hours that can be eliminated              6,552 hrs
+(capped at doc-driven OT)
+
+× OT hourly rate                          $67.50 🔧
+($45 base × 1.5)
+
+= Annual savings                          $442,260
+
+───────────────────────────────────────────────
+✓ DIRECT, MEASURABLE savings
+Track month-over-month in payroll data
+───────────────────────────────────────────────
+
+[📊 Benchmarks ▼]
+Benchmarks (collapsed):
+CopyNURSING OVERTIME RATES:
+- Base RN hourly: $40-$50
+- OT rate (1.5×): $60-$75
+- Average OT hours: 3-5 hrs/nurse/week
+
+We use $45 base ($67.50 OT) conservatively.
+
+Category 2: Bedside Care
+Qualitative by default, with optional quality modeling.
+Copy🛏️ Bedside Care                                  30%
+
+4,914 hours allocated → Value: Qualitative
+
+[What to track ▼]
+
+EXPANDED:
+
+Hours reinvested in patient care          4,914 hrs
+Hours per nurse per year                  16.4 hrs
+Minutes per nurse per shift               ~12 min
+
+───────────────────────────────────────────────
+METRICS TO TRACK:
+
+- Bedside time % (goal: increase by 5-10%)
+- Call light response time
+- Hourly rounding compliance
+- Patient satisfaction scores (HCAHPS)
+───────────────────────────────────────────────
+
+☐ Model quality impact (experimental)
+
+[If toggled ON, shows Falls + HAPI calculation
+with clear "POTENTIAL VALUE" labeling]
+If "Model quality impact" toggled ON:
+Copy⚠️ POTENTIAL VALUE - Indirect causal link
+
+FALLS PREVENTION:
+Annual admissions                         10,000 🔧
+× Falls rate (per 1,000 patient days)     3.5 🔧
+= Falls/year                              140
+
+× Documentation-preventable %             5% 🔧
+= Preventable falls                       7
+
+× Cost per fall                           $6,500 🔧
+= Potential value                         $45,500
+
+HAPI PREVENTION:
+Annual admissions                         10,000 🔧
+× HAPI rate                               2.5% 🔧
+= HAPIs/year                              250
+
+× Documentation-preventable %             5% 🔧
+= Preventable HAPIs                       13
+
+× Cost per HAPI                           $20,000 🔧
+= Potential value                         $250,000
+
+───────────────────────────────────────────────
+Combined potential: $295,500
+
+⚠️ WHY THIS IS "POTENTIAL":
+Falls and HAPIs are prevented through clinical 
+care—turning, mobility, skin checks. Documentation 
+SUPPORTS this but doesn't REPLACE it. We show this 
+separately because the causal link is indirect.
+───────────────────────────────────────────────
+
+Category 3: Nurse Wellbeing
+Same threshold model as other settings.
+Copy💚 Nurse Wellbeing                               30%
+
+4,914 hours allocated → Value: $202,500
+
+[See the math ▼]
+
+EXPANDED:
+
+Hours per nurse per year                  16.4 hrs
+(4,914 ÷ 300 nurses)
+
+Hours per nurse per week                  0.3 hrs
+(~20 min/week)
+
+🎯 IMPACT THRESHOLD: MINIMAL
+├─ 0-25 hrs/yr:    MINIMAL (3-5% reduction) ←
+├─ 25-50 hrs/yr:   MODERATE (8-12% reduction)
+└─ 50+ hrs/yr:     SIGNIFICANT (15-20% reduction)
+
+───────────────────────────────────────────────
+
+Nurse FTEs                                300
+× Annual turnover rate                    18% 🔧
+= Annual departures                       54
+
+× Burnout-related %                       50% 🔧
+= Burnout-driven departures               27
+
+× Retention lift (MINIMAL)                5% 🔧
+= Nurses retained                         1.35
+
+× Replacement cost                        $50,000 🔧
+= Retention value                         $67,500
+
+───────────────────────────────────────────────
+
+AGENCY REDUCTION (linked to retention):
+
+Current agency FTEs                       30 🔧
+(200 beds × 0.15 agency ratio)
+
+× Agency premium                          $75,000 🔧
+($150K agency - $75K staff)
+
+× Retention-driven reduction              10% 🔧
+= FTEs converted                          3
+
+× Premium saved                           $75,000
+= Agency savings                          $225,000
+
+───────────────────────────────────────────────
+
+Combined Wellbeing Value:
+Retention: $67,500 + Agency: $135,000 = $202,500
+
+───────────────────────────────────────────────
+
+Presets:
+Copy[Balanced]       → 40% / 30% / 30%
+[Efficiency Focus] → 60% / 20% / 20%
+[Retention Focus]  → 20% / 20% / 60%
+
+Live Receipt:
+Copy┌─────────────────────────────────────────────┐
+│ Time Savings                       100%     │
+│ Value summary                               │
+│                                             │
+│ Annual Value                                │
+│ $643,500                                    │
+│ From 16,380 hours saved                     │
+│                                             │
+│ 💰 Staffing Efficiency    $441,000 (40%)    │
+│ 🛏️ Bedside Care          Qualitative (30%) │
+│ 💚 Nurse Wellbeing        $202,500 (30%)    │
+│                                             │
+│ [Continue →]                                │
+└─────────────────────────────────────────────┘

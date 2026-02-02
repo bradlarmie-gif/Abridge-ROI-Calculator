@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
-import { ArrowRight, Users, Activity, Percent, Receipt } from "lucide-react";
+import { ArrowRight, Users, Activity, Percent, Receipt, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type ExploreState } from "./ExploreFlow";
+import { type ExploreState, type NursingUnitType } from "./ExploreFlow";
 
 interface ExploreOpportunityProps {
   state: ExploreState;
@@ -36,12 +36,11 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
   { label: "Busy", value: 500 },
 ];
 
-// Nursing: patient encounters per nurse per year (based on shift load)
-// ~250 shifts/year × 6 patients/shift = 1500 typical
-const NURSING_BUSYNESS_PRESETS: BusynessPreset[] = [
-  { label: "Lighter", value: 1200 },
-  { label: "Typical", value: 1500 },
-  { label: "Busy", value: 1800 },
+// Nursing unit type options
+const NURSING_UNIT_TYPES: { id: NursingUnitType; label: string; bedsPerNurse: string }[] = [
+  { id: 'med-surg', label: 'Med-Surg', bedsPerNurse: '~1.5 FTEs/bed' },
+  { id: 'icu', label: 'ICU/Critical Care', bedsPerNurse: '~3 FTEs/bed' },
+  { id: 'mixed', label: 'Mixed', bedsPerNurse: '~2 FTEs/bed' },
 ];
 
 const UTILIZATION_PRESETS = [
@@ -54,16 +53,15 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
   const isNursing = state.careSetting === 'nursing';
-  const BUSYNESS_PRESETS = isNursing 
-    ? NURSING_BUSYNESS_PRESETS 
-    : isInpatient 
-      ? INPATIENT_BUSYNESS_PRESETS 
-      : isED 
-        ? ED_BUSYNESS_PRESETS 
-        : OUTPATIENT_BUSYNESS_PRESETS;
-  const defaultEncountersPerProvider = isNursing ? 1500 : isInpatient ? 400 : isED ? 1800 : 3000;
+  const BUSYNESS_PRESETS = isInpatient 
+    ? INPATIENT_BUSYNESS_PRESETS 
+    : isED 
+      ? ED_BUSYNESS_PRESETS 
+      : OUTPATIENT_BUSYNESS_PRESETS;
+  const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 3000;
   
   const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders > 0 ? state.numberOfProviders.toString() : '');
+  const [bedsInputValue, setBedsInputValue] = useState(state.nursingStaffedBeds > 0 ? state.nursingStaffedBeds.toString() : '');
   const [encountersPerProvider, setEncountersPerProvider] = useState(
     state.numberOfProviders > 0 && state.annualEncounters > 0 
       ? Math.round(state.annualEncounters / state.numberOfProviders) 
@@ -71,6 +69,28 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   );
   const [totalEncountersInput, setTotalEncountersInput] = useState('');
   const [usingTotalInput, setUsingTotalInput] = useState(false);
+  
+  // Nursing-specific handlers
+  const handleBedsChange = useCallback((inputVal: string) => {
+    setBedsInputValue(inputVal);
+    if (inputVal === '') {
+      updateState({ nursingStaffedBeds: 0 });
+      return;
+    }
+    const numValue = parseInt(inputVal, 10);
+    if (!isNaN(numValue) && numValue > 0) {
+      const clampedValue = Math.max(1, Math.min(2000, numValue));
+      updateState({ nursingStaffedBeds: clampedValue });
+    }
+  }, [updateState]);
+  
+  const handleNursingUnitTypeChange = useCallback((unitType: NursingUnitType) => {
+    updateState({ nursingUnitType: unitType });
+  }, [updateState]);
+  
+  // Nursing calculations (per-shift model)
+  const nursingTotalShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
+  const nursingEligibleShifts = Math.round(nursingTotalShiftsPerYear * (state.utilizationPercent / 100));
 
   const handleProvidersChange = useCallback((inputVal: string) => {
     setProviderInputValue(inputVal);
@@ -149,7 +169,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
   const formatNumber = (n: number) => n.toLocaleString();
 
-  const isValid = state.numberOfProviders > 0 && state.utilizationPercent > 0;
+  // Validation differs for nursing (needs beds + nurses) vs other settings
+  const isValid = isNursing 
+    ? state.numberOfProviders > 0 && state.nursingStaffedBeds > 0 && state.utilizationPercent > 0
+    : state.numberOfProviders > 0 && state.utilizationPercent > 0;
 
   const isPresetSelected = (presetValue: number) => {
     return encountersPerProvider === presetValue && !usingTotalInput;
@@ -200,12 +223,46 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
             </motion.div>
 
             <div className="space-y-5">
-              {/* Number of Providers */}
+              {/* NURSING-SPECIFIC: Staffed Beds (shown first for nursing) */}
+              {isNursing && (
+                <motion.div
+                  className="bg-white rounded-2xl border border-slate-200 p-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-[#EA2C00]" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-black">Staffed Beds in Scope</h2>
+                        <p className="text-sm text-slate-500">This is your billing unit for Abridge Nursing</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={bedsInputValue}
+                        onChange={(e) => handleBedsChange(e.target.value)}
+                        className="w-28 py-3 px-4 text-right text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
+                        data-testid="input-beds"
+                      />
+                      <span className="text-sm text-slate-500">beds</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Number of Providers/Nurses */}
               <motion.div
                 className="bg-white rounded-2xl border border-slate-200 p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.5 }}
+                transition={{ delay: isNursing ? 0.15 : 0.1, duration: 0.5 }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -213,24 +270,85 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <Users className="w-6 h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">{isNursing ? "Number of Nurses" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
-                      <p className="text-sm text-slate-500">{isNursing ? "Nurses using Abridge" : isInpatient ? "Hospitalists using Abridge" : isED ? "Physicians using Abridge in the ED" : "Clinicians using Abridge"}</p>
+                      <h2 className="text-base font-bold text-black">{isNursing ? "Nurse FTEs" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
+                      <p className="text-sm text-slate-500">
+                        {isNursing 
+                          ? "How many nurse FTEs support these beds?" 
+                          : isInpatient 
+                            ? "Hospitalists using Abridge" 
+                            : isED 
+                              ? "Physicians using Abridge in the ED" 
+                              : "Clinicians using Abridge"}
+                      </p>
+                      {isNursing && state.nursingStaffedBeds > 0 && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          ~1.5 FTEs per bed is typical for med-surg, higher for ICU
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={providerInputValue}
-                    onChange={(e) => handleProvidersChange(e.target.value)}
-                    onBlur={handleProviderInputBlur}
-                    className="w-28 py-3 px-4 text-right text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
-                    data-testid="input-providers"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={providerInputValue}
+                      onChange={(e) => handleProvidersChange(e.target.value)}
+                      onBlur={handleProviderInputBlur}
+                      className="w-28 py-3 px-4 text-right text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
+                      data-testid="input-providers"
+                    />
+                    {isNursing && <span className="text-sm text-slate-500">FTEs</span>}
+                  </div>
                 </div>
               </motion.div>
 
-              {/* Annual Encounters */}
+              {/* NURSING-SPECIFIC: Unit Type */}
+              {isNursing && (
+                <motion.div
+                  className="bg-white rounded-2xl border border-slate-200 p-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                >
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-[#EA2C00]" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-bold text-black">What type of unit(s)?</h2>
+                      <p className="text-sm text-slate-500">This helps set appropriate expectations</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {NURSING_UNIT_TYPES.map((unit) => {
+                      const isSelected = state.nursingUnitType === unit.id;
+                      return (
+                        <button
+                          key={unit.id}
+                          type="button"
+                          onClick={() => handleNursingUnitTypeChange(unit.id)}
+                          className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-[#EA2C00] text-white shadow-sm'
+                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                          }`}
+                          data-testid={`unit-type-${unit.id}`}
+                        >
+                          <span className="block font-semibold">{unit.label}</span>
+                          <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                            {unit.bedsPerNurse}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* NON-NURSING: Annual Encounters */}
+              {!isNursing && (
               <motion.div
                 className="bg-white rounded-2xl border border-slate-200 p-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -242,8 +360,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <Activity className="w-6 h-6 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black">{isNursing ? "Annual Patient Encounters" : isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
-                    <p className="text-sm text-slate-500">{isNursing ? "How many patient encounters do your nurses document?" : isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
+                    <h2 className="text-base font-bold text-black">{isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
+                    <p className="text-sm text-slate-500">{isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
                   </div>
                 </div>
 
@@ -265,7 +383,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       >
                         <span className="block font-semibold">{preset.label}</span>
                         <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                          {preset.value.toLocaleString()}/{isNursing ? 'nurse' : isInpatient ? 'hospitalist' : 'provider'}
+                          {preset.value.toLocaleString()}/{isInpatient ? 'hospitalist' : 'provider'}
                         </span>
                       </button>
                     );
@@ -273,7 +391,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
                 
                 {/* Help text for encounter estimates */}
-                {!isNursing && !isInpatient && !isED && (
+                {!isInpatient && !isED && (
                   <p className="text-xs text-slate-400 mt-2">
                     Based on ~220 working days per year. Typical represents blended primary care and specialty outpatient practices.
                   </p>
@@ -283,8 +401,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 <div className="pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-slate-600 font-medium">{isNursing ? "Or enter your total annual patient encounters" : isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
-                      <p className="text-xs text-slate-400">{isNursing ? "Total patient encounters your nursing team documents" : isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
+                      <p className="text-sm text-slate-600 font-medium">{isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
+                      <p className="text-xs text-slate-400">{isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <input
@@ -301,13 +419,14 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   </div>
                 </div>
               </motion.div>
+              )}
 
               {/* Expected Utilization */}
               <motion.div
                 className="bg-white rounded-2xl border border-slate-200 p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
+                transition={{ delay: isNursing ? 0.25 : 0.2, duration: 0.5 }}
               >
                 <div className="flex items-center gap-4 mb-3">
                   <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
@@ -315,11 +434,16 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-black">Expected Utilization</h2>
-                    <p className="text-sm text-slate-500">Percentage of encounters using Abridge</p>
+                    <p className="text-sm text-slate-500">
+                      {isNursing ? "Percentage of shifts using Abridge" : "Percentage of encounters using Abridge"}
+                    </p>
                   </div>
                 </div>
                 <p className="text-xs text-slate-400 mb-4 ml-16">
-                  Utilization often starts at 50-60% and grows to 75-85% as workflows mature. Start conservatively—you can always adjust.
+                  {isNursing 
+                    ? "Utilization often starts at 50-60% and grows to 75-85% as workflows mature. Start conservatively."
+                    : "Utilization often starts at 50-60% and grows to 75-85% as workflows mature. Start conservatively—you can always adjust."
+                  }
                 </p>
 
                 {/* Preset buttons */}
@@ -412,47 +536,94 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="px-6 py-5 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">Providers</span>
-                    <span className="text-base font-semibold text-white">
-                      {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
-                    </span>
-                  </div>
+                {/* Content - Different for Nursing vs Others */}
+                {isNursing ? (
+                  <div className="px-6 py-5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Staffed Beds</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.nursingStaffedBeds > 0 ? formatNumber(state.nursingStaffedBeds) : '—'}
+                      </span>
+                    </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">{isInpatient ? 'Admissions/Hospitalist' : 'Encounters/Provider'}</span>
-                    <span className="text-base font-semibold text-white">
-                      {formatNumber(encountersPerProvider)}
-                    </span>
-                  </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Nurse FTEs</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
+                      </span>
+                    </div>
 
-                  <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                    <span className="text-sm text-white/50">{isInpatient ? 'Annual Admissions' : 'Annual Encounters'}</span>
-                    <span className="text-base font-semibold text-white">
-                      {state.numberOfProviders > 0 ? formatNumber(annualEncounters) : '—'}
-                    </span>
-                  </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Shifts per nurse/year</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.nursingShiftsPerNurseYear}
+                      </span>
+                    </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">Utilization</span>
-                    <span className="text-base font-semibold text-white">
-                      {state.utilizationPercent}%
-                    </span>
-                  </div>
-                </div>
+                    <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                      <span className="text-sm text-white/50">Total shifts/year</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.numberOfProviders > 0 ? formatNumber(nursingTotalShiftsPerYear) : '—'}
+                      </span>
+                    </div>
 
-                {/* Eligible Encounters - Highlighted */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Utilization</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.utilizationPercent}%
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-6 py-5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">{isInpatient ? 'Hospitalists' : isED ? 'ED Physicians' : 'Providers'}</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">{isInpatient ? 'Admissions/Hospitalist' : 'Encounters/Provider'}</span>
+                      <span className="text-base font-semibold text-white">
+                        {formatNumber(encountersPerProvider)}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                      <span className="text-sm text-white/50">{isInpatient ? 'Annual Admissions' : 'Annual Encounters'}</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.numberOfProviders > 0 ? formatNumber(annualEncounters) : '—'}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Utilization</span>
+                      <span className="text-base font-semibold text-white">
+                        {state.utilizationPercent}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Eligible Encounters/Shifts - Highlighted */}
                 <div className="px-6 py-5 border-t border-white/10">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-white/70">{isInpatient ? 'Eligible Admissions' : 'Eligible Encounters'}</span>
+                    <span className="text-sm font-medium text-white/70">
+                      {isNursing ? 'Eligible Shifts' : isInpatient ? 'Eligible Admissions' : 'Eligible Encounters'}
+                    </span>
                     <span className="text-2xl font-bold text-[#F07B5F]">
-                      {state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—'}
+                      {isNursing 
+                        ? (state.numberOfProviders > 0 ? formatNumber(nursingEligibleShifts) : '—')
+                        : (state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—')
+                      }
                     </span>
                   </div>
                   <p className="text-xs text-white/30">
-                    This is your value multiplier—every driver calculation uses this number
+                    {isNursing 
+                      ? "This is your value multiplier—every calculation uses this number"
+                      : "This is your value multiplier—every driver calculation uses this number"
+                    }
                   </p>
                 </div>
 

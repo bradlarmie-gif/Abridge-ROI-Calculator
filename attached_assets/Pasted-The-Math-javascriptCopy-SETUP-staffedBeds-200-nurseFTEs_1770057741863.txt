@@ -1,0 +1,163 @@
+The Math:
+javascriptCopy// SETUP
+staffedBeds = 200
+nurseFTEs = 300
+occupancyRate = 0.85
+
+// TIME SAVINGS (Per Nurse Per Shift model)
+minutesSavedPerNursePerShift = 30 // Conservative: 15, Typical: 30, Aggressive: 45
+shiftsPerNursePerYear = 156 // ~3 shifts/week × 52 weeks
+utilizationRate = 0.70
+
+// CALCULATE
+totalShiftsPerYear = nurseFTEs × shiftsPerNursePerYear
+// = 300 × 156 = 46,800 shifts/year
+
+eligibleShifts = totalShiftsPerYear × utilizationRate
+// = 46,800 × 0.70 = 32,760 shifts
+
+totalMinutesSaved = eligibleShifts × minutesSavedPerNursePerShift
+// = 32,760 × 30 = 982,800 minutes
+
+totalHoursSaved = totalMinutesSaved / 60
+// = 16,380 hours/year
+
+hoursPerNursePerYear = totalHoursSaved / nurseFTEs
+// = 16,380 / 300 = 54.6 hours/nurse/year
+// = ~1 hour/week per nurse
+
+Updated Setup + Modeling Approach:
+PAGE 1: SETUP
+CopySIZE YOUR OPPORTUNITY
+
+Let's understand your nursing program
+
+1️⃣ DEPLOYMENT SCOPE
+
+How many staffed beds are in scope?        [200] beds
+This is your billing unit for Abridge Nursing
+
+How many nurse FTEs support these beds?    [300] FTEs
+~1.5 FTEs per bed is typical for med-surg, higher for ICU
+
+What type of unit(s)?
+[Med-Surg]  [ICU/Critical Care]  [Mixed]
+
+2️⃣ EXPECTED UTILIZATION
+
+What percentage of shifts will use Abridge?
+
+[Conservative 50%]  [Typical 70%]  [Aggressive 85%]
+
+───────────────────────────────────────────────
+
+YOUR BASELINE:
+
+Nurse FTEs:               300
+Shifts per nurse/year:    156 (3 shifts/week avg)
+Total shifts/year:        46,800
+Eligible shifts:          32,760 (at 70% utilization)
+
+[Continue to Time Savings →]
+
+PAGE 2: MODELING APPROACH
+CopyMODEL NURSING TIME SAVINGS
+
+How much time can nurses save per shift?
+
+Nursing documentation includes assessments, care plans, 
+interventions, and handoffs. Pick the scenario that matches 
+your expectations.
+
+───────────────────────────────────────────────
+
+[Conservative]                              15 min
+Play it safe                               per shift
+For skeptical CNOs or pilot programs.
+
+[Typical] ← RECOMMENDED                     30 min
+Most nursing programs start here           per shift
+Based on real nursing implementations.
+
+[Aggressive]                                45 min
+Maximize time for patient care             per shift
+For units with strong leadership and optimized workflows.
+
+───────────────────────────────────────────────
+
+📊 WHERE DOES 30 MIN/SHIFT COME FROM?
+
+Nurses spend 25-35% of their shift documenting:
+- Assessment documentation: 10-15 min saved
+- Care notes & interventions: 5-10 min saved
+- End-of-shift charting: 10-15 min saved
+- Handoff preparation: 5-10 min saved
+
+30 min/shift is conservative—many units see 45+ min.
+
+───────────────────────────────────────────────
+
+PROJECTED TIME SAVINGS:
+
+32,760 eligible shifts × 30 min = 
+
+16,380 hours/year
+
+That's:
+- 54.6 hours per nurse per year
+- ~1 hour per nurse per week
+- 30 min less per shift
+
+[Continue to Time Allocation →]
+
+Why This is Better Than "Per Encounter":
+Current ("Per Encounter")Proposed ("Per Shift")"84,000 encounters" - what does that mean?"32,760 shifts" - clear"20 min per encounter" - confusing"30 min per shift" - intuitiveHard to validateEasy to track shift end timesDoesn't tie to OT directlyDirectly ties to OT reduction
+
+The Flow:
+CopySETUP:
+- Beds: 200
+- Nurse FTEs: 300
+- Unit type: Med-Surg
+- Utilization: 70%
+→ Eligible shifts: 32,760/year
+
+MODELING APPROACH:
+- Time saved: 30 min/shift (Typical)
+→ Total hours saved: 16,380/year
+→ Per nurse: 54.6 hours/year (~1 hr/week)
+
+TIME ALLOCATION:
+- Staffing Efficiency: 40%
+- Bedside Care: 30%
+- Nurse Wellbeing: 30%
+→ Calculate value for each bucket
+
+Changes Needed to Current Calculator:
+CopySETUP PAGE:
+
+REMOVE:
+- "Annual Patient Encounters" 
+- "Encounters/nurse" (1,200/1,500/1,800)
+
+KEEP:
+- Number of Nurses (FTEs)
+- Staffed Beds
+- Unit type
+- Utilization rate
+
+ADD:
+- "Shifts per nurse per year" (default: 156, or ~3/week)
+- Show calculated "Eligible shifts/year"
+
+MODELING APPROACH PAGE:
+
+CHANGE:
+- From "min per encounter" → "min per shift"
+- Conservative: 15 min/shift
+- Typical: 30 min/shift
+- Aggressive: 45 min/shift
+
+UPDATE receipt to show:
+- Total hours saved/year
+- Hours per nurse per year
+- "Time back per shift: 30 min"

@@ -106,22 +106,22 @@ const INPATIENT_SCENARIOS: ScenarioOption[] = [
   },
 ];
 
-// Nursing: time savings per patient encounter (nursing documentation is extensive)
+// Nursing: time savings per SHIFT (not per encounter)
 const NURSING_SCENARIOS: ScenarioOption[] = [
   {
     id: 'conservative',
     label: 'Conservative',
     tagline: 'Play it safe',
-    description: 'Accounts for nursing workflow complexity. Start here for skeptical CNOs or pilot programs.',
-    minutes: 10,
+    description: 'For skeptical CNOs or pilot programs. Start here and prove value.',
+    minutes: 15,
     icon: Shield,
   },
   {
     id: 'typical',
     label: 'Typical',
     tagline: 'Most nursing programs start here',
-    description: 'Based on real nursing implementations. Balances documentation time savings with adoption realities.',
-    minutes: 20,
+    description: 'Based on real nursing implementations. Assessment docs, care notes, handoffs.',
+    minutes: 30,
     icon: Target,
     recommended: true,
   },
@@ -129,8 +129,8 @@ const NURSING_SCENARIOS: ScenarioOption[] = [
     id: 'aggressive',
     label: 'Aggressive',
     tagline: 'Maximize time for patient care',
-    description: 'For programs with strong nursing leadership buy-in and streamlined charting workflows.',
-    minutes: 30,
+    description: 'For units with strong leadership and optimized workflows. Many units see 45+ min.',
+    minutes: 45,
     icon: Zap,
   },
 ];
@@ -148,12 +148,28 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
         : OUTPATIENT_SCENARIOS;
   
   const handleSelectScenario = (scenario: ScenarioOption) => {
-    updateState({ 
-      timePathScenario: scenario.id,
-      minutesSavedPerEncounter: scenario.minutes,
-    });
+    if (isNursing) {
+      updateState({ 
+        timePathScenario: scenario.id,
+        nursingMinutesPerShift: scenario.minutes,
+      });
+    } else {
+      updateState({ 
+        timePathScenario: scenario.id,
+        minutesSavedPerEncounter: scenario.minutes,
+      });
+    }
   };
 
+  // Nursing uses per-shift model, others use per-encounter
+  const nursingTotalShiftsPerYear = state.numberOfProviders * state.nursingShiftsPerNurseYear;
+  const nursingEligibleShifts = Math.round(nursingTotalShiftsPerYear * (state.utilizationPercent / 100));
+  const nursingTotalMinutesSaved = nursingEligibleShifts * state.nursingMinutesPerShift;
+  const nursingTotalHoursSaved = Math.round(nursingTotalMinutesSaved / 60);
+  const nursingHoursPerNursePerYear = state.numberOfProviders > 0 
+    ? (nursingTotalHoursSaved / state.numberOfProviders).toFixed(1) 
+    : '0';
+  
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   const totalMinutesSaved = eligibleEncounters * state.minutesSavedPerEncounter;
   const totalHoursSaved = Math.round(totalMinutesSaved / 60);
@@ -186,11 +202,11 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                 {isNursing ? "Model Nursing Time Savings" : isInpatient ? "Model Documentation Efficiency" : isED ? "Model ED Efficiency" : "Model Time Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isNursing ? "How much time per patient encounter?" : isInpatient ? "How much time per admission?" : isED ? "How much time per encounter?" : "Choose your modeling approach"}
+                {isNursing ? "How much time can nurses save per shift?" : isInpatient ? "How much time per admission?" : isED ? "How much time per encounter?" : "Choose your modeling approach"}
               </h1>
               <p className="text-slate-600 mb-4">
                 {isNursing
-                  ? "Nursing documentation is extensive—assessments, care plans, handoffs, and charting. Pick the scenario that matches your expectations for per-encounter time savings."
+                  ? "Nursing documentation includes assessments, care plans, interventions, and handoffs. Pick the scenario that matches your expectations."
                   : isInpatient
                     ? "Inpatient documentation is extensive—H&Ps, progress notes, discharge summaries. Pick the scenario that matches your expectations for per-admission time savings."
                     : isED 
