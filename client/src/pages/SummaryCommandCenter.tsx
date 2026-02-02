@@ -466,13 +466,56 @@ export default function SummaryCommandCenter({
 
     const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
     
+    // Calculate wellbeing/retention inputs for PDF math breakdown
+    const baselineTurnoverRate = 8; // 8% default
+    const burnoutAttribution = 50; // 50% of turnover is burnout-related
+    const replacementCost = activeSetting === "nursing" ? 65000 : activeSetting === "ed" ? 500000 : 250000;
+    const annualDepartures = pilotUnits * (baselineTurnoverRate / 100);
+    const burnoutDepartures = annualDepartures * (burnoutAttribution / 100);
+    
+    // Determine retention lift based on hours per provider
+    const eligibleEncounters = pilotUnits * encountersPerUnit * (pilotUtilization / 100);
+    const hoursReturned = (eligibleEncounters * 2.5) / 60; // 2.5 min saved per encounter
+    const wellbeingAllocation = 25; // Default 25% to wellbeing
+    const hoursToWellbeing = hoursReturned * (wellbeingAllocation / 100);
+    const hoursPerProviderAnnual = hoursToWellbeing / Math.max(1, pilotUnits);
+    
+    let retentionLift = 4; // MINIMAL (3-5%)
+    if (hoursPerProviderAnnual >= 200) retentionLift = 27.5; // MAXIMUM
+    else if (hoursPerProviderAnnual >= 150) retentionLift = 17.5; // SIGNIFICANT
+    else if (hoursPerProviderAnnual >= 100) retentionLift = 10; // MODERATE
+    
+    const departuresAvoided = burnoutDepartures * (retentionLift / 100);
+    
     Object.entries(mergedDriverResults).forEach(([key, result]) => {
       if (result && result.value > 0) {
         const normalizedId = driverIdMap[key] || key;
+        
+        // Enrich workforce/retention driver with calculated inputs for all care settings
+        let inputs = result.inputs || {};
+        const isRetentionDriver = normalizedId === "workforce" || key === "retention" || 
+          normalizedId === "edRetention" || key === "edRetention" ||
+          normalizedId === "inpatientRetention" || key === "inpatientRetention";
+        
+        if (isRetentionDriver) {
+          inputs = {
+            ...inputs,
+            providers: pilotUnits,
+            turnoverRate: baselineTurnoverRate,
+            annualDepartures: annualDepartures,
+            burnoutAttribution: burnoutAttribution,
+            burnoutPct: burnoutAttribution, // Inpatient uses burnoutPct
+            burnoutDepartures: burnoutDepartures,
+            retentionLift: retentionLift,
+            departuresAvoided: departuresAvoided,
+            replacementCost: replacementCost,
+          };
+        }
+        
         driverResults[normalizedId] = {
           name: result.name || key,
           value: result.value,
-          inputs: result.inputs || {},
+          inputs,
         };
       }
     });
