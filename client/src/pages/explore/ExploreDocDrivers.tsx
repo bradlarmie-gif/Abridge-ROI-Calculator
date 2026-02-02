@@ -44,14 +44,14 @@ const OUTPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     description: 'Capture the complexity you are already delivering',
     icon: BarChart3,
     min: 0.5,
-    max: 5,
+    max: 10,
     step: 0.5,
     suffix: '%',
     detail: 'When notes fully reflect visit complexity, E&M levels often code higher',
     presets: [
-      { label: 'Conservative', value: 1 },
-      { label: 'Typical', value: 2 },
-      { label: 'Aggressive', value: 4 },
+      { label: 'Conservative', value: 2 },
+      { label: 'Typical', value: 5 },
+      { label: 'Aggressive', value: 7 },
     ],
   },
   {
