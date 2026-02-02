@@ -1156,11 +1156,11 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               
               {/* Live total allocation display */}
               <div className="ml-auto flex items-center gap-2">
-                <span className={`text-sm font-medium ${totalAllocated === 100 ? 'text-slate-500' : 'text-[#EA2C00]'}`}>
+                <span className={`text-sm font-medium ${totalAllocated === 100 ? 'text-slate-600' : 'text-[#EA2C00]'}`}>
                   Total: {totalAllocated}%
                 </span>
                 {totalAllocated === 100 && (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-slate-500" />
                 )}
               </div>
             </motion.div>
@@ -1224,7 +1224,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                               {/* Decrement button */}
                               <button
                                 onClick={() => handleIncrement(option.id, -5)}
-                                className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                                className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover-elevate"
+                                aria-label={`Decrease ${option.label} allocation`}
                                 data-testid={`button-decrement-${option.id}`}
                               >
                                 <ChevronDown className="w-4 h-4" />
@@ -1241,15 +1242,20 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleCommitEdit();
                                     if (e.key === 'Escape') handleCancelEdit();
+                                    if (e.key === 'Tab') {
+                                      handleCommitEdit();
+                                    }
                                   }}
                                   autoFocus
+                                  aria-label={`Edit ${option.label} percentage`}
                                   className="w-14 text-2xl font-bold text-black text-center border-2 border-[#EA2C00] rounded-lg bg-white focus:outline-none"
                                   data-testid={`input-percentage-${option.id}`}
                                 />
                               ) : (
                                 <button
                                   onClick={() => handleStartEdit(option.id)}
-                                  className="text-2xl font-bold text-black hover:bg-slate-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                                  aria-label={`Click to edit ${option.label} percentage, currently ${value}%`}
+                                  className="text-2xl font-bold text-black hover-elevate px-2 py-0.5 rounded-lg cursor-pointer"
                                   data-testid={`button-percentage-${option.id}`}
                                 >
                                   {value}%
@@ -1259,7 +1265,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                               {/* Increment button */}
                               <button
                                 onClick={() => handleIncrement(option.id, 5)}
-                                className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                                className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover-elevate"
+                                aria-label={`Increase ${option.label} allocation`}
                                 data-testid={`button-increment-${option.id}`}
                               >
                                 <ChevronUp className="w-4 h-4" />
@@ -1275,8 +1282,16 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                         </div>
                       </div>
 
-                      {/* Visual-only progress bar */}
-                      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                      {/* Visual-only progress bar (display only) */}
+                      <div 
+                        className="w-full h-2 bg-slate-200 rounded-full overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={value}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${option.label} allocation: ${value}%`}
+                        data-testid={`progressbar-${option.id}`}
+                      >
                         <motion.div 
                           className="h-full bg-[#EA2C00] rounded-full"
                           initial={false}
