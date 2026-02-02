@@ -1,0 +1,92 @@
+IMPROVE ALLOCATION INPUT UX - Keep visuals, fix interaction:
+
+CURRENT ISSUE: Sliders are hard to control precisely. Users want to type 
+exact percentages but still see the visual breakdown.
+
+SOLUTION - Hybrid approach:
+
+1. KEEP the visual bar (make it non-interactive, just visual feedback)
+
+2. MAKE THE PERCENTAGE NUMBER CLICKABLE:
+   - The "40%" at top right of each card should be clickable
+   - On click, transform into an input field:
+     
+     Before: Patient Access                      40%
+     After:  Patient Access                   [ 40 ]%
+                                              ↑ input, auto-selected
+   
+   - Input styling:
+     * 60px wide
+     * Large font (20px)
+     * Border appears on focus
+     * Placeholder shows current value
+     * Auto-select text on click (easy to replace)
+
+3. INPUT BEHAVIOR:
+   - Type new percentage (e.g., "55")
+   - Press Enter or click outside → commits change
+   - Automatically adjusts largest OTHER category to maintain 100%
+   - Visual bar animates to new percentage
+   - Value recalculates in real-time
+   - Press Escape → reverts to original value
+   - Tab key → moves to next category's percentage
+
+4. VISUAL FEEDBACK while typing:
+   - Show live total at top of page:
+     "Total Allocation: 95%" (red if ≠ 100%)
+   - Shade the category being adjusted in other categories 
+     (show which one will auto-adjust)
+   - Animate bar width changes smoothly
+
+5. KEEP everything else:
+   - Preset buttons (Balanced, Growth Focus, Retention Focus)
+   - "Step-by-Step Calculation" expandable
+   - Settings gear icon to adjust assumptions
+   - "See the math" functionality
+   - Hours allocated shown
+   - Annual value calculation
+
+6. ADD keyboard shortcuts:
+   - "/" key → focuses first percentage input
+   - Numbers + % → quick input (e.g., "45%" while viewing page)
+
+7. MOBILE: 
+   - Larger tap target (entire right side of card header is tappable)
+   - Numeric keyboard auto-opens
+
+8. ALTERNATIVE for non-tech users:
+   - Add small [▲] [▼] buttons next to percentage
+   - Clicking increments/decrements by 5%
+   - Holding increments by 1%
+
+KEEP the slider track as pure visual representation (non-interactive).
+The percentage number becomes the primary input.
+
+This gives precision of typing + visual feedback of sliders.
+
+Visual Mock-up of the Interaction:
+Before (default state):
+Copy👥 Patient Access                                    40% ←clickable
+See more patients and reduce wait times
+
+[████████████████                                    ]
+                                           ↑ visual only
+
+4,900 hours → Annual Value: $392,000
+During edit:
+Copy👥 Patient Access                                 [ 55 ]% ←typing
+See more patients and reduce wait times           ┌─────┐
+                                                  │Enter│
+[████████████████████████                          ] or Tab
+                                                  └─────┘
+6,738 hours → Annual Value: $539,000 (preview)
+                                    ↑ updates live
+
+⚠️ Total: 115% - Patient Experience will adjust to 15%
+After commit:
+Copy👥 Patient Access                                    55% ←done
+See more patients and reduce wait times
+
+[████████████████████████                          ]
+
+6,738 hours → Annual Value: $539,000 ✓

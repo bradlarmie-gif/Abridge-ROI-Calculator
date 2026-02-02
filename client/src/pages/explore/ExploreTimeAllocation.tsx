@@ -525,9 +525,62 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
   const [patientAccessSettingsOpen, setPatientAccessSettingsOpen] = useState(false);
   const [wellbeingSettingsOpen, setWellbeingSettingsOpen] = useState(false);
+  
+  // Editable percentage state
+  const [editingCategory, setEditingCategory] = useState<keyof TimeAllocation | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Start editing a percentage
+  const handleStartEdit = (id: keyof TimeAllocation) => {
+    setEditingCategory(id);
+    setEditValue(state.timeAllocation[id].toString());
+  };
+
+  // Commit the edited percentage
+  const handleCommitEdit = () => {
+    if (!editingCategory) return;
+    
+    const newValue = Math.max(0, Math.min(100, parseInt(editValue) || 0));
+    handleSliderChange(editingCategory, newValue);
+    setEditingCategory(null);
+    setEditValue('');
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingCategory(null);
+    setEditValue('');
+  };
+
+  // Increment/decrement by step
+  const handleIncrement = (id: keyof TimeAllocation, step: number) => {
+    const current = state.timeAllocation[id];
+    const newValue = Math.max(0, Math.min(100, current + step));
+    handleSliderChange(id, newValue);
+  };
+
+  // Calculate total allocation for validation display
+  const totalAllocation = useMemo(() => {
+    return state.timeAllocation.patientAccess + 
+      (isOutpatient ? state.timeAllocation.patientExperience : 0) +
+      (includeLocums ? state.timeAllocation.reducingLocums : 0) + 
+      state.timeAllocation.clinicianWellbeing;
+  }, [state.timeAllocation, isOutpatient, includeLocums]);
+
+  // Find which category will be adjusted when editing
+  const getAdjustingCategory = (editingId: keyof TimeAllocation): keyof TimeAllocation | null => {
+    const current = { ...state.timeAllocation };
+    const adjustableKeys = (Object.keys(current) as (keyof TimeAllocation)[])
+      .filter(k => k !== editingId && (includeLocums || k !== 'reducingLocums'));
+    
+    if (adjustableKeys.length === 0) return null;
+    return adjustableKeys.reduce((largest, k) => 
+      current[k] > current[largest] ? k : largest
+    , adjustableKeys[0]);
   };
 
   const handleToggleLocums = () => {
@@ -1163,7 +1216,53 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                 </span>
                               )}
                             </div>
-                            <span className="text-2xl font-bold text-black">{value}%</span>
+                            
+                            {/* Clickable percentage with increment/decrement */}
+                            <div className="flex items-center gap-1">
+                              {/* Decrement button */}
+                              <button
+                                onClick={() => handleIncrement(option.id, -5)}
+                                className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                                data-testid={`button-decrement-${option.id}`}
+                              >
+                                <ChevronDown className="w-4 h-4" />
+                              </button>
+                              
+                              {/* Editable percentage */}
+                              {editingCategory === option.id ? (
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value.replace(/\D/g, ''))}
+                                  onBlur={handleCommitEdit}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleCommitEdit();
+                                    if (e.key === 'Escape') handleCancelEdit();
+                                  }}
+                                  autoFocus
+                                  className="w-14 text-2xl font-bold text-black text-center border-2 border-[#EA2C00] rounded-lg bg-white focus:outline-none"
+                                  data-testid={`input-percentage-${option.id}`}
+                                />
+                              ) : (
+                                <button
+                                  onClick={() => handleStartEdit(option.id)}
+                                  className="text-2xl font-bold text-black hover:bg-slate-100 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                                  data-testid={`button-percentage-${option.id}`}
+                                >
+                                  {value}%
+                                </button>
+                              )}
+                              
+                              {/* Increment button */}
+                              <button
+                                onClick={() => handleIncrement(option.id, 5)}
+                                className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                                data-testid={`button-increment-${option.id}`}
+                              >
+                                <ChevronUp className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                           <p className="text-sm text-slate-500">{option.description}</p>
                           {isWellbeing && (
@@ -1174,16 +1273,15 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                         </div>
                       </div>
 
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="5"
-                        value={value}
-                        onChange={(e) => handleSliderChange(option.id, Number(e.target.value))}
-                        className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-[#EA2C00]"
-                        data-testid={`slider-${option.id}`}
-                      />
+                      {/* Visual-only progress bar */}
+                      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-[#EA2C00] rounded-full"
+                          initial={false}
+                          animate={{ width: `${value}%` }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        />
+                      </div>
 
                       {/* Value row */}
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
