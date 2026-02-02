@@ -1143,7 +1143,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 return (
                   <motion.div
                     key={option.id}
-                    className={`bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all duration-300 ${isWellbeing ? 'ring-2 ring-offset-1 ' + (wellbeingCalculation.threshold.label === 'MAXIMUM' ? 'ring-[#EA2C00]/30' : wellbeingCalculation.threshold.label === 'SIGNIFICANT' ? 'ring-orange-300' : wellbeingCalculation.threshold.label === 'MODERATE' ? 'ring-amber-200' : 'ring-transparent') : ''}`}
+                    className="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all duration-300"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
