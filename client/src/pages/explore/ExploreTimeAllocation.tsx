@@ -575,7 +575,12 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     current[id] = newValue;
     
-    const total = current.patientAccess + (includeLocums ? current.reducingLocums : 0) + current.clinicianWellbeing;
+    // Calculate total including patientExperience for Outpatient
+    const total = current.patientAccess + 
+      (isOutpatient ? current.patientExperience : 0) +
+      (includeLocums ? current.reducingLocums : 0) + 
+      current.clinicianWellbeing;
+    
     if (total !== 100) {
       const adjustment = 100 - total;
       const adjustKey = adjustableKeys.find(k => current[k] > 0) || adjustableKeys[0];
@@ -669,11 +674,11 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
         };
       }
       case 'patientExperience': {
-        const value = hours * assumptions.qualityTimeValue;
+        // Qualitative only - no dollar value
         return {
-          value: Math.round(value),
+          value: 0, // No monetary value - purely qualitative
           hours,
-          qualityTimeValue: assumptions.qualityTimeValue,
+          isQualitative: true,
         };
       }
       case 'reducingLocums': {
@@ -784,39 +789,39 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
       return (
         <div className="space-y-3">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-slate-800">Quality Time Investment</span>
+            <span className="text-sm font-semibold text-slate-800">Qualitative Benefits</span>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Non-monetary</span>
           </div>
           
           <div className="bg-white rounded-lg p-3 border border-slate-200 font-mono text-xs space-y-2">
             <div className="flex justify-between">
               <span className="text-slate-500">Hours allocated</span>
-              <span className="text-slate-900">{calc.hours.toLocaleString()} hrs</span>
+              <span className="text-slate-900 font-semibold">{calc.hours.toLocaleString()} hrs/year</span>
             </div>
-            <div className="flex items-center justify-between bg-[#FFF5F2] -mx-3 px-3 py-1.5 rounded">
-              <span className="flex items-center gap-1.5 text-[#EA2C00]">
-                × Value per hour
-                <InfoTooltip>
-                  <p className="font-semibold mb-1">Why $50/hour?</p>
-                  <p>Conservative proxy for patient satisfaction improvements, reduced complaints, stronger relationships, and reputation benefits.</p>
-                  <p className="mt-2 text-white/70">Supports quality metrics and downstream volume.</p>
-                </InfoTooltip>
-              </span>
-              <span className="text-[#EA2C00] font-semibold">${assumptions.qualityTimeValue}/hr</span>
-            </div>
-            <div className="border-t border-slate-300 mt-2 pt-2" />
-            <div className="flex justify-between text-sm">
-              <span className="font-bold text-slate-800">Annual Value</span>
-              <span className="font-bold text-[#EA2C00]">${calc.value.toLocaleString()}</span>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-400">Per provider per week</span>
+              <span className="text-slate-600">{(calc.hours / Math.max(1, state.numberOfProviders) / 52).toFixed(1)} hrs</span>
             </div>
           </div>
           
+          <div className="bg-[#FDF8F6] rounded-lg p-3 border border-[#F07B5F]/20">
+            <p className="text-sm font-semibold text-slate-800 mb-2">Why we don't assign a dollar value:</p>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Patient experience improvements—deeper conversations, better education, stronger relationships—create real value, but assigning speculative monetary figures would undermine the credibility of this model.
+            </p>
+            <p className="text-xs text-slate-500 mt-3 italic">
+              Instead, track qualitative outcomes: patient satisfaction scores, repeat visit rates, and referral patterns.
+            </p>
+          </div>
+          
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-            <p className="text-xs text-slate-600">
-              <span className="font-semibold text-slate-700">Qualitative benefits:</span> Hours invested in patient education, relationship building, and complex care coordination.
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Supports quality metrics, patient loyalty, and downstream volume retention.
-            </p>
+            <p className="text-xs font-semibold text-slate-700 mb-1">Qualitative outcomes to track:</p>
+            <ul className="text-xs text-slate-600 space-y-1">
+              <li>• Patient satisfaction (HCAHPS/Press Ganey)</li>
+              <li>• Appointment adherence & follow-up rates</li>
+              <li>• Patient complaints & grievances</li>
+              <li>• Referral patterns from satisfied patients</li>
+            </ul>
           </div>
         </div>
       );
@@ -1179,16 +1184,27 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                       {/* Value row */}
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
                         <div>
-                          <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours → Annual Value</p>
-                          <motion.p 
-                            key={driverCalc?.value}
-                            initial={{ scale: 1 }}
-                            animate={{ scale: [1, 1.05, 1] }}
-                            transition={{ duration: 0.3 }}
-                            className="text-xl font-bold text-[#F07B5F]"
-                          >
-                            ${driverCalc?.value.toLocaleString() || 0}
-                          </motion.p>
+                          {option.id === 'patientExperience' ? (
+                            <>
+                              <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours invested</p>
+                              <p className="text-lg font-semibold text-slate-600">
+                                Qualitative Benefits
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs text-slate-400 mb-0.5">{hours.toLocaleString()} hours → Annual Value</p>
+                              <motion.p 
+                                key={driverCalc?.value}
+                                initial={{ scale: 1 }}
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 0.3 }}
+                                className="text-xl font-bold text-[#F07B5F]"
+                              >
+                                ${driverCalc?.value.toLocaleString() || 0}
+                              </motion.p>
+                            </>
+                          )}
                         </div>
                         
                         <button
@@ -1196,8 +1212,12 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors"
                           data-testid={`button-expand-${option.id}`}
                         >
-                          <Calculator className="w-3.5 h-3.5" />
-                          <span>{isExpanded ? 'Hide' : 'See the math'}</span>
+                          {option.id === 'patientExperience' ? (
+                            <Info className="w-3.5 h-3.5" />
+                          ) : (
+                            <Calculator className="w-3.5 h-3.5" />
+                          )}
+                          <span>{isExpanded ? 'Hide' : (option.id === 'patientExperience' ? 'Learn more' : 'See the math')}</span>
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>
                       </div>
@@ -1305,6 +1325,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                     const Icon = option.icon;
                     const value = state.timeAllocation[option.id];
                     const driverCalc = calculateDriverValue(option.id);
+                    const isQualitative = option.id === 'patientExperience';
                     
                     return (
                       <div key={option.id} className="flex items-center justify-between">
@@ -1313,7 +1334,11 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                           <span className="text-sm text-white/70">{option.label}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-semibold text-white">${formatNumber(driverCalc?.value || 0)}</span>
+                          {isQualitative ? (
+                            <span className="text-sm text-white/50 italic">Qualitative</span>
+                          ) : (
+                            <span className="text-sm font-semibold text-white">${formatNumber(driverCalc?.value || 0)}</span>
+                          )}
                           <span className="text-xs text-white/40 ml-1">({value}%)</span>
                         </div>
                       </div>
