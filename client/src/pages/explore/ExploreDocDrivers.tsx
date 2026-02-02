@@ -75,17 +75,17 @@ const OUTPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     id: 'denials',
     label: 'Denial Prevention',
     shortLabel: 'Denials',
-    description: 'Reduce rework from documentation-related denials',
+    description: 'Prevent unappealable denials caused by documentation gaps',
     icon: AlertTriangle,
-    min: 10,
-    max: 40,
+    min: 25,
+    max: 75,
     step: 5,
     suffix: '%',
-    detail: 'About half of claim denials stem from documentation issues',
+    detail: '30-40% of denials cannot be appealed due to missing documentation',
     presets: [
-      { label: 'Conservative', value: 15 },
-      { label: 'Typical', value: 25 },
-      { label: 'Aggressive', value: 35 },
+      { label: 'Conservative', value: 25 },
+      { label: 'Typical', value: 50 },
+      { label: 'Aggressive', value: 75 },
     ],
   },
 ];
@@ -130,17 +130,17 @@ const INPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     id: 'denials',
     label: 'Denial Prevention',
     shortLabel: 'Denials',
-    description: 'Reduce inpatient claim denials through complete documentation',
+    description: 'Prevent unappealable inpatient denials from documentation gaps',
     icon: AlertTriangle,
-    min: 10,
-    max: 40,
+    min: 25,
+    max: 75,
     step: 5,
     suffix: '%',
-    detail: 'Inpatient denials are high-dollar—better notes prevent costly appeals',
+    detail: 'High-dollar inpatient denials that cannot be appealed due to missing medical necessity',
     presets: [
-      { label: 'Conservative', value: 15 },
-      { label: 'Typical', value: 25 },
-      { label: 'Aggressive', value: 35 },
+      { label: 'Conservative', value: 25 },
+      { label: 'Typical', value: 50 },
+      { label: 'Aggressive', value: 75 },
     ],
   },
 ];
@@ -185,17 +185,17 @@ const NURSING_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     id: 'denials',
     label: 'Regulatory Compliance',
     shortLabel: 'Compliance',
-    description: 'Reduce documentation-related compliance gaps and audit findings',
+    description: 'Prevent unappealable compliance gaps from documentation issues',
     icon: AlertTriangle,
-    min: 15,
-    max: 50,
+    min: 25,
+    max: 75,
     step: 5,
     suffix: '%',
     detail: 'Complete nursing documentation reduces CMS survey findings and audit risks',
     presets: [
-      { label: 'Conservative', value: 20 },
-      { label: 'Typical', value: 30 },
-      { label: 'Aggressive', value: 40 },
+      { label: 'Conservative', value: 25 },
+      { label: 'Typical', value: 50 },
+      { label: 'Aggressive', value: 75 },
     ],
   },
 ];
@@ -211,10 +211,12 @@ interface EditableAssumptions {
   rafImpactPerHcc: number;
   annualPaymentPerRaf: number;
   hccRealization: number;
-  // Denials
+  // Denials - unappealable focus
+  baselineDenialRate: number;
+  unappealableRate: number;
+  denialPreventionTarget: number;
   denialAvgValue: number;
   denialRealization: number;
-  baselineDenialRate: number;
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
@@ -228,10 +230,12 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   rafImpactPerHcc: 0.4,
   annualPaymentPerRaf: 12000,
   hccRealization: 60,
-  // Denials
-  denialAvgValue: 250,
-  denialRealization: 70,
+  // Denials - unappealable focus (Typical scenario)
   baselineDenialRate: 8,
+  unappealableRate: 40,
+  denialPreventionTarget: 50,
+  denialAvgValue: 250,
+  denialRealization: 85,
 };
 
 const REALIZATION_RATES = {
@@ -326,7 +330,7 @@ function EditableValue({
 const DEFAULT_DOC_DRIVERS = {
   wrvu: { enabled: false, value: 5 },  // Typical scenario default
   hcc: { enabled: false, value: 15 },
-  denials: { enabled: false, value: 25 },
+  denials: { enabled: false, value: 50 },  // Typical prevention target
 };
 
 export default function ExploreDocDrivers({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreDocDriversProps) {
@@ -605,22 +609,29 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
         };
       }
       case 'denials': {
+        // Unappealable denials calculation
         const baselineDenialRate = assumptions.baselineDenialRate / 100;
-        const docRelatedPct = 0.5;
-        const denials = eligibleEncounters * baselineDenialRate;
-        const denialsFromDoc = denials * docRelatedPct;
-        const denialsRecovered = denialsFromDoc * (driverValue / 100);
-        const grossValue = denialsRecovered * assumptions.denialAvgValue;
+        const unappealableRate = assumptions.unappealableRate / 100;
+        const preventionTarget = driverValue / 100;
+        
+        const totalDenials = eligibleEncounters * baselineDenialRate;
+        const appealableDenials = totalDenials * (1 - unappealableRate);
+        const unappealableDenials = totalDenials * unappealableRate;
+        const denialsPrevented = unappealableDenials * preventionTarget;
+        const grossValue = denialsPrevented * assumptions.denialAvgValue;
         const realizedValue = grossValue * (assumptions.denialRealization / 100);
+        
         return {
           value: Math.round(realizedValue),
           editableInputs: (
             <div className="space-y-3">
               <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
                 <p className="text-xs text-slate-500">
-                  <span className="font-medium text-slate-700">The logic:</span> Documentation gaps drive about half of claim denials. Each denial costs staff time to appeal and delays payment. Preventing denials upfront is more efficient than winning appeals.
+                  <span className="font-medium text-slate-700">The logic:</span> Documentation gaps drive 30-40% of denials that cannot be appealed—permanent revenue loss. Abridge captures clinical reasoning and medical necessity in real-time, preventing denials before they occur.
                 </p>
               </div>
+              
+              {/* Step 1: Total denials */}
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-slate-600">Eligible encounters</span>
                 <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
@@ -631,57 +642,105 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                   value={assumptions.baselineDenialRate} 
                   onChange={(v) => updateAssumption('baselineDenialRate', v)}
                   suffix="%"
-                  min={2}
-                  max={20}
+                  min={5}
+                  max={12}
                 />
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Total denials</span>
-                <span className="text-sm font-semibold text-black">{Math.round(denials).toLocaleString()} claims</span>
+                <span className="text-sm text-slate-600">= Total denials</span>
+                <span className="text-sm font-semibold text-black">{Math.round(totalDenials).toLocaleString()} claims</span>
+              </div>
+              
+              {/* Step 2: Appealable vs Unappealable visualization */}
+              <div className="bg-slate-100 -mx-4 px-4 py-3 rounded my-2">
+                <p className="text-xs font-semibold text-slate-700 mb-2">Denial breakdown:</p>
+                <div className="space-y-1 font-mono text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400 w-4">├─</span>
+                    <span className="text-slate-500">Appealable ({100 - assumptions.unappealableRate}%):</span>
+                    <span className="text-slate-600">{Math.round(appealableDenials).toLocaleString()}</span>
+                    <span className="text-slate-400 text-[10px]">← Recovered through appeals</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400 w-4">└─</span>
+                    <span className="text-[#EA2C00] font-semibold">Unappealable ({assumptions.unappealableRate}%):</span>
+                    <span className="text-[#EA2C00] font-semibold">{Math.round(unappealableDenials).toLocaleString()}</span>
+                    <span className="text-[#EA2C00] text-[10px]">← Abridge prevents these</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 3: Unappealable rate */}
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm text-slate-600">Unappealable rate</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Denials due to documentation gaps</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.unappealableRate} 
+                  onChange={(v) => updateAssumption('unappealableRate', v)}
+                  suffix="%"
+                  min={30}
+                  max={50}
+                />
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Documentation-related</span>
-                <span className="text-sm font-semibold text-black">50%</span>
+                <span className="text-sm text-slate-600">= Unrecoverable denials</span>
+                <span className="text-sm font-semibold text-black">{Math.round(unappealableDenials).toLocaleString()} claims</span>
               </div>
+              
+              {/* Step 4: Prevention target */}
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Doc-related denials</span>
-                <span className="text-sm font-semibold text-black">{Math.round(denialsFromDoc).toLocaleString()} claims</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Your reduction target</span>
+                <div>
+                  <span className="text-sm text-slate-600">× Your prevention target</span>
+                  <p className="text-xs text-slate-400 mt-0.5">% you'll prevent with better docs</p>
+                </div>
                 <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Denials prevented</span>
-                <span className="text-sm font-semibold text-black">{Math.round(denialsRecovered).toLocaleString()} claims</span>
+                <span className="text-sm text-slate-600">= Denials prevented</span>
+                <span className="text-sm font-semibold text-black">{Math.round(denialsPrevented).toLocaleString()} claims</span>
               </div>
+              
+              {/* Step 5: Value calculation */}
               <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Avg denial value</span>
+                <span className="text-sm text-slate-600">× Avg denied claim value</span>
                 <EditableValue 
                   value={assumptions.denialAvgValue} 
                   onChange={(v) => updateAssumption('denialAvgValue', v)}
                   prefix="$"
-                  min={50}
-                  max={1000}
+                  min={150}
+                  max={500}
+                  step={25}
                 />
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Gross value</span>
+                <span className="text-sm text-slate-600">= Gross value</span>
                 <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
               </div>
+              
+              {/* Step 6: Realization */}
               <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
                 <div>
                   <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
-                  <p className="text-xs text-slate-500 mt-0.5">Appeals success rate, collection timing</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Clean claims payment rate</p>
                 </div>
                 <EditableValue 
                   value={assumptions.denialRealization} 
                   onChange={(v) => updateAssumption('denialRealization', v)}
                   suffix="%"
-                  min={25}
-                  max={100}
+                  min={75}
+                  max={95}
                 />
               </div>
+              
+              {/* Impact summary */}
+              <div className="bg-[#FFF5F2] -mx-4 px-4 py-2 rounded mt-2">
+                <p className="text-xs text-slate-700">
+                  <span className="font-semibold text-[#EA2C00]">Your impact:</span> Prevent {Math.round(denialsPrevented).toLocaleString()} of the {Math.round(unappealableDenials).toLocaleString()} unrecoverable denials
+                </p>
+              </div>
+              
               <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
                 <span className="text-sm font-bold text-black">Net annual value</span>
                 <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
