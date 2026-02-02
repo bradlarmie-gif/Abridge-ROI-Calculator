@@ -92,7 +92,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            Where Will You Deploy Abridge?
+            Select Your Care Setting
           </h1>
 
           <p className="text-lg text-slate-600 max-w-xl mx-auto mb-6">
@@ -100,8 +100,17 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
           </p>
           
           <div className="bg-slate-100 rounded-lg p-4 max-w-xl mx-auto text-left">
-            <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-slate-700">Why this matters:</span> Each care setting has distinct workflows, reimbursement models, and documentation challenges. Outpatient visits are shorter with E&M-driven revenue. EDs face high-acuity, high-volume throughput pressure. Selecting your setting ensures the model uses appropriate benchmarks, time savings, and value drivers.
+            <p className="text-slate-500 text-sm mb-3">
+              <span className="font-semibold text-slate-700">Why this matters:</span> Each care setting has unique workflows, time pressures, and documentation requirements. We'll customize the ROI model to reflect your setting's specific realities:
+            </p>
+            <ul className="text-slate-500 text-sm space-y-1 ml-1">
+              <li>• <span className="font-medium text-slate-600">Outpatient:</span> Visit volume & E&M documentation</li>
+              <li>• <span className="font-medium text-slate-600">Emergency:</span> Throughput pressure & medical necessity</li>
+              <li>• <span className="font-medium text-slate-600">Inpatient:</span> Care coordination & CDI efficiency</li>
+              <li>• <span className="font-medium text-slate-600">Nursing:</span> Bedside time & handoff quality</li>
+            </ul>
+            <p className="text-slate-500 text-sm mt-3">
+              Choosing the right setting ensures accurate, defensible ROI projections.
             </p>
           </div>
         </motion.div>
@@ -224,7 +233,10 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   `}
                   data-testid="button-continue"
                 >
-                  Continue
+                  {selectedSetting 
+                    ? `Continue with ${CARE_SETTINGS.find(s => s.id === selectedSetting)?.label || 'Setting'}`
+                    : 'Continue'
+                  }
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
                 
