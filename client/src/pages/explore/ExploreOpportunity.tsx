@@ -158,7 +158,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     }
   }, [updateState]);
 
-  const annualEncounters = state.numberOfProviders * encountersPerProvider;
+  // Use direct state value when user typed a custom total, otherwise use calculated value
+  const annualEncounters = usingTotalInput && state.annualEncounters > 0 
+    ? state.annualEncounters 
+    : state.numberOfProviders * encountersPerProvider;
   const eligibleEncounters = Math.round(annualEncounters * (state.utilizationPercent / 100));
 
   const formatNumber = (n: number) => n.toLocaleString();
