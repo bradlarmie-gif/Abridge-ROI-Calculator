@@ -1037,21 +1037,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               <p className="text-slate-600 mb-4">
                 You're unlocking <span className="font-bold text-[#EA2C00]">{totalHoursSaved.toLocaleString()} hours</span>. {context.subtitle}
               </p>
-              <div className="bg-slate-100 rounded-lg p-3 mb-3">
+              <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
                   <span className="font-semibold text-slate-700">Why this matters:</span> {context.whyItMatters}
-                </p>
-              </div>
-              <div className="bg-[#FFF5F2] rounded-lg p-3">
-                <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-[#EA2C00]">Realization rates:</span> {isNursing
-                    ? "Not every hour saved translates directly to dollars. Nursing constraints like staffing ratios and patient acuity mean time savings primarily flow to care quality and retention. Each driver shows its realization rate—tap \"See the math\" to adjust."
-                    : isInpatient
-                      ? "Not every hour saved translates to dollars. Inpatient constraints mean time savings primarily flow to quality of life and retention. Each driver shows its realization rate—tap \"See the math\" to adjust."
-                      : isED 
-                        ? "Not every saved hour converts to dollars. ED constraints like staffing minimums and throughput caps mean only a portion of time savings realizes as value. Each driver shows its realization rate—tap \"See the math\" to adjust."
-                        : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
-                  }
                 </p>
               </div>
             </motion.div>
