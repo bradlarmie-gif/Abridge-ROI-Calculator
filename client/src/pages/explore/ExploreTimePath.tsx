@@ -201,12 +201,12 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
                   <span className="font-semibold text-slate-700">How to choose:</span> {isNursing
-                    ? "Use \"Conservative\" for CNO presentations. \"Typical\" reflects average nursing implementations. \"Aggressive\" suits units with strong nursing leadership and optimized charting workflows. All assumptions can be adjusted later."
+                    ? "\"Conservative\" uses validated benchmarks. \"Typical\" reflects average nursing implementations. \"Aggressive\" suits units with strong nursing leadership and optimized charting workflows. All assumptions can be adjusted later."
                     : isInpatient
-                      ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average hospitalist implementations. \"Aggressive\" suits programs with strong physician buy-in and optimized rounding. All assumptions can be adjusted later."
+                      ? "\"Conservative\" uses validated benchmarks. \"Typical\" reflects average hospitalist implementations. \"Aggressive\" suits programs with strong physician buy-in and optimized rounding. All assumptions can be adjusted later."
                       : isED 
-                        ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
-                        : "Use \"Conservative\" for CFO presentations or skeptical stakeholders. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
+                        ? "\"Conservative\" uses validated benchmarks. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
+                        : "\"Conservative\" uses validated benchmarks. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
                   }
                 </p>
               </div>
