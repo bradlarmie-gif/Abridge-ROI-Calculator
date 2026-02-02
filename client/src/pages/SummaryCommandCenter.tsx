@@ -855,58 +855,85 @@ export default function SummaryCommandCenter({
 
           {/* ========== ED DOWNSTREAM VALUE ========== */}
           {isEDSetting && (
-            <section className="py-12 md:py-16 px-6 bg-gradient-to-b from-slate-800 to-slate-900">
-              <div className="max-w-5xl mx-auto">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-[#F07B5F]" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-white">Downstream Value Potential</h2>
-                    <p className="text-white/60 text-sm">ED documentation connects to Inpatient value</p>
-                  </div>
-                </div>
-                
-                <p className="text-white/80 mb-8 max-w-3xl">
-                  ED encounters that result in admissions create additional documentation value opportunities. 
-                  These are captured in the Inpatient flow and represent significant potential beyond direct ED metrics.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <FileCheck className="w-5 h-5 text-[#F07B5F]" />
-                      <span className="font-semibold text-white">DRG/CMI Capture</span>
+            <section className="py-12 md:py-16 px-6 bg-[#FDF8F6]">
+              <div className="max-w-4xl mx-auto">
+                {/* Premium Card Container */}
+                <div className="bg-white rounded-2xl border border-[#F5E6E0] shadow-sm overflow-hidden">
+                  {/* Header with accent bar */}
+                  <div className="bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] h-1" />
+                  
+                  <div className="p-8 md:p-10">
+                    {/* Title Section */}
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                        <Link2 className="w-6 h-6 text-[#EA2C00]" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">The Bigger Picture</p>
+                        <h2 className="text-2xl md:text-3xl font-bold text-black">Downstream Value Potential</h2>
+                        <p className="text-slate-500 text-sm mt-1">ED documentation connects to Inpatient value</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-white/70">Accurate ED documentation supports proper DRG assignment for admitted patients, capturing the full complexity of the case.</p>
-                  </div>
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Stethoscope className="w-5 h-5 text-[#F07B5F]" />
-                      <span className="font-semibold text-white">Medical Necessity</span>
+                    
+                    {/* Educational Context */}
+                    <p className="text-slate-600 mb-8 leading-relaxed">
+                      ED encounters that result in admissions create additional documentation value opportunities. 
+                      The work you do here flows directly into inpatient coding, CDI workflows, and denial defense—representing 
+                      significant potential beyond direct ED metrics.
+                    </p>
+                    
+                    {/* Value Drivers Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                      <div className="bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                            <BarChart3 className="w-4 h-4 text-[#EA2C00]" />
+                          </div>
+                          <span className="font-semibold text-black">DRG/CMI Capture</span>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">Accurate ED documentation supports proper DRG assignment for admitted patients, capturing the full complexity of the case.</p>
+                      </div>
+                      
+                      <div className="bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                            <Stethoscope className="w-4 h-4 text-[#EA2C00]" />
+                          </div>
+                          <span className="font-semibold text-black">Medical Necessity</span>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">Complete documentation establishes medical necessity for admission decisions, reducing retrospective denials.</p>
+                      </div>
+                      
+                      <div className="bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                            <FileCheck className="w-4 h-4 text-[#EA2C00]" />
+                          </div>
+                          <span className="font-semibold text-black">CDI Efficiency</span>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">Reduces Clinical Documentation Improvement queries and rework by capturing detail upfront.</p>
+                      </div>
+                      
+                      <div className="bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                            <Building2 className="w-4 h-4 text-[#EA2C00]" />
+                          </div>
+                          <span className="font-semibold text-black">Inpatient Connection</span>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">ED documentation flows into inpatient records, enabling end-to-end value capture across the care continuum.</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-white/70">Complete documentation establishes medical necessity for admission decisions, reducing retrospective denials.</p>
-                  </div>
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Building2 className="w-5 h-5 text-[#F07B5F]" />
-                      <span className="font-semibold text-white">CDI Efficiency</span>
+                    
+                    {/* Callout */}
+                    <div className="flex items-start gap-3 bg-[#FFF5F2] rounded-xl p-4 border border-[#FDDDD4]">
+                      <Lightbulb className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-slate-700">
+                        <span className="font-semibold text-black">Ready to see the full picture?</span> To model inpatient value 
+                        from ED admissions, explore the Inpatient care setting in a separate analysis.
+                      </p>
                     </div>
-                    <p className="text-sm text-white/70">Reduces Clinical Documentation Improvement queries and rework by capturing detail upfront.</p>
                   </div>
-                  <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Link2 className="w-5 h-5 text-[#F07B5F]" />
-                      <span className="font-semibold text-white">Inpatient Connection</span>
-                    </div>
-                    <p className="text-sm text-white/70">ED documentation flows into inpatient records, enabling end-to-end value capture across the care continuum.</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 pt-4 border-t border-white/10">
-                  <p className="text-xs text-white/40 text-center">
-                    To model inpatient value from ED admissions, explore the Inpatient care setting.
-                  </p>
                 </div>
               </div>
             </section>
@@ -914,55 +941,75 @@ export default function SummaryCommandCenter({
 
           {/* ========== INPATIENT CONNECTED VALUE ========== */}
           {isInpatientSetting && (
-            <section className="py-12 md:py-16 px-6 bg-gradient-to-b from-indigo-50 to-white">
-              <div className="max-w-5xl mx-auto">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-                    <Link2 className="w-6 h-6 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Connected Value</h2>
-                    <p className="text-slate-500 text-sm">ED + Inpatient compounds your results</p>
-                  </div>
-                </div>
-                
-                <p className="text-slate-600 mb-8 max-w-3xl">
-                  When both ED and Inpatient use Abridge, the value compounds. The admission documentation 
-                  that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-3">
-                      <BarChart3 className="w-5 h-5 text-indigo-600" />
-                      <span className="font-semibold text-slate-800">DRG Capture</span>
-                    </div>
-                    <p className="text-sm text-slate-600">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
-                  </div>
+            <section className="py-12 md:py-16 px-6 bg-[#FDF8F6]">
+              <div className="max-w-4xl mx-auto">
+                {/* Premium Card Container */}
+                <div className="bg-white rounded-2xl border border-[#F5E6E0] shadow-sm overflow-hidden">
+                  {/* Header with accent bar */}
+                  <div className="bg-gradient-to-r from-[#EA2C00] to-[#F07B5F] h-1" />
                   
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-3">
-                      <FileCheck className="w-5 h-5 text-blue-500" />
-                      <span className="font-semibold text-slate-800">CDI Efficiency</span>
+                  <div className="p-8 md:p-10">
+                    {/* Title Section */}
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                        <Link2 className="w-6 h-6 text-[#EA2C00]" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">Compounding Returns</p>
+                        <h2 className="text-2xl md:text-3xl font-bold text-black">Connected Value</h2>
+                        <p className="text-slate-500 text-sm mt-1">ED + Inpatient compounds your results</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-slate-600">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
-                  </div>
-                  
-                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Shield className="w-5 h-5 text-amber-500" />
-                      <span className="font-semibold text-slate-800">Denial Prevention</span>
+                    
+                    {/* Educational Context */}
+                    <p className="text-slate-600 mb-8 leading-relaxed">
+                      When both ED and Inpatient use Abridge, the value compounds. The admission documentation 
+                      that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense—creating 
+                      a seamless documentation foundation from arrival through discharge.
+                    </p>
+                    
+                    {/* Value Drivers - Horizontal List */}
+                    <div className="space-y-4 mb-8">
+                      <div className="flex items-start gap-4 bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                          <BarChart3 className="w-5 h-5 text-[#EA2C00]" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-black block mb-1">DRG Capture</span>
+                          <p className="text-sm text-slate-600 leading-relaxed">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4 bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                          <FileCheck className="w-5 h-5 text-[#EA2C00]" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-black block mb-1">CDI Efficiency</span>
+                          <p className="text-sm text-slate-600 leading-relaxed">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4 bg-[#FAFAFA] rounded-xl p-5 border border-slate-100">
+                        <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                          <Shield className="w-5 h-5 text-[#EA2C00]" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-black block mb-1">Denial Prevention</span>
+                          <p className="text-sm text-slate-600 leading-relaxed">Medical necessity documented at admission is your first line of defense against payer audits.</p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-slate-600">Medical necessity documented at admission is your first line of defense against payer audits.</p>
+                    
+                    {/* Callout */}
+                    <div className="flex items-start gap-3 bg-[#FFF5F2] rounded-xl p-4 border border-[#FDDDD4]">
+                      <Lightbulb className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-slate-700">
+                        <span className="font-semibold text-black">If you're also using Abridge in ED</span>, the documentation 
+                        quality benefits above are amplified — you're building on a stronger foundation.
+                      </p>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-start gap-3 bg-indigo-100 rounded-xl p-4">
-                  <Lightbulb className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-indigo-800">
-                    <span className="font-semibold">If you're also using Abridge in ED</span>, the documentation 
-                    quality benefits above are amplified — you're building on a stronger foundation.
-                  </p>
                 </div>
               </div>
             </section>
