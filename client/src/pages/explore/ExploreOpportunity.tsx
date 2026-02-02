@@ -223,32 +223,32 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* NURSING-SPECIFIC: Staffed Beds (shown first for nursing) */}
               {isNursing && (
                 <motion.div
-                  className="bg-white rounded-2xl border border-slate-200 p-6"
+                  className="bg-white rounded-xl md:rounded-2xl border border-slate-200 p-4 md:p-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1, duration: 0.5 }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-[#EA2C00]" />
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-black">Staffed Beds in Scope</h2>
-                        <p className="text-sm text-slate-500">This is your billing unit for Abridge Nursing</p>
+                        <h2 className="text-sm md:text-base font-bold text-black">Staffed Beds in Scope</h2>
+                        <p className="text-xs md:text-sm text-slate-500">This is your billing unit for Abridge Nursing</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-auto sm:ml-0">
                       <input
                         type="text"
                         inputMode="numeric"
                         placeholder="0"
                         value={bedsInputValue}
                         onChange={(e) => handleBedsChange(e.target.value)}
-                        className="w-28 py-3 px-4 text-right text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
+                        className="w-24 md:w-28 py-2 md:py-3 px-3 md:px-4 text-right text-xl md:text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
                         data-testid="input-beds"
                       />
-                      <span className="text-sm text-slate-500">beds</span>
+                      <span className="text-xs md:text-sm text-slate-500">beds</span>
                     </div>
                   </div>
                 </motion.div>
@@ -256,19 +256,19 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
               {/* Number of Providers/Nurses */}
               <motion.div
-                className="bg-white rounded-2xl border border-slate-200 p-6"
+                className="bg-white rounded-xl md:rounded-2xl border border-slate-200 p-4 md:p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: isNursing ? 0.15 : 0.1, duration: 0.5 }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                      <Users className="w-6 h-6 text-[#EA2C00]" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">{isNursing ? "Nurse FTEs" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
-                      <p className="text-sm text-slate-500">
+                      <h2 className="text-sm md:text-base font-bold text-black">{isNursing ? "Nurse FTEs" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
+                      <p className="text-xs md:text-sm text-slate-500">
                         {isNursing 
                           ? "How many nurse FTEs support these beds?" 
                           : isInpatient 
@@ -284,7 +284,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 ml-auto sm:ml-0">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -292,10 +292,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       value={providerInputValue}
                       onChange={(e) => handleProvidersChange(e.target.value)}
                       onBlur={handleProviderInputBlur}
-                      className="w-28 py-3 px-4 text-right text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
+                      className="w-24 md:w-28 py-2 md:py-3 px-3 md:px-4 text-right text-xl md:text-2xl font-bold text-[#EA2C00] bg-slate-50 border border-slate-200 rounded-lg md:rounded-xl focus:outline-none focus:border-[#EA2C00] focus:bg-white focus:ring-2 focus:ring-[#EA2C00]/10 transition-all placeholder:text-slate-300"
                       data-testid="input-providers"
                     />
-                    {isNursing && <span className="text-sm text-slate-500">FTEs</span>}
+                    {isNursing && <span className="text-xs md:text-sm text-slate-500">FTEs</span>}
                   </div>
                 </div>
               </motion.div>
@@ -303,22 +303,22 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* NURSING-SPECIFIC: Occupancy Rate */}
               {isNursing && (
                 <motion.div
-                  className="bg-white rounded-2xl border border-slate-200 p-6"
+                  className="bg-white rounded-xl md:rounded-2xl border border-slate-200 p-4 md:p-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                      <Percent className="w-6 h-6 text-[#EA2C00]" />
+                  <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-5">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                      <Percent className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">Average Bed Occupancy Rate</h2>
-                      <p className="text-sm text-slate-500">Most hospitals run 75-90% occupancy</p>
+                      <h2 className="text-sm md:text-base font-bold text-black">Average Bed Occupancy Rate</h2>
+                      <p className="text-xs md:text-sm text-slate-500">Most hospitals run 75-90% occupancy</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
                     <input
                       type="range"
                       min={50}
@@ -328,11 +328,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
                       data-testid="slider-occupancy-rate"
                     />
-                    <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-2 min-w-[80px] justify-center">
-                      <span className="text-lg font-bold text-[#EA2C00]">{state.nursingOccupancyRate}%</span>
+                    <div className="flex items-center gap-2 bg-slate-50 rounded-lg md:rounded-xl px-3 md:px-4 py-2 min-w-[70px] md:min-w-[80px] justify-center">
+                      <span className="text-base md:text-lg font-bold text-[#EA2C00]">{state.nursingOccupancyRate}%</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-3">
+                  <p className="text-xs text-slate-500 mt-2 md:mt-3">
                     Patient days/year: {state.nursingStaffedBeds} beds × {state.nursingOccupancyRate}% × 365 = {Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365).toLocaleString()}
                   </p>
                 </motion.div>
@@ -341,23 +341,23 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* NON-NURSING: Annual Encounters */}
               {!isNursing && (
               <motion.div
-                className="bg-white rounded-2xl border border-slate-200 p-6"
+                className="bg-white rounded-xl md:rounded-2xl border border-slate-200 p-4 md:p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.5 }}
               >
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-[#EA2C00]" />
+                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-5">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                    <Activity className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black">{isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
-                    <p className="text-sm text-slate-500">{isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
+                    <h2 className="text-sm md:text-base font-bold text-black">{isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
+                    <p className="text-xs md:text-sm text-slate-500">{isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
                   </div>
                 </div>
 
                 {/* Preset buttons - quick select by clinic type */}
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                   {BUSYNESS_PRESETS.map((preset) => {
                     const isSelected = isPresetSelected(preset.value);
                     return (
@@ -365,7 +365,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         key={preset.value}
                         type="button"
                         onClick={() => handleBusynessChange(preset.value)}
-                        className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        className={`flex-1 py-2 md:py-3 px-2 md:px-4 rounded-lg md:rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
                           isSelected
                             ? 'bg-[#EA2C00] text-white shadow-sm'
                             : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
@@ -373,8 +373,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         data-testid={`preset-busyness-${preset.label.toLowerCase()}`}
                       >
                         <span className="block font-semibold">{preset.label}</span>
-                        <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                          {preset.value.toLocaleString()}/{isInpatient ? 'hospitalist' : 'provider'}
+                        <span className={`block text-[10px] md:text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                          {preset.value.toLocaleString()}/{isInpatient ? 'hosp' : 'prov'}
                         </span>
                       </button>
                     );
@@ -389,23 +389,23 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 )}
 
                 {/* Total encounters input */}
-                <div className="pt-4 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
+                <div className="pt-3 md:pt-4 border-t border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
-                      <p className="text-sm text-slate-600 font-medium">{isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
-                      <p className="text-xs text-slate-400">{isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
+                      <p className="text-xs md:text-sm text-slate-600 font-medium">{isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
+                      <p className="text-xs text-slate-400 hidden sm:block">{isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-auto sm:ml-0">
                       <input
                         type="text"
                         inputMode="numeric"
                         placeholder={annualEncounters > 0 ? annualEncounters.toLocaleString() : "e.g. 180,000"}
                         value={totalEncountersInput}
                         onChange={(e) => handleTotalEncountersChange(e.target.value)}
-                        className="w-32 py-2 px-3 text-right font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#EA2C00] transition-all placeholder:text-slate-300"
+                        className="w-28 md:w-32 py-2 px-3 text-right font-medium text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#EA2C00] transition-all placeholder:text-slate-300 text-sm"
                         data-testid="input-total-encounters"
                       />
-                      <span className="text-sm text-slate-400">/yr</span>
+                      <span className="text-xs md:text-sm text-slate-400">/yr</span>
                     </div>
                   </div>
                 </div>
@@ -414,23 +414,23 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
               {/* Expected Utilization */}
               <motion.div
-                className="bg-white rounded-2xl border border-slate-200 p-6"
+                className="bg-white rounded-xl md:rounded-2xl border border-slate-200 p-4 md:p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: isNursing ? 0.25 : 0.2, duration: 0.5 }}
               >
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                    <Percent className="w-6 h-6 text-[#EA2C00]" />
+                <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                    <Percent className="w-5 h-5 md:w-6 md:h-6 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black">Expected Utilization</h2>
-                    <p className="text-sm text-slate-500">
+                    <h2 className="text-sm md:text-base font-bold text-black">Expected Utilization</h2>
+                    <p className="text-xs md:text-sm text-slate-500">
                       {isNursing ? "Percentage of shifts using Abridge" : "Percentage of encounters using Abridge"}
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 mb-4 ml-16">
+                <p className="text-xs text-slate-400 mb-3 md:mb-4 ml-0 md:ml-16">
                   {isNursing 
                     ? "Utilization often starts at 50-60% and grows to 75-85% as workflows mature. Start conservatively."
                     : "Utilization often starts at 50-60% and grows to 75-85% as workflows mature. Start conservatively—you can always adjust."
@@ -438,7 +438,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </p>
 
                 {/* Preset buttons */}
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                   {UTILIZATION_PRESETS.map((preset) => {
                     const isSelected = isUtilizationPresetSelected(preset.value);
                     return (
@@ -446,7 +446,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         key={preset.value}
                         type="button"
                         onClick={() => handleUtilizationChange(preset.value)}
-                        className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        className={`flex-1 py-2 md:py-3 px-2 md:px-4 rounded-lg md:rounded-xl text-xs md:text-sm font-medium transition-all duration-200 ${
                           isSelected
                             ? 'bg-[#EA2C00] text-white shadow-sm'
                             : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'

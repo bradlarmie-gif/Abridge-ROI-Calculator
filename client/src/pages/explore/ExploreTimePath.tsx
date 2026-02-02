@@ -229,7 +229,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
             </motion.div>
 
             {/* Scenario Cards */}
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {SCENARIOS.map((scenario, index) => {
                 const Icon = scenario.icon;
                 const isSelected = state.timePathScenario === scenario.id;
@@ -239,7 +239,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     key={scenario.id}
                     onClick={() => handleSelectScenario(scenario)}
                     className={`
-                      relative w-full text-left rounded-2xl transition-all duration-200 overflow-hidden
+                      relative w-full text-left rounded-xl md:rounded-2xl transition-all duration-200 overflow-hidden
                       ${isSelected 
                         ? 'ring-2 ring-[#EA2C00] shadow-lg' 
                         : 'hover:shadow-md'
@@ -251,57 +251,57 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     data-testid={`card-scenario-${scenario.id}`}
                   >
                     <div className={`
-                      p-6 
+                      p-4 md:p-6 
                       ${isSelected ? 'bg-white' : 'bg-white border border-slate-200'}
                       ${scenario.recommended && !isSelected ? 'border-[#EA2C00]/30' : ''}
                     `}>
-                      <div className="flex items-start gap-5">
+                      <div className="flex items-start gap-3 md:gap-5">
                         {/* Icon with selection indicator */}
                         <div className="relative flex-shrink-0">
                           <div className={`
-                            w-14 h-14 rounded-xl flex items-center justify-center transition-colors
+                            w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center transition-colors
                             ${isSelected ? 'bg-[#EA2C00]' : 'bg-[#FFF5F2]'}
                           `}>
-                            <Icon className={`w-7 h-7 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
+                            <Icon className={`w-5 h-5 md:w-7 md:h-7 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
                           </div>
                           {isSelected && (
                             <motion.div 
-                              className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center"
+                              className="absolute -bottom-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-black rounded-full flex items-center justify-center"
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
                               transition={{ type: "spring", stiffness: 500, damping: 30 }}
                             >
-                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                              <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" strokeWidth={3} />
                             </motion.div>
                           )}
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 min-w-0 pt-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className="text-lg font-bold text-black">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1 flex-wrap">
+                            <h3 className="text-base md:text-lg font-bold text-black">
                               {scenario.label}
                             </h3>
                             {scenario.recommended && (
-                              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-[#EA2C00]/10 text-[#EA2C00] rounded">
+                              <span className="px-1.5 md:px-2 py-0.5 text-[8px] md:text-[10px] font-semibold uppercase tracking-wide bg-[#EA2C00]/10 text-[#EA2C00] rounded">
                                 Recommended
                               </span>
                             )}
-                            <span className="text-sm text-slate-400">
+                            <span className="text-xs md:text-sm text-slate-400 hidden sm:inline">
                               {scenario.tagline}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-600 leading-relaxed">
+                          <p className="text-xs md:text-sm text-slate-600 leading-relaxed line-clamp-2 md:line-clamp-none">
                             {scenario.description}
                           </p>
                         </div>
 
                         {/* Time Value */}
-                        <div className="text-right flex-shrink-0 pt-1">
-                          <div className="text-3xl font-bold text-[#EA2C00]">
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-2xl md:text-3xl font-bold text-[#EA2C00]">
                             {scenario.minutes}
                           </div>
-                          <p className="text-xs text-slate-400 font-medium">
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium">
                             {isNursing ? 'min/shift' : 'min saved'}
                           </p>
                         </div>
