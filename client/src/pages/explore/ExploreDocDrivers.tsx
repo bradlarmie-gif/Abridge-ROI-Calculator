@@ -201,6 +201,7 @@ const NURSING_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
 ];
 
 interface EditableAssumptions {
+  baseWrvuPerVisit: number;
   wrvuConversion: number;
   wrvuRealization: number;
   // HCC panel-based assumptions
@@ -220,6 +221,7 @@ interface EditableAssumptions {
 }
 
 const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
+  baseWrvuPerVisit: 1.5,
   wrvuConversion: 33,
   wrvuRealization: 75,
   // HCC panel-based defaults
@@ -381,37 +383,61 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
 
     switch (driverId) {
       case 'wrvu': {
-        const baseWrvu = 1.5;
+        const baseWrvu = assumptions.baseWrvuPerVisit;
         const wrvuLift = baseWrvu * (driverValue / 100);
-        const grossValue = wrvuLift * eligibleEncounters * assumptions.wrvuConversion;
+        const totalAdditionalWrvus = wrvuLift * eligibleEncounters;
+        const grossValue = totalAdditionalWrvus * assumptions.wrvuConversion;
         const realizedValue = grossValue * (assumptions.wrvuRealization / 100);
         return {
           value: Math.round(realizedValue),
           editableInputs: (
             <div className="space-y-3">
-              <div className="bg-slate-50 -mx-4 px-4 py-2 rounded mb-2">
-                <p className="text-xs text-slate-500">
-                  <span className="font-medium text-slate-700">The logic:</span> When documentation captures the full clinical complexity, coders can assign appropriate E&M levels. A small wRVU improvement per visit compounds across your volume.
-                </p>
-              </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-slate-600">Eligible encounters</span>
                 <span className="text-sm font-semibold text-black">{eligibleEncounters.toLocaleString()} visits</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Base wRVU per visit</span>
-                <span className="text-sm font-semibold text-black">{baseWrvu} wRVU</span>
+              
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
+                <div>
+                  <span className="text-sm text-slate-600">Current avg wRVU per visit</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Your organization's baseline</p>
+                </div>
+                <EditableValue 
+                  value={assumptions.baseWrvuPerVisit} 
+                  onChange={(v) => updateAssumption('baseWrvuPerVisit', v)}
+                  suffix=" wRVU"
+                  min={0.5}
+                  max={5}
+                  step={0.1}
+                />
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Your improvement target</span>
+              
+              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-[#EA2C00]">Documentation improvement</span>
+                  <p className="text-xs text-slate-500 mt-0.5">Industry avg: 5-10% wRVU lift with better MDM capture</p>
+                </div>
                 <span className="text-sm font-semibold text-[#EA2C00]">{driverValue}%</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">wRVU lift per visit</span>
+              
+              <div className="flex items-center justify-between py-2 border-t border-slate-200">
+                <span className="text-sm text-slate-600">= wRVU lift per visit</span>
                 <span className="text-sm font-semibold text-black">{wrvuLift.toFixed(3)} wRVU</span>
               </div>
+              
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <span className="text-sm text-slate-600">Total additional wRVUs</span>
+                  <p className="text-xs text-slate-400 mt-0.5">({eligibleEncounters.toLocaleString()} x {wrvuLift.toFixed(3)})</p>
+                </div>
+                <span className="text-sm font-semibold text-black">{Math.round(totalAdditionalWrvus).toLocaleString()} wRVUs</span>
+              </div>
+              
               <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
-                <span className="text-sm text-slate-600">Conversion rate</span>
+                <div>
+                  <span className="text-sm text-slate-600">Conversion rate</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Medicare rate - conservative baseline</p>
+                </div>
                 <EditableValue 
                   value={assumptions.wrvuConversion} 
                   onChange={(v) => updateAssumption('wrvuConversion', v)}
@@ -421,25 +447,28 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
                   max={100}
                 />
               </div>
+              
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-slate-600">Gross value</span>
+                <span className="text-sm text-slate-600">= Gross value</span>
                 <span className="text-sm font-semibold text-black">${Math.round(grossValue).toLocaleString()}</span>
               </div>
-              <div className="flex items-center justify-between py-2 bg-[#FFF5F2] -mx-4 px-4 rounded">
+              
+              <div className="flex items-center justify-between py-2 bg-slate-50 -mx-4 px-4 rounded">
                 <div>
-                  <span className="text-sm font-medium text-[#EA2C00]">Realization rate</span>
-                  <p className="text-xs text-slate-500 mt-0.5">Payer mix, fee schedule variations</p>
+                  <span className="text-sm text-slate-600">Realization rate</span>
+                  <p className="text-xs text-slate-400 mt-0.5">Accounts for payer mix, already-accurate coding</p>
                 </div>
                 <EditableValue 
                   value={assumptions.wrvuRealization} 
                   onChange={(v) => updateAssumption('wrvuRealization', v)}
                   suffix="%"
-                  min={25}
-                  max={100}
+                  min={60}
+                  max={90}
                 />
               </div>
+              
               <div className="flex items-center justify-between py-3 border-t-2 border-[#EA2C00]/20 mt-2">
-                <span className="text-sm font-bold text-black">Net annual value</span>
+                <span className="text-sm font-bold text-black">= Net annual value</span>
                 <span className="text-lg font-bold text-[#F07B5F]">${Math.round(realizedValue).toLocaleString()}</span>
               </div>
             </div>
