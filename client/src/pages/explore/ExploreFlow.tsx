@@ -170,6 +170,23 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
                   denials: { enabled: false, value: 25 }
                 }
               });
+            } else if (setting === 'nursing') {
+              // Nursing uses Care Plan Compliance (wrvu slot), Care Coordination (hcc slot), and Regulatory Compliance
+              updateState({ 
+                careSetting: setting,
+                // Set nursing-appropriate default values
+                minutesSavedPerEncounter: 20, // Higher per-patient savings for nursing
+                timeAllocation: {
+                  patientAccess: 35, // Direct Patient Care
+                  reducingLocums: 35, // Nurse Retention
+                  clinicianWellbeing: 30, // Wellbeing
+                },
+                docDrivers: {
+                  wrvu: { enabled: false, value: 20 }, // Care Plan Compliance
+                  hcc: { enabled: false, value: 25 },  // Care Coordination
+                  denials: { enabled: false, value: 30 } // Regulatory Compliance
+                }
+              });
             } else {
               updateState({ careSetting: setting });
             }

@@ -33,7 +33,7 @@ const CARE_SETTINGS: CareSettingOption[] = [
     label: 'Nursing',
     shortDesc: 'Nursing Documentation',
     icon: HeartPulse,
-    available: false,
+    available: true,
   },
   {
     id: 'inpatient',

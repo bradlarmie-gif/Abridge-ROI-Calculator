@@ -22,6 +22,7 @@ const DENIAL_REALIZATION = 0.70;
 export default function ExploreReview({ state, totalHoursSaved, onContinueToInvestment, onBack, onHome }: ExploreReviewProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   
   const calculateWrvuValue = () => {
@@ -75,6 +76,13 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const totalValue = totalDocValue + timeValue;
 
   const getTimePathLabel = () => {
+    if (isNursing) {
+      switch (state.timePathScenario) {
+        case 'conservative': return 'Conservative (10 min)';
+        case 'typical': return 'Typical (20 min)';
+        case 'aggressive': return 'Aggressive (30 min)';
+      }
+    }
     if (isInpatient) {
       switch (state.timePathScenario) {
         case 'conservative': return 'Conservative (5 min)';
@@ -100,13 +108,15 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
     const enabled = [];
     // Use care-setting-specific labels for drivers
     if (state.docDrivers.wrvu.enabled) {
-      enabled.push(isInpatient ? 'CC/MCC' : 'wRVU');
+      enabled.push(isNursing ? 'Care Plans' : isInpatient ? 'CC/MCC' : 'wRVU');
     }
-    // HCC/CDI not applicable for ED
+    // HCC/CDI/Coordination not applicable for ED
     if (!isED && state.docDrivers.hcc.enabled) {
-      enabled.push(isInpatient ? 'CDI' : 'HCC');
+      enabled.push(isNursing ? 'Coordination' : isInpatient ? 'CDI' : 'HCC');
     }
-    if (state.docDrivers.denials.enabled) enabled.push('Denials');
+    if (state.docDrivers.denials.enabled) {
+      enabled.push(isNursing ? 'Compliance' : 'Denials');
+    }
     if (enabled.length === 0) return 'None selected';
     return enabled.join(', ');
   };
@@ -122,8 +132,8 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const DocIcon = getDocIcon();
 
   // Use care-setting-specific terminology
-  const providerLabel = isInpatient ? 'hospitalists' : isED ? 'physicians' : 'providers';
-  const encounterLabel = isInpatient ? 'eligible admissions' : 'eligible encounters';
+  const providerLabel = isNursing ? 'nurses' : isInpatient ? 'hospitalists' : isED ? 'physicians' : 'providers';
+  const encounterLabel = isNursing ? 'eligible patient encounters' : isInpatient ? 'eligible admissions' : 'eligible encounters';
 
   const summaryItems = [
     {
@@ -149,24 +159,30 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   const enabledDriverDetails = [];
   if (state.docDrivers.wrvu.enabled) {
     enabledDriverDetails.push({
-      label: isInpatient 
-        ? `CC/MCC Capture (${state.docDrivers.wrvu.value}% improvement)`
-        : `wRVU (${state.docDrivers.wrvu.value}% improvement)`,
+      label: isNursing
+        ? `Care Plan Compliance (${state.docDrivers.wrvu.value}% improvement)`
+        : isInpatient 
+          ? `CC/MCC Capture (${state.docDrivers.wrvu.value}% improvement)`
+          : `wRVU (${state.docDrivers.wrvu.value}% improvement)`,
       value: wrvuValue,
     });
   }
-  // HCC/CDI not applicable for ED
+  // HCC/CDI/Coordination not applicable for ED
   if (!isED && state.docDrivers.hcc.enabled) {
     enabledDriverDetails.push({
-      label: isInpatient
-        ? `CDI Query Reduction (${state.docDrivers.hcc.value}% reduction)`
-        : `HCC Capture (${state.docDrivers.hcc.value}% recapture)`,
+      label: isNursing
+        ? `Care Coordination (${state.docDrivers.hcc.value}% improvement)`
+        : isInpatient
+          ? `CDI Query Reduction (${state.docDrivers.hcc.value}% reduction)`
+          : `HCC Capture (${state.docDrivers.hcc.value}% recapture)`,
       value: hccValue,
     });
   }
   if (state.docDrivers.denials.enabled) {
     enabledDriverDetails.push({
-      label: `Denial Prevention (${state.docDrivers.denials.value}% reduction)`,
+      label: isNursing
+        ? `Regulatory Compliance (${state.docDrivers.denials.value}% improvement)`
+        : `Denial Prevention (${state.docDrivers.denials.value}% reduction)`,
       value: denialValue,
     });
   }

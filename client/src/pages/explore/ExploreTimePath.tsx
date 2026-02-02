@@ -106,10 +106,46 @@ const INPATIENT_SCENARIOS: ScenarioOption[] = [
   },
 ];
 
+// Nursing: time savings per patient encounter (nursing documentation is extensive)
+const NURSING_SCENARIOS: ScenarioOption[] = [
+  {
+    id: 'conservative',
+    label: 'Conservative',
+    tagline: 'Play it safe',
+    description: 'Accounts for nursing workflow complexity. Start here for skeptical CNOs or pilot programs.',
+    minutes: 10,
+    icon: Shield,
+  },
+  {
+    id: 'typical',
+    label: 'Typical',
+    tagline: 'Most nursing programs start here',
+    description: 'Based on real nursing implementations. Balances documentation time savings with adoption realities.',
+    minutes: 20,
+    icon: Target,
+    recommended: true,
+  },
+  {
+    id: 'aggressive',
+    label: 'Aggressive',
+    tagline: 'Maximize time for patient care',
+    description: 'For programs with strong nursing leadership buy-in and streamlined charting workflows.',
+    minutes: 30,
+    icon: Zap,
+  },
+];
+
 export default function ExploreTimePath({ state, updateState, onNext, onBack, onHome }: ExploreTimePathProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
-  const SCENARIOS = isInpatient ? INPATIENT_SCENARIOS : isED ? ED_SCENARIOS : OUTPATIENT_SCENARIOS;
+  const isNursing = state.careSetting === 'nursing';
+  const SCENARIOS = isNursing 
+    ? NURSING_SCENARIOS 
+    : isInpatient 
+      ? INPATIENT_SCENARIOS 
+      : isED 
+        ? ED_SCENARIOS 
+        : OUTPATIENT_SCENARIOS;
   
   const handleSelectScenario = (scenario: ScenarioOption) => {
     updateState({ 
@@ -147,26 +183,30 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-                {isInpatient ? "Model Documentation Efficiency" : isED ? "Model ED Efficiency" : "Model Time Savings"}
+                {isNursing ? "Model Nursing Time Savings" : isInpatient ? "Model Documentation Efficiency" : isED ? "Model ED Efficiency" : "Model Time Savings"}
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isInpatient ? "How much time per admission?" : isED ? "How much time per encounter?" : "Choose your modeling approach"}
+                {isNursing ? "How much time per patient encounter?" : isInpatient ? "How much time per admission?" : isED ? "How much time per encounter?" : "Choose your modeling approach"}
               </h1>
               <p className="text-slate-600 mb-4">
-                {isInpatient
-                  ? "Inpatient documentation is extensive—H&Ps, progress notes, discharge summaries. Pick the scenario that matches your expectations for per-admission time savings."
-                  : isED 
-                    ? "ED documentation is fast-paced but still time-consuming. Pick the scenario that matches your expectations for per-encounter time savings."
-                    : "Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations."
+                {isNursing
+                  ? "Nursing documentation is extensive—assessments, care plans, handoffs, and charting. Pick the scenario that matches your expectations for per-encounter time savings."
+                  : isInpatient
+                    ? "Inpatient documentation is extensive—H&Ps, progress notes, discharge summaries. Pick the scenario that matches your expectations for per-admission time savings."
+                    : isED 
+                      ? "ED documentation is fast-paced but still time-consuming. Pick the scenario that matches your expectations for per-encounter time savings."
+                      : "Time savings vary by specialty, EHR, and workflow. Pick the scenario that matches your organization's expectations."
                 }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">How to choose:</span> {isInpatient
-                    ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average hospitalist implementations. \"Aggressive\" suits programs with strong physician buy-in and optimized rounding. All assumptions can be adjusted later."
-                    : isED 
-                      ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
-                      : "Use \"Conservative\" for CFO presentations or skeptical stakeholders. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
+                  <span className="font-semibold text-slate-700">How to choose:</span> {isNursing
+                    ? "Use \"Conservative\" for CNO presentations. \"Typical\" reflects average nursing implementations. \"Aggressive\" suits units with strong nursing leadership and optimized charting workflows. All assumptions can be adjusted later."
+                    : isInpatient
+                      ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average hospitalist implementations. \"Aggressive\" suits programs with strong physician buy-in and optimized rounding. All assumptions can be adjusted later."
+                      : isED 
+                        ? "Use \"Conservative\" for CFO presentations. \"Typical\" reflects average ED implementations. \"Aggressive\" suits high-volume EDs ready to fully embrace ambient documentation. All assumptions can be adjusted later."
+                        : "Use \"Conservative\" for CFO presentations or skeptical stakeholders. \"Typical\" reflects average outcomes. \"Aggressive\" suits high-adoption organizations with strong change management. All assumptions can be adjusted later."
                   }
                 </p>
               </div>

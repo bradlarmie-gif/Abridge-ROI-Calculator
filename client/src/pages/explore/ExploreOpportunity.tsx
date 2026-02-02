@@ -36,6 +36,14 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
   { label: "Busy", value: 500 },
 ];
 
+// Nursing: patient encounters per nurse per year (based on shift load)
+// ~250 shifts/year × 6 patients/shift = 1500 typical
+const NURSING_BUSYNESS_PRESETS: BusynessPreset[] = [
+  { label: "Lighter", value: 1200 },
+  { label: "Typical", value: 1500 },
+  { label: "Busy", value: 1800 },
+];
+
 const UTILIZATION_PRESETS = [
   { label: "Conservative", value: 50 },
   { label: "Typical", value: 70 },
@@ -45,8 +53,15 @@ const UTILIZATION_PRESETS = [
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
-  const BUSYNESS_PRESETS = isInpatient ? INPATIENT_BUSYNESS_PRESETS : isED ? ED_BUSYNESS_PRESETS : OUTPATIENT_BUSYNESS_PRESETS;
-  const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 2100;
+  const isNursing = state.careSetting === 'nursing';
+  const BUSYNESS_PRESETS = isNursing 
+    ? NURSING_BUSYNESS_PRESETS 
+    : isInpatient 
+      ? INPATIENT_BUSYNESS_PRESETS 
+      : isED 
+        ? ED_BUSYNESS_PRESETS 
+        : OUTPATIENT_BUSYNESS_PRESETS;
+  const defaultEncountersPerProvider = isNursing ? 1500 : isInpatient ? 400 : isED ? 1800 : 2100;
   
   const [providerInputValue, setProviderInputValue] = useState(state.numberOfProviders > 0 ? state.numberOfProviders.toString() : '');
   const [encountersPerProvider, setEncountersPerProvider] = useState(
@@ -170,23 +185,27 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 Size Your Opportunity
               </p>
               <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-                {isInpatient ? "Let's understand your hospitalist program" : isED ? "Let's understand your ED" : "Let's understand your practice"}
+                {isNursing ? "Let's understand your nursing program" : isInpatient ? "Let's understand your hospitalist program" : isED ? "Let's understand your ED" : "Let's understand your practice"}
               </h1>
               <p className="text-slate-600 mb-4">
-                {isInpatient
-                  ? "These inputs establish the baseline for your value model. Inpatient value works differently—it's about retention, efficiency, and documentation quality, not seeing more patients."
-                  : isED 
-                    ? "These inputs establish the baseline for your value model. Every ED physician and encounter contributes to the opportunity."
-                    : "These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers."
+                {isNursing
+                  ? "These inputs establish the baseline for your value model. Nursing value centers on time back for patient care, retention, and compliance—reducing documentation burden so nurses can nurse."
+                  : isInpatient
+                    ? "These inputs establish the baseline for your value model. Inpatient value works differently—it's about retention, efficiency, and documentation quality, not seeing more patients."
+                    : isED 
+                      ? "These inputs establish the baseline for your value model. Every ED physician and encounter contributes to the opportunity."
+                      : "These inputs establish the baseline for your value model. Every calculation downstream builds on these numbers."
                 }
               </p>
               <div className="bg-slate-100 rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-slate-700">Why we ask:</span> {isInpatient
-                    ? "Inpatient value scales with hospitalist count and census. More hospitalists mean more documentation burden to relieve—and greater opportunity for retention, wellbeing, and revenue integrity through better documentation."
-                    : isED 
-                      ? "ED value scales with volume and complexity. More providers and higher utilization mean more eligible encounters—and more opportunity for throughput, retention, and documentation quality."
-                      : "Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement."
+                  <span className="font-semibold text-slate-700">Why we ask:</span> {isNursing
+                    ? "Nursing value scales with staff count and patient load. More nurses documenting means more burden to relieve—and greater opportunity for direct patient care, retention, and regulatory compliance."
+                    : isInpatient
+                      ? "Inpatient value scales with hospitalist count and census. More hospitalists mean more documentation burden to relieve—and greater opportunity for retention, wellbeing, and revenue integrity through better documentation."
+                      : isED 
+                        ? "ED value scales with volume and complexity. More providers and higher utilization mean more eligible encounters—and more opportunity for throughput, retention, and documentation quality."
+                        : "Value scales with volume. More providers and higher utilization mean more eligible encounters—and more opportunity for both time savings and documentation improvement."
                   }
                 </p>
               </div>
@@ -206,8 +225,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <Users className="w-6 h-6 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-black">{isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
-                      <p className="text-sm text-slate-500">{isInpatient ? "Hospitalists using Abridge" : isED ? "Physicians using Abridge in the ED" : "Clinicians using Abridge"}</p>
+                      <h2 className="text-base font-bold text-black">{isNursing ? "Number of Nurses" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers"}</h2>
+                      <p className="text-sm text-slate-500">{isNursing ? "Nurses using Abridge" : isInpatient ? "Hospitalists using Abridge" : isED ? "Physicians using Abridge in the ED" : "Clinicians using Abridge"}</p>
                     </div>
                   </div>
                   <input
@@ -235,8 +254,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <Activity className="w-6 h-6 text-[#EA2C00]" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-black">{isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
-                    <p className="text-sm text-slate-500">{isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
+                    <h2 className="text-base font-bold text-black">{isNursing ? "Annual Patient Encounters" : isInpatient ? "Annual Admissions" : "Annual Encounters"}</h2>
+                    <p className="text-sm text-slate-500">{isNursing ? "How many patient encounters do your nurses document?" : isInpatient ? "How many patients does your program admit?" : "How busy is your practice?"}</p>
                   </div>
                 </div>
 
@@ -258,7 +277,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       >
                         <span className="block font-semibold">{preset.label}</span>
                         <span className={`block text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                          {preset.value.toLocaleString()}/{isInpatient ? 'hospitalist' : 'provider'}
+                          {preset.value.toLocaleString()}/{isNursing ? 'nurse' : isInpatient ? 'hospitalist' : 'provider'}
                         </span>
                       </button>
                     );
@@ -269,8 +288,8 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 <div className="pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-slate-600 font-medium">{isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
-                      <p className="text-xs text-slate-400">{isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
+                      <p className="text-sm text-slate-600 font-medium">{isNursing ? "Or enter your total annual patient encounters" : isInpatient ? "Or enter your total annual admissions" : "Or enter your total practice volume"}</p>
+                      <p className="text-xs text-slate-400">{isNursing ? "Total patient encounters your nursing team documents" : isInpatient ? "Total admissions your hospitalist program handles" : "Total encounters your practice sees per year"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <input

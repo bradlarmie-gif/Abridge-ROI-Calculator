@@ -145,6 +145,61 @@ const INPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
   },
 ];
 
+// Nursing uses: Care Plan Compliance (wrvu slot), Care Coordination (hcc slot), Regulatory Compliance (denials slot)
+const NURSING_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
+  {
+    id: 'wrvu',
+    label: 'Care Plan Compliance',
+    shortLabel: 'Care Plans',
+    description: 'Improve care plan completion and accuracy rates',
+    icon: BarChart3,
+    min: 10,
+    max: 40,
+    step: 5,
+    suffix: '%',
+    detail: 'Complete documentation ensures care plans reflect actual patient needs and interventions',
+    presets: [
+      { label: 'Conservative', value: 15 },
+      { label: 'Typical', value: 20 },
+      { label: 'Aggressive', value: 30 },
+    ],
+  },
+  {
+    id: 'hcc',
+    label: 'Care Coordination',
+    shortLabel: 'Coordination',
+    description: 'Improve handoff quality and reduce communication gaps',
+    icon: Building2,
+    min: 15,
+    max: 45,
+    step: 5,
+    suffix: '%',
+    detail: 'Better documentation enables smoother shift changes and care transitions',
+    presets: [
+      { label: 'Conservative', value: 20 },
+      { label: 'Typical', value: 25 },
+      { label: 'Aggressive', value: 35 },
+    ],
+  },
+  {
+    id: 'denials',
+    label: 'Regulatory Compliance',
+    shortLabel: 'Compliance',
+    description: 'Reduce documentation-related compliance gaps and audit findings',
+    icon: AlertTriangle,
+    min: 15,
+    max: 50,
+    step: 5,
+    suffix: '%',
+    detail: 'Complete nursing documentation reduces CMS survey findings and audit risks',
+    presets: [
+      { label: 'Conservative', value: 20 },
+      { label: 'Typical', value: 30 },
+      { label: 'Aggressive', value: 40 },
+    ],
+  },
+];
+
 interface EditableAssumptions {
   wrvuConversion: number;
   wrvuRealization: number;
@@ -265,20 +320,24 @@ const DEFAULT_DOC_DRIVERS = {
 export default function ExploreDocDrivers({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreDocDriversProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
 
   const docDrivers = state.docDrivers || DEFAULT_DOC_DRIVERS;
   
   // Select appropriate driver configs based on care setting
+  // Nursing uses Care Plans, Coordination, and Compliance
   // Inpatient uses CC/MCC, CDI, and Denials
   // ED uses wRVU and Denials (no HCC)
   // Outpatient uses all three
-  const availableDriverConfigs = isInpatient
-    ? INPATIENT_DOC_DRIVER_CONFIGS
-    : isED 
-      ? OUTPATIENT_DOC_DRIVER_CONFIGS.filter(d => d.id !== 'hcc')
-      : OUTPATIENT_DOC_DRIVER_CONFIGS;
+  const availableDriverConfigs = isNursing
+    ? NURSING_DOC_DRIVER_CONFIGS
+    : isInpatient
+      ? INPATIENT_DOC_DRIVER_CONFIGS
+      : isED 
+        ? OUTPATIENT_DOC_DRIVER_CONFIGS.filter(d => d.id !== 'hcc')
+        : OUTPATIENT_DOC_DRIVER_CONFIGS;
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
@@ -587,39 +646,45 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
           transition={{ duration: 0.5 }}
         >
           <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            {isInpatient ? "Inpatient Documentation Quality" : isED ? "ED Documentation Quality" : "Documentation Quality"}
+            {isNursing ? "Nursing Documentation Quality" : isInpatient ? "Inpatient Documentation Quality" : isED ? "ED Documentation Quality" : "Documentation Quality"}
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            {isInpatient ? "Capture inpatient documentation value" : isED ? "Capture ED documentation value" : "Capture value beyond time savings"}
+            {isNursing ? "Capture nursing documentation value" : isInpatient ? "Capture inpatient documentation value" : isED ? "Capture ED documentation value" : "Capture value beyond time savings"}
           </h1>
 
           <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-6">
-            {isInpatient
-              ? "Inpatient documentation directly drives DRG reimbursement and reduces costly CDI workflows. Toggle the drivers that match your organization's priorities."
-              : isED 
-                ? "ED documentation drives revenue capture and denial prevention. Toggle the drivers that match your organization's priorities."
-                : "Better documentation creates downstream value. Toggle the drivers that match your organization's priorities."
+            {isNursing
+              ? "Nursing documentation drives care quality, coordination, and regulatory compliance. Toggle the drivers that match your organization's priorities."
+              : isInpatient
+                ? "Inpatient documentation directly drives DRG reimbursement and reduces costly CDI workflows. Toggle the drivers that match your organization's priorities."
+                : isED 
+                  ? "ED documentation drives revenue capture and denial prevention. Toggle the drivers that match your organization's priorities."
+                  : "Better documentation creates downstream value. Toggle the drivers that match your organization's priorities."
             }
           </p>
 
           <div className="bg-slate-100 rounded-xl p-4 max-w-2xl mx-auto text-left mb-3">
             <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-slate-700">Why this matters:</span> {isInpatient
-                ? "Inpatient documentation directly impacts DRG assignment and CC/MCC capture. Incomplete notes mean lower DRG weights, more CDI queries, and preventable denials. Better documentation captures the clinical complexity you're already delivering—improving reimbursement without changing care."
-                : isED 
-                  ? "ED visits are high-acuity but often under-documented due to pace. When notes don't capture complexity, Level of Service codes lower than warranted, and claims get denied for insufficient documentation. These are recoverable dollars—not new procedures, just capturing what you're already doing."
-                  : "Clinicians do thorough work, but documentation often lags behind. When notes don't capture complexity, you leave money on the table—lower E&M levels, missed chronic conditions, and preventable denials. This isn't about doing more; it's about capturing what you're already doing."
+              <span className="font-semibold text-slate-700">Why this matters:</span> {isNursing
+                ? "Nursing documentation affects care continuity, patient safety, and regulatory compliance. Incomplete notes create handoff gaps, missed interventions, and audit findings. Better documentation ensures care plans are accurate, transitions are smooth, and compliance is maintained—without adding burden."
+                : isInpatient
+                  ? "Inpatient documentation directly impacts DRG assignment and CC/MCC capture. Incomplete notes mean lower DRG weights, more CDI queries, and preventable denials. Better documentation captures the clinical complexity you're already delivering—improving reimbursement without changing care."
+                  : isED 
+                    ? "ED visits are high-acuity but often under-documented due to pace. When notes don't capture complexity, Level of Service codes lower than warranted, and claims get denied for insufficient documentation. These are recoverable dollars—not new procedures, just capturing what you're already doing."
+                    : "Clinicians do thorough work, but documentation often lags behind. When notes don't capture complexity, you leave money on the table—lower E&M levels, missed chronic conditions, and preventable denials. This isn't about doing more; it's about capturing what you're already doing."
               }
             </p>
           </div>
           <div className="bg-[#FFF5F2] rounded-xl p-4 max-w-2xl mx-auto text-left">
             <p className="text-slate-500 text-sm">
-              <span className="font-semibold text-[#EA2C00]">How this works:</span> {isInpatient
-                ? "Each driver calculates value based on your admission volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
-                : isED 
-                  ? "Each driver calculates value based on your ED volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
-                  : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
+              <span className="font-semibold text-[#EA2C00]">How this works:</span> {isNursing
+                ? "Each driver calculates value based on your nursing encounter volume and conservative assumptions. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
+                : isInpatient
+                  ? "Each driver calculates value based on your admission volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
+                  : isED 
+                    ? "Each driver calculates value based on your ED volume and conservative realization rates. Tap \"See the math\" on any enabled driver to see the full calculation and adjust assumptions."
+                    : "Each driver calculates value differently based on your encounter volume. Tap \"See the math\" on any enabled driver to see the full calculation—and adjust the assumptions to match your reality."
               }
             </p>
           </div>

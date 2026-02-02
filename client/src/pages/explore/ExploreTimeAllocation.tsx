@@ -96,6 +96,31 @@ const INPATIENT_ALLOCATION_OPTIONS: AllocationOption[] = [
   },
 ];
 
+// Nursing: Focus on direct patient care, nurse retention, and wellbeing
+const NURSING_ALLOCATION_OPTIONS: AllocationOption[] = [
+  {
+    id: 'patientAccess',
+    label: 'Direct Patient Care',
+    description: 'More time at the bedside, better patient relationships and outcomes',
+    icon: Heart,
+    valueLabel: 'Hours back to patients',
+  },
+  {
+    id: 'reducingLocums',
+    label: 'Nurse Retention',
+    description: 'Reduce turnover and avoid costly agency/travel nurse reliance',
+    icon: Users,
+    valueLabel: 'Retention improvement',
+  },
+  {
+    id: 'clinicianWellbeing',
+    label: 'Nurse Wellbeing',
+    description: 'Reduce burnout and improve job satisfaction',
+    icon: Clock,
+    valueLabel: 'Wellbeing improvement',
+  },
+];
+
 const getPresetsForLocums = (includeLocums: boolean) => {
   if (includeLocums) {
     return [
@@ -125,6 +150,14 @@ const INPATIENT_PRESETS = [
   { label: 'Retention Focus', allocation: { patientAccess: 20, reducingLocums: 55, clinicianWellbeing: 25 } },
   { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
   { label: 'Efficiency Focus', allocation: { patientAccess: 50, reducingLocums: 30, clinicianWellbeing: 20 } },
+];
+
+// Nursing presets: prioritize patient care and retention
+const NURSING_PRESETS = [
+  { label: 'Balanced', allocation: { patientAccess: 35, reducingLocums: 35, clinicianWellbeing: 30 } },
+  { label: 'Patient Care Focus', allocation: { patientAccess: 55, reducingLocums: 25, clinicianWellbeing: 20 } },
+  { label: 'Retention Focus', allocation: { patientAccess: 25, reducingLocums: 50, clinicianWellbeing: 25 } },
+  { label: 'Wellbeing Focus', allocation: { patientAccess: 25, reducingLocums: 25, clinicianWellbeing: 50 } },
 ];
 
 interface EditableAssumptions {
@@ -247,16 +280,34 @@ const TIME_ALLOCATION_CONTEXT = {
     subtitle: "Inpatient time savings don't create more patients—but they create immense value.",
     whyItMatters: "Hospitalists don't see more patients when they document faster—census is driven by admissions. But the value is real: physicians get their lives back (protecting your workforce), and reduced burnout drives retention (avoiding $300K+ replacement costs). Two value streams with compounding impact.",
   },
+  nursing: {
+    title: "How will your nursing team benefit?",
+    subtitle: "Nursing time savings translate directly to patient care and retention.",
+    whyItMatters: "Nurses spend up to 35% of their time on documentation. Recovered time means more time at the bedside, better patient relationships, and reduced burnout. In a profession with 20%+ annual turnover and agency nurse costs of $150+/hour, the retention value alone is substantial.",
+  },
 };
 
 export default function ExploreTimeAllocation({ state, updateState, totalHoursSaved, onNext, onBack, onHome }: ExploreTimeAllocationProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
-  const ALLOCATION_OPTIONS = isInpatient ? INPATIENT_ALLOCATION_OPTIONS : isED ? ED_ALLOCATION_OPTIONS : OUTPATIENT_ALLOCATION_OPTIONS;
-  const context = isInpatient ? TIME_ALLOCATION_CONTEXT.inpatient : isED ? TIME_ALLOCATION_CONTEXT.ed : TIME_ALLOCATION_CONTEXT.outpatient;
+  const isNursing = state.careSetting === 'nursing';
+  const ALLOCATION_OPTIONS = isNursing 
+    ? NURSING_ALLOCATION_OPTIONS 
+    : isInpatient 
+      ? INPATIENT_ALLOCATION_OPTIONS 
+      : isED 
+        ? ED_ALLOCATION_OPTIONS 
+        : OUTPATIENT_ALLOCATION_OPTIONS;
+  const context = isNursing 
+    ? TIME_ALLOCATION_CONTEXT.nursing 
+    : isInpatient 
+      ? TIME_ALLOCATION_CONTEXT.inpatient 
+      : isED 
+        ? TIME_ALLOCATION_CONTEXT.ed 
+        : TIME_ALLOCATION_CONTEXT.outpatient;
   
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
-  const [includeLocums, setIncludeLocums] = useState(isED || isInpatient ? true : false);
+  const [includeLocums, setIncludeLocums] = useState(isED || isInpatient || isNursing ? true : false);
   const [assumptions, setAssumptions] = useState<EditableAssumptions>(DEFAULT_ASSUMPTIONS);
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
@@ -467,8 +518,14 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     setExpandedDriver(expandedDriver === id ? null : id);
   };
 
-  const presets = isInpatient ? INPATIENT_PRESETS : isED ? ED_PRESETS : getPresetsForLocums(includeLocums);
-  const visibleOptions = (isED || isInpatient) ? ALLOCATION_OPTIONS : ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
+  const presets = isNursing 
+    ? NURSING_PRESETS 
+    : isInpatient 
+      ? INPATIENT_PRESETS 
+      : isED 
+        ? ED_PRESETS 
+        : getPresetsForLocums(includeLocums);
+  const visibleOptions = (isED || isInpatient || isNursing) ? ALLOCATION_OPTIONS : ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
 
   const totalAllocated = visibleOptions.reduce((sum, opt) => sum + state.timeAllocation[opt.id], 0);
   const totalTimeValue = visibleOptions.reduce((sum, opt) => {
@@ -516,11 +573,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               </div>
               <div className="bg-[#FFF5F2] rounded-lg p-3">
                 <p className="text-slate-500 text-xs">
-                  <span className="font-semibold text-[#EA2C00]">Realization rates:</span> {isInpatient
-                    ? "Not every hour saved translates to dollars. Inpatient constraints mean time savings primarily flow to quality of life and retention. Each driver shows its realization rate—tap \"See the math\" to adjust."
-                    : isED 
-                      ? "Not every saved hour converts to dollars. ED constraints like staffing minimums and throughput caps mean only a portion of time savings realizes as value. Each driver shows its realization rate—tap \"See the math\" to adjust."
-                      : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
+                  <span className="font-semibold text-[#EA2C00]">Realization rates:</span> {isNursing
+                    ? "Not every hour saved translates directly to dollars. Nursing constraints like staffing ratios and patient acuity mean time savings primarily flow to care quality and retention. Each driver shows its realization rate—tap \"See the math\" to adjust."
+                    : isInpatient
+                      ? "Not every hour saved translates to dollars. Inpatient constraints mean time savings primarily flow to quality of life and retention. Each driver shows its realization rate—tap \"See the math\" to adjust."
+                      : isED 
+                        ? "Not every saved hour converts to dollars. ED constraints like staffing minimums and throughput caps mean only a portion of time savings realizes as value. Each driver shows its realization rate—tap \"See the math\" to adjust."
+                        : "Not every hour saved creates a dollar. Scheduling constraints, minimum shift requirements, and real-world factors mean only a portion converts to value. Each driver includes a realization rate—tap \"See the math\" to understand and adjust these assumptions."
                   }
                 </p>
               </div>
