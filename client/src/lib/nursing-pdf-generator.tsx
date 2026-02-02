@@ -108,6 +108,8 @@ const colors = {
   purpleLight: "#F3E8FF",
   slate: "#1e293b",
   slateLight: "#334155",
+  heroSlate: "#1e293b",
+  heroSlateLight: "#334155",
 };
 
 const styles = StyleSheet.create({
@@ -1455,6 +1457,206 @@ function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepDa
   }
 }
 
+// ============================================================================
+// PREMIUM NARRATIVE CONTENT - Nursing-Specific Story Arc
+// ============================================================================
+
+const narrativeContent = {
+  stakes: {
+    headline: "Nurses are drowning in documentation—and patient care suffers for it.",
+    stats: [
+      { value: "35%", label: "Of each shift spent on documentation" },
+      { value: "22%", label: "National nurse turnover rate" },
+      { value: "$65K", label: "Average cost to replace one nurse" },
+    ],
+    body: "Nursing has always been demanding. But today's nurses face a documentation burden their predecessors never imagined. Every assessment, intervention, and patient interaction must be charted—often hours after the fact, at the end of exhausting shifts. The result: chronic overtime, accelerating turnover, reliance on expensive agency staff, and the constant guilt of choosing between thorough documentation and time at the bedside.",
+    pullQuote: "Nurses didn't become nurses to chart. They became nurses to care for patients.",
+  },
+
+  recommendations: {
+    headline: "Your Path Forward",
+    phases: [
+      {
+        name: "Pilot",
+        duration: "30-60 days",
+        actions: [
+          "Deploy on 1-2 nursing units with engaged leadership",
+          "Establish baseline: documentation time, overtime hours, nurse satisfaction",
+          "Track patient safety metrics on pilot units",
+        ],
+      },
+      {
+        name: "Measure",
+        duration: "60-90 days",
+        actions: [
+          "Compare end-of-shift overtime before and after",
+          "Survey nurse satisfaction and perceived documentation burden",
+          "Monitor quality metrics: HAPI rates, fall rates, assessment completeness",
+        ],
+      },
+      {
+        name: "Scale",
+        duration: "Ongoing",
+        actions: [
+          "Expand to additional units based on pilot outcomes",
+          "Integrate with retention and staffing strategy",
+          "Connect to quality improvement initiatives",
+        ],
+      },
+    ],
+    closing: "The nursing units that solve documentation burden become magnets for talent. In today's staffing environment, that competitive advantage compounds.",
+    costOfInaction: "Every month of delay represents nursing overtime accumulating, agency premiums compounding, and talented nurses considering whether this profession is sustainable.",
+  },
+};
+
+// ============================================================================
+// PAGE COMPONENTS - Premium Narrative Arc
+// ============================================================================
+
+// Cover Page
+const CoverPage = ({ data }: { data: NursingPDFData }) => {
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const displayName = data.clientName || data.organizationName || "Your Organization";
+
+  return (
+    <Page size="A4" style={{ backgroundColor: colors.heroSlate, padding: 0 }} wrap={false}>
+      <View style={{ padding: 50, height: "100%", justifyContent: "space-between" }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Image src={abridgeLogoPath} style={{ width: 100, height: 20 }} />
+          <Text style={{ fontSize: 10, color: colors.lightGray, letterSpacing: 1 }}>{today}</Text>
+        </View>
+
+        <View style={{ flex: 1, justifyContent: "center", paddingVertical: 60 }}>
+          <Text style={{ fontSize: 11, color: colors.emerald, textTransform: "uppercase", letterSpacing: 4, marginBottom: 24 }}>Nursing</Text>
+          <Text style={{ fontSize: 48, fontWeight: "bold", color: colors.white, marginBottom: 20, lineHeight: 1.0 }}>{displayName}</Text>
+          <Text style={{ fontSize: 14, color: colors.lightGray, lineHeight: 1.6, maxWidth: 380 }}>
+            A transparent framework for understanding how ambient AI documentation creates value in nursing workflows.
+          </Text>
+
+          <View style={{ flexDirection: "row", marginTop: 50, gap: 60 }}>
+            <View style={{ marginRight: 60 }}>
+              <Text style={{ fontSize: 44, fontWeight: "bold", color: colors.emerald, marginBottom: 8 }}>{formatCurrency(data.netGain)}</Text>
+              <Text style={{ fontSize: 10, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 2 }}>Net Annual Value</Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 44, fontWeight: "bold", color: colors.white, marginBottom: 8 }}>{data.roi.toFixed(1)}x</Text>
+              <Text style={{ fontSize: 10, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 2 }}>Return on Investment</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ borderTopWidth: 1, borderTopColor: colors.heroSlateLight, paddingTop: 20 }}>
+          <Text style={{ fontSize: 10, color: colors.lightGray }}>
+            Nursing • {data.staffedBeds} staffed beds • {data.nurseFTEs} FTEs • {formatNumber(data.documentationEvents)} events
+          </Text>
+        </View>
+      </View>
+    </Page>
+  );
+};
+
+// Stakes Page
+const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={{ backgroundColor: colors.white, padding: 0 }} wrap={false}>
+      <View style={{ backgroundColor: colors.heroSlate, padding: 50, paddingTop: 40, paddingBottom: 50 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
+          <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
+          <Text style={{ fontSize: 9, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1 }}>The Stakes</Text>
+        </View>
+        <Text style={{ fontSize: 32, fontWeight: "bold", color: colors.white, lineHeight: 1.2, marginBottom: 32, maxWidth: 440 }}>
+          {narrativeContent.stakes.headline}
+        </Text>
+        <View style={{ flexDirection: "row", gap: 40 }}>
+          {narrativeContent.stakes.stats.map((stat, i) => (
+            <View key={i} style={{ marginRight: 40 }}>
+              <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.emerald, marginBottom: 6 }}>{stat.value}</Text>
+              <Text style={{ fontSize: 9, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, maxWidth: 120 }}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={{ padding: 50 }}>
+        <Text style={{ fontSize: 12, color: colors.black, lineHeight: 1.8, marginBottom: 40 }}>
+          {narrativeContent.stakes.body}
+        </Text>
+        <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 24, marginTop: 20 }}>
+          <Text style={{ fontSize: 14, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+            {narrativeContent.stakes.pullQuote}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+// Path Forward Page
+const PathForwardPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={styles.page} wrap={false}>
+      <View style={styles.header}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image src={abridgeLogoPath} style={styles.logo} />
+        </View>
+        <View style={styles.headerRight}>
+          <Text style={styles.headerTitle}>Nursing ROI Assessment</Text>
+        </View>
+      </View>
+
+      <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Recommendations</Text>
+      <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.black, marginBottom: 8 }}>{narrativeContent.recommendations.headline}</Text>
+      <Text style={{ fontSize: 10, color: colors.mediumGray, marginBottom: 24 }}>
+        A phased approach to capturing {formatCurrency(data.netGain)} in annual value.
+      </Text>
+
+      {narrativeContent.recommendations.phases.map((phase, i) => (
+        <View key={i} style={{ marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.primary, justifyContent: "center", alignItems: "center", marginRight: 14 }}>
+              <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.white }}>{i + 1}</Text>
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black }}>{phase.name}</Text>
+            <Text style={{ fontSize: 9, color: colors.mediumGray, marginLeft: 10 }}>{phase.duration}</Text>
+          </View>
+          <View style={{ paddingLeft: 42 }}>
+            {phase.actions.map((action, j) => (
+              <Text key={j} style={{ fontSize: 9, color: colors.darkGray, marginBottom: 6, lineHeight: 1.5 }}>• {action}</Text>
+            ))}
+          </View>
+        </View>
+      ))}
+
+      <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 20, marginTop: 20, marginBottom: 20 }}>
+        <Text style={{ fontSize: 12, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+          {narrativeContent.recommendations.closing}
+        </Text>
+      </View>
+
+      <View style={{ backgroundColor: colors.heroSlate, padding: 20, borderRadius: 4 }}>
+        <Text style={{ fontSize: 8, color: colors.emerald, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>The Cost of Waiting</Text>
+        <Text style={{ fontSize: 10, color: colors.white, lineHeight: 1.6 }}>
+          {narrativeContent.recommendations.costOfInaction}
+        </Text>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
@@ -2256,20 +2458,34 @@ const ClosingPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; page
 
 const NursingROIDocument = ({ data }: { data: NursingPDFData }) => {
   const quantifiedDrivers = data.drivers.filter(d => d.category === "labor" || d.category === "quality");
-  const totalPages = 2 + quantifiedDrivers.length + 3; // Executive + drivers + FullPicture + Journey + Methodology + Closing
-
+  // Stakes + Executive + drivers + Journey + Path Forward + Methodology (Cover not counted)
+  const totalPages = 1 + 1 + quantifiedDrivers.length + 1 + 1 + 1;
   let currentPage = 1;
 
   return (
     <Document>
+      {/* Cover - no page number, not counted */}
+      <CoverPage data={data} />
+      
+      {/* Stakes - Page 1 */}
+      <StakesPage pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Executive Summary */}
       <ExecutiveSummary data={data} pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Driver Deep Dives */}
       {quantifiedDrivers.map((driver) => (
         <DriverPage key={driver.id} driver={driver} data={data} pageNum={currentPage++} totalPages={totalPages} />
       ))}
-      <FullPicturePage data={data} pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Journey / Projections */}
       <JourneyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Path Forward */}
+      <PathForwardPage data={data} pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Methodology */}
       <MethodologyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
-      <ClosingPage data={data} pageNum={currentPage++} totalPages={totalPages} />
     </Document>
   );
 };

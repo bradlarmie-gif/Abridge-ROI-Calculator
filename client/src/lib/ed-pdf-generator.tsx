@@ -187,6 +187,127 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
     backgroundColor: brand.white,
   },
+
+  // Stakes page styles
+  stakesPage: {
+    backgroundColor: brand.white,
+    padding: 0,
+  },
+  stakesHero: {
+    backgroundColor: brand.black,
+    padding: 50,
+    paddingTop: 40,
+    paddingBottom: 50,
+  },
+  stakesHeroTitle: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: brand.white,
+    lineHeight: 1.2,
+    marginBottom: 32,
+    maxWidth: 440,
+  },
+  stakesStatRow: {
+    flexDirection: "row",
+    gap: 40,
+  },
+  stakesStat: {
+    marginRight: 40,
+  },
+  stakesStatValue: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: brand.coral,
+    marginBottom: 6,
+  },
+  stakesStatLabel: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    maxWidth: 120,
+  },
+  stakesContent: {
+    padding: 50,
+  },
+  stakesBody: {
+    fontSize: 12,
+    color: brand.black,
+    lineHeight: 1.8,
+    marginBottom: 40,
+  },
+  pullQuoteBox: {
+    borderLeftWidth: 4,
+    borderLeftColor: brand.red,
+    paddingLeft: 24,
+    marginTop: 20,
+  },
+  pullQuoteText: {
+    fontSize: 14,
+    fontStyle: "italic",
+    color: brand.black,
+    lineHeight: 1.6,
+  },
+
+  // Path Forward page styles
+  phaseSection: {
+    marginBottom: 28,
+  },
+  phaseHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  phaseNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: brand.red,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  phaseNumberText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: brand.white,
+  },
+  phaseName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: brand.black,
+  },
+  phaseDuration: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    marginLeft: 12,
+  },
+  phaseActions: {
+    paddingLeft: 48,
+  },
+  phaseAction: {
+    fontSize: 10,
+    color: brand.black,
+    marginBottom: 8,
+    lineHeight: 1.5,
+  },
+  costOfInactionBox: {
+    backgroundColor: brand.black,
+    padding: 24,
+    marginTop: 32,
+  },
+  costOfInactionLabel: {
+    fontSize: 9,
+    color: brand.coral,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    marginBottom: 10,
+  },
+  costOfInactionText: {
+    fontSize: 11,
+    color: brand.white,
+    lineHeight: 1.6,
+  },
   pageHeader: {
     backgroundColor: brand.black,
     padding: 24,
@@ -591,11 +712,23 @@ const formatNumber = (value: number): string => value.toLocaleString();
 
 // ============================================================================
 // ED-SPECIFIC NARRATIVE CONTENT - THE SOUL
+// Premium story arc with emotional anchors
 // ============================================================================
 
 const narrativeContent = {
   cover: {
-    subtitle: "This document explores how ambient AI documentation could create value in your Emergency Department—built on transparent methodology you can challenge and adapt.",
+    subtitle: "A transparent framework for understanding how ambient AI documentation creates value in high-acuity, time-critical emergency care environments.",
+  },
+
+  stakes: {
+    headline: "In the ED, every minute spent documenting is a minute not spent saving lives.",
+    stats: [
+      { value: "43%", label: "Of ED physicians report burnout symptoms" },
+      { value: "3.5%", label: "Average LWBS rate—patients leaving without care" },
+      { value: "$1.2M", label: "Cost per ED physician departure" },
+    ],
+    body: "Emergency Departments operate at the intersection of life and death. Yet ED physicians spend nearly half their shift on documentation—creating notes instead of treating patients. The result: longer wait times, higher LWBS rates, and clinicians pushed to the breaking point. This isn't sustainable. Every ED faces a choice: continue the status quo and absorb the costs, or fundamentally reimagine how documentation happens in emergency care.",
+    pullQuote: "The ED that documents faster treats more patients. The question is whether you'll lead that transformation.",
   },
   
   executive: {
@@ -626,31 +759,76 @@ const narrativeContent = {
     patientAccess: {
       theory: "In the ED, reduced documentation time means improved throughput and lower LWBS rates. Each additional patient seen represents both revenue and better community access to emergency care.",
       implication: (value: number, pct: number) => `At ${formatCurrency(value)}, throughput improvement represents ${pct}% of your projected value. EDs with high LWBS rates often see this number grow as workflows mature.`,
+      benchmark: "High-performing EDs convert 30-40% of reclaimed documentation time to additional patient throughput.",
     },
     overtime: {
       theory: "ED physician retention is heavily influenced by work-life balance. Documentation that extends shifts creates burnout, driving attrition. Reducing burnout-driven departures avoids substantial recruitment and ramp-up costs.",
       implication: (value: number) => `The ${formatCurrency(value)} in retention value represents avoided recruitment costs and maintained productivity. This materializes over 12+ months as turnover patterns emerge.`,
+      benchmark: "ED physician turnover runs 15-20% annually, with 50-60% attributable to burnout.",
     },
     workforce: {
       theory: "ED physician burnout leads to departures, and each departure costs $500K-$1M+ in recruiting, onboarding, and lost productivity. Documentation burden is a leading driver of ED physician burnout.",
       implication: (value: number, providers: number) => `With ${providers} ED physicians, even fractional retention improvement creates substantial value. This is probabilistic and materializes over time.`,
+      benchmark: "ED physician replacement typically takes 6-12 months with significant productivity loss during ramp-up.",
     },
     wrvu: {
       theory: "ED encounters often involve complex medical decision-making that isn't fully documented. When notes capture the complete picture, E&M coding can reflect the actual work performed.",
       implication: (value: number) => `This ${formatCurrency(value)} represents level-of-service accuracy—capturing complexity that's already being delivered. Highly defensible because it's not about doing more.`,
+      benchmark: "ED E&M levels average 10-15% undercoding due to documentation gaps in high-acuity encounters.",
     },
     denials: {
       theory: "ED claims are frequently denied for documentation gaps—missing clinical information, insufficient medical necessity, incomplete MDM. Preventing denials upfront is more efficient than appeals.",
       implication: (value: number) => `Denial prevention at ${formatCurrency(value)} is highly measurable—you can track ED-specific denials before and after with clear attribution to documentation improvement.`,
+      benchmark: "ED denial rates run 8-12%, with 50-60% stemming from documentation insufficiency.",
     },
   },
   
   scaling: {
     intro: "Value doesn't scale linearly. As utilization improves and workflows adapt, each ED physician may generate more value at maturity than at pilot. These projections assume adoption patterns we've observed—your experience could differ.",
   },
+
+  recommendations: {
+    headline: "Your Path Forward",
+    phases: [
+      {
+        name: "Validate",
+        duration: "30 days",
+        actions: [
+          "Deploy with 3-5 high-volume ED physicians",
+          "Target a single shift pattern initially",
+          "Establish baseline LWBS and throughput metrics",
+        ],
+      },
+      {
+        name: "Prove",
+        duration: "60-90 days",
+        actions: [
+          "Measure time savings and physician satisfaction",
+          "Track LWBS rate changes",
+          "Document workflow integration patterns",
+        ],
+      },
+      {
+        name: "Scale",
+        duration: "Ongoing",
+        actions: [
+          "Expand to all ED physicians and shifts",
+          "Optimize workflows based on learnings",
+          "Connect ED documentation to inpatient flow",
+        ],
+      },
+    ],
+    closing: "The EDs that move first don't just improve throughput—they become destinations for top emergency medicine talent.",
+    costOfInaction: "Every month of delay represents patients leaving without care, physicians considering departure, and revenue lost to documentation gaps.",
+  },
   
   methodology: {
     approach: "This model prioritizes transparency over precision. We use conservative assumptions informed by ED-specific realities, show our work step-by-step, and make every input editable. The goal isn't to prove a number—it's to give you a framework for thinking about ED value.",
+    principles: [
+      { name: "ED-specific conservatism", description: "Realization rates account for patient arrival unpredictability, capacity constraints, and high-stress environments." },
+      { name: "Transparent calculations", description: "Every number traces back to editable inputs. Challenge anything that doesn't match your ED reality." },
+      { name: "Defensible to skeptics", description: "Built to withstand CFO and CMO scrutiny. No hidden assumptions or optimistic leaps." },
+    ],
   },
 };
 
@@ -960,6 +1138,41 @@ const CoverPage = ({ data }: { data: EDPDFData }) => {
   );
 };
 
+// Stakes Page - The Urgency
+const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={styles.stakesPage} wrap={false}>
+      <View style={styles.stakesHero}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
+          <Image src={abridgeLogoPath} style={styles.headerLogo} />
+          <Text style={{ fontSize: 9, color: brand.textSecondary, textTransform: "uppercase", letterSpacing: 1 }}>The Stakes</Text>
+        </View>
+        <Text style={styles.stakesHeroTitle}>{narrativeContent.stakes.headline}</Text>
+        <View style={styles.stakesStatRow}>
+          {narrativeContent.stakes.stats.map((stat, i) => (
+            <View key={i} style={styles.stakesStat}>
+              <Text style={styles.stakesStatValue}>{stat.value}</Text>
+              <Text style={styles.stakesStatLabel}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.stakesContent}>
+        <Text style={styles.stakesBody}>{narrativeContent.stakes.body}</Text>
+        <View style={styles.pullQuoteBox}>
+          <Text style={styles.pullQuoteText}>{narrativeContent.stakes.pullQuote}</Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
@@ -1217,6 +1430,57 @@ const DriverDetailPage = ({
   );
 };
 
+// Path Forward Page - Recommendations
+const PathForwardPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={styles.contentPage} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Emergency Department Value Assessment</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Recommendations</Text>
+        <Text style={styles.sectionTitle}>{narrativeContent.recommendations.headline}</Text>
+        <Text style={styles.sectionSubtitle}>
+          A phased approach to capturing {formatCurrency(data.netGain)} in annual value.
+        </Text>
+
+        {narrativeContent.recommendations.phases.map((phase, i) => (
+          <View key={i} style={styles.phaseSection}>
+            <View style={styles.phaseHeader}>
+              <View style={styles.phaseNumber}>
+                <Text style={styles.phaseNumberText}>{i + 1}</Text>
+              </View>
+              <Text style={styles.phaseName}>{phase.name}</Text>
+              <Text style={styles.phaseDuration}>{phase.duration}</Text>
+            </View>
+            <View style={styles.phaseActions}>
+              {phase.actions.map((action, j) => (
+                <Text key={j} style={styles.phaseAction}>• {action}</Text>
+              ))}
+            </View>
+          </View>
+        ))}
+
+        <View style={styles.pullQuoteBox}>
+          <Text style={styles.pullQuoteText}>{narrativeContent.recommendations.closing}</Text>
+        </View>
+
+        <View style={styles.costOfInactionBox}>
+          <Text style={styles.costOfInactionLabel}>The Cost of Waiting</Text>
+          <Text style={styles.costOfInactionText}>{narrativeContent.recommendations.costOfInaction}</Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge ED Value Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
 const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageNum: number; totalPages: number }) => {
   return (
     <Page size="A4" style={styles.contentPage} wrap={false}>
@@ -1306,14 +1570,17 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: EDPDFData; pageN
 // ============================================================================
 
 const EDPDFDocument = ({ data }: { data: EDPDFData }) => {
-  const totalPages = 3 + data.drivers.length + 1;
-  let pageNum = 1;
+  // Pages: Stakes, Executive, Driver pages..., Projections, Path Forward, Methodology (Cover not counted)
+  const totalPages = 5 + data.drivers.length;
+  let pageNum = 0;
 
   return (
     <Document>
+      {/* Cover - no page number, not counted */}
       <CoverPage data={data} />
+      {/* Stakes - Page 1 */}
+      <StakesPage pageNum={++pageNum} totalPages={totalPages} />
       <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
-      <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
         <DriverDetailPage 
           key={driver.id} 
@@ -1323,6 +1590,8 @@ const EDPDFDocument = ({ data }: { data: EDPDFData }) => {
           totalPages={totalPages}
         />
       ))}
+      <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <PathForwardPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       <MethodologyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
   );

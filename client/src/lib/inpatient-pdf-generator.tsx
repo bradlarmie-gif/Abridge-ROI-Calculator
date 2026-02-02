@@ -1166,6 +1166,58 @@ const driverImplications: Record<string, (value: number, data: InpatientPDFData)
   },
 };
 
+// ============================================================================
+// PREMIUM NARRATIVE CONTENT - Story Arc
+// ============================================================================
+
+const narrativeContent = {
+  stakes: {
+    headline: "Hospitalists carry the heaviest documentation burden in medicine—and it's breaking them.",
+    stats: [
+      { value: "63%", label: "Of hospitalists report burnout symptoms" },
+      { value: "2+ hrs", label: "Daily documentation time after rounds" },
+      { value: "$500K", label: "Average cost to replace one hospitalist" },
+    ],
+    body: "Inpatient medicine demands the most complex documentation in healthcare. Every admission requires histories, progress notes, discharge summaries—often written after shifts or at home. The result: hospitalist turnover rates 50% higher than other specialties, DRG accuracy suffering from time pressure, and CDI teams spending hours chasing documentation gaps that were discussed but never captured.",
+    pullQuote: "The hospital that documents at the bedside captures value that others leave behind.",
+  },
+
+  recommendations: {
+    headline: "Your Path Forward",
+    phases: [
+      {
+        name: "Validate",
+        duration: "30-60 days",
+        actions: [
+          "Deploy with 3-5 hospitalists on a single unit",
+          "Establish baseline documentation time and CDI query rates",
+          "Track DRG accuracy for pilot patients",
+        ],
+      },
+      {
+        name: "Prove",
+        duration: "60-90 days",
+        actions: [
+          "Measure documentation completion time",
+          "Compare CC/MCC capture rates vs. baseline",
+          "Survey hospitalist satisfaction and burnout indicators",
+        ],
+      },
+      {
+        name: "Scale",
+        duration: "Ongoing",
+        actions: [
+          "Expand to all hospitalists and units",
+          "Integrate with CDI workflow optimization",
+          "Connect ED documentation for seamless care continuum",
+        ],
+      },
+    ],
+    closing: "The hospitals that move first on ambient documentation aren't just improving efficiency—they're becoming destinations for top hospitalist talent.",
+    costOfInaction: "Every month of delay represents hospitalists considering departure, DRG accuracy gaps compounding, and CDI teams spending time on preventable queries.",
+  },
+};
+
 interface StepData {
   label: string;
   question: string;
@@ -1479,41 +1531,171 @@ function getFinalFormula(driver: DriverCalculation): string {
   }
 }
 
-const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
+// ============================================================================
+// PAGE COMPONENTS - Premium Narrative Arc
+// ============================================================================
+
+// Cover Page
+const CoverPage = ({ data }: { data: InpatientPDFData }) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+  const displayName = data.clientName || data.organizationName || "Your Organization";
 
+  return (
+    <Page size="A4" style={{ backgroundColor: colors.heroSlate, padding: 0 }} wrap={false}>
+      <View style={{ padding: 50, height: "100%", justifyContent: "space-between" }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Image src={abridgeLogoPath} style={{ width: 100, height: 20 }} />
+          <Text style={{ fontSize: 10, color: colors.lightGray, letterSpacing: 1 }}>{today}</Text>
+        </View>
+
+        <View style={{ flex: 1, justifyContent: "center", paddingVertical: 60 }}>
+          <Text style={{ fontSize: 11, color: colors.heroEmerald, textTransform: "uppercase", letterSpacing: 4, marginBottom: 24 }}>Inpatient</Text>
+          <Text style={{ fontSize: 48, fontWeight: "bold", color: colors.white, marginBottom: 20, lineHeight: 1.0 }}>{displayName}</Text>
+          <Text style={{ fontSize: 14, color: colors.lightGray, lineHeight: 1.6, maxWidth: 380 }}>
+            A transparent framework for understanding how ambient AI documentation creates value in hospitalist programs.
+          </Text>
+
+          <View style={{ flexDirection: "row", marginTop: 50, gap: 60 }}>
+            <View style={{ marginRight: 60 }}>
+              <Text style={{ fontSize: 44, fontWeight: "bold", color: colors.heroEmerald, marginBottom: 8 }}>{formatCurrency(data.netGain)}</Text>
+              <Text style={{ fontSize: 10, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 2 }}>Net Annual Value</Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 44, fontWeight: "bold", color: colors.white, marginBottom: 8 }}>{data.roi.toFixed(1)}x</Text>
+              <Text style={{ fontSize: 10, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 2 }}>Return on Investment</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ borderTopWidth: 1, borderTopColor: colors.heroSlateLight, paddingTop: 20 }}>
+          <Text style={{ fontSize: 10, color: colors.lightGray }}>
+            Inpatient • {data.providers} {data.unitNamePlural} • {formatNumber(data.encounters)} admissions
+          </Text>
+        </View>
+      </View>
+    </Page>
+  );
+};
+
+// Stakes Page
+const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={{ backgroundColor: colors.white, padding: 0 }} wrap={false}>
+      <View style={{ backgroundColor: colors.heroSlate, padding: 50, paddingTop: 40, paddingBottom: 50 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
+          <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
+          <Text style={{ fontSize: 9, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1 }}>The Stakes</Text>
+        </View>
+        <Text style={{ fontSize: 32, fontWeight: "bold", color: colors.white, lineHeight: 1.2, marginBottom: 32, maxWidth: 440 }}>
+          {narrativeContent.stakes.headline}
+        </Text>
+        <View style={{ flexDirection: "row", gap: 40 }}>
+          {narrativeContent.stakes.stats.map((stat, i) => (
+            <View key={i} style={{ marginRight: 40 }}>
+              <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.heroEmerald, marginBottom: 6 }}>{stat.value}</Text>
+              <Text style={{ fontSize: 9, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, maxWidth: 120 }}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={{ padding: 50 }}>
+        <Text style={{ fontSize: 12, color: colors.black, lineHeight: 1.8, marginBottom: 40 }}>
+          {narrativeContent.stakes.body}
+        </Text>
+        <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 24, marginTop: 20 }}>
+          <Text style={{ fontSize: 14, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+            {narrativeContent.stakes.pullQuote}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Inpatient ROI Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+// Path Forward Page
+const PathForwardPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
+  return (
+    <Page size="A4" style={styles.page} wrap={false}>
+      <View style={styles.header}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image src={abridgeLogoPath} style={styles.logo} />
+        </View>
+        <View style={styles.headerRight}>
+          <Text style={styles.headerTitle}>Inpatient ROI Assessment</Text>
+        </View>
+      </View>
+
+      <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Recommendations</Text>
+      <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.black, marginBottom: 8 }}>{narrativeContent.recommendations.headline}</Text>
+      <Text style={{ fontSize: 10, color: colors.mediumGray, marginBottom: 24 }}>
+        A phased approach to capturing {formatCurrency(data.netGain)} in annual value.
+      </Text>
+
+      {narrativeContent.recommendations.phases.map((phase, i) => (
+        <View key={i} style={{ marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.primary, justifyContent: "center", alignItems: "center", marginRight: 14 }}>
+              <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.white }}>{i + 1}</Text>
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black }}>{phase.name}</Text>
+            <Text style={{ fontSize: 9, color: colors.mediumGray, marginLeft: 10 }}>{phase.duration}</Text>
+          </View>
+          <View style={{ paddingLeft: 42 }}>
+            {phase.actions.map((action, j) => (
+              <Text key={j} style={{ fontSize: 9, color: colors.darkGray, marginBottom: 6, lineHeight: 1.5 }}>• {action}</Text>
+            ))}
+          </View>
+        </View>
+      ))}
+
+      <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 20, marginTop: 20, marginBottom: 20 }}>
+        <Text style={{ fontSize: 12, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+          {narrativeContent.recommendations.closing}
+        </Text>
+      </View>
+
+      <View style={{ backgroundColor: colors.heroSlate, padding: 20, borderRadius: 4 }}>
+        <Text style={{ fontSize: 8, color: colors.heroEmerald, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>The Cost of Waiting</Text>
+        <Text style={{ fontSize: 10, color: colors.white, lineHeight: 1.6 }}>
+          {narrativeContent.recommendations.costOfInaction}
+        </Text>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Abridge Inpatient ROI Assessment</Text>
+        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData; pageNum: number; totalPages: number }) => {
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
   const revenueDrivers = data.drivers.filter(d => d.category === "revenue");
   const valuePerProvider = Math.round(data.netGain / data.providers);
 
-  // Generate personalized tagline based on ROI
-  const getHeroTagline = (): string => {
-    if (data.roi >= 5) return "Strong potential for value creation in your hospitalist program";
-    if (data.roi >= 3) return "Meaningful opportunities for efficiency and revenue recovery";
-    if (data.roi >= 2) return "A solid foundation worth exploring further";
-    return "Understanding your documentation value landscape";
-  };
-
   return (
     <Page size="A4" style={styles.page}>
-      {/* Dark Hero Section */}
-      <View style={styles.heroSection}>
-        <View style={styles.heroMeta}>
+      <View style={styles.header}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image src={abridgeLogoPath} style={styles.logo} />
-          <Text style={styles.heroDate}>{today}</Text>
+          {data.clientName && (
+            <Text style={{ fontSize: 8, color: colors.mediumGray, marginLeft: 8, fontWeight: "bold" }}>{data.clientName}</Text>
+          )}
         </View>
-        <Text style={styles.heroTagline}>{getHeroTagline()}</Text>
-        <Text style={styles.heroTitle}>
-          {data.organizationName || "Your Organization"} — Inpatient ROI Model
-        </Text>
-        <Text style={styles.heroSubtitle}>
-          An exploratory model for understanding what ambient documentation could mean for your hospitalist program. 
-          Every projection traces back to your inputs and industry benchmarks.
-        </Text>
+        <View style={styles.headerRight}>
+          <Text style={styles.headerTitle}>Inpatient ROI Assessment</Text>
+        </View>
       </View>
 
       {/* Content Section */}
@@ -2097,13 +2279,22 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData
 };
 
 const InpatientROIDocument = ({ data }: { data: InpatientPDFData }) => {
-  const totalPages = 2 + data.drivers.length + 1;
+  // Stakes + Executive Summary + Drivers + Journey + Path Forward + Methodology (Cover excluded from count)
+  const totalPages = 1 + 1 + data.drivers.length + 1 + 1 + 1;
   let currentPage = 1;
 
   return (
     <Document>
+      {/* Cover - no page number, not counted */}
+      <CoverPage data={data} />
+      
+      {/* Stakes - Page 1 */}
+      <StakesPage pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Executive Summary */}
       <ExecutiveSummaryPage data={data} pageNum={currentPage++} totalPages={totalPages} />
 
+      {/* Driver Deep Dives */}
       {data.drivers.map((driver) => (
         <DriverDetailPage
           key={driver.id}
@@ -2114,8 +2305,13 @@ const InpatientROIDocument = ({ data }: { data: InpatientPDFData }) => {
         />
       ))}
 
+      {/* Journey/Projections */}
       <JourneyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
+      
+      {/* Path Forward */}
+      <PathForwardPage data={data} pageNum={currentPage++} totalPages={totalPages} />
 
+      {/* Methodology */}
       <MethodologyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
     </Document>
   );
