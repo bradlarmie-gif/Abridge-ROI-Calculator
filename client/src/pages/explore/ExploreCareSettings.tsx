@@ -80,9 +80,9 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -95,40 +95,19 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
             Select Your Care Setting
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-xl mx-auto mb-6">
-            Select your care setting to begin modeling the impact.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-12">
+            Each care setting has unique workflows and documentation requirements. 
+            We'll customize time savings and value drivers to match your environment.
           </p>
-          
-          <div className="bg-slate-100 rounded-lg p-4 max-w-xl mx-auto text-left">
-            <p className="text-slate-500 text-sm mb-3">
-              <span className="font-semibold text-slate-700">Why this matters:</span> Each care setting has unique workflows, time pressures, and documentation requirements. We'll customize the ROI model to reflect your setting's specific realities:
-            </p>
-            <ul className="text-slate-500 text-sm space-y-1 ml-1">
-              <li>• <span className="font-medium text-slate-600">Outpatient:</span> Visit volume & E&M documentation</li>
-              <li>• <span className="font-medium text-slate-600">Emergency:</span> Throughput pressure & medical necessity</li>
-              <li>• <span className="font-medium text-slate-600">Inpatient:</span> Care coordination & CDI efficiency</li>
-              <li>• <span className="font-medium text-slate-600">Nursing:</span> Bedside time & handoff quality</li>
-            </ul>
-            <p className="text-slate-500 text-sm mt-3">
-              Choosing the right setting ensures accurate, defensible ROI projections.
-            </p>
-          </div>
         </motion.div>
 
         <motion.div
-          className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 mb-8"
+          className="mb-24"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">
-            Choose One
-          </p>
-          <h2 className="text-lg font-bold text-black mb-6">
-            Select Your Care Setting
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div className="flex justify-center gap-12">
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
               const isSelected = selectedSetting === setting.id;
@@ -140,7 +119,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   onClick={() => handleSelectSetting(setting)}
                   disabled={isDisabled}
                   className={`
-                    relative flex flex-col items-center text-center p-8 rounded-2xl transition-all duration-200
+                    relative flex flex-col items-center text-center w-[260px] py-10 px-8 rounded-2xl transition-all duration-200
                     ${isSelected 
                       ? 'bg-black text-white shadow-xl' 
                       : isDisabled
@@ -155,23 +134,23 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                 >
                   {isSelected && (
                     <motion.div 
-                      className="absolute top-3 right-3 w-6 h-6 bg-[#EA2C00] rounded-full flex items-center justify-center"
+                      className="absolute top-4 right-4 w-7 h-7 bg-[#EA2C00] rounded-full flex items-center justify-center"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     >
-                      <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
                     </motion.div>
                   )}
 
                   {isDisabled && (
-                    <div className="absolute top-3 right-3 px-2 py-1 bg-slate-200 rounded-md text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                    <div className="absolute top-4 right-4 px-2 py-1 bg-slate-200 rounded-md text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
                       Soon
                     </div>
                   )}
 
                   <div className={`
-                    w-14 h-14 rounded-xl flex items-center justify-center mb-4
+                    w-20 h-20 rounded-2xl flex items-center justify-center mb-6
                     ${isSelected 
                       ? 'bg-white/10' 
                       : isDisabled
@@ -179,14 +158,14 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                         : 'bg-[#FFF5F2]'
                     }
                   `}>
-                    <Icon className={`w-7 h-7 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-10 h-10 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
                   </div>
                   
-                  <h3 className={`text-base font-bold mb-1 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
+                  <h3 className={`text-xl font-bold mb-1 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
                     {setting.label}
                   </h3>
                   
-                  <p className={`text-sm ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-sm font-medium leading-tight ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
                     {setting.shortDesc}
                   </p>
                 </motion.button>
