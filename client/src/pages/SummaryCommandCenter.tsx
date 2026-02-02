@@ -24,6 +24,8 @@ import {
   Building2,
   Link2,
   Stethoscope,
+  Shield,
+  BarChart3,
 } from "lucide-react";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { Button } from "@/components/ui/button";
@@ -199,6 +201,7 @@ export default function SummaryCommandCenter({
   const config = settingConfig[activeSetting] || settingConfig.outpatient;
   const isNursingSetting = selectedSettings.includes("nursing");
   const isEDSetting = selectedSettings.includes("ed");
+  const isInpatientSetting = selectedSettings.includes("inpatient");
   
   const initialUnits = isNursingSetting 
     ? (modelResults.nursingStaffedBeds || 200)
@@ -902,7 +905,63 @@ export default function SummaryCommandCenter({
                 
                 <div className="mt-6 pt-4 border-t border-white/10">
                   <p className="text-xs text-white/40 text-center">
-                    To model inpatient value from ED admissions, explore the Inpatient care setting when it becomes available.
+                    To model inpatient value from ED admissions, explore the Inpatient care setting.
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ========== INPATIENT CONNECTED VALUE ========== */}
+          {isInpatientSetting && (
+            <section className="py-12 md:py-16 px-6 bg-gradient-to-b from-indigo-50 to-white">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                    <Link2 className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Connected Value</h2>
+                    <p className="text-slate-500 text-sm">ED + Inpatient compounds your results</p>
+                  </div>
+                </div>
+                
+                <p className="text-slate-600 mb-8 max-w-3xl">
+                  When both ED and Inpatient use Abridge, the value compounds. The admission documentation 
+                  that starts in ED flows directly into inpatient coding, CDI workflows, and denial defense.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                      <BarChart3 className="w-5 h-5 text-indigo-600" />
+                      <span className="font-semibold text-slate-800">DRG Capture</span>
+                    </div>
+                    <p className="text-sm text-slate-600">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                      <FileCheck className="w-5 h-5 text-blue-500" />
+                      <span className="font-semibold text-slate-800">CDI Efficiency</span>
+                    </div>
+                    <p className="text-sm text-slate-600">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Shield className="w-5 h-5 text-amber-500" />
+                      <span className="font-semibold text-slate-800">Denial Prevention</span>
+                    </div>
+                    <p className="text-sm text-slate-600">Medical necessity documented at admission is your first line of defense against payer audits.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 bg-indigo-100 rounded-xl p-4">
+                  <Lightbulb className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-indigo-800">
+                    <span className="font-semibold">If you're also using Abridge in ED</span>, the documentation 
+                    quality benefits above are amplified — you're building on a stronger foundation.
                   </p>
                 </div>
               </div>
