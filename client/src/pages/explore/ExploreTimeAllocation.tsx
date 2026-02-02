@@ -651,6 +651,9 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   };
 
   const handleSliderChange = (id: keyof TimeAllocation, newValue: number) => {
+    // Block changes to auto-calculated category
+    if (isAutoCalculated(id)) return;
+    
     const current = { ...state.timeAllocation };
     const oldValue = current[id];
     const diff = newValue - oldValue;
@@ -662,14 +665,27 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     // If no adjustable keys, can't change
     if (adjustableKeys.length === 0) return;
     
-    // Find the slider with the LARGEST percentage to absorb the change
-    // This keeps other sliders fixed - only ONE slider adjusts
-    const largestKey = adjustableKeys.reduce((largest, k) => 
-      current[k] > current[largest] ? k : largest
-    , adjustableKeys[0]);
+    // Find the slider with the LARGEST percentage among adjustable keys (for use in multiple places)
+    const largestKey = adjustableKeys.length > 0 
+      ? adjustableKeys.reduce((largest, k) => current[k] > current[largest] ? k : largest, adjustableKeys[0])
+      : null;
     
-    if (largestKey) {
-      // Only adjust the largest slider, leave others unchanged
+    // When 2 categories are locked, use explicit auto-calculation for the remaining category
+    const autoCalcKey = getAutoCalculatedCategory();
+    if (autoCalcKey && adjustableKeys.includes(autoCalcKey)) {
+      // Set the edited value
+      current[id] = Math.max(0, Math.min(100, newValue));
+      
+      // Calculate sum of all non-auto-calculated visible categories
+      const visibleKeys = (Object.keys(current) as (keyof TimeAllocation)[])
+        .filter(k => (includeLocums || k !== 'reducingLocums') && k !== autoCalcKey);
+      const sumOthers = visibleKeys.reduce((sum, k) => sum + current[k], 0);
+      
+      // Auto-calculated category gets the remainder
+      current[autoCalcKey] = Math.max(0, 100 - sumOthers);
+    } else if (largestKey) {
+      // Normal behavior: adjust the largest slider to absorb the change
+      // This keeps other sliders fixed - only ONE slider adjusts
       const newLargestValue = current[largestKey] - diff;
       
       // Clamp the adjustment to valid range
