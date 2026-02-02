@@ -202,8 +202,7 @@ interface WellbeingThreshold {
 const WELLBEING_THRESHOLDS: WellbeingThreshold[] = [
   { minHoursAnnual: 0, maxHoursAnnual: 100, label: 'MINIMAL', rateMin: 0.03, rateMax: 0.05, color: 'text-slate-500', bgColor: 'bg-slate-100', description: '<2 hrs/week' },
   { minHoursAnnual: 100, maxHoursAnnual: 150, label: 'MODERATE', rateMin: 0.08, rateMax: 0.12, color: 'text-slate-600', bgColor: 'bg-slate-100', description: '2-3 hrs/week' },
-  { minHoursAnnual: 150, maxHoursAnnual: 200, label: 'SIGNIFICANT', rateMin: 0.15, rateMax: 0.20, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '3-4 hrs/week' },
-  { minHoursAnnual: 200, maxHoursAnnual: Infinity, label: 'MAXIMUM', rateMin: 0.25, rateMax: 0.30, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '4+ hrs/week' },
+  { minHoursAnnual: 150, maxHoursAnnual: Infinity, label: 'SIGNIFICANT', rateMin: 0.15, rateMax: 0.20, color: 'text-[#EA2C00]', bgColor: 'bg-slate-100', description: '3+ hrs/week' },
 ];
 
 function getWellbeingThreshold(hoursPerProviderAnnual: number): WellbeingThreshold {
@@ -1091,8 +1090,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
             </div>
           </div>
           
-          {/* Nudge message */}
-          {showNudge && wc.valueAtNextThreshold && (
+          {/* Nudge message - show next tier opportunity OR maximizing message */}
+          {showNudge && wc.valueAtNextThreshold && wc.nextThreshold && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1101,8 +1100,23 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               <Zap className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
               <p className="text-xs text-slate-700">
                 <span className="font-semibold">At {wc.allocationForNextThreshold}% allocation</span>, you'd reach the{' '}
-                <span className="font-semibold text-[#EA2C00]">{wc.nextThreshold?.label}</span> tier with a value of{' '}
+                <span className="font-semibold text-[#EA2C00]">{wc.nextThreshold.label}</span> tier with a value of{' '}
                 <span className="font-bold text-[#EA2C00]">${wc.valueAtNextThreshold.toLocaleString()}</span>
+              </p>
+            </motion.div>
+          )}
+          
+          {/* Maximizing impact message - when at SIGNIFICANT tier with high allocation */}
+          {wc.threshold.label === 'SIGNIFICANT' && state.timeAllocation.clinicianWellbeing >= 80 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-2 bg-[#FFF5F2] rounded-lg p-3 border-l-4 border-[#EA2C00]"
+            >
+              <Zap className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-700">
+                <span className="font-semibold">At {state.timeAllocation.clinicianWellbeing}% allocation</span>, you're maximizing wellbeing impact with a value of{' '}
+                <span className="font-bold text-[#EA2C00]">${wc.value.toLocaleString()}</span>
               </p>
             </motion.div>
           )}
