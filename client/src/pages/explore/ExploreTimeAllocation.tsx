@@ -2945,10 +2945,10 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                           <Icon className="w-4 h-4 text-white/50" />
                           <span className="text-sm text-white/70">{option.label}</span>
                           {isDirectValue && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 uppercase tracking-wider">Direct</span>
+                            <span className="text-[9px] text-green-400/80 uppercase tracking-widest font-medium">direct</span>
                           )}
                           {isPotentialValue && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 uppercase tracking-wider">Potential</span>
+                            <span className="text-[9px] text-amber-400/70 uppercase tracking-widest font-medium">est.</span>
                           )}
                         </div>
                         <div className="text-right">
