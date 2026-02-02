@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star, AlertTriangle } from "lucide-react";
+import { ArrowRight, Users, Clock, Heart, Check, ChevronDown, ChevronUp, Calculator, ToggleLeft, ToggleRight, Pencil, Info, Settings, X, Target, Zap, Star, AlertTriangle, Lock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -529,13 +529,57 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   // Editable percentage state
   const [editingCategory, setEditingCategory] = useState<keyof TimeAllocation | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  
+  // Lock state for each allocation category
+  const [lockedCategories, setLockedCategories] = useState<Set<keyof TimeAllocation>>(new Set());
 
   const updateAssumption = (key: keyof EditableAssumptions, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
   };
 
+  // Toggle lock for a category
+  const handleToggleLock = (id: keyof TimeAllocation) => {
+    setLockedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        // Can't lock if already 2 are locked
+        if (newSet.size >= 2) return prev;
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  // Get the auto-calculated category (when 2 are locked)
+  const getAutoCalculatedCategory = (): keyof TimeAllocation | null => {
+    if (lockedCategories.size !== 2) return null;
+    // Compute visible categories inline (same logic as visibleOptions)
+    const currentOptions = (isED || isInpatient || isNursing) 
+      ? ALLOCATION_OPTIONS 
+      : ALLOCATION_OPTIONS.filter(opt => !opt.isOptional || includeLocums);
+    const allCategories = currentOptions.map(opt => opt.id);
+    return allCategories.find(id => !lockedCategories.has(id)) || null;
+  };
+
+  // Check if a category is locked
+  const isLocked = (id: keyof TimeAllocation) => lockedCategories.has(id);
+
+  // Check if a category is auto-calculated
+  const isAutoCalculated = (id: keyof TimeAllocation) => getAutoCalculatedCategory() === id;
+
+  // Check if a category can be locked (max 2 locks)
+  const canLock = (id: keyof TimeAllocation) => lockedCategories.size < 2 || lockedCategories.has(id);
+
   // Start editing a percentage
   const handleStartEdit = (id: keyof TimeAllocation) => {
+    // If auto-calculated, can't edit
+    if (isAutoCalculated(id)) return;
+    // If locked, unlock first
+    if (isLocked(id)) {
+      handleToggleLock(id);
+    }
     setEditingCategory(id);
     setEditValue(state.timeAllocation[id].toString());
   };
@@ -558,6 +602,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
 
   // Increment/decrement by step
   const handleIncrement = (id: keyof TimeAllocation, step: number) => {
+    // Can't adjust auto-calculated category
+    if (isAutoCalculated(id)) return;
     const current = state.timeAllocation[id];
     const newValue = Math.max(0, Math.min(100, current + step));
     handleSliderChange(id, newValue);
@@ -578,6 +624,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   const handleToggleLocums = () => {
     const newIncludeLocums = !includeLocums;
     setIncludeLocums(newIncludeLocums);
+    // Clear all locks when toggling locums
+    setLockedCategories(new Set());
     
     if (!newIncludeLocums) {
       const currentLocums = state.timeAllocation.reducingLocums;
@@ -607,9 +655,12 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     const oldValue = current[id];
     const diff = newValue - oldValue;
     
-    // Get adjustable sliders (not the one being dragged, and respect locums toggle)
+    // Get adjustable sliders (not the one being dragged, respect locums toggle, and respect locks)
     const adjustableKeys = (Object.keys(current) as (keyof TimeAllocation)[])
-      .filter(k => k !== id && (includeLocums || k !== 'reducingLocums'));
+      .filter(k => k !== id && (includeLocums || k !== 'reducingLocums') && !lockedCategories.has(k));
+    
+    // If no adjustable keys, can't change
+    if (adjustableKeys.length === 0) return;
     
     // Find the slider with the LARGEST percentage to absorb the change
     // This keeps other sliders fixed - only ONE slider adjusts
@@ -643,7 +694,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
     
     if (total !== 100) {
       const adjustment = 100 - total;
-      // Find any slider with value > 0 to absorb rounding error
+      // Find any unlocked slider with value > 0 to absorb rounding error
       const fixKey = adjustableKeys.find(k => current[k] > 0) || largestKey;
       if (fixKey) {
         current[fixKey] = Math.max(0, current[fixKey] + adjustment);
@@ -654,6 +705,8 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
   };
 
   const handlePreset = (preset: { allocation: TimeAllocation }) => {
+    // Clear all locks when applying a preset
+    setLockedCategories(new Set());
     updateState({ timeAllocation: preset.allocation });
   };
 
@@ -1232,15 +1285,24 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                 const isWellbeing = option.id === 'clinicianWellbeing' && isOutpatient;
                 const thresholdBg = isWellbeing ? wellbeingCalculation.threshold.bgColor : '';
                 
+                const categoryIsLocked = isLocked(option.id);
+                const categoryIsAutoCalculated = isAutoCalculated(option.id);
+                
                 return (
                   <motion.div
                     key={option.id}
-                    className="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all duration-300"
+                    className={`bg-white rounded-2xl border overflow-hidden transition-all duration-300 ${
+                      categoryIsLocked 
+                        ? 'border-l-4 border-l-[#EA2C00] border-t-slate-200 border-r-slate-200 border-b-slate-200' 
+                        : categoryIsAutoCalculated
+                          ? 'border-slate-200 bg-slate-50'
+                          : 'border-slate-200'
+                    }`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.05, duration: 0.4 }}
                   >
-                    <div className="p-5">
+                    <div className={`p-5 ${categoryIsAutoCalculated ? 'bg-slate-50' : ''}`}>
                       <div className="flex items-start gap-4 mb-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isWellbeing ? thresholdBg : 'bg-[#FFF5F2]'}`}>
                           <Icon className={`w-5 h-5 ${isWellbeing ? wellbeingCalculation.threshold.color : 'text-[#EA2C00]'}`} />
@@ -1256,12 +1318,15 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                               )}
                             </div>
                             
-                            {/* Clickable percentage with increment/decrement */}
+                            {/* Clickable percentage with increment/decrement and lock */}
                             <div className="flex items-center gap-1">
-                              {/* Decrement button */}
+                              {/* Decrement button - hidden when auto-calculated */}
                               <button
                                 onClick={() => handleIncrement(option.id, -5)}
-                                className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover-elevate"
+                                disabled={isAutoCalculated(option.id)}
+                                className={`w-7 h-7 flex items-center justify-center rounded hover-elevate ${
+                                  isAutoCalculated(option.id) ? 'text-slate-300 cursor-not-allowed' : 'text-slate-400'
+                                }`}
                                 aria-label={`Decrease ${option.label} allocation`}
                                 data-testid={`button-decrement-${option.id}`}
                               >
@@ -1288,6 +1353,13 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                   className="w-14 text-2xl font-bold text-black text-center border-2 border-[#EA2C00] rounded-lg bg-white focus:outline-none"
                                   data-testid={`input-percentage-${option.id}`}
                                 />
+                              ) : isAutoCalculated(option.id) ? (
+                                <span
+                                  className="text-2xl font-bold text-slate-400 px-2 py-0.5"
+                                  data-testid={`text-percentage-${option.id}`}
+                                >
+                                  {value}%
+                                </span>
                               ) : (
                                 <button
                                   onClick={() => handleStartEdit(option.id)}
@@ -1299,19 +1371,57 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
                                 </button>
                               )}
                               
-                              {/* Increment button */}
+                              {/* Increment button - hidden when auto-calculated */}
                               <button
                                 onClick={() => handleIncrement(option.id, 5)}
-                                className="w-7 h-7 flex items-center justify-center rounded text-slate-400 hover-elevate"
+                                disabled={isAutoCalculated(option.id)}
+                                className={`w-7 h-7 flex items-center justify-center rounded hover-elevate ${
+                                  isAutoCalculated(option.id) ? 'text-slate-300 cursor-not-allowed' : 'text-slate-400'
+                                }`}
                                 aria-label={`Increase ${option.label} allocation`}
                                 data-testid={`button-increment-${option.id}`}
                               >
                                 <ChevronUp className="w-4 h-4" />
                               </button>
+                              
+                              {/* Lock button */}
+                              {isAutoCalculated(option.id) ? (
+                                <div
+                                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100"
+                                  title="Auto-calculated to reach 100%"
+                                  data-testid={`icon-auto-${option.id}`}
+                                >
+                                  <Calculator className="w-4 h-4 text-slate-400" />
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handleToggleLock(option.id)}
+                                  disabled={!canLock(option.id) && !isLocked(option.id)}
+                                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+                                    isLocked(option.id)
+                                      ? 'bg-[#EA2C00]/10 text-[#EA2C00]'
+                                      : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                  } ${!canLock(option.id) && !isLocked(option.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  aria-label={isLocked(option.id) ? `Unlock ${option.label} (click to unlock)` : `Lock ${option.label} allocation`}
+                                  title={isLocked(option.id) ? 'Click to unlock' : canLock(option.id) ? 'Lock this allocation' : 'At least one category must adjust automatically'}
+                                  data-testid={`button-lock-${option.id}`}
+                                >
+                                  {isLocked(option.id) ? (
+                                    <Lock className="w-4 h-4" />
+                                  ) : (
+                                    <LockOpen className="w-4 h-4" />
+                                  )}
+                                </button>
+                              )}
                             </div>
                           </div>
                           <p className="text-sm text-slate-500">{option.description}</p>
-                          {isWellbeing && (
+                          {categoryIsAutoCalculated && (
+                            <p className="text-xs text-slate-400 mt-1 italic">
+                              Auto-calculated to reach 100%
+                            </p>
+                          )}
+                          {isWellbeing && !categoryIsAutoCalculated && (
                             <p className="text-xs text-slate-400 mt-1">
                               {wellbeingCalculation.hoursPerProviderPerWeek.toFixed(1)} hrs/provider/week
                             </p>
