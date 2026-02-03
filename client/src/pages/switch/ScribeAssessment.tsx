@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
@@ -25,7 +25,6 @@ export default function ScribeAssessment({
   onBackToJourney,
 }: ScribeAssessmentProps) {
   const calculations = useMemo(() => calculateScribeGap(inputs), [inputs]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const updateInput = <K extends keyof ScribeInputs>(key: K, value: ScribeInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
@@ -72,8 +71,8 @@ export default function ScribeAssessment({
             <div className="lg:col-span-2 bg-[#F5F0EB] rounded-xl p-6 md:p-8">
               <h2 className="text-lg font-semibold text-black mb-6">Your Scribe Program</h2>
 
-              {/* 4 Essential Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {/* All Input Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InputField
                   label="Number of scribes"
                   value={inputs.scribeCount}
@@ -98,56 +97,31 @@ export default function ScribeAssessment({
                   onChange={(v) => updateInput("totalProviders", v)}
                   testId="input-total-providers"
                 />
+                <InputField
+                  label="Hours per week"
+                  value={inputs.scribeHoursPerWeek}
+                  onChange={(v) => updateInput("scribeHoursPerWeek", v)}
+                  testId="input-scribe-hours"
+                />
+                <InputField
+                  label="Annual encounters"
+                  value={inputs.annualEncounters}
+                  onChange={(v) => updateInput("annualEncounters", v)}
+                  testId="input-annual-encounters"
+                />
+                <InputField
+                  label="Doc time per encounter (min)"
+                  value={inputs.minutesPerEncounter}
+                  onChange={(v) => updateInput("minutesPerEncounter", v)}
+                  testId="input-minutes-per-encounter"
+                />
+                <InputField
+                  label="Scribe turnover rate (%)"
+                  value={inputs.turnoverRate}
+                  onChange={(v) => updateInput("turnoverRate", v)}
+                  testId="input-turnover-rate"
+                />
               </div>
-
-              {/* Expandable Advanced Settings */}
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-sm text-[#888888] hover:text-[#111827] transition-colors mt-2"
-                data-testid="button-toggle-advanced"
-              >
-                <span>Adjust additional assumptions</span>
-                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-
-              <AnimatePresence>
-                {showAdvanced && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-[#E5E7EB]">
-                      <InputField
-                        label="Hours per week"
-                        value={inputs.scribeHoursPerWeek}
-                        onChange={(v) => updateInput("scribeHoursPerWeek", v)}
-                        testId="input-scribe-hours"
-                      />
-                      <InputField
-                        label="Annual encounters"
-                        value={inputs.annualEncounters}
-                        onChange={(v) => updateInput("annualEncounters", v)}
-                        testId="input-annual-encounters"
-                      />
-                      <InputField
-                        label="Doc time per encounter (min)"
-                        value={inputs.minutesPerEncounter}
-                        onChange={(v) => updateInput("minutesPerEncounter", v)}
-                        testId="input-minutes-per-encounter"
-                      />
-                      <InputField
-                        label="Scribe turnover rate (%)"
-                        value={inputs.turnoverRate}
-                        onChange={(v) => updateInput("turnoverRate", v)}
-                        testId="input-turnover-rate"
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* Your Program Today - White with red-orange left borders */}

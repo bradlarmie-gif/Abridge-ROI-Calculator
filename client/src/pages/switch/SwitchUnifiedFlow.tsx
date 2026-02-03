@@ -39,8 +39,8 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     providersWithScribes: 0,
     totalProviders: 0,
     annualEncounters: 0,
-    minutesPerEncounter: 10,
-    turnoverRate: 40,
+    minutesPerEncounter: 0,
+    turnoverRate: 0,
     trainingCostPerScribe: 5000,
   });
 
