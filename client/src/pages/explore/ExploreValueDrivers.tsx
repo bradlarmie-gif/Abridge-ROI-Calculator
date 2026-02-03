@@ -1114,8 +1114,8 @@ export default function ExploreValueDrivers({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">{config.driver3Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
+                <p className="font-semibold text-black">{isInpatient ? config.driver2Title : config.driver3Title}</p>
+                <p className="text-sm text-[#888888]">{isInpatient ? config.driver2Subtitle : config.driver3Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
                 {timeDriverInputs.wellbeingEnabled && (
@@ -1494,6 +1494,44 @@ export default function ExploreValueDrivers({
                       </div>
                       {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled && (
                         <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.edAdmissionRate}% admission rate)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.wellbeingEnabled 
+                            ? (timeDriverInputs.calculateRetentionValue 
+                                ? formatCurrency(retentionCalcs.retentionValue)
+                                : '—')
+                            : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.wellbeingEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">
+                          {timeDriverInputs.calculateRetentionValue ? '(retention value)' : `${hoursPerProviderPerWeek} hrs/wk back`}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : isInpatient ? (
+                  <>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Rounding Efficiency</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.ipRoundingEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.ipRoundingEnabled ? '—' : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.ipRoundingEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(qualitative)</p>
                       )}
                     </div>
 

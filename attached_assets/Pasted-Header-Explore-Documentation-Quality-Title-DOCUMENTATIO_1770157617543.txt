@@ -1,0 +1,186 @@
+Header: "Explore · Documentation Quality"
+
+Title: DOCUMENTATION QUALITY
+Subtitle: Complete documentation drives revenue integrity.
+
+───────────────────────────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ DRG Accuracy                                                     [Toggle]  │
+│ Capture clinical complexity that drives reimbursement                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+Documentation gaps cause downcoding and denials. Abridge captures the 
+clinical reasoning that prevents both.
+
+STEP 1: ADMISSIONS AT RISK
+───────────────────────────────────────
+
+Eligible Admissions              At-Risk Rate
+[84,000]                    ×    [25] %
+
+= 21,000 admissions at risk
+
+Helper: 20-30% of admissions have documentation gaps that affect 
+DRG assignment. 25% is moderate.
+
+
+STEP 2: ABRIDGE PROTECTION
+───────────────────────────────────────
+
+How many can Abridge protect?
+
+[Conservative]  [Typical]  [Aggressive]
+     15%          20%          25%
+
+21,000 × 20% = 4,200 admissions protected
+
+
+STEP 3: REVENUE PROTECTED
+───────────────────────────────────────
+
+Admissions Protected    DRG Weight Lift    Base DRG Payment
+[4,200]            ×    [0.4]          ×   [$6,000]
+
+= $10,080,000 gross
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📊 Benchmark: DRG Weight Impact                                            │
+│                                                                            │
+│ Acute respiratory failure                    +0.3 to +0.5                  │
+│ Sepsis / Severe sepsis                       +0.4 to +0.6                  │
+│ Malnutrition                                 +0.2 to +0.4                  │
+│ Acute encephalopathy                         +0.3 to +0.5                  │
+│                                                                            │
+│ 0.4 is average. Higher acuity facilities may see 0.5-0.6.                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+STEP 4: REALIZATION
+───────────────────────────────────────
+
+Gross Value              Realization Rate
+[$10,080,000]       ×    [50] %
+
+= $5,040,000 net
+
+Helper: 50% accounts for audits, coder discretion, and cases where 
+documentation doesn't change final code.
+
+───────────────────────────────────────
+
+Annual DRG Value                                         $5,040,000
+
+Includes DRG accuracy improvement and denial prevention from 
+complete documentation.
+
+⚠️ Validate capture rates with your CDI team for your case mix.
+
+
+───────────────────────────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CDI Query Reduction                                              [Toggle]  │
+│ Fewer queries when documentation is complete upfront                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+When Abridge captures clinical conversations, many queries become 
+unnecessary—freeing CDI to focus on complex cases.
+
+STEP 1: CURRENT QUERY VOLUME
+───────────────────────────────────────
+
+Admissions              Query Rate
+[84,000]           ×    [30] %
+
+= 25,200 queries/year
+
+Helper: CDI query rates typically range 20-40%. 30% is average.
+
+
+STEP 2: QUERIES AVOIDED
+───────────────────────────────────────
+
+[Conservative]  [Typical]  [Aggressive]
+     15%          25%          35%
+
+25,200 × 25% = 6,300 queries avoided
+
+
+STEP 3: SAVINGS
+───────────────────────────────────────
+
+Queries Avoided         Cost per Query
+[6,300]            ×    [$50]
+
+= $315,000
+
+Helper: Fully loaded cost per query: $50-$100. We use $50 conservatively.
+
+───────────────────────────────────────
+
+Annual CDI Savings                                       $315,000
+
+
+RIGHT PANEL:
+- DOCUMENTATION VALUE
+- Your model so far
+─────────────────────────────────
+Time Savings              $[value]
+─────────────────────────────────
+● DRG Accuracy            $[value]
+                              or —
+● CDI Query Reduction     $[value]
+                              or —
+─────────────────────────────────
+PROJECTED ANNUAL VALUE
+
+$[total]
+
+All values include conservative realization 
+rates for defensible estimates.
+─────────────────────────────────
+[Continue to Investment →] button
+
+
+================================================================================
+PAGE 5: YOUR INVESTMENT
+================================================================================
+
+Same structure as Outpatient/ED. No changes needed.
+
+
+================================================================================
+PAGE 6: YOUR ROI MODEL (SUMMARY)
+================================================================================
+
+Same structure as Outpatient/ED with these Inpatient-specific updates:
+
+HERO SECTION:
+- "Inpatient · [X] hospitalists"
+- PROJECTED NET VALUE: $[X] / year
+- Three stat cards: ROI, Value per Hospitalist, Hours Saved
+
+WHERE THE VALUE COMES FROM:
+
+┌─────────────────────────────────────┐  ┌─────────────────────────────────────┐
+│ TIME BACK                          │  │ DOCUMENTATION QUALITY              │
+│                                    │  │                                    │
+│ ┃ $[value] / year                  │  │ ┃ $[value] / year                  │
+│   (+ qualitative efficiency)       │  │                                    │
+│                                    │  │                                    │
+│ Faster documentation means more    │  │ Complete documentation drives      │
+│ time for patient care and less     │  │ accurate DRG assignment and        │
+│ after-hours charting.              │  │ reduces CDI burden.                │
+│                                    │  │                                    │
+│ • Rounding Efficiency  Qualitative │  │ • DRG Accuracy       $[value]      │
+│   [X] hrs/wk back                  │  │   ([X]% protection)                │
+│                                    │  │                                    │
+│ • Clinician Wellbeing  $[value]    │  │ • CDI Query Reduction $[value]     │
+│   (retention value)        or —    │  │   ([X] queries avoided)    or —    │
+│                                    │  │                                    │
+└─────────────────────────────────────┘  └─────────────────────────────────────┘
