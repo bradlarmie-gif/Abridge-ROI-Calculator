@@ -336,34 +336,34 @@ export default function ScribeFullAnalysis({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="bg-black rounded-xl p-6 md:p-10 text-center relative overflow-hidden"
+            className="bg-[#F5F0EB] rounded-xl p-6 md:p-10 text-center relative overflow-hidden"
           >
-            <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
-              <img src={patternV} alt="" className="absolute w-20 md:w-28 -top-4 -left-4 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-              <img src={patternCorner} alt="" className="absolute w-24 md:w-32 -top-6 right-8 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-              <img src={patternQuarter} alt="" className="absolute w-28 md:w-36 -bottom-8 -left-6 -rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-              <img src={patternSemicircle} alt="" className="absolute w-16 md:w-24 top-1/4 -right-4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-              <img src={patternCorner} alt="" className="absolute w-20 md:w-28 -bottom-4 right-1/4 rotate-180" style={{ filter: 'grayscale(100%) brightness(2)' }} />
-              <img src={patternV} alt="" className="absolute w-24 md:w-32 bottom-1/3 -right-8 rotate-45" style={{ filter: 'grayscale(100%) brightness(2)' }} />
+            <div className="absolute inset-0 opacity-[0.06] pointer-events-none">
+              <img src={patternV} alt="" className="absolute w-20 md:w-28 -top-4 -left-4 -rotate-12" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
+              <img src={patternCorner} alt="" className="absolute w-24 md:w-32 -top-6 right-8 rotate-90" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
+              <img src={patternQuarter} alt="" className="absolute w-28 md:w-36 -bottom-8 -left-6 -rotate-45" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
+              <img src={patternSemicircle} alt="" className="absolute w-16 md:w-24 top-1/4 -right-4 rotate-180" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
+              <img src={patternCorner} alt="" className="absolute w-20 md:w-28 -bottom-4 right-1/4 rotate-180" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
+              <img src={patternV} alt="" className="absolute w-24 md:w-32 bottom-1/3 -right-8 rotate-45" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
             </div>
 
             <div className="relative">
               <div className="flex justify-center mb-4">
-                <div className="w-12 h-12 rounded-full bg-[#EA2C00]/20 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#EA2C00]/15 flex items-center justify-center">
                   <Sparkles className="w-6 h-6 text-[#EA2C00]" />
                 </div>
               </div>
 
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-3">
+              <h2 className="text-xl md:text-2xl font-bold text-[#111827] mb-3">
                 What if documentation support didn't scale this way?
               </h2>
-              <p className="text-slate-400 text-sm md:text-base mb-6 max-w-xl mx-auto">
+              <p className="text-[#374151] text-sm md:text-base mb-6 max-w-xl mx-auto">
                 Abridge can support every provider without the linear cost curve.
               </p>
 
               <Button
                 onClick={() => onExploreAmbientAI(inputs.totalProviders, inputs.annualEncounters)}
-                className="h-12 px-8 bg-white hover:bg-slate-100 text-black font-semibold rounded-full"
+                className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
                 data-testid="button-explore-ambient"
               >
                 Explore Ambient AI
