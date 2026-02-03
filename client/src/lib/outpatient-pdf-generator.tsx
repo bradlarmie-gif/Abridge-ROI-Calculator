@@ -11,11 +11,6 @@ import {
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
-// ============================================================================
-// FONT CONFIGURATION
-// Using Helvetica (built-in) with refined typography sizing
-// ============================================================================
-
 Font.registerHyphenationCallback((word) => [word]);
 
 // ============================================================================
@@ -101,21 +96,20 @@ export interface OutpatientPDFData {
 }
 
 // ============================================================================
-// PREMIUM BRAND PALETTE
+// MCKINSEY/BLOOMBERG COLOR PALETTE
 // ============================================================================
 
 const brand = {
-  black: "#0A0A0A",
+  black: "#1A1A1A",
   white: "#FFFFFF",
-  red: "#EA2C00",
-  coral: "#F07B5F",
-  warmGray: "#F5F4F3",
-  lightGray: "#FAFAFA",
-  midGray: "#E8E7E6",
+  coral: "#E85A4F",
+  warmGray: "#F8F7F6",
+  lightGray: "#F5F4F3",
+  midGray: "#E5E4E3",
+  borderGray: "#D4D4D4",
   textPrimary: "#1A1A1A",
-  textSecondary: "#5C5C5C",
-  textTertiary: "#8A8A8A",
-  textMuted: "#B0B0B0",
+  textSecondary: "#6B7280",
+  textTertiary: "#9CA3AF",
 };
 
 // ============================================================================
@@ -123,33 +117,30 @@ const brand = {
 // ============================================================================
 
 const styles = StyleSheet.create({
-  // Base page styles - Helvetica for refined, modern typography
   page: {
     fontFamily: "Helvetica",
-    fontSize: 9,
+    fontSize: 10,
     color: brand.textPrimary,
     backgroundColor: brand.white,
   },
 
-  // =========================================================================
-  // COVER PAGE - Bold, minimal, one powerful moment
-  // =========================================================================
+  // COVER PAGE
   coverPage: {
     backgroundColor: brand.black,
     height: "100%",
     padding: 0,
   },
   coverTop: {
-    padding: 40,
+    padding: 48,
     paddingBottom: 0,
   },
   coverLogo: {
-    width: 80,
-    height: 16,
-    marginBottom: 60,
+    width: 90,
+    height: 18,
+    marginBottom: 80,
   },
   coverHero: {
-    paddingHorizontal: 40,
+    paddingHorizontal: 48,
     flex: 1,
     justifyContent: "center",
   },
@@ -157,748 +148,531 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 600,
     color: brand.coral,
-    letterSpacing: 2.5,
+    letterSpacing: 3,
     textTransform: "uppercase",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   coverTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 700,
     color: brand.white,
-    lineHeight: 1.15,
-    marginBottom: 12,
+    lineHeight: 1.1,
+    marginBottom: 16,
   },
   coverSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 400,
     color: brand.textTertiary,
-    lineHeight: 1.5,
-    maxWidth: 360,
+    lineHeight: 1.6,
+    maxWidth: 380,
     marginBottom: 48,
   },
   coverMetricBlock: {
     marginBottom: 40,
   },
   coverMetricValue: {
-    fontSize: 56,
+    fontSize: 64,
     fontWeight: 700,
     color: brand.coral,
-    letterSpacing: -1.5,
+    letterSpacing: -2,
     lineHeight: 1,
   },
   coverMetricLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 500,
     color: brand.textTertiary,
-    marginTop: 6,
+    marginTop: 8,
     letterSpacing: 0.5,
   },
   coverBottom: {
-    padding: 40,
+    padding: 48,
     paddingTop: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
   },
   coverMeta: {
-    fontSize: 9,
+    fontSize: 10,
     color: brand.textTertiary,
+    marginBottom: 4,
     lineHeight: 1.5,
   },
   coverDate: {
-    fontSize: 9,
-    color: brand.textMuted,
+    fontSize: 10,
+    color: brand.textTertiary,
+    marginTop: 16,
   },
 
-  // =========================================================================
   // CONTENT PAGES
-  // =========================================================================
   contentPage: {
-    backgroundColor: brand.white,
-    padding: 0,
+    paddingHorizontal: 48,
+    paddingTop: 40,
+    paddingBottom: 60,
   },
   pageHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 48,
-    paddingVertical: 24,
+    marginBottom: 32,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: brand.midGray,
   },
   headerLogo: {
-    width: 70,
-    height: 14,
+    width: 60,
+    height: 12,
   },
   headerMeta: {
     fontSize: 9,
-    color: brand.textTertiary,
-    letterSpacing: 0.5,
+    color: brand.textSecondary,
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
-
   content: {
-    padding: 48,
-    paddingTop: 40,
-  },
-
-  // Section headers - refined sizing
-  sectionEyebrow: {
-    fontSize: 8,
-    fontWeight: 600,
-    color: brand.red,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: brand.black,
-    lineHeight: 1.2,
-    marginBottom: 6,
-  },
-  sectionSubtitle: {
-    fontSize: 10,
-    fontWeight: 400,
-    color: brand.textSecondary,
-    lineHeight: 1.5,
-    marginBottom: 24,
-    maxWidth: 380,
-  },
-  
-  // Benefit category tags
-  benefitTag: {
-    fontSize: 7,
-    fontWeight: 600,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 3,
-  },
-  timeBenefitTag: {
-    backgroundColor: "#E8F4FD",
-    color: "#1565C0",
-  },
-  docBenefitTag: {
-    backgroundColor: "#FFF3E0",
-    color: "#E65100",
-  },
-
-  // =========================================================================
-  // THE STAKES PAGE - Urgency and impact
-  // =========================================================================
-  stakesHero: {
-    backgroundColor: brand.black,
-    marginHorizontal: -48,
-    marginTop: -40,
-    padding: 48,
-    marginBottom: 32,
-  },
-  stakesHeroTitle: {
-    fontSize: 32,
-    fontWeight: 800,
-    color: brand.white,
-    lineHeight: 1.15,
-    marginBottom: 16,
-  },
-  stakesHeroSubtitle: {
-    fontSize: 13,
-    color: brand.textTertiary,
-    lineHeight: 1.6,
-    maxWidth: 400,
-  },
-  statsRow: {
-    flexDirection: "row",
-    marginBottom: 32,
-    gap: 24,
-  },
-  statBlock: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  statValue: {
-    fontSize: 36,
-    fontWeight: 800,
-    color: brand.red,
-    marginBottom: 6,
-    letterSpacing: -1,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: 500,
-    color: brand.textSecondary,
-    lineHeight: 1.4,
-  },
-  narrativeBlock: {
-    backgroundColor: brand.warmGray,
-    padding: 24,
-    marginBottom: 24,
-  },
-  narrativeText: {
-    fontSize: 11,
-    fontWeight: 400,
-    color: brand.textPrimary,
-    lineHeight: 1.7,
-  },
-  pullQuote: {
-    borderLeftWidth: 4,
-    borderLeftColor: brand.red,
-    paddingLeft: 20,
-    paddingVertical: 8,
-    marginVertical: 24,
-  },
-  pullQuoteText: {
-    fontSize: 16,
-    fontWeight: 500,
-    color: brand.black,
-    lineHeight: 1.4,
-  },
-
-  // =========================================================================
-  // EXECUTIVE SUMMARY - The opportunity
-  // =========================================================================
-  heroMetrics: {
-    flexDirection: "row",
-    marginBottom: 32,
-    gap: 32,
-  },
-  heroMetricPrimary: {
-    flex: 2,
-  },
-  heroMetricSecondary: {
-    flex: 1,
-    borderLeftWidth: 1,
-    borderLeftColor: brand.midGray,
-    paddingLeft: 24,
-  },
-  metricValueLarge: {
-    fontSize: 48,
-    fontWeight: 800,
-    color: brand.red,
-    letterSpacing: -1,
-    lineHeight: 1,
-    marginBottom: 8,
-  },
-  metricValueMedium: {
-    fontSize: 32,
-    fontWeight: 700,
-    color: brand.black,
-    lineHeight: 1,
-    marginBottom: 6,
-  },
-  metricLabel: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: brand.textSecondary,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  metricContext: {
-    fontSize: 9,
-    color: brand.textTertiary,
-    marginTop: 4,
-  },
-
-  valueBreakdown: {
-    flexDirection: "row",
-    gap: 24,
-    marginBottom: 32,
-  },
-  valueColumn: {
     flex: 1,
   },
-  valueColumnHeader: {
-    backgroundColor: brand.black,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 0,
-  },
-  valueColumnTitle: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: brand.white,
-    letterSpacing: 0.5,
-  },
-  valueColumnTotal: {
+
+  // TYPOGRAPHY
+  sectionLabel: {
     fontSize: 9,
     fontWeight: 600,
-    color: brand.coral,
-    marginTop: 2,
-  },
-  valueRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: brand.warmGray,
-    backgroundColor: brand.lightGray,
-  },
-  valueRowLabel: {
-    fontSize: 10,
-    color: brand.textPrimary,
-    fontWeight: 500,
-  },
-  valueRowAmount: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: brand.red,
-  },
-
-  insightBox: {
-    backgroundColor: brand.black,
-    padding: 24,
-    marginTop: 24,
-  },
-  insightLabel: {
-    fontSize: 9,
-    fontWeight: 700,
-    color: brand.coral,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  insightText: {
-    fontSize: 11,
-    color: brand.white,
-    lineHeight: 1.6,
-  },
-
-  // =========================================================================
-  // DRIVER DETAIL PAGES - Story-driven calculations
-  // =========================================================================
-  driverHero: {
-    backgroundColor: brand.black,
-    marginHorizontal: -48,
-    marginTop: -40,
-    padding: 48,
-    paddingBottom: 40,
-    marginBottom: 24,
-  },
-  driverHeroContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  driverHeroLeft: {
-    flex: 1,
-    paddingRight: 32,
-  },
-  driverEyebrow: {
-    fontSize: 9,
-    fontWeight: 700,
     color: brand.coral,
     letterSpacing: 2,
     textTransform: "uppercase",
     marginBottom: 12,
   },
-  driverTitle: {
-    fontSize: 26,
-    fontWeight: 800,
-    color: brand.white,
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: brand.textPrimary,
     lineHeight: 1.2,
     marginBottom: 12,
   },
-  driverTheory: {
+  sectionIntro: {
     fontSize: 11,
-    color: brand.textTertiary,
-    lineHeight: 1.6,
-  },
-  driverHeroRight: {
-    alignItems: "flex-end",
-  },
-  driverValueLabel: {
-    fontSize: 9,
-    fontWeight: 600,
-    color: brand.textTertiary,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  driverValueAmount: {
-    fontSize: 40,
-    fontWeight: 800,
-    color: brand.coral,
-    letterSpacing: -1,
+    color: brand.textSecondary,
+    lineHeight: 1.7,
+    marginBottom: 24,
+    maxWidth: 480,
   },
 
-  calculationSection: {
+  // TWO COLUMN FRAMEWORK BOX
+  frameworkContainer: {
+    flexDirection: "row",
+    gap: 20,
     marginBottom: 24,
   },
-  calculationTitle: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: brand.black,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    marginBottom: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: brand.black,
+  frameworkColumn: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: brand.warmGray,
+    borderWidth: 1,
+    borderColor: brand.midGray,
   },
-  stepContainer: {
-    marginBottom: 16,
-    paddingBottom: 16,
+  frameworkLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  frameworkValue: {
+    fontSize: 28,
+    fontWeight: 700,
+    color: brand.coral,
+    marginBottom: 12,
+  },
+  frameworkDescription: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.5,
+    marginBottom: 8,
+  },
+  frameworkTagline: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.textPrimary,
+    marginTop: 8,
+  },
+
+  // ALLOCATION TABLE
+  allocationSection: {
+    marginBottom: 24,
+  },
+  allocationLabel: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.textPrimary,
+    marginBottom: 12,
+  },
+  allocationTable: {
+    borderWidth: 1,
+    borderColor: brand.midGray,
+  },
+  allocationHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.lightGray,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: brand.midGray,
   },
-  stepContainerLast: {
-    borderBottomWidth: 0,
-    marginBottom: 0,
+  allocationHeaderCell: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
-  stepHeader: {
+  allocationRow: {
     flexDirection: "row",
-    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  allocationRowLast: {
+    borderBottomWidth: 0,
+  },
+  allocationCell: {
+    fontSize: 10,
+    color: brand.textPrimary,
+  },
+  allocationCellBold: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.coral,
+  },
+
+  // INSIGHT BOX
+  insightBox: {
+    backgroundColor: brand.lightGray,
+    padding: 20,
+    borderLeftWidth: 3,
+    borderLeftColor: brand.coral,
+  },
+  insightLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 1,
+    textTransform: "uppercase",
     marginBottom: 8,
   },
-  stepNumber: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: brand.red,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  stepNumberText: {
+  insightText: {
     fontSize: 10,
-    fontWeight: 700,
-    color: brand.white,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
   },
-  stepQuestion: {
+
+  // DRIVER PAGE - STEP BOXES
+  driverHeader: {
+    marginBottom: 24,
+  },
+  driverEyebrow: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  driverTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    color: brand.textPrimary,
+    marginBottom: 4,
+  },
+  driverValueBadge: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginBottom: 16,
+  },
+  driverValueAmount: {
+    fontSize: 32,
+    fontWeight: 700,
+    color: brand.coral,
+  },
+  driverValueLabel: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    marginLeft: 8,
+  },
+  theLogicSection: {
+    marginBottom: 24,
+  },
+  theLogicLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  theLogicText: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.7,
+  },
+  stepBox: {
+    backgroundColor: brand.lightGray,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: brand.midGray,
+  },
+  stepBoxLast: {
+    marginBottom: 0,
+  },
+  stepLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textPrimary,
+    marginBottom: 10,
+  },
+  stepFormula: {
     fontSize: 11,
     fontWeight: 600,
-    color: brand.black,
-  },
-  stepMath: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    marginLeft: 30,
-    marginTop: 8,
-  },
-  stepInput: {
-    backgroundColor: brand.warmGray,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  stepInputText: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: brand.black,
-  },
-  stepOperator: {
-    fontSize: 12,
-    color: brand.textTertiary,
-    marginHorizontal: 6,
-  },
-  stepResult: {
-    backgroundColor: brand.black,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    marginLeft: 6,
-  },
-  stepResultText: {
-    fontSize: 11,
-    fontWeight: 700,
     color: brand.coral,
+    marginBottom: 8,
   },
-  stepNote: {
+  stepExplanation: {
     fontSize: 9,
-    color: brand.textTertiary,
-    marginLeft: 30,
-    marginTop: 6,
-    fontWeight: 400,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
   },
-
-  finalResultBox: {
-    backgroundColor: brand.black,
-    padding: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  calibrationNote: {
+    backgroundColor: brand.warmGray,
+    padding: 16,
     marginTop: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: brand.textSecondary,
   },
-  finalResultLabel: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: brand.white,
-  },
-  finalResultFormula: {
+  calibrationLabel: {
     fontSize: 9,
-    color: brand.textTertiary,
-    marginTop: 4,
-  },
-  finalResultValue: {
-    fontSize: 28,
-    fontWeight: 800,
-    color: brand.coral,
-  },
-
-  benchmarkBox: {
-    backgroundColor: brand.warmGray,
-    padding: 20,
-    marginTop: 20,
-  },
-  benchmarkLabel: {
-    fontSize: 9,
-    fontWeight: 700,
+    fontWeight: 600,
     color: brand.textSecondary,
     letterSpacing: 1,
     textTransform: "uppercase",
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  benchmarkText: {
-    fontSize: 10,
-    color: brand.textPrimary,
-    lineHeight: 1.5,
-    fontWeight: 400,
+  calibrationText: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
   },
 
-  // =========================================================================
-  // PROJECTION PAGE
-  // =========================================================================
-  table: {
+  // PROJECTION TABLE
+  projectionTable: {
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: brand.midGray,
   },
-  tableHeader: {
+  projectionHeader: {
     flexDirection: "row",
-    backgroundColor: brand.black,
+    backgroundColor: brand.lightGray,
     paddingVertical: 12,
     paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
   },
-  tableHeaderCell: {
+  projectionHeaderCell: {
     flex: 1,
     fontSize: 9,
-    fontWeight: 700,
-    color: brand.white,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
     textAlign: "center",
   },
-  tableHeaderCellFirst: {
+  projectionHeaderCellFirst: {
     flex: 1.2,
     textAlign: "left",
   },
-  tableRow: {
+  projectionRow: {
     flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: brand.midGray,
-    backgroundColor: brand.lightGray,
   },
-  tableCell: {
+  projectionRowLast: {
+    borderBottomWidth: 0,
+  },
+  projectionCell: {
     flex: 1,
     fontSize: 10,
     color: brand.textPrimary,
     textAlign: "center",
   },
-  tableCellFirst: {
+  projectionCellFirst: {
     flex: 1.2,
     textAlign: "left",
     fontWeight: 600,
   },
-  tableCellBold: {
+  projectionCellBold: {
     flex: 1,
     fontSize: 10,
     fontWeight: 700,
-    color: brand.black,
+    color: brand.textPrimary,
     textAlign: "center",
   },
-  tableCellRed: {
+  projectionCellCoral: {
     flex: 1,
     fontSize: 10,
     fontWeight: 700,
-    color: brand.red,
+    color: brand.coral,
     textAlign: "center",
   },
 
-  scaleComparison: {
+  // SCALE ECONOMICS
+  scaleContainer: {
     flexDirection: "row",
-    gap: 24,
-    marginTop: 24,
+    gap: 20,
+    marginBottom: 24,
   },
   scaleCard: {
     flex: 1,
     backgroundColor: brand.black,
-    padding: 24,
+    padding: 20,
   },
-  scaleCardLabel: {
+  scaleLabel: {
     fontSize: 9,
-    fontWeight: 700,
+    fontWeight: 600,
     color: brand.coral,
     letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: 8,
   },
-  scaleCardValue: {
-    fontSize: 28,
-    fontWeight: 800,
-    color: brand.white,
-    marginBottom: 4,
-  },
-  scaleCardMeta: {
-    fontSize: 10,
-    color: brand.textTertiary,
-    lineHeight: 1.4,
-  },
-
-  // =========================================================================
-  // RECOMMENDATIONS PAGE
-  // =========================================================================
-  phaseContainer: {
-    marginBottom: 20,
-  },
-  phaseHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  phaseNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: brand.red,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  phaseNumberText: {
-    fontSize: 12,
+  scaleValue: {
+    fontSize: 24,
     fontWeight: 700,
     color: brand.white,
-  },
-  phaseName: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: brand.black,
-  },
-  phaseDuration: {
-    fontSize: 10,
-    color: brand.textTertiary,
-    marginLeft: 8,
-  },
-  phaseActions: {
-    marginLeft: 40,
-  },
-  phaseAction: {
-    flexDirection: "row",
     marginBottom: 6,
   },
-  phaseActionBullet: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: brand.red,
-    marginRight: 10,
-    marginTop: 6,
-  },
-  phaseActionText: {
+  scaleMeta: {
     fontSize: 10,
-    color: brand.textPrimary,
+    color: brand.textTertiary,
     lineHeight: 1.5,
-    flex: 1,
   },
 
-  urgencyBox: {
-    backgroundColor: brand.black,
-    padding: 28,
-    marginTop: 24,
+  // TRANSPARENCY PAGE
+  transparencyIntro: {
+    fontSize: 11,
+    color: brand.textSecondary,
+    lineHeight: 1.7,
+    marginBottom: 24,
+    maxWidth: 480,
   },
-  urgencyLabel: {
+  inputsSection: {
+    marginBottom: 20,
+  },
+  inputsSectionLabel: {
     fontSize: 9,
-    fontWeight: 700,
-    color: brand.coral,
-    letterSpacing: 2,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1,
     textTransform: "uppercase",
     marginBottom: 12,
   },
-  urgencyTitle: {
-    fontSize: 20,
-    fontWeight: 800,
-    color: brand.white,
-    marginBottom: 12,
-  },
-  urgencyText: {
-    fontSize: 11,
-    color: brand.textTertiary,
-    lineHeight: 1.6,
-    marginBottom: 16,
-  },
-  urgencyValue: {
-    fontSize: 36,
-    fontWeight: 800,
-    color: brand.coral,
-  },
-  urgencyValueLabel: {
-    fontSize: 11,
-    color: brand.textTertiary,
-    marginTop: 4,
-  },
-
-  // =========================================================================
-  // METHODOLOGY PAGE
-  // =========================================================================
-  principleRow: {
-    flexDirection: "row",
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
-  },
-  principleNumber: {
-    width: 24,
-    fontSize: 14,
-    fontWeight: 800,
-    color: brand.red,
-  },
-  principleContent: {
-    flex: 1,
-  },
-  principleName: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: brand.black,
-    marginBottom: 4,
-  },
-  principleDescription: {
-    fontSize: 10,
-    color: brand.textSecondary,
-    lineHeight: 1.5,
-  },
-
   inputsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 16,
-    marginTop: 24,
+    gap: 12,
   },
   inputCard: {
-    width: "47%",
-    backgroundColor: brand.warmGray,
-    padding: 16,
+    width: "31%",
+    backgroundColor: brand.lightGray,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: brand.midGray,
   },
   inputLabel: {
+    fontSize: 8,
+    color: brand.textSecondary,
+    marginBottom: 4,
+  },
+  inputValue: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: brand.textPrimary,
+  },
+  realizationTable: {
+    borderWidth: 1,
+    borderColor: brand.midGray,
+    marginBottom: 16,
+  },
+  realizationHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.lightGray,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  realizationHeaderCell: {
     fontSize: 9,
     fontWeight: 600,
     color: brand.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 4,
   },
-  inputValue: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: brand.black,
+  realizationRow: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  realizationRowLast: {
+    borderBottomWidth: 0,
+  },
+  realizationCell: {
+    fontSize: 10,
+    color: brand.textPrimary,
+  },
+  realizationCellBold: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.coral,
+  },
+  realizationCellWhy: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    lineHeight: 1.4,
   },
 
-  // =========================================================================
+  // HOW TO USE PAGE
+  actionSection: {
+    marginBottom: 20,
+  },
+  actionNumber: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: brand.coral,
+    marginBottom: 4,
+  },
+  actionTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: brand.textPrimary,
+    marginBottom: 8,
+  },
+  actionText: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+  },
+  closingBox: {
+    backgroundColor: brand.black,
+    padding: 24,
+    marginTop: 24,
+  },
+  closingText: {
+    fontSize: 11,
+    color: brand.white,
+    lineHeight: 1.7,
+  },
+
   // FOOTER
-  // =========================================================================
   footer: {
     position: "absolute",
     bottom: 24,
@@ -911,9 +685,8 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 8,
     color: brand.textTertiary,
-    letterSpacing: 0.5,
   },
-  footerPageNum: {
+  footerPage: {
     fontSize: 8,
     fontWeight: 600,
     color: brand.textSecondary,
@@ -937,355 +710,13 @@ const formatCurrency = (value: number): string => {
 const formatNumber = (value: number): string => value.toLocaleString();
 
 // ============================================================================
-// NARRATIVE CONTENT - Story Arc
-// ============================================================================
-
-const narrative = {
-  stakes: {
-    headline: "Every hour your clinicians spend on documentation is an hour stolen from patient care.",
-    stats: [
-      { value: "2:1", label: "Hours on documentation for every hour with patients" },
-      { value: "49%", label: "Of physicians experiencing burnout symptoms" },
-      { value: "$4.6B", label: "Annual cost of burnout to US health systems" },
-    ],
-    body: "The administrative burden on clinicians has reached a breaking point. Documentation has become the single largest driver of physician dissatisfaction—and the leading cause of preventable turnover. This isn't a technology problem. It's an institutional crisis that requires institutional action.",
-    pullQuote: "The question isn't whether to address documentation burden. It's whether you'll lead the change or be forced to react.",
-  },
-
-  drivers: {
-    patientAccess: {
-      theory: "When documentation happens in real-time, clinicians reclaim capacity. That capacity converts to access—more patients seen, shorter wait times, healthier communities served.",
-      implication: (value: number, pct: number) => 
-        `At ${formatCurrency(value)}, patient access represents ${pct}% of your projected value. This is revenue you're currently leaving on the table—patients who want to be seen but can't get appointments.`,
-      benchmark: "Top-performing practices convert 18-22% of reclaimed time to additional patient volume.",
-    },
-    reducingLocums: {
-      theory: "Locum coverage costs 2-3x what employed physicians cost. Every hour of documentation burden translates to coverage gaps that require expensive fill-ins.",
-      implication: (value: number) => 
-        `The ${formatCurrency(value)} in projected locum reduction isn't theoretical—it's money currently flowing to staffing agencies instead of your organization.`,
-      benchmark: "Organizations with high locum spend typically see 15-25% reduction within 18 months of deployment.",
-    },
-    clinicianWellbeing: {
-      theory: "Physician replacement costs $500K-$1M+ per departure. Documentation burden is the leading driver of preventable turnover. Protecting your clinicians protects your bottom line.",
-      implication: (value: number, providers: number) => 
-        `With ${providers} clinicians, even fractional retention improvement creates ${formatCurrency(value)} in value. This is the cost of departures you won't have to absorb.`,
-      benchmark: "Research indicates 20-40% of physician turnover is directly attributable to burnout.",
-    },
-    wrvu: {
-      theory: "Complex medical decision-making often goes undocumented in the rush between patients. When notes capture the complete picture, coding reflects the actual work performed.",
-      implication: (value: number) => 
-        `This ${formatCurrency(value)} isn't about billing more—it's about billing accurately for complexity you're already delivering.`,
-      benchmark: "Studies show 8-15% of encounters are systematically undercoded due to documentation gaps.",
-    },
-    hcc: {
-      theory: "Hierarchical Condition Categories drive risk adjustment in value-based contracts. Conditions that aren't documented can't be coded. Gaps compound year over year.",
-      implication: (value: number) => 
-        `HCC capture at ${formatCurrency(value)} represents revenue you've already earned through patient care—you're just not capturing it in documentation.`,
-      benchmark: "The average Medicare Advantage patient has 3.2 undocumented HCCs worth $1,200-2,400 annually.",
-    },
-    denials: {
-      theory: "Claims denied for documentation gaps require expensive rework—when they're appealed at all. Prevention is dramatically more efficient than recovery.",
-      implication: (value: number) => 
-        `Denial prevention at ${formatCurrency(value)} is among the most measurable value drivers. You can track denials before and after with clear attribution.`,
-      benchmark: "45% of denials stem from documentation issues. 60% of those are preventable with complete notes.",
-    },
-  },
-
-  recommendations: {
-    headline: "Your Path Forward",
-    phases: [
-      {
-        name: "Validate",
-        duration: "30 days",
-        actions: [
-          "Deploy with 5-10 high-volume clinicians",
-          "Establish baseline time and satisfaction metrics",
-          "Document workflow integration patterns",
-        ],
-      },
-      {
-        name: "Prove",
-        duration: "60-90 days",
-        actions: [
-          "Measure time savings and clinician satisfaction",
-          "Track coding accuracy improvements",
-          "Calculate realized ROI against projections",
-        ],
-      },
-      {
-        name: "Scale",
-        duration: "Ongoing",
-        actions: [
-          "Expand to additional clinicians and specialties",
-          "Optimize workflows based on learnings",
-          "Document and share best practices",
-        ],
-      },
-    ],
-    closing: "The organizations that move first don't just capture value—they define how value is created in their markets.",
-  },
-
-  methodology: {
-    approach: "This model prioritizes transparency over precision. We use conservative assumptions, show our work step-by-step, and make every input editable. The goal isn't to prove a number—it's to give you a defensible framework for thinking about value.",
-    principles: [
-      { name: "Conservative by default", description: "All realization rates assume imperfect execution. Reality often exceeds these projections." },
-      { name: "Transparent calculations", description: "Every number traces back to editable inputs. Challenge anything that doesn't match your reality." },
-      { name: "Defensible to skeptics", description: "Built to withstand CFO scrutiny. No hidden assumptions or optimistic leaps." },
-    ],
-  },
-};
-
-const DRIVER_LABELS: Record<string, string> = {
-  patientAccess: "Patient Access",
-  reducingLocums: "Locum Reduction",
-  clinicianWellbeing: "Clinician Wellbeing",
-  wrvu: "Level of Service (wRVU)",
-  hcc: "HCC Capture",
-  denials: "Denial Prevention",
-};
-
-function getDriverName(id: string, fallback: string): string {
-  return DRIVER_LABELS[id] || fallback;
-}
-
-// ============================================================================
-// CALCULATION STEPS
-// ============================================================================
-
-interface CalculationStep {
-  question: string;
-  inputs: { value: string; label?: string }[];
-  operators?: string[];
-  result: string;
-  note?: string;
-}
-
-function getDriverSteps(driver: DriverCalculation, data: OutpatientPDFData): CalculationStep[] {
-  const inputs = driver.inputs;
-
-  switch (driver.id) {
-    case "patientAccess":
-      return [
-        {
-          question: "How much documentation time does Abridge return?",
-          inputs: [
-            { value: formatNumber(data.eligibleEncounters), label: "encounters" },
-            { value: `${data.timeSavedPerEncounter} min` },
-          ],
-          operators: ["×"],
-          result: `${formatNumber(data.hoursReturned)} hours/year`,
-        },
-        {
-          question: "How much time converts to patient access?",
-          inputs: [
-            { value: formatNumber(data.hoursReturned), label: "hours" },
-            { value: `${data.timeAllocation?.patientAccess || 35}%`, label: "allocation" },
-          ],
-          operators: ["×"],
-          result: `${formatNumber(Math.round(data.hoursReturned * (data.timeAllocation?.patientAccess || 35) / 100))} hours`,
-        },
-        {
-          question: "How many additional patients can you see?",
-          inputs: [
-            { value: formatNumber(Math.round(data.hoursReturned * (data.timeAllocation?.patientAccess || 35) / 100)) },
-            { value: "15%", label: "realization" },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.additionalVisits as number) || 0)} patients`,
-          note: "Realization accounts for scheduling constraints and room availability.",
-        },
-        {
-          question: "What's the revenue impact?",
-          inputs: [
-            { value: formatNumber((inputs.additionalVisits as number) || 0) },
-            { value: `$${inputs.revenuePerVisit || 200}`, label: "per visit" },
-          ],
-          operators: ["×"],
-          result: formatCurrency(driver.value),
-        },
-      ];
-
-    case "wrvu":
-      return [
-        {
-          question: "What's your baseline wRVU generation?",
-          inputs: [
-            { value: formatNumber(data.eligibleEncounters) },
-            { value: `${inputs.avgWrvuPerEncounter || 1.5}`, label: "wRVU/enc" },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.baselineWrvus as number) || 0)} wRVUs`,
-        },
-        {
-          question: "How much improvement does complete documentation create?",
-          inputs: [
-            { value: formatNumber((inputs.baselineWrvus as number) || 0) },
-            { value: `${inputs.wrvuImprovementRate || 3}%`, label: "improvement" },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.wrvuGain as number) || 0)} additional wRVUs`,
-        },
-        {
-          question: "What's the financial impact?",
-          inputs: [
-            { value: formatNumber((inputs.wrvuGain as number) || 0) },
-            { value: `$${inputs.conversionFactor || 40}`, label: "CF" },
-            { value: "75%", label: "realization" },
-          ],
-          operators: ["×", "×"],
-          result: formatCurrency(driver.value),
-        },
-      ];
-
-    case "hcc":
-      return [
-        {
-          question: "How many patients have documentation gaps?",
-          inputs: [
-            { value: formatNumber(data.eligibleEncounters) },
-            { value: `${inputs.maPercentage || 25}%`, label: "MA patients" },
-            { value: `${inputs.gapRate || 15}%`, label: "gap rate" },
-          ],
-          operators: ["×", "×"],
-          result: `${formatNumber((inputs.patientsWithGaps as number) || 0)} patients`,
-        },
-        {
-          question: "How many HCCs can complete documentation capture?",
-          inputs: [
-            { value: formatNumber((inputs.patientsWithGaps as number) || 0) },
-            { value: `${inputs.captureRate || 70}%` },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.capturedHccs as number) || 0)} HCCs`,
-        },
-        {
-          question: "What's the RAF impact?",
-          inputs: [
-            { value: formatNumber((inputs.capturedHccs as number) || 0) },
-            { value: `$${inputs.rafValue || 1200}`, label: "per HCC" },
-            { value: "60%", label: "realization" },
-          ],
-          operators: ["×", "×"],
-          result: formatCurrency(driver.value),
-        },
-      ];
-
-    case "reducingLocums":
-    case "clinicianWellbeing":
-      return [
-        {
-          question: "What's your baseline turnover?",
-          inputs: [
-            { value: formatNumber(data.providers), label: "clinicians" },
-            { value: `${inputs.turnoverRate || 8}%` },
-          ],
-          operators: ["×"],
-          result: `${((inputs.annualDepartures as number) || 0).toFixed(1)} departures/year`,
-        },
-        {
-          question: "How many departures are burnout-related?",
-          inputs: [
-            { value: ((inputs.annualDepartures as number) || 0).toFixed(1) },
-            { value: `${inputs.burnoutAttribution || 50}%` },
-          ],
-          operators: ["×"],
-          result: `${((inputs.burnoutDepartures as number) || 0).toFixed(2)} burnout-driven`,
-        },
-        {
-          question: "How many can reduced documentation burden prevent?",
-          inputs: [
-            { value: ((inputs.burnoutDepartures as number) || 0).toFixed(2) },
-            { value: `${inputs.retentionLift || 15}%`, label: "retention lift" },
-          ],
-          operators: ["×"],
-          result: `${((inputs.departuresAvoided as number) || 0).toFixed(2)} prevented`,
-          note: "Conservative estimate—documentation is a major driver but not the only one.",
-        },
-        {
-          question: "What's the cost savings?",
-          inputs: [
-            { value: ((inputs.departuresAvoided as number) || 0).toFixed(2) },
-            { value: formatCurrency((inputs.replacementCost as number) || 500000) },
-          ],
-          operators: ["×"],
-          result: formatCurrency(driver.value),
-        },
-      ];
-
-    case "denials":
-      return [
-        {
-          question: "How many claims are denied today?",
-          inputs: [
-            { value: formatNumber(data.eligibleEncounters) },
-            { value: `${inputs.denialRate || 8}%` },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.totalDenials as number) || 0)} denials`,
-        },
-        {
-          question: "How many stem from documentation gaps?",
-          inputs: [
-            { value: formatNumber((inputs.totalDenials as number) || 0) },
-            { value: `${inputs.docRelatedPercent || 50}%` },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.docRelatedDenials as number) || 0)} doc-related`,
-        },
-        {
-          question: "How many are written off without appeal?",
-          inputs: [
-            { value: formatNumber((inputs.docRelatedDenials as number) || 0) },
-            { value: `${inputs.writtenOffPercent || 45}%` },
-          ],
-          operators: ["×"],
-          result: `${formatNumber((inputs.writtenOffDenials as number) || 0)} written off`,
-        },
-        {
-          question: "What can complete documentation save?",
-          inputs: [
-            { value: formatNumber((inputs.writtenOffDenials as number) || 0) },
-            { value: `${inputs.abridgeCaptureRate || 70}%` },
-            { value: `$${inputs.avgClaimValue || 350}` },
-          ],
-          operators: ["×", "×"],
-          result: formatCurrency(driver.value),
-        },
-      ];
-
-    default:
-      return [];
-  }
-}
-
-function getFinalFormula(driver: DriverCalculation): string {
-  const inputs = driver.inputs;
-  switch (driver.id) {
-    case "patientAccess":
-      return `${formatNumber((inputs.additionalVisits as number) || 0)} patients × $${inputs.revenuePerVisit || 200}`;
-    case "wrvu":
-      return `${formatNumber((inputs.wrvuGain as number) || 0)} wRVUs × $${inputs.conversionFactor || 40} × 75%`;
-    case "hcc":
-      return `${formatNumber((inputs.capturedHccs as number) || 0)} HCCs × $${inputs.rafValue || 1200} × 60%`;
-    case "reducingLocums":
-    case "clinicianWellbeing":
-      return `${((inputs.departuresAvoided as number) || 0).toFixed(2)} prevented × ${formatCurrency((inputs.replacementCost as number) || 500000)}`;
-    case "denials":
-      return `${formatNumber((inputs.claimsRecovered as number) || 0)} claims × $${inputs.avgClaimValue || 350}`;
-    default:
-      return "";
-  }
-}
-
-// ============================================================================
-// PAGE COMPONENTS
+// PAGE 1: COVER
 // ============================================================================
 
 const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
-    day: "numeric",
   });
   const displayName = data.clientName || data.organizationName || "Your Organization";
 
@@ -1296,11 +727,10 @@ const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
       </View>
 
       <View style={styles.coverHero}>
-        <Text style={styles.coverEyebrow}>Value Assessment</Text>
+        <Text style={styles.coverEyebrow}>Strategic Value Assessment</Text>
         <Text style={styles.coverTitle}>{displayName}</Text>
         <Text style={styles.coverSubtitle}>
-          A strategic framework for understanding how ambient AI documentation
-          transforms clinical operations, financial performance, and clinician experience.
+          A framework for understanding the economics of ambient clinical documentation
         </Text>
 
         <View style={styles.coverMetricBlock}>
@@ -1310,205 +740,307 @@ const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
       </View>
 
       <View style={styles.coverBottom}>
-        <View>
-          {data.preparedBy && (
-            <Text style={styles.coverMeta}>Prepared by: {data.preparedBy}</Text>
-          )}
-          <Text style={styles.coverMeta}>
-            {data.providers} {data.unitNamePlural || "clinicians"} · {formatNumber(data.encounters)} annual encounters
-          </Text>
-        </View>
+        <Text style={styles.coverMeta}>
+          {data.providers} {data.unitNamePlural || "providers"} · {formatNumber(data.encounters)} encounters · {
+            data.careSetting === "ed" ? "Emergency Department" :
+            data.careSetting === "inpatient" ? "Inpatient" :
+            data.careSetting === "nursing" ? "Nursing" : "Outpatient"
+          }
+        </Text>
         <Text style={styles.coverDate}>{today}</Text>
+        {data.preparedBy && (
+          <Text style={[styles.coverMeta, { marginTop: 12 }]}>Prepared for {data.preparedBy}</Text>
+        )}
       </View>
     </Page>
   );
 };
 
-const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => {
-  return (
-    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-      <View style={styles.pageHeader}>
-        <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Value Assessment</Text>
-      </View>
+// ============================================================================
+// PAGE 2: THE THESIS
+// ============================================================================
 
-      <View style={styles.content}>
-        <View style={styles.stakesHero}>
-          <Text style={styles.stakesHeroTitle}>{narrative.stakes.headline}</Text>
-          <Text style={styles.stakesHeroSubtitle}>
-            The administrative burden has reached a breaking point.
-          </Text>
-        </View>
+const ThesisPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+  const timeReturned = data.laborTotal;
+  const docImproved = data.revenueTotal;
+  
+  const allocations = [];
+  if (data.timeAllocation?.patientAccess) {
+    allocations.push({ category: "Patient Access", allocation: data.timeAllocation.patientAccess, implication: "Growth-oriented" });
+  }
+  if (data.timeAllocation?.clinicianWellbeing) {
+    allocations.push({ category: "Clinician Wellbeing", allocation: data.timeAllocation.clinicianWellbeing, implication: "Sustainability-oriented" });
+  }
+  if (data.timeAllocation?.reducingLocums) {
+    allocations.push({ category: "Locum Reduction", allocation: data.timeAllocation.reducingLocums, implication: "Cost-reduction" });
+  }
 
-        <View style={styles.statsRow}>
-          {narrative.stakes.stats.map((stat, i) => (
-            <View key={i} style={styles.statBlock}>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.narrativeBlock}>
-          <Text style={styles.narrativeText}>{narrative.stakes.body}</Text>
-        </View>
-
-        <View style={styles.pullQuote}>
-          <Text style={styles.pullQuoteText}>{narrative.stakes.pullQuote}</Text>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Value Assessment</Text>
-        <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
-  const laborDrivers = data.drivers.filter((d) => d.category === "labor");
-  const revenueDrivers = data.drivers.filter((d) => d.category === "revenue");
+  const primaryAllocation = allocations.length > 0 ? allocations.sort((a, b) => b.allocation - a.allocation)[0] : null;
+  const strategyInsight = primaryAllocation?.implication === "Growth-oriented" 
+    ? `This allocation reveals a growth-leaning strategy. You're betting that capacity—not retention—is your binding constraint. If that changes, the math changes. The model adapts.`
+    : primaryAllocation?.implication === "Sustainability-oriented"
+    ? `This allocation prioritizes sustainability. You're betting that keeping your clinicians healthy and engaged is the primary constraint. This is a long-term play.`
+    : `This allocation balances multiple priorities. You're hedging across growth, sustainability, and cost reduction.`;
 
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Value Assessment</Text>
+        <Text style={styles.headerMeta}>The Thesis</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionEyebrow}>Your Opportunity</Text>
-        <Text style={styles.sectionTitle}>The Value Story</Text>
-        <Text style={styles.sectionSubtitle}>
-          Based on {data.providers} clinicians and {formatNumber(data.encounters)} annual encounters,
-          here's what ambient documentation could unlock.
+        <Text style={styles.sectionLabel}>The Thesis</Text>
+        <Text style={styles.sectionTitle}>Two Sources of Value, One Strategic Choice</Text>
+        <Text style={styles.sectionIntro}>
+          Ambient documentation creates value through two distinct mechanisms: time returned and documentation improved. Most analyses conflate these. We separate them—because the strategic implications are different.
+        </Text>
+        <Text style={[styles.sectionIntro, { marginTop: -12 }]}>
+          Time returned is a resource. You decide how to deploy it. Documentation improved is a capture. It happens automatically.
+        </Text>
+        <Text style={[styles.sectionIntro, { marginTop: -12, fontWeight: 600, color: brand.textPrimary }]}>
+          This distinction matters because it puts the ROI question where it belongs: What would you do with {formatNumber(data.hoursReturned)} hours back?
         </Text>
 
-        <View style={styles.heroMetrics}>
-          <View style={styles.heroMetricPrimary}>
-            <Text style={styles.metricValueLarge}>{formatCurrency(data.netGain)}</Text>
-            <Text style={styles.metricLabel}>Net Annual Value</Text>
-            <Text style={styles.metricContext}>
-              {formatCurrency(data.totalValue)} value − {formatCurrency(data.investment)} investment
+        <View style={styles.frameworkContainer}>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Time Returned</Text>
+            <Text style={styles.frameworkValue}>{formatCurrency(timeReturned)}</Text>
+            <Text style={styles.frameworkDescription}>
+              A resource you deploy. The ROI depends on your strategic choices.
             </Text>
+            <Text style={styles.frameworkTagline}>You control this.</Text>
           </View>
-          <View style={styles.heroMetricSecondary}>
-            <Text style={styles.metricValueMedium}>{data.roi.toFixed(1)}x</Text>
-            <Text style={styles.metricLabel}>ROI</Text>
-          </View>
-          <View style={styles.heroMetricSecondary}>
-            <Text style={styles.metricValueMedium}>{formatNumber(data.hoursReturned)}</Text>
-            <Text style={styles.metricLabel}>Hours Returned</Text>
-          </View>
-        </View>
-
-        <View style={styles.valueBreakdown}>
-          <View style={styles.valueColumn}>
-            <View style={styles.valueColumnHeader}>
-              <Text style={styles.valueColumnTitle}>Time Back</Text>
-              <Text style={styles.valueColumnTotal}>{formatCurrency(data.laborTotal)}</Text>
-            </View>
-            {laborDrivers.map((driver) => (
-              <View key={driver.id} style={styles.valueRow}>
-                <Text style={styles.valueRowLabel}>{getDriverName(driver.id, driver.name)}</Text>
-                <Text style={styles.valueRowAmount}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-            {laborDrivers.length === 0 && (
-              <View style={styles.valueRow}>
-                <Text style={[styles.valueRowLabel, { fontWeight: 400, color: brand.textTertiary }]}>
-                  No time-based drivers selected
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.valueColumn}>
-            <View style={styles.valueColumnHeader}>
-              <Text style={styles.valueColumnTitle}>Documentation Quality</Text>
-              <Text style={styles.valueColumnTotal}>{formatCurrency(data.revenueTotal)}</Text>
-            </View>
-            {revenueDrivers.map((driver) => (
-              <View key={driver.id} style={styles.valueRow}>
-                <Text style={styles.valueRowLabel}>{getDriverName(driver.id, driver.name)}</Text>
-                <Text style={styles.valueRowAmount}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-            {revenueDrivers.length === 0 && (
-              <View style={styles.valueRow}>
-                <Text style={[styles.valueRowLabel, { fontWeight: 400, color: brand.textTertiary }]}>
-                  No documentation drivers selected
-                </Text>
-              </View>
-            )}
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Documentation Improved</Text>
+            <Text style={styles.frameworkValue}>{formatCurrency(docImproved)}</Text>
+            <Text style={styles.frameworkDescription}>
+              Value that accrues automatically when notes capture reality.
+            </Text>
+            <Text style={styles.frameworkTagline}>We deliver this.</Text>
           </View>
         </View>
 
-        {/* Time allocation breakdown if available */}
-        {data.timeAllocation && (
-          <View style={{ marginTop: 16, padding: 12, backgroundColor: brand.lightGray, borderRadius: 6 }}>
-            <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textSecondary, marginBottom: 8, letterSpacing: 1, textTransform: "uppercase" }}>Time Allocation</Text>
-            <View style={{ flexDirection: "row", gap: 16 }}>
-              {data.timeAllocation.patientAccess > 0 && (
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: 700, color: brand.red }}>{data.timeAllocation.patientAccess}%</Text>
-                  <Text style={{ fontSize: 8, color: brand.textTertiary }}>Patient Access</Text>
+        {allocations.length > 0 && (
+          <View style={styles.allocationSection}>
+            <Text style={styles.allocationLabel}>
+              You've chosen to allocate your {formatNumber(data.hoursReturned)} hours as follows:
+            </Text>
+            <View style={styles.allocationTable}>
+              <View style={styles.allocationHeader}>
+                <Text style={[styles.allocationHeaderCell, { flex: 2 }]}>Category</Text>
+                <Text style={[styles.allocationHeaderCell, { flex: 1, textAlign: "center" }]}>Allocation</Text>
+                <Text style={[styles.allocationHeaderCell, { flex: 2 }]}>Implication</Text>
+              </View>
+              {allocations.map((item, i) => (
+                <View key={i} style={[styles.allocationRow, i === allocations.length - 1 ? styles.allocationRowLast : {}]}>
+                  <Text style={[styles.allocationCell, { flex: 2 }]}>{item.category}</Text>
+                  <Text style={[styles.allocationCellBold, { flex: 1, textAlign: "center" }]}>{item.allocation}%</Text>
+                  <Text style={[styles.allocationCell, { flex: 2 }]}>{item.implication}</Text>
                 </View>
-              )}
-              {data.timeAllocation.reducingLocums && data.timeAllocation.reducingLocums > 0 && (
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: 700, color: brand.red }}>{data.timeAllocation.reducingLocums}%</Text>
-                  <Text style={{ fontSize: 8, color: brand.textTertiary }}>Locum Reduction</Text>
-                </View>
-              )}
-              {data.timeAllocation.clinicianWellbeing > 0 && (
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: 700, color: brand.red }}>{data.timeAllocation.clinicianWellbeing}%</Text>
-                  <Text style={{ fontSize: 8, color: brand.textTertiary }}>Clinician Wellbeing</Text>
-                </View>
-              )}
+              ))}
             </View>
           </View>
         )}
 
         <View style={styles.insightBox}>
-          <Text style={styles.insightLabel}>The Bottom Line</Text>
-          <Text style={styles.insightText}>
-            With {formatNumber(data.hoursReturned)} hours returned annually and a {data.roi.toFixed(1)}x ROI, 
-            this investment pays for itself {Math.ceil(12 / data.roi)} times over each year. 
-            Every number traces back to editable inputs and conservative realization rates.
-          </Text>
+          <Text style={styles.insightLabel}>Strategic Observation</Text>
+          <Text style={styles.insightText}>{strategyInsight}</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
-        <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-const DriverDetailPage = ({
-  driver,
-  data,
-  pageNum,
-  totalPages,
-}: {
-  driver: DriverCalculation;
-  data: OutpatientPDFData;
-  pageNum: number;
+// ============================================================================
+// DRIVER PAGES - EDUCATIONAL FORMAT WITH STEP BOXES
+// ============================================================================
+
+interface DriverLogic {
+  theory: string;
+  steps: Array<{
+    label: string;
+    formula: string;
+    explanation: string;
+  }>;
+  calibration: string;
+}
+
+function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): DriverLogic {
+  const inputs = driver.inputs;
+  const allocation = data.timeAllocation || { patientAccess: 35, clinicianWellbeing: 35 };
+  
+  switch (driver.id) {
+    case "patientAccess": {
+      const hoursAllocated = Math.round(data.hoursReturned * (allocation.patientAccess / 100));
+      const hoursRealized = Math.round(hoursAllocated * 0.15);
+      const visits = Math.round(hoursRealized / 0.25);
+      return {
+        theory: `Every minute a physician spends documenting is a minute they're not seeing patients. This is elementary—but the implications are not.\n\nIf documentation time compresses, capacity expands. The question becomes: Can you convert that capacity to volume?\n\nThe answer depends on demand (do patients want to be seen?), operations (can you schedule them?), and physician willingness (will they see more?). We account for all three.`,
+        steps: [
+          {
+            label: "STEP 1: TIME CREATED",
+            formula: `${formatNumber(data.eligibleEncounters)} encounters × ${data.timeSavedPerEncounter} min saved = ${formatNumber(data.hoursReturned)} hours`,
+            explanation: "This is the raw material. What happens next depends on your allocation.",
+          },
+          {
+            label: "STEP 2: TIME ALLOCATED",
+            formula: `${formatNumber(data.hoursReturned)} hours × ${allocation.patientAccess}% to access = ${formatNumber(hoursAllocated)} hours`,
+            explanation: "You've chosen to deploy this portion of your time dividend toward growth. This is a strategic bet.",
+          },
+          {
+            label: "STEP 3: TIME CONVERTED",
+            formula: `${formatNumber(hoursAllocated)} hours × 15% realization = ${formatNumber(hoursRealized)} hours of visits`,
+            explanation: "Why 15%? Not all freed time converts to volume. Scheduling friction, demand variability, physician preferences all constrain conversion. We're conservative because over-promising destroys credibility.",
+          },
+          {
+            label: "STEP 4: VALUE REALIZED",
+            formula: `${formatNumber(visits)} visits × $${inputs.revenuePerVisit || 200}/visit = ${formatCurrency(driver.value)}`,
+            explanation: "This is revenue you're currently leaving on the table. Patients who want appointments but can't get them. Demand you're turning away.",
+          },
+        ],
+        calibration: "The 15% realization rate is intentionally conservative. Top-quartile organizations convert 20-25% of freed time to volume. If you execute well, you'll beat this projection.",
+      };
+    }
+
+    case "clinicianWellbeing": {
+      const hoursAllocated = Math.round(data.hoursReturned * (allocation.clinicianWellbeing / 100));
+      const hoursPerProvider = Math.round(hoursAllocated / data.providers);
+      const annualDepartures = data.providers * ((inputs.turnoverRate as number) || 8) / 100;
+      const retentionLift = (inputs.retentionLift as number) || 4;
+      const prevented = annualDepartures * (retentionLift / 100);
+      const tier = hoursPerProvider < 50 ? "MINIMAL (3-5% turnover reduction)" 
+                 : hoursPerProvider < 100 ? "MODERATE (8-12% reduction)" 
+                 : "SIGNIFICANT (15-20% reduction)";
+      return {
+        theory: `Documentation burden is the number one driver of physician burnout. Burnout drives turnover. Turnover is expensive—$250K to $500K per physician when you factor recruiting, onboarding, ramp time, and lost revenue.\n\nThe math is straightforward: reduce burden → reduce burnout → reduce turnover → avoid replacement costs.\n\nThe challenge is attribution. We can't claim that every hour saved prevents a departure. So we use a threshold model that acknowledges diminishing returns and realistic impact windows.`,
+        steps: [
+          {
+            label: "STEP 1: TIME ALLOCATED TO WELLBEING",
+            formula: `${formatNumber(data.hoursReturned)} hours × ${allocation.clinicianWellbeing}% = ${formatNumber(hoursAllocated)} hours`,
+            explanation: `Per provider: ${hoursPerProvider} hours/year (~${Math.round(hoursPerProvider / 52)} minutes back per week)`,
+          },
+          {
+            label: "STEP 2: IMPACT THRESHOLD",
+            formula: `At ${hoursPerProvider} hrs/provider/year, you're in the ${tier}`,
+            explanation: "< 50 hrs/yr: MINIMAL · 50-100 hrs/yr: MODERATE · 100+ hrs/yr: SIGNIFICANT. Small doses of time back help, but meaningful retention impact requires meaningful time investment.",
+          },
+          {
+            label: "STEP 3: TURNOVER ECONOMICS",
+            formula: `${data.providers} providers × ${retentionLift}% retention lift × $${formatNumber((inputs.replacementCost as number) || 250000)} = ${formatCurrency(driver.value)}`,
+            explanation: `${prevented.toFixed(1)} prevented departures. That's real money—and it compounds. Year over year, the providers you keep become your culture.`,
+          },
+        ],
+        calibration: `Your current allocation (${allocation.clinicianWellbeing}% to wellbeing) produces ${hoursPerProvider < 50 ? "modest" : "meaningful"} retention impact. ${hoursPerProvider < 50 ? "If retention is a strategic priority, consider shifting allocation—60%+ to wellbeing would push you into the MODERATE impact tier." : "You're investing meaningfully in sustainability."}`,
+      };
+    }
+
+    case "wrvu": {
+      return {
+        theory: `Complex medical decision-making often goes undocumented in the rush between patients. When notes capture the complete picture, coding reflects the actual work performed.\n\nThis isn't about upcoding—it's about accurate coding. The gap between what clinicians do and what gets documented is real and measurable.`,
+        steps: [
+          {
+            label: "STEP 1: BASELINE GENERATION",
+            formula: `${formatNumber(data.eligibleEncounters)} encounters × ${inputs.avgWrvuPerEncounter || 1.5} wRVU/encounter = ${formatNumber((inputs.baselineWrvus as number) || 0)} wRVUs`,
+            explanation: "Your current documented productivity.",
+          },
+          {
+            label: "STEP 2: IMPROVEMENT RATE",
+            formula: `${formatNumber((inputs.baselineWrvus as number) || 0)} × ${inputs.wrvuImprovementRate || 3}% improvement = ${formatNumber((inputs.wrvuGain as number) || 0)} additional wRVUs`,
+            explanation: "Complete documentation captures complexity that's currently being left out.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `${formatNumber((inputs.wrvuGain as number) || 0)} wRVUs × $${inputs.conversionFactor || 40} × 75% realization = ${formatCurrency(driver.value)}`,
+            explanation: "The 75% realization accounts for payer mix variation and fee schedule differences.",
+          },
+        ],
+        calibration: "Studies show 8-15% of encounters are systematically undercoded due to documentation gaps. Our 3% improvement assumption is deliberately modest.",
+      };
+    }
+
+    case "hcc": {
+      return {
+        theory: `Hierarchical Condition Categories drive risk adjustment in value-based contracts. Conditions that aren't documented can't be coded. Gaps compound year over year.\n\nThe average Medicare Advantage patient has 3.2 undocumented HCCs worth $1,200-2,400 annually.`,
+        steps: [
+          {
+            label: "STEP 1: PATIENTS WITH GAPS",
+            formula: `${formatNumber(data.eligibleEncounters)} × ${inputs.maPercentage || 25}% MA × ${inputs.gapRate || 15}% gap rate = ${formatNumber((inputs.patientsWithGaps as number) || 0)} patients`,
+            explanation: "These are patients with conditions you're treating but not fully documenting.",
+          },
+          {
+            label: "STEP 2: CAPTURED CONDITIONS",
+            formula: `${formatNumber((inputs.patientsWithGaps as number) || 0)} × ${inputs.captureRate || 70}% capture = ${formatNumber((inputs.capturedHccs as number) || 0)} HCCs`,
+            explanation: "Complete notes surface conditions that were previously missed.",
+          },
+          {
+            label: "STEP 3: RAF VALUE",
+            formula: `${formatNumber((inputs.capturedHccs as number) || 0)} HCCs × $${inputs.rafValue || 1200} × 60% realization = ${formatCurrency(driver.value)}`,
+            explanation: "The 60% realization accounts for payer validation and retrospective adjustments.",
+          },
+        ],
+        calibration: "HCC capture represents revenue you've already earned through patient care—you're just not capturing it in documentation.",
+      };
+    }
+
+    case "denials": {
+      return {
+        theory: `Claims denied for documentation gaps require expensive rework—when they're appealed at all. Prevention is dramatically more efficient than recovery.\n\n45% of denials stem from documentation issues. 60% of those are preventable with complete notes.`,
+        steps: [
+          {
+            label: "STEP 1: CURRENT DENIALS",
+            formula: `${formatNumber(data.eligibleEncounters)} × ${inputs.denialRate || 8}% = ${formatNumber((inputs.totalDenials as number) || 0)} denials`,
+            explanation: "Your baseline denial volume.",
+          },
+          {
+            label: "STEP 2: DOCUMENTATION-RELATED",
+            formula: `${formatNumber((inputs.totalDenials as number) || 0)} × ${inputs.docRelatedPercent || 50}% = ${formatNumber((inputs.docRelatedDenials as number) || 0)} doc-related`,
+            explanation: "These are the denials that better documentation can prevent.",
+          },
+          {
+            label: "STEP 3: PREVENTABLE VALUE",
+            formula: `${formatNumber((inputs.writtenOffDenials as number) || 0)} × ${inputs.abridgeCaptureRate || 70}% × $${inputs.avgClaimValue || 350} = ${formatCurrency(driver.value)}`,
+            explanation: "Denial prevention is among the most measurable value drivers. You can track before and after with clear attribution.",
+          },
+        ],
+        calibration: "Most organizations write off 40-50% of denials without appeal. Complete documentation prevents the denial from occurring in the first place.",
+      };
+    }
+
+    default:
+      return {
+        theory: "This driver represents measurable value from improved documentation efficiency and quality.",
+        steps: [
+          {
+            label: "VALUE CALCULATION",
+            formula: `Total: ${formatCurrency(driver.value)}`,
+            explanation: "Based on your practice inputs and conservative realization rates.",
+          },
+        ],
+        calibration: "All projections use conservative estimates that account for real-world constraints.",
+      };
+  }
+}
+
+const DriverPage = ({ 
+  driver, 
+  data, 
+  pageNum, 
+  totalPages 
+}: { 
+  driver: DriverCalculation; 
+  data: OutpatientPDFData; 
+  pageNum: number; 
   totalPages: number;
 }) => {
-  const driverNarrative = narrative.drivers[driver.id as keyof typeof narrative.drivers];
-  const steps = getDriverSteps(driver, data);
-  const displayName = getDriverName(driver.id, driver.name);
-  const pct = Math.round((driver.value / data.totalValue) * 100);
-  
-  // Determine benefit category
-  const isTimeBenefit = ['patientAccess', 'locums', 'clinicianWellbeing', 'retention', 'workforce'].includes(driver.id);
-  const benefitCategory = isTimeBenefit ? "Time Benefit" : "Documentation Benefit";
+  const logic = getDriverLogic(driver, data);
+  const isTimeBenefit = ['patientAccess', 'reducingLocums', 'clinicianWellbeing', 'retention', 'workforce'].includes(driver.id);
+  const benefitLabel = isTimeBenefit ? "TIME BENEFIT" : "DOCUMENTATION BENEFIT";
 
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
@@ -1518,368 +1050,280 @@ const DriverDetailPage = ({
       </View>
 
       <View style={styles.content}>
-        <View style={styles.driverHero}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-            <Text style={styles.driverEyebrow}>Value Driver</Text>
-            <View style={[styles.benefitTag, isTimeBenefit ? styles.timeBenefitTag : styles.docBenefitTag, { marginLeft: 12 }]}>
-              <Text>{benefitCategory}</Text>
-            </View>
-          </View>
-          <View style={styles.driverHeroContent}>
-            <View style={styles.driverHeroLeft}>
-              <Text style={styles.driverTitle}>{displayName}</Text>
-              <Text style={styles.driverTheory}>
-                {driverNarrative?.theory || "This driver represents measurable value from improved documentation."}
-              </Text>
-            </View>
-            <View style={styles.driverHeroRight}>
-              <Text style={styles.driverValueLabel}>Annual Value</Text>
-              <Text style={styles.driverValueAmount}>{formatCurrency(driver.value)}</Text>
-            </View>
+        <View style={styles.driverHeader}>
+          <Text style={styles.driverEyebrow}>VALUE DRIVER · {benefitLabel}</Text>
+          <Text style={styles.driverTitle}>{driver.name}</Text>
+          <View style={styles.driverValueBadge}>
+            <Text style={styles.driverValueAmount}>{formatCurrency(driver.value)}</Text>
+            <Text style={styles.driverValueLabel}>annual value</Text>
           </View>
         </View>
 
-        <View style={styles.calculationSection}>
-          <Text style={styles.calculationTitle}>The Calculation</Text>
-          {steps.map((step, index) => (
-            <View
-              key={index}
-              style={[
-                styles.stepContainer,
-                index === steps.length - 1 ? styles.stepContainerLast : {},
-              ]}
-            >
-              <View style={styles.stepHeader}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>{index + 1}</Text>
-                </View>
-                <Text style={styles.stepQuestion}>{step.question}</Text>
-              </View>
-              <View style={styles.stepMath}>
-                {step.inputs.map((input, i) => (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-                    {i > 0 && (
-                      <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "×"}</Text>
-                    )}
-                    <View style={styles.stepInput}>
-                      <Text style={styles.stepInputText}>{input.value}</Text>
-                    </View>
-                  </View>
-                ))}
-                <Text style={styles.stepOperator}>=</Text>
-                <View style={styles.stepResult}>
-                  <Text style={styles.stepResultText}>{step.result}</Text>
-                </View>
-              </View>
-              {step.note && <Text style={styles.stepNote}>{step.note}</Text>}
-            </View>
-          ))}
+        <View style={styles.theLogicSection}>
+          <Text style={styles.theLogicLabel}>The Logic</Text>
+          <Text style={styles.theLogicText}>{logic.theory}</Text>
         </View>
 
-        <View style={styles.finalResultBox}>
-          <View>
-            <Text style={styles.finalResultLabel}>Annual {displayName} Value</Text>
-            <Text style={styles.finalResultFormula}>{getFinalFormula(driver)}</Text>
+        {logic.steps.map((step, i) => (
+          <View key={i} style={[styles.stepBox, i === logic.steps.length - 1 ? styles.stepBoxLast : {}]}>
+            <Text style={styles.stepLabel}>{step.label}</Text>
+            <Text style={styles.stepFormula}>{step.formula}</Text>
+            <Text style={styles.stepExplanation}>{step.explanation}</Text>
           </View>
-          <Text style={styles.finalResultValue}>{formatCurrency(driver.value)}</Text>
-        </View>
+        ))}
 
-        {driverNarrative && (
-          <View style={styles.benchmarkBox}>
-            <Text style={styles.benchmarkLabel}>What This Means</Text>
-            <Text style={styles.benchmarkText}>
-              {driverNarrative.implication(driver.value, pct)}
-            </Text>
-            {driverNarrative.benchmark && (
-              <Text style={[styles.benchmarkText, { marginTop: 12 }]}>
-                Industry benchmark: {driverNarrative.benchmark}
-              </Text>
-            )}
-          </View>
-        )}
+        <View style={styles.calibrationNote}>
+          <Text style={styles.calibrationLabel}>Calibration Note</Text>
+          <Text style={styles.calibrationText}>{logic.calibration}</Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
-        <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-const ProjectionPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+// ============================================================================
+// PAGE: INVESTMENT & RETURN
+// ============================================================================
+
+const InvestmentPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+  const year3ROI = ((data.threeYearNet / data.threeYearCost) + 1).toFixed(2);
+
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Value Assessment</Text>
+        <Text style={styles.headerMeta}>Financial Framework</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionEyebrow}>Multi-Year View</Text>
-        <Text style={styles.sectionTitle}>Investment & Return</Text>
-        <Text style={styles.sectionSubtitle}>
-          Value compounds as adoption matures and workflows optimize.
+        <Text style={styles.sectionLabel}>Financial Framework</Text>
+        <Text style={styles.sectionTitle}>The Investment Case</Text>
+        <Text style={styles.sectionIntro}>
+          ROI calculations are necessary but insufficient. They answer 'Is this worth it?' but not 'How should we think about it?'
+        </Text>
+        <Text style={[styles.sectionIntro, { marginTop: -12 }]}>
+          The right frame: ambient documentation is infrastructure, not an expense. It creates capacity that compounds.
         </Text>
 
-        <View style={styles.table}>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderCell, styles.tableHeaderCellFirst]}></Text>
-            <Text style={styles.tableHeaderCell}>Year 1</Text>
-            <Text style={styles.tableHeaderCell}>Year 2</Text>
-            <Text style={styles.tableHeaderCell}>Year 3</Text>
-            <Text style={styles.tableHeaderCell}>Total</Text>
+        <View style={styles.projectionTable}>
+          <View style={styles.projectionHeader}>
+            <Text style={[styles.projectionHeaderCell, styles.projectionHeaderCellFirst]}>Period</Text>
+            <Text style={styles.projectionHeaderCell}>Value</Text>
+            <Text style={styles.projectionHeaderCell}>Investment</Text>
+            <Text style={styles.projectionHeaderCell}>Net Value</Text>
+            <Text style={styles.projectionHeaderCell}>Cumulative</Text>
           </View>
-          <View style={styles.tableRow}>
-            <Text style={[styles.tableCell, styles.tableCellFirst]}>Value</Text>
-            <Text style={styles.tableCell}>{formatCurrency(data.year1Value)}</Text>
-            <Text style={styles.tableCell}>{formatCurrency(data.year2Value)}</Text>
-            <Text style={styles.tableCell}>{formatCurrency(data.year3Value)}</Text>
-            <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearValue)}</Text>
+          <View style={styles.projectionRow}>
+            <Text style={[styles.projectionCell, styles.projectionCellFirst]}>Year 1</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year1Value)}</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year1Cost)}</Text>
+            <Text style={styles.projectionCellCoral}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+            <Text style={styles.projectionCellBold}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
           </View>
-          <View style={styles.tableRow}>
-            <Text style={[styles.tableCell, styles.tableCellFirst]}>Investment</Text>
-            <Text style={styles.tableCell}>{formatCurrency(data.year1Cost)}</Text>
-            <Text style={styles.tableCell}>{formatCurrency(data.year2Cost)}</Text>
-            <Text style={styles.tableCell}>{formatCurrency(data.year3Cost)}</Text>
-            <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearCost)}</Text>
+          <View style={styles.projectionRow}>
+            <Text style={[styles.projectionCell, styles.projectionCellFirst]}>Year 2</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year2Value)}</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year2Cost)}</Text>
+            <Text style={styles.projectionCellCoral}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
+            <Text style={styles.projectionCellBold}>{formatCurrency((data.year1Value - data.year1Cost) + (data.year2Value - data.year2Cost))}</Text>
           </View>
-          <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
-            <Text style={[styles.tableCell, styles.tableCellFirst]}>Net Value</Text>
-            <Text style={styles.tableCellRed}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
-            <Text style={styles.tableCellRed}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
-            <Text style={styles.tableCellRed}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
-            <Text style={styles.tableCellRed}>{formatCurrency(data.threeYearNet)}</Text>
-          </View>
-        </View>
-
-        <View style={styles.scaleComparison}>
-          <View style={styles.scaleCard}>
-            <Text style={styles.scaleCardLabel}>Current Model</Text>
-            <Text style={styles.scaleCardValue}>{formatCurrency(data.journey.pilotValue)}/yr</Text>
-            <Text style={styles.scaleCardMeta}>
-              {data.journey.pilotProviders} clinicians at {data.journey.pilotUtilization}% utilization
-            </Text>
-          </View>
-          <View style={styles.scaleCard}>
-            <Text style={styles.scaleCardLabel}>Full Scale Potential</Text>
-            <Text style={styles.scaleCardValue}>{formatCurrency(data.journey.fullScaleValue)}/yr</Text>
-            <Text style={styles.scaleCardMeta}>
-              {data.journey.fullScaleProviders} clinicians at {data.journey.fullScaleUtilization}% utilization
-            </Text>
-          </View>
-        </View>
-
-        {/* Expansion Path Details */}
-        <View style={{ marginTop: 20, padding: 16, backgroundColor: brand.lightGray, borderRadius: 6 }}>
-          <Text style={{ fontSize: 9, fontWeight: 600, color: brand.textPrimary, marginBottom: 8 }}>Your Expansion Path</Text>
-          <View style={{ flexDirection: "row", gap: 24 }}>
-            <View>
-              <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 2 }}>Scaling Pace</Text>
-              <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary, textTransform: "capitalize" }}>{data.journey.scalingPace}</Text>
-            </View>
-            <View>
-              <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 2 }}>Timeline to Full Scale</Text>
-              <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary }}>{data.journey.scalingMonths} months</Text>
-            </View>
-            <View>
-              <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 2 }}>Network Effect</Text>
-              <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary }}>{data.journey.networkEffect}%</Text>
-            </View>
+          <View style={[styles.projectionRow, styles.projectionRowLast]}>
+            <Text style={[styles.projectionCell, styles.projectionCellFirst]}>Year 3</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year3Value)}</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year3Cost)}</Text>
+            <Text style={styles.projectionCellCoral}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
+            <Text style={styles.projectionCellBold}>{formatCurrency(data.threeYearNet)}</Text>
           </View>
         </View>
 
         <View style={styles.insightBox}>
-          <Text style={styles.insightLabel}>The Compounding Effect</Text>
+          <Text style={styles.insightLabel}>Economics Insight</Text>
           <Text style={styles.insightText}>
-            Value compounds as you scale. At {data.journey.fullScaleProviders} {data.unitNamePlural || "clinicians"} with {data.journey.fullScaleUtilization}% utilization, 
-            you'll generate {formatCurrency(data.journey.fullScaleValue)} annually—a {((data.journey.fullScaleValue / data.journey.pilotValue - 1) * 100).toFixed(0)}% increase 
-            from your pilot. This isn't theoretical; it's the natural result of operational learning and workflow maturation.
+            Notice the asymmetry: investment stays flat while value grows. This is the signature of infrastructure—fixed cost, scaling returns. By Year 3, you're generating ${year3ROI} for every $1 invested. That's not a line item to be cut in a downturn. It's a competitive advantage to be protected.
           </Text>
         </View>
+
+        <View style={styles.scaleContainer}>
+          <View style={styles.scaleCard}>
+            <Text style={styles.scaleLabel}>Current Model</Text>
+            <Text style={styles.scaleValue}>{formatCurrency(data.journey.pilotValue)}/yr</Text>
+            <Text style={styles.scaleMeta}>
+              {data.journey.pilotProviders} providers · {data.journey.pilotUtilization}% utilization
+            </Text>
+          </View>
+          <View style={styles.scaleCard}>
+            <Text style={styles.scaleLabel}>Full Scale Potential</Text>
+            <Text style={styles.scaleValue}>{formatCurrency(data.journey.fullScaleValue)}/yr</Text>
+            <Text style={styles.scaleMeta}>
+              {data.journey.fullScaleProviders} providers · {data.journey.fullScaleUtilization}% utilization
+            </Text>
+          </View>
+        </View>
+
+        <Text style={{ fontSize: 9, color: brand.textSecondary, lineHeight: 1.5 }}>
+          Per-provider economics remain consistent at scale. Operational learning often improves them.
+        </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
-        <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-const RecommendationsPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
-  const monthlyLoss = Math.round(data.totalValue / 12);
+// ============================================================================
+// PAGE: MODEL TRANSPARENCY
+// ============================================================================
+
+const TransparencyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+  const realizationRates = [
+    { rate: "Access realization", value: "15%", why: "Scheduling friction, demand variability" },
+    { rate: "wRVU realization", value: "75%", why: "Payer mix variation" },
+    { rate: "HCC realization", value: "60%", why: "Payer validation timing" },
+    { rate: "Retention impact", value: "4%", why: "Multi-factor burnout attribution" },
+  ];
 
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Value Assessment</Text>
+        <Text style={styles.headerMeta}>Model Transparency</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionEyebrow}>Next Steps</Text>
-        <Text style={styles.sectionTitle}>{narrative.recommendations.headline}</Text>
-        <Text style={styles.sectionSubtitle}>
-          A phased approach to validation, proof, and scale.
+        <Text style={styles.sectionLabel}>Model Transparency</Text>
+        <Text style={styles.sectionTitle}>Every Number Has a Source</Text>
+        <Text style={styles.transparencyIntro}>
+          We don't hide assumptions. We highlight them. If you disagree with an input, change it. The model adapts. This isn't a black box designed to produce a predetermined answer. It's a thinking tool designed to stress-test scenarios.
         </Text>
 
-        {narrative.recommendations.phases.map((phase, i) => (
-          <View key={i} style={styles.phaseContainer}>
-            <View style={styles.phaseHeader}>
-              <View style={styles.phaseNumber}>
-                <Text style={styles.phaseNumberText}>{i + 1}</Text>
-              </View>
-              <Text style={styles.phaseName}>{phase.name}</Text>
-              <Text style={styles.phaseDuration}>{phase.duration}</Text>
+        <View style={styles.inputsSection}>
+          <Text style={styles.inputsSectionLabel}>Your Inputs</Text>
+          <View style={styles.inputsGrid}>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>{data.unitNamePlural || "Providers"}</Text>
+              <Text style={styles.inputValue}>{data.providers}</Text>
             </View>
-            <View style={styles.phaseActions}>
-              {phase.actions.map((action, j) => (
-                <View key={j} style={styles.phaseAction}>
-                  <View style={styles.phaseActionBullet} />
-                  <Text style={styles.phaseActionText}>{action}</Text>
-                </View>
-              ))}
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Annual Encounters</Text>
+              <Text style={styles.inputValue}>{formatNumber(data.encounters)}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Utilization</Text>
+              <Text style={styles.inputValue}>{data.utilization}%</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Time Saved</Text>
+              <Text style={styles.inputValue}>{data.timeSavedPerEncounter} min</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Hours Returned</Text>
+              <Text style={styles.inputValue}>{formatNumber(data.hoursReturned)}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Investment</Text>
+              <Text style={styles.inputValue}>{formatCurrency(data.investment)}/yr</Text>
             </View>
           </View>
-        ))}
-
-        <View style={styles.urgencyBox}>
-          <Text style={styles.urgencyLabel}>The Cost of Waiting</Text>
-          <Text style={styles.urgencyTitle}>Every month of delay has measurable cost.</Text>
-          <Text style={styles.urgencyText}>
-            Based on your projected annual value of {formatCurrency(data.totalValue)},
-            each month without action represents approximately:
-          </Text>
-          <Text style={styles.urgencyValue}>{formatCurrency(monthlyLoss)}</Text>
-          <Text style={styles.urgencyValueLabel}>in unrealized value per month</Text>
         </View>
 
-        <View style={styles.pullQuote}>
-          <Text style={styles.pullQuoteText}>{narrative.recommendations.closing}</Text>
+        <View style={styles.inputsSection}>
+          <Text style={styles.inputsSectionLabel}>Realization Rates</Text>
+          <View style={styles.realizationTable}>
+            <View style={styles.realizationHeader}>
+              <Text style={[styles.realizationHeaderCell, { flex: 2 }]}>Rate</Text>
+              <Text style={[styles.realizationHeaderCell, { flex: 1, textAlign: "center" }]}>Value</Text>
+              <Text style={[styles.realizationHeaderCell, { flex: 3 }]}>Why This Conservative</Text>
+            </View>
+            {realizationRates.map((item, i) => (
+              <View key={i} style={[styles.realizationRow, i === realizationRates.length - 1 ? styles.realizationRowLast : {}]}>
+                <Text style={[styles.realizationCell, { flex: 2 }]}>{item.rate}</Text>
+                <Text style={[styles.realizationCellBold, { flex: 1, textAlign: "center" }]}>{item.value}</Text>
+                <Text style={[styles.realizationCellWhy, { flex: 3 }]}>{item.why}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Methodology Statement</Text>
+          <Text style={styles.insightText}>
+            We intentionally err conservative. Organizations that execute well beat these projections. We'd rather you be pleasantly surprised than disappointed.
+          </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Value Assessment</Text>
-        <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-const AssumptionsPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
-  // Categorize drivers by benefit type
-  const timeDrivers = data.drivers.filter(d => 
-    ['patientAccess', 'locums', 'clinicianWellbeing', 'retention', 'workforce'].includes(d.id)
-  );
-  const docDrivers = data.drivers.filter(d => 
-    ['wrvu', 'hcc', 'denials', 'levelOfService'].includes(d.id)
-  );
+// ============================================================================
+// PAGE: HOW TO USE THIS DOCUMENT
+// ============================================================================
 
+const HowToUsePage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Model Assumptions</Text>
+        <Text style={styles.headerMeta}>Next Steps</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionEyebrow}>Transparency</Text>
-        <Text style={styles.sectionTitle}>Your Model Assumptions</Text>
-        <Text style={styles.sectionSubtitle}>
-          Complete transparency into every input that shaped this analysis.
+        <Text style={styles.sectionLabel}>Next Steps</Text>
+        <Text style={styles.sectionTitle}>How to Use This Document</Text>
+        <Text style={styles.sectionIntro}>
+          This analysis is a starting point, not a conclusion. Here's how to make it useful:
         </Text>
 
-        {/* Practice Inputs Section */}
-        <Text style={[styles.sectionEyebrow, { marginTop: 16, color: brand.textSecondary }]}>Practice Inputs</Text>
-        <View style={styles.inputsGrid}>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>{data.unitNamePlural || "Clinicians"}</Text>
-            <Text style={styles.inputValue}>{data.providers}</Text>
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Annual Encounters</Text>
-            <Text style={styles.inputValue}>{formatNumber(data.encounters)}</Text>
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Abridge Utilization</Text>
-            <Text style={styles.inputValue}>{data.utilization}%</Text>
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Time Saved</Text>
-            <Text style={styles.inputValue}>{data.timeSavedPerEncounter} min/encounter</Text>
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Eligible Encounters</Text>
-            <Text style={styles.inputValue}>{formatNumber(data.eligibleEncounters)}</Text>
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Hours Returned</Text>
-            <Text style={styles.inputValue}>{formatNumber(data.hoursReturned)}</Text>
-          </View>
+        <View style={styles.actionSection}>
+          <Text style={styles.actionNumber}>1.</Text>
+          <Text style={styles.actionTitle}>Stress Test</Text>
+          <Text style={styles.actionText}>
+            Challenge the assumptions. If you think 15% realization is too conservative (or too aggressive), change it. The model updates in real-time. Find the inputs that matter most to your context.
+          </Text>
         </View>
 
-        {/* Investment Section */}
-        <Text style={[styles.sectionEyebrow, { marginTop: 24, color: brand.textSecondary }]}>Investment</Text>
-        <View style={styles.inputsGrid}>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Monthly per {data.unitName || "Clinician"}</Text>
-            <Text style={styles.inputValue}>{formatCurrency(data.costPerProvider)}</Text>
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Annual Investment</Text>
-            <Text style={styles.inputValue}>{formatCurrency(data.investment)}</Text>
-          </View>
+        <View style={styles.actionSection}>
+          <Text style={styles.actionNumber}>2.</Text>
+          <Text style={styles.actionTitle}>Scenario Plan</Text>
+          <Text style={styles.actionText}>
+            Run multiple versions. What if utilization reaches 85%? What if you prioritize retention over access? What if commercial rates apply instead of Medicare? The model handles all of these.
+          </Text>
         </View>
 
-        {/* Value Drivers Section */}
-        <Text style={[styles.sectionEyebrow, { marginTop: 24, color: brand.textSecondary }]}>Value Drivers</Text>
-        
-        {timeDrivers.length > 0 && (
-          <View style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-              <View style={[styles.benefitTag, styles.timeBenefitTag]}>
-                <Text>Time Benefits</Text>
-              </View>
-            </View>
-            {timeDrivers.map((driver) => (
-              <View key={driver.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: brand.midGray }}>
-                <Text style={{ fontSize: 9, color: brand.textSecondary }}>{driver.name}</Text>
-                <Text style={{ fontSize: 9, fontWeight: 600, color: brand.textPrimary }}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-        
-        {docDrivers.length > 0 && (
-          <View style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-              <View style={[styles.benefitTag, styles.docBenefitTag]}>
-                <Text>Documentation Benefits</Text>
-              </View>
-            </View>
-            {docDrivers.map((driver) => (
-              <View key={driver.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: brand.midGray }}>
-                <Text style={{ fontSize: 9, color: brand.textSecondary }}>{driver.name}</Text>
-                <Text style={{ fontSize: 9, fontWeight: 600, color: brand.textPrimary }}>{formatCurrency(driver.value)}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        <View style={styles.actionSection}>
+          <Text style={styles.actionNumber}>3.</Text>
+          <Text style={styles.actionTitle}>Track Outcomes</Text>
+          <Text style={styles.actionText}>
+            Pick 3 metrics to track post-implementation:{"\n"}
+            • Documentation time per encounter (target: -50%){"\n"}
+            • Provider satisfaction score (target: +15 pts){"\n"}
+            • One financial metric aligned to your allocation
+          </Text>
+        </View>
 
-        <View style={[styles.insightBox, { marginTop: 20 }]}>
-          <Text style={styles.insightLabel}>Methodology Note</Text>
-          <Text style={styles.insightText}>
-            All projections use conservative realization rates that account for real-world constraints. 
-            Organizations that execute well typically exceed these projections.
+        <View style={styles.closingBox}>
+          <Text style={styles.closingText}>
+            The goal isn't to predict the future with precision. It's to give you a framework for making decisions with confidence—and adjusting as reality unfolds.
           </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
-        <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
@@ -1890,16 +1334,16 @@ const AssumptionsPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
 // ============================================================================
 
 const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
-  // Cover + Executive Summary + Driver pages + Projection + Assumptions = 4 + drivers
-  const totalPages = 4 + data.drivers.length;
+  // Cover + Thesis + Drivers + Investment + Transparency + HowToUse
+  const totalPages = 5 + data.drivers.length;
   let pageNum = 1;
 
   return (
     <Document>
       <CoverPage data={data} />
-      <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <ThesisPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
-        <DriverDetailPage
+        <DriverPage
           key={driver.id}
           driver={driver}
           data={data}
@@ -1907,8 +1351,9 @@ const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
           totalPages={totalPages}
         />
       ))}
-      <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
-      <AssumptionsPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <InvestmentPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <TransparencyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <HowToUsePage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
   );
 };
@@ -1921,7 +1366,6 @@ export async function generateOutpatientROIPDF(data: OutpatientPDFData): Promise
   const blob = await pdf(<OutpatientPDFDocument data={data} />).toBlob();
   const today = new Date().toISOString().split("T")[0];
   const orgName = data.clientName || data.organizationName || "Organization";
-  // Format: (Care Setting) ROI Model
   const careSettingLabel = data.careSetting === "ed" ? "Emergency Department" : 
                            data.careSetting === "nursing" ? "Nursing" :
                            data.careSetting === "inpatient" ? "Inpatient" : "Outpatient";
