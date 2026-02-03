@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowLeft, TrendingUp, Clock, FileText, Heart } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Clock, FileText, TrendingUp, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -17,89 +17,93 @@ interface MeasureTransformationProps {
   onHome: () => void;
 }
 
-function TransformationCard({ 
+function ComparisonCard({ 
   icon: Icon,
   title,
   beforeValue,
   afterValue,
   beforeLabel,
   afterLabel,
-  changeText,
+  deltaText,
   insight,
   delay = 0,
 }: {
-  icon: typeof TrendingUp;
+  icon: typeof Clock;
   title: string;
-  beforeValue: string;
-  afterValue: string;
-  beforeLabel?: string;
-  afterLabel?: string;
-  changeText: string;
+  beforeValue: number;
+  afterValue: number;
+  beforeLabel: string;
+  afterLabel: string;
+  deltaText: string;
   insight: string;
   delay?: number;
 }) {
-  const beforeNum = parseFloat(beforeValue) || 0;
-  const afterNum = parseFloat(afterValue) || 0;
-  const maxVal = Math.max(beforeNum, afterNum, 0.1);
-  const beforeWidth = (beforeNum / maxVal) * 100;
-  const afterWidth = (afterNum / maxVal) * 100;
+  const maxVal = Math.max(beforeValue, afterValue, 0.1);
+  const beforeWidth = Math.max((beforeValue / maxVal) * 100, 5);
+  const afterWidth = Math.max((afterValue / maxVal) * 100, 5);
 
   return (
     <motion.div
-      className="bg-white rounded-xl border border-[#E5E7EB] p-5"
-      initial={{ opacity: 0, y: 30 }}
+      className="bg-white rounded-lg border border-[#E5E5E5] p-5"
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5 }}
+      transition={{ delay, duration: 0.4 }}
     >
+      {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-          <Icon className="w-5 h-5 text-[#E85A2C]" />
+        <div className="w-9 h-9 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+          <Icon className="w-4 h-4 text-[#E85A2C]" />
         </div>
-        <h3 className="text-sm font-semibold text-black">{title}</h3>
+        <h3 className="text-base font-semibold text-black">{title}</h3>
       </div>
 
       {/* Before/After Bars */}
-      <div className="space-y-2.5 mb-4">
+      <div className="space-y-2 mb-4">
+        {/* Before Bar */}
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[#888888] w-12 uppercase tracking-wide">Before</span>
-          <div className="flex-1 h-7 bg-[#F5F0EB] rounded-lg overflow-hidden">
+          <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">Before</span>
+          <div className="flex-1 h-8 bg-[#F5F5F5] rounded overflow-hidden relative">
             <motion.div 
-              className="h-full bg-[#888888] rounded-lg flex items-center justify-end px-3"
+              className="h-full bg-[#D1D5DB] rounded flex items-center px-3"
               initial={{ width: 0 }}
               animate={{ width: `${beforeWidth}%` }}
-              transition={{ delay: delay + 0.3, duration: 0.6 }}
-            >
-              <span className="text-xs font-bold text-white">{beforeValue}{beforeLabel}</span>
-            </motion.div>
+              transition={{ delay: delay + 0.2, duration: 0.5, ease: "easeOut" }}
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-black">
+              {beforeLabel}
+            </span>
           </div>
         </div>
+
+        {/* After Bar */}
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[#E85A2C] w-12 uppercase tracking-wide">After</span>
-          <div className="flex-1 h-7 bg-[#FFF5F2] rounded-lg overflow-hidden">
+          <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">After</span>
+          <div className="flex-1 h-8 bg-[#FFF5F2] rounded overflow-hidden relative">
             <motion.div 
-              className="h-full bg-[#E85A2C] rounded-lg flex items-center justify-end px-3"
+              className="h-full bg-[#E85A2C] rounded flex items-center px-3"
               initial={{ width: 0 }}
               animate={{ width: `${afterWidth}%` }}
-              transition={{ delay: delay + 0.5, duration: 0.6 }}
-            >
-              <span className="text-xs font-bold text-white">{afterValue}{afterLabel}</span>
-            </motion.div>
+              transition={{ delay: delay + 0.3, duration: 0.5, ease: "easeOut" }}
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-black">
+              {afterLabel}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Change Badge */}
+      {/* Delta and Insight */}
       <div className="flex items-center justify-between">
         <motion.div 
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FFF5F2] border border-[#E85A2C]/20 rounded-full"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E5E5E5] rounded"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: delay + 0.7, duration: 0.3 }}
+          transition={{ delay: delay + 0.5, duration: 0.3 }}
         >
-          <TrendingUp className="w-3.5 h-3.5 text-[#E85A2C]" />
-          <span className="text-xs font-bold text-[#E85A2C]">{changeText}</span>
+          <ArrowUpRight className="w-3.5 h-3.5 text-black" />
+          <span className="text-[13px] font-medium text-black">{deltaText}</span>
         </motion.div>
-        <p className="text-xs text-[#888888] italic">{insight}</p>
+        <p className="text-sm text-[#666666] italic">{insight}</p>
       </div>
     </motion.div>
   );
@@ -114,7 +118,7 @@ export default function MeasureTransformation({
   const results = useMemo(() => calculateMeasureResults(state), [state]);
 
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
-  const workLifeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
+  const pajamaTimeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
 
   return (
     <div className="min-h-screen bg-white">
@@ -128,14 +132,14 @@ export default function MeasureTransformation({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         {/* Step Indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {[1, 2, 3, 4, 5].map((step) => (
             <div
               key={step}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-                step === 3 ? "bg-[#E85A2C] scale-125" : step < 3 ? "bg-[#E85A2C]/40" : "bg-[#D1D5DB]"
+              className={`w-2 h-2 rounded-full transition-all ${
+                step <= 3 ? "bg-[#E85A2C]" : "bg-[#D1D5DB]"
               }`}
             />
           ))}
@@ -148,127 +152,117 @@ export default function MeasureTransformation({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
-            WHAT CHANGED
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
+            What Changed
           </h1>
-          <p className="text-base text-[#6B7280]">
+          <p className="text-base text-[#888888]">
             Same providers. Same patients. Different outcomes.
           </p>
         </motion.div>
 
-        {/* Context Stats */}
+        {/* Context Stats Bar */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-xl p-5 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="bg-[#F5F0EB] rounded-lg p-5 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div className="border-l-4 border-[#E85A2C] pl-3">
-            <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">providers</p>
-          </div>
-          <div className="border-l-4 border-[#E85A2C] pl-3">
-            <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">encounters</p>
-          </div>
-          <div className="border-l-4 border-[#E85A2C] pl-3">
-            <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">utilization</p>
-          </div>
-          <div className="border-l-4 border-[#E85A2C] pl-3">
-            <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">on Abridge</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="border-l-4 border-[#E85A2C] pl-3">
+              <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Providers</p>
+            </div>
+            <div className="border-l-4 border-[#E85A2C] pl-3">
+              <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Encounters</p>
+            </div>
+            <div className="border-l-4 border-[#E85A2C] pl-3">
+              <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Utilization</p>
+            </div>
+            <div className="border-l-4 border-[#E85A2C] pl-3">
+              <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
+            </div>
           </div>
         </motion.div>
 
-        {/* Transformation Cards */}
-        <div className="grid gap-4 mb-8">
-          <TransformationCard
+        {/* Comparison Cards */}
+        <div className="space-y-4 mb-8">
+          <ComparisonCard
             icon={Clock}
             title="Documentation Time"
-            beforeValue={state.timeEfficiency.timeInNotesWithout.toString()}
-            afterValue={state.timeEfficiency.timeInNotesWith.toString()}
-            beforeLabel=" min"
-            afterLabel=" min"
-            changeText={`${timeReclaimed} min saved per note`}
+            beforeValue={state.timeEfficiency.timeInNotesWithout}
+            afterValue={state.timeEfficiency.timeInNotesWith}
+            beforeLabel={`${state.timeEfficiency.timeInNotesWithout} min`}
+            afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
+            deltaText={`${timeReclaimed} min saved per note`}
             insight="Less time charting, more time caring"
-            delay={0.2}
+            delay={0.15}
           />
 
-          <TransformationCard
+          <ComparisonCard
             icon={FileText}
             title="Revenue Capture"
-            beforeValue={state.documentationQuality.wrvuWithout.toFixed(2)}
-            afterValue={state.documentationQuality.wrvuWith.toFixed(2)}
-            beforeLabel=" wRVU"
-            afterLabel=" wRVU"
-            changeText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
+            beforeValue={state.documentationQuality.wrvuWithout}
+            afterValue={state.documentationQuality.wrvuWith}
+            beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
+            afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
+            deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
             insight="Complexity captured, not missed"
+            delay={0.25}
+          />
+
+          <ComparisonCard
+            icon={TrendingUp}
+            title="Same-Day Closure"
+            beforeValue={state.timeEfficiency.sameDayClosureWithout}
+            afterValue={state.timeEfficiency.sameDayClosureWith}
+            beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+            afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+            deltaText={`+${results.sameDayClosureDelta} percentage points`}
+            insight="Notes closed before going home"
             delay={0.35}
           />
 
-          <TransformationCard
-            icon={TrendingUp}
-            title="Same-Day Closure"
-            beforeValue={state.timeEfficiency.sameDayClosureWithout.toString()}
-            afterValue={state.timeEfficiency.sameDayClosureWith.toString()}
-            beforeLabel="%"
-            afterLabel="%"
-            changeText={`+${results.sameDayClosureDelta} percentage points`}
-            insight="Notes closed before going home"
-            delay={0.5}
+          <ComparisonCard
+            icon={Heart}
+            title="Work-Life Balance"
+            beforeValue={state.timeEfficiency.workOutsideWithout}
+            afterValue={state.timeEfficiency.workOutsideWith}
+            beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
+            afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
+            deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
+            insight="Evenings reclaimed"
+            delay={0.45}
           />
-
-          {workLifeSaved > 0 && (
-            <TransformationCard
-              icon={Heart}
-              title="Work-Life Balance"
-              beforeValue={state.timeEfficiency.workOutsideWithout.toFixed(1)}
-              afterValue={state.timeEfficiency.workOutsideWith.toFixed(1)}
-              beforeLabel=" hrs/day"
-              afterLabel=" hrs/day"
-              changeText={`${workLifeSaved.toFixed(1)} hours back per day`}
-              insight="Providers going home on time"
-              delay={0.65}
-            />
-          )}
         </div>
 
         {/* Transition Text */}
         <motion.div
           className="text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
         >
-          <p className="text-[#6B7280] text-base">
-            Now let's translate this into impact.
+          <p className="text-base text-[#666666] italic">
+            Now let's see what that's worth.
           </p>
         </motion.div>
 
         {/* Navigation */}
         <motion.div 
-          className="flex justify-between items-center"
+          className="flex justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
+          transition={{ delay: 0.7 }}
         >
           <Button
-            variant="ghost"
-            onClick={onBack}
-            className="gap-2"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-          
-          <Button
             onClick={onNext}
-            className="h-11 px-6 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-semibold rounded-full gap-2"
-            data-testid="button-see-impact"
+            className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+            data-testid="button-see-value"
           >
-            See the Impact
+            See the Value
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
