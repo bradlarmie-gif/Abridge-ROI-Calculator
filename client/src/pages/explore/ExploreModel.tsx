@@ -113,6 +113,41 @@ export default function ExploreModel({
     return Math.round(prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100));
   }, [eligibleEncounters, docQualityInputs]);
 
+  // Inpatient-specific calculations
+  const isInpatient = state.careSetting === 'inpatient';
+
+  // Inpatient: Clinician Wellbeing Retention Value
+  const ipWellbeingRetentionValue = useMemo(() => {
+    if (!isInpatient || !timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
+    const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, aggressive: 40 };
+    const retentionPercent = retentionScenarios[timeDriverInputs.ipRetentionScenario];
+    const providersLeaving = state.numberOfProviders * (timeDriverInputs.ipAnnualTurnover / 100);
+    const burnoutRelated = providersLeaving * (timeDriverInputs.ipBurnoutRelated / 100);
+    const retained = burnoutRelated * (retentionPercent / 100);
+    return Math.round(retained * timeDriverInputs.ipReplacementCost);
+  }, [isInpatient, state.numberOfProviders, timeDriverInputs]);
+
+  // Inpatient: DRG Accuracy Value
+  const ipDrgValue = useMemo(() => {
+    if (!isInpatient || !docQualityInputs.ipDrgEnabled) return 0;
+    const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+    const protectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
+    const admissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
+    const admissionsProtected = admissionsAtRisk * (protectionPercent / 100);
+    const grossValue = admissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
+    return Math.round(grossValue * (docQualityInputs.ipDrgRealization / 100));
+  }, [isInpatient, eligibleEncounters, docQualityInputs]);
+
+  // Inpatient: CDI Query Reduction Value
+  const ipCdiValue = useMemo(() => {
+    if (!isInpatient || !docQualityInputs.ipCdiEnabled) return 0;
+    const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+    const reductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
+    const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
+    const queriesAvoided = totalQueries * (reductionPercent / 100);
+    return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery);
+  }, [isInpatient, eligibleEncounters, docQualityInputs]);
+
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
     : '0';
@@ -266,14 +301,14 @@ export default function ExploreModel({
     inpatient: {
       timeCardTitle: 'Clinical Operations',
       timeCardDescription: 'Reduced documentation burden allows hospitalists to focus on patient care and rounding.',
-      driver1: 'LOS Impact',
-      driver2: 'Rounding Efficiency',
-      driver3: 'Clinician Wellbeing',
+      driver1: 'Rounding Efficiency',
+      driver2: 'Clinician Wellbeing',
+      driver3: '',
       docCardTitle: 'Connected Value',
-      docCardDescription: 'Accurate documentation drives CC/MCC capture and reduces claim denials.',
-      docDriver1: 'CC/MCC Capture',
-      docDriver2: '', // No HCC for Inpatient
-      docDriver3: 'Denial Prevention',
+      docCardDescription: 'Accurate documentation drives DRG accuracy and reduces CDI queries.',
+      docDriver1: 'DRG Accuracy',
+      docDriver2: 'CDI Query Reduction',
+      docDriver3: '',
       showHCC: false,
     },
     nursing: {
@@ -416,6 +451,24 @@ export default function ExploreModel({
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
                     )}
                   </>
+                ) : isInpatient ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver1}</span>
+                      <span className="font-semibold text-black">{`${hoursPerProviderPerWeek} hrs/wk`}</span>
+                    </div>
+                    <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver2}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.ipRetentionScenario === 'conservative' ? '20' : timeDriverInputs.ipRetentionScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                    )}
+                    {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
+                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    )}
+                  </>
                 ) : (
                   <>
                     <div className="flex justify-between">
@@ -458,23 +511,44 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#666666]">• {labels.docDriver1}</span>
-                  <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
-                </div>
-                {docQualityInputs.wrvuEnabled && (
-                  <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
+                {isInpatient ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver1}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.ipDrgEnabled ? formatCurrency(ipDrgValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.ipDrgEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipDrgScenario === 'conservative' ? '15' : docQualityInputs.ipDrgScenario === 'typical' ? '20' : '25'}% protection)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver2}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.ipCdiEnabled ? formatCurrency(ipCdiValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.ipCdiEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.ipCdiScenario === 'conservative' ? '15' : docQualityInputs.ipCdiScenario === 'typical' ? '25' : '35'}% query reduction)</p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver1}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.wrvuEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
+                    )}
+                    {labels.showHCC && (
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver2}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
+                    </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver3}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
+                    </div>
+                  </>
                 )}
-                {labels.showHCC && (
-                <div className="flex justify-between">
-                  <span className="text-[#666666]">• {labels.docDriver2}</span>
-                  <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
-                </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-[#666666]">• {labels.docDriver3}</span>
-                  <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
-                </div>
               </div>
             </div>
           </div>
