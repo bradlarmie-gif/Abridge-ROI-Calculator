@@ -318,61 +318,127 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
         {/* ED-specific Downstream Value section */}
         {isED && (
           <motion.div
-            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 mb-10 text-white"
+            className="bg-white rounded-2xl border border-slate-200 p-6 mb-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#F07B5F]" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                <Link className="w-5 h-5 text-[#EA2C00]" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Downstream Value Potential</h3>
-                <p className="text-sm text-white/60">ED documentation connects to Inpatient value</p>
+                <h3 className="font-bold text-lg text-black">Downstream Value</h3>
+                <p className="text-sm text-slate-500">The ED admission note is just the beginning</p>
               </div>
             </div>
             
-            <p className="text-sm text-white/80 mb-5">
-              ED encounters that result in admissions create additional documentation value opportunities. 
-              These are captured in the Inpatient flow and represent significant potential beyond direct ED metrics.
+            <p className="text-sm text-slate-600 mb-5">
+              When an ED physician decides to admit a patient, their documentation becomes the foundation for 
+              inpatient revenue. The conditions they capture, the medical necessity they establish, and the clinical 
+              reasoning they document all determine what happens downstream.
+            </p>
+
+            <p className="text-sm font-semibold text-slate-700 mb-3">Better ED documentation directly impacts:</p>
+            
+            <div className="space-y-3 mb-5">
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-[#EA2C00]">
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart3 className="w-4 h-4 text-[#EA2C00]" />
+                  <span className="font-semibold text-black">DRG & CMI Capture</span>
+                </div>
+                <p className="text-sm text-slate-600">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-green-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="font-semibold text-black">Medical Necessity</span>
+                </div>
+                <p className="text-sm text-slate-600">The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-blue-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  <span className="font-semibold text-black">CDI Efficiency</span>
+                </div>
+                <p className="text-sm text-slate-600">When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.</p>
+              </div>
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-amber-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <span className="font-semibold text-black">Denial Prevention</span>
+                </div>
+                <p className="text-sm text-slate-600">Payer audits start with the admission note. Complete documentation from day one means stronger appeals.</p>
+              </div>
+            </div>
+            
+            <div className="bg-[#5B4FE9] rounded-xl p-4 text-white">
+              <div className="flex items-start gap-3">
+                <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">These benefits are quantified in the <span className="font-bold">Inpatient Setting</span>.</p>
+                  <p className="text-sm opacity-80 mt-1">If your organization admits patients from the ED, the value compounds when both settings use Abridge.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Inpatient-specific Connected Value section */}
+        {isInpatient && (
+          <motion.div
+            className="bg-white rounded-2xl border border-slate-200 p-6 mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                <Link className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-black">Connected Value</h3>
+                <p className="text-sm text-slate-500">ED + Inpatient compounds your results</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-slate-600 mb-5">
+              When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts 
+              in ED flows directly into inpatient coding, CDI workflows, and denial defense.
             </p>
             
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileCheck className="w-4 h-4 text-[#F07B5F]" />
-                  <span className="text-xs font-medium text-white/60">DRG/CMI Capture</span>
+            <div className="space-y-3 mb-5">
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-[#EA2C00]">
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart3 className="w-4 h-4 text-[#EA2C00]" />
+                  <span className="font-semibold text-black">DRG Capture</span>
                 </div>
-                <p className="text-sm text-white/80">Accurate ED documentation supports proper DRG assignment for admitted patients</p>
+                <p className="text-sm text-slate-600">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Stethoscope className="w-4 h-4 text-[#F07B5F]" />
-                  <span className="text-xs font-medium text-white/60">Medical Necessity</span>
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-blue-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  <span className="font-semibold text-black">CDI Efficiency</span>
                 </div>
-                <p className="text-sm text-white/80">Complete documentation establishes medical necessity for admission decisions</p>
+                <p className="text-sm text-slate-600">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Building2 className="w-4 h-4 text-[#F07B5F]" />
-                  <span className="text-xs font-medium text-white/60">CDI Efficiency</span>
+              <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-amber-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <span className="font-semibold text-black">Denial Prevention</span>
                 </div>
-                <p className="text-sm text-white/80">Reduces Clinical Documentation Improvement queries and rework</p>
-              </div>
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Link className="w-4 h-4 text-[#F07B5F]" />
-                  <span className="text-xs font-medium text-white/60">Inpatient Connection</span>
-                </div>
-                <p className="text-sm text-white/80">ED documentation flows into inpatient records, enabling end-to-end value capture</p>
+                <p className="text-sm text-slate-600">Medical necessity documented at admission is your first line of defense against payer audits.</p>
               </div>
             </div>
             
-            <div className="mt-5 pt-4 border-t border-white/10">
-              <p className="text-xs text-white/50 text-center">
-                To model inpatient value from ED admissions, explore the Inpatient care setting
-              </p>
+            <div className="bg-[#EEF2FF] rounded-xl p-4 border border-[#C7D2FE]">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-[#5B4FE9] mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-[#3730A3]">
+                  <span className="font-semibold">If you're also using Abridge in ED</span>, the documentation quality benefits below are amplified — 
+                  you're building on a stronger foundation.
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
