@@ -436,8 +436,18 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
     } else if (isInpatient) {
-      // Inpatient: Rounding is qualitative only (no dollar value added here)
-      // Time value comes from Wellbeing driver only (handled elsewhere)
+      // Inpatient: Rounding is qualitative only (no dollar value)
+      // Time value comes from Wellbeing/Retention driver only
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+        const providersLeaving = numberOfProviders * turnoverRate;
+        const burnoutRelated = providersLeaving * burnoutRate;
+        const retained = burnoutRelated * impactRate;
+        total += retained * timeDriverInputs.replacementCost;
+      }
     } else if (isNursing) {
       // Nursing: OT Reduction and Retention
       if (timeDriverInputs.nursingOtEnabled) {
@@ -496,8 +506,8 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
       total += rafValue * (docQualityInputs.hccRealization / 100);
     }
 
-    // Denials
-    if (docQualityInputs.denialsEnabled) {
+    // Denials (not for inpatient - included in DRG Accuracy)
+    if (docQualityInputs.denialsEnabled && state.careSetting !== 'inpatient') {
       const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
       const totalDenials = eligibleEncounters * (docQualityInputs.denialRate / 100);
       const unappealable = totalDenials * (docQualityInputs.unappealableRate / 100);
@@ -505,8 +515,27 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
       total += prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100);
     }
 
+    // Inpatient: DRG Accuracy
+    if (state.careSetting === 'inpatient' && docQualityInputs.ipDrgEnabled) {
+      const ipDrgProtectionScenarios: Record<string, number> = { conservative: 15, typical: 20, aggressive: 25 };
+      const protectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
+      const admissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
+      const admissionsProtected = admissionsAtRisk * (protectionPercent / 100);
+      const grossValue = admissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
+      total += grossValue * (docQualityInputs.ipDrgRealization / 100);
+    }
+
+    // Inpatient: CDI Query Reduction
+    if (state.careSetting === 'inpatient' && docQualityInputs.ipCdiEnabled) {
+      const ipCdiReductionScenarios: Record<string, number> = { conservative: 15, typical: 25, aggressive: 35 };
+      const reductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
+      const totalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
+      const queriesAvoided = totalQueries * (reductionPercent / 100);
+      total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery;
+    }
+
     return Math.round(total);
-  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs]);
+  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting]);
 
   // Calculate annual investment
   const annualInvestment = useMemo(() => {
