@@ -9,7 +9,7 @@ import ExploreModel from "./ExploreModel";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
-export type TimePathScenario = 'conservative' | 'typical' | 'aggressive';
+export type TimePathScenario = 'conservative' | 'typical' | 'aggressive' | null;
 
 export type TimeAllocationFocus = 'patientAccess' | 'reducingLocums' | 'clinicianWellbeing';
 
@@ -155,7 +155,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   nursingOccupancyRate: 85,
   nursingShiftsPerNurseYear: 156,
   nursingMinutesPerShift: 30,
-  timePathScenario: 'typical',
+  timePathScenario: null,
   minutesSavedPerEncounter: 4,
   timeAllocation: {
     patientAccess: 15,

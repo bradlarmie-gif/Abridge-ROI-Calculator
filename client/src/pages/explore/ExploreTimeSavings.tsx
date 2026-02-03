@@ -25,7 +25,7 @@ export default function ExploreTimeSavings({
     return Math.round(state.annualEncounters * (state.utilizationPercent / 100));
   }, [state.annualEncounters, state.utilizationPercent]);
 
-  const scenarioMinutes: Record<TimePathScenario, number> = {
+  const scenarioMinutes: Record<string, number> = {
     conservative: 2,
     typical: 4,
     aggressive: 6,
@@ -43,7 +43,7 @@ export default function ExploreTimeSavings({
     return state.numberOfProviders > 0 ? (hoursSaved / state.numberOfProviders / 52).toFixed(1) : '0';
   }, [hoursSaved, state.numberOfProviders]);
 
-  const handleScenarioSelect = (scenario: TimePathScenario) => {
+  const handleScenarioSelect = (scenario: 'conservative' | 'typical' | 'aggressive') => {
     updateState({
       timePathScenario: scenario,
       minutesSavedPerEncounter: scenarioMinutes[scenario],
@@ -52,7 +52,7 @@ export default function ExploreTimeSavings({
 
   const formatNumber = (n: number) => n.toLocaleString();
 
-  const scenarioLabels: Record<TimePathScenario, string> = {
+  const scenarioLabels: Record<string, string> = {
     conservative: 'Conservative',
     typical: 'Typical',
     aggressive: 'Optimistic',
@@ -271,7 +271,7 @@ export default function ExploreTimeSavings({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#888888]">Scenario</span>
-                  <span className="text-white font-medium">{scenarioLabels[state.timePathScenario]}</span>
+                  <span className="text-white font-medium">{state.timePathScenario ? scenarioLabels[state.timePathScenario] : '—'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#888888]">Time Saved</span>
