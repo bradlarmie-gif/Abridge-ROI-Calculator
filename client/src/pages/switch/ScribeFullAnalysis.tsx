@@ -101,7 +101,7 @@ export default function ScribeFullAnalysis({
                     </div>
                     <div>
                       <h1 className="text-xl md:text-2xl font-bold text-white">Your Scribe Program Analysis</h1>
-                      <p className="text-slate-400 text-sm">The full picture of your documentation investment</p>
+                      <p className="text-slate-400 text-sm">The full picture</p>
                     </div>
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function ScribeFullAnalysis({
                 className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-slate-300"
               >
                 <strong className="text-white">The bottom line:</strong> Your scribe program costs{" "}
-                <span className="text-white font-semibold">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/provider/year</span> when you account for turnover and overhead. 
+                <span className="text-white font-semibold">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/provider/year</span> when you factor in overhead. 
                 Scaling to 100% coverage would require an additional{" "}
                 <span className="text-[#EA2C00] font-semibold">{formatCurrency(calculations.costToScale)}/year</span>.
               </motion.div>
@@ -196,7 +196,7 @@ export default function ScribeFullAnalysis({
 
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-8 shadow-sm">
             <h3 className="text-base font-bold text-[#111827] mb-2">Scribe programs scale linearly</h3>
-            <p className="text-sm text-[#6B7280] mb-6">Double the coverage = double the cost. No economies of scale.</p>
+            <p className="text-sm text-[#6B7280] mb-6">Double the coverage, double the cost. No economies of scale.</p>
 
             <div className="space-y-4 mb-6">
               <div className="flex items-center gap-4">
@@ -276,8 +276,8 @@ export default function ScribeFullAnalysis({
           transition={{ duration: 0.4, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-8 mb-8 shadow-sm"
         >
-          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-2">The Costs That Don't Show Up in Salary</h2>
-          <p className="text-sm text-[#6B7280] mb-6">Beyond wages, scribe programs carry operational overhead</p>
+          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-2">The Costs Beyond Salary</h2>
+          <p className="text-sm text-[#6B7280] mb-6">Scribe programs carry costs beyond wages</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5">
@@ -313,17 +313,17 @@ export default function ScribeFullAnalysis({
             </div>
           </div>
 
-          <div className="bg-[#EA2C00] rounded-xl p-5 text-white">
+          <div className="bg-black rounded-xl p-5 text-white border-l-4 border-l-[#EA2C00]">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <div className="text-white/70 text-xs uppercase tracking-wide mb-1">Your true annual cost</div>
+                <div className="text-slate-400 text-xs uppercase tracking-wide mb-1">Your true annual cost</div>
                 <div className="text-3xl md:text-4xl font-bold">{formatCurrency(trueTotalCost)}</div>
-                <div className="text-white/70 text-sm mt-1">
-                  {formatCurrency(calculations.totalScribeCost)} salaries + {formatCurrency(totalHiddenCosts)} in overhead
+                <div className="text-slate-400 text-sm mt-1">
+                  {formatCurrency(calculations.totalScribeCost)} salaries + {formatCurrency(totalHiddenCosts)} overhead
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-white/70 text-xs uppercase tracking-wide mb-1">Per covered provider</div>
+                <div className="text-slate-400 text-xs uppercase tracking-wide mb-1">Per covered provider</div>
                 <div className="text-2xl font-bold">{formatCurrency(Math.round(trueTotalCost / inputs.providersWithScribes))}/year</div>
               </div>
             </div>
@@ -355,10 +355,10 @@ export default function ScribeFullAnalysis({
               </div>
 
               <h2 className="text-xl md:text-2xl font-bold text-[#111827] mb-3">
-                What if you could cover every provider—without the linear cost curve?
+                There's a better way to scale.
               </h2>
               <p className="text-[#374151] text-sm md:text-base mb-6 max-w-xl mx-auto">
-                Abridge can support your entire organization at a fraction of the cost.
+                Abridge supports every provider—without the linear cost curve.
               </p>
 
               <Button
@@ -366,7 +366,7 @@ export default function ScribeFullAnalysis({
                 className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
                 data-testid="button-explore-ambient"
               >
-                See the Abridge Model
+                See How Abridge Compares
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>

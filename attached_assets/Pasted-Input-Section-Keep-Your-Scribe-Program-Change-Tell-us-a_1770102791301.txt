@@ -1,0 +1,88 @@
+Input Section:
+
+Keep "Your Scribe Program"
+Change "Tell us about your current setup" to: "Your program details"
+Consider adding a soft beige/tan background to this input section to visually separate it from the analysis sections below.
+
+YOUR CURRENT STATE Card:
+
+Change "YOUR CURRENT STATE" to: "Your Program Today"
+
+The Coverage Gap Section:
+
+Keep "The Coverage Gap" and the "400 providers without support" tag
+Change "Where your documentation support falls short" to: "Providers your program doesn't reach"
+
+The Documentation Burden Section:
+
+Keep "The documentation burden"
+Keep "400 providers handling all documentation themselves"
+Fix "1 weeks of their year" to: "1 week of their year"
+
+What Would It Take Section:
+
+Change "What Would It Take?" to: "Scaling to Full Coverage"
+Change "The cost to give every provider scribe support" to: "What it would cost to cover every provider"
+
+FULL COVERAGE Card:
+
+Change "annual investment required" to: "to reach 100% coverage"
+
+Bottom CTA Banner:
+
+Keep "Scaling your scribe program to full coverage would cost an additional"
+Keep "$10.5M/year"
+Change "But what if you could give every provider documentation support—without adding 200 more scribes?" to: "There's another way to cover every provider—without adding 200 more scribes."
+Change button from "See How" to: "Continue"
+
+
+PAGE 2: Full Analysis
+Header Card:
+
+Keep "Your Scribe Program Analysis"
+Change "Complete evaluation of your documentation investment" to: "The full picture"
+Change "Hidden Costs" label to: "Indirect Costs"
+In the bottom line statement, change "when you include hidden costs" to: "when you factor in overhead"
+
+The Problem With Scaling Scribes Section:
+
+Keep "The Problem With Scaling Scribes"
+Keep "You're spending $2.6M/year to cover 20% of your providers. Here's why that math never gets better."
+
+Scribe Programs Scale Linearly:
+
+Change "Double the coverage = double the cost. There are no economies of scale." to: "Double the coverage, double the cost. No economies of scale."
+
+The Costs You're Not Seeing Section:
+
+Change "The costs you're not seeing" to: "The Costs Beyond Salary"
+Change "Beyond salaries, scribe programs carry hidden operational costs" to: "Scribe programs carry costs beyond wages"
+
+Management Overhead Card:
+
+Change "Scheduling, supervision, quality assurance, and administrative support" to: "Scheduling, supervision, QA, and admin support"
+
+YOUR TRUE ANNUAL COST Banner:
+
+Keep black background
+Add a subtle cadmium red left border (4px) to the banner for brand alignment
+Change "$2.6M salaries + $494K hidden costs" to: "$2.6M salaries + $494K overhead"
+
+Final CTA Section:
+
+Change "What if documentation support didn't scale this way?" to: "There's a better way to scale."
+Change "Abridge can support every provider without the linear cost curve." to: "Abridge supports every provider—without the linear cost curve."
+Change button from "Explore Ambient AI" to: "See How Abridge Compares"
+
+
+Layout/UX Changes:
+Page 1:
+
+Add a soft beige/tan (#F5F0E8 or similar from Abridge palette) background to the input section ("Your Scribe Program") to create visual separation between user inputs and the analysis that follows.
+Consider collapsing "Hours per week," "Doc time per encounter," and "Scribe turnover rate" into an expandable "Advanced settings" section with industry defaults pre-filled. This reduces cognitive load on first interaction while keeping the depth available.
+
+Page 2:
+
+Add a 4px cadmium red left border to the "YOUR TRUE ANNUAL COST" banner.
+Ensure the horizontal bar chart uses Abridge cadmium red for the 100% / $13.1M bar (not a different red-orange).
+

@@ -70,10 +70,10 @@ export default function ScribeAssessment({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
+          className="bg-[#F5F0E8] rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
         >
           <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">Your Scribe Program</h2>
-          <p className="text-sm text-[#6B7280] mb-5">Start with what you have today</p>
+          <p className="text-sm text-[#6B7280] mb-5">Your program details</p>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -178,7 +178,7 @@ export default function ScribeAssessment({
             <div className="lg:col-span-1">
               <div className="bg-[#FFF5F2] border border-[#EA2C00]/10 rounded-xl p-5 lg:sticky lg:top-24">
                 <div className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-                  Your Current State
+                  Your Program Today
                 </div>
                 
                 <AnimatePresence mode="wait">
@@ -253,7 +253,7 @@ export default function ScribeAssessment({
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[#6B7280] mb-6">The providers your current program doesn't reach</p>
+              <p className="text-sm text-[#6B7280] mb-6">Providers your program doesn't reach</p>
 
               <div className="mb-6">
                 <div className="relative h-14 bg-[#F1F5F9] rounded-xl overflow-hidden">
@@ -395,8 +395,8 @@ export default function ScribeAssessment({
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
             >
-              <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">The Cost to Scale</h2>
-              <p className="text-sm text-[#6B7280] mb-6">What it would take to cover every provider with scribes</p>
+              <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">Scaling to Full Coverage</h2>
+              <p className="text-sm text-[#6B7280] mb-6">What it would cost to cover every provider</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-5">
@@ -437,7 +437,7 @@ export default function ScribeAssessment({
                     
                     <div className="mb-4">
                       <div className="text-3xl font-bold text-[#111827]">{formatCurrency(calculations.fullScribeCost)}</div>
-                      <div className="text-sm text-[#6B7280]">annual investment to reach 100%</div>
+                      <div className="text-sm text-[#6B7280]">to reach 100% coverage</div>
                     </div>
 
                     <div className="space-y-2 text-sm border-t border-[#FECDC4] pt-4">
@@ -483,7 +483,7 @@ export default function ScribeAssessment({
                   {formatCurrency(calculations.costToScale)}/year
                 </div>
                 <p className="text-slate-400 text-sm md:text-base mb-6 max-w-lg mx-auto">
-                  What if you could cover every provider—without adding {calculations.scribesNeededForFullCoverage - inputs.scribeCount} more scribes?
+                  There's another way to cover every provider—without adding {calculations.scribesNeededForFullCoverage - inputs.scribeCount} more scribes.
                 </p>
                 
                 <Button
@@ -491,7 +491,7 @@ export default function ScribeAssessment({
                   className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
                   data-testid="button-see-full-analysis"
                 >
-                  See What's Possible
+                  Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
