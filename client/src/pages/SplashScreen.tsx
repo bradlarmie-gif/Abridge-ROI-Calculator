@@ -170,7 +170,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             alt="Abridge" 
             className="w-24 md:w-32"
             style={{ 
-              animation: 'splashPulse 3s ease-in-out infinite'
+              animation: 'splashLogoEnter 0.3s ease-out forwards, splashPulse 3s ease-in-out 0.3s infinite'
             }}
           />
         </div>
@@ -295,6 +295,16 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           72% { transform: translate(40px, -70px); }
           90% { transform: translate(30px, -20px); }
           100% { transform: translate(0, 0); }
+        }
+        @keyframes splashLogoEnter {
+          0% { 
+            opacity: 0; 
+            transform: scale(0.8);
+          }
+          100% { 
+            opacity: 1; 
+            transform: scale(1);
+          }
         }
         @keyframes splashPulse {
           0%, 100% { 
