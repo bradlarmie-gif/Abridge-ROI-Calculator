@@ -36,6 +36,7 @@ The application supports multiple distinct user journeys:
 -   **Animations**: Smooth page transitions using framer-motion, staggered entrance animations, and accordion animations.
 -   **Navigation**: Scroll-to-top on navigation and keyboard navigation support.
 -   **Input Handling**: Input debouncing for delayed processing.
+-   **Sticky Right Panels**: Explore path pages 2-6 feature dark-styled (#1A1A1A) sticky right panels showing running totals and contextual calculations. Panels use red-orange (#E85A2C) accent for hero values and are hidden on mobile (lg:block). Each panel displays accumulated values from previous steps and includes navigation.
 
 ### Summary Page Design
 Features a premium restructured layout with a Hero Section (dark gradient background, large net value display), Value Breakdown (two-column layout with labor/efficiency and revenue/quality cards), Scaling Journey (Recharts chart, pace selector, pilot vs. full scale comparison), Investment Summary (3-year projection table), and an Actions Section (CTA for PDF download and model editing).
