@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, AlertTriangle, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "./ExploreFlow";
+
+type RetentionScenario = 'conservative' | 'typical' | 'optimistic';
 
 interface ExploreValueDriversProps {
   state: ExploreState;
@@ -63,6 +65,33 @@ export default function ExploreValueDrivers({
       ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
       : '0';
   }, [totalHoursSaved, state.numberOfProviders]);
+
+  // Retention value calculations
+  const retentionScenarios: Record<RetentionScenario, number> = {
+    conservative: 20,
+    typical: 30,
+    optimistic: 40,
+  };
+
+  const retentionCalcs = useMemo(() => {
+    const providers = state.numberOfProviders;
+    const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+    const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+    const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+    const replacementCost = timeDriverInputs.replacementCost;
+
+    const providersLeavingPerYear = providers * turnoverRate;
+    const burnoutRelatedDepartures = providersLeavingPerYear * burnoutRate;
+    const providersRetained = burnoutRelatedDepartures * impactRate;
+    const retentionValue = providersRetained * replacementCost;
+
+    return {
+      providersLeavingPerYear,
+      burnoutRelatedDepartures,
+      providersRetained,
+      retentionValue: Math.round(retentionValue),
+    };
+  }, [state.numberOfProviders, timeDriverInputs.annualTurnoverRate, timeDriverInputs.burnoutRelatedTurnover, timeDriverInputs.retentionImpactScenario, timeDriverInputs.replacementCost]);
 
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -396,20 +425,180 @@ export default function ExploreValueDrivers({
 
                   <div className="h-px bg-[#E5E5E5] my-4" />
 
-                  <p className="text-sm text-black mb-3">
-                    We don't assign a dollar value to this.
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                    The Retention Case
                   </p>
 
-                  <p className="text-sm text-[#888888] mb-2">But consider:</p>
-                  <ul className="text-sm text-[#666666] space-y-1 mb-3">
-                    <li>• Documentation burden is the #1 driver of burnout</li>
-                    <li>• Burnout is the #1 reason physicians leave</li>
-                    <li>• Cost to replace one provider: <strong className="text-black">$300K–$500K</strong></li>
-                  </ul>
-
-                  <p className="text-sm text-black italic">
-                    If Abridge helps retain even one provider who would have left, that's the value.
+                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
+                    Documentation burden is the #1 driver of burnout. Burnout is the #1 reason physicians leave. 
+                    Reducing documentation time can help retain providers who would otherwise leave.
                   </p>
+
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
+                  {/* Calculate retention checkbox */}
+                  <button
+                    onClick={() => updateTimeDriverInputs({ calculateRetentionValue: !timeDriverInputs.calculateRetentionValue })}
+                    className="flex items-center gap-3 text-sm text-black hover:text-[#E85A2C] transition-colors mb-4"
+                    data-testid="checkbox-calculate-retention"
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                      timeDriverInputs.calculateRetentionValue 
+                        ? 'bg-[#E85A2C] border-[#E85A2C]' 
+                        : 'border-[#D1D5DB] bg-white'
+                    }`}>
+                      {timeDriverInputs.calculateRetentionValue && <Check className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                    Calculate retention value
+                  </button>
+
+                  <AnimatePresence>
+                    {timeDriverInputs.calculateRetentionValue && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="h-px bg-[#E5E5E5] mb-4" />
+
+                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                          Your Organization
+                        </p>
+
+                        {/* Turnover Rate */}
+                        <div className="mb-4">
+                          <label className="text-sm text-black mb-1.5 block">Annual provider turnover rate</label>
+                          <div className="relative">
+                            <FormattedNumberInput
+                              value={timeDriverInputs.annualTurnoverRate}
+                              onChange={(v: number) => updateTimeDriverInputs({ annualTurnoverRate: v })}
+                              className="h-10 bg-white pr-8"
+                              data-testid="input-turnover-rate"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                          </div>
+                          <p className="text-xs text-[#888888] italic mt-1">Industry average: 6-7%</p>
+                        </div>
+
+                        {/* Burnout Related */}
+                        <div className="mb-4">
+                          <label className="text-sm text-black mb-1.5 block">Turnover related to burnout</label>
+                          <div className="relative">
+                            <FormattedNumberInput
+                              value={timeDriverInputs.burnoutRelatedTurnover}
+                              onChange={(v: number) => updateTimeDriverInputs({ burnoutRelatedTurnover: v })}
+                              className="h-10 bg-white pr-8"
+                              data-testid="input-burnout-turnover"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                          </div>
+                          <p className="text-xs text-[#888888] italic mt-1">Research suggests 30-50% of physician turnover is burnout-related</p>
+                        </div>
+
+                        {/* Replacement Cost */}
+                        <div className="mb-4">
+                          <label className="text-sm text-black mb-1.5 block">Cost to replace one provider</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                            <FormattedNumberInput
+                              value={timeDriverInputs.replacementCost}
+                              onChange={(v: number) => updateTimeDriverInputs({ replacementCost: v })}
+                              className="h-10 bg-white pl-7"
+                              data-testid="input-replacement-cost"
+                            />
+                          </div>
+                          <p className="text-xs text-[#888888] italic mt-1">Includes recruitment, onboarding, and lost revenue during transition</p>
+                        </div>
+
+                        <div className="h-px bg-[#E5E5E5] my-4" />
+
+                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                          Abridge Impact
+                        </p>
+
+                        <p className="text-sm text-black mb-3">
+                          What percentage of burnout-related turnover could Abridge help prevent?
+                        </p>
+
+                        {/* Scenario Buttons */}
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                          {(['conservative', 'typical', 'optimistic'] as RetentionScenario[]).map((scenario) => (
+                            <button
+                              key={scenario}
+                              onClick={() => updateTimeDriverInputs({ retentionImpactScenario: scenario })}
+                              className={`p-3 rounded-lg border text-center transition-all ${
+                                timeDriverInputs.retentionImpactScenario === scenario
+                                  ? 'bg-[#E85A2C] border-[#E85A2C] text-white'
+                                  : 'bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]'
+                              }`}
+                              data-testid={`button-scenario-${scenario}`}
+                            >
+                              <p className="text-xs capitalize mb-1">{scenario}</p>
+                              <p className="font-semibold">{retentionScenarios[scenario]}%</p>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="h-px bg-[#E5E5E5] my-4" />
+
+                        {/* Calculation Card */}
+                        <div className="bg-[#F5F0EB] rounded-lg p-4">
+                          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
+                            Calculation
+                          </p>
+
+                          <div className="space-y-2 text-sm font-mono">
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">Providers</span>
+                              <span className="text-black">{formatNumber(state.numberOfProviders)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">× Annual turnover rate</span>
+                              <span className="text-black">{timeDriverInputs.annualTurnoverRate}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">= Providers leaving per year</span>
+                              <span className="text-black">{retentionCalcs.providersLeavingPerYear.toFixed(1)}</span>
+                            </div>
+                            <div className="h-px bg-[#E5E5E5] my-2" />
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">× Burnout-related turnover</span>
+                              <span className="text-black">{timeDriverInputs.burnoutRelatedTurnover}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">= Burnout-related departures</span>
+                              <span className="text-black">{retentionCalcs.burnoutRelatedDepartures.toFixed(2)}</span>
+                            </div>
+                            <div className="h-px bg-[#E5E5E5] my-2" />
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">× Abridge retention impact</span>
+                              <span className="text-black">{retentionScenarios[timeDriverInputs.retentionImpactScenario]}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">= Providers retained</span>
+                              <span className="text-black">{retentionCalcs.providersRetained.toFixed(2)}</span>
+                            </div>
+                            <div className="h-px bg-[#E5E5E5] my-2" />
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">× Replacement cost</span>
+                              <span className="text-black">{formatCurrency(timeDriverInputs.replacementCost)}</span>
+                            </div>
+                            <div className="h-px bg-[#888888] my-2" />
+                            <div className="flex justify-between font-semibold">
+                              <span className="text-black">= Retention value</span>
+                              <span className="text-[#E85A2C]">{formatCurrency(retentionCalcs.retentionValue)}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-2 mt-4 text-xs text-[#888888] italic">
+                            <AlertTriangle className="w-4 h-4 text-[#E85A2C] flex-shrink-0 mt-0.5" />
+                            <span>This assumes Abridge meaningfully reduces documentation burden for providers at risk of leaving due to burnout.</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             )}
@@ -456,11 +645,17 @@ export default function ExploreValueDrivers({
             <div className="flex justify-between">
               <span className="text-[#666666]">Wellbeing:</span>
               <span className="font-semibold text-black">
-                {timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk back` : '—'}
+                {timeDriverInputs.wellbeingEnabled 
+                  ? (timeDriverInputs.calculateRetentionValue 
+                      ? formatCurrency(retentionCalcs.retentionValue)
+                      : `${hoursPerProviderPerWeek} hrs/wk back`)
+                  : '—'}
               </span>
             </div>
             {timeDriverInputs.wellbeingEnabled && (
-              <p className="text-xs text-[#888888] text-right">(qualitative)</p>
+              <p className="text-xs text-[#888888] text-right">
+                {timeDriverInputs.calculateRetentionValue ? '(retention value)' : '(qualitative)'}
+              </p>
             )}
           </div>
         </motion.div>

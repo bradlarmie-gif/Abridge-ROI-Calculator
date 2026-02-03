@@ -1,0 +1,171 @@
+Replit Prompt — Clinician Wellbeing Section Update:
+Replace the current Clinician Wellbeing section with the following:
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  Clinician Wellbeing                                               [Toggle]  │
+│  If time improves work-life balance and retention                             │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  Clinician Wellbeing                                              [On]    │
+│  ┃  If time improves work-life balance and retention                          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Your providers would get back:                                               │
+│                                                                               │
+│                      2.7 hours per week                                       │
+│                         per provider                                          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  THE RETENTION CASE                                                           │
+│                                                                               │
+│  Documentation burden is the #1 driver of burnout.                            │
+│  Burnout is the #1 reason physicians leave.                                   │
+│  Reducing documentation time can help retain providers who would otherwise    │
+│  leave.                                                                       │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ☐  Calculate retention value                                                 │
+│                                                                               │
+│  [When checkbox is checked, show the following:]                              │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  YOUR ORGANIZATION                                                            │
+│                                                                               │
+│  Annual provider turnover rate                                                │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ 6                                         %  │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Industry average: 6-7%                                                       │
+│                                                                               │
+│  Turnover related to burnout                                                  │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ 40                                        %  │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Research suggests 30-50% of physician turnover is burnout-related            │
+│                                                                               │
+│  Cost to replace one provider                                                 │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ $ 350,000                                    │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Includes recruitment, onboarding, and lost revenue during transition         │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ABRIDGE IMPACT                                                               │
+│                                                                               │
+│  What percentage of burnout-related turnover could Abridge help prevent?      │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Optimistic  │                            │
+│  │    20%      │  │    30%      │  │    40%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                         │  │
+│  │  CALCULATION                                                            │  │
+│  │                                                                         │  │
+│  │  Providers                                   80                         │  │
+│  │  × Annual turnover rate                      6%                         │  │
+│  │  = Providers leaving per year                4.8                        │  │
+│  │                                                                         │  │
+│  │  × Burnout-related turnover                  40%                        │  │
+│  │  = Burnout-related departures                1.92                       │  │
+│  │                                                                         │  │
+│  │  × Abridge retention impact                  30%                        │  │
+│  │  = Providers retained                        0.58                       │  │
+│  │                                                                         │  │
+│  │  × Replacement cost                          $350,000                   │  │
+│  │  ───────────────────────────────────────────────────────────────────    │  │
+│  │  = Retention value                           $201,600                   │  │
+│  │                                                                         │  │
+│  │  ⚠️ This assumes Abridge meaningfully reduces documentation burden      │  │
+│  │     for providers at risk of leaving due to burnout.                    │  │
+│  │                                                                         │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+Styling Notes:
+Section when collapsed:
+
+White background, subtle border
+Red-orange left border (4px) when toggled on
+Toggle switch on right side
+
+"Calculate retention value" checkbox:
+
+Unchecked by default
+When checked, reveals the input fields and calculation
+
+Input fields:
+
+White background, gray border
+Right-aligned values
+Helper text below each in gray italic (14px)
+
+Scenario buttons (Abridge Impact):
+
+Conservative (20%) / Typical (30%) / Optimistic (40%)
+Default selected: Typical (30%)
+Selected state: Red-orange background, white text
+
+Calculation card:
+
+Light warm beige background (#F5F0EB)
+Monospace or tabular numbers for alignment
+Final "Retention value" row: Bold, red-orange value
+Caveat text at bottom: 13px, gray, italic
+
+
+Time Value Summary Update:
+When retention value is calculated, update the summary card:
+CopyTIME VALUE SUMMARY
+─────────────────────────────────────────────────
+Hours reclaimed:           11,200
+Patient Access:            $672,000
+                          (if 15% to capacity)
+Cost Reduction:            $100,000
+Wellbeing:                 $201,600
+                          (retention value)
+─────────────────────────────────────────────────
+Time Value Total:          $973,600
+If they toggle on Wellbeing but DON'T check "Calculate retention value," show:
+CopyWellbeing:                 2.7 hrs/wk back
+                          (qualitative)
+
+Copy:
+Section title: Clinician Wellbeing
+Section subtitle: If time improves work-life balance and retention
+Hours back display: Your providers would get back: 2.7 hours per week per provider
+Retention case intro:
+
+Documentation burden is the #1 driver of burnout.
+Burnout is the #1 reason physicians leave.
+Reducing documentation time can help retain providers who would otherwise leave.
+
+Checkbox label: Calculate retention value
+Input labels + helper text:
+
+Annual provider turnover rate / Industry average: 6-7%
+Turnover related to burnout / Research suggests 30-50% of physician turnover is burnout-related
+Cost to replace one provider / Includes recruitment, onboarding, and lost revenue during transition
+
+Abridge Impact question: What percentage of burnout-related turnover could Abridge help prevent?
+Scenario options:
+
+Conservative (20%)
+Typical (30%)
+Optimistic (40%)
+
+Caveat: This assumes Abridge meaningfully reduces documentation burden for providers at risk of leaving due to burnout.

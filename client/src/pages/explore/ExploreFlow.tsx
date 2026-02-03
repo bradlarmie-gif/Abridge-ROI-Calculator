@@ -65,6 +65,11 @@ export interface TimeDriverInputs {
   estimatedCostReduction: number;
   
   wellbeingEnabled: boolean;
+  calculateRetentionValue: boolean;
+  annualTurnoverRate: number;
+  burnoutRelatedTurnover: number;
+  replacementCost: number;
+  retentionImpactScenario: 'conservative' | 'typical' | 'optimistic';
 }
 
 // Documentation Quality inputs
@@ -181,6 +186,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     costReductionEnabled: false,
     estimatedCostReduction: 0,
     wellbeingEnabled: false,
+    calculateRetentionValue: false,
+    annualTurnoverRate: 6,
+    burnoutRelatedTurnover: 40,
+    replacementCost: 350000,
+    retentionImpactScenario: 'typical',
   },
   // Documentation quality inputs
   docQualityInputs: {
