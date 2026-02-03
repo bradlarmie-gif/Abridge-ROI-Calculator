@@ -126,12 +126,12 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                 onClick={() => handleSelectSetting(setting)}
                 disabled={isDisabled}
                 className={`
-                  relative flex flex-col items-center text-center p-5 rounded-lg transition-all duration-200
+                  relative flex flex-col items-center text-center p-5 rounded-xl transition-all duration-200
                   ${isSelected 
-                    ? 'bg-white border-l-4 border-l-[#E85A2C] border-t border-r border-b border-[#E5E5E5] shadow-md' 
+                    ? 'bg-[#F5F0EB] border-2 border-[#E85A2C] shadow-xl' 
                     : isDisabled
                       ? 'bg-[#F5F5F5] border border-transparent cursor-not-allowed'
-                      : 'bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] hover:shadow-sm'
+                      : 'bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] hover:shadow-md'
                   }
                 `}
                 initial={{ opacity: 0, y: 10 }}
@@ -152,7 +152,12 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
 
                 <div className={`
                   w-10 h-10 rounded-xl flex items-center justify-center mb-3
-                  ${isDisabled ? 'bg-[#E5E5E5]' : 'bg-[#FFF5F2]'}
+                  ${isSelected
+                    ? 'bg-white'
+                    : isDisabled 
+                      ? 'bg-[#E5E5E5]' 
+                      : 'bg-[#FFF5F2]'
+                  }
                 `}>
                   <Icon className={`w-5 h-5 ${isDisabled ? 'text-[#888888]' : 'text-[#E85A2C]'}`} />
                 </div>
@@ -161,7 +166,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                   {setting.label}
                 </h3>
                 
-                <p className={`text-xs leading-tight ${isDisabled ? 'text-[#AAAAAA]' : 'text-[#666666]'}`}>
+                <p className={`text-xs leading-tight ${isSelected ? 'text-[#666666]' : isDisabled ? 'text-[#AAAAAA]' : 'text-[#666666]'}`}>
                   {setting.shortDesc}
                 </p>
 
@@ -206,16 +211,16 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                   onClick={handleContinue}
                   disabled={!selectedSetting}
                   className={`
-                    h-11 px-8 font-medium rounded-md transition-all duration-200 gap-2
+                    h-12 px-8 font-semibold rounded-full transition-all duration-200
                     ${selectedSetting 
-                      ? 'bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white' 
+                      ? 'bg-[#F5F0EB] hover:bg-[#EDE5DB] text-[#E85A2C] border border-[#E5E5E5]' 
                       : 'bg-[#E5E5E5] text-[#888888] cursor-not-allowed'
                     }
                   `}
                   data-testid="button-continue"
                 >
-                  Continue
-                  <ArrowRight className="w-4 h-4" />
+                  <span className="text-[#E85A2C] font-semibold">Continue</span><span className="text-black">&nbsp;with {selectedSetting ? CARE_SETTINGS.find(s => s.id === selectedSetting)?.label : 'Setting'}</span>
+                  <ArrowRight className="w-4 h-4 ml-2 text-[#E85A2C]" />
                 </Button>
               </motion.div>
             )}
