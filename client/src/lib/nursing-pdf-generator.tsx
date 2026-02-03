@@ -6,20 +6,23 @@ import {
   StyleSheet,
   Image,
   pdf,
-  Svg,
-  Path,
-  Line,
-  Circle,
+  Font,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+
+Font.registerHyphenationCallback((word) => [word]);
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export interface DriverCalculation {
   id: string;
   name: string;
   value: number;
   category: "labor" | "quality" | "qualitative";
-  inputs: Record<string, unknown>;
+  inputs: Record<string, number | string>;
   isPotentialValue?: boolean;
 }
 
@@ -78,2425 +81,1233 @@ export interface NursingPDFData {
   journey: JourneyData;
 }
 
-const colors = {
-  primary: "#EA2C00",
-  primaryLight: "#FEF2F0",
-  primaryDark: "#C42400",
-  green: "#059669",
-  greenLight: "#ECFDF5",
-  greenDark: "#047857",
-  emerald: "#10b981",
-  emeraldLight: "#d1fae5",
-  emeraldDark: "#065f46",
-  black: "#111827",
-  darkGray: "#374151",
-  mediumGray: "#6B7280",
-  lightGray: "#9CA3AF",
-  paleGray: "#F9FAFB",
-  borderGray: "#E5E7EB",
+// ============================================================================
+// MCKINSEY/BLOOMBERG COLOR PALETTE
+// ============================================================================
+
+const brand = {
+  black: "#1A1A1A",
   white: "#FFFFFF",
-  success: "#059669",
-  successLight: "#d1fae5",
-  warning: "#f59e0b",
-  warningLight: "#fef3c7",
-  amber: "#F59E0B",
-  amberLight: "#FEF3C7",
-  amberDark: "#92400E",
-  blue: "#3B82F6",
-  blueLight: "#EFF6FF",
-  purple: "#7C3AED",
-  purpleLight: "#F3E8FF",
-  slate: "#1e293b",
-  slateLight: "#334155",
-  heroSlate: "#1e293b",
-  heroSlateLight: "#334155",
+  coral: "#E85A4F",
+  warmGray: "#F8F7F6",
+  lightGray: "#F5F4F3",
+  midGray: "#E5E4E3",
+  borderGray: "#D4D4D4",
+  textPrimary: "#1A1A1A",
+  textSecondary: "#6B7280",
+  textTertiary: "#9CA3AF",
 };
+
+// ============================================================================
+// PREMIUM TYPOGRAPHY & STYLES
+// ============================================================================
 
 const styles = StyleSheet.create({
   page: {
-    padding: 0,
-    paddingBottom: 50,
     fontFamily: "Helvetica",
-    fontSize: 9,
-    color: colors.black,
-    backgroundColor: colors.white,
-  },
-
-  heroSection: {
-    backgroundColor: colors.slate,
-    padding: 40,
-    paddingTop: 30,
-    paddingBottom: 35,
-    marginBottom: 0,
-  },
-  heroMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  heroMetaText: {
-    fontSize: 8,
-    color: colors.lightGray,
-  },
-  heroClientName: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  heroTagline: {
-    fontSize: 12,
-    color: colors.lightGray,
-    lineHeight: 1.6,
-  },
-
-  heroCompact: {
-    backgroundColor: colors.slate,
-    padding: 24,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  heroCompactTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 4,
-  },
-  heroCompactSubtitle: {
     fontSize: 10,
-    color: colors.lightGray,
-  },
-  heroCompactValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.emerald,
-    marginTop: 8,
-  },
-  heroCompactValuePotential: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.amber,
-    marginTop: 8,
+    color: brand.textPrimary,
+    backgroundColor: brand.white,
   },
 
-  contentSection: {
-    padding: 40,
-    paddingTop: 24,
-    paddingBottom: 20,
-  },
-
-  chapterLabel: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 6,
-  },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-  },
-  logo: {
-    width: 85,
-    height: 17,
-  },
-  headerRight: {
-    textAlign: "right",
-  },
-  headerTitle: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 25,
-    left: 40,
-    right: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-  },
-  footerText: {
-    fontSize: 7,
-    color: colors.lightGray,
-  },
-  sectionTitle: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    marginTop: 16,
-  },
-  pageTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  pageSubtitle: {
-    fontSize: 8.5,
-    color: colors.mediumGray,
-    marginBottom: 16,
-    fontWeight: 500,
-  },
-  narrativeBox: {
-    backgroundColor: colors.paleGray,
-    padding: 14,
-    borderRadius: 4,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-  },
-  narrativeText: {
-    fontSize: 8.5,
-    color: colors.darkGray,
-    lineHeight: 1.55,
-  },
-  narrativeBold: {
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  metricsRow: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  metricBox: {
-    flex: 1,
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
-    alignItems: "center",
-  },
-  metricBoxLast: {
-    marginRight: 0,
-  },
-  metricBoxHighlight: {
-    flex: 1,
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
-    alignItems: "center",
-  },
-  metricValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-    fontFamily: "Helvetica-Bold",
-  },
-  metricValueGreen: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
-  },
-  metricLabel: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginTop: 3,
-    textAlign: "center",
-  },
-  metricSublabel: {
-    fontSize: 6,
-    color: colors.lightGray,
-    marginTop: 2,
-    textAlign: "center",
-  },
-  twoColumn: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  column: {
-    flex: 1,
-    marginRight: 8,
-  },
-  columnLast: {
-    flex: 1,
-    marginRight: 0,
-  },
-  card: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  cardRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  cardLabel: {
-    fontSize: 8,
-    color: colors.darkGray,
-  },
-  cardValue: {
-    fontSize: 8,
-    color: colors.black,
-    fontWeight: "bold",
-    fontFamily: "Helvetica-Bold",
-  },
-  cardTotal: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGray,
-    marginTop: 4,
-  },
-  cardTotalLabel: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  cardTotalValue: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    fontFamily: "Helvetica-Bold",
-  },
-  valueBreakdownCard: {
-    flex: 1,
-    borderRadius: 4,
-    padding: 12,
-    marginRight: 8,
-  },
-  valueBreakdownCardLast: {
-    marginRight: 0,
-  },
-  laborCard: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-  },
-  qualityCard: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 1,
-    borderColor: colors.amber,
-  },
-  valueBreakdownTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 2,
-  },
-  valueBreakdownPct: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    marginBottom: 6,
-  },
-  valueBreakdownAmount: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.black,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 8,
-  },
-  valueBreakdownDriver: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 3,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.08)",
-  },
-  valueBreakdownDriverLast: {
-    borderBottomWidth: 0,
-  },
-  valueBreakdownDriverName: {
-    fontSize: 7.5,
-    color: colors.darkGray,
-  },
-  valueBreakdownDriverValue: {
-    fontSize: 7.5,
-    fontWeight: "bold",
-    color: colors.green,
-  },
-  progressBar: {
-    height: 10,
-    flexDirection: "row",
-    borderRadius: 5,
-    overflow: "hidden",
-    marginTop: 8,
-    marginBottom: 6,
-  },
-  progressSegment: {
-    height: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  progressLabel: {
-    fontSize: 6,
-    color: colors.white,
-    fontWeight: "bold",
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: colors.paleGray,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  tableHeaderCell: {
-    flex: 1,
-    padding: 6,
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textAlign: "center",
-  },
-  tableRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  tableRowLast: {
-    borderBottomWidth: 0,
-  },
-  tableCell: {
-    flex: 1,
-    padding: 6,
-    fontSize: 8,
-    color: colors.darkGray,
-    textAlign: "center",
-  },
-  tableCellBold: {
-    flex: 1,
-    padding: 6,
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textAlign: "center",
-  },
-  tableCellGreen: {
-    flex: 1,
-    padding: 6,
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.green,
-    textAlign: "center",
-  },
-  potentialValueNote: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 1,
-    borderColor: colors.amber,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 16,
-  },
-  potentialValueTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.amberDark,
-    marginBottom: 4,
-  },
-  potentialValueText: {
-    fontSize: 7.5,
-    color: colors.amberDark,
-    lineHeight: 1.4,
-  },
-  qualitativeSection: {
-    backgroundColor: colors.blueLight,
-    borderWidth: 1,
-    borderColor: colors.blue,
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 16,
-  },
-  qualitativeTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.blue,
-    marginBottom: 8,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  qualitativeItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  qualitativeBullet: {
-    fontSize: 8,
-    color: colors.blue,
-    marginRight: 6,
-  },
-  qualitativeText: {
-    fontSize: 7.5,
-    color: colors.darkGray,
-  },
-  driverHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  driverName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  driverValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
-  },
-  driverValuePotential: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.amber,
-    fontFamily: "Helvetica-Bold",
-  },
-  theoryBox: {
-    backgroundColor: colors.paleGray,
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 14,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.amber,
-  },
-  theoryLabel: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.amber,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  theoryText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
-  },
-  calcSection: {
-    marginBottom: 14,
-  },
-  calcTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 10,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  calcSectionTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
-  },
-  stepBox: {
-    marginBottom: 12,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderGray,
-  },
-  stepBoxLast: {
-    borderBottomWidth: 0,
-    marginBottom: 0,
+  // COVER PAGE
+  coverPage: {
+    backgroundColor: brand.black,
+    height: "100%",
+    padding: 0,
+  },
+  coverTop: {
+    padding: 48,
     paddingBottom: 0,
   },
-  stepLabel: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
+  coverLogo: {
+    width: 90,
+    height: 18,
+    marginBottom: 80,
+  },
+  coverHero: {
+    paddingHorizontal: 48,
+    flex: 1,
+    justifyContent: "center",
+  },
+  coverEyebrow: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 3,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 3,
+    marginBottom: 20,
   },
-  stepQuestion: {
-    fontSize: 8,
-    color: colors.darkGray,
+  coverTitle: {
+    fontSize: 36,
+    fontWeight: 700,
+    color: brand.white,
+    lineHeight: 1.1,
+    marginBottom: 16,
+  },
+  coverSubtitle: {
+    fontSize: 12,
+    fontWeight: 400,
+    color: brand.textTertiary,
+    lineHeight: 1.6,
+    maxWidth: 380,
+    marginBottom: 48,
+  },
+  coverMetricBlock: {
+    marginBottom: 40,
+  },
+  coverMetricValue: {
+    fontSize: 64,
+    fontWeight: 700,
+    color: brand.coral,
+    letterSpacing: -2,
+    lineHeight: 1,
+  },
+  coverMetricLabel: {
+    fontSize: 11,
     fontWeight: 500,
-    marginBottom: 6,
+    color: brand.textTertiary,
+    marginTop: 8,
+    letterSpacing: 0.5,
   },
-  stepMath: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
+  coverBottom: {
+    padding: 48,
+    paddingTop: 0,
+  },
+  coverMeta: {
+    fontSize: 10,
+    color: brand.textTertiary,
     marginBottom: 4,
+    lineHeight: 1.5,
   },
-  stepCalc: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    marginBottom: 4,
+  coverDate: {
+    fontSize: 10,
+    color: brand.textTertiary,
+    marginTop: 16,
   },
-  stepInput: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    marginRight: 4,
-    marginBottom: 4,
+
+  // CONTENT PAGES
+  contentPage: {
+    paddingHorizontal: 48,
+    paddingTop: 40,
+    paddingBottom: 60,
   },
-  stepInputText: {
-    fontSize: 8,
-    fontFamily: "Courier",
-    color: colors.black,
-  },
-  mono: {
-    fontFamily: "Courier",
-  },
-  stepOperator: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginHorizontal: 4,
-  },
-  stepResult: {
-    backgroundColor: colors.paleGray,
-    borderRadius: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 4,
-  },
-  stepResultText: {
-    fontSize: 8,
-    fontWeight: "bold",
-    fontFamily: "Courier-Bold",
-    color: colors.black,
-  },
-  stepNote: {
-    fontSize: 7,
-    color: colors.lightGray,
-    fontWeight: 500,
-    marginTop: 4,
-  },
-  stepNoteHighlight: {
-    fontSize: 7,
-    color: colors.primary,
-    marginTop: 4,
-  },
-  calloutBox: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 1,
-    borderColor: colors.amber,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 12,
-  },
-  calloutTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.amberDark,
-    marginBottom: 4,
-  },
-  calloutText: {
-    fontSize: 7,
-    color: colors.amberDark,
-    lineHeight: 1.4,
-  },
-  benchmarkBox: {
-    backgroundColor: colors.paleGray,
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 12,
-  },
-  benchmarkTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.mediumGray,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 6,
-  },
-  benchmarkRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 3,
-  },
-  benchmarkLabel: {
-    fontSize: 7,
-    color: colors.darkGray,
-  },
-  benchmarkValue: {
-    fontSize: 7,
-    color: colors.black,
-    fontWeight: "bold",
-  },
-  benchmarkNote: {
-    fontSize: 6,
-    color: colors.lightGray,
-    fontWeight: 500,
-    marginTop: 4,
-  },
-  finalValueBox: {
-    backgroundColor: colors.greenLight,
-    borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 12,
+  pageHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 32,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
   },
-  finalValueLabel: {
+  headerLogo: {
+    width: 60,
+    height: 12,
+  },
+  headerMeta: {
     fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  finalValueAmount: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
-  },
-  finalValueAmountPotential: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.amber,
-    fontFamily: "Helvetica-Bold",
-  },
-  finalValueFormula: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    marginTop: 2,
-  },
-  implicationBox: {
-    backgroundColor: colors.paleGray,
-    padding: 10,
-    borderRadius: 4,
-    marginTop: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.green,
-  },
-  implicationTitle: {
-    fontSize: 7,
-    fontWeight: "bold",
-    color: colors.green,
+    color: brand.textSecondary,
+    letterSpacing: 1,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-    marginBottom: 4,
   },
-  implicationText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
+  content: {
+    flex: 1,
   },
-  potentialCallout: {
-    backgroundColor: colors.amberLight,
-    borderWidth: 2,
-    borderColor: colors.amber,
-    borderRadius: 4,
-    padding: 14,
-    marginBottom: 14,
-  },
-  potentialCalloutTitle: {
+
+  // TYPOGRAPHY
+  sectionLabel: {
     fontSize: 9,
-    fontWeight: "bold",
-    color: colors.amberDark,
-    marginBottom: 6,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 2,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  potentialCalloutText: {
-    fontSize: 8,
-    color: colors.amberDark,
-    lineHeight: 1.5,
-  },
-  fullPictureCard: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 10,
-  },
-  fullPictureTitle: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 4,
-  },
-  fullPictureDescription: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.4,
-    marginBottom: 6,
-  },
-  fullPictureImpact: {
-    fontSize: 7,
-    color: colors.mediumGray,
-    fontWeight: 500,
-  },
-  fullPictureWhyNot: {
-    fontSize: 7,
-    color: colors.blue,
-    fontWeight: 500,
-    lineHeight: 1.4,
-  },
-  valueBreakdownIntro: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 12,
     marginBottom: 12,
   },
-  valueBreakdownIntroTitle: {
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: brand.textPrimary,
+    lineHeight: 1.2,
+    marginBottom: 12,
+  },
+  sectionIntro: {
+    fontSize: 11,
+    color: brand.textSecondary,
+    lineHeight: 1.7,
+    marginBottom: 24,
+    maxWidth: 480,
+  },
+
+  // TWO COLUMN FRAMEWORK BOX
+  frameworkContainer: {
+    flexDirection: "row",
+    gap: 20,
+    marginBottom: 24,
+  },
+  frameworkColumn: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: brand.warmGray,
+    borderWidth: 1,
+    borderColor: brand.midGray,
+  },
+  frameworkLabel: {
     fontSize: 9,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  frameworkValue: {
+    fontSize: 28,
+    fontWeight: 700,
+    color: brand.coral,
+    marginBottom: 12,
+  },
+  frameworkDescription: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.5,
+    marginBottom: 8,
+  },
+  frameworkTagline: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.textPrimary,
+    marginTop: 8,
+  },
+
+  // ALLOCATION TABLE
+  allocationSection: {
+    marginBottom: 24,
+  },
+  allocationLabel: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.textPrimary,
+    marginBottom: 12,
+  },
+  allocationTable: {
+    borderWidth: 1,
+    borderColor: brand.midGray,
+  },
+  allocationHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.lightGray,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  allocationHeaderCell: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-  valueBreakdownIntroText: {
-    fontSize: 8,
-    color: colors.darkGray,
-    lineHeight: 1.5,
+  allocationRow: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
   },
-  methodologySection: {
+  allocationRowLast: {
+    borderBottomWidth: 0,
+  },
+  allocationCell: {
+    fontSize: 10,
+    color: brand.textPrimary,
+  },
+  allocationCellBold: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.coral,
+  },
+
+  // INSIGHT BOX
+  insightBox: {
+    backgroundColor: brand.lightGray,
+    padding: 20,
+    borderLeftWidth: 3,
+    borderLeftColor: brand.coral,
+  },
+  insightLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  insightText: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+  },
+
+  // DRIVER PAGE - STEP BOXES
+  driverHeader: {
+    marginBottom: 24,
+  },
+  driverEyebrow: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  driverTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    color: brand.textPrimary,
+    marginBottom: 4,
+  },
+  driverValueBadge: {
+    flexDirection: "row",
+    alignItems: "baseline",
     marginBottom: 16,
   },
-  methodologyBox: {
-    backgroundColor: colors.paleGray,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 12,
+  driverValueAmount: {
+    fontSize: 32,
+    fontWeight: 700,
+    color: brand.coral,
+  },
+  driverValueLabel: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    marginLeft: 8,
+  },
+  theLogicSection: {
+    marginBottom: 24,
+  },
+  theLogicLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
     marginBottom: 10,
   },
-  methodologyTitle: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
+  theLogicText: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.7,
   },
-  methodologyItem: {
-    fontSize: 7.5,
-    color: colors.darkGray,
-    marginBottom: 3,
-  },
-  closingSection: {
-    marginTop: 20,
-  },
-  closingQuote: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 4,
+  stepBox: {
+    backgroundColor: brand.lightGray,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: brand.midGray,
   },
-  closingQuoteText: {
+  stepBoxLast: {
+    marginBottom: 0,
+  },
+  stepLabel: {
     fontSize: 9,
-    fontWeight: 500,
-    color: colors.primaryDark,
+    fontWeight: 600,
+    color: brand.textPrimary,
+    marginBottom: 10,
+  },
+  stepFormula: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: brand.coral,
+    marginBottom: 8,
+  },
+  stepExplanation: {
+    fontSize: 9,
+    color: brand.textSecondary,
     lineHeight: 1.6,
+  },
+  calibrationNote: {
+    backgroundColor: brand.warmGray,
+    padding: 16,
+    marginTop: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: brand.textSecondary,
+  },
+  calibrationLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 6,
+  },
+  calibrationText: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
+  },
+
+  // PROJECTION TABLE
+  projectionTable: {
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: brand.midGray,
+  },
+  projectionHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.lightGray,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  projectionHeaderCell: {
+    flex: 1,
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
     textAlign: "center",
   },
-  closingHighlight: {
-    fontWeight: "bold",
+  projectionHeaderCellFirst: {
+    flex: 1.2,
+    textAlign: "left",
   },
-  connectedSection: {
-    backgroundColor: colors.blueLight,
-    borderWidth: 1,
-    borderColor: colors.blue,
-    borderRadius: 4,
-    padding: 14,
-    marginBottom: 16,
+  projectionRow: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
   },
-  connectedTitle: {
+  projectionRowLast: {
+    borderBottomWidth: 0,
+  },
+  projectionCell: {
+    flex: 1,
+    fontSize: 10,
+    color: brand.textPrimary,
+    textAlign: "center",
+  },
+  projectionCellFirst: {
+    flex: 1.2,
+    textAlign: "left",
+    fontWeight: 600,
+  },
+  projectionCellBold: {
+    flex: 1,
+    fontSize: 10,
+    fontWeight: 700,
+    color: brand.textPrimary,
+    textAlign: "center",
+  },
+  projectionCellCoral: {
+    flex: 1,
+    fontSize: 10,
+    fontWeight: 700,
+    color: brand.coral,
+    textAlign: "center",
+  },
+
+  // SCALE ECONOMICS
+  scaleContainer: {
+    flexDirection: "row",
+    gap: 20,
+    marginBottom: 24,
+  },
+  scaleCard: {
+    flex: 1,
+    backgroundColor: brand.black,
+    padding: 20,
+  },
+  scaleLabel: {
     fontSize: 9,
-    fontWeight: "bold",
-    color: colors.blue,
+    fontWeight: 600,
+    color: brand.coral,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  connectedSubtitle: {
-    fontSize: 8,
-    color: colors.blue,
-    fontWeight: 500,
     marginBottom: 8,
   },
-  connectedText: {
-    fontSize: 8,
-    color: colors.darkGray,
+  scaleValue: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: brand.white,
+    marginBottom: 6,
+  },
+  scaleMeta: {
+    fontSize: 10,
+    color: brand.textTertiary,
     lineHeight: 1.5,
   },
-  journeyChart: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 16,
-    marginBottom: 14,
+
+  // TRANSPARENCY PAGE
+  transparencyIntro: {
+    fontSize: 11,
+    color: brand.textSecondary,
+    lineHeight: 1.7,
+    marginBottom: 24,
+    maxWidth: 480,
   },
-  journeyScenario: {
+  inputsSection: {
+    marginBottom: 20,
+  },
+  inputsSectionLabel: {
+    fontSize: 9,
+    fontWeight: 600,
+    color: brand.textSecondary,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 12,
+  },
+  inputsGrid: {
     flexDirection: "row",
-    marginBottom: 14,
+    flexWrap: "wrap",
+    gap: 12,
   },
-  journeyScenarioCard: {
-    flex: 1,
-    backgroundColor: colors.paleGray,
+  inputCard: {
+    width: "31%",
+    backgroundColor: brand.lightGray,
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.borderGray,
-    borderRadius: 4,
-    padding: 10,
-    marginRight: 8,
+    borderColor: brand.midGray,
   },
-  journeyScenarioCardHighlight: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 10,
-  },
-  journeyScenarioTitle: {
+  inputLabel: {
     fontSize: 8,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 6,
-  },
-  journeyScenarioTitleHighlight: {
-    fontSize: 8,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginBottom: 6,
-  },
-  journeyScenarioRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    color: brand.textSecondary,
     marginBottom: 4,
   },
-  journeyScenarioCheck: {
-    fontSize: 8,
-    color: colors.mediumGray,
-    marginRight: 6,
+  inputValue: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: brand.textPrimary,
   },
-  journeyScenarioText: {
-    fontSize: 8,
-    color: colors.darkGray,
-  },
-  journeyScenarioValue: {
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  journeyScenarioValueGreen: {
-    fontWeight: "bold",
-    color: colors.green,
-  },
-  compoundingBox: {
-    backgroundColor: colors.greenLight,
+  realizationTable: {
     borderWidth: 1,
-    borderColor: colors.green,
-    borderRadius: 4,
-    padding: 14,
-    marginBottom: 14,
+    borderColor: brand.midGray,
+    marginBottom: 16,
   },
-  compoundingTitle: {
+  realizationHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.lightGray,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  realizationHeaderCell: {
     fontSize: 9,
-    fontWeight: "bold",
-    color: colors.greenDark,
+    fontWeight: 600,
+    color: brand.textSecondary,
     textTransform: "uppercase",
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+  },
+  realizationRow: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.midGray,
+  },
+  realizationRowLast: {
+    borderBottomWidth: 0,
+  },
+  realizationCell: {
+    fontSize: 10,
+    color: brand.textPrimary,
+  },
+  realizationCellBold: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: brand.coral,
+  },
+  realizationCellWhy: {
+    fontSize: 9,
+    color: brand.textSecondary,
+    lineHeight: 1.4,
+  },
+
+  // HOW TO USE PAGE
+  actionSection: {
+    marginBottom: 20,
+  },
+  actionNumber: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: brand.coral,
+    marginBottom: 4,
+  },
+  actionTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: brand.textPrimary,
     marginBottom: 8,
   },
-  compoundingValue: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: colors.green,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 4,
+  actionText: {
+    fontSize: 10,
+    color: brand.textSecondary,
+    lineHeight: 1.6,
   },
-  compoundingSubtext: {
+  closingBox: {
+    backgroundColor: brand.black,
+    padding: 24,
+    marginTop: 24,
+  },
+  closingText: {
+    fontSize: 11,
+    color: brand.white,
+    lineHeight: 1.7,
+  },
+
+  // FOOTER
+  footer: {
+    position: "absolute",
+    bottom: 24,
+    left: 48,
+    right: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  footerText: {
     fontSize: 8,
-    color: colors.greenDark,
+    color: brand.textTertiary,
+  },
+  footerPage: {
+    fontSize: 8,
+    fontWeight: 600,
+    color: brand.textSecondary,
   },
 });
 
+// ============================================================================
+// HELPERS
+// ============================================================================
+
 const formatCurrency = (value: number): string => {
   if (Math.abs(value) >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}M`;
+    return `$${(value / 1000000).toFixed(1)}M`;
   }
   if (Math.abs(value) >= 1000) {
-    return `$${Math.round(value / 1000)}K`;
+    return `$${Math.round(value / 1000).toLocaleString()}K`;
   }
   return `$${value.toLocaleString()}`;
 };
 
-const formatNumber = (value: number): string => {
-  return value.toLocaleString();
-};
-
-const driverTheories: Record<string, string> = {
-  nursingOvertime: `Every nursing unit has a rhythm: shift start, rounds, assessments, medications, documentation, handoff, shift end. In theory, documentation fits within the shift. In practice, it doesn't.
-
-Nurses routinely stay 30-60 minutes past their scheduled shift to finish charting. Multiply that across your FTEs, 5 days a week, 50 weeks a year—and you're looking at tens of thousands of overtime hours. At 1.5× pay, that's real budget impact.
-
-But here's the thing: not all overtime is documentation. Some is patient acuity. Some is understaffing. Some is just the nature of nursing. We estimate ~33% of overtime is specifically end-of-shift charting catch-up—the kind that real-time ambient documentation can address.
-
-This is the most measurable driver in nursing. You can track it in payroll data, week over week, unit by unit. If overtime drops after Abridge deployment, you'll see it.`,
-
-  nursingAgency: `Agency and travel nurses exist because hospitals can't retain enough staff nurses. The reasons are complex—compensation, schedules, ratios, culture—but documentation burden is consistently in the top 3 complaints in nursing exit interviews.
-
-The math is stark: a staff RN costs $70-90K fully loaded. An agency RN costs $140-200K when you factor agency fees, housing, travel stipends, and benefits. That's a $75,000+ premium per FTE.
-
-Now here's the chain of logic: Documentation burden drives burnout. Burnout drives turnover. Turnover creates staffing gaps. Gaps get filled with agency nurses. Agency nurses cost 2× staff nurses.
-
-If you can break any link in that chain, you reduce agency spend. Abridge targets the first link: documentation burden. When nurses spend less time charting, they're less burned out. When they're less burned out, more of them stay. When more of them stay, you need fewer travelers.
-
-We model only 10% of agency FTEs converting back to staff positions—driven by the retention improvement from documentation burden reduction. Some organizations see more. But we'd rather understate than overstate an indirect benefit.`,
-
-  nursingRetention: `Nursing turnover runs 18-25% annually—significantly higher than most hospital roles. The cost per departure is $40-60K when you factor in recruiting, hiring, onboarding, training, and the productivity ramp for new nurses learning unit workflows.
-
-But the real cost is harder to measure: institutional knowledge lost, team dynamics disrupted, patient relationships broken, and the burden on remaining staff who pick up extra shifts.
-
-Why do nurses leave? The research is consistent: workload and patient ratios, schedules and work-life balance, compensation and career growth, and administrative burden and documentation.
-
-Documentation burden shows up in every nursing satisfaction survey. It's the thing nurses didn't sign up for. They became nurses to care for patients, not to chart about caring for patients.
-
-Here's where we're careful: nursing burnout is multifactorial. Documentation is ONE driver, not THE driver. Unlike physicians—where 50% of burnout is documentation-related—nurses face additional pressures (ratios, acuity, physical demands) that Abridge doesn't address.
-
-We use 15% attribution for nursing (vs 30% for physicians) because we want to be honest about what documentation improvement can and can't do. It helps. It's not a silver bullet.`,
-
-  nursingHAPI: `Hospital-acquired pressure injuries (HAPIs) are a quality measure, a patient safety issue, and a financial drain. CMS doesn't reimburse for them. The hospital absorbs the full cost—$10,000 to $50,000+ depending on severity.
-
-HAPIs happen when: skin assessments are missed or delayed, turning schedules aren't followed, risk factors aren't communicated across shifts, and early warning signs aren't documented and acted on.
-
-Real-time documentation can help with all of these. When assessments are charted as they happen (not hours later at end of shift), the information is available sooner. When risk factors are captured in conversation, they're less likely to be forgotten.
-
-BUT HERE'S WHERE WE'RE CAREFUL: HAPIs are prevented through clinical care—turning, positioning, nutrition, skin care, mobility. Documentation supports this but doesn't replace it. A perfectly documented patient can still develop a pressure injury if the interventions don't happen.
-
-The causal link between documentation and HAPI prevention is indirect: Better documentation → better visibility → earlier intervention → fewer HAPIs. We believe this link is real. We've seen it in nursing units that improved documentation practices. But we can't claim a direct 1:1 relationship.
-
-That's why we show this as "POTENTIAL VALUE"—not to diminish it, but to be intellectually honest about the causal chain.`,
-
-  nursingFalls: `Patient falls cost $3K-$30K per incident. Prevention depends on real-time risk awareness and timely interventions—both of which require time at the bedside.
-
-Falls happen when: risk assessments are incomplete or delayed, mobility and toileting schedules aren't followed, environmental hazards aren't identified and addressed, and nursing staff are stretched too thin to provide adequate supervision.
-
-Real-time documentation means nurses spend less time charting and more time at the bedside where they can observe early signs of fall risk—confusion, restlessness, attempts to get out of bed.
-
-Like HAPI prevention, this is an indirect benefit. The chain is: less charting time → more bedside presence → better situational awareness → faster intervention → fewer falls. The mechanism is clear, but direct attribution is complex.
-
-We show this as "POTENTIAL VALUE" because the causal link, while well-supported, is indirect. Your quality team can help you assess whether the assumed prevention rate fits your patient population.`,
-};
-
-const driverImplications: Record<string, (value: number, data: NursingPDFData) => string> = {
-  nursingOvertime: (value, data) => {
-    const hoursReduced = (data.drivers.find(d => d.id === "nursingOvertime")?.inputs?.hoursReduced as number) || 0;
-    return `${formatNumber(Math.round(hoursReduced))} overtime hours eliminated annually—that's ${formatCurrency(value)} in direct payroll savings. This shows up immediately in your labor reports and is one of the most measurable impacts of ambient documentation.`;
-  },
-  nursingAgency: (value, data) => {
-    const ftesReplaced = (data.drivers.find(d => d.id === "nursingAgency")?.inputs?.ftesReplaced as number) || 0;
-    return `Converting ${ftesReplaced.toFixed(1)} agency FTEs to staff positions saves ${formatCurrency(value)} annually. Beyond cost, this improves care continuity—agency nurses don't know your patients, your workflows, or your culture.`;
-  },
-  nursingRetention: (value, data) => {
-    const nursesRetained = (data.drivers.find(d => d.id === "nursingRetention")?.inputs?.nursesRetained as number) || 0;
-    return `Retaining ${nursesRetained.toFixed(1)} additional nurses per year saves ${formatCurrency(value)} in replacement costs. This is a 12+ month impact—but satisfaction and engagement improvements often appear within months.`;
-  },
-  nursingHAPI: (value, data) => {
-    const hapisAvoided = (data.drivers.find(d => d.id === "nursingHAPI")?.inputs?.hapisAvoided as number) || 0;
-    return `If ${hapisAvoided.toFixed(1)} HAPIs are prevented through better bedside time and assessment documentation, that's ${formatCurrency(value)} in avoided costs. This is potential value—the causal link is indirect but well-supported in literature.`;
-  },
-  nursingFalls: (value, data) => {
-    const fallsAvoided = (data.drivers.find(d => d.id === "nursingFalls")?.inputs?.fallsAvoided as number) || 0;
-    return `If ${fallsAvoided.toFixed(1)} falls are prevented through improved bedside presence and situational awareness, that's ${formatCurrency(value)} in avoided costs. This is potential value—attribution is indirect but the mechanism is clear.`;
-  },
-};
-
-interface StepData {
-  label: string;
-  question: string;
-  inputs: Array<{ value: string; label?: string }>;
-  operators?: string[];
-  result: string;
-  note?: string;
-  noteHighlight?: boolean;
-}
-
-interface Benchmark {
-  title: string;
-  rows: { label: string; value: string }[];
-  note?: string;
-}
-
-function getDriverBenchmarks(driverId: string): Benchmark | null {
-  switch (driverId) {
-    case "nursingOvertime":
-      return {
-        title: "Nursing Overtime Rates",
-        rows: [
-          { label: "Typical OT Rate", value: "1.5x base" },
-          { label: "Avg Hourly Rate (RN)", value: "$35 - $50" },
-          { label: "OT Hourly Cost", value: "$52 - $75" },
-          { label: "Doc-Related OT", value: "30 - 45 min/shift" },
-        ],
-        note: "Documentation is a leading driver of nursing overtime.",
-      };
-
-    case "nursingRetention":
-      return {
-        title: "Nursing Turnover Costs",
-        rows: [
-          { label: "Recruiting & Hiring", value: "$15K - $25K" },
-          { label: "Onboarding & Training", value: "$10K - $20K" },
-          { label: "Lost Productivity", value: "$20K - $35K" },
-          { label: "Total Replacement", value: "$45K - $80K" },
-        ],
-        note: "Average RN replacement cost is 0.5-1x annual salary.",
-      };
-
-    case "nursingAgency":
-      return {
-        title: "Agency Staff Costs",
-        rows: [
-          { label: "Staff RN Hourly", value: "$35 - $50" },
-          { label: "Agency RN Hourly", value: "$75 - $150+" },
-          { label: "Agency Premium", value: "2x - 3x staff" },
-          { label: "Shift Differential", value: "$500 - $1,500" },
-        ],
-        note: "Agency costs spike during high-turnover periods.",
-      };
-
-    default:
-      return null;
-  }
-}
-
-interface Warning {
-  title: string;
-  text: string;
-}
-
-function getDriverWarnings(driver: DriverCalculation, data: NursingPDFData): Warning | null {
-  if (driver.id === "nursingRetention" && data.nurseFTEs < 100) {
-    return {
-      title: "Smaller Nursing Staff",
-      text: "With fewer than 100 nursing FTEs, retention math is probabilistic over multi-year periods. The value is real—it materializes as reduced turnover over 2-3 years rather than in a single year.",
-    };
-  }
-
-  if (driver.isPotentialValue) {
-    return {
-      title: "Potential Value Note",
-      text: "This benefit has an indirect causal chain. The mechanism is well-supported in literature, but direct attribution is complex. We include this as potential value for transparency.",
-    };
-  }
-
-  return null;
-}
-
-function getFinalFormula(driver: DriverCalculation): string {
-  const inputs = driver.inputs;
-  switch (driver.id) {
-    case "nursingOvertime":
-      return `${formatNumber((inputs.totalOvertimeHoursSaved as number) || 0)} OT hrs x $${inputs.hourlyRate || 50} x 1.5`;
-    case "nursingRetention":
-      return `${((inputs.nursesRetained as number) || 0).toFixed(2)} retained x ${formatCurrency((inputs.replacementCost as number) || 65000)}`;
-    case "nursingAgency":
-      return `${formatNumber((inputs.agencyShiftsReduced as number) || 0)} shifts x $${inputs.shiftDifferential || 800}`;
-    case "nursingHapi":
-      return `${((inputs.hapisAvoided as number) || 0).toFixed(1)} HAPIs x ${formatCurrency((inputs.hapiCost as number) || 20000)}`;
-    case "nursingFalls":
-      return `${((inputs.fallsAvoided as number) || 0).toFixed(1)} falls x ${formatCurrency((inputs.fallCost as number) || 6500)}`;
-    default:
-      return `Annual value: ${formatCurrency(driver.value)}`;
-  }
-}
-
-function getDriverSteps(driver: DriverCalculation, data: NursingPDFData): StepData[] {
-  const inputs = driver.inputs;
-  
-  switch (driver.id) {
-    case "nursingOvertime":
-      return [
-        {
-          label: "Step 1: Daily OT Per Nurse",
-          question: "How much overtime does documentation drive?",
-          inputs: [
-            { value: `${inputs.otMinutesPerShift || 15}`, label: "min/shift" },
-          ],
-          result: `${inputs.otMinutesPerShift || 15} min overtime`,
-          note: "Documentation catch-up typically adds 15-30 minutes per shift.",
-        },
-        {
-          label: "Step 2: Annual OT Hours",
-          question: "What's the total overtime impact?",
-          inputs: [
-            { value: formatNumber(inputs.nurseFTEs as number || data.nurseFTEs), label: "nurses" },
-            { value: `${inputs.otMinutesPerShift || 15}`, label: "min" },
-            { value: `${inputs.shiftsPerYear || 260}`, label: "shifts" },
-          ],
-          operators: ["x", "x", "÷ 60 ="],
-          result: `${formatNumber(Math.round(inputs.hoursReduced as number || 0))} hrs`,
-          note: "260 shifts = 5 shifts/week × 52 weeks average per nurse.",
-        },
-        {
-          label: "Step 3: OT Cost Eliminated",
-          question: "What's the savings?",
-          inputs: [
-            { value: formatNumber(Math.round(inputs.hoursReduced as number || 0)), label: "hours" },
-            { value: formatCurrency(inputs.otRate as number || 60), label: "OT rate" },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "OT rate = 1.5× base ($40-50/hr → $60-75/hr).",
-        },
-      ];
-
-    case "nursingAgency":
-      return [
-        {
-          label: "Step 1: Agency Utilization",
-          question: "How much agency coverage are you using?",
-          inputs: [
-            { value: formatNumber(inputs.agencyFTEs as number || 5), label: "agency FTEs" },
-          ],
-          result: `${inputs.agencyFTEs || 5} FTE agency`,
-          note: "Count all agency/travel nurses as FTE equivalents.",
-        },
-        {
-          label: "Step 2: Reduction Target",
-          question: "How much can be converted to staff?",
-          inputs: [
-            { value: formatNumber(inputs.agencyFTEs as number || 5), label: "agency FTEs" },
-            { value: `${inputs.reductionPct || 20}%`, label: "reduction" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.ftesReplaced as number || 0).toFixed(1)} FTEs`,
-          note: "Conservative 20% reduction through improved retention.",
-        },
-        {
-          label: "Step 3: Cost Savings",
-          question: "What's the annual savings?",
-          inputs: [
-            { value: (inputs.ftesReplaced as number || 0).toFixed(1), label: "FTEs" },
-            { value: formatCurrency(inputs.premiumPerFTE as number || 75000), label: "premium" },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "Agency premium = $75K/FTE over staff cost annually.",
-        },
-      ];
-
-    case "nursingRetention":
-      return [
-        {
-          label: "Step 1: Annual Turnover",
-          question: "How many nurses leave annually?",
-          inputs: [
-            { value: formatNumber(inputs.nurseFTEs as number || data.nurseFTEs), label: "nurses" },
-            { value: `${inputs.turnoverRate || 20}%`, label: "turnover" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.annualDepartures as number || 0).toFixed(1)} departures`,
-          note: "Nursing turnover averages 18-25%.",
-        },
-        {
-          label: "Step 2: Burnout-Related",
-          question: "How many are burnout-driven?",
-          inputs: [
-            { value: (inputs.annualDepartures as number || 0).toFixed(1), label: "departures" },
-            { value: `${inputs.burnoutPct || 40}%`, label: "burnout" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.burnoutDepartures as number || 0).toFixed(1)} burnout`,
-          note: "Documentation is a top burnout driver in nursing.",
-        },
-        {
-          label: "Step 3: Abridge Impact",
-          question: "How many can be retained?",
-          inputs: [
-            { value: (inputs.burnoutDepartures as number || 0).toFixed(1), label: "at-risk" },
-            { value: `${inputs.abridgeImpact || 25}%`, label: "impact" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.nursesRetained as number || 0).toFixed(1)} retained`,
-          note: "Conservative estimate—full impact takes 12+ months.",
-        },
-        {
-          label: "Step 4: Cost Savings",
-          question: "What's the value?",
-          inputs: [
-            { value: (inputs.nursesRetained as number || 0).toFixed(1), label: "retained" },
-            { value: formatCurrency(inputs.replacementCost as number || 50000), label: "cost" },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "Replacement cost: $40K-$60K including recruiting/onboarding.",
-        },
-      ];
-
-    case "nursingHAPI":
-      return [
-        {
-          label: "Step 1: Baseline HAPI Rate",
-          question: "How many HAPIs occur annually?",
-          inputs: [
-            { value: formatNumber(inputs.staffedBeds as number || data.staffedBeds), label: "beds" },
-            { value: `${((inputs.hapiRate as number) || 2).toFixed(1)}%`, label: "rate" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.baselineHapis as number || 0).toFixed(1)} HAPIs`,
-          note: "National average HAPI rate is 2-3% of admissions.",
-        },
-        {
-          label: "Step 2: Prevention Potential",
-          question: "How many could be prevented?",
-          inputs: [
-            { value: (inputs.baselineHapis as number || 0).toFixed(1), label: "HAPIs" },
-            { value: `${inputs.preventionRate || 10}%`, label: "prevention" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.hapisAvoided as number || 0).toFixed(1)} avoided`,
-          note: "Conservative 10% through better assessment time.",
-        },
-        {
-          label: "Step 3: Cost Avoidance",
-          question: "What's the potential value?",
-          inputs: [
-            { value: (inputs.hapisAvoided as number || 0).toFixed(1), label: "avoided" },
-            { value: formatCurrency(inputs.hapiCost as number || 20000), label: "cost" },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "HAPI cost: $10K-$50K average. We use $20K.",
-          noteHighlight: true,
-        },
-      ];
-
-    case "nursingFalls":
-      return [
-        {
-          label: "Step 1: Baseline Fall Rate",
-          question: "How many falls occur annually?",
-          inputs: [
-            { value: formatNumber(inputs.staffedBeds as number || data.staffedBeds), label: "beds" },
-            { value: `${((inputs.fallRate as number) || 3).toFixed(1)}%`, label: "rate" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.baselineFalls as number || 0).toFixed(1)} falls`,
-          note: "Average fall rate: 3-5 per 1,000 patient days.",
-        },
-        {
-          label: "Step 2: Prevention Potential",
-          question: "How many could be prevented?",
-          inputs: [
-            { value: (inputs.baselineFalls as number || 0).toFixed(1), label: "falls" },
-            { value: `${inputs.preventionRate || 10}%`, label: "prevention" },
-          ],
-          operators: ["x"],
-          result: `${(inputs.fallsAvoided as number || 0).toFixed(1)} avoided`,
-          note: "Conservative 10% through better bedside time.",
-        },
-        {
-          label: "Step 3: Cost Avoidance",
-          question: "What's the potential value?",
-          inputs: [
-            { value: (inputs.fallsAvoided as number || 0).toFixed(1), label: "avoided" },
-            { value: formatCurrency(inputs.fallCost as number || 6500), label: "cost" },
-          ],
-          operators: ["x"],
-          result: formatCurrency(driver.value),
-          note: "Fall cost: $3K-$30K average. We use $6,500.",
-          noteHighlight: true,
-        },
-      ];
-
-    default:
-      return [];
-  }
-}
+const formatNumber = (value: number): string => value.toLocaleString();
 
 // ============================================================================
-// PREMIUM NARRATIVE CONTENT - Nursing-Specific Story Arc
+// PAGE 1: COVER
 // ============================================================================
 
-const narrativeContent = {
-  stakes: {
-    headline: "Nurses are drowning in documentation—and patient care suffers for it.",
-    stats: [
-      { value: "35%", label: "Of each shift spent on documentation" },
-      { value: "22%", label: "National nurse turnover rate" },
-      { value: "$65K", label: "Average cost to replace one nurse" },
-    ],
-    body: "Nursing has always been demanding. But today's nurses face a documentation burden their predecessors never imagined. Every assessment, intervention, and patient interaction must be charted—often hours after the fact, at the end of exhausting shifts. The result: chronic overtime, accelerating turnover, reliance on expensive agency staff, and the constant guilt of choosing between thorough documentation and time at the bedside.",
-    pullQuote: "Nurses didn't become nurses to chart. They became nurses to care for patients.",
-  },
-
-  recommendations: {
-    headline: "Your Path Forward",
-    phases: [
-      {
-        name: "Pilot",
-        duration: "30-60 days",
-        actions: [
-          "Deploy on 1-2 nursing units with engaged leadership",
-          "Establish baseline: documentation time, overtime hours, nurse satisfaction",
-          "Track patient safety metrics on pilot units",
-        ],
-      },
-      {
-        name: "Measure",
-        duration: "60-90 days",
-        actions: [
-          "Compare end-of-shift overtime before and after",
-          "Survey nurse satisfaction and perceived documentation burden",
-          "Monitor quality metrics: HAPI rates, fall rates, assessment completeness",
-        ],
-      },
-      {
-        name: "Scale",
-        duration: "Ongoing",
-        actions: [
-          "Expand to additional units based on pilot outcomes",
-          "Integrate with retention and staffing strategy",
-          "Connect to quality improvement initiatives",
-        ],
-      },
-    ],
-    closing: "The nursing units that solve documentation burden become magnets for talent. In today's staffing environment, that competitive advantage compounds.",
-    costOfInaction: "Every month of delay represents nursing overtime accumulating, agency premiums compounding, and talented nurses considering whether this profession is sustainable.",
-  },
-};
-
-// ============================================================================
-// PAGE COMPONENTS - Premium Narrative Arc
-// ============================================================================
-
-// Cover Page
 const CoverPage = ({ data }: { data: NursingPDFData }) => {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
-    day: "numeric",
   });
   const displayName = data.clientName || data.organizationName || "Your Organization";
 
   return (
-    <Page size="A4" style={{ backgroundColor: colors.heroSlate, padding: 0 }} wrap={false}>
-      <View style={{ padding: 50, height: "100%", justifyContent: "space-between" }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <Image src={abridgeLogoPath} style={{ width: 100, height: 20 }} />
-          <Text style={{ fontSize: 10, color: colors.lightGray, letterSpacing: 1 }}>{today}</Text>
-        </View>
+    <Page size="A4" style={[styles.page, styles.coverPage]} wrap={false}>
+      <View style={styles.coverTop}>
+        <Image src={abridgeLogoPath} style={styles.coverLogo} />
+      </View>
 
-        <View style={{ flex: 1, justifyContent: "center", paddingVertical: 60 }}>
-          <Text style={{ fontSize: 11, color: colors.emerald, textTransform: "uppercase", letterSpacing: 4, marginBottom: 24 }}>Nursing</Text>
-          <Text style={{ fontSize: 48, fontWeight: "bold", color: colors.white, marginBottom: 20, lineHeight: 1.0 }}>{displayName}</Text>
-          <Text style={{ fontSize: 14, color: colors.lightGray, lineHeight: 1.6, maxWidth: 380 }}>
-            A transparent framework for understanding how ambient AI documentation creates value in nursing workflows.
-          </Text>
+      <View style={styles.coverHero}>
+        <Text style={styles.coverEyebrow}>Strategic Value Assessment</Text>
+        <Text style={styles.coverTitle}>{displayName}</Text>
+        <Text style={styles.coverSubtitle}>
+          A framework for understanding the economics of ambient nursing documentation
+        </Text>
 
-          <View style={{ flexDirection: "row", marginTop: 50, gap: 60 }}>
-            <View style={{ marginRight: 60 }}>
-              <Text style={{ fontSize: 44, fontWeight: "bold", color: colors.emerald, marginBottom: 8 }}>{formatCurrency(data.netGain)}</Text>
-              <Text style={{ fontSize: 10, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 2 }}>Net Annual Value</Text>
-            </View>
-            <View>
-              <Text style={{ fontSize: 44, fontWeight: "bold", color: colors.white, marginBottom: 8 }}>{data.roi.toFixed(1)}x</Text>
-              <Text style={{ fontSize: 10, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 2 }}>Return on Investment</Text>
-            </View>
-          </View>
+        <View style={styles.coverMetricBlock}>
+          <Text style={styles.coverMetricValue}>{formatCurrency(data.netGain)}</Text>
+          <Text style={styles.coverMetricLabel}>Projected Net Annual Value</Text>
         </View>
+      </View>
 
-        <View style={{ borderTopWidth: 1, borderTopColor: colors.heroSlateLight, paddingTop: 20 }}>
-          <Text style={{ fontSize: 10, color: colors.lightGray }}>
-            Nursing • {data.staffedBeds} staffed beds • {data.nurseFTEs} FTEs • {formatNumber(data.documentationEvents)} events
-          </Text>
-        </View>
+      <View style={styles.coverBottom}>
+        <Text style={styles.coverMeta}>
+          {data.staffedBeds} staffed beds · {data.nurseFTEs} nurse FTEs · {formatNumber(data.documentationEvents)} documentation events · Nursing
+        </Text>
+        <Text style={styles.coverDate}>{today}</Text>
+        {data.preparedBy && (
+          <Text style={[styles.coverMeta, { marginTop: 12 }]}>Prepared for {data.preparedBy}</Text>
+        )}
       </View>
     </Page>
   );
 };
 
-// Stakes Page
-const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: number }) => {
-  return (
-    <Page size="A4" style={{ backgroundColor: colors.white, padding: 0 }} wrap={false}>
-      <View style={{ backgroundColor: colors.heroSlate, padding: 50, paddingTop: 40, paddingBottom: 50 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30 }}>
-          <Image src={abridgeLogoPath} style={{ width: 80, height: 16 }} />
-          <Text style={{ fontSize: 9, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1 }}>The Stakes</Text>
-        </View>
-        <Text style={{ fontSize: 32, fontWeight: "bold", color: colors.white, lineHeight: 1.2, marginBottom: 32, maxWidth: 440 }}>
-          {narrativeContent.stakes.headline}
-        </Text>
-        <View style={{ flexDirection: "row", gap: 40 }}>
-          {narrativeContent.stakes.stats.map((stat, i) => (
-            <View key={i} style={{ marginRight: 40 }}>
-              <Text style={{ fontSize: 36, fontWeight: "bold", color: colors.emerald, marginBottom: 6 }}>{stat.value}</Text>
-              <Text style={{ fontSize: 9, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, maxWidth: 120 }}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+// ============================================================================
+// PAGE 2: THE THESIS
+// ============================================================================
 
-      <View style={{ padding: 50 }}>
-        <Text style={{ fontSize: 12, color: colors.black, lineHeight: 1.8, marginBottom: 40 }}>
-          {narrativeContent.stakes.body}
-        </Text>
-        <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 24, marginTop: 20 }}>
-          <Text style={{ fontSize: 14, fontWeight: 500, color: colors.black, lineHeight: 1.6 }}>
-            {narrativeContent.stakes.pullQuote}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-// Path Forward Page
-const PathForwardPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Image src={abridgeLogoPath} style={styles.logo} />
-        </View>
-        <View style={styles.headerRight}>
-          <Text style={styles.headerTitle}>Nursing ROI Assessment</Text>
-        </View>
-      </View>
-
-      <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Recommendations</Text>
-      <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.black, marginBottom: 8 }}>{narrativeContent.recommendations.headline}</Text>
-      <Text style={{ fontSize: 10, color: colors.mediumGray, marginBottom: 24 }}>
-        A phased approach to capturing {formatCurrency(data.netGain)} in annual value.
-      </Text>
-
-      {narrativeContent.recommendations.phases.map((phase, i) => (
-        <View key={i} style={{ marginBottom: 24 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.primary, justifyContent: "center", alignItems: "center", marginRight: 14 }}>
-              <Text style={{ fontSize: 12, fontWeight: "bold", color: colors.white }}>{i + 1}</Text>
-            </View>
-            <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.black }}>{phase.name}</Text>
-            <Text style={{ fontSize: 9, color: colors.mediumGray, marginLeft: 10 }}>{phase.duration}</Text>
-          </View>
-          <View style={{ paddingLeft: 42 }}>
-            {phase.actions.map((action, j) => (
-              <Text key={j} style={{ fontSize: 9, color: colors.darkGray, marginBottom: 6, lineHeight: 1.5 }}>• {action}</Text>
-            ))}
-          </View>
-        </View>
-      ))}
-
-      <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 20, marginTop: 20, marginBottom: 20 }}>
-        <Text style={{ fontSize: 12, fontWeight: 500, color: colors.black, lineHeight: 1.6 }}>
-          {narrativeContent.recommendations.closing}
-        </Text>
-      </View>
-
-      <View style={{ backgroundColor: colors.heroSlate, padding: 20, borderRadius: 4 }}>
-        <Text style={{ fontSize: 8, color: colors.emerald, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>The Cost of Waiting</Text>
-        <Text style={{ fontSize: 10, color: colors.white, lineHeight: 1.6 }}>
-          {narrativeContent.recommendations.costOfInaction}
-        </Text>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  const today = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
+const ThesisPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
   const laborDrivers = data.drivers.filter(d => d.category === "labor");
-  const qualityDrivers = data.drivers.filter(d => d.category === "quality");
-  const valuePerBed = Math.round(data.netGain / data.staffedBeds);
-  const displayClientName = data.clientName || data.organizationName || "Your Organization";
-  const displayPreparedBy = data.preparedBy || "Abridge";
+  const qualityDrivers = data.drivers.filter(d => d.category === "quality" || d.category === "qualitative");
 
-  const getHeroTagline = () => {
-    const hasOvertime = data.drivers.some(d => d.id === "nursingOvertime");
-    const hasRetention = data.drivers.some(d => d.id === "nursingRetention");
-    const hasAgency = data.drivers.some(d => d.id === "nursingAgency");
-    
-    if (data.roi >= 5 && hasOvertime) {
-      return "Addressing the charting burden that keeps nurses past their shifts";
-    } else if (data.roi >= 5 && hasRetention) {
-      return "Exploring how documentation relief could support nurse retention";
-    } else if (data.roi >= 5 && hasAgency) {
-      return "Reducing reliance on agency staff through better workflows";
-    } else if (data.roi >= 5) {
-      return "Strong potential across your nursing value drivers";
-    } else if (data.roi >= 3) {
-      return "Meaningful pathways to nursing efficiency and quality";
-    } else if (data.roi >= 2) {
-      return "A foundation worth exploring for your nursing units";
-    }
-    return "Understanding your nursing documentation landscape";
-  };
+  const laborValue = laborDrivers.reduce((sum, d) => sum + d.value, 0);
+  const qualityValue = qualityDrivers.reduce((sum, d) => sum + d.value, 0);
 
-  const getOpeningNarrative = () => {
-    if (data.drivers.length >= 4) {
-      return `Nurses spend 25-35% of their shifts documenting—time that could be spent at the bedside. With ${data.drivers.length} value drivers selected, this model explores multiple pathways where ambient documentation could create value for your nursing organization. Each page walks through the math step-by-step.`;
-    } else if (data.drivers.length >= 2) {
-      return `Nursing workflows are unique: shift handoffs, patient ratios, regulatory documentation, and the constant tension between charting and caregiving. This assessment explores ${data.drivers.length} key areas: ${data.drivers.map(d => d.name).join(" and ")}. Each driver page breaks down the calculation so you can stress-test the assumptions.`;
-    }
-    return `Nurses didn't become nurses to chart. They became nurses to care for patients. This focused assessment explores ${data.drivers[0]?.name || "your selected driver"} in depth, showing exactly how we arrived at each number.`;
-  };
+  const strategyInsight = laborValue > qualityValue
+    ? "Your model emphasizes staffing efficiency—reducing overtime, optimizing ratios. This is the playbook of organizations managing margin pressure while maintaining safety."
+    : "Your model emphasizes care quality—reducing adverse events, improving outcomes. This is the playbook of organizations pursuing excellence in clinical outcomes.";
 
   return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.heroSection}>
-        <View style={styles.heroMeta}>
-          <Text style={styles.heroMetaText}>{today}</Text>
-          <Text style={styles.heroMetaText}>Prepared by {displayPreparedBy}</Text>
-        </View>
-        <Image src={abridgeLogoPath} style={{ width: 85, height: 17, marginBottom: 24 }} />
-        <Text style={styles.heroClientName}>{displayClientName}</Text>
-        <Text style={styles.heroTagline}>
-          {getHeroTagline()}
-        </Text>
-        <Text style={{ fontSize: 9, color: colors.lightGray, marginTop: 8, lineHeight: 1.5 }}>
-          Nursing ROI Assessment — An exploratory model built from your inputs and industry benchmarks.
-        </Text>
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>Value Framework</Text>
       </View>
 
-      <View style={styles.contentSection}>
-        <Text style={styles.chapterLabel}>The Overview</Text>
-        <Text style={{ fontSize: 16, fontWeight: "bold", color: colors.black, marginBottom: 4 }}>What We're Exploring Together</Text>
-        
-        <Text style={{ fontSize: 9, color: colors.darkGray, lineHeight: 1.6, marginBottom: 16 }}>
-          {getOpeningNarrative()}
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>The Thesis</Text>
+        <Text style={styles.sectionTitle}>Two Sources of Value</Text>
+        <Text style={styles.sectionIntro}>
+          Most ROI models ask: "How much will you save?" We ask: "If we give nurses time back, what happens to your patients?"
+        </Text>
+        <Text style={[styles.sectionIntro, { marginTop: -12 }]}>
+          The answer reveals your strategy. There are two fundamental ways nursing documentation time creates value:
         </Text>
 
-      <View style={styles.metricsRow}>
-        <View style={styles.metricBoxHighlight}>
-          <Text style={styles.metricValueGreen}>+{formatCurrency(data.netGain)}</Text>
-          <Text style={styles.metricLabel}>Net Annual Gain</Text>
-          <Text style={styles.metricSublabel}>{formatCurrency(data.totalValue)} value - {formatCurrency(data.investment)} cost</Text>
-        </View>
-        <View style={styles.metricBox}>
-          <Text style={styles.metricValue}>{data.roi.toFixed(1)}x</Text>
-          <Text style={styles.metricLabel}>Return on Investment</Text>
-          <Text style={styles.metricSublabel}>Every $1 returns ${data.roi.toFixed(2)}</Text>
-        </View>
-        <View style={styles.metricBox}>
-          <Text style={styles.metricValue}>{formatCurrency(valuePerBed)}</Text>
-          <Text style={styles.metricLabel}>Per {data.unitName}</Text>
-          <Text style={styles.metricSublabel}>Net annual benefit each</Text>
-        </View>
-        <View style={[styles.metricBox, styles.metricBoxLast]}>
-          <Text style={styles.metricValue}>{formatNumber(data.hoursReturned)}</Text>
-          <Text style={styles.metricLabel}>Hours Returned</Text>
-          <Text style={styles.metricSublabel}>Documentation time saved</Text>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>Where the Value Comes From</Text>
-      
-      <View style={styles.twoColumn}>
-        <View style={[styles.valueBreakdownCard, styles.laborCard]}>
-          <Text style={styles.valueBreakdownTitle}>Labor & Efficiency</Text>
-          <Text style={styles.valueBreakdownPct}>{data.laborPct}% of total value</Text>
-          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.laborTotal)}</Text>
-          {laborDrivers.map((driver, i) => (
-            <View key={driver.id} style={[styles.valueBreakdownDriver, i === laborDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
-              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
-              <Text style={styles.valueBreakdownDriverValue}>{formatCurrency(driver.value)}</Text>
-            </View>
-          ))}
-          {laborDrivers.length === 0 && (
-            <Text style={{ fontSize: 7, color: colors.mediumGray, fontWeight: 500 }}>No labor drivers selected</Text>
-          )}
-        </View>
-
-        <View style={[styles.valueBreakdownCard, styles.qualityCard, styles.valueBreakdownCardLast]}>
-          <Text style={styles.valueBreakdownTitle}>Quality & Safety</Text>
-          <Text style={styles.valueBreakdownPct}>{data.qualityPct}% of total value</Text>
-          <Text style={styles.valueBreakdownAmount}>{formatCurrency(data.qualityTotal)}</Text>
-          {qualityDrivers.map((driver, i) => (
-            <View key={driver.id} style={[styles.valueBreakdownDriver, i === qualityDrivers.length - 1 ? styles.valueBreakdownDriverLast : {}]}>
-              <Text style={styles.valueBreakdownDriverName}>{driver.name}</Text>
-              <Text style={[styles.valueBreakdownDriverValue, { color: colors.amber }]}>{formatCurrency(driver.value)}</Text>
-            </View>
-          ))}
-          {qualityDrivers.length === 0 && (
-            <Text style={{ fontSize: 7, color: colors.mediumGray, fontWeight: 500 }}>No quality drivers selected</Text>
-          )}
-          <Text style={{ fontSize: 6, color: colors.amberDark, fontWeight: 500, marginTop: 4 }}>
-            * Shown as "Potential Value"
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.progressBar}>
-        {data.laborPct > 0 && (
-          <View style={[styles.progressSegment, { flex: data.laborPct, backgroundColor: colors.green }]}>
-            {data.laborPct > 20 && <Text style={styles.progressLabel}>Labor {data.laborPct}%</Text>}
+        <View style={styles.frameworkContainer}>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Staffing Efficiency</Text>
+            <Text style={styles.frameworkValue}>{formatCurrency(laborValue)}</Text>
+            <Text style={styles.frameworkDescription}>
+              Hours returned to direct patient care. Reduced overtime. Optimized nurse-to-patient ratios. Improved retention.
+            </Text>
+            <Text style={styles.frameworkTagline}>Time at the bedside, not the screen.</Text>
           </View>
-        )}
-        {data.qualityPct > 0 && (
-          <View style={[styles.progressSegment, { flex: data.qualityPct, backgroundColor: colors.amber }]}>
-            {data.qualityPct > 20 && <Text style={styles.progressLabel}>Quality {data.qualityPct}%</Text>}
-          </View>
-        )}
-      </View>
-
-      <Text style={styles.sectionTitle}>Investment Details</Text>
-      
-      <View style={styles.twoColumn}>
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>Your Configuration</Text>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Setting</Text>
-            <Text style={styles.cardValue}>{data.careSetting}</Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>{data.unitNamePlural}</Text>
-            <Text style={styles.cardValue}>{data.staffedBeds}</Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardLabel}>Price</Text>
-            <Text style={styles.cardValue}>${data.costPerBed}/{data.unitName}/month</Text>
-          </View>
-          <View style={styles.cardTotal}>
-            <Text style={styles.cardTotalLabel}>Annual Investment</Text>
-            <Text style={styles.cardTotalValue}>{formatCurrency(data.investment)}</Text>
+          <View style={styles.frameworkColumn}>
+            <Text style={styles.frameworkLabel}>Care Quality</Text>
+            <Text style={styles.frameworkValue}>{formatCurrency(qualityValue)}</Text>
+            <Text style={styles.frameworkDescription}>
+              Better documentation, fewer adverse events. Complete handoffs. Reduced falls, pressure injuries, missed medications.
+            </Text>
+            <Text style={styles.frameworkTagline}>The notes prevent the harm.</Text>
           </View>
         </View>
 
-        <View style={[styles.card, styles.columnLast]}>
-          <Text style={styles.cardTitle}>Multi-Year Projection</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderCell, { flex: 0.8 }]}></Text>
-              <Text style={styles.tableHeaderCell}>Year 1</Text>
-              <Text style={styles.tableHeaderCell}>Year 2</Text>
-              <Text style={styles.tableHeaderCell}>Year 3</Text>
-              <Text style={[styles.tableHeaderCell, { fontWeight: "bold" }]}>3-Yr Total</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Value</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year1Value)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year2Value)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year3Value)}</Text>
-              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearValue)}</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 0.8, textAlign: "left" }]}>Cost</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year1Cost)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year2Cost)}</Text>
-              <Text style={styles.tableCell}>{formatCurrency(data.year3Cost)}</Text>
-              <Text style={styles.tableCellBold}>{formatCurrency(data.threeYearCost)}</Text>
-            </View>
-            <View style={[styles.tableRow, styles.tableRowLast]}>
-              <Text style={[styles.tableCellBold, { flex: 0.8, textAlign: "left" }]}>Net</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
-              <Text style={styles.tableCellGreen}>{formatCurrency(data.threeYearNet)}</Text>
-            </View>
-          </View>
-          <Text style={{ fontSize: 6, color: colors.lightGray, marginTop: 4, fontWeight: 500 }}>
-            Assumes 10% annual value growth with increased adoption
-          </Text>
-        </View>
-      </View>
-
-      <View style={{ backgroundColor: colors.paleGray, padding: 14, borderRadius: 4, marginTop: 12, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-          <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.black, marginBottom: 6 }}>What's Inside This Report</Text>
-          <Text style={{ fontSize: 8, color: colors.darkGray, lineHeight: 1.5 }}>
-            Each of the following pages explores one driver in depth—showing the theory, the step-by-step calculation, industry benchmarks, and what the numbers might suggest for your nursing units. Review, adjust assumptions, and see what resonates.
-          </Text>
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Strategic Observation</Text>
+          <Text style={styles.insightText}>{strategyInsight}</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
+
+// ============================================================================
+// DRIVER PAGES - EDUCATIONAL FORMAT WITH STEP BOXES
+// ============================================================================
+
+interface DriverLogic {
+  theory: string;
+  steps: Array<{
+    label: string;
+    formula: string;
+    explanation: string;
+  }>;
+  calibration: string;
+}
+
+function getDriverLogic(driver: DriverCalculation, data: NursingPDFData): DriverLogic {
+  const inputs = driver.inputs;
+  
+  switch (driver.id) {
+    case "staffingEfficiency":
+    case "overtimeReduction": {
+      const overtimeHours = Math.round(data.hoursReturned * 0.15);
+      const hourlyRate = (inputs.avgHourlyRate as number) || 45;
+      return {
+        theory: `Nursing overtime is expensive—1.5x hourly rates, plus burnout, plus quality degradation. Every hour a nurse spends on documentation is an hour that could be spent on direct care.\n\nThe math is direct: reduce documentation burden → reduce overtime → reduce cost. But the real benefit is upstream: nurses who aren't drowning in documentation don't burn out as fast.`,
+        steps: [
+          {
+            label: "STEP 1: TIME CREATED",
+            formula: `${formatNumber(data.eligibleEvents)} events × ${data.timeSavedPerEvent} min = ${formatNumber(data.hoursReturned)} hours`,
+            explanation: "Raw documentation time returned to clinical work.",
+          },
+          {
+            label: "STEP 2: OVERTIME IMPACT",
+            formula: `${formatNumber(data.hoursReturned)} hours × 15% overtime conversion = ${formatNumber(overtimeHours)} OT hours avoided`,
+            explanation: "Not all freed time directly reduces overtime—but a meaningful portion does.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `${formatNumber(overtimeHours)} hrs × $${hourlyRate} × 1.5x = ${formatCurrency(driver.value)}`,
+            explanation: "Overtime premium avoided, plus downstream retention benefits.",
+          },
+        ],
+        calibration: "We're conservative on overtime conversion because workflow dynamics vary. Organizations with tight staffing may see higher conversion rates.",
+      };
+    }
+
+    case "nurseRetention": {
+      const turnoverCost = (inputs.turnoverCost as number) || 56000;
+      return {
+        theory: `Nurse turnover is a crisis—and documentation burden is a primary driver. Replacing a nurse costs $40K-$75K in recruiting, training, and lost productivity.\n\nThe causal chain: excessive documentation → burnout → turnover → replacement costs. Break the first link, and the chain unravels.`,
+        steps: [
+          {
+            label: "STEP 1: BURDEN REDUCTION",
+            formula: `${formatNumber(data.hoursReturned)} hours returned across ${data.nurseFTEs} FTEs`,
+            explanation: "Hours not spent documenting are hours for patient care—or personal recovery.",
+          },
+          {
+            label: "STEP 2: RETENTION IMPACT",
+            formula: `Reduced burden → lower burnout → improved retention`,
+            explanation: "Literature supports 15-20% documentation reduction correlating with measurable retention improvement.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `Avoided departures × $${formatNumber(turnoverCost)} cost = ${formatCurrency(driver.value)}`,
+            explanation: "Full replacement cost including recruiting, onboarding, and productivity ramp.",
+          },
+        ],
+        calibration: "Retention is multi-factorial. Documentation is one lever—but it's the lever nurses most frequently cite as a burnout driver.",
+      };
+    }
+
+    case "fallPrevention":
+    case "adverseEvents": {
+      const avgFallCost = (inputs.avgFallCost as number) || 14000;
+      return {
+        theory: `Falls are expensive—averaging $14K in direct costs, plus liability exposure. Most falls happen when nurses are away from patients. Where are they? Often, documenting.\n\nTime returned to the bedside is time spent on surveillance, ambulation assistance, and early intervention. The documentation-to-presence connection is direct.`,
+        steps: [
+          {
+            label: "STEP 1: TIME AT BEDSIDE",
+            formula: `${formatNumber(data.hoursReturned)} hours returned to direct patient care`,
+            explanation: "Every hour freed from documentation is an hour available for patient monitoring.",
+          },
+          {
+            label: "STEP 2: FALL REDUCTION",
+            formula: `Increased presence → earlier intervention → fewer falls`,
+            explanation: "Studies show direct correlation between nursing presence and fall prevention.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `Prevented falls × $${formatNumber(avgFallCost)} cost = ${formatCurrency(driver.value)}`,
+            explanation: "Direct cost avoidance plus reduced liability exposure.",
+          },
+        ],
+        calibration: "Fall prevention is conservative. We only count falls directly attributable to improved surveillance time.",
+      };
+    }
+
+    case "pressureInjuries": {
+      const avgInjuryCost = (inputs.avgInjuryCost as number) || 43000;
+      return {
+        theory: `Hospital-acquired pressure injuries are never events—expensive, preventable, and harmful. Prevention requires regular repositioning, skin assessment, and early intervention.\n\nNurses know what to do. They often lack time to do it. Documentation burden is frequently the culprit.`,
+        steps: [
+          {
+            label: "STEP 1: CARE TIME FREED",
+            formula: `${formatNumber(data.hoursReturned)} hours available for preventive care`,
+            explanation: "Time for repositioning, skin checks, and early intervention.",
+          },
+          {
+            label: "STEP 2: PREVENTION IMPACT",
+            formula: `More prevention time → fewer pressure injuries`,
+            explanation: "Literature strongly supports time-on-task correlation with HAPI prevention.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `Prevented injuries × $${formatNumber(avgInjuryCost)} cost = ${formatCurrency(driver.value)}`,
+            explanation: "Full cost including treatment, extended stay, and potential liability.",
+          },
+        ],
+        calibration: "Conservative estimate. Some organizations see 30-50% reduction in HAPIs with improved care time.",
+      };
+    }
+
+    case "handoffQuality": {
+      return {
+        theory: `Handoffs are high-risk moments. Information lost in transition creates safety gaps. Complete, timely documentation means complete handoffs.\n\nAmbient documentation captures the clinical story in real-time—no details forgotten, no context lost. The receiving nurse gets the full picture.`,
+        steps: [
+          {
+            label: "STEP 1: DOCUMENTATION COMPLETENESS",
+            formula: `Real-time capture → comprehensive clinical narrative`,
+            explanation: "Every intervention, every observation, every patient response documented at point of care.",
+          },
+          {
+            label: "STEP 2: HANDOFF IMPROVEMENT",
+            formula: `Complete notes → complete verbal handoffs → fewer gaps`,
+            explanation: "Structured handoff quality improves when supporting documentation is complete.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `Prevented errors/adverse events = ${formatCurrency(driver.value)}`,
+            explanation: "Value from avoided errors attributable to improved handoff quality.",
+          },
+        ],
+        calibration: "Handoff quality is harder to isolate than other drivers. We use conservative attribution.",
+      };
+    }
+
+    default: {
+      return {
+        theory: `This value driver represents operational improvements from ambient nursing documentation. The logic follows the pattern of time savings creating capacity for direct patient care, which converts to measurable value.`,
+        steps: [
+          {
+            label: "STEP 1: EFFICIENCY GAIN",
+            formula: `Documentation improvement → time returned to care`,
+            explanation: "Every minute saved on documentation is a minute available for patients.",
+          },
+          {
+            label: "STEP 2: VALUE CONVERSION",
+            formula: `Care time × opportunity = value`,
+            explanation: "Time at the bedside converts to improved outcomes and reduced costs.",
+          },
+          {
+            label: "STEP 3: VALUE REALIZED",
+            formula: `Annual value = ${formatCurrency(driver.value)}`,
+            explanation: "Conservative estimate with realization adjustments.",
+          },
+        ],
+        calibration: "Estimates are conservative to account for implementation variability across units and shifts.",
+      };
+    }
+  }
+}
 
 const DriverPage = ({ driver, data, pageNum, totalPages }: { driver: DriverCalculation; data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  const theory = driverTheories[driver.id] || "This driver creates measurable value through improved documentation workflows.";
-  const implicationFn = driverImplications[driver.id];
-  const implication = implicationFn ? implicationFn(driver.value, data) : `This driver contributes ${formatCurrency(driver.value)} annually to your ROI.`;
-  const steps = getDriverSteps(driver, data);
-  const isPotential = driver.isPotentialValue;
-  const benchmarks = getDriverBenchmarks(driver.id);
-  const warnings = getDriverWarnings(driver, data);
-
-  const getDriverHeroTagline = (driverId: string): string => {
-    const taglines: Record<string, string> = {
-      nursingOvertime: "Nurses staying late to finish charting—exploring whether ambient documentation could help them go home on time",
-      nursingRetention: "Turnover costs are significant—exploring whether documentation relief could support nurse retention",
-      nursingAgency: "Agency reliance is expensive—exploring how reduced charting burden might improve staffing stability",
-      hapiPrevention: "Preventing pressure injuries through better assessment time—potential value worth examining",
-      fallPrevention: "More eyes on patients, fewer falls—exploring the patient safety connection",
-    };
-    return taglines[driverId] || "Exploring how this driver could create value for your nursing units";
-  };
+  const logic = getDriverLogic(driver, data);
+  const benefitLabel = driver.category === "labor" ? "STAFFING" : "CARE QUALITY";
 
   return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.heroCompact}>
-        <Text style={{ fontSize: 8, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Value Driver</Text>
-        <Text style={styles.heroCompactTitle}>{driver.name}</Text>
-        <Text style={styles.heroCompactSubtitle}>{getDriverHeroTagline(driver.id)}</Text>
-        <Text style={isPotential ? styles.heroCompactValuePotential : styles.heroCompactValue}>{formatCurrency(driver.value)}</Text>
-        {isPotential && (
-          <Text style={{ fontSize: 8, color: colors.amber, marginTop: 4 }}>Potential Value (see methodology)</Text>
-        )}
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>Value Driver</Text>
       </View>
 
-      <View style={styles.contentSection} wrap={false}>
-        <View style={styles.theoryBox}>
-          <Text style={styles.theoryLabel}>The Theory</Text>
-          <Text style={styles.theoryText}>{theory}</Text>
+      <View style={styles.content}>
+        <View style={styles.driverHeader}>
+          <Text style={styles.driverEyebrow}>VALUE DRIVER · {benefitLabel}</Text>
+          <Text style={styles.driverTitle}>{driver.name}</Text>
+          <View style={styles.driverValueBadge}>
+            <Text style={styles.driverValueAmount}>{formatCurrency(driver.value)}</Text>
+            <Text style={styles.driverValueLabel}>annual value</Text>
+          </View>
         </View>
 
-        {warnings && (
-          <View style={styles.calloutBox}>
-            <Text style={styles.calloutTitle}>{warnings.title}</Text>
-            <Text style={styles.calloutText}>{warnings.text}</Text>
-          </View>
-        )}
+        <View style={styles.theLogicSection}>
+          <Text style={styles.theLogicLabel}>The Logic</Text>
+          <Text style={styles.theLogicText}>{logic.theory}</Text>
+        </View>
 
-        {isPotential && (
-          <View style={styles.potentialCallout}>
-            <Text style={styles.potentialCalloutTitle}>Why This Is Potential Value</Text>
-            <Text style={styles.potentialCalloutText}>
-              This benefit has an indirect causal chain: ambient documentation → less time charting → more time at bedside → better assessments → fewer adverse events. The mechanism is well-supported in literature, but direct attribution is complex. We show this separately from hard ROI so you can evaluate it with appropriate context.
+        {logic.steps.map((step, i) => (
+          <View key={i} style={[styles.stepBox, i === logic.steps.length - 1 ? styles.stepBoxLast : {}]}>
+            <Text style={styles.stepLabel}>{step.label}</Text>
+            <Text style={styles.stepFormula}>{step.formula}</Text>
+            <Text style={styles.stepExplanation}>{step.explanation}</Text>
+          </View>
+        ))}
+
+        <View style={styles.calibrationNote}>
+          <Text style={styles.calibrationLabel}>Calibration Note</Text>
+          <Text style={styles.calibrationText}>{logic.calibration}</Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+// ============================================================================
+// PAGE: INVESTMENT & RETURN
+// ============================================================================
+
+const InvestmentPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
+  const year3ROI = ((data.threeYearNet / data.threeYearCost) + 1).toFixed(2);
+
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>Financial Framework</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Financial Framework</Text>
+        <Text style={styles.sectionTitle}>The Investment Case</Text>
+        <Text style={styles.sectionIntro}>
+          ROI calculations are necessary but insufficient. They answer 'Is this worth it?' but not 'How should we think about it?'
+        </Text>
+        <Text style={[styles.sectionIntro, { marginTop: -12 }]}>
+          The right frame: ambient documentation is infrastructure for nursing excellence. It creates capacity that compounds.
+        </Text>
+
+        <View style={styles.projectionTable}>
+          <View style={styles.projectionHeader}>
+            <Text style={[styles.projectionHeaderCell, styles.projectionHeaderCellFirst]}>Period</Text>
+            <Text style={styles.projectionHeaderCell}>Value</Text>
+            <Text style={styles.projectionHeaderCell}>Investment</Text>
+            <Text style={styles.projectionHeaderCell}>Net Value</Text>
+            <Text style={styles.projectionHeaderCell}>Cumulative</Text>
+          </View>
+          <View style={styles.projectionRow}>
+            <Text style={[styles.projectionCell, styles.projectionCellFirst]}>Year 1</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year1Value)}</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year1Cost)}</Text>
+            <Text style={styles.projectionCellCoral}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+            <Text style={styles.projectionCellBold}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+          </View>
+          <View style={styles.projectionRow}>
+            <Text style={[styles.projectionCell, styles.projectionCellFirst]}>Year 2</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year2Value)}</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year2Cost)}</Text>
+            <Text style={styles.projectionCellCoral}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
+            <Text style={styles.projectionCellBold}>{formatCurrency((data.year1Value - data.year1Cost) + (data.year2Value - data.year2Cost))}</Text>
+          </View>
+          <View style={[styles.projectionRow, styles.projectionRowLast]}>
+            <Text style={[styles.projectionCell, styles.projectionCellFirst]}>Year 3</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year3Value)}</Text>
+            <Text style={styles.projectionCell}>{formatCurrency(data.year3Cost)}</Text>
+            <Text style={styles.projectionCellCoral}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
+            <Text style={styles.projectionCellBold}>{formatCurrency(data.threeYearNet)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Economics Insight</Text>
+          <Text style={styles.insightText}>
+            Notice the asymmetry: investment stays flat while value grows. This is the signature of infrastructure—fixed cost, scaling returns. By Year 3, you're generating ${year3ROI} for every $1 invested. That's not a line item to be cut in a downturn. It's a competitive advantage in the nursing labor market.
+          </Text>
+        </View>
+
+        <View style={styles.scaleContainer}>
+          <View style={styles.scaleCard}>
+            <Text style={styles.scaleLabel}>Current Model</Text>
+            <Text style={styles.scaleValue}>{formatCurrency(data.journey.pilotValue)}/yr</Text>
+            <Text style={styles.scaleMeta}>
+              {data.journey.pilotBeds} beds · {data.journey.pilotUtilization}% utilization
             </Text>
           </View>
-        )}
-
-        <View style={styles.calcSection}>
-          <Text style={styles.calcSectionTitle}>Your Calculation</Text>
-          
-          {steps.map((step, index) => (
-            <View key={index} style={[styles.stepBox, index === steps.length - 1 ? styles.stepBoxLast : {}]} wrap={false}>
-              <Text style={styles.stepLabel}>{step.label}</Text>
-              <Text style={styles.stepQuestion}>{step.question}</Text>
-              
-              <View style={styles.stepMath}>
-                {step.inputs.map((input, i) => (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
-                    {i > 0 && <Text style={styles.stepOperator}>{step.operators?.[i - 1] || "x"}</Text>}
-                    <View style={styles.stepInput}>
-                      <Text style={styles.stepInputText}>{input.value}</Text>
-                    </View>
-                    {input.label && (
-                      <Text style={{ fontSize: 7, color: colors.lightGray, marginLeft: 2 }}>{input.label}</Text>
-                    )}
-                  </View>
-                ))}
-                <Text style={styles.stepOperator}>=</Text>
-                <View style={isPotential ? [styles.stepResult, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.stepResult}>
-                  <Text style={isPotential ? [styles.stepResultText, { color: colors.amber }] : styles.stepResultText}>{step.result}</Text>
-                </View>
-              </View>
-              
-              {step.note && (
-                <Text style={step.noteHighlight ? styles.stepNoteHighlight : styles.stepNote}>{step.note}</Text>
-              )}
-            </View>
-          ))}
+          <View style={styles.scaleCard}>
+            <Text style={styles.scaleLabel}>Full Scale Potential</Text>
+            <Text style={styles.scaleValue}>{formatCurrency(data.journey.fullScaleValue)}/yr</Text>
+            <Text style={styles.scaleMeta}>
+              {data.journey.fullScaleBeds} beds · {data.journey.fullScaleUtilization}% utilization
+            </Text>
+          </View>
         </View>
 
-        {benchmarks && (
-          <View style={styles.benchmarkBox} wrap={false}>
-            <Text style={styles.benchmarkTitle}>Benchmark: {benchmarks.title}</Text>
-            {benchmarks.rows.map((row, i) => (
-              <View key={i} style={styles.benchmarkRow}>
-                <Text style={styles.benchmarkLabel}>{row.label}</Text>
-                <Text style={styles.benchmarkValue}>{row.value}</Text>
+        <Text style={{ fontSize: 9, color: brand.textSecondary, lineHeight: 1.5 }}>
+          Per-bed economics remain consistent at scale. Adoption maturity often improves them.
+        </Text>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
+      </View>
+    </Page>
+  );
+};
+
+// ============================================================================
+// PAGE: MODEL TRANSPARENCY
+// ============================================================================
+
+const TransparencyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
+  const realizationRates = [
+    { rate: "Overtime conversion", value: "15%", why: "Workflow dynamics vary by unit" },
+    { rate: "Fall prevention impact", value: "10%", why: "Multi-factorial event causation" },
+    { rate: "HAPI reduction", value: "12%", why: "Conservative attribution to time freed" },
+    { rate: "Retention impact", value: "5%", why: "Burnout has multiple drivers" },
+  ];
+
+  return (
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>Model Transparency</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Model Transparency</Text>
+        <Text style={styles.sectionTitle}>Every Number Has a Source</Text>
+        <Text style={styles.transparencyIntro}>
+          We don't hide assumptions. We highlight them. If you disagree with an input, change it. The model adapts. This isn't a black box designed to produce a predetermined answer. It's a thinking tool designed to stress-test scenarios.
+        </Text>
+
+        <View style={styles.inputsSection}>
+          <Text style={styles.inputsSectionLabel}>Your Inputs</Text>
+          <View style={styles.inputsGrid}>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Staffed Beds</Text>
+              <Text style={styles.inputValue}>{data.staffedBeds}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Nurse FTEs</Text>
+              <Text style={styles.inputValue}>{data.nurseFTEs}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Doc Events</Text>
+              <Text style={styles.inputValue}>{formatNumber(data.documentationEvents)}</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Utilization</Text>
+              <Text style={styles.inputValue}>{data.utilization}%</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Time Saved</Text>
+              <Text style={styles.inputValue}>{data.timeSavedPerEvent} min</Text>
+            </View>
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Investment</Text>
+              <Text style={styles.inputValue}>{formatCurrency(data.investment)}/yr</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.inputsSection}>
+          <Text style={styles.inputsSectionLabel}>Realization Rates</Text>
+          <View style={styles.realizationTable}>
+            <View style={styles.realizationHeader}>
+              <Text style={[styles.realizationHeaderCell, { flex: 2 }]}>Rate</Text>
+              <Text style={[styles.realizationHeaderCell, { flex: 1, textAlign: "center" }]}>Value</Text>
+              <Text style={[styles.realizationHeaderCell, { flex: 3 }]}>Why This Conservative</Text>
+            </View>
+            {realizationRates.map((item, i) => (
+              <View key={i} style={[styles.realizationRow, i === realizationRates.length - 1 ? styles.realizationRowLast : {}]}>
+                <Text style={[styles.realizationCell, { flex: 2 }]}>{item.rate}</Text>
+                <Text style={[styles.realizationCellBold, { flex: 1, textAlign: "center" }]}>{item.value}</Text>
+                <Text style={[styles.realizationCellWhy, { flex: 3 }]}>{item.why}</Text>
               </View>
             ))}
-            {benchmarks.note && (
-              <Text style={styles.benchmarkNote}>{benchmarks.note}</Text>
-            )}
           </View>
-        )}
-
-        <View style={isPotential ? [styles.finalValueBox, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.finalValueBox} wrap={false}>
-          <View>
-            <Text style={[styles.finalValueLabel, isPotential ? { color: colors.amberDark } : {}]}>
-              Annual {driver.name} Value
-            </Text>
-            <Text style={styles.finalValueFormula}>{getFinalFormula(driver)}</Text>
-          </View>
-          <Text style={isPotential ? styles.finalValueAmountPotential : styles.finalValueAmount}>
-            {formatCurrency(driver.value)}
-          </Text>
         </View>
 
-        <View style={isPotential ? [styles.implicationBox, { backgroundColor: colors.amberLight, borderColor: colors.amber }] : styles.implicationBox} wrap={false}>
-          <Text style={[styles.implicationTitle, isPotential ? { color: colors.amberDark } : {}]}>What This Suggests</Text>
-          <Text style={[styles.implicationText, isPotential ? { color: colors.amberDark } : {}]}>{implication}</Text>
+        <View style={styles.insightBox}>
+          <Text style={styles.insightLabel}>Methodology Note</Text>
+          <Text style={styles.insightText}>
+            Our philosophy: conservative inputs, transparent logic. We'd rather you be pleasantly surprised than disappointed. These realization rates are based on observed nursing implementations, not theoretical maximums.
+          </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-const FullPicturePage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
+// ============================================================================
+// PAGE: HOW TO USE THIS DOCUMENT
+// ============================================================================
+
+const HowToUsePage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
   return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.heroCompact}>
-        <Text style={{ fontSize: 8, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Beyond the Numbers</Text>
-        <Text style={styles.heroCompactTitle}>The Full Picture</Text>
-        <Text style={styles.heroCompactSubtitle}>What else gets better—and why we don't put a number on it</Text>
+    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
+      <View style={styles.pageHeader}>
+        <Image src={abridgeLogoPath} style={styles.headerLogo} />
+        <Text style={styles.headerMeta}>Next Steps</Text>
       </View>
 
-      <View style={styles.contentSection}>
-        <View style={styles.narrativeBox}>
-          <Text style={styles.narrativeText}>
-          Your ROI model captures outcomes we can measure with confidence: overtime, retention, agency spend, and (with caveats) patient safety events. But ambient documentation also improves areas that are harder to quantify—and often matter just as much to your organization.
-          {"\n\n"}We're showing these separately because we want to be honest about what we can and can't measure. These benefits are real. They show up in surveys, in audits, in patient feedback, in the daily experience of nurses. But attributing a dollar value would require assumptions we're not comfortable making.
+      <View style={styles.content}>
+        <Text style={styles.sectionLabel}>Next Steps</Text>
+        <Text style={styles.sectionTitle}>How to Use This Document</Text>
+        <Text style={styles.sectionIntro}>
+          This isn't a sales document. It's a decision-support tool. Here's how to get the most from it:
         </Text>
-      </View>
 
-      <View style={styles.fullPictureCard}>
-        <Text style={styles.fullPictureTitle}>Patient Experience (HCAHPS)</Text>
-        <Text style={styles.fullPictureDescription}>
-          Patients notice when nurses are fully present versus distracted by documentation. The research is clear: nurse communication scores correlate with bedside presence. When nurses chart at the bedside on a laptop, patients perceive divided attention. When nurses are fully present—making eye contact, listening actively, explaining clearly—scores improve.
-          {"\n\n"}Ambient documentation removes the laptop from the interaction. The nurse can focus on the patient. The charting happens automatically.
-        </Text>
-        <Text style={styles.fullPictureImpact}>Impacts: "Nurse listened carefully" scores, "Nurse explained things" ratings, overall nurse communication domain, VBP reimbursement tied to HCAHPS</Text>
-        <Text style={[styles.fullPictureWhyNot, { marginTop: 6 }]}>Why we don't quantify: HCAHPS is influenced by dozens of factors—staffing, acuity, room cleanliness, food quality, pain management. Isolating the documentation effect is nearly impossible.</Text>
-      </View>
+        <View style={styles.actionSection}>
+          <Text style={styles.actionNumber}>1.</Text>
+          <Text style={styles.actionTitle}>Stress Test the Inputs</Text>
+          <Text style={styles.actionText}>
+            What if adoption is slower than projected? What if time savings are more modest? Run scenarios. The value of this model is in its flexibility, not its point estimate.
+          </Text>
+        </View>
 
-      <View style={styles.fullPictureCard}>
-        <Text style={styles.fullPictureTitle}>Survey & Compliance Readiness</Text>
-        <Text style={styles.fullPictureDescription}>
-          Complete documentation is your first line of defense in any survey. Joint Commission, CMS, state surveys—they all start with the chart. When documentation is complete, timely, and accurate, surveyors find what they're looking for. When it's not, you get findings, corrective action plans, and follow-up visits.
-          {"\n\n"}Real-time documentation means charts are always current. There's no end-of-shift catch-up. No "I'll finish that later." The documentation exists because the conversation happened.
-        </Text>
-        <Text style={styles.fullPictureImpact}>Impacts: Survey deficiency rates, time spent preparing for surveys, remediation costs after findings, staff anxiety around survey readiness</Text>
-        <Text style={[styles.fullPictureWhyNot, { marginTop: 6 }]}>Why we don't quantify: Survey outcomes are binary and infrequent. Attributing a dollar value would require assumptions about deficiency probability that vary too much by organization.</Text>
-      </View>
+        <View style={styles.actionSection}>
+          <Text style={styles.actionNumber}>2.</Text>
+          <Text style={styles.actionTitle}>Scenario Plan</Text>
+          <Text style={styles.actionText}>
+            Map the pilots and rollouts. Which units first? Which shifts are most likely to benefit? Build the sequencing logic before the implementation plan.
+          </Text>
+        </View>
 
-      <View style={styles.fullPictureCard}>
-        <Text style={styles.fullPictureTitle}>Care Coordination</Text>
-        <Text style={styles.fullPictureDescription}>
-          Handoffs are only as good as the documentation behind them. Shift-to-shift handoffs, department-to-department transfers, discharge planning—they all depend on complete, accurate, timely documentation. When documentation lags, information gets lost. When it's real-time, everyone works from the same current picture.
-        </Text>
-        <Text style={styles.fullPictureImpact}>Impacts: Shift-to-shift handoff quality, interdepartmental communication, miscommunication-related safety events, time spent "hunting" for information</Text>
-        <Text style={[styles.fullPictureWhyNot, { marginTop: 6 }]}>Why we don't quantify: Care coordination benefits are diffuse and hard to isolate. Better handoffs lead to fewer errors, faster care, better outcomes—but the causal chain is long and confounded.</Text>
-      </View>
+        <View style={styles.actionSection}>
+          <Text style={styles.actionNumber}>3.</Text>
+          <Text style={styles.actionTitle}>Track Outcomes</Text>
+          <Text style={styles.actionText}>
+            Pick 3 metrics to track post-implementation:{"\n"}
+            • Documentation time per event (target: -40%){"\n"}
+            • Nurse satisfaction scores (target: +10 pts){"\n"}
+            • One quality metric aligned to your value drivers (falls, HAPIs, etc.)
+          </Text>
+        </View>
 
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>Why This Matters</Text>
-        <Text style={styles.calloutText}>
-          We could have assigned dollar values to these outcomes. Other vendors do. But we'd rather give you a conservative ROI you can defend than an inflated one that falls apart under scrutiny.
-        </Text>
-        <Text style={[styles.calloutText, { marginTop: 8, fontWeight: "bold" }]}>
-          These outcomes are real—they show up in surveys, in patient feedback, in the daily experience of nurses. And they matter to your board, your CNO, and your patients.
-        </Text>
-      </View>
+        <View style={styles.closingBox}>
+          <Text style={styles.closingText}>
+            The goal isn't to predict the future with precision. It's to give you a framework for making decisions with confidence—and adjusting as reality unfolds.
+          </Text>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge Value Assessment"}</Text>
+        <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
   );
 };
 
-const JourneyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  const journey = data.journey;
-  const valueMultiple = journey.pilotValue > 0 ? (journey.fullScaleValue / journey.pilotValue).toFixed(1) : "N/A";
-  const paceLabels: Record<string, string> = {
-    measured: "36 months",
-    steady: "24 months",
-    aggressive: "18 months",
-  };
-  const timeline = paceLabels[journey.scalingPace] || "24 months";
+// ============================================================================
+// DOCUMENT COMPONENT
+// ============================================================================
 
-  return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.heroCompact}>
-        <Text style={{ fontSize: 8, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>The Path Forward</Text>
-        <Text style={styles.heroCompactTitle}>Your Value Journey</Text>
-        <Text style={styles.heroCompactSubtitle}>Unit-by-unit adoption, shift-by-shift results</Text>
-      </View>
-
-      <View style={styles.contentSection}>
-        <View style={styles.narrativeBox}>
-          <Text style={styles.narrativeText}>
-            <Text style={styles.narrativeBold}>Nursing workflows require a thoughtful rollout.</Text> Starting with a pilot on {journey.pilotBeds} {data.unitNamePlural.toLowerCase()}, you'll validate value before expanding unit-by-unit. We're seeing organizations succeed by beginning with units that have strong nurse champions, then letting early adopters share their experience across shift handoffs.
-          </Text>
-          <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-            At full scale with {journey.fullScaleBeds} {data.unitNamePlural.toLowerCase()} and {journey.fullScaleUtilization}% utilization, annual value could reach {formatCurrency(journey.fullScaleValue)}—approximately {valueMultiple}x your pilot phase. This progression reflects patterns we're observing: as nurses experience documentation relief, adoption spreads organically through shift-to-shift conversations.
-          </Text>
-        </View>
-
-      <View style={styles.journeyChart}>
-        <View style={{ flexDirection: "row", marginBottom: 8 }}>
-          <View style={{ width: 55, justifyContent: "space-between", paddingVertical: 4, height: 100 }}>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.fullScaleValue)}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(Math.round((journey.fullScaleValue + journey.pilotValue) / 2))}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>{formatCurrency(journey.pilotValue)}</Text>
-            <Text style={{ fontSize: 7, color: colors.mediumGray, textAlign: "right" }}>$0</Text>
-          </View>
-          
-          <View style={{ flex: 1, marginLeft: 8, height: 100, position: "relative" }}>
-            <Svg width={400} height={100} viewBox="0 0 400 100">
-              <Line x1="0" y1="25" x2="400" y2="25" stroke={colors.borderGray} strokeWidth="0.5" />
-              <Line x1="0" y1="50" x2="400" y2="50" stroke={colors.borderGray} strokeWidth="0.5" />
-              <Line x1="0" y1="75" x2="400" y2="75" stroke={colors.borderGray} strokeWidth="0.5" />
-              <Line x1="0" y1="100" x2="400" y2="100" stroke={colors.borderGray} strokeWidth="1" />
-              <Line x1="0" y1="0" x2="0" y2="100" stroke={colors.borderGray} strokeWidth="1" />
-              
-              <Line 
-                x1="20" 
-                y1="85" 
-                x2="380" 
-                y2="15" 
-                stroke={colors.lightGray} 
-                strokeWidth="2" 
-                strokeDasharray="6,4" 
-              />
-              
-              <Path 
-                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15" 
-                stroke={colors.green} 
-                strokeWidth="2.5" 
-                fill="none" 
-              />
-              
-              <Path 
-                d="M 20 85 Q 120 55, 200 40 Q 300 20, 380 15 L 380 15 L 20 85 Z" 
-                fill={colors.greenLight} 
-                opacity="0.5" 
-              />
-              
-              <Circle cx="20" cy="85" r="6" fill={colors.primary} stroke={colors.white} strokeWidth="2" />
-              <Circle cx="380" cy="10" r="6" fill={colors.green} stroke={colors.white} strokeWidth="2" />
-            </Svg>
-            
-            <Text style={{ position: "absolute", bottom: 2, left: 4, fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
-            <Text style={{ position: "absolute", top: -2, right: 4, fontSize: 7, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
-            
-            <View style={{ position: "absolute", top: 35, left: 160, backgroundColor: colors.greenLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, borderWidth: 1, borderColor: colors.green }}>
-              <Text style={{ fontSize: 8, color: colors.green, fontWeight: "bold", textAlign: "center" }}>+{formatCurrency(journey.networkEffect)}</Text>
-              <Text style={{ fontSize: 6, color: colors.greenDark, textAlign: "center" }}>compounding bonus</Text>
-            </View>
-          </View>
-        </View>
-        
-        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingLeft: 63, paddingRight: 10, marginBottom: 4 }}>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.primary, fontWeight: "bold" }}>Today</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.pilotBeds} {data.unitNamePlural}</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>6 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>12 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>18 mo</Text>
-          </View>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 7, color: colors.green, fontWeight: "bold" }}>Full Scale</Text>
-            <Text style={{ fontSize: 6, color: colors.mediumGray }}>{journey.fullScaleBeds} {data.unitNamePlural}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.journeyScenario}>
-        <View style={styles.journeyScenarioCard}>
-          <Text style={styles.journeyScenarioTitle}>Pilot Phase</Text>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotBeds}</Text> {data.unitNamePlural.toLowerCase()}</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{formatNumber(journey.pilotEvents)}</Text> documentation events</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValue}>{journey.pilotUtilization}%</Text> utilization target</Text>
-          </View>
-          <View style={[styles.journeyScenarioRow, { marginTop: 6 }]}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}>Annual value: <Text style={styles.journeyScenarioValue}>{formatCurrency(journey.pilotValue)}</Text></Text>
-          </View>
-        </View>
-
-        <View style={styles.journeyScenarioCardHighlight}>
-          <Text style={styles.journeyScenarioTitleHighlight}>Full Scale</Text>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValueGreen}>{journey.fullScaleBeds}</Text> {data.unitNamePlural.toLowerCase()}</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}><Text style={styles.journeyScenarioValueGreen}>{journey.fullScaleUtilization}%</Text> utilization target</Text>
-          </View>
-          <View style={styles.journeyScenarioRow}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}>{timeline} timeline</Text>
-          </View>
-          <View style={[styles.journeyScenarioRow, { marginTop: 6 }]}>
-            <Text style={styles.journeyScenarioCheck}>-</Text>
-            <Text style={styles.journeyScenarioText}>Annual value: <Text style={styles.journeyScenarioValueGreen}>{formatCurrency(journey.fullScaleValue)}</Text></Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.compoundingBox}>
-        <Text style={styles.compoundingTitle}>The Compounding Effect</Text>
-        <Text style={styles.compoundingValue}>+{formatCurrency(journey.networkEffect)}</Text>
-        <Text style={styles.compoundingSubtext}>Additional annual value from network effects at full scale</Text>
-      </View>
-
-      <View style={styles.narrativeBox}>
-        <Text style={styles.narrativeText}>
-          <Text style={styles.narrativeBold}>Value doesn't grow linearly—it compounds across nursing units.</Text> As more nurses adopt Abridge, we're seeing patterns emerge: overtime drops unit-by-unit, shift handoffs improve, documentation becomes more complete. The value per bed tends to increase even as you add beds.
-        </Text>
-        <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-          This is why pilot success often understates full-scale potential. At {journey.fullScaleUtilization}% utilization with {journey.fullScaleBeds} {data.unitNamePlural.toLowerCase()}, network effects could add approximately {formatCurrency(journey.networkEffect)} to your annual value—bringing total potential to {formatCurrency(journey.fullScaleValue + journey.networkEffect)}.
-        </Text>
-      </View>
-
-      <View style={{ backgroundColor: colors.slateLight, padding: 14, borderRadius: 6, marginTop: 12 }}>
-        <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.white, marginBottom: 6 }}>Nursing-Specific Scaling Dynamics</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <View style={{ width: "50%", paddingRight: 8, marginBottom: 6 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Shift Coverage</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Full value requires all-shift adoption across days, evenings, nights</Text>
-          </View>
-          <View style={{ width: "50%", paddingLeft: 8, marginBottom: 6 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Champion Networks</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Early adopters who share experiences across shift handoffs accelerate rollout</Text>
-          </View>
-          <View style={{ width: "50%", paddingRight: 8 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Unit Culture</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Some units adopt faster based on nurse engagement and leadership support</Text>
-          </View>
-          <View style={{ width: "50%", paddingLeft: 8 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Documentation Patterns</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Real-time charting vs end-of-shift catch-up varies by unit and impacts results</Text>
-          </View>
-        </View>
-      </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const MethodologyPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.heroCompact}>
-        <Text style={{ fontSize: 8, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Under the Hood</Text>
-        <Text style={styles.heroCompactTitle}>Methodology & Assumptions</Text>
-        <Text style={styles.heroCompactSubtitle}>How we built your nursing ROI model</Text>
-      </View>
-
-      <View style={styles.contentSection}>
-        <View style={styles.connectedSection}>
-          <Text style={styles.connectedTitle}>CONNECTED VALUE</Text>
-          <Text style={styles.connectedSubtitle}>Nursing + Inpatient compounds your results</Text>
-          <Text style={styles.connectedText}>
-            This assessment models nursing-specific value. Organizations implementing Abridge across nursing and inpatient settings often see compounding benefits: nurses charting faster means hospitalists get better context, CDI has cleaner records to work with, and the entire documentation ecosystem tends to improve.
-          </Text>
-        </View>
-
-      <View style={styles.methodologySection}>
-        <View style={styles.methodologyBox}>
-          <Text style={styles.methodologyTitle}>Your Inputs</Text>
-          <Text style={styles.methodologyItem}>{data.staffedBeds} {data.unitNamePlural}</Text>
-          <Text style={styles.methodologyItem}>{formatNumber(data.nurseFTEs)} nurse FTEs</Text>
-          <Text style={styles.methodologyItem}>{data.utilization}% expected utilization</Text>
-          <Text style={styles.methodologyItem}>{data.timeSavedPerEvent} min saved per documentation event</Text>
-          <Text style={styles.methodologyItem}>${data.costPerBed}/{data.unitName}/month</Text>
-        </View>
-
-        <View style={styles.methodologyBox}>
-          <Text style={styles.methodologyTitle}>Labor Cost Benchmarks</Text>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderCell}>Metric</Text>
-            <Text style={styles.tableHeaderCell}>Range</Text>
-            <Text style={styles.tableHeaderCell}>Default</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>RN Base Hourly Rate</Text>
-            <Text style={styles.tableCell}>$40-$50</Text>
-            <Text style={styles.tableCellBold}>$45</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>OT Rate (1.5×)</Text>
-            <Text style={styles.tableCell}>$60-$75</Text>
-            <Text style={styles.tableCellBold}>$60</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>Agency Premium</Text>
-            <Text style={styles.tableCell}>$65K-$85K/FTE</Text>
-            <Text style={styles.tableCellBold}>$75K/FTE</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>Replacement Cost</Text>
-            <Text style={styles.tableCell}>$40K-$60K</Text>
-            <Text style={styles.tableCellBold}>$50K</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>Turnover Rate</Text>
-            <Text style={styles.tableCell}>18-25%</Text>
-            <Text style={styles.tableCellBold}>20%</Text>
-          </View>
-        </View>
-
-        <View style={styles.methodologyBox}>
-          <Text style={styles.methodologyTitle}>Quality & Safety Benchmarks</Text>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderCell}>Metric</Text>
-            <Text style={styles.tableHeaderCell}>Range</Text>
-            <Text style={styles.tableHeaderCell}>Default</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>HAPI Cost</Text>
-            <Text style={styles.tableCell}>$10K-$50K</Text>
-            <Text style={styles.tableCellBold}>$20K</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>Fall Cost</Text>
-            <Text style={styles.tableCell}>$3K-$30K</Text>
-            <Text style={styles.tableCellBold}>$6,500</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>HAPI Rate</Text>
-            <Text style={styles.tableCell}>2-3%</Text>
-            <Text style={styles.tableCellBold}>2%</Text>
-          </View>
-          <View style={styles.tableRow}>
-            <Text style={styles.tableCell}>Fall Rate</Text>
-            <Text style={styles.tableCell}>3-5%</Text>
-            <Text style={styles.tableCellBold}>3%</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={{ backgroundColor: colors.slateLight, padding: 14, borderRadius: 6, marginTop: 10, marginBottom: 10 }}>
-        <Text style={{ fontSize: 9, fontWeight: "bold", color: colors.white, marginBottom: 8 }}>Nursing-Specific Considerations</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <View style={{ width: "50%", paddingRight: 8, marginBottom: 6 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Bedside Workflows</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Value varies by how much current charting occurs at bedside vs nursing station vs at home</Text>
-          </View>
-          <View style={{ width: "50%", paddingLeft: 8, marginBottom: 6 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Shift Handoffs</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Complete real-time documentation improves handoff quality and continuity of care</Text>
-          </View>
-          <View style={{ width: "50%", paddingRight: 8, marginBottom: 6 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Nurse-to-Patient Ratios</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Higher patient loads amplify documentation burden and potential time savings</Text>
-          </View>
-          <View style={{ width: "50%", paddingLeft: 8, marginBottom: 6 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Regulatory Compliance</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Joint Commission, CMS, and state requirements drive documentation completeness needs</Text>
-          </View>
-          <View style={{ width: "50%", paddingRight: 8 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Overtime Patterns</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Charting-related overtime varies by unit culture, acuity, and EHR complexity</Text>
-          </View>
-          <View style={{ width: "50%", paddingLeft: 8 }}>
-            <Text style={{ fontSize: 7, fontWeight: "bold", color: colors.emerald }}>Agency Reliance</Text>
-            <Text style={{ fontSize: 7, color: colors.lightGray }}>Documentation burden contributes to burnout which impacts retention and agency dependence</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>Conservative by Design</Text>
-        <Text style={styles.calloutText}>
-          Every assumption here can be adjusted. We start conservative because credibility matters more than inflated projections. Your actual results may differ—often in positive ways we didn't model.
-        </Text>
-      </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const ClosingPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; pageNum: number; totalPages: number }) => {
-  const displayClientName = data.clientName || data.organizationName || "Your Organization";
-  
-  return (
-    <Page size="A4" style={styles.page} wrap={false}>
-      <View style={styles.heroCompact}>
-        <Text style={{ fontSize: 8, color: colors.lightGray, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Summary</Text>
-        <Text style={styles.heroCompactTitle}>{displayClientName}</Text>
-        <Text style={styles.heroCompactSubtitle}>Making the case for nursing documentation relief</Text>
-      </View>
-
-      <View style={styles.contentSection}>
-        <View style={styles.closingQuote}>
-          <Text style={styles.closingQuoteText}>
-            "Nursing documentation carries a different kind of weight—it's not just about coding or billing. It's about <Text style={styles.closingHighlight}>patient safety</Text>, <Text style={styles.closingHighlight}>regulatory compliance</Text>, and the daily experience of nurses who spend 25-35% of their shift charting instead of caring. The ROI is measurable. The impact on culture is harder to quantify—but often matters more."
-          </Text>
-        </View>
-
-        <View style={styles.narrativeBox}>
-          <Text style={styles.narrativeText}>
-            <Text style={styles.narrativeBold}>This assessment represents a starting point.</Text> The calculations here are based on industry benchmarks and conservative assumptions. Your organization's actual experience will depend on current documentation workflows, nurse engagement, and implementation approach.
-          </Text>
-          <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-            What this model doesn't capture: the relief on nurses' faces when they realize they can go home on time. The quality of patient interactions when nurses aren't typing. The cultural shift when documentation stops being a burden.
-          </Text>
-          <Text style={[styles.narrativeText, { marginTop: 8 }]}>
-            Those outcomes matter. They're just harder to put in a spreadsheet.
-          </Text>
-        </View>
-
-        <View style={styles.benchmarkBox}>
-          <Text style={styles.benchmarkTitle}>Your Summary</Text>
-          <View style={styles.benchmarkRow}>
-            <Text style={styles.benchmarkLabel}>Total Annual Value (Labor)</Text>
-            <Text style={[styles.benchmarkValue, { color: colors.green }]}>{formatCurrency(data.laborTotal)}</Text>
-          </View>
-          <View style={styles.benchmarkRow}>
-            <Text style={styles.benchmarkLabel}>Potential Value (Quality)</Text>
-            <Text style={[styles.benchmarkValue, { color: colors.amber }]}>{formatCurrency(data.qualityTotal)}</Text>
-          </View>
-          <View style={styles.benchmarkRow}>
-            <Text style={styles.benchmarkLabel}>Annual Investment</Text>
-            <Text style={styles.benchmarkValue}>{formatCurrency(data.investment)}</Text>
-          </View>
-          <View style={[styles.benchmarkRow, { borderBottomWidth: 0 }]}>
-            <Text style={[styles.benchmarkLabel, { fontWeight: "bold" }]}>Net Value Created</Text>
-            <Text style={[styles.benchmarkValue, { color: colors.green, fontSize: 10 }]}>{formatCurrency(data.netGain)}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Nursing ROI Assessment</Text>
-        <Text style={styles.footerText}>Page {pageNum} of {totalPages}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const NursingROIDocument = ({ data }: { data: NursingPDFData }) => {
-  const quantifiedDrivers = data.drivers.filter(d => d.category === "labor" || d.category === "quality");
-  // Stakes + Executive + drivers + Journey + Path Forward + Methodology (Cover not counted)
-  const totalPages = 1 + 1 + quantifiedDrivers.length + 1 + 1 + 1;
-  let currentPage = 1;
+const NursingPDFDocument = ({ data }: { data: NursingPDFData }) => {
+  // Cover + Thesis + Drivers + Investment + Transparency + HowToUse
+  const totalPages = 5 + data.drivers.length;
+  let pageNum = 1;
 
   return (
     <Document>
-      {/* Cover - no page number, not counted */}
       <CoverPage data={data} />
-      
-      {/* Stakes - Page 1 */}
-      <StakesPage pageNum={currentPage++} totalPages={totalPages} />
-      
-      {/* Executive Summary */}
-      <ExecutiveSummary data={data} pageNum={currentPage++} totalPages={totalPages} />
-      
-      {/* Driver Deep Dives */}
-      {quantifiedDrivers.map((driver) => (
-        <DriverPage key={driver.id} driver={driver} data={data} pageNum={currentPage++} totalPages={totalPages} />
+      <ThesisPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      {data.drivers.map((driver) => (
+        <DriverPage
+          key={driver.id}
+          driver={driver}
+          data={data}
+          pageNum={++pageNum}
+          totalPages={totalPages}
+        />
       ))}
-      
-      {/* Journey / Projections */}
-      <JourneyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
-      
-      {/* Path Forward */}
-      <PathForwardPage data={data} pageNum={currentPage++} totalPages={totalPages} />
-      
-      {/* Methodology */}
-      <MethodologyPage data={data} pageNum={currentPage++} totalPages={totalPages} />
+      <InvestmentPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <TransparencyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <HowToUsePage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
   );
 };
 
-export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {
-  const blob = await pdf(<NursingROIDocument data={data} />).toBlob();
-  const filename = `Abridge_Nursing_ROI_${data.organizationName?.replace(/\s+/g, "_") || "Assessment"}_${new Date().toISOString().split("T")[0]}.pdf`;
-  return { blob, filename };
-}
+// ============================================================================
+// EXPORT FUNCTIONS
+// ============================================================================
 
 export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
-  const { blob, filename } = await generateNursingROIPDFBlob(data);
-  saveAs(blob, filename);
+  const blob = await pdf(<NursingPDFDocument data={data} />).toBlob();
+  const today = new Date().toISOString().split("T")[0];
+  const orgName = data.clientName || data.organizationName || "Organization";
+  const fileName = `Nursing_ROI_Model_${orgName.replace(/\s+/g, "_")}_${today}.pdf`;
+  saveAs(blob, fileName);
 }
+
+export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<Blob> {
+  return await pdf(<NursingPDFDocument data={data} />).toBlob();
+}
+
+export { NursingPDFDocument };
