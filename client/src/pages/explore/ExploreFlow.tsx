@@ -216,7 +216,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     denialsRealization: 85,
   },
   pricingModel: 'perProvider',
-  costPerProvider: 210,
+  costPerProvider: 0,
   annualLicenseFee: 0,
   implementationFee: 25000,
   includeImplementation: false,

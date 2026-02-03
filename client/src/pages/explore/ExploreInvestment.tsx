@@ -213,55 +213,6 @@ export default function ExploreInvestment({
           )}
         </motion.div>
 
-        {/* Your ROI Summary */}
-        <motion.div
-          className="bg-white rounded-lg border border-[#E5E5E5] p-6 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-            Your ROI
-          </p>
-
-          <div className="space-y-3 text-sm mb-4">
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Annual Value</span>
-              <span className="font-semibold text-black">{formatCurrency(totalValue)}</span>
-            </div>
-            <p className="text-xs text-[#888888] text-right">(Time + Documentation)</p>
-
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Annual Investment</span>
-              <span className="font-semibold text-black">-{formatCurrency(annualInvestment)}</span>
-            </div>
-          </div>
-
-          <div className="h-px bg-[#E5E5E5] my-4" />
-
-          <div className="mb-4">
-            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-              Net Annual Value
-            </p>
-            <p className="text-3xl font-bold text-[#E85A2C]">
-              {formatCurrency(netAnnualValue)}
-            </p>
-          </div>
-
-          <div className="h-px bg-[#E5E5E5] my-4" />
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-[#888888]">ROI</p>
-              <p className="text-2xl font-bold text-black">{roi.toFixed(1)}×</p>
-            </div>
-            <div>
-              <p className="text-sm text-[#888888]">Value per Provider</p>
-              <p className="text-2xl font-bold text-black">{formatCurrency(valuePerProvider)}</p>
-            </div>
-          </div>
-        </motion.div>
-
         {/* Continue Button - Mobile */}
         <motion.div 
           className="flex justify-center lg:hidden"
