@@ -128,7 +128,7 @@ export default function ExploreDocQuality({
       pageTitle: 'Documentation Quality',
       pageSubtitle: 'Complete documentation drives revenue integrity.',
       driver1Title: 'DRG Accuracy',
-      driver1Subtitle: 'Capture clinical complexity that drives reimbursement',
+      driver1Subtitle: "Capture clinical complexity that's discussed but not documented",
       driver2Title: 'CDI Query Reduction',
       driver2Subtitle: 'Fewer queries when documentation is complete upfront',
       driver3Title: '', // Denials handled within DRG Accuracy
@@ -220,14 +220,15 @@ export default function ExploreDocQuality({
               >
                 <div className="bg-white rounded-b-lg p-6 md:p-8">
                   <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
-                    Documentation gaps cause downcoding and denials. Abridge captures the clinical reasoning that prevents both.
+                    Documentation gaps cost you twice—first at coding, then at audit. Abridge captures the clinical conversations that close these gaps.
                   </p>
 
-                  {/* STEP 1: ADMISSIONS AT RISK */}
+                  {/* STEP 1: YOUR DOCUMENTATION OPPORTUNITY */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 1: Admissions at Risk
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Step 1: Your Documentation Opportunity
                     </p>
+                    <p className="text-[13px] text-[#666666] mb-4">How often does CDI identify documentation opportunities?</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
@@ -238,7 +239,7 @@ export default function ExploreDocQuality({
                         </div>
                         <span className="text-[#888888] text-xl hidden sm:block">×</span>
                         <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">At-Risk Rate</label>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">CDI Opportunity Rate</label>
                           <div className="relative">
                             <input
                               type="number"
@@ -254,21 +255,24 @@ export default function ExploreDocQuality({
                       </div>
                       <div className="text-center py-2">
                         <span className="text-[13px] text-[#666666]">= </span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsAtRisk))} admissions at risk</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsAtRisk))} admissions with documentation opportunities</span>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        20-30% of admissions have documentation gaps that affect DRG assignment. 25% is moderate.
+                        Your benchmark: If CDI queries 30% of admissions, you have at least 30% with documentation gaps. 25% is moderate.
                       </p>
                     </div>
                   </div>
 
-                  {/* STEP 2: ABRIDGE PROTECTION */}
+                  {/* STEP 2: THE GAP ABRIDGE CLOSES */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 2: Abridge Protection
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Step 2: The Gap Abridge Closes
                     </p>
-                    <p className="text-[13px] text-[#666666] mb-4">How many can Abridge protect?</p>
-                    <div className="grid grid-cols-3 gap-3 mb-4">
+                    <p className="text-[13px] text-[#666666] mb-2">
+                      Not all gaps are the same. Abridge specifically captures "discussed but not documented"—clinical reasoning that happened verbally but didn't make the note.
+                    </p>
+                    <p className="text-[13px] text-[#666666] mb-4">What portion of your documentation gaps are verbal-to-written gaps?</p>
+                    <div className="grid grid-cols-3 gap-3 mb-3">
                       {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                         <button
                           key={level}
@@ -287,28 +291,34 @@ export default function ExploreDocQuality({
                         </button>
                       ))}
                     </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
+                    <div className="bg-[#F5F0EB] rounded-lg p-4 text-center mb-4">
                       <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipAdmissionsAtRisk))} × {ipDrgProtectionPercent}% = </span>
-                      <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))} admissions protected</span>
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))} admissions where Abridge captures what was missed</span>
+                    </div>
+                    <div className="text-[13px] text-[#888888] space-y-1">
+                      <p><strong>Conservative:</strong> Only clear verbal discussions</p>
+                      <p><strong>Typical:</strong> Includes clinical reasoning that supports specificity</p>
+                      <p><strong>Optimistic:</strong> Strong adoption, comprehensive capture</p>
                     </div>
                   </div>
 
-                  {/* STEP 3: REVENUE PROTECTED */}
+                  {/* STEP 3: REVENUE IMPACT */}
                   <div className="mb-10">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 3: Revenue Protected
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Step 3: Revenue Impact
                     </p>
+                    <p className="text-[13px] text-[#666666] mb-4">When a missed CC/MCC is captured, DRG weight increases.</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions Protected</label>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions Captured</label>
                           <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
                             <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))}</span>
                           </div>
                         </div>
                         <span className="text-[#888888] text-xl hidden sm:block">×</span>
                         <div className="flex-1">
-                          <label className="text-[13px] text-[#666666] mb-1.5 block">DRG Weight Lift</label>
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Avg DRG Weight Lift</label>
                           <input
                             type="number"
                             step="0.1"
@@ -336,14 +346,17 @@ export default function ExploreDocQuality({
                       </div>
                       <div className="text-center py-2">
                         <span className="text-[13px] text-[#666666]">= </span>
-                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))} gross</span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))} gross value</span>
                       </div>
                     </div>
 
                     {/* Benchmark Table */}
                     <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-4 mb-4">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3 flex items-center gap-2">
-                        <span>📊</span> Benchmark: DRG Weight Impact
+                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2 flex items-center gap-2">
+                        <span>📊</span> Common Documentation Gaps
+                      </p>
+                      <p className="text-[13px] text-[#666666] mb-3">
+                        These conditions are frequently discussed but under-documented. When captured, they change DRG assignment.
                       </p>
                       <div className="space-y-2 text-[13px]">
                         <div className="flex justify-between">
@@ -362,18 +375,23 @@ export default function ExploreDocQuality({
                           <span className="text-[#666666]">Acute encephalopathy</span>
                           <span className="text-black">+0.3 to +0.5</span>
                         </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">Acute kidney injury</span>
+                          <span className="text-black">+0.1 to +0.3</span>
+                        </div>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        0.4 is average. Higher acuity facilities may see 0.5-0.6.
+                        0.4 is a blended average across common missed CCs/MCCs.
                       </p>
                     </div>
                   </div>
 
-                  {/* STEP 4: REALIZATION */}
+                  {/* STEP 4: WHAT YOU CAN COUNT ON */}
                   <div className="mb-8">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                      Step 4: Realization
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                      Step 4: What You Can Count On
                     </p>
+                    <p className="text-[13px] text-[#666666] mb-4">Not all captured documentation changes the final code.</p>
                     <div className="bg-[#F5F0EB] rounded-lg p-5">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
@@ -403,7 +421,7 @@ export default function ExploreDocQuality({
                         <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgNetValue))} net</span>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        50% accounts for audits, coder discretion, and cases where documentation doesn't change final code.
+                        50% accounts for audit risk, coder judgment, and cases where documentation doesn't change final DRG. This is conservative.
                       </p>
                     </div>
                   </div>
@@ -414,12 +432,9 @@ export default function ExploreDocQuality({
                       <span className="font-semibold text-black">Annual DRG Value</span>
                       <span className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipDrgNetValue))}</span>
                     </div>
-                    <p className="text-[13px] text-[#666666] mb-4">
-                      Includes DRG accuracy improvement and denial prevention from complete documentation.
-                    </p>
                     <p className="text-[13px] text-[#888888] flex items-start gap-2">
                       <span>⚠️</span>
-                      <span>Validate capture rates with your CDI team for your case mix.</span>
+                      <span>Validate with your CDI team. They know your case mix and current gap rates better than any benchmark.</span>
                     </p>
                   </div>
                 </div>
