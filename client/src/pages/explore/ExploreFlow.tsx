@@ -145,7 +145,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
   numberOfProviders: 0,
   annualEncounters: 0,
-  utilizationPercent: 70,
+  utilizationPercent: 0,
   nursingStaffedBeds: 0,
   nursingOccupancyRate: 85,
   nursingShiftsPerNurseYear: 156,

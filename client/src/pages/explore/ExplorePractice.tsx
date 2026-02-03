@@ -14,8 +14,8 @@ interface ExplorePracticeProps {
   onHome: () => void;
 }
 
-type EncounterPreset = 'lighter' | 'typical' | 'busy' | 'custom';
-type UtilizationPreset = 'conservative' | 'typical' | 'aggressive';
+type EncounterPreset = 'lighter' | 'typical' | 'busy' | 'custom' | null;
+type UtilizationPreset = 'conservative' | 'typical' | 'aggressive' | null;
 
 export default function ExplorePractice({
   state,
@@ -26,7 +26,8 @@ export default function ExplorePractice({
 }: ExplorePracticeProps) {
   const providers = state.numberOfProviders || 80;
 
-  const getEncounterPreset = (): EncounterPreset => {
+  const getEncounterPreset = (): EncounterPreset | null => {
+    if (state.annualEncounters === 0) return null;
     const perProvider = providers > 0 ? state.annualEncounters / providers : 0;
     if (perProvider === 2000) return 'lighter';
     if (perProvider === 3000) return 'typical';
@@ -34,11 +35,11 @@ export default function ExplorePractice({
     return 'custom';
   };
 
-  const getUtilizationPreset = (): UtilizationPreset => {
+  const getUtilizationPreset = (): UtilizationPreset | null => {
     if (state.utilizationPercent === 50) return 'conservative';
     if (state.utilizationPercent === 70) return 'typical';
     if (state.utilizationPercent === 85) return 'aggressive';
-    return 'typical';
+    return null;
   };
 
   const selectedEncounterPreset = getEncounterPreset();
@@ -48,8 +49,8 @@ export default function ExplorePractice({
     return Math.round(state.annualEncounters * (state.utilizationPercent / 100));
   }, [state.annualEncounters, state.utilizationPercent]);
 
-  const handleEncounterPreset = (preset: EncounterPreset) => {
-    const multipliers: Record<EncounterPreset, number> = {
+  const handleEncounterPreset = (preset: 'lighter' | 'typical' | 'busy' | 'custom') => {
+    const multipliers = {
       lighter: 2000,
       typical: 3000,
       busy: 4000,
@@ -58,8 +59,8 @@ export default function ExplorePractice({
     updateState({ annualEncounters: providers * multipliers[preset] });
   };
 
-  const handleUtilizationPreset = (preset: UtilizationPreset) => {
-    const values: Record<UtilizationPreset, number> = {
+  const handleUtilizationPreset = (preset: 'conservative' | 'typical' | 'aggressive') => {
+    const values = {
       conservative: 50,
       typical: 70,
       aggressive: 85,
@@ -69,7 +70,7 @@ export default function ExplorePractice({
 
   const formatNumber = (n: number) => n.toLocaleString();
 
-  const canContinue = providers > 0 && state.annualEncounters > 0;
+  const canContinue = state.numberOfProviders > 0 && state.annualEncounters > 0 && state.utilizationPercent > 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -131,12 +132,12 @@ export default function ExplorePractice({
               Clinicians who would use Abridge
             </p>
             <FormattedNumberInput
-              value={providers}
+              value={state.numberOfProviders || ''}
               onChange={(v: number) => {
                 const newProviders = v;
                 // If using a preset, recalculate encounters
-                if (selectedEncounterPreset !== 'custom') {
-                  const multipliers = { lighter: 2000, typical: 3000, busy: 4000, custom: 3000 };
+                if (selectedEncounterPreset && selectedEncounterPreset !== 'custom') {
+                  const multipliers = { lighter: 2000, typical: 3000, busy: 4000 };
                   updateState({ 
                     numberOfProviders: newProviders,
                     annualEncounters: newProviders * multipliers[selectedEncounterPreset]
@@ -146,6 +147,7 @@ export default function ExplorePractice({
                 }
               }}
               className="h-11 text-base bg-white"
+              placeholder="Enter number of providers"
               data-testid="input-providers"
             />
           </div>
@@ -188,9 +190,10 @@ export default function ExplorePractice({
             </p>
             <div className="relative">
               <FormattedNumberInput
-                value={state.annualEncounters}
+                value={state.annualEncounters || ''}
                 onChange={(v: number) => updateState({ annualEncounters: v })}
                 className="h-11 text-base bg-white pr-16"
+                placeholder="Enter total volume"
                 data-testid="input-encounters"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">

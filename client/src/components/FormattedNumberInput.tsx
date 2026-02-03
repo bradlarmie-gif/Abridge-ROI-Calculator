@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 
 interface FormattedNumberInputProps {
-  value: number;
+  value: number | '';
   onChange: (value: number) => void;
   step?: number;
   className?: string;
+  placeholder?: string;
   'data-testid'?: string;
 }
 
@@ -28,18 +29,20 @@ export function FormattedNumberInput({
   onChange,
   step = 1,
   className = '',
+  placeholder = '',
   'data-testid': testId
 }: FormattedNumberInputProps) {
   const decimals = step < 1 ? Math.ceil(-Math.log10(step)) : 0;
-  const [displayValue, setDisplayValue] = useState(() => formatWithCommas(value, decimals));
+  const numValue = value === '' ? 0 : value;
+  const [displayValue, setDisplayValue] = useState(() => value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isFocused) {
-      setDisplayValue(formatWithCommas(value, decimals));
+      setDisplayValue(value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
     }
-  }, [value, isFocused, decimals]);
+  }, [value, isFocused, decimals, numValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
@@ -58,7 +61,7 @@ export function FormattedNumberInput({
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
     // Show raw number for editing
-    setDisplayValue(value.toString());
+    setDisplayValue(value === '' || value === 0 ? '' : value.toString());
     // Select all on next tick so user can easily replace
     setTimeout(() => {
       e.target.select();
@@ -70,7 +73,7 @@ export function FormattedNumberInput({
       inputRef.current?.blur();
     }
     if (e.key === 'Escape') {
-      setDisplayValue(formatWithCommas(value, decimals));
+      setDisplayValue(value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
       inputRef.current?.blur();
     }
   };
@@ -86,6 +89,7 @@ export function FormattedNumberInput({
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={className}
+      placeholder={placeholder}
       data-testid={testId}
       autoComplete="off"
     />
