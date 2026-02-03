@@ -52,11 +52,36 @@ export default function App() {
   usePreventNumberInputScroll();
   
   const [currentView, setCurrentView] = useState<AppView>("splash");
+  
+  // Track navigation history for browser back button support
+  const [viewHistory, setViewHistory] = useState<AppView[]>(["splash"]);
 
-  const navigateTo = (view: AppView) => {
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.view) {
+        setCurrentView(event.state.view);
+      }
+      // If no view in state, preserve current view (don't force splash)
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // Initialize history state
+    if (!window.history.state?.view) {
+      window.history.replaceState({ view: currentView }, '', window.location.href);
+    }
+    
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentView]);
+
+  const navigateTo = useCallback((view: AppView) => {
     setCurrentView(view);
+    setViewHistory(prev => [...prev, view]);
+    // Push to browser history so back button works
+    window.history.pushState({ view }, '', window.location.href);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   const [selectionState, setSelectionState] = useState<SelectionState>({
     selectedSettings: [],

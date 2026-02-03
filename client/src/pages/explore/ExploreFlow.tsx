@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import ExploreCareSettings from "./ExploreCareSettings";
 import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimePath from "./ExploreTimePath";
@@ -145,6 +145,30 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // Handle browser back button within explore flow
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      // Only handle explore phase if we're still in explore view
+      if (event.state?.view === 'explore' && event.state?.explorePhase) {
+        setPhase(event.state.explorePhase);
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    
+    // Initialize with current phase (preserve view state)
+    const currentState = window.history.state || {};
+    if (!currentState.explorePhase || currentState.view !== 'explore') {
+      window.history.replaceState({ 
+        ...currentState, 
+        view: 'explore',
+        explorePhase: phase 
+      }, '');
+    }
+    
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []); // Register once
+
   const goHome = useCallback(() => {
     if (onBackToJourney) {
       onBackToJourney();
@@ -155,6 +179,11 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
 
   const navigate = useCallback((nextPhase: ExplorePhase) => {
     setPhase(nextPhase);
+    // Push browser history with both view and phase for consistent state
+    window.history.pushState({ 
+      view: 'explore', 
+      explorePhase: nextPhase 
+    }, '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
