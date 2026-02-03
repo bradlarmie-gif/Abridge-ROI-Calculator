@@ -25,9 +25,11 @@ interface JourneyInputs {
 }
 
 const INPATIENT_DRIVER_CATEGORIES: Record<string, "labor" | "revenue"> = {
+  // Time Returned drivers (from Time Allocation page)
   inpatientRetention: "labor",
+  // Documentation Improved drivers (from Documentation Levers page)
   inpatientCCMCC: "revenue",
-  inpatientCDI: "labor",
+  inpatientCDI: "revenue",
   inpatientDenials: "revenue",
 };
 

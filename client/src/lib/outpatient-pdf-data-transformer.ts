@@ -31,9 +31,11 @@ interface JourneyInputs {
 }
 
 const DRIVER_CATEGORIES: Record<string, "labor" | "revenue"> = {
-  patientAccess: "revenue",
+  // Time Returned drivers (from Time Allocation page)
+  patientAccess: "labor",
   overtime: "labor",
   workforce: "labor",
+  // Documentation Improved drivers (from Documentation Levers page)
   wrvu: "revenue",
   hcc: "revenue",
   denials: "revenue",
