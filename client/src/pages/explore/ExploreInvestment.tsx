@@ -191,7 +191,7 @@ export default function ExploreInvestment({
               type="checkbox"
               checked={state.includeImplementation}
               onChange={(e) => updateState({ includeImplementation: e.target.checked })}
-              className="w-5 h-5 rounded border-[#D1D5DB] text-[#E85A2C] focus:ring-[#E85A2C]"
+              className="w-5 h-5 rounded border-[#D1D5DB] accent-black focus:ring-black"
               data-testid="checkbox-implementation"
             />
             <span className="text-sm text-black">Add implementation fee</span>
