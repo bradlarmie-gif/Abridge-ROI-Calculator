@@ -127,18 +127,6 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        {/* Step Indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3, 4, 5].map((step) => (
-            <div
-              key={step}
-              className={`w-2 h-2 rounded-full ${
-                step <= 5 ? "bg-[#E85A2C]" : "bg-[#D1D5DB]"
-              }`}
-            />
-          ))}
-        </div>
-
         {/* Hero Statement */}
         <motion.div 
           className="text-center mb-8"
