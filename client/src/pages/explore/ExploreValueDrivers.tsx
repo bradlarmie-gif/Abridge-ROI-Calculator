@@ -163,11 +163,11 @@ export default function ExploreValueDrivers({
     },
     ed: {
       pageTitle: 'What Could That Time Be Worth?',
-      pageSubtitle: `Your ED providers could reclaim ${formatNumber(totalHoursSaved)} hours. Faster documentation means faster throughput.`,
-      driver1Title: 'LWBS Reduction',
-      driver1Subtitle: 'Faster turnaround reduces patients leaving without being seen',
-      driver2Title: 'Throughput Improvement',
-      driver2Subtitle: 'More patients per shift with faster documentation',
+      pageSubtitle: `Your ED providers could reclaim ${formatNumber(totalHoursSaved)} hours. In the ED, faster documentation means faster throughput and fewer patients leaving without being seen.`,
+      driver1Title: 'LWBS Recovery',
+      driver1Subtitle: 'Recover patients who leave without being seen',
+      driver2Title: 'Admission Capture',
+      driver2Subtitle: 'Recover revenue when ED admits become inpatient',
       driver3Title: 'Clinician Wellbeing',
       driver3Subtitle: 'If time improves work-life balance and retention',
     },
@@ -274,11 +274,13 @@ export default function ExploreValueDrivers({
             How to Use This Section
           </p>
           <p className="text-sm text-black leading-relaxed">
-            We can't tell you exactly how your organization will use reclaimed time. 
-            But we can help you model different scenarios.
+            {isED 
+              ? "ED time savings create value differently than outpatient. Faster documentation reduces wait times and LWBS rates—the primary way time converts to value in emergency settings."
+              : "We can't tell you exactly how your organization will use reclaimed time. But we can help you model different scenarios."
+            }
           </p>
           <p className="text-sm text-[#888888] mt-2">
-            Engage with the drivers that are relevant to your situation. Skip the ones that aren't.
+            Engage with the drivers that {isED ? "match your situation." : "are relevant to your situation. Skip the ones that aren't."}
           </p>
         </motion.div>
 
@@ -330,8 +332,10 @@ export default function ExploreValueDrivers({
               >
                 <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
                   <p className="text-sm text-black mb-4">
-                    Faster documentation reduces wait times and LWBS rates.
+                    Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
                   </p>
+
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="space-y-1.5">
@@ -728,7 +732,7 @@ export default function ExploreValueDrivers({
 
         {/* DRIVER 2 - Care Setting Specific */}
         
-        {/* ED: Throughput */}
+        {/* ED: Admission Capture */}
         {isED && (
         <motion.div
           className="mb-4"
@@ -754,7 +758,7 @@ export default function ExploreValueDrivers({
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.edThroughputEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
                   }`}
-                  data-testid="toggle-throughput"
+                  data-testid="toggle-admission-capture"
                 >
                   <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
                     timeDriverInputs.edThroughputEnabled ? 'right-0.5' : 'left-0.5'
@@ -774,11 +778,13 @@ export default function ExploreValueDrivers({
               >
                 <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
                   <p className="text-sm text-black mb-4">
-                    Faster documentation enables physicians to see more patients.
+                    For EDs with admission rates, complete documentation supports DRG capture when patients are admitted. This driver is available if your ED has an admission component.
                   </p>
 
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
+
                   <div className="space-y-1.5 mb-4">
-                    <label className="text-sm text-[#888888]">Additional patients seen (%)</label>
+                    <label className="text-sm text-[#888888]">Admission rate (%)</label>
                     <div className="relative">
                       <FormattedNumberInput
                         value={timeDriverInputs.edAdditionalPatientsPercent}
@@ -792,11 +798,11 @@ export default function ExploreValueDrivers({
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Additional patients/year:</span>
+                        <span className="text-[#666666]">Patients admitted/year:</span>
                         <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100)))}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Throughput value:</span>
+                        <span className="text-[#666666]">Admission capture value:</span>
                         <span className="font-bold text-[#E85A2C]">{formatCurrency(edThroughputValue)}</span>
                       </div>
                     </div>

@@ -1,0 +1,834 @@
+ED PATH — COMPREHENSIVE REPLIT PROMPT
+OVERVIEW
+This prompt covers the complete ED Explore path with:
+
+Correct time savings (smaller than Outpatient)
+Simplified Time Value drivers (LWBS + Admission Capture + Wellbeing)
+ED-specific Documentation Quality (wRVU + Denials, no HCC)
+Downstream Value section on summary
+Consistent Abridge styling throughout
+
+
+PAGE 1: SELECT CARE SETTING
+No changes needed — this is the shared entry point.
+
+PAGE 2: YOUR ED
+Header:
+CopyExplore · Your ED
+Content:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│                               YOUR ED                                           │
+│                                                                                 │
+│                      Tell us about your starting point.                         │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  DEPLOYMENT SIZE                                                          │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  ED Physicians                                                            │  │
+│  │  Physicians using Abridge in the ED                                       │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  ENCOUNTER VOLUME                                                         │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  How busy is your ED?                                                     │  │
+│  │                                                                           │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                       │  │
+│  │  │   Lighter   │  │   Typical   │  │    Busy     │                       │  │
+│  │  │ 1,400/prov  │  │ 1,800/prov  │  │ 2,200/prov  │                       │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                       │  │
+│  │                                                                           │  │
+│  │  Based on ~220 working days. Typical reflects blended community ED.       │  │
+│  │                                                                           │  │
+│  │  Or enter your total ED volume:                                           │  │
+│  │  ┌─────────────────────────────────────────────┐                         │  │
+│  │  │                                      /year  │                         │  │
+│  │  └─────────────────────────────────────────────┘                         │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  EXPECTED UTILIZATION                                                     │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  What percentage of encounters will use Abridge?                          │  │
+│  │                                                                           │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                       │  │
+│  │  │Conservative │  │   Typical   │  │ Aggressive  │                       │  │
+│  │  │    50%      │  │    70%      │  │    85%      │                       │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                       │  │
+│  │                                                                           │  │
+│  │  Utilization typically starts at 50-60% and grows to 75-85%               │  │
+│  │  as workflows mature.                                                     │  │
+│  │                                                                           │  │
+│  │  Or enter custom:  ┌──────────┐  %                                       │  │
+│  │                    │          │                                           │  │
+│  │                    └──────────┘                                           │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Right Panel:
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  YOUR BASELINE                          │
+│  Practice summary                       │
+│                                         │
+│  ED Physicians              —           │
+│  Encounters/Provider        1,800       │
+│  Annual Encounters          —           │
+│  Utilization                —           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ELIGIBLE ENCOUNTERS                    │
+│                                         │
+│  —                                      │
+│                                         │
+│  This is your value multiplier—every    │
+│  calculation downstream uses this       │
+│  number.                                │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue → ]                         │
+│  (disabled until providers entered)     │
+│                                         │
+└─────────────────────────────────────────┘
+Behavior:
+
+No defaults pre-populated for providers
+Encounter volume defaults to "Typical" when a scenario is selected
+Utilization defaults to nothing until selected
+Continue button disabled until all required fields have values
+
+
+PAGE 3: TIME SAVINGS
+Header:
+CopyExplore · Time Savings
+Content:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│                              TIME SAVINGS                                       │
+│                                                                                 │
+│              How much time could your ED providers get back?                    │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  WHAT THE DATA SHOWS                                                      │  │
+│  │                                                                           │  │
+│  │  ED documentation is faster-paced than outpatient, with more templated    │  │
+│  │  workflows. Across ED implementations, providers typically save 1-3       │  │
+│  │  minutes per encounter. The range depends on acuity mix, EHR              │  │
+│  │  configuration, and workflow adoption.                                    │  │
+│  │                                                                           │  │
+│  │  Source: Abridge customer data, 2024-2025                                 │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  CHOOSE YOUR SCENARIO                                                     │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  ○  Conservative                                        1 min       │  │  │
+│  │  │     For skeptical stakeholders. Under-promise to over-deliver.      │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  ┃                                                                  │  │  │
+│  │  │  ┃  ●  Typical                                 RECOMMENDED  2 min   │  │  │
+│  │  │  ┃     Based on average outcomes across similar ED implementations. │  │  │
+│  │  │  ┃                                                                  │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  ○  Optimistic                                          3 min       │  │  │
+│  │  │     For high-adoption EDs with strong change management.            │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  Or enter a custom value:  ┌──────┐  min/encounter                       │  │
+│  │                            │      │                                       │  │
+│  │                            └──────┘                                       │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Right Panel:
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  PROJECTED TIME SAVINGS                 │
+│  Based on your scenario                 │
+│                                         │
+│           [value]                       │
+│        hours / year                     │
+│                                         │
+│  [X] min × [Y] encounters               │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Scenario              [Selected]       │
+│  Time Saved            [X] min/encounter│
+│  Eligible Encounters   [Y]              │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Per provider:                          │
+│  [X] hours/year                         │
+│  [X] hours/week                         │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Value Drivers → ]        │
+│                                         │
+└─────────────────────────────────────────┘
+Math:
+CopyHours Saved = Time Saved (min) × Eligible Encounters ÷ 60
+
+Example with 50 providers, 1,800 enc/prov, 70% util, 2 min saved:
+- Eligible Encounters = 50 × 1,800 × 70% = 63,000
+- Hours Saved = 2 × 63,000 ÷ 60 = 2,100 hours
+
+PAGE 4: VALUE DRIVERS (TIME)
+Header:
+CopyExplore · Value Drivers
+Headline:
+CopyWHAT COULD THAT TIME BE WORTH?
+
+Your ED providers could reclaim [X] hours. In the ED, faster documentation 
+means faster throughput and fewer patients leaving without being seen.
+Intro Box:
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  HOW TO USE THIS SECTION                                                      │
+│                                                                               │
+│  ED time savings create value differently than outpatient. Faster             │
+│  documentation reduces wait times and LWBS rates—the primary way              │
+│  time converts to value in emergency settings.                                │
+│                                                                               │
+│  Engage with the drivers that match your situation.                           │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+Driver 1: LWBS Recovery
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  LWBS RECOVERY                                                   [Toggle] │
+│  ┃  Recover patients who leave without being seen                             │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  LWBS RECOVERY                                                      [On]  │
+│  ┃  Recover patients who leave without being seen                             │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Faster documentation reduces door-to-doc time and overall wait times.        │
+│  When patients wait less, fewer leave without being seen.                     │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  YOUR ED                                                                      │
+│                                                                               │
+│  Current LWBS rate                                                            │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ 3                                         %  │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Industry average: 2-5%                                                       │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ABRIDGE IMPACT                                                               │
+│                                                                               │
+│  How much could Abridge reduce your LWBS rate?                                │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │    10%      │  │    20%      │  │    30%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  This reflects the percentage reduction in LWBS, not percentage points.       │
+│  A 20% reduction on a 3% LWBS rate = 2.4% new rate.                          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Revenue per ED visit                                                         │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ $ 450                                        │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Average ED visit reimbursement (industry range: $350-$600)                   │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Annual ED volume                               90,000                        │
+│  (from eligible encounters ÷ utilization)                                     │
+│                                                                               │
+│  × Current LWBS rate                            3%                            │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Annual LWBS patients                         2,700                         │
+│                                                                               │
+│  × Expected LWBS reduction                      20%                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Patients recovered                           540                           │
+│                                                                               │
+│  × Revenue per visit                            $450                          │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Gross value                                  $243,000                      │
+│                                                                               │
+│  × Realization rate                             75% ✏️                        │
+│    (No-shows on return, incomplete visits)                                    │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual LWBS Recovery Value                     $182,250                      │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+LWBS Math:
+CopyAnnual ED Volume = Eligible Encounters ÷ Utilization Rate
+LWBS Patients = Annual ED Volume × LWBS Rate
+Patients Recovered = LWBS Patients × LWBS Reduction %
+Gross Value = Patients Recovered × Revenue per Visit
+Net Value = Gross Value × Realization Rate
+
+Defaults:
+- LWBS Rate: 3%
+- LWBS Reduction: 10% / 20% / 30%
+- Revenue per Visit: $450
+- Realization Rate: 75%
+
+Driver 2: Admission Capture
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  ADMISSION CAPTURE                                               [Toggle] │
+│  ┃  More ED patients means more admissions (if capacity exists)               │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  ADMISSION CAPTURE                                                  [On]  │
+│  ┃  More ED patients means more admissions (if capacity exists)               │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  12-25% of ED patients get admitted. If you're recovering LWBS patients,      │
+│  some percentage will require admission. This only applies if your            │
+│  hospital has inpatient capacity.                                             │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ☐  My hospital has inpatient capacity for additional admissions              │
+│                                                                               │
+│  [When checkbox is checked:]                                                  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  YOUR ORGANIZATION                                                            │
+│                                                                               │
+│  ED admission rate                                                            │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ 18                                        %  │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Industry range: 12-25% depending on acuity                                   │
+│                                                                               │
+│  Average admission revenue contribution                                       │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ $ 8,000                                      │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Net margin contribution from ED-originated admission                         │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Recovered ED patients                          540                           │
+│  (from LWBS Recovery)                                                         │
+│                                                                               │
+│  × Admission rate                               18%                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Potential additional admissions              97                            │
+│                                                                               │
+│  × Avg admission revenue                        $8,000                        │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Gross value                                  $776,000                      │
+│                                                                               │
+│  × Realization rate                             40% ✏️                        │
+│    (Bed availability, payer mix, patient acuity)                              │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual Admission Capture Value                 $310,400                      │
+│                                                                               │
+│  ⚠️ Only include if your hospital has bed capacity for growth.                │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+Admission Capture Math:
+CopyRecovered Patients = (from LWBS calculation)
+Potential Admissions = Recovered Patients × Admission Rate
+Gross Value = Potential Admissions × Admission Revenue
+Net Value = Gross Value × Realization Rate
+
+Defaults:
+- Admission Rate: 18%
+- Admission Revenue: $8,000
+- Realization Rate: 40% (very conservative — capacity constraints)
+Important: This driver is DEPENDENT on LWBS Recovery. If LWBS is not enabled, Admission Capture should show:
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  ADMISSION CAPTURE                                              [Disabled]│
+│  ┃  Enable LWBS Recovery first to calculate admission value                   │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+Driver 3: Clinician Wellbeing
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  CLINICIAN WELLBEING                                             [Toggle] │
+│  ┃  If time improves work-life balance and retention                          │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  CLINICIAN WELLBEING                                                [On]  │
+│  ┃  If time improves work-life balance and retention                          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Your ED providers would get back:                                            │
+│                                                                               │
+│                      [X] hours per week                                       │
+│                         per provider                                          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  THE RETENTION CASE                                                           │
+│                                                                               │
+│  ED physicians face higher burnout rates than most specialties.               │
+│  Documentation burden is a leading contributor. Reducing documentation        │
+│  time can help retain providers who would otherwise leave.                    │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ☐  Calculate retention value                                                 │
+│                                                                               │
+│  [When checkbox is checked:]                                                  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  YOUR ORGANIZATION                                                            │
+│                                                                               │
+│  Annual provider turnover rate                                                │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ 10                                        %  │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  ED average: 8-12%                                                            │
+│                                                                               │
+│  Turnover related to burnout                                                  │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ 45                                        %  │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  Research suggests 35-50% of ED turnover is burnout-related                   │
+│                                                                               │
+│  Cost to replace one ED physician                                             │
+│  ┌──────────────────────────────────────────────┐                             │
+│  │ $ 450,000                                    │                             │
+│  └──────────────────────────────────────────────┘                             │
+│  ED replacement costs are higher due to specialized training                  │
+│  and 24/7 coverage requirements                                               │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ABRIDGE IMPACT                                                               │
+│                                                                               │
+│  What percentage of burnout-related turnover could Abridge help prevent?      │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Optimistic  │                            │
+│  │    20%      │  │    30%      │  │    40%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Providers                                      50                            │
+│  × Annual turnover rate                         10%                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Providers leaving per year                   5.0                           │
+│                                                                               │
+│  × Burnout-related turnover                     45%                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Burnout-related departures                   2.25                          │
+│                                                                               │
+│  × Abridge retention impact                     30%                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Providers retained                           0.68                          │
+│                                                                               │
+│  × Replacement cost                             $450,000                      │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual Retention Value                         $303,750                      │
+│                                                                               │
+│  ⚠️ This assumes Abridge meaningfully reduces documentation burden for        │
+│     providers at risk of leaving due to burnout.                              │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+ED Clinician Wellbeing Defaults:
+Copy- Annual turnover rate: 10% (vs 6% for OP)
+- Burnout-related: 45% (vs 40% for OP)
+- Replacement cost: $450,000 (vs $350,000 for OP)
+- Abridge impact: 20% / 30% / 40% (same as OP)
+
+Right Panel for Value Drivers Page:
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  TIME VALUE                       100%  │
+│  Value summary                          │
+│                                         │
+│           $[total]                      │
+│                                         │
+│  From [X] hours saved                   │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ● LWBS Recovery          $[value]      │
+│                               or —      │
+│                                         │
+│  ● Admission Capture      $[value]      │
+│                               or —      │
+│                                         │
+│  ● Clinician Wellbeing    $[value]      │
+│    [X] hrs/wk back            or —      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Documentation → ]        │
+│                                         │
+└─────────────────────────────────────────┘
+
+PAGE 5: DOCUMENTATION QUALITY
+Header:
+CopyExplore · Documentation Quality
+Headline:
+CopyDOCUMENTATION QUALITY
+
+Complete documentation supports accurate coding and faster reimbursement.
+Select the drivers that apply to your ED.
+Driver 1: E&M Level Accuracy (wRVU)
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  E&M LEVEL ACCURACY                                              [Toggle] │
+│  ┃  Capture the true complexity of ED visits                                  │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  E&M LEVEL ACCURACY                                                 [On]  │
+│  ┃  Capture the true complexity of ED visits                                  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  When notes fully reflect visit complexity, E/M levels often code higher.     │
+│  Industry data shows 2-7% wRVU lift from better documentation.                │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Choose your scenario:                                                        │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │     2%      │  │     5%      │  │     7%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                         │  │
+│  │  📊 Benchmark: ED wRVU per Encounter                                    │  │
+│  │                                                                         │  │
+│  │  Low acuity mix (urgent care-like)          1.5 - 2.0                   │  │
+│  │  Typical community ED                        2.0 - 2.5                   │  │
+│  │  High acuity / trauma center                 2.5 - 3.5                   │  │
+│  │                                                                         │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Eligible encounters                            63,000                        │
+│  Current avg wRVU/visit                         2.5 ✏️  wRVU                  │
+│  Documentation improvement                      5%                            │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = wRVU lift per visit                          0.125 wRVU                    │
+│  = Total additional wRVUs                       7,875                         │
+│                                                                               │
+│  × Conversion factor                            $ 33 ✏️                       │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Gross value                                  $259,875                      │
+│                                                                               │
+│  × Realization rate                             75% ✏️                        │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual E&M Accuracy Value                      $194,906                      │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+ED wRVU Defaults:
+Copy- Current avg wRVU/visit: 2.5 (vs 1.5 for OP)
+- Documentation improvement: 2% / 5% / 7% (same as OP)
+- Conversion factor: $33
+- Realization rate: 75%
+
+Driver 2: Denial Prevention
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  DENIAL PREVENTION                                               [Toggle] │
+│  ┃  Reduce documentation-related claim denials                                │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+[When toggled ON:]
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  DENIAL PREVENTION                                                  [On]  │
+│  ┃  Reduce documentation-related claim denials                                │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ED claims face higher denial rates than other settings. Documentation        │
+│  gaps drive 30-40% of denials that cannot be appealed—permanent revenue       │
+│  loss. Abridge captures clinical reasoning and medical necessity in           │
+│  real-time, preventing denials before they occur.                             │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Prevention target:                                                           │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │    25%      │  │    50%      │  │    75%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Eligible encounters                            63,000                        │
+│  × Baseline denial rate                         10% ✏️                        │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Total denials                                6,300 claims                  │
+│                                                                               │
+│  Denial breakdown:                                                            │
+│  ├─ Appealable (70%): 4,410 — Recovered through appeals                       │
+│  └─ Unappealable (30%): 1,890 — Abridge prevents these                        │
+│                                                                               │
+│  Unappealable rate                              30% ✏️                        │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Unrecoverable denials                        1,890 claims                  │
+│                                                                               │
+│  × Your prevention target                       50%                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Denials prevented                            945 claims                    │
+│                                                                               │
+│  × Avg denied claim value                       $ 300 ✏️                      │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Gross value                                  $283,500                      │
+│                                                                               │
+│  × Realization rate                             60% ✏️                        │
+│    (Collection timing, adjustments)                                           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual Denial Prevention Value                 $170,100                      │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+ED Denial Prevention Defaults:
+Copy- Baseline denial rate: 10% (vs 8% for OP)
+- Unappealable rate: 30%
+- Prevention target: 25% / 50% / 75%
+- Avg denied claim value: $300 (vs $200 for OP)
+- Realization rate: 60%
+
+No HCC for ED
+HCC Capture is NOT included for ED. Medicare Advantage risk adjustment is not a primary ED value driver.
+
+Right Panel for Documentation Quality Page:
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  DOCUMENTATION VALUE                    │
+│  Your model so far                      │
+│                                         │
+│  Time Savings             $[value]      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ● E&M Accuracy           $[value]      │
+│    ([X]% lift)                or —      │
+│                                         │
+│  ● Denial Prevention      $[value]      │
+│                               or —      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  PROJECTED ANNUAL VALUE                 │
+│                                         │
+│           $[total]                      │
+│                                         │
+│  All values include conservative        │
+│  realization rates for defensible       │
+│  estimates.                             │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Investment → ]           │
+│                                         │
+└─────────────────────────────────────────┘
+
+PAGE 6: YOUR INVESTMENT
+Same structure as Outpatient. No ED-specific changes needed.
+
+PAGE 7: YOUR ROI MODEL (SUMMARY)
+Structure:
+Copy1. HERO SECTION (dark background)
+   - "Emergency Department · [X] providers"
+   - PROJECTED NET VALUE: $[X] / year
+   - Value breakdown: $[X] value – $[X] investment
+   - Three stat cards: ROI, Per Provider, Hours Saved
+   - Disclaimer
+
+2. WHERE THE VALUE COMES FROM
+   - Two columns: TIME BACK | DOCUMENTATION QUALITY
+   - Each with total value and line item breakdown
+
+3. DOWNSTREAM VALUE (ED-SPECIFIC)
+   - Warm beige background
+   - Explanation of ED → Inpatient connection
+   - Four impact areas with icons
+   - CTA callout to Inpatient Setting
+
+4. THE EXPANSION OPPORTUNITY
+   - Today vs Full Scale comparison
+   - Utilization slider
+
+5. GROWTH TRAJECTORY
+   - Large chart (400px+ height)
+   - Expansion pace selector
+
+6. 3-YEAR PROJECTION
+   - Year 1, 2, 3, 3-Year Net
+
+7. YOUR ANALYSIS
+   - Edit Model + Download PDF buttons
+
+8. METHODOLOGY
+   - Expandable section
+
+WHERE THE VALUE COMES FROM — ED Version:
+Copy┌──────────────────────────────────────┐  ┌──────────────────────────────────┐
+│                                      │  │                                  │
+│  TIME BACK                           │  │  DOCUMENTATION QUALITY           │
+│                                      │  │                                  │
+│  ┃ $[total] / year                   │  │  ┃ $[total] / year               │
+│                                      │  │                                  │
+│  ─────────────────────────────────   │  │  ─────────────────────────────   │
+│                                      │  │                                  │
+│  Faster documentation means shorter  │  │  Complete documentation supports │
+│  door-to-doc times and reduced       │  │  accurate coding and reduces     │
+│  LWBS rates.                         │  │  claim denials.                  │
+│                                      │  │                                  │
+│  ─────────────────────────────────   │  │  ─────────────────────────────   │
+│                                      │  │                                  │
+│  • LWBS Recovery        $[value]     │  │  • E&M Level Accuracy  $[value]  │
+│                             or —     │  │    ([X]% lift)             or —  │
+│                                      │  │                                  │
+│  • Admission Capture    $[value]     │  │  • Denial Prevention   $[value]  │
+│                             or —     │  │                             or — │
+│                                      │  │                                  │
+│  • Clinician Wellbeing  $[value]     │  │                                  │
+│    [X] hrs/wk back          or —     │  │                                  │
+│                                      │  │                                  │
+└──────────────────────────────────────┘  └──────────────────────────────────┘
+
+DOWNSTREAM VALUE Section:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  🔗  DOWNSTREAM VALUE                                                           │
+│      The ED admission note is just the beginning                                │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  When an ED physician decides to admit a patient, their documentation           │
+│  becomes the foundation for inpatient revenue. The conditions they capture,     │
+│  the medical necessity they establish, and the clinical reasoning they          │
+│  document all determine what happens downstream.                                │
+│                                                                                 │
+│  Better ED documentation directly impacts:                                      │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ ┃  DRG & CMI Capture                                                    │    │
+│  │ ┃  CCs and MCCs documented in ED carry forward to inpatient coding.     │    │
+│  │ ┃  What's captured here determines your case mix.                       │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ ┃  Medical Necessity                                                    │    │
+│  │ ┃  The admission decision is documented in ED. This is your first line  │    │
+│  │ ┃  of defense against status denials and downgrades.                    │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ ┃  CDI Efficiency                                                       │    │
+│  │ ┃  When the ED note is complete, CDI teams spend less time querying     │    │
+│  │ ┃  physicians and more time on complex cases.                           │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ ┃  Denial Prevention                                                    │    │
+│  │ ┃  Payer audits start with the admission note. Complete documentation   │    │
+│  │ ┃  from day one means stronger appeals.                                 │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  These benefits are quantified in the Inpatient Setting.                │    │
+│  │  If your organization admits patients from the ED, the value            │    │
+│  │  compounds when both settings use Abridge.                              │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Styling for Downstream Value:
+
+Section background: Warm beige (#F5F0EB)
+Icon: 🔗 or link icon in red-orange
+Title: "DOWNSTREAM VALUE" — 16px, bold, black
+Subtitle: "The ED admission note is just the beginning" — 14px, gray, italic
+Impact cards: White background, 4px red-orange left border, 16px padding
+Impact card titles: 14px, bold, black
+Impact card descriptions: 14px, gray
+CTA callout: Light blue background (#E8F4F8), 4px blue left border, 16px padding

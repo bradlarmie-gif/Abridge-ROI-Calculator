@@ -382,9 +382,12 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
                 
                 {/* Help text for encounter estimates */}
-                {!isInpatient && !isED && (
+                {!isInpatient && !isNursing && (
                   <p className="text-xs text-slate-400 mt-2">
-                    Based on ~220 working days per year. Typical represents blended primary care and specialty outpatient practices.
+                    {isED
+                      ? "Based on ~220 working days. Typical reflects blended community ED."
+                      : "Based on ~220 working days per year. Typical represents blended primary care and specialty outpatient practices."
+                    }
                   </p>
                 )}
 

@@ -21,15 +21,18 @@ export default function ExploreTimeSavings({
   onBack,
   onHome,
 }: ExploreTimeSavingsProps) {
+  const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
+
   const eligibleEncounters = useMemo(() => {
     return Math.round(state.annualEncounters * (state.utilizationPercent / 100));
   }, [state.annualEncounters, state.utilizationPercent]);
 
-  const scenarioMinutes: Record<string, number> = {
-    conservative: 2,
-    typical: 4,
-    aggressive: 6,
-  };
+  // ED has smaller time savings (1/2/3 min) vs Outpatient (2/4/6 min)
+  const scenarioMinutes: Record<string, number> = isED 
+    ? { conservative: 1, typical: 2, aggressive: 3 }
+    : { conservative: 2, typical: 4, aggressive: 6 };
 
   const hoursSaved = useMemo(() => {
     return Math.round((state.minutesSavedPerEncounter * eligibleEncounters) / 60);
@@ -84,7 +87,10 @@ export default function ExploreTimeSavings({
                 Time Savings
               </h1>
               <p className="text-base text-[#888888]">
-                How much time could your providers get back?
+                {isED 
+                  ? "How much time could your ED providers get back?"
+                  : "How much time could your providers get back?"
+                }
               </p>
             </motion.div>
 
@@ -99,11 +105,13 @@ export default function ExploreTimeSavings({
                 What the Data Shows
               </p>
               <p className="text-sm text-black leading-relaxed">
-                Across implementations, providers typically save 2-6 minutes per encounter on documentation. 
-                The range depends on specialty, workflow, and how providers use the time.
+                {isED 
+                  ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
+                  : "Across implementations, providers typically save 2-6 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
+                }
               </p>
               <p className="text-xs text-[#888888] mt-2 italic">
-                Source: Abridge customer data, 2025
+                Source: Abridge customer data, 2024-2025
               </p>
             </motion.div>
 
@@ -143,7 +151,7 @@ export default function ExploreTimeSavings({
                         <p className="text-sm text-[#888888]">For skeptical stakeholders. Under-promise to over-deliver.</p>
                       </div>
                     </div>
-                    <span className="text-lg font-bold text-black">2 min</span>
+                    <span className="text-lg font-bold text-black">{scenarioMinutes.conservative} min</span>
                   </div>
                 </button>
 
@@ -168,10 +176,15 @@ export default function ExploreTimeSavings({
                       </div>
                       <div>
                         <p className="font-medium text-black">Typical <span className="text-xs text-[#E85A2C] font-normal ml-2">RECOMMENDED</span></p>
-                        <p className="text-sm text-[#888888]">Based on average outcomes across similar implementations.</p>
+                        <p className="text-sm text-[#888888]">
+                          {isED 
+                            ? "Based on average outcomes across similar ED implementations."
+                            : "Based on average outcomes across similar implementations."
+                          }
+                        </p>
                       </div>
                     </div>
-                    <span className="text-lg font-bold text-black">4 min</span>
+                    <span className="text-lg font-bold text-black">{scenarioMinutes.typical} min</span>
                   </div>
                 </button>
 
@@ -196,10 +209,15 @@ export default function ExploreTimeSavings({
                       </div>
                       <div>
                         <p className="font-medium text-black">Optimistic</p>
-                        <p className="text-sm text-[#888888]">For high-adoption organizations with strong change management.</p>
+                        <p className="text-sm text-[#888888]">
+                          {isED 
+                            ? "For high-adoption EDs with strong change management."
+                            : "For high-adoption organizations with strong change management."
+                          }
+                        </p>
                       </div>
                     </div>
-                    <span className="text-lg font-bold text-black">6 min</span>
+                    <span className="text-lg font-bold text-black">{scenarioMinutes.aggressive} min</span>
                   </div>
                 </button>
               </div>
