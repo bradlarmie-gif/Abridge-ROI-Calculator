@@ -908,35 +908,52 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
       };
     }
 
-    case "clinicianWellbeing": {
-      const hoursAllocated = Math.round(data.hoursReturned * (allocation.clinicianWellbeing / 100));
-      const hoursPerProvider = Math.round(hoursAllocated / data.providers);
-      const annualDepartures = data.providers * ((inputs.turnoverRate as number) || 8) / 100;
+    case "clinicianWellbeing":
+    case "workforce": {
+      // Get wellbeing allocation - try from inputs first (wellbeingPct), then from timeAllocation
+      const wellbeingPct = (inputs.wellbeingPct as number) || allocation.clinicianWellbeing || 30;
+      const hoursAllocated = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(hoursAllocated / data.providers);
+      const turnoverRate = (inputs.turnoverRate as number) || 8;
+      const burnoutAttribution = (inputs.burnoutAttribution as number) || 50;
+      const annualDepartures = (inputs.annualDepartures as number) || (data.providers * (turnoverRate / 100));
+      const burnoutDepartures = (inputs.burnoutDepartures as number) || (annualDepartures * (burnoutAttribution / 100));
       const retentionLift = (inputs.retentionLift as number) || 4;
-      const prevented = annualDepartures * (retentionLift / 100);
+      const departuresAvoided = (inputs.departuresAvoided as number) || (burnoutDepartures * (retentionLift / 100));
+      const replacementCost = (inputs.replacementCost as number) || 250000;
+      
       const tier = hoursPerProvider < 50 ? "MINIMAL (3-5% turnover reduction)" 
                  : hoursPerProvider < 100 ? "MODERATE (8-12% reduction)" 
-                 : "SIGNIFICANT (15-20% reduction)";
+                 : hoursPerProvider < 150 ? "SIGNIFICANT (15-20% reduction)"
+                 : "MAXIMUM (25-30% reduction)";
+      
+      const weeklyMinutes = Math.round(hoursPerProvider * 60 / 52);
+      
       return {
         theory: `Documentation burden is the number one driver of physician burnout. Burnout drives turnover. Turnover is expensive—$250K to $500K per physician when you factor recruiting, onboarding, ramp time, and lost revenue.\n\nThe math is straightforward: reduce burden → reduce burnout → reduce turnover → avoid replacement costs.\n\nThe challenge is attribution. We can't claim that every hour saved prevents a departure. So we use a threshold model that acknowledges diminishing returns and realistic impact windows.`,
         steps: [
           {
             label: "STEP 1: TIME ALLOCATED TO WELLBEING",
-            formula: `${formatNumber(data.hoursReturned)} hours × ${allocation.clinicianWellbeing}% = ${formatNumber(hoursAllocated)} hours`,
-            explanation: `Per provider: ${hoursPerProvider} hours/year (~${Math.round(hoursPerProvider / 52)} minutes back per week)`,
+            formula: `${formatNumber(data.hoursReturned)} total hours × ${wellbeingPct}% to wellbeing = ${formatNumber(hoursAllocated)} hours`,
+            explanation: `Per provider: ${hoursPerProvider} hours/year (~${weeklyMinutes} minutes back per week). This is time that goes directly to reducing after-hours charting burden.`,
           },
           {
             label: "STEP 2: IMPACT THRESHOLD",
-            formula: `At ${hoursPerProvider} hrs/provider/year, you're in the ${tier}`,
-            explanation: "< 50 hrs/yr: MINIMAL · 50-100 hrs/yr: MODERATE · 100+ hrs/yr: SIGNIFICANT. Small doses of time back help, but meaningful retention impact requires meaningful time investment.",
+            formula: `At ${hoursPerProvider} hrs/provider/year → ${tier}`,
+            explanation: "Research shows time-back interventions follow a threshold model:\n• < 50 hrs/yr: MINIMAL impact (3-5% retention lift)\n• 50-100 hrs/yr: MODERATE impact (8-12% lift)\n• 100-150 hrs/yr: SIGNIFICANT impact (15-20% lift)\n• 150+ hrs/yr: MAXIMUM impact (25-30% lift)",
           },
           {
-            label: "STEP 3: TURNOVER ECONOMICS",
-            formula: `${data.providers} providers × ${retentionLift}% retention lift × $${formatNumber((inputs.replacementCost as number) || 250000)} = ${formatCurrency(driver.value)}`,
-            explanation: `${prevented.toFixed(1)} prevented departures. That's real money—and it compounds. Year over year, the providers you keep become your culture.`,
+            label: "STEP 3: BASELINE TURNOVER",
+            formula: `${data.providers} providers × ${turnoverRate}% turnover = ${annualDepartures.toFixed(1)} departures/year`,
+            explanation: `Of these, approximately ${burnoutAttribution}% (${burnoutDepartures.toFixed(1)} departures) are burnout-related and addressable through documentation burden reduction.`,
+          },
+          {
+            label: "STEP 4: RETENTION VALUE",
+            formula: `${burnoutDepartures.toFixed(1)} burnout departures × ${retentionLift}% retention lift × $${formatNumber(replacementCost)} = ${formatCurrency(driver.value)}`,
+            explanation: `${departuresAvoided.toFixed(2)} departures avoided annually. Replacement costs include recruiting ($30-50K), signing bonus ($20-50K), onboarding (3-6 months reduced productivity), and revenue loss during vacancy.`,
           },
         ],
-        calibration: `Your current allocation (${allocation.clinicianWellbeing}% to wellbeing) produces ${hoursPerProvider < 50 ? "modest" : "meaningful"} retention impact. ${hoursPerProvider < 50 ? "If retention is a strategic priority, consider shifting allocation—60%+ to wellbeing would push you into the MODERATE impact tier." : "You're investing meaningfully in sustainability."}`,
+        calibration: `Your allocation (${wellbeingPct}% to wellbeing, ${hoursPerProvider} hrs/provider) produces ${hoursPerProvider < 50 ? "modest but measurable" : hoursPerProvider < 100 ? "moderate" : "significant"} retention impact. ${hoursPerProvider < 50 ? "Organizations prioritizing retention often allocate 40-50% to wellbeing." : "You're investing meaningfully in workforce sustainability—this compounds year over year."}`,
       };
     }
 
