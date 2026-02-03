@@ -157,8 +157,8 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               icon={Compass}
               title="Explore"
               subtitle="New to Abridge?"
-              description="Build your first ROI model and see what ambient documentation could deliver for your organization"
-              buttonText="Get Started"
+              description="Discover what ambient documentation could unlock for your organization—in real numbers"
+              buttonText="Start Exploring"
               onClick={onSelectExplore}
               onSelect={() => setSelectedPath('explore')}
               isSelected={selectedPath === 'explore'}
@@ -170,7 +170,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               icon={TrendingUp}
               title="Measure"
               subtitle="Already using Abridge?"
-              description="See what you've built and capture your value story"
+              description="Capture what you've built and frame your value story with data"
               buttonText="Start Your Story"
               onClick={onSelectExpand}
               onSelect={() => setSelectedPath('measure')}
@@ -183,8 +183,8 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               icon={ArrowLeftRight}
               title="Switch"
               subtitle="Using another solution?"
-              description="See how Abridge compares and what switching could mean for your ROI"
-              buttonText="Compare Solutions"
+              description="See how Abridge compares—and what you'd gain by switching"
+              buttonText="Run the Comparison"
               onClick={onSelectSwitch}
               onSelect={() => setSelectedPath('switch')}
               isSelected={selectedPath === 'switch'}
