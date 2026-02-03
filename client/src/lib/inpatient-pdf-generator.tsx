@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   heroTagline: {
     fontSize: 9,
     color: colors.heroEmeraldLight,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginBottom: 4,
   },
   heroTitle: {
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   stepQuestion: {
     fontSize: 8,
     color: colors.darkGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginBottom: 6,
   },
   stepMath: {
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   stepNote: {
     fontSize: 7,
     color: colors.lightGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginTop: 4,
   },
   stepNoteHighlight: {
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   benchmarkNote: {
     fontSize: 6,
     color: colors.lightGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginTop: 4,
   },
 
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
     fontSize: 7,
     color: colors.lightGray,
     lineHeight: 1.5,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginTop: 8,
   },
 
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: colors.darkGray,
     lineHeight: 1.6,
-    fontStyle: "italic",
+    fontWeight: 500,
   },
   closingHighlight: {
     fontWeight: "bold",
@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
   connectedSubtitle: {
     fontSize: 9,
     color: colors.darkGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginBottom: 10,
   },
   connectedIntro: {
@@ -1608,7 +1608,7 @@ const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: numb
           {narrativeContent.stakes.body}
         </Text>
         <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 24, marginTop: 20 }}>
-          <Text style={{ fontSize: 14, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+          <Text style={{ fontSize: 14, fontWeight: 500, color: colors.black, lineHeight: 1.6 }}>
             {narrativeContent.stakes.pullQuote}
           </Text>
         </View>
@@ -1659,7 +1659,7 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: InpatientPDFData
       ))}
 
       <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 20, marginTop: 20, marginBottom: 20 }}>
-        <Text style={{ fontSize: 12, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+        <Text style={{ fontSize: 12, fontWeight: 500, color: colors.black, lineHeight: 1.6 }}>
           {narrativeContent.recommendations.closing}
         </Text>
       </View>

@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: colors.darkGray,
     lineHeight: 1.6,
-    fontStyle: "italic",
+    fontWeight: 500,
   },
   
   // CTA section

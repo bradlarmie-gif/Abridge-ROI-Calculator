@@ -50,7 +50,7 @@ export function DriverDetail({ model, config, driverId, driverValue, explanation
           <View key={index} style={styles.tableRow}>
             <Text style={{ ...styles.tableCellBold, flex: 1 }}>{assumption.label}</Text>
             <Text style={{ ...styles.tableCell, flex: 1 }}>{assumption.value}</Text>
-            <Text style={{ ...styles.tableCell, flex: 2, fontSize: 9, fontStyle: 'italic' }}>
+            <Text style={{ ...styles.tableCell, flex: 2, fontSize: 9, fontWeight: 500 }}>
               {assumption.validation}
               {assumption.industryRange && ` (${assumption.industryRange})`}
             </Text>

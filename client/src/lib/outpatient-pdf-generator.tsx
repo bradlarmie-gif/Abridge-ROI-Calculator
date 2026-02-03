@@ -13,7 +13,7 @@ import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png
 
 // ============================================================================
 // FONT CONFIGURATION
-// Using Helvetica (built-in) as base with clean hyphenation
+// Using Helvetica (built-in) with refined typography sizing
 // ============================================================================
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -123,10 +123,10 @@ const brand = {
 // ============================================================================
 
 const styles = StyleSheet.create({
-  // Base page styles
+  // Base page styles - Helvetica for refined, modern typography
   page: {
     fontFamily: "Helvetica",
-    fontSize: 10,
+    fontSize: 9,
     color: brand.textPrimary,
     backgroundColor: brand.white,
   },
@@ -140,73 +140,73 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   coverTop: {
-    padding: 48,
+    padding: 40,
     paddingBottom: 0,
   },
   coverLogo: {
-    width: 90,
-    height: 18,
-    marginBottom: 80,
+    width: 80,
+    height: 16,
+    marginBottom: 60,
   },
   coverHero: {
-    paddingHorizontal: 48,
+    paddingHorizontal: 40,
     flex: 1,
     justifyContent: "center",
   },
   coverEyebrow: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: 600,
     color: brand.coral,
-    letterSpacing: 3,
+    letterSpacing: 2.5,
     textTransform: "uppercase",
-    marginBottom: 20,
-  },
-  coverTitle: {
-    fontSize: 42,
-    fontWeight: 800,
-    color: brand.white,
-    lineHeight: 1.1,
     marginBottom: 16,
   },
+  coverTitle: {
+    fontSize: 32,
+    fontWeight: 700,
+    color: brand.white,
+    lineHeight: 1.15,
+    marginBottom: 12,
+  },
   coverSubtitle: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: 400,
     color: brand.textTertiary,
-    lineHeight: 1.6,
-    maxWidth: 400,
-    marginBottom: 60,
-  },
-  coverMetricBlock: {
+    lineHeight: 1.5,
+    maxWidth: 360,
     marginBottom: 48,
   },
+  coverMetricBlock: {
+    marginBottom: 40,
+  },
   coverMetricValue: {
-    fontSize: 72,
-    fontWeight: 800,
+    fontSize: 56,
+    fontWeight: 700,
     color: brand.coral,
-    letterSpacing: -2,
+    letterSpacing: -1.5,
     lineHeight: 1,
   },
   coverMetricLabel: {
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: 500,
     color: brand.textTertiary,
-    marginTop: 8,
-    letterSpacing: 1,
+    marginTop: 6,
+    letterSpacing: 0.5,
   },
   coverBottom: {
-    padding: 48,
+    padding: 40,
     paddingTop: 0,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
   coverMeta: {
-    fontSize: 10,
+    fontSize: 9,
     color: brand.textTertiary,
     lineHeight: 1.5,
   },
   coverDate: {
-    fontSize: 10,
+    fontSize: 9,
     color: brand.textMuted,
   },
 
@@ -241,29 +241,48 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
 
-  // Section headers
+  // Section headers - refined sizing
   sectionEyebrow: {
-    fontSize: 10,
-    fontWeight: 700,
+    fontSize: 8,
+    fontWeight: 600,
     color: brand.red,
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 28,
-    fontWeight: 800,
-    color: brand.black,
-    lineHeight: 1.15,
     marginBottom: 8,
   },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    color: brand.black,
+    lineHeight: 1.2,
+    marginBottom: 6,
+  },
   sectionSubtitle: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 400,
     color: brand.textSecondary,
-    lineHeight: 1.6,
-    marginBottom: 32,
-    maxWidth: 420,
+    lineHeight: 1.5,
+    marginBottom: 24,
+    maxWidth: 380,
+  },
+  
+  // Benefit category tags
+  benefitTag: {
+    fontSize: 7,
+    fontWeight: 600,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 3,
+  },
+  timeBenefitTag: {
+    backgroundColor: "#E8F4FD",
+    color: "#1565C0",
+  },
+  docBenefitTag: {
+    backgroundColor: "#FFF3E0",
+    color: "#E65100",
   },
 
   // =========================================================================
@@ -331,10 +350,9 @@ const styles = StyleSheet.create({
   },
   pullQuoteText: {
     fontSize: 16,
-    fontWeight: 700,
+    fontWeight: 500,
     color: brand.black,
     lineHeight: 1.4,
-    fontStyle: "italic",
   },
 
   // =========================================================================
@@ -595,7 +613,7 @@ const styles = StyleSheet.create({
     color: brand.textTertiary,
     marginLeft: 30,
     marginTop: 6,
-    fontStyle: "italic",
+    fontWeight: 400,
   },
 
   finalResultBox: {
@@ -639,7 +657,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: brand.textPrimary,
     lineHeight: 1.5,
-    fontStyle: "italic",
+    fontWeight: 400,
   },
 
   // =========================================================================
@@ -1293,10 +1311,12 @@ const CoverPage = ({ data }: { data: OutpatientPDFData }) => {
 
       <View style={styles.coverBottom}>
         <View>
+          {data.preparedBy && (
+            <Text style={styles.coverMeta}>Prepared by: {data.preparedBy}</Text>
+          )}
           <Text style={styles.coverMeta}>
-            {data.providers} clinicians · {formatNumber(data.encounters)} annual encounters
+            {data.providers} {data.unitNamePlural || "clinicians"} · {formatNumber(data.encounters)} annual encounters
           </Text>
-          <Text style={styles.coverMeta}>{data.roi.toFixed(1)}x return on investment</Text>
         </View>
         <Text style={styles.coverDate}>{today}</Text>
       </View>
@@ -1397,7 +1417,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
             ))}
             {laborDrivers.length === 0 && (
               <View style={styles.valueRow}>
-                <Text style={[styles.valueRowLabel, { fontStyle: "italic", color: brand.textTertiary }]}>
+                <Text style={[styles.valueRowLabel, { fontWeight: 400, color: brand.textTertiary }]}>
                   No time-based drivers selected
                 </Text>
               </View>
@@ -1417,7 +1437,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
             ))}
             {revenueDrivers.length === 0 && (
               <View style={styles.valueRow}>
-                <Text style={[styles.valueRowLabel, { fontStyle: "italic", color: brand.textTertiary }]}>
+                <Text style={[styles.valueRowLabel, { fontWeight: 400, color: brand.textTertiary }]}>
                   No documentation drivers selected
                 </Text>
               </View>
@@ -1425,17 +1445,45 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: OutpatientP
           </View>
         </View>
 
+        {/* Time allocation breakdown if available */}
+        {data.timeAllocation && (
+          <View style={{ marginTop: 16, padding: 12, backgroundColor: brand.lightGray, borderRadius: 6 }}>
+            <Text style={{ fontSize: 8, fontWeight: 600, color: brand.textSecondary, marginBottom: 8, letterSpacing: 1, textTransform: "uppercase" }}>Time Allocation</Text>
+            <View style={{ flexDirection: "row", gap: 16 }}>
+              {data.timeAllocation.patientAccess > 0 && (
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: 700, color: brand.red }}>{data.timeAllocation.patientAccess}%</Text>
+                  <Text style={{ fontSize: 8, color: brand.textTertiary }}>Patient Access</Text>
+                </View>
+              )}
+              {data.timeAllocation.reducingLocums && data.timeAllocation.reducingLocums > 0 && (
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: 700, color: brand.red }}>{data.timeAllocation.reducingLocums}%</Text>
+                  <Text style={{ fontSize: 8, color: brand.textTertiary }}>Locum Reduction</Text>
+                </View>
+              )}
+              {data.timeAllocation.clinicianWellbeing > 0 && (
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: 700, color: brand.red }}>{data.timeAllocation.clinicianWellbeing}%</Text>
+                  <Text style={{ fontSize: 8, color: brand.textTertiary }}>Clinician Wellbeing</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
         <View style={styles.insightBox}>
           <Text style={styles.insightLabel}>The Bottom Line</Text>
           <Text style={styles.insightText}>
-            Every number in this model traces back to editable inputs and conservative realization rates.
-            We've built this to withstand scrutiny—not to sell you on optimistic projections.
+            With {formatNumber(data.hoursReturned)} hours returned annually and a {data.roi.toFixed(1)}x ROI, 
+            this investment pays for itself {Math.ceil(12 / data.roi)} times over each year. 
+            Every number traces back to editable inputs and conservative realization rates.
           </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Value Assessment</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
         <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1457,17 +1505,26 @@ const DriverDetailPage = ({
   const steps = getDriverSteps(driver, data);
   const displayName = getDriverName(driver.id, driver.name);
   const pct = Math.round((driver.value / data.totalValue) * 100);
+  
+  // Determine benefit category
+  const isTimeBenefit = ['patientAccess', 'locums', 'clinicianWellbeing', 'retention', 'workforce'].includes(driver.id);
+  const benefitCategory = isTimeBenefit ? "Time Benefit" : "Documentation Benefit";
 
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Value Assessment</Text>
+        <Text style={styles.headerMeta}>Value Driver</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.driverHero}>
-          <Text style={styles.driverEyebrow}>Value Driver</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+            <Text style={styles.driverEyebrow}>Value Driver</Text>
+            <View style={[styles.benefitTag, isTimeBenefit ? styles.timeBenefitTag : styles.docBenefitTag, { marginLeft: 12 }]}>
+              <Text>{benefitCategory}</Text>
+            </View>
+          </View>
           <View style={styles.driverHeroContent}>
             <View style={styles.driverHeroLeft}>
               <Text style={styles.driverTitle}>{displayName}</Text>
@@ -1543,7 +1600,7 @@ const DriverDetailPage = ({
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Value Assessment</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
         <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1613,18 +1670,37 @@ const ProjectionPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData
           </View>
         </View>
 
+        {/* Expansion Path Details */}
+        <View style={{ marginTop: 20, padding: 16, backgroundColor: brand.lightGray, borderRadius: 6 }}>
+          <Text style={{ fontSize: 9, fontWeight: 600, color: brand.textPrimary, marginBottom: 8 }}>Your Expansion Path</Text>
+          <View style={{ flexDirection: "row", gap: 24 }}>
+            <View>
+              <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 2 }}>Scaling Pace</Text>
+              <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary, textTransform: "capitalize" }}>{data.journey.scalingPace}</Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 2 }}>Timeline to Full Scale</Text>
+              <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary }}>{data.journey.scalingMonths} months</Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 8, color: brand.textTertiary, marginBottom: 2 }}>Network Effect</Text>
+              <Text style={{ fontSize: 10, fontWeight: 600, color: brand.textPrimary }}>{data.journey.networkEffect}%</Text>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.insightBox}>
           <Text style={styles.insightLabel}>The Compounding Effect</Text>
           <Text style={styles.insightText}>
-            Per-clinician economics remain consistent at scale, while operational learning typically
-            improves utilization as workflows mature. Organizations that execute well often exceed
-            these conservative projections.
+            Value compounds as you scale. At {data.journey.fullScaleProviders} {data.unitNamePlural || "clinicians"} with {data.journey.fullScaleUtilization}% utilization, 
+            you'll generate {formatCurrency(data.journey.fullScaleValue)} annually—a {((data.journey.fullScaleValue / data.journey.pilotValue - 1) * 100).toFixed(0)}% increase 
+            from your pilot. This isn't theoretical; it's the natural result of operational learning and workflow maturation.
           </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Value Assessment</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
         <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1692,35 +1768,34 @@ const RecommendationsPage = ({ data, pageNum, totalPages }: { data: OutpatientPD
   );
 };
 
-const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+const AssumptionsPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFData; pageNum: number; totalPages: number }) => {
+  // Categorize drivers by benefit type
+  const timeDrivers = data.drivers.filter(d => 
+    ['patientAccess', 'locums', 'clinicianWellbeing', 'retention', 'workforce'].includes(d.id)
+  );
+  const docDrivers = data.drivers.filter(d => 
+    ['wrvu', 'hcc', 'denials', 'levelOfService'].includes(d.id)
+  );
+
   return (
     <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
       <View style={styles.pageHeader}>
         <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerMeta}>Value Assessment</Text>
+        <Text style={styles.headerMeta}>Model Assumptions</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionEyebrow}>Methodology</Text>
-        <Text style={styles.sectionTitle}>How We Built This</Text>
+        <Text style={styles.sectionEyebrow}>Transparency</Text>
+        <Text style={styles.sectionTitle}>Your Model Assumptions</Text>
         <Text style={styles.sectionSubtitle}>
-          {narrative.methodology.approach}
+          Complete transparency into every input that shaped this analysis.
         </Text>
 
-        {narrative.methodology.principles.map((principle, i) => (
-          <View key={i} style={styles.principleRow}>
-            <Text style={styles.principleNumber}>{i + 1}</Text>
-            <View style={styles.principleContent}>
-              <Text style={styles.principleName}>{principle.name}</Text>
-              <Text style={styles.principleDescription}>{principle.description}</Text>
-            </View>
-          </View>
-        ))}
-
-        <Text style={[styles.sectionEyebrow, { marginTop: 32 }]}>Your Inputs</Text>
+        {/* Practice Inputs Section */}
+        <Text style={[styles.sectionEyebrow, { marginTop: 16, color: brand.textSecondary }]}>Practice Inputs</Text>
         <View style={styles.inputsGrid}>
           <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Clinicians</Text>
+            <Text style={styles.inputLabel}>{data.unitNamePlural || "Clinicians"}</Text>
             <Text style={styles.inputValue}>{data.providers}</Text>
           </View>
           <View style={styles.inputCard}>
@@ -1728,7 +1803,7 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
             <Text style={styles.inputValue}>{formatNumber(data.encounters)}</Text>
           </View>
           <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Utilization Rate</Text>
+            <Text style={styles.inputLabel}>Abridge Utilization</Text>
             <Text style={styles.inputValue}>{data.utilization}%</Text>
           </View>
           <View style={styles.inputCard}>
@@ -1736,27 +1811,74 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
             <Text style={styles.inputValue}>{data.timeSavedPerEncounter} min/encounter</Text>
           </View>
           <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Investment</Text>
-            <Text style={styles.inputValue}>{formatCurrency(data.costPerProvider)}/mo per clinician</Text>
+            <Text style={styles.inputLabel}>Eligible Encounters</Text>
+            <Text style={styles.inputValue}>{formatNumber(data.eligibleEncounters)}</Text>
           </View>
           <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Value Drivers</Text>
-            <Text style={styles.inputValue}>{data.drivers.length} selected</Text>
+            <Text style={styles.inputLabel}>Hours Returned</Text>
+            <Text style={styles.inputValue}>{formatNumber(data.hoursReturned)}</Text>
           </View>
         </View>
 
-        <View style={[styles.insightBox, { marginTop: 32 }]}>
-          <Text style={styles.insightLabel}>A Note on Conservatism</Text>
+        {/* Investment Section */}
+        <Text style={[styles.sectionEyebrow, { marginTop: 24, color: brand.textSecondary }]}>Investment</Text>
+        <View style={styles.inputsGrid}>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>Monthly per {data.unitName || "Clinician"}</Text>
+            <Text style={styles.inputValue}>{formatCurrency(data.costPerProvider)}</Text>
+          </View>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>Annual Investment</Text>
+            <Text style={styles.inputValue}>{formatCurrency(data.investment)}</Text>
+          </View>
+        </View>
+
+        {/* Value Drivers Section */}
+        <Text style={[styles.sectionEyebrow, { marginTop: 24, color: brand.textSecondary }]}>Value Drivers</Text>
+        
+        {timeDrivers.length > 0 && (
+          <View style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              <View style={[styles.benefitTag, styles.timeBenefitTag]}>
+                <Text>Time Benefits</Text>
+              </View>
+            </View>
+            {timeDrivers.map((driver) => (
+              <View key={driver.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: brand.midGray }}>
+                <Text style={{ fontSize: 9, color: brand.textSecondary }}>{driver.name}</Text>
+                <Text style={{ fontSize: 9, fontWeight: 600, color: brand.textPrimary }}>{formatCurrency(driver.value)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+        
+        {docDrivers.length > 0 && (
+          <View style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              <View style={[styles.benefitTag, styles.docBenefitTag]}>
+                <Text>Documentation Benefits</Text>
+              </View>
+            </View>
+            {docDrivers.map((driver) => (
+              <View key={driver.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: brand.midGray }}>
+                <Text style={{ fontSize: 9, color: brand.textSecondary }}>{driver.name}</Text>
+                <Text style={{ fontSize: 9, fontWeight: 600, color: brand.textPrimary }}>{formatCurrency(driver.value)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <View style={[styles.insightBox, { marginTop: 20 }]}>
+          <Text style={styles.insightLabel}>Methodology Note</Text>
           <Text style={styles.insightText}>
-            These projections use conservative realization rates that account for real-world
-            constraints—scheduling limitations, payer mix variability, and attribution complexity.
+            All projections use conservative realization rates that account for real-world constraints. 
             Organizations that execute well typically exceed these projections.
           </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Abridge Value Assessment</Text>
+        <Text style={styles.footerText}>{data.preparedBy ? `Prepared by: ${data.preparedBy}` : "Abridge ROI Model"}</Text>
         <Text style={styles.footerPageNum}>Page {pageNum} of {totalPages}</Text>
       </View>
     </Page>
@@ -1768,13 +1890,13 @@ const MethodologyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDat
 // ============================================================================
 
 const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
-  const totalPages = 5 + data.drivers.length;
+  // Cover + Executive Summary + Driver pages + Projection + Assumptions = 4 + drivers
+  const totalPages = 4 + data.drivers.length;
   let pageNum = 1;
 
   return (
     <Document>
       <CoverPage data={data} />
-      <StakesPage pageNum={++pageNum} totalPages={totalPages} />
       <ExecutiveSummaryPage data={data} pageNum={++pageNum} totalPages={totalPages} />
       {data.drivers.map((driver) => (
         <DriverDetailPage
@@ -1786,8 +1908,7 @@ const OutpatientPDFDocument = ({ data }: { data: OutpatientPDFData }) => {
         />
       ))}
       <ProjectionPage data={data} pageNum={++pageNum} totalPages={totalPages} />
-      <RecommendationsPage data={data} pageNum={++pageNum} totalPages={totalPages} />
-      <MethodologyPage data={data} pageNum={++pageNum} totalPages={totalPages} />
+      <AssumptionsPage data={data} pageNum={++pageNum} totalPages={totalPages} />
     </Document>
   );
 };
@@ -1800,7 +1921,11 @@ export async function generateOutpatientROIPDF(data: OutpatientPDFData): Promise
   const blob = await pdf(<OutpatientPDFDocument data={data} />).toBlob();
   const today = new Date().toISOString().split("T")[0];
   const orgName = data.clientName || data.organizationName || "Organization";
-  const fileName = `Abridge_Value_Assessment_${orgName.replace(/\s+/g, "_")}_${today}.pdf`;
+  // Format: (Care Setting) ROI Model
+  const careSettingLabel = data.careSetting === "ed" ? "Emergency Department" : 
+                           data.careSetting === "nursing" ? "Nursing" :
+                           data.careSetting === "inpatient" ? "Inpatient" : "Outpatient";
+  const fileName = `${careSettingLabel}_ROI_Model_${orgName.replace(/\s+/g, "_")}_${today}.pdf`;
   saveAs(blob, fileName);
 }
 

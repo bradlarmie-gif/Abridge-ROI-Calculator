@@ -407,7 +407,7 @@ export const styles = StyleSheet.create({
     flex: 2,
     fontSize: 10,
     color: COLORS.lightGray,
-    fontStyle: 'italic',
+    fontWeight: 500,
   },
 
   comparisonHeader: {

@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   pullQuoteText: {
     fontSize: 14,
-    fontStyle: "italic",
+    fontWeight: 500,
     color: brand.black,
     lineHeight: 1.6,
   },
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   stepQuestion: {
     fontSize: 11,
     color: brand.black,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginBottom: 12,
   },
   stepMath: {
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   stepNote: {
     fontSize: 9,
     color: brand.textSecondary,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginTop: 10,
   },
 
@@ -1225,7 +1225,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; 
             </View>
           ))}
           {laborDrivers.length === 0 && (
-            <Text style={{ fontSize: 10, color: brand.textSecondary, fontStyle: "italic", paddingVertical: 12 }}>No time-based drivers selected</Text>
+            <Text style={{ fontSize: 10, color: brand.textSecondary, fontWeight: 500, paddingVertical: 12 }}>No time-based drivers selected</Text>
           )}
         </View>
 
@@ -1238,7 +1238,7 @@ const ExecutiveSummaryPage = ({ data, pageNum, totalPages }: { data: EDPDFData; 
             </View>
           ))}
           {revenueDrivers.length === 0 && (
-            <Text style={{ fontSize: 10, color: brand.textSecondary, fontStyle: "italic", paddingVertical: 12 }}>No documentation drivers selected</Text>
+            <Text style={{ fontSize: 10, color: brand.textSecondary, fontWeight: 500, paddingVertical: 12 }}>No documentation drivers selected</Text>
           )}
         </View>
       </View>

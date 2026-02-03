@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     fontSize: 8.5,
     color: colors.mediumGray,
     marginBottom: 16,
-    fontStyle: "italic",
+    fontWeight: 500,
   },
   narrativeBox: {
     backgroundColor: colors.paleGray,
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   stepQuestion: {
     fontSize: 8,
     color: colors.darkGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginBottom: 6,
   },
   stepMath: {
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
   stepNote: {
     fontSize: 7,
     color: colors.lightGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginTop: 4,
   },
   stepNoteHighlight: {
@@ -769,7 +769,7 @@ const styles = StyleSheet.create({
   benchmarkNote: {
     fontSize: 6,
     color: colors.lightGray,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginTop: 4,
   },
   finalValueBox: {
@@ -869,12 +869,12 @@ const styles = StyleSheet.create({
   fullPictureImpact: {
     fontSize: 7,
     color: colors.mediumGray,
-    fontStyle: "italic",
+    fontWeight: 500,
   },
   fullPictureWhyNot: {
     fontSize: 7,
     color: colors.blue,
-    fontStyle: "italic",
+    fontWeight: 500,
     lineHeight: 1.4,
   },
   valueBreakdownIntro: {
@@ -935,7 +935,7 @@ const styles = StyleSheet.create({
   },
   closingQuoteText: {
     fontSize: 9,
-    fontStyle: "italic",
+    fontWeight: 500,
     color: colors.primaryDark,
     lineHeight: 1.6,
     textAlign: "center",
@@ -962,7 +962,7 @@ const styles = StyleSheet.create({
   connectedSubtitle: {
     fontSize: 8,
     color: colors.blue,
-    fontStyle: "italic",
+    fontWeight: 500,
     marginBottom: 8,
   },
   connectedText: {
@@ -1586,7 +1586,7 @@ const StakesPage = ({ pageNum, totalPages }: { pageNum: number; totalPages: numb
           {narrativeContent.stakes.body}
         </Text>
         <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 24, marginTop: 20 }}>
-          <Text style={{ fontSize: 14, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+          <Text style={{ fontSize: 14, fontWeight: 500, color: colors.black, lineHeight: 1.6 }}>
             {narrativeContent.stakes.pullQuote}
           </Text>
         </View>
@@ -1637,7 +1637,7 @@ const PathForwardPage = ({ data, pageNum, totalPages }: { data: NursingPDFData; 
       ))}
 
       <View style={{ borderLeftWidth: 4, borderLeftColor: colors.primary, paddingLeft: 20, marginTop: 20, marginBottom: 20 }}>
-        <Text style={{ fontSize: 12, fontStyle: "italic", color: colors.black, lineHeight: 1.6 }}>
+        <Text style={{ fontSize: 12, fontWeight: 500, color: colors.black, lineHeight: 1.6 }}>
           {narrativeContent.recommendations.closing}
         </Text>
       </View>
@@ -1762,7 +1762,7 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
             </View>
           ))}
           {laborDrivers.length === 0 && (
-            <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No labor drivers selected</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, fontWeight: 500 }}>No labor drivers selected</Text>
           )}
         </View>
 
@@ -1777,9 +1777,9 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
             </View>
           ))}
           {qualityDrivers.length === 0 && (
-            <Text style={{ fontSize: 7, color: colors.mediumGray, fontStyle: "italic" }}>No quality drivers selected</Text>
+            <Text style={{ fontSize: 7, color: colors.mediumGray, fontWeight: 500 }}>No quality drivers selected</Text>
           )}
-          <Text style={{ fontSize: 6, color: colors.amberDark, fontStyle: "italic", marginTop: 4 }}>
+          <Text style={{ fontSize: 6, color: colors.amberDark, fontWeight: 500, marginTop: 4 }}>
             * Shown as "Potential Value"
           </Text>
         </View>
@@ -1853,7 +1853,7 @@ const ExecutiveSummary = ({ data, pageNum, totalPages }: { data: NursingPDFData;
               <Text style={styles.tableCellGreen}>{formatCurrency(data.threeYearNet)}</Text>
             </View>
           </View>
-          <Text style={{ fontSize: 6, color: colors.lightGray, marginTop: 4, fontStyle: "italic" }}>
+          <Text style={{ fontSize: 6, color: colors.lightGray, marginTop: 4, fontWeight: 500 }}>
             Assumes 10% annual value growth with increased adoption
           </Text>
         </View>
