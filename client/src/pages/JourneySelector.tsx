@@ -120,13 +120,13 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           className="text-center mb-10 md:mb-14"
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-3 tracking-tight px-2 font-abridge uppercase">
-            Frame the value of
+            The value of
             <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#E85A2C' }}>
               Abridge
             </span>
           </h1>
           <p className="text-base md:text-lg text-[#6B7280]">
-            Build a value story that resonates.
+            Modeled for your organization.
           </p>
         </motion.section>
 
