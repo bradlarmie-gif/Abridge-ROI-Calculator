@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ArrowRight, AlertTriangle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -24,6 +24,20 @@ export default function ExploreValueDrivers({
   onHome,
 }: ExploreValueDriversProps) {
   const { timeDriverInputs } = state;
+  
+  const [expandedSections, setExpandedSections] = useState<{
+    patientAccess: boolean;
+    costReduction: boolean;
+    wellbeing: boolean;
+  }>({
+    patientAccess: true,
+    costReduction: true,
+    wellbeing: true,
+  });
+
+  const toggleExpanded = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
   
   const updateTimeDriverInputs = (updates: Partial<typeof timeDriverInputs>) => {
     updateState({
@@ -108,32 +122,49 @@ export default function ExploreValueDrivers({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <button
-            onClick={() => updateTimeDriverInputs({ patientAccessEnabled: !timeDriverInputs.patientAccessEnabled })}
+          <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.patientAccessEnabled 
                 ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
-            data-testid="toggle-patient-access"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">Patient Access</p>
                 <p className="text-sm text-[#888888]">If providers use time to see more patients</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  timeDriverInputs.patientAccessEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {timeDriverInputs.patientAccessEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('patientAccess')}
+                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                    data-testid="collapse-patient-access"
+                  >
+                    {expandedSections.patientAccess ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => updateTimeDriverInputs({ patientAccessEnabled: !timeDriverInputs.patientAccessEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-patient-access"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.patientAccessEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {timeDriverInputs.patientAccessEnabled && (
+            {timeDriverInputs.patientAccessEnabled && expandedSections.patientAccess && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -222,32 +253,49 @@ export default function ExploreValueDrivers({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <button
-            onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
+          <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.costReductionEnabled 
                 ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
-            data-testid="toggle-cost-reduction"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">Cost Reduction</p>
                 <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                timeDriverInputs.costReductionEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  timeDriverInputs.costReductionEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {timeDriverInputs.costReductionEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('costReduction')}
+                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                    data-testid="collapse-cost-reduction"
+                  >
+                    {expandedSections.costReduction ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.costReductionEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-cost-reduction"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.costReductionEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {timeDriverInputs.costReductionEnabled && (
+            {timeDriverInputs.costReductionEnabled && expandedSections.costReduction && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -289,32 +337,49 @@ export default function ExploreValueDrivers({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <button
-            onClick={() => updateTimeDriverInputs({ wellbeingEnabled: !timeDriverInputs.wellbeingEnabled })}
+          <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.wellbeingEnabled 
                 ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
-            data-testid="toggle-wellbeing"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">Clinician Wellbeing</p>
                 <p className="text-sm text-[#888888]">If time improves work-life balance and retention</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  timeDriverInputs.wellbeingEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {timeDriverInputs.wellbeingEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('wellbeing')}
+                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                    data-testid="collapse-wellbeing"
+                  >
+                    {expandedSections.wellbeing ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => updateTimeDriverInputs({ wellbeingEnabled: !timeDriverInputs.wellbeingEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-wellbeing"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.wellbeingEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {timeDriverInputs.wellbeingEnabled && (
+            {timeDriverInputs.wellbeingEnabled && expandedSections.wellbeing && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
