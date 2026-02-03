@@ -1,0 +1,532 @@
+# INPATIENT — THE REAL STORY
+
+## The Industry Question:
+
+*"What is Abridge going to do in the inpatient setting... and is it a big deal or not?"*
+
+## The Honest Answer:
+
+**For hospitalists, the value story is different than outpatient.**
+
+In outpatient:
+- Time savings → More patients → Revenue
+- wRVU lift → Revenue
+
+In inpatient:
+- Time savings → Better work-life, maybe handle larger census
+- DRG accuracy → Revenue (this is the big one)
+- CDI efficiency → Operational savings
+
+**The hero isn't time. The hero is documentation quality driving revenue integrity.**
+
+---
+
+# REVISED INPATIENT STRUCTURE
+
+## Page 1: Your Hospitalist Program
+
+**Keep it simple:**
+- Hospitalists
+- Admissions per Provider (300/400/500)
+- Utilization Rate
+
+**No patient days needed** — we're measuring per admission, not per day.
+
+---
+
+## Page 2: Time Savings
+
+**Reframe for hospitalists:**
+
+```
+TIME SAVINGS
+
+How much time could your hospitalists get back?
+
+Hospitalists document across the patient stay—H&Ps, progress notes, 
+discharge summaries. Abridge reduces documentation time across all of these.
+
+WHAT THE DATA SHOWS
+
+Across inpatient implementations, hospitalists typically save 15-45 minutes 
+per admission on total documentation time.
+
+Source: Abridge customer data, 2024-2025
+
+CHOOSE YOUR SCENARIO
+
+○ Conservative    15 min
+  Per admission (combined across all notes)
+
+● Typical         30 min      RECOMMENDED
+  Based on average outcomes across similar implementations
+
+○ Optimistic      45 min
+  For high-adoption programs with strong workflows
+```
+
+**Math:**
+```
+Hours Saved = Time per Admission × Eligible Admissions ÷ 60
+
+Example: 30 min × 84,000 admissions ÷ 60 = 42,000 hours/year
+```
+
+---
+
+## Page 3: Value Drivers (Time)
+
+### Driver 1: Rounding Efficiency — QUALITATIVE ONLY
+
+You're right — rounding efficiency is real, but we shouldn't tie a dollar figure to it. Instead, frame it as a qualitative benefit.
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ROUNDING EFFICIENCY                                                [Toggle] │
+│  More time at bedside, less time charting                                     │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  When documentation happens automatically, hospitalists spend less time       │
+│  charting during and after rounds. This time returns to patient care,         │
+│  teaching, or work-life balance.                                              │
+│                                                                               │
+│  YOUR PROGRAM                                                                 │
+│                                                                               │
+│  Your hospitalists would get back:                                            │
+│                                                                               │
+│                      42,000 hours / year                                      │
+│                                                                               │
+│                      ~140 hours per hospitalist                               │
+│                      ~2.7 hours per week                                      │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  WHERE THAT TIME GOES                                                         │
+│                                                                               │
+│  Different programs use this time differently:                                │
+│                                                                               │
+│  • More time with complex patients                                            │
+│  • Better teaching for residents                                              │
+│  • Earlier completion of rounds                                               │
+│  • Reduced after-hours documentation                                          │
+│  • Ability to manage larger census                                            │
+│                                                                               │
+│  We don't assign a dollar value because it varies by organization.            │
+│  The value shows up in wellbeing, capacity, or quality—depending on           │
+│  how your program chooses to use it.                                          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│                                               Qualitative benefit             │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+**No dollar value calculated.** Just show the hours and let them understand the impact.
+
+---
+
+### Driver 2: Clinician Wellbeing — OPTIONAL DOLLAR VALUE
+
+Same structure as ED/Outpatient, with hospitalist defaults.
+
+```
+Hospitalist-specific defaults:
+- Annual turnover rate: 8%
+- Turnover related to burnout: 45%
+- Cost to replace: $400,000
+
+Helper text updates:
+- "Hospitalist average: 7-10%"
+- "Hospitalist replacement costs include recruitment, credentialing, and coverage during vacancy"
+```
+
+---
+
+### Right Panel for Time Value:
+
+```
+┌─────────────────────────────────────────┐
+│                                         │
+│  TIME VALUE                             │
+│  What reclaimed time could mean         │
+│                                         │
+│           42,000                        │
+│        hours / year                     │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ● Rounding Efficiency    Qualitative   │
+│    2.7 hrs/wk per hospitalist           │
+│                                         │
+│  ● Clinician Wellbeing    $[value]      │
+│    (retention value)          or —      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  TIME VALUE TOTAL                       │
+│                                         │
+│  $[wellbeing value only]                │
+│  + qualitative efficiency gains         │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Documentation → ]        │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## Page 4: Documentation Quality — THE HERO PAGE
+
+This is where Inpatient shines. The story is:
+
+**"Better documentation at bedside → Better DRG capture → Real revenue"**
+
+### Driver 1: DRG Accuracy (CC/MCC Capture)
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  DRG ACCURACY                                                     [On]    │
+│  ┃  Capture clinical complexity that drives reimbursement                     │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  THE THEORY                                                                   │
+│                                                                               │
+│  Incomplete documentation costs you twice. First, at coding—when conditions   │
+│  discussed at bedside aren't captured, DRGs are assigned lower than           │
+│  clinically appropriate. Second, after submission—when payers deny claims     │
+│  because medical necessity, level of care, or status criteria weren't         │
+│  documented.                                                                  │
+│                                                                               │
+│  Abridge captures the clinical reasoning that prevents both.                  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 1: ADMISSIONS AT RISK                                                   │
+│                                                                               │
+│  How many admissions have documentation gaps that affect DRG assignment?      │
+│                                                                               │
+│  Eligible Admissions              At-Risk Rate                                │
+│  ┌──────────────────┐             ┌──────────────────┐                        │
+│  │ 84,000           │      ×      │ 25            %  │                        │
+│  └──────────────────┘             └──────────────────┘                        │
+│                                                                               │
+│  = 21,000 admissions at risk                                                  │
+│                                                                               │
+│  20-30% of admissions have documentation gaps—conditions discussed but        │
+│  not documented, clinical complexity not fully captured. 25% is moderate.     │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 2: ABRIDGE PROTECTION                                                   │
+│                                                                               │
+│  How many can Abridge protect?                                                │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │    15%      │  │    20%      │  │    25%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  21,000 at risk × 20% = 4,200 admissions protected                            │
+│                                                                               │
+│  Abridge captures clinical discussions that would otherwise be lost.          │
+│  20% is conservative—the complexity was discussed, now it's documented.       │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 3: REVENUE PROTECTED                                                    │
+│                                                                               │
+│  What's the value of prevented downcoding?                                    │
+│                                                                               │
+│  Admissions Protected    DRG Weight Increase    Base DRG Payment              │
+│  ┌────────────────┐      ┌────────────────┐     ┌────────────────┐            │
+│  │ 4,200          │  ×   │ 0.4            │  ×  │ $ 6,000        │            │
+│  └────────────────┘      └────────────────┘     └────────────────┘            │
+│                                                                               │
+│  = $10,080,000 gross value                                                    │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                         │  │
+│  │  📊 Benchmark: What Drives 0.4 DRG Weight?                              │  │
+│  │                                                                         │  │
+│  │  Acute respiratory failure                    +0.3 to +0.5              │  │
+│  │  Sepsis / Severe sepsis                       +0.4 to +0.6              │  │
+│  │  Malnutrition                                 +0.2 to +0.4              │  │
+│  │  Acute encephalopathy                         +0.3 to +0.5              │  │
+│  │  Acute kidney injury                          +0.1 to +0.3              │  │
+│  │                                                                         │  │
+│  │  0.4 represents average DRG weight difference when documentation        │  │
+│  │  gaps cause downcoding. Higher acuity facilities may see 0.5-0.6.       │  │
+│  │                                                                         │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 4: REALITY CHECK                                                        │
+│                                                                               │
+│  What passes audit?                                                           │
+│                                                                               │
+│  Gross Impact              Realization Rate                                   │
+│  ┌──────────────────┐      ┌──────────────────┐                               │
+│  │ $10,080,000      │  ×   │ 50            %  │                               │
+│  └──────────────────┘      └──────────────────┘                               │
+│                                                                               │
+│  = $5,040,000 net                                                             │
+│                                                                               │
+│  50% haircut accounts for RAC/PEPPER audits, coder discretion, cases          │
+│  where documentation doesn't change final code, and retrospective             │
+│  adjustments. This is revenue you can actually count on.                      │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                         │  │
+│  │  WHAT THIS INCLUDES                                                     │  │
+│  │                                                                         │  │
+│  │  This calculation captures two types of revenue protection:             │  │
+│  │                                                                         │  │
+│  │  DRG Accuracy                                                           │  │
+│  │  Conditions discussed but not documented lead to lower DRG assignments. │  │
+│  │  Abridge captures clinical complexity upfront, ensuring accurate        │  │
+│  │  coding the first time.                                                 │  │
+│  │                                                                         │  │
+│  │  Denial Prevention                                                      │  │
+│  │  Documentation gaps also cause post-submission denials—medical          │  │
+│  │  necessity not supported, level of care not justified, IP vs Obs        │  │
+│  │  status unclear. The same documentation that improves DRG accuracy      │  │
+│  │  also reduces denial write-offs.                                        │  │
+│  │                                                                         │  │
+│  │  We combine these into a single value to avoid double-counting.         │  │
+│  │  Both stem from the same Abridge capability: capturing what's           │  │
+│  │  discussed at bedside.                                                  │  │
+│  │                                                                         │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Annual Revenue Protected                               $5,040,000            │
+│  (DRG Accuracy + Denial Prevention)                                           │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ⚠️ Work with your CDI team to validate capture rates for your specific       │
+│     case mix.                                                                 │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Driver 2: CDI Query Reduction
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  CDI QUERY REDUCTION                                              [On]    │
+│  ┃  Fewer queries when documentation is complete from the start               │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  THE THEORY                                                                   │
+│                                                                               │
+│  Many CDI queries are simply asking physicians to document what they          │
+│  already discussed with the patient. When Abridge captures these              │
+│  conversations automatically, the query becomes unnecessary—freeing           │
+│  CDI to focus on complex cases.                                               │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 1: CURRENT QUERY VOLUME                                                 │
+│                                                                               │
+│  How many queries happen today?                                               │
+│                                                                               │
+│  Admissions              Query Rate                                           │
+│  ┌──────────────────┐    ┌──────────────────┐                                 │
+│  │ 84,000           │ ×  │ 30            %  │  = 25,200 queries/year          │
+│  └──────────────────┘    └──────────────────┘                                 │
+│                                                                               │
+│  CDI query rates typically range 20-40% of admissions.                        │
+│  30% is average for most health systems.                                      │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 2: QUERIES AVOIDED                                                      │
+│                                                                               │
+│  How many can better documentation prevent?                                   │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │    15%      │  │    25%      │  │    35%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  25,200 queries × 25% = 6,300 queries avoided                                 │
+│                                                                               │
+│  When initial documentation is complete, CDI doesn't need to query.           │
+│  Common examples: severity of illness indicators, clinical indicators         │
+│  for conditions like malnutrition or encephalopathy, and specificity          │
+│  on diagnoses already discussed at bedside.                                   │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  STEP 3: OPERATIONAL SAVINGS                                                  │
+│                                                                               │
+│  What's the efficiency value?                                                 │
+│                                                                               │
+│  Queries Avoided         Cost per Query                                       │
+│  ┌──────────────────┐    ┌──────────────────┐                                 │
+│  │ 6,300            │ ×  │ $ 50             │  = $315,000                     │
+│  └──────────────────┘    └──────────────────┘                                 │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                         │  │
+│  │  📊 Benchmark: Cost per Query                                           │  │
+│  │                                                                         │  │
+│  │  CDI Specialist time (research, write, follow-up)     20-30 min         │  │
+│  │  Physician time (read, respond)                        5-10 min         │  │
+│  │                                                                         │  │
+│  │  Fully loaded cost: $50-$100 per query.                                 │  │
+│  │  We use $50 conservatively.                                             │  │
+│  │                                                                         │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Annual CDI Savings                                         $315,000          │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ℹ️ Query reduction and DRG accuracy are complementary. Fewer queries         │
+│     means faster, more accurate coding—and the documentation that             │
+│     avoids queries is the same documentation that supports accurate           │
+│     DRG assignment.                                                           │
+│                                                                               │
+│  ✨ Additional benefit: Faster DRG finalization → faster billing cycles.      │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Summary Page — "Connected Value" Section
+
+For Inpatient, if they also use ED, show the connection:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  🔗  CONNECTED VALUE                                                            │
+│      ED + Inpatient compounds your results                                      │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  When patients are admitted from the ED, complete ED documentation              │
+│  becomes the foundation for inpatient coding. Organizations using               │
+│  Abridge in both settings see compounding benefits:                             │
+│                                                                                 │
+│  • CCs and MCCs captured in ED carry forward                                    │
+│  • Medical necessity established at admission                                   │
+│  • CDI has complete picture from day one                                        │
+│  • Fewer queries, faster DRG finalization                                       │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  If you're also considering Abridge in the ED, the value compounds.     │    │
+│  │  Run the ED model to see the full picture.                              │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+# INPATIENT VALUE SUMMARY
+
+## The Story:
+
+**"Inpatient is about revenue integrity. Abridge captures the clinical complexity that drives accurate DRGs and reduces CDI burden."**
+
+## The Drivers:
+
+| Category | Driver | Value Type |
+|----------|--------|------------|
+| **Time Back** | Rounding Efficiency | Qualitative (hours back) |
+| **Time Back** | Clinician Wellbeing | Optional $ (retention) |
+| **Documentation** | DRG Accuracy | $ (hero driver) |
+| **Documentation** | CDI Query Reduction | $ (operational savings) |
+
+## The Numbers (Example: 300 hospitalists, 84K admissions):
+
+| Driver | Value |
+|--------|-------|
+| Rounding Efficiency | 42,000 hours (qualitative) |
+| Clinician Wellbeing | ~$300K (if calculated) |
+| DRG Accuracy | ~$5M (the big one) |
+| CDI Query Reduction | ~$300K |
+| **Total** | **~$5.6M** |
+
+---
+
+## Replit Prompt Summary:
+
+```
+INPATIENT PATH — COMPLETE REBUILD:
+
+1. PAGE 1 (Your Hospitalist Program):
+   - Keep: Hospitalists, Admissions/Provider, Utilization
+   - Remove: Any patient days reference
+
+2. PAGE 2 (Time Savings):
+   - Change unit from "min per encounter" to "min per admission"
+   - Scenarios: 15 min / 30 min / 45 min
+   - Update copy for hospitalist documentation pattern
+
+3. PAGE 3 (Value Drivers - Time):
+   - REMOVE: LOS Impact entirely
+   - REFRAME: Rounding Efficiency as QUALITATIVE ONLY (no dollar value)
+     - Show hours back, time per hospitalist, per week
+     - List where time goes (patient care, teaching, work-life)
+     - Explicitly say "we don't assign a dollar value"
+   - KEEP: Clinician Wellbeing with hospitalist defaults
+     - Turnover: 8%
+     - Burnout-related: 45%
+     - Replacement cost: $400,000
+
+4. PAGE 4 (Documentation Quality):
+   - ADD: DRG Accuracy as the hero driver
+     - Step 1: Admissions at risk (25% default)
+     - Step 2: Abridge protection (15%/20%/25% scenarios)
+     - Step 3: Revenue protected (0.4 weight × $6,000 base)
+     - Step 4: Reality check (50% realization)
+     - Include "What This Includes" box explaining DRG + Denial Prevention combined
+     - Include benchmark tables
+   - KEEP: CDI Query Reduction
+     - Query rate: 30% default
+     - Reduction rate: 15%/25%/35% scenarios
+     - Cost per query: $50 default
+
+5. PAGE 5 (Investment):
+   - Same structure as other settings
+
+6. PAGE 6 (Summary):
+   - Hero metrics: Net Value, ROI, Value per Hospitalist, Hours Saved
+   - Where Value Comes From:
+     - TIME BACK: Rounding Efficiency (qualitative) + Wellbeing ($)
+     - DOCUMENTATION QUALITY: DRG Accuracy ($) + CDI Savings ($)
+   - Connected Value section (ED + IP connection)
+   - Expansion Opportunity
+   - Growth Trajectory
+   - 3-Year Projection
+
+7. STYLING:
+   - Match new Explore styling (warm beige, spacing, etc.)
+   - Step-by-step calculations in each driver
+   - Benchmark tables where helpful

@@ -98,3 +98,12 @@ Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, 
 - **Segmented Controls**: Larger touch targets with 16px vertical padding (`py-4 px-3`)
 - **Content Gap**: 40px gap between main content and right panel (`gap-10`)
 - **Helper Text**: Increased margin-top for better separation (`mt-3`)
+
+### Inpatient Flow Redesign
+- **Time Savings**: 15/30/45 min per admission (not per encounter)
+- **Value Drivers**: Rounding Efficiency is qualitative-only (shows hours back, no $ value). Clinician Wellbeing uses hospitalist defaults: 8% turnover, 45% burnout-related, $400k replacement cost
+- **Documentation Quality Drivers**: Inpatient-specific drivers replace wRVU/HCC/Denials:
+  - **DRG Accuracy**: 25% at-risk admissions, 15%/20%/25% protection by scenario, 0.4 DRG weight increase, $6k base payment, 50% realization. Includes denial prevention to avoid double-counting
+  - **CDI Query Reduction**: 30% query rate, 15%/25%/35% reduction by scenario, $50 cost per query
+- **Calculation Flow**: Admissions at risk × Protection rate × DRG weight increase × Base payment × Realization = Net DRG value
+- **Scenario Labels**: "Aggressive" renamed to "Optimistic" throughout

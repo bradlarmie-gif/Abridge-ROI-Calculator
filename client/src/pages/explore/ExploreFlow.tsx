@@ -83,11 +83,10 @@ export interface TimeDriverInputs {
   edAdmissionRealization: number; // Realization rate for admission capture
   
   // Inpatient-specific inputs
-  ipLosEnabled: boolean;
-  ipLosReduction: number; // Days reduction per patient
-  ipCostPerDay: number;
   ipRoundingEnabled: boolean;
-  ipRoundingEfficiencyGain: number; // % efficiency gain
+  ipAnnualTurnoverRate: number; // Hospitalist turnover rate
+  ipBurnoutRelatedTurnover: number; // % of turnover burnout-related
+  ipReplacementCost: number; // Hospitalist replacement cost
   
   // Nursing-specific inputs
   nursingOtEnabled: boolean;
@@ -127,6 +126,20 @@ export interface DocQualityInputs {
   unappealableRate: number;
   avgClaimValue: number;
   denialsRealization: number;
+  
+  // Inpatient: DRG Accuracy
+  ipDrgEnabled: boolean;
+  ipDrgScenario: 'conservative' | 'typical' | 'aggressive';
+  ipDrgAtRiskRate: number; // % of admissions with documentation gaps
+  ipDrgWeightIncrease: number; // Average DRG weight difference
+  ipDrgBasePayment: number; // Base DRG payment
+  ipDrgRealization: number; // Realization rate (audit adjustments)
+  
+  // Inpatient: CDI Query Reduction
+  ipCdiEnabled: boolean;
+  ipCdiScenario: 'conservative' | 'typical' | 'aggressive';
+  ipCdiQueryRate: number; // % of admissions that generate queries
+  ipCdiCostPerQuery: number; // Cost per query
 }
 
 export interface ExploreState {
@@ -230,11 +243,10 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edAdmissionRevenue: 8000, // Average admission revenue
     edAdmissionRealization: 40, // 40% realization (bed availability, payer mix)
     // Inpatient-specific defaults
-    ipLosEnabled: false,
-    ipLosReduction: 0.25, // 0.25 day reduction per patient
-    ipCostPerDay: 2500,
     ipRoundingEnabled: false,
-    ipRoundingEfficiencyGain: 10, // 10% efficiency
+    ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
+    ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
+    ipReplacementCost: 400000, // $400,000 replacement cost
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtHoursPerNurseWeek: 4,
@@ -267,6 +279,18 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     unappealableRate: 30,
     avgClaimValue: 200,
     denialsRealization: 60,
+    // Inpatient: DRG Accuracy defaults
+    ipDrgEnabled: false,
+    ipDrgScenario: 'typical',
+    ipDrgAtRiskRate: 25, // 25% of admissions have documentation gaps
+    ipDrgWeightIncrease: 0.4, // Average DRG weight difference
+    ipDrgBasePayment: 6000, // $6,000 base DRG payment
+    ipDrgRealization: 50, // 50% realization (RAC/PEPPER audits)
+    // Inpatient: CDI Query Reduction defaults
+    ipCdiEnabled: false,
+    ipCdiScenario: 'typical',
+    ipCdiQueryRate: 30, // 30% of admissions generate queries
+    ipCdiCostPerQuery: 50, // $50 per query
   },
   pricingModel: 'perProvider',
   costPerProvider: 0,
@@ -412,16 +436,8 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
     } else if (isInpatient) {
-      // Inpatient: LOS and Rounding
-      if (timeDriverInputs.ipLosEnabled) {
-        const daysSaved = annualEncounters * timeDriverInputs.ipLosReduction;
-        total += daysSaved * timeDriverInputs.ipCostPerDay;
-      }
-      if (timeDriverInputs.ipRoundingEnabled) {
-        const efficiencyHours = totalHoursSaved * (timeDriverInputs.ipRoundingEfficiencyGain / 100);
-        const hourlyValue = 150;
-        total += efficiencyHours * hourlyValue;
-      }
+      // Inpatient: Rounding is qualitative only (no dollar value added here)
+      // Time value comes from Wellbeing driver only (handled elsewhere)
     } else if (isNursing) {
       // Nursing: OT Reduction and Retention
       if (timeDriverInputs.nursingOtEnabled) {

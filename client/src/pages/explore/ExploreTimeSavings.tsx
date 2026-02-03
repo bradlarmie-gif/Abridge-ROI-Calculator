@@ -31,7 +31,9 @@ export default function ExploreTimeSavings({
 
   const scenarioMinutes: Record<string, number> = isED 
     ? { conservative: 1, typical: 2, aggressive: 3 }
-    : { conservative: 2, typical: 4, aggressive: 6 };
+    : isInpatient
+      ? { conservative: 15, typical: 30, aggressive: 45 }  // Per admission for hospitalists
+      : { conservative: 2, typical: 4, aggressive: 6 };
 
   const hoursSaved = useMemo(() => {
     return Math.round((state.minutesSavedPerEncounter * eligibleEncounters) / 60);
@@ -64,14 +66,18 @@ export default function ExploreTimeSavings({
     {
       key: 'conservative',
       label: 'Conservative',
-      description: 'For skeptical stakeholders. Under-promise to over-deliver.',
+      description: isInpatient
+        ? 'Per admission (combined across all notes). For skeptical stakeholders.'
+        : 'For skeptical stakeholders. Under-promise to over-deliver.',
     },
     {
       key: 'typical',
       label: 'Typical',
       description: isED 
         ? 'Based on average outcomes across similar ED implementations.'
-        : 'Based on average outcomes across similar implementations.',
+        : isInpatient
+          ? 'Based on average outcomes across similar hospitalist implementations.'
+          : 'Based on average outcomes across similar implementations.',
       recommended: true,
     },
     {
@@ -79,7 +85,9 @@ export default function ExploreTimeSavings({
       label: 'Optimistic',
       description: isED 
         ? 'For high-adoption EDs with strong change management.'
-        : 'For high-adoption organizations with strong change management.',
+        : isInpatient
+          ? 'For high-adoption programs with strong workflows.'
+          : 'For high-adoption organizations with strong change management.',
     },
   ];
 
@@ -111,7 +119,9 @@ export default function ExploreTimeSavings({
               <p className="text-base text-[#888888]">
                 {isED 
                   ? "How much time could your ED providers get back?"
-                  : "How much time could your providers get back?"
+                  : isInpatient
+                    ? "How much time could your hospitalists get back?"
+                    : "How much time could your providers get back?"
                 }
               </p>
             </motion.div>
@@ -130,7 +140,9 @@ export default function ExploreTimeSavings({
               <p className="text-sm text-black leading-relaxed">
                 {isED 
                   ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
-                  : "Across implementations, providers typically save 2-6 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
+                  : isInpatient
+                    ? "Hospitalists document across the patient stay—H&Ps, progress notes, discharge summaries. Abridge reduces documentation time across all of these. Across inpatient implementations, hospitalists typically save 15-45 minutes per admission on total documentation time."
+                    : "Across implementations, providers typically save 2-6 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
                 }
               </p>
               <p className="text-xs text-[#888888] mt-2 italic">

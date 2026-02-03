@@ -40,6 +40,8 @@ export default function ExploreDocQuality({
   const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 7 };
   const hccScenarios: Record<ScenarioLevel, number> = { conservative: 10, typical: 15, aggressive: 25 };
   const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75 };
+  const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25 };
+  const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35 };
 
   // wRVU Calculation
   const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
@@ -66,6 +68,19 @@ export default function ExploreDocQuality({
   const denialsRevenueGross = preventedDenials * docQualityInputs.avgClaimValue;
   const denialsRevenueNet = denialsRevenueGross * (docQualityInputs.denialsRealization / 100);
 
+  // Inpatient: DRG Accuracy Calculation
+  const ipDrgProtectionPercent = ipDrgProtectionScenarios[docQualityInputs.ipDrgScenario];
+  const ipAdmissionsAtRisk = eligibleEncounters * (docQualityInputs.ipDrgAtRiskRate / 100);
+  const ipAdmissionsProtected = ipAdmissionsAtRisk * (ipDrgProtectionPercent / 100);
+  const ipDrgGrossValue = ipAdmissionsProtected * docQualityInputs.ipDrgWeightIncrease * docQualityInputs.ipDrgBasePayment;
+  const ipDrgNetValue = ipDrgGrossValue * (docQualityInputs.ipDrgRealization / 100);
+
+  // Inpatient: CDI Query Reduction Calculation
+  const ipCdiReductionPercent = ipCdiReductionScenarios[docQualityInputs.ipCdiScenario];
+  const ipTotalQueries = eligibleEncounters * (docQualityInputs.ipCdiQueryRate / 100);
+  const ipQueriesAvoided = ipTotalQueries * (ipCdiReductionPercent / 100);
+  const ipCdiSavingsValue = ipQueriesAvoided * docQualityInputs.ipCdiCostPerQuery;
+
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
@@ -75,10 +90,18 @@ export default function ExploreDocQuality({
   const isNursing = state.careSetting === 'nursing';
   const showHCC = !isED && !isInpatient && !isNursing; // Only show HCC for Outpatient
 
-  // HCC only applies to Outpatient - include in total only when applicable
-  const totalDocValue = (docQualityInputs.wrvuEnabled ? wrvuRevenueNet : 0) + 
-                        (showHCC && docQualityInputs.hccEnabled ? hccRevenueNet : 0) + 
-                        (docQualityInputs.denialsEnabled ? denialsRevenueNet : 0);
+  // Calculate total based on care setting
+  const totalDocValue = useMemo(() => {
+    if (isInpatient) {
+      // Inpatient: DRG Accuracy + CDI Query Reduction
+      return (docQualityInputs.ipDrgEnabled ? ipDrgNetValue : 0) + 
+             (docQualityInputs.ipCdiEnabled ? ipCdiSavingsValue : 0);
+    }
+    // Other settings: wRVU + HCC (if applicable) + Denials
+    return (docQualityInputs.wrvuEnabled ? wrvuRevenueNet : 0) + 
+           (showHCC && docQualityInputs.hccEnabled ? hccRevenueNet : 0) + 
+           (docQualityInputs.denialsEnabled ? denialsRevenueNet : 0);
+  }, [isInpatient, docQualityInputs, ipDrgNetValue, ipCdiSavingsValue, wrvuRevenueNet, hccRevenueNet, denialsRevenueNet, showHCC]);
 
   const docConfig = {
     outpatient: {
@@ -103,13 +126,13 @@ export default function ExploreDocQuality({
     },
     inpatient: {
       pageTitle: 'Documentation Quality',
-      pageSubtitle: 'Accurate documentation drives CC/MCC capture and reduces denials.',
-      driver1Title: 'CC/MCC Capture',
-      driver1Subtitle: 'Document complications and comorbidities accurately',
-      driver2Title: '', // No HCC for Inpatient
-      driver2Subtitle: '',
-      driver3Title: 'Denial Prevention',
-      driver3Subtitle: 'Reduce documentation-related claim denials',
+      pageSubtitle: 'Better documentation at bedside → Better DRG capture → Real revenue.',
+      driver1Title: 'DRG Accuracy',
+      driver1Subtitle: 'Capture clinical complexity that drives reimbursement',
+      driver2Title: 'CDI Query Reduction',
+      driver2Subtitle: 'Fewer queries when documentation is complete from the start',
+      driver3Title: '', // Denials handled within DRG Accuracy
+      driver3Subtitle: '',
     },
     nursing: {
       pageTitle: 'Care Quality',
@@ -155,7 +178,288 @@ export default function ExploreDocQuality({
           </p>
         </motion.div>
 
-        {/* wRVU Improvement */}
+        {/* Inpatient: DRG Accuracy */}
+        {isInpatient && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <button
+            onClick={() => updateDocInputs({ ipDrgEnabled: !docQualityInputs.ipDrgEnabled })}
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              docQualityInputs.ipDrgEnabled 
+                ? "bg-white" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+            data-testid="toggle-drg"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-black">{config.driver1Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
+              </div>
+              <div className={`w-12 h-6 rounded-full relative transition-all ${
+                docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+              }`}>
+                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                  docQualityInputs.ipDrgEnabled ? 'right-0.5' : 'left-0.5'
+                }`} />
+              </div>
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {docQualityInputs.ipDrgEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-b-lg p-5">
+                  <p className="text-sm text-black mb-4">
+                    Incomplete documentation costs you twice. First, at coding—when conditions discussed at bedside aren't captured. Second, after submission—when payers deny claims. Abridge captures the clinical reasoning that prevents both.
+                  </p>
+
+                  <p className="text-sm font-medium text-black mb-2">How many can Abridge protect?</p>
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => updateDocInputs({ ipDrgScenario: level })}
+                        className={`p-3 rounded-lg border-2 transition-all text-center ${
+                          docQualityInputs.ipDrgScenario === level
+                            ? "border-[#EA2C00] bg-white"
+                            : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+                        }`}
+                      >
+                        <p className="font-medium text-black capitalize">{level === 'aggressive' ? 'Optimistic' : level}</p>
+                        <p className="text-sm text-[#888888]">{ipDrgProtectionScenarios[level]}%</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-4">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Eligible admissions</span>
+                        <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">At-risk rate</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="1"
+                            value={docQualityInputs.ipDrgAtRiskRate}
+                            onChange={(e) => updateDocInputs({ ipDrgAtRiskRate: parseFloat(e.target.value) || 0 })}
+                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          />
+                          <span className="text-[#888888]">%</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">= Admissions at risk</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsAtRisk))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">× Abridge protection</span>
+                        <span className="font-semibold text-black">{ipDrgProtectionPercent}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">= Admissions protected</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))}</span>
+                      </div>
+                      <div className="h-px bg-[#D1D5DB] my-2" />
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">DRG weight increase</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={docQualityInputs.ipDrgWeightIncrease}
+                            onChange={(e) => updateDocInputs({ ipDrgWeightIncrease: parseFloat(e.target.value) || 0 })}
+                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">Base DRG payment</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[#888888]">$</span>
+                          <input
+                            type="number"
+                            step="100"
+                            value={docQualityInputs.ipDrgBasePayment}
+                            onChange={(e) => updateDocInputs({ ipDrgBasePayment: parseFloat(e.target.value) || 0 })}
+                            className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">= Gross value</span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))}</span>
+                      </div>
+                      <div className="h-px bg-[#D1D5DB] my-2" />
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">× Realization rate</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="5"
+                            value={docQualityInputs.ipDrgRealization}
+                            onChange={(e) => updateDocInputs({ ipDrgRealization: parseFloat(e.target.value) || 0 })}
+                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          />
+                          <span className="text-[#888888]">%</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-[#666666]">= Net revenue protected</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipDrgNetValue))}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-3">
+                    <p className="text-xs text-[#888888]">
+                      <strong>What's included:</strong> DRG Accuracy (conditions discussed but not documented) + Denial Prevention (medical necessity, level of care). Combined to avoid double-counting—both stem from the same Abridge capability.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Inpatient: CDI Query Reduction */}
+        {isInpatient && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <button
+            onClick={() => updateDocInputs({ ipCdiEnabled: !docQualityInputs.ipCdiEnabled })}
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              docQualityInputs.ipCdiEnabled 
+                ? "bg-white" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+            data-testid="toggle-cdi"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-black">{config.driver2Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
+              </div>
+              <div className={`w-12 h-6 rounded-full relative transition-all ${
+                docQualityInputs.ipCdiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+              }`}>
+                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                  docQualityInputs.ipCdiEnabled ? 'right-0.5' : 'left-0.5'
+                }`} />
+              </div>
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {docQualityInputs.ipCdiEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-b-lg p-5">
+                  <p className="text-sm text-black mb-4">
+                    Many CDI queries simply ask physicians to document what they already discussed with the patient. When Abridge captures these conversations automatically, the query becomes unnecessary—freeing CDI to focus on complex cases.
+                  </p>
+
+                  <p className="text-sm font-medium text-black mb-2">How many queries can be avoided?</p>
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => updateDocInputs({ ipCdiScenario: level })}
+                        className={`p-3 rounded-lg border-2 transition-all text-center ${
+                          docQualityInputs.ipCdiScenario === level
+                            ? "border-[#EA2C00] bg-white"
+                            : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+                        }`}
+                      >
+                        <p className="font-medium text-black capitalize">{level === 'aggressive' ? 'Optimistic' : level}</p>
+                        <p className="text-sm text-[#888888]">{ipCdiReductionScenarios[level]}%</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Eligible admissions</span>
+                        <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">Query rate</span>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="5"
+                            value={docQualityInputs.ipCdiQueryRate}
+                            onChange={(e) => updateDocInputs({ ipCdiQueryRate: parseFloat(e.target.value) || 0 })}
+                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          />
+                          <span className="text-[#888888]">%</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">= Total queries/year</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipTotalQueries))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">× Reduction rate</span>
+                        <span className="font-semibold text-black">{ipCdiReductionPercent}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">= Queries avoided</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))}</span>
+                      </div>
+                      <div className="h-px bg-[#D1D5DB] my-2" />
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#666666]">× Cost per query</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[#888888]">$</span>
+                          <input
+                            type="number"
+                            step="10"
+                            value={docQualityInputs.ipCdiCostPerQuery}
+                            onChange={(e) => updateDocInputs({ ipCdiCostPerQuery: parseFloat(e.target.value) || 0 })}
+                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-[#666666]">= CDI savings</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipCdiSavingsValue))}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* wRVU Improvement - Not for Inpatient */}
+        {!isInpatient && (
         <motion.div
           className="mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -290,6 +594,8 @@ export default function ExploreDocQuality({
             )}
           </AnimatePresence>
         </motion.div>
+        )
+        }
 
         {/* HCC Capture - Only show for Outpatient */}
         {showHCC && (
@@ -516,7 +822,8 @@ export default function ExploreDocQuality({
         </motion.div>
         )}
 
-        {/* Denial Prevention / Care Quality Driver 3 */}
+        {/* Denial Prevention / Care Quality Driver 3 - Not for Inpatient */}
+        {!isInpatient && (
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -709,6 +1016,7 @@ export default function ExploreDocQuality({
             )}
           </AnimatePresence>
         </motion.div>
+        )}
 
         {/* Continue Button - Mobile */}
         <motion.div 
@@ -754,38 +1062,65 @@ export default function ExploreDocQuality({
 
               {/* Documentation Drivers - Care Setting Specific */}
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                    <span className="text-sm text-[#888888]">{isED ? 'E&M Accuracy' : 'wRVU'}</span>
-                  </div>
-                  <span className={`text-sm font-semibold ${docQualityInputs.wrvuEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                    {docQualityInputs.wrvuEnabled ? formatCurrency(Math.round(wrvuRevenueNet)) : '—'}
-                  </span>
-                </div>
-
-                {/* Only show HCC for non-ED settings */}
-                {showHCC && (
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                      <span className="text-sm text-[#888888]">HCC</span>
+                {/* Inpatient-specific drivers */}
+                {isInpatient ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888]">DRG Accuracy</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${docQualityInputs.ipDrgEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                        {docQualityInputs.ipDrgEnabled ? formatCurrency(Math.round(ipDrgNetValue)) : '—'}
+                      </span>
                     </div>
-                    <span className={`text-sm font-semibold ${docQualityInputs.hccEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                      {docQualityInputs.hccEnabled ? formatCurrency(Math.round(hccRevenueNet)) : '—'}
-                    </span>
-                  </div>
-                )}
 
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                    <span className="text-sm text-[#888888]">{isED ? 'Denial Prevention' : 'Denials'}</span>
-                  </div>
-                  <span className={`text-sm font-semibold ${docQualityInputs.denialsEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                    {docQualityInputs.denialsEnabled ? formatCurrency(Math.round(denialsRevenueNet)) : '—'}
-                  </span>
-                </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.ipCdiEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888]">CDI Queries</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${docQualityInputs.ipCdiEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                        {docQualityInputs.ipCdiEnabled ? formatCurrency(Math.round(ipCdiSavingsValue)) : '—'}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888]">{isED ? 'E&M Accuracy' : 'wRVU'}</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${docQualityInputs.wrvuEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                        {docQualityInputs.wrvuEnabled ? formatCurrency(Math.round(wrvuRevenueNet)) : '—'}
+                      </span>
+                    </div>
+
+                    {/* Only show HCC for Outpatient */}
+                    {showHCC && (
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">HCC</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${docQualityInputs.hccEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {docQualityInputs.hccEnabled ? formatCurrency(Math.round(hccRevenueNet)) : '—'}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                        <span className="text-sm text-[#888888]">{isED ? 'Denial Prevention' : 'Denials'}</span>
+                      </div>
+                      <span className={`text-sm font-semibold ${docQualityInputs.denialsEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                        {docQualityInputs.denialsEnabled ? formatCurrency(Math.round(denialsRevenueNet)) : '—'}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="h-px bg-[#333333] my-4" />

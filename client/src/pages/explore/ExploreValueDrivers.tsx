@@ -115,21 +115,8 @@ export default function ExploreValueDrivers({
     return Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
   }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
 
-  // Inpatient-specific calculations
-  const ipLosValue = useMemo(() => {
-    if (!timeDriverInputs.ipLosEnabled) return 0;
-    const annualAdmissions = state.annualEncounters;
-    const daysSaved = annualAdmissions * timeDriverInputs.ipLosReduction;
-    return Math.round(daysSaved * timeDriverInputs.ipCostPerDay);
-  }, [state.annualEncounters, timeDriverInputs.ipLosEnabled, timeDriverInputs.ipLosReduction, timeDriverInputs.ipCostPerDay]);
-
-  const ipRoundingValue = useMemo(() => {
-    if (!timeDriverInputs.ipRoundingEnabled) return 0;
-    // Efficiency gain translates to time savings - conservative value estimate
-    const efficiencyHours = totalHoursSaved * (timeDriverInputs.ipRoundingEfficiencyGain / 100);
-    const hourlyValue = 150; // Hospitalist hourly value
-    return Math.round(efficiencyHours * hourlyValue);
-  }, [totalHoursSaved, timeDriverInputs.ipRoundingEnabled, timeDriverInputs.ipRoundingEfficiencyGain]);
+  // Inpatient-specific: Rounding Efficiency is qualitative only (no dollar value)
+  // Value comes from Clinician Wellbeing driver only
 
   // Nursing-specific calculations
   const nursingOtValue = useMemo(() => {
@@ -181,12 +168,12 @@ export default function ExploreValueDrivers({
     inpatient: {
       pageTitle: 'What Could That Time Be Worth?',
       pageSubtitle: `Your hospitalists could reclaim ${formatNumber(totalHoursSaved)} hours. More time for patient care and rounding.`,
-      driver1Title: 'LOS Impact',
-      driver1Subtitle: 'Better documentation supports faster discharges',
-      driver2Title: 'Rounding Efficiency',
-      driver2Subtitle: 'More time at bedside means better patient outcomes',
-      driver3Title: 'Clinician Wellbeing',
-      driver3Subtitle: 'If time improves work-life balance and retention',
+      driver1Title: 'Rounding Efficiency',
+      driver1Subtitle: 'More time at bedside, less time charting',
+      driver2Title: 'Clinician Wellbeing',
+      driver2Subtitle: 'If time improves work-life balance and retention',
+      driver3Title: '',
+      driver3Subtitle: '',
     },
     nursing: {
       pageTitle: 'What Could That Time Be Worth?',
@@ -213,8 +200,7 @@ export default function ExploreValueDrivers({
         total += retentionCalcs.retentionValue;
       }
     } else if (isInpatient) {
-      // Inpatient uses LOS and Rounding
-      total += ipLosValue + ipRoundingValue;
+      // Inpatient: Rounding is qualitative (no dollar value), only Wellbeing has $ value
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         total += retentionCalcs.retentionValue;
       }
@@ -235,7 +221,7 @@ export default function ExploreValueDrivers({
       }
     }
     return total;
-  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edAdmissionCaptureValue, ipLosValue, ipRoundingValue, nursingOtValue, nursingRetentionValue]);
+  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edAdmissionCaptureValue, nursingOtValue, nursingRetentionValue]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -452,12 +438,12 @@ export default function ExploreValueDrivers({
         </div>
         )}
 
-        {/* Inpatient: LOS Impact */}
+        {/* Inpatient: Rounding Efficiency - Qualitative Only */}
         {isInpatient && (
         <div className="space-y-0">
           <div
             className={`w-full p-4 rounded-t-lg text-left transition-all ${
-              timeDriverInputs.ipLosEnabled 
+              timeDriverInputs.ipRoundingEnabled 
                 ? "bg-white" 
                 : "bg-white/70 hover:bg-white"
             }`}
@@ -469,14 +455,14 @@ export default function ExploreValueDrivers({
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => updateTimeDriverInputs({ ipLosEnabled: !timeDriverInputs.ipLosEnabled })}
+                  onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.ipLosEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
-                  data-testid="toggle-los"
+                  data-testid="toggle-rounding"
                 >
                   <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    timeDriverInputs.ipLosEnabled ? 'right-0.5' : 'left-0.5'
+                    timeDriverInputs.ipRoundingEnabled ? 'right-0.5' : 'left-0.5'
                   }`} />
                 </button>
               </div>
@@ -484,7 +470,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.ipLosEnabled && (
+            {timeDriverInputs.ipRoundingEnabled && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -493,46 +479,54 @@ export default function ExploreValueDrivers({
               >
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
-                    Better documentation supports faster discharges and reduced length of stay.
+                    When documentation happens automatically, hospitalists spend less time charting during and after rounds. This time returns to patient care, teaching, or work-life balance.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">LOS reduction per patient (days)</label>
-                      <FormattedNumberInput
-                        value={timeDriverInputs.ipLosReduction}
-                        onChange={(v: number) => updateTimeDriverInputs({ ipLosReduction: v })}
-                        className="h-12 bg-white"
-                      />
-                    </div>
-                    <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">Cost per patient day</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                        <FormattedNumberInput
-                          value={timeDriverInputs.ipCostPerDay}
-                          onChange={(v: number) => updateTimeDriverInputs({ ipCostPerDay: v })}
-                          className="h-12 bg-white pl-7"
-                        />
-                      </div>
-                    </div>
+                  {/* Hours Summary */}
+                  <div className="bg-[#F5F0EB] rounded-lg p-6 mb-6 text-center">
+                    <p className="text-sm text-[#666666] mb-2">Your hospitalists would get back:</p>
+                    <p className="text-3xl font-bold text-black mb-1">{formatNumber(Math.round(totalHoursSaved))} hours / year</p>
+                    <p className="text-sm text-[#888888]">
+                      ~{state.numberOfProviders > 0 ? formatNumber(Math.round(totalHoursSaved / state.numberOfProviders)) : 0} hours per hospitalist · ~{state.numberOfProviders > 0 ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1) : '0'} hours per week
+                    </p>
                   </div>
 
-                  <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Annual admissions:</span>
-                        <span className="font-semibold text-black">{formatNumber(state.annualEncounters)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Days saved:</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * timeDriverInputs.ipLosReduction))}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">LOS value:</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(ipLosValue)}</span>
-                      </div>
-                    </div>
+                  {/* Where Time Goes */}
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-3">WHERE THAT TIME GOES</p>
+                    <p className="text-sm text-[#666666] mb-3">Different programs use this time differently:</p>
+                    <ul className="text-sm text-[#666666] space-y-1.5">
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#EA2C00] mt-1">•</span>
+                        <span>More time with complex patients</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#EA2C00] mt-1">•</span>
+                        <span>Better teaching for residents</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#EA2C00] mt-1">•</span>
+                        <span>Earlier completion of rounds</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#EA2C00] mt-1">•</span>
+                        <span>Reduced after-hours documentation</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#EA2C00] mt-1">•</span>
+                        <span>Ability to manage larger census</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-4">
+                    <p className="text-xs text-[#888888] italic">
+                      We don't assign a dollar value because it varies by organization. The value shows up in wellbeing, capacity, or quality—depending on how your program chooses to use it.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 text-right">
+                    <span className="text-xs font-medium text-[#888888] uppercase tracking-wide">Qualitative benefit</span>
                   </div>
                 </div>
               </motion.div>
@@ -919,86 +913,7 @@ export default function ExploreValueDrivers({
         </motion.div>
         )}
 
-        {/* Inpatient: Rounding Efficiency */}
-        {isInpatient && (
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
-              timeDriverInputs.ipRoundingEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-semibold text-black">{config.driver2Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-rounding"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    timeDriverInputs.ipRoundingEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {timeDriverInputs.ipRoundingEnabled && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-black mb-4">
-                    Less documentation time means more efficient rounding.
-                  </p>
-
-                  <div className="space-y-2.5 mb-4">
-                    <label className="text-sm text-[#888888]">Rounding efficiency gain (%)</label>
-                    <div className="relative">
-                      <FormattedNumberInput
-                        value={timeDriverInputs.ipRoundingEfficiencyGain}
-                        onChange={(v: number) => updateTimeDriverInputs({ ipRoundingEfficiencyGain: v })}
-                        className="h-12 bg-white pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Hours saved annually:</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(totalHoursSaved))}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Rounding value:</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(ipRoundingValue)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-        )}
-
+        
         {/* Nursing: Retention */}
         {isNursing && (
         <motion.div
