@@ -849,27 +849,49 @@ function getDriverLogic(driver: DriverCalculation, data: NursingPDFData): Driver
     }
 
     case "nurseRetention": {
-      const turnoverCost = (inputs.turnoverCost as number) || 56000;
+      // Get wellbeing allocation from inputs
+      const wellbeingPct = (inputs.wellbeingPct as number) || 30;
+      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const hoursPerNurse = (inputs.hoursPerProvider as number) || Math.round(wellbeingHours / data.nurseFTEs);
+      const turnoverRate = (inputs.turnoverRate as number) || 18;
+      const burnoutAttribution = (inputs.burnoutAttribution as number) || 55;
+      const annualDepartures = (inputs.annualDepartures as number) || (data.nurseFTEs * (turnoverRate / 100));
+      const burnoutDepartures = (inputs.burnoutDepartures as number) || (annualDepartures * (burnoutAttribution / 100));
+      const retentionLift = (inputs.retentionLift as number) || 12;
+      const departuresAvoided = (inputs.departuresAvoided as number) || (burnoutDepartures * (retentionLift / 100));
+      const replacementCost = (inputs.replacementCost as number) || (inputs.turnoverCost as number) || 56000;
+      
+      const weeklyMinutes = Math.round(hoursPerNurse * 60 / 52);
+      const tier = hoursPerNurse < 30 ? "MINIMAL (3-5% turnover reduction)" 
+                 : hoursPerNurse < 60 ? "MODERATE (8-12% reduction)" 
+                 : hoursPerNurse < 100 ? "SIGNIFICANT (15-20% reduction)"
+                 : "MAXIMUM (25-30% reduction)";
+      
       return {
-        theory: `Nurse turnover is a crisis—and documentation burden is a primary driver. Replacing a nurse costs $40K-$75K in recruiting, training, and lost productivity.\n\nThe causal chain: excessive documentation → burnout → turnover → replacement costs. Break the first link, and the chain unravels.`,
+        theory: `Nurse turnover is a crisis—averaging 18% annually with replacement costs of $40K-$75K per nurse. Documentation burden is consistently cited as a top driver of burnout.\n\nThe causal chain is clear: excessive documentation → time away from patients → burnout → turnover → replacement costs. Break the first link, and the chain unravels.`,
         steps: [
           {
-            label: "STEP 1: BURDEN REDUCTION",
-            formula: `${formatNumber(data.hoursReturned)} hours returned across ${data.nurseFTEs} FTEs`,
-            explanation: "Hours not spent documenting are hours for patient care—or personal recovery.",
+            label: "STEP 1: TIME ALLOCATED TO WELLBEING",
+            formula: `${formatNumber(data.hoursReturned)} total hours × ${wellbeingPct}% to wellbeing = ${formatNumber(wellbeingHours)} hours`,
+            explanation: `Per nurse: ${hoursPerNurse} hours/year (~${weeklyMinutes} minutes back per week). This time goes directly to reducing documentation burden.`,
           },
           {
-            label: "STEP 2: RETENTION IMPACT",
-            formula: `Reduced burden → lower burnout → improved retention`,
-            explanation: "Literature supports 15-20% documentation reduction correlating with measurable retention improvement.",
+            label: "STEP 2: IMPACT THRESHOLD",
+            formula: `At ${hoursPerNurse} hrs/nurse/year → ${tier}`,
+            explanation: "Nursing retention follows a threshold model:\n• < 30 hrs/yr: MINIMAL impact (3-5% lift)\n• 30-60 hrs/yr: MODERATE impact (8-12% lift)\n• 60-100 hrs/yr: SIGNIFICANT impact (15-20% lift)\n• 100+ hrs/yr: MAXIMUM impact (25-30% lift)",
           },
           {
-            label: "STEP 3: VALUE REALIZED",
-            formula: `Avoided departures × $${formatNumber(turnoverCost)} cost = ${formatCurrency(driver.value)}`,
-            explanation: "Full replacement cost including recruiting, onboarding, and productivity ramp.",
+            label: "STEP 3: BASELINE TURNOVER",
+            formula: `${data.nurseFTEs} nurses × ${turnoverRate}% turnover = ${annualDepartures.toFixed(1)} departures/year`,
+            explanation: `Of these, approximately ${burnoutAttribution}% (${burnoutDepartures.toFixed(1)} departures) are burnout-related and addressable.`,
+          },
+          {
+            label: "STEP 4: RETENTION VALUE",
+            formula: `${burnoutDepartures.toFixed(1)} burnout departures × ${retentionLift}% retention lift × $${formatNumber(replacementCost)} = ${formatCurrency(driver.value)}`,
+            explanation: `${departuresAvoided.toFixed(2)} departures avoided annually. Nurse replacement includes recruiting, training, preceptor time, and productivity ramp.`,
           },
         ],
-        calibration: "Retention is multi-factorial. Documentation is one lever—but it's the lever nurses most frequently cite as a burnout driver.",
+        calibration: `Your allocation (${wellbeingPct}% to wellbeing, ${hoursPerNurse} hrs/nurse) produces ${hoursPerNurse < 30 ? "modest but measurable" : hoursPerNurse < 60 ? "moderate" : "significant"} retention impact. ${hoursPerNurse < 30 ? "Units prioritizing retention often allocate 40-50% to wellbeing." : "You're investing meaningfully in workforce sustainability—a key differentiator in today's nursing shortage."}`,
       };
     }
 

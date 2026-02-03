@@ -948,11 +948,42 @@ function getDriverSteps(driver: DriverCalculation, data: EDPDFData): Calculation
         },
       ];
 
+    case "edRetention":
     case "overtime":
-    case "workforce":
+    case "workforce": {
+      const wellbeingPct = (inputs.wellbeingPct as number) || 30;
+      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(wellbeingHours / data.providers);
+      const weeklyMinutes = Math.round(hoursPerProvider * 60 / 52);
+      const tier = hoursPerProvider < 50 ? "MINIMAL (3-5%)" 
+                 : hoursPerProvider < 100 ? "MODERATE (8-12%)" 
+                 : hoursPerProvider < 150 ? "SIGNIFICANT (15-20%)"
+                 : "MAXIMUM (25-30%)";
+      
       return [
         {
           label: "Step 1",
+          question: "How much time is allocated to reducing burnout?",
+          inputs: [
+            { value: formatNumber(data.hoursReturned), label: "total hours" },
+            { value: `${wellbeingPct}%`, label: "to wellbeing" },
+          ],
+          operators: ["×"],
+          result: `${formatNumber(wellbeingHours)} hours`,
+          note: `That's ${hoursPerProvider} hours/physician/year (~${weeklyMinutes} min/week back).`,
+        },
+        {
+          label: "Step 2",
+          question: "What retention impact tier does this achieve?",
+          inputs: [
+            { value: `${hoursPerProvider}`, label: "hrs/provider" },
+          ],
+          operators: [],
+          result: tier,
+          note: "ED physicians have higher burnout rates—time-back interventions have proportionally greater impact.",
+        },
+        {
+          label: "Step 3",
           question: "How many departures occur annually?",
           inputs: [
             { value: formatNumber(data.providers), label: "ED physicians" },
@@ -960,41 +991,22 @@ function getDriverSteps(driver: DriverCalculation, data: EDPDFData): Calculation
           ],
           operators: ["×"],
           result: `${(inputs.annualDepartures as number || 0).toFixed(1)} departures`,
-          note: "ED physician turnover is typically higher than outpatient.",
-        },
-        {
-          label: "Step 2",
-          question: "How many are tied to burnout?",
-          inputs: [
-            { value: (inputs.annualDepartures as number || 0).toFixed(1) },
-            { value: `${inputs.burnoutAttribution || 60}%` },
-          ],
-          operators: ["×"],
-          result: `${(inputs.burnoutDepartures as number || 0).toFixed(2)} burnout-related`,
-        },
-        {
-          label: "Step 3",
-          question: "How many can improved documentation help prevent?",
-          inputs: [
-            { value: (inputs.burnoutDepartures as number || 0).toFixed(2) },
-            { value: `${inputs.abridgeImpact || 25}%` },
-          ],
-          operators: ["×"],
-          result: `${(inputs.departuresAvoided as number || 0).toFixed(2)} prevented`,
-          note: "Conservative—documentation is a major driver but not the only one.",
+          note: `Of these, ${inputs.burnoutAttribution || 60}% (${(inputs.burnoutDepartures as number || 0).toFixed(1)}) are burnout-related.`,
         },
         {
           label: "Step 4",
-          question: "What's the cost savings?",
+          question: "What's the retention value?",
           inputs: [
-            { value: (inputs.departuresAvoided as number || 0).toFixed(2) },
+            { value: (inputs.burnoutDepartures as number || 0).toFixed(2), label: "burnout departures" },
+            { value: `${inputs.retentionLift || inputs.abridgeImpact || 15}%`, label: "retention lift" },
             { value: formatCurrency(inputs.replacementCost as number || 500000) },
           ],
-          operators: ["×"],
+          operators: ["×", "×"],
           result: formatCurrency(driver.value),
-          note: "ED physician replacement costs typically exceed $500K.",
+          note: `${(inputs.departuresAvoided as number || 0).toFixed(2)} departures avoided. ED replacement costs include recruiting, signing bonus, credentialing, and revenue loss during vacancy.`,
         },
       ];
+    }
 
     case "denials":
       return [

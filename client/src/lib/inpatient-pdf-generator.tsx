@@ -899,28 +899,51 @@ function getDriverLogic(driver: DriverCalculation, data: InpatientPDFData): Driv
       };
     }
 
+    case "inpatientRetention":
     case "physicianEfficiency": {
-      const turnoverCost = (inputs.turnoverCost as number) || 350000;
+      // Get wellbeing allocation from inputs
+      const wellbeingPct = (inputs.wellbeingPct as number) || 30;
+      const wellbeingHours = (inputs.wellbeingHours as number) || Math.round(data.hoursReturned * (wellbeingPct / 100));
+      const hoursPerProvider = (inputs.hoursPerProvider as number) || Math.round(wellbeingHours / data.providers);
+      const turnoverRate = (inputs.turnoverRate as number) || 10;
+      const burnoutAttribution = (inputs.burnoutAttribution as number) || (inputs.burnoutPct as number) || 60;
+      const annualDepartures = (inputs.annualDepartures as number) || (data.providers * (turnoverRate / 100));
+      const burnoutDepartures = (inputs.burnoutDepartures as number) || (annualDepartures * (burnoutAttribution / 100));
+      const retentionLift = (inputs.retentionLift as number) || 15;
+      const departuresAvoided = (inputs.departuresAvoided as number) || (burnoutDepartures * (retentionLift / 100));
+      const replacementCost = (inputs.replacementCost as number) || (inputs.turnoverCost as number) || 350000;
+      
+      const weeklyMinutes = Math.round(hoursPerProvider * 60 / 52);
+      const tier = hoursPerProvider < 50 ? "MINIMAL (3-5% turnover reduction)" 
+                 : hoursPerProvider < 100 ? "MODERATE (8-12% reduction)" 
+                 : hoursPerProvider < 150 ? "SIGNIFICANT (15-20% reduction)"
+                 : "MAXIMUM (25-30% reduction)";
+      
       return {
-        theory: `Hospitalist turnover is epidemic—and expensive. Recruiting, credentialing, onboarding, lost productivity. The root cause is often burnout. The root cause of burnout is often documentation burden.\n\nReduce the burden, reduce the burnout, reduce the turnover.`,
+        theory: `Hospitalist turnover is epidemic—and expensive. Recruiting, credentialing, onboarding, lost productivity. The full replacement cost often exceeds $350K.\n\nThe root cause is frequently burnout. The root cause of burnout is frequently documentation burden. The math is direct: reduce documentation time → reduce after-hours charting → reduce burnout → reduce turnover → avoid replacement costs.`,
         steps: [
           {
-            label: "STEP 1: BURDEN REDUCTION",
-            formula: `${formatNumber(data.hoursReturned)} hours returned to ${data.providers} hospitalists`,
-            explanation: "Hours not spent on documentation are hours available for patient care or personal time.",
+            label: "STEP 1: TIME ALLOCATED TO WELLBEING",
+            formula: `${formatNumber(data.hoursReturned)} total hours × ${wellbeingPct}% to wellbeing = ${formatNumber(wellbeingHours)} hours`,
+            explanation: `Per hospitalist: ${hoursPerProvider} hours/year (~${weeklyMinutes} minutes back per week). This time goes directly to reducing pajama-time charting.`,
           },
           {
-            label: "STEP 2: RETENTION IMPACT",
-            formula: `Reduced burnout → lower turnover rate`,
-            explanation: "Literature supports 15-20% documentation time reduction correlating with improved retention.",
+            label: "STEP 2: IMPACT THRESHOLD",
+            formula: `At ${hoursPerProvider} hrs/provider/year → ${tier}`,
+            explanation: "Time-back interventions follow a threshold model:\n• < 50 hrs/yr: MINIMAL impact (3-5% lift)\n• 50-100 hrs/yr: MODERATE impact (8-12% lift)\n• 100-150 hrs/yr: SIGNIFICANT impact (15-20% lift)\n• 150+ hrs/yr: MAXIMUM impact (25-30% lift)",
           },
           {
-            label: "STEP 3: VALUE REALIZED",
-            formula: `Avoided departures × $${formatNumber(turnoverCost)} cost = ${formatCurrency(driver.value)}`,
-            explanation: "Replacement cost includes recruiting, onboarding, ramp time, and lost revenue.",
+            label: "STEP 3: BASELINE TURNOVER",
+            formula: `${data.providers} hospitalists × ${turnoverRate}% turnover = ${annualDepartures.toFixed(1)} departures/year`,
+            explanation: `Of these, approximately ${burnoutAttribution}% (${burnoutDepartures.toFixed(1)} departures) are burnout-related and addressable.`,
+          },
+          {
+            label: "STEP 4: RETENTION VALUE",
+            formula: `${burnoutDepartures.toFixed(1)} burnout departures × ${retentionLift}% retention lift × $${formatNumber(replacementCost)} = ${formatCurrency(driver.value)}`,
+            explanation: `${departuresAvoided.toFixed(2)} departures avoided annually. Hospitalist replacement costs include recruiting, signing bonus, credentialing, onboarding, and lost revenue during ramp-up.`,
           },
         ],
-        calibration: "We use conservative retention lift estimates. Individual circumstances vary, but the aggregate trend is clear.",
+        calibration: `Your allocation (${wellbeingPct}% to wellbeing, ${hoursPerProvider} hrs/hospitalist) produces ${hoursPerProvider < 50 ? "modest but measurable" : hoursPerProvider < 100 ? "moderate" : "significant"} retention impact. ${hoursPerProvider < 50 ? "Organizations prioritizing retention often allocate 40-50% to wellbeing." : "You're investing meaningfully in workforce sustainability."}`,
       };
     }
 
