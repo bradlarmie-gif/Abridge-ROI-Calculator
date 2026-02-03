@@ -15,7 +15,7 @@ The application supports multiple distinct user journeys:
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings. This includes specific time allocation categories and documentation drivers for each setting.
     - **Outpatient**: Patient Access (capacity-to-visits conversion), Cost Reduction (user-estimated), Clinician Wellbeing (retention)
-    - **Emergency Department**: LWBS Reduction (recovered patients from lower left-without-being-seen rates), Throughput Improvement (additional patients per shift), Clinician Wellbeing
+    - **Emergency Department**: LWBS Recovery (recovered patients from reduced left-without-being-seen rates), Admission Capture (improved admission documentation revenue), Clinician Wellbeing. ED uses smaller time savings (1/2/3 min vs Outpatient's 2/4/6 min) due to faster-paced, templated workflows. ED-specific defaults: wRVU baseline 2.5, denial rate 10%, avg claim $300. Documentation Quality includes E&M Level Accuracy and Denial Prevention (no HCC).
     - **Inpatient**: LOS Impact (length of stay reduction savings), Rounding Efficiency (time-to-value conversion), Clinician Wellbeing
     - **Nursing**: OT Reduction (overtime cost savings with 1.5x multiplier), Retention Savings (nurse turnover reduction), Care Time (qualitative - bedside time returned)
 -   **Defensible Math with Realization Rates**: All ROI calculations incorporate conservative realization rates for defensible estimates across all benefit categories (e.g., Patient Access, Locum Reduction, wRVU, HCC, Denials, Wellbeing).
