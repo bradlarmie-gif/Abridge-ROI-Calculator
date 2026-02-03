@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, TrendingUp, Clock, FileText, Heart } from "lucide-react";
+import { ArrowRight, ArrowLeft, TrendingUp, Clock, FileText, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -46,38 +46,38 @@ function TransformationCard({
 
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-slate-200 p-6"
+      className="bg-white rounded-xl border border-[#E5E7EB] p-5"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
     >
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-          <Icon className="w-5 h-5 text-[#EA2C00]" />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+          <Icon className="w-5 h-5 text-[#E85A2C]" />
         </div>
-        <h3 className="text-base font-semibold text-black">{title}</h3>
+        <h3 className="text-sm font-semibold text-black">{title}</h3>
       </div>
 
       {/* Before/After Bars */}
-      <div className="space-y-3 mb-5">
+      <div className="space-y-2.5 mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-slate-400 w-14 uppercase tracking-wide">Before</span>
-          <div className="flex-1 h-8 bg-slate-100 rounded-lg overflow-hidden">
+          <span className="text-xs font-medium text-[#888888] w-12 uppercase tracking-wide">Before</span>
+          <div className="flex-1 h-7 bg-[#F5F0EB] rounded-lg overflow-hidden">
             <motion.div 
-              className="h-full bg-slate-300 rounded-lg flex items-center justify-end px-3"
+              className="h-full bg-[#888888] rounded-lg flex items-center justify-end px-3"
               initial={{ width: 0 }}
               animate={{ width: `${beforeWidth}%` }}
               transition={{ delay: delay + 0.3, duration: 0.6 }}
             >
-              <span className="text-xs font-bold text-slate-600">{beforeValue}{beforeLabel}</span>
+              <span className="text-xs font-bold text-white">{beforeValue}{beforeLabel}</span>
             </motion.div>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-[#EA2C00] w-14 uppercase tracking-wide">After</span>
-          <div className="flex-1 h-8 bg-[#FFF5F2] rounded-lg overflow-hidden">
+          <span className="text-xs font-medium text-[#E85A2C] w-12 uppercase tracking-wide">After</span>
+          <div className="flex-1 h-7 bg-[#FFF5F2] rounded-lg overflow-hidden">
             <motion.div 
-              className="h-full bg-[#EA2C00] rounded-lg flex items-center justify-end px-3"
+              className="h-full bg-[#E85A2C] rounded-lg flex items-center justify-end px-3"
               initial={{ width: 0 }}
               animate={{ width: `${afterWidth}%` }}
               transition={{ delay: delay + 0.5, duration: 0.6 }}
@@ -91,15 +91,15 @@ function TransformationCard({
       {/* Change Badge */}
       <div className="flex items-center justify-between">
         <motion.div 
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black rounded-full"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FFF5F2] border border-[#E85A2C]/20 rounded-full"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: delay + 0.7, duration: 0.3 }}
         >
-          <TrendingUp className="w-3.5 h-3.5 text-white" />
-          <span className="text-xs font-bold text-white">{changeText}</span>
+          <TrendingUp className="w-3.5 h-3.5 text-[#E85A2C]" />
+          <span className="text-xs font-bold text-[#E85A2C]">{changeText}</span>
         </motion.div>
-        <p className="text-xs text-slate-500 italic">{insight}</p>
+        <p className="text-xs text-[#888888] italic">{insight}</p>
       </div>
     </motion.div>
   );
@@ -117,65 +117,72 @@ export default function MeasureTransformation({
   const workLifeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
         currentStep={3}
         totalSteps={5}
-        stepName="The Transformation"
+        stepName="What Changed"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Hero Section */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {[1, 2, 3, 4, 5].map((step) => (
+            <div
+              key={step}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                step === 3 ? "bg-[#E85A2C] scale-125" : step < 3 ? "bg-[#E85A2C]/40" : "bg-[#D1D5DB]"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Header */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-            What the Data Reveals
-          </p>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-3">
-            The Transformation
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
+            WHAT CHANGED
           </h1>
-
-          <p className="text-lg text-slate-600 max-w-xl mx-auto">
-            Same providers. Same patients. <span className="text-black font-medium">Different outcomes.</span>
+          <p className="text-base text-[#6B7280]">
+            Same providers. Same patients. Different outcomes.
           </p>
         </motion.div>
 
-        {/* Context Strip */}
+        {/* Context Stats */}
         <motion.div
-          className="bg-white rounded-2xl border border-slate-200 p-5 mb-8 grid grid-cols-4 gap-4 text-center"
+          className="bg-[#F5F0EB] rounded-xl p-5 mb-8 grid grid-cols-2 md:grid-cols-4 gap-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div>
-            <p className="text-2xl font-bold text-black">{state.deployment.providers}</p>
-            <p className="text-xs text-slate-500">providers</p>
+          <div className="border-l-4 border-[#E85A2C] pl-3">
+            <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">providers</p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
-            <p className="text-xs text-slate-500">encounters</p>
+          <div className="border-l-4 border-[#E85A2C] pl-3">
+            <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">encounters</p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-black">{state.deployment.utilizationRate}%</p>
-            <p className="text-xs text-slate-500">utilization</p>
+          <div className="border-l-4 border-[#E85A2C] pl-3">
+            <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">utilization</p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
-            <p className="text-xs text-slate-500">on Abridge</p>
+          <div className="border-l-4 border-[#E85A2C] pl-3">
+            <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px]">on Abridge</p>
           </div>
         </motion.div>
 
         {/* Transformation Cards */}
-        <div className="grid gap-5 mb-10">
+        <div className="grid gap-4 mb-8">
           <TransformationCard
             icon={Clock}
             title="Documentation Time"
@@ -196,7 +203,7 @@ export default function MeasureTransformation({
             beforeLabel=" wRVU"
             afterLabel=" wRVU"
             changeText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
-            insight="Complexity that was missed is now captured"
+            insight="Complexity captured, not missed"
             delay={0.35}
           />
 
@@ -227,31 +234,42 @@ export default function MeasureTransformation({
           )}
         </div>
 
-        {/* Story teaser */}
+        {/* Transition Text */}
         <motion.div
-          className="bg-black rounded-2xl p-6 text-center mb-8"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
         >
-          <p className="text-white/70 text-sm mb-2">The question now is...</p>
-          <p className="text-white text-lg font-semibold">Where did all that time go?</p>
+          <p className="text-[#6B7280] text-base">
+            Now let's translate this into impact.
+          </p>
         </motion.div>
 
-        {/* CTA */}
+        {/* Navigation */}
         <motion.div 
-          className="flex justify-center"
+          className="flex justify-between items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
         >
           <Button
+            variant="ghost"
+            onClick={onBack}
+            className="gap-2"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+          
+          <Button
             onClick={onNext}
-            className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full"
+            className="h-11 px-6 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-semibold rounded-full gap-2"
             data-testid="button-see-impact"
           >
             See the Impact
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
       </div>

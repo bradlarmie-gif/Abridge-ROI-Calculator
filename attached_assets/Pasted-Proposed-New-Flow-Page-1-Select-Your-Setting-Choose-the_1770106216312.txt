@@ -1,0 +1,567 @@
+Proposed New Flow:
+Page 1: Select Your Setting
+Choose the care setting you're measuring.
+Page 2: Your Data
+Enter your before/after metrics. Clean, fast, minimal.
+Page 3: What Changed
+Visual before/after comparisons. The "holy shit" moment.
+Page 4: What It Means
+Translate the changes into impact categories (Capacity, Savings, Wellbeing). This is where the story selector lives.
+Page 5: Your Value Story
+The boardroom-ready summary. The soundbite. The export.
+
+PAGE 1: SELECT YOUR SETTING
+The Story:
+Simple. Pick where you're measuring value.
+Current Problems:
+
+"MEASURE YOUR VALUE" label competes with headline
+"Document Your Impact" is okay but not inspiring
+"You've lived the change. Now let's measure it—and give you a story worth sharing." is good but slightly long
+Card layout is fine but the selected state (black background) is too heavy
+"SOON" badges on future options are fine
+
+Revised Layout:
+Header:
+
+Subtle step indicator (5 dots, first = red-orange)
+Remove "MEASURE YOUR VALUE" red label
+
+Headline Section:
+
+White background
+Headline: YOUR VALUE STORY
+Subhead: You've lived the change. Let's measure it.
+
+Selection Cards:
+
+Warm beige background for section
+Four cards in a row:
+
+Outpatient (selectable) - selected state: white background with red-orange left border, subtle shadow
+Emergency (coming soon) - grayed out, "COMING SOON" small badge
+Nursing (coming soon)
+Inpatient (coming soon)
+
+
+Selected card should NOT be black—should be white with red-orange accent
+
+CTA:
+
+Button (red-orange fill): "Continue →"
+
+
+Revised Copy:
+Headline: YOUR VALUE STORY
+Subhead: You've lived the change. Let's measure it.
+Card Labels:
+
+Outpatient / Clinic & Ambulatory
+Emergency / Emergency Department
+Nursing / Nursing Documentation
+Inpatient / Hospital & Acute Care
+
+Button: Continue →
+
+PAGE 2: YOUR DATA
+The Story:
+Enter your before/after metrics. Same providers, same patients—different outcomes.
+Current Problems:
+
+"THE NATURAL EXPERIMENT" label is too academic
+"Same Providers. Same Patients." is actually a great headline—keep it
+Accordion structure is functional but not premium
+"Show Me the Transformation" button is good but black
+The "WITHOUT" / "WITH ABRIDGE" column headers work
+
+Revised Layout:
+Header:
+
+Subtle step indicator
+Remove "THE NATURAL EXPERIMENT" red label
+
+Headline Section:
+
+White background
+Headline: SAME PROVIDERS. SAME PATIENTS.
+Subhead: Enter your before and after metrics. We'll show you what changed.
+
+Data Entry Section:
+
+Single warm beige card (not accordions)
+Organized into clear sections with subtle dividers:
+
+Section 1: Your Deployment
+Small gray label: YOUR DEPLOYMENT
+
+Providers on Abridge: [input]
+Months on Abridge: [input]
+Total Encounters: [input]
+Utilization Rate: [input] %
+
+Section 2: Documentation Quality
+Small gray label: DOCUMENTATION QUALITY
+Two columns: BEFORE | WITH ABRIDGE
+
+wRVU per Encounter: [input] | [input]
+Avg E/M Level: [input] | [input]
+
+Section 3: Time & Efficiency
+Small gray label: TIME & EFFICIENCY
+Two columns: BEFORE | WITH ABRIDGE
+
+Time in Notes (min): [input] | [input]
+Same-Day Closure %: [input] | [input]
+Pajama Time (hrs/day): [input] | [input]
+
+CTA:
+
+Button (red-orange fill): "See What Changed →"
+
+
+Revised Copy:
+Headline: SAME PROVIDERS. SAME PATIENTS.
+Subhead: Enter your before and after metrics. We'll show you what changed.
+Section Labels: YOUR DEPLOYMENT / DOCUMENTATION QUALITY / TIME & EFFICIENCY
+Column Headers: BEFORE / WITH ABRIDGE
+Button: See What Changed →
+
+PAGE 3: WHAT CHANGED
+The Story:
+Here's the transformation. Same people, different outcomes. Let the data speak.
+Current Problems:
+
+"WHAT THE DATA REVEALS" label is awkward
+"The Transformation" headline is okay but generic
+The four context stats at top (80 providers, 47,000 encounters, etc.) are good
+Before/after bars are effective—keep them
+The "8 min saved per note" pills are good
+The dark banner at bottom ("Where did all that time go?") is awkward transition
+"See the Impact" button is good but black
+
+Revised Layout:
+Header:
+
+Subtle step indicator
+Remove "WHAT THE DATA REVEALS" red label
+
+Headline Section:
+
+White background
+Headline: WHAT CHANGED
+Subhead: Same providers. Same patients. Different outcomes.
+
+Context Stats:
+
+Warm beige card, four stats in a row with red-orange left borders:
+
+80 providers
+47,000 encounters
+72% utilization
+6 mo on Abridge
+
+
+
+Transformation Cards:
+
+White background
+Four comparison cards, each with:
+
+Icon + Title (e.g., "Documentation Time")
+Before bar (gray) with value
+After bar (red-orange) with value
+Delta pill (e.g., "↗ 8 min saved per note")
+Context line (e.g., "Less time charting, more time caring")
+
+
+
+Cards:
+
+Documentation Time
+Before: 12 min | After: 4 min
+↗ 8 min saved per note
+Less time charting, more time caring
+Revenue Capture
+Before: 2.10 wRVU | After: 2.30 wRVU
+↗ +10% per encounter
+Complexity captured, not missed
+Same-Day Closure
+Before: 41% | After: 78%
+↗ +37 percentage points
+Notes closed before going home
+Work-Life Balance
+Before: 2.1 hrs/day | After: 0.4 hrs/day
+↗ 1.7 hours back per day
+Providers going home on time
+
+Transition:
+
+Remove dark banner
+Simple centered text: Now let's translate this into impact.
+Button (red-orange fill): "See the Impact →"
+
+
+Revised Copy:
+Headline: WHAT CHANGED
+Subhead: Same providers. Same patients. Different outcomes.
+Context Stats: 80 providers / 47,000 encounters / 72% utilization / 6 mo on Abridge
+Card Titles: Documentation Time / Revenue Capture / Same-Day Closure / Work-Life Balance
+Delta Pills: 8 min saved per note / +10% per encounter / +37 percentage points / 1.7 hours back per day
+Context Lines: Less time charting, more time caring / Complexity captured, not missed / Notes closed before going home / Providers going home on time
+Transition: Now let's translate this into impact.
+Button: See the Impact →
+
+PAGE 4: WHAT IT MEANS
+The Story:
+You saved time. But where did it go? Different organizations use that time differently. Let's understand your story.
+Current Problems:
+
+"UNDERSTANDING IMPACT" label is generic
+"Where Did the Time Go?" headline is good—keep the concept
+The story selector ("What best describes your experience?") is a great concept but:
+
+The 2x2 card layout is awkward
+The selected state (black background) is too heavy
+The options are good: More patients / Cut costs / Lives back / Bit of everything
+
+
+The stacked bar visualization is hard to read
+The three impact rows (Additional Capacity / Hard Savings / Quality of Life) are good but:
+
+"Retention Value" for Quality of Life is confusing
+The dollar values are good
+
+
+"Fine-tune percentages" expandable adds complexity—hide it better
+"See Your Value Story" button is good but black
+
+Major Reframe Needed:
+This page should be simpler. The story selector should FEEL like a choice, not a quiz. And the impact calculations should flow naturally from that choice.
+Revised Layout:
+Header:
+
+Subtle step indicator
+Remove "UNDERSTANDING IMPACT" red label
+
+Headline Section:
+
+White background
+Headline: WHERE THE TIME WENT
+Subhead: Your providers reclaimed 4,533 hours. Here's what that means for your organization.
+
+Story Selector:
+
+Warm beige background
+Small gray label: TELL YOUR STORY
+Subhead: What best describes how your organization experienced this change?
+Four cards in 2x2 grid, white background, subtle border:
+
+Selected state: white with red-orange left border (not black)
+
+We saw more patients
+Capacity was the big win
+We cut real costs
+Overtime and locums down
+Our people got their lives back
+This is why they stay
+A bit of everything
+Balanced across all three
+
+Impact Summary:
+
+White background
+Small gray label: THE IMPACT
+Three impact rows, each with icon, description, and value:
+Capacity
+5,440 more visits possible
+$1.1M revenue opportunity
+Savings
+680 hours of overtime avoided
+$102K direct savings
+Wellbeing
+0.3 hrs/week back per provider
+Retention value (1 kept = $300-500K saved)
+
+Advanced Settings:
+
+Subtle expandable: "Adjust assumptions →"
+When expanded: Capacity % / Savings % / Wellbeing % inputs + value assumptions
+
+CTA:
+
+Button (red-orange fill): "See Your Value Story →"
+
+
+Revised Copy:
+Headline: WHERE THE TIME WENT
+Subhead: Your providers reclaimed 4,533 hours. Here's what that means for your organization.
+Story Selector Label: TELL YOUR STORY
+Story Selector Subhead: What best describes how your organization experienced this change?
+Story Options:
+
+We saw more patients / Capacity was the big win
+We cut real costs / Overtime and locums down
+Our people got their lives back / This is why they stay
+A bit of everything / Balanced across all three
+
+Impact Label: THE IMPACT
+Impact Rows:
+
+Capacity / 5,440 more visits possible / $1.1M revenue opportunity
+Savings / 680 hours of overtime avoided / $102K direct savings
+Wellbeing / 0.3 hrs/week back per provider / Retention value (1 kept = $300-500K saved)
+
+Advanced: Adjust assumptions →
+Button: See Your Value Story →
+
+PAGE 5: YOUR VALUE STORY
+The Story:
+Here's your story. The soundbite. The numbers. The narrative. Take this to your leadership.
+Current Problems:
+
+"YOUR ABRIDGE STORY" red label is okay but could be simpler
+The headline ("80 providers. 6 months. 4,533 hours back.") is GREAT—keep it
+The subhead about "0.3 hours per week per provider" is good context
+"The Value Created" black card header is too heavy
+The breakdown (Time Recaptured / How you used that time / Documentation Impact / Total Annual Value) is good content but messy layout
+"What if you expanded?" section is a nice upsell but competes with main story
+"THE REAL STORY" black banner has good copy but wrong visual treatment
+Export section is good—keep the "Export PDF" button prominent
+
+Major Reframe:
+This page should feel like an executive summary. Clean. Scannable. Shareable. The "What if you expanded?" should be de-emphasized or moved.
+Revised Layout:
+Header:
+
+Subtle step indicator (all dots filled)
+Remove red label
+
+Hero Section:
+
+White background, centered
+Headline (stacked, dramatic):
+80 providers.
+6 months.
+4,533 hours back.
+Subhead: That's 0.3 hours per week per provider—time that used to disappear into documentation.
+
+Value Summary Card:
+
+Warm beige background
+Clean two-column layout:
+Left side:
+Small gray label: TIME RECAPTURED
+4,533 hours
+Right side:
+Small gray label: ANNUAL VALUE
+$849K – $905K
+
+Value Breakdown:
+
+White card with subtle border
+Small gray label: HOW YOU USED THAT TIME
+Three rows:
+
+● More patients (20%) → $363K
+● Reduced costs (55%) → $374K
+● Work-life balance (25%) → 0.3 hrs/wk back
+
+
+Divider
+Small gray label: DOCUMENTATION IMPACT
++0.20 wRVU/encounter
+34,000 encounters analyzed
+Revenue potential: $112K – $168K
+
+The Story Block:
+
+Warm beige card (not black)
+Small gray label: THE REAL STORY
+Text: You didn't just save time. You gave 80 people their evenings back—and the notes got better, not worse.
+Subtext: That's the counterintuitive truth: better documentation comes from less time documenting.
+
+Expansion Section (de-emphasized):
+
+Subtle expandable: "What if you expanded? →"
+When expanded: Slider for provider count, projected value at scale
+
+Export Section:
+
+White card
+Left: Share Your Story / Export a polished PDF for leadership
+Right: Button (red-orange fill): "Export PDF"
+
+Footer:
+
+Subtle expandable: "Methodology & Assumptions"
+"Start Over" link (gray, understated)
+
+
+Revised Copy:
+Hero:
+80 providers.
+6 months.
+4,533 hours back.
+That's 0.3 hours per week per provider—time that used to disappear into documentation.
+Value Summary:
+
+TIME RECAPTURED / 4,533 hours
+ANNUAL VALUE / $849K – $905K
+
+Value Breakdown Label: HOW YOU USED THAT TIME
+
+More patients (20%) → $363K
+Reduced costs (55%) → $374K
+Work-life balance (25%) → 0.3 hrs/wk back
+
+Documentation Impact Label: DOCUMENTATION IMPACT
+
++0.20 wRVU/encounter / 34,000 encounters analyzed / Revenue potential: $112K – $168K
+
+The Story:
+
+Label: THE REAL STORY
+Text: You didn't just save time. You gave 80 people their evenings back—and the notes got better, not worse.
+Subtext: That's the counterintuitive truth: better documentation comes from less time documenting.
+
+Export:
+
+Share Your Story / Export a polished PDF for leadership
+Button: Export PDF
+
+
+FULL REPLIT PROMPT — MEASURE PATH
+Global Style Changes:
+
+Page backgrounds: White (#FFFFFF)
+Card backgrounds: Warm beige (#F5F0EB)
+Remove all dark/black background sections (including "The Value Created" header and "THE REAL STORY" banner)
+Section labels: ALL CAPS, 12px, light gray (#888888), letter-spacing 1.5px
+Hero numbers: 48-64px, black—or red-orange for key value figures
+Red-orange left borders: 4px, #E85A2C on key stat blocks and selected cards
+Buttons: Red-orange (#E85A2C) fill with white text
+Step indicator: 5 small dots, gray, current = red-orange
+Selected card state: White background with red-orange left border (NOT black background)
+Font: Manrope throughout
+
+
+Page 1: Select Your Setting
+Remove: "MEASURE YOUR VALUE" red label
+Headline: YOUR VALUE STORY
+Subhead: You've lived the change. Let's measure it.
+Selection Cards:
+
+Warm beige background for section
+Selected card: white background, red-orange left border, subtle shadow (NOT black)
+Coming soon cards: grayed out with small "COMING SOON" badge
+
+Button: Red-orange fill: "Continue →"
+
+Page 2: Your Data
+Remove: "THE NATURAL EXPERIMENT" red label
+Headline: SAME PROVIDERS. SAME PATIENTS.
+Subhead: Enter your before and after metrics. We'll show you what changed.
+Data Entry:
+
+Single warm beige card (remove accordion structure)
+Three sections with subtle dividers:
+
+YOUR DEPLOYMENT (4 fields)
+DOCUMENTATION QUALITY (2 rows, BEFORE | WITH ABRIDGE columns)
+TIME & EFFICIENCY (3 rows, BEFORE | WITH ABRIDGE columns)
+
+
+Column headers: BEFORE / WITH ABRIDGE (remove "WITHOUT")
+
+Button: Red-orange fill: "See What Changed →"
+
+Page 3: What Changed
+Remove: "WHAT THE DATA REVEALS" red label
+Headline: WHAT CHANGED
+Subhead: Same providers. Same patients. Different outcomes.
+Context Stats:
+
+Warm beige card with four stats, red-orange left borders
+
+Transformation Cards:
+
+White background
+Four cards with before/after bars
+Gray before bars, red-orange after bars
+Delta pills (black background with white text, or red-orange background)
+Context lines below each
+
+Remove: Dark transition banner
+Transition:
+
+Centered text: Now let's translate this into impact.
+Button: Red-orange fill: "See the Impact →"
+
+
+Page 4: What It Means
+Remove: "UNDERSTANDING IMPACT" red label
+Headline: WHERE THE TIME WENT
+Subhead: Your providers reclaimed 4,533 hours. Here's what that means for your organization.
+Story Selector:
+
+Warm beige background
+Label: TELL YOUR STORY
+Subhead: What best describes how your organization experienced this change?
+Four cards (2x2), white background
+Selected state: white with red-orange left border (NOT black)
+
+Impact Summary:
+
+White background
+Label: THE IMPACT
+Three rows with icons, descriptions, and values
+
+Advanced:
+
+Subtle expandable: "Adjust assumptions →"
+
+Button: Red-orange fill: "See Your Value Story →"
+
+Page 5: Your Value Story
+Remove: "YOUR ABRIDGE STORY" red label (or change to small gray label)
+Hero:
+
+Centered, stacked headline:
+80 providers.
+6 months.
+4,533 hours back.
+Subhead below
+
+Value Summary:
+
+Warm beige card, two columns:
+
+TIME RECAPTURED / 4,533 hours
+ANNUAL VALUE / $849K – $905K
+
+
+
+Value Breakdown:
+
+White card
+HOW YOU USED THAT TIME section
+DOCUMENTATION IMPACT section
+
+The Story Block:
+
+Change from black to warm beige background
+Label: THE REAL STORY
+Keep the copy
+
+Expansion Section:
+
+De-emphasize: subtle expandable "What if you expanded? →"
+
+Export:
+
+White card with Export PDF button (red-orange fill)
+
+Footer:
+
+Methodology expandable
+Start Over link (gray, understated)

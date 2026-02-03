@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, DollarSign, TrendingUp, Heart, Sparkles, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, ArrowLeft, DollarSign, TrendingUp, Heart, Sparkles, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -116,44 +116,51 @@ export default function MeasureAllocate({
         pathType="measure"
         currentStep={4}
         totalSteps={5}
-        stepName="The Impact"
+        stepName="What It Means"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {[1, 2, 3, 4, 5].map((step) => (
+            <div
+              key={step}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                step === 4 ? "bg-[#E85A2C] scale-125" : step < 4 ? "bg-[#E85A2C]/40" : "bg-[#D1D5DB]"
+              }`}
+            />
+          ))}
+        </div>
+
         {/* Header */}
         <motion.div 
-          className="text-center mb-10"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
-            Understanding Impact
-          </p>
-
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-3">
-            Where Did the Time Go?
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
+            WHERE THE TIME WENT
           </h1>
-
-          <p className="text-slate-600">
-            Your providers reclaimed <span className="font-semibold text-black">{formatNumber(Math.round(results.totalHoursSaved))} hours</span>. What happened with it?
+          <p className="text-base text-[#6B7280]">
+            Your providers reclaimed <span className="font-semibold text-black">{formatNumber(Math.round(results.totalHoursSaved))} hours</span>. Here's what that means for your organization.
           </p>
         </motion.div>
 
-        {/* Preset Selection Card */}
+        {/* Story Selector */}
         <motion.div
-          className="bg-white rounded-2xl border border-slate-200 p-6 mb-6"
+          className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">
-            Select Your Story
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+            TELL YOUR STORY
           </p>
-          <h2 className="text-base font-bold text-black mb-5">
-            What best describes your experience?
+          <h2 className="text-sm font-semibold text-black mb-5">
+            What best describes how your organization experienced this change?
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -168,8 +175,8 @@ export default function MeasureAllocate({
                   className={`
                     relative flex items-start gap-3 p-4 rounded-xl text-left transition-all duration-200
                     ${isSelected 
-                      ? 'bg-black text-white' 
-                      : 'bg-white border border-slate-200 hover:border-slate-300'
+                      ? 'bg-white border-l-4 border-l-[#E85A2C] border-t border-r border-b border-[#E5E7EB] shadow-sm' 
+                      : 'bg-white border border-[#E5E7EB] hover:border-[#E85A2C]/30'
                     }
                   `}
                   initial={{ opacity: 0, y: 10 }}
@@ -178,23 +185,20 @@ export default function MeasureAllocate({
                   data-testid={`button-preset-${preset.id}`}
                 >
                   {isSelected && (
-                    <div className="absolute top-3 right-3 w-5 h-5 bg-[#EA2C00] rounded-full flex items-center justify-center">
+                    <div className="absolute top-3 right-3 w-5 h-5 bg-[#E85A2C] rounded-full flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" strokeWidth={3} />
                     </div>
                   )}
                   
-                  <div className={`
-                    w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-                    ${isSelected ? 'bg-white/10' : 'bg-[#FFF5F2]'}
-                  `}>
-                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#FFF5F2]">
+                    <Icon className="w-5 h-5 text-[#E85A2C]" />
                   </div>
                   
                   <div className="min-w-0">
-                    <p className={`font-semibold text-sm ${isSelected ? 'text-white' : 'text-black'}`}>
+                    <p className="font-semibold text-sm text-black">
                       {preset.label}
                     </p>
-                    <p className={`text-xs mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
+                    <p className="text-xs mt-0.5 text-[#888888]">
                       {preset.subtext}
                     </p>
                   </div>
@@ -204,7 +208,7 @@ export default function MeasureAllocate({
           </div>
         </motion.div>
 
-        {/* Results Breakdown - shows after selection */}
+        {/* Impact Summary - shows after selection */}
         <AnimatePresence>
           {hasStarted && (
             <motion.div
@@ -213,70 +217,35 @@ export default function MeasureAllocate({
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4 mb-6"
             >
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center">
-                Here's What That Means
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] text-center">
+                THE IMPACT
               </p>
 
-              {/* Stacked allocation bar */}
-              <div className="bg-slate-50 rounded-xl p-4">
-                <div className="h-3 bg-slate-200 rounded-full overflow-hidden flex mb-3">
-                  <motion.div 
-                    className="h-full bg-[#EA2C00]" 
-                    animate={{ width: `${capacityPercent}%` }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                  />
-                  <motion.div 
-                    className="h-full bg-black" 
-                    animate={{ width: `${hardSavingsPercent}%` }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                  />
-                  <motion.div 
-                    className="h-full bg-slate-400" 
-                    animate={{ width: `${qualityOfLifePercent}%` }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                  />
-                </div>
-                <div className="flex items-center justify-center gap-4 text-xs">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]"></span>
-                    <span className="text-slate-600">Capacity {capacityPercent}%</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-black"></span>
-                    <span className="text-slate-600">Savings {hardSavingsPercent}%</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                    <span className="text-slate-600">Wellbeing {qualityOfLifePercent}%</span>
-                  </span>
-                </div>
-              </div>
-
               {/* Value Cards */}
-              <div className="grid gap-3">
+              <div className="space-y-3">
                 {/* Capacity Card */}
                 {capacityPercent > 0 && (
                   <motion.div 
-                    className="bg-[#FFF5F2] rounded-xl p-4"
+                    className="bg-white rounded-xl border border-[#E5E7EB] p-4"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#EA2C00] flex items-center justify-center">
-                          <TrendingUp className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-[#E85A2C]" />
                         </div>
                         <div>
-                          <p className="font-semibold text-black">Additional Capacity</p>
-                          <p className="text-sm text-slate-600">
+                          <p className="font-semibold text-black text-sm">Capacity</p>
+                          <p className="text-xs text-[#6B7280]">
                             {formatNumber(Math.round(results.capacityVisits))} more visits possible
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.capacityValue)}</p>
-                        <p className="text-xs text-slate-500">revenue opportunity</p>
+                      <div className="text-right border-l-4 border-[#E85A2C] pl-3">
+                        <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(results.capacityValue)}</p>
+                        <p className="text-[10px] text-[#888888] uppercase tracking-[1.5px]">revenue opportunity</p>
                       </div>
                     </div>
                   </motion.div>
@@ -285,26 +254,26 @@ export default function MeasureAllocate({
                 {/* Hard Savings Card */}
                 {hardSavingsPercent > 0 && (
                   <motion.div 
-                    className="bg-slate-100 rounded-xl p-4"
+                    className="bg-white rounded-xl border border-[#E5E7EB] p-4"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.15 }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 rounded-lg bg-[#F5F0EB] flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-black" />
                         </div>
                         <div>
-                          <p className="font-semibold text-black">Hard Savings</p>
-                          <p className="text-sm text-slate-600">
+                          <p className="font-semibold text-black text-sm">Savings</p>
+                          <p className="text-xs text-[#6B7280]">
                             {formatNumber(Math.round(results.hardSavingsHours))} hours of overtime avoided
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right border-l-4 border-black pl-3">
                         <p className="text-xl font-bold text-black">{formatCurrency(results.hardSavingsValue)}</p>
-                        <p className="text-xs text-slate-500">direct savings</p>
+                        <p className="text-[10px] text-[#888888] uppercase tracking-[1.5px]">direct savings</p>
                       </div>
                     </div>
                   </motion.div>
@@ -313,39 +282,39 @@ export default function MeasureAllocate({
                 {/* Quality of Life Card */}
                 {qualityOfLifePercent > 0 && (
                   <motion.div 
-                    className="bg-white border border-slate-200 rounded-xl p-4"
+                    className="bg-white rounded-xl border border-[#E5E7EB] p-4"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center">
-                          <Heart className="w-5 h-5 text-slate-600" />
+                        <div className="w-10 h-10 rounded-lg bg-[#F5F0EB] flex items-center justify-center">
+                          <Heart className="w-5 h-5 text-[#888888]" />
                         </div>
                         <div>
-                          <p className="font-semibold text-black">Quality of Life</p>
-                          <p className="text-sm text-slate-600">
+                          <p className="font-semibold text-black text-sm">Wellbeing</p>
+                          <p className="text-xs text-[#6B7280]">
                             {results.qualityHoursPerWeek.toFixed(1)} hrs/week back per provider
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-600">Retention Value</p>
-                        <p className="text-xs text-slate-500">1 kept = $300-500K saved</p>
+                      <div className="text-right pl-3">
+                        <p className="text-sm font-semibold text-[#6B7280]">Retention value</p>
+                        <p className="text-xs text-[#888888]">1 kept = $300-500K saved</p>
                       </div>
                     </div>
                   </motion.div>
                 )}
               </div>
 
-              {/* Fine-tune toggle */}
+              {/* Adjust assumptions toggle */}
               <button
                 onClick={() => setShowFineTune(!showFineTune)}
-                className="w-full flex items-center justify-center gap-2 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2 text-sm text-[#888888] hover:text-[#6B7280] transition-colors"
                 data-testid="button-toggle-fine-tune"
               >
-                <span>{showFineTune ? 'Hide' : 'Fine-tune'} percentages</span>
+                <span>Adjust assumptions →</span>
                 {showFineTune ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               
@@ -355,12 +324,12 @@ export default function MeasureAllocate({
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-white rounded-xl border border-slate-200 p-4 space-y-4 overflow-hidden"
+                    className="bg-white rounded-xl border border-[#E5E7EB] p-4 space-y-4 overflow-hidden"
                   >
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-[#EA2C00]"></span>
+                        <label className="text-xs font-medium text-[#6B7280] flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#E85A2C]"></span>
                           Capacity %
                         </label>
                         <FormattedNumberInput
@@ -371,7 +340,7 @@ export default function MeasureAllocate({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                        <label className="text-xs font-medium text-[#6B7280] flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-black"></span>
                           Savings %
                         </label>
@@ -383,8 +352,8 @@ export default function MeasureAllocate({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <label className="text-xs font-medium text-[#6B7280] flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#888888]"></span>
                           Wellbeing %
                         </label>
                         <FormattedNumberInput
@@ -397,17 +366,17 @@ export default function MeasureAllocate({
                     </div>
                     
                     {!isValid && (
-                      <p className="text-xs font-medium text-center text-[#EA2C00]">
+                      <p className="text-xs font-medium text-center text-[#E85A2C]">
                         Total must equal 100% (currently {totalAllocation}%)
                       </p>
                     )}
                     
                     {/* Calibration settings */}
-                    <div className="border-t border-slate-100 pt-4">
-                      <p className="text-xs text-slate-500 mb-3">Value assumptions:</p>
+                    <div className="border-t border-[#E5E7EB] pt-4">
+                      <p className="text-xs text-[#888888] mb-3">Value assumptions:</p>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500">OT Rate ($/hr)</label>
+                          <label className="text-[10px] text-[#888888]">OT Rate ($/hr)</label>
                           <FormattedNumberInput
                             value={state.calibration.otHourlyRate}
                             onChange={(v: number) => updateCalibration('otHourlyRate', v)}
@@ -415,7 +384,7 @@ export default function MeasureAllocate({
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500">Min/Visit</label>
+                          <label className="text-[10px] text-[#888888]">Min/Visit</label>
                           <FormattedNumberInput
                             value={state.calibration.minutesPerVisit}
                             onChange={(v: number) => updateCalibration('minutesPerVisit', v)}
@@ -423,7 +392,7 @@ export default function MeasureAllocate({
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500">$/Visit</label>
+                          <label className="text-[10px] text-[#888888]">$/Visit</label>
                           <FormattedNumberInput
                             value={state.calibration.revenuePerVisit}
                             onChange={(v: number) => updateCalibration('revenuePerVisit', v)}
@@ -439,27 +408,37 @@ export default function MeasureAllocate({
           )}
         </AnimatePresence>
 
-        {/* CTA */}
+        {/* Navigation */}
         <motion.div 
-          className="flex justify-center"
+          className="flex justify-between items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
           <Button
+            variant="ghost"
+            onClick={onBack}
+            className="gap-2"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+          
+          <Button
             onClick={onNext}
             disabled={!isValid}
             className={`
-              h-12 px-8 font-semibold rounded-full transition-all duration-200
+              h-11 px-6 font-semibold rounded-full transition-all duration-200 gap-2
               ${isValid 
-                ? 'bg-black hover:bg-black/90 text-white' 
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                ? 'bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white' 
+                : 'bg-[#E5E7EB] text-[#888888] cursor-not-allowed'
               }
             `}
             data-testid="button-see-story"
           >
             {!hasStarted ? 'Select a story to continue' : isValid ? 'See Your Value Story' : `Allocate remaining ${100 - totalAllocation}%`}
-            {isValid && <ArrowRight className="w-4 h-4 ml-2" />}
+            {isValid && <ArrowRight className="w-4 h-4" />}
           </Button>
         </motion.div>
       </div>

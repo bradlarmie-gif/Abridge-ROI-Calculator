@@ -55,12 +55,12 @@ interface MeasureWelcomeProps {
 export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNext, onBack, onHome }: MeasureWelcomeProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleShowMe = () => {
+  const handleContinue = () => {
     if (!selectedSetting) return;
     setIsLoading(true);
     setTimeout(() => {
       onNext();
-    }, 1500);
+    }, 800);
   };
 
   const handleSelectSetting = (setting: CareSettingOption) => {
@@ -74,39 +74,48 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
         pathType="measure"
         currentStep={1}
         totalSteps={5}
-        stepName="Set the Stage"
+        stepName="Select Your Setting"
         onBack={onBack}
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {[1, 2, 3, 4, 5].map((step) => (
+            <div
+              key={step}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                step === 1 ? "bg-[#E85A2C] scale-125" : "bg-[#D1D5DB]"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Header */}
         <motion.div 
-          className="text-center mb-20"
+          className="text-center mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
-            Measure Your Value
-          </p>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
-            Document Your Impact
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-3">
+            YOUR VALUE STORY
           </h1>
-
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-12">
-            You've lived the change. Now let's measure it—and give you a story worth sharing.
+          <p className="text-base text-[#6B7280]">
+            You've lived the change. Let's measure it.
           </p>
         </motion.div>
 
+        {/* Care Setting Cards */}
         <motion.div
-          className="mb-24"
+          className="bg-[#F5F0EB] rounded-xl p-6 mb-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div className="flex justify-center gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {CARE_SETTINGS.map((setting, index) => {
               const Icon = setting.icon;
               const isSelected = selectedSetting === setting.id;
@@ -118,12 +127,12 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                   onClick={() => handleSelectSetting(setting)}
                   disabled={isDisabled}
                   className={`
-                    relative flex flex-col items-center text-center w-[260px] py-10 px-8 rounded-2xl transition-all duration-200
+                    relative flex flex-col items-center text-center p-5 rounded-xl transition-all duration-200
                     ${isSelected 
-                      ? 'bg-black text-white shadow-xl' 
+                      ? 'bg-white border-l-4 border-l-[#E85A2C] border-t border-r border-b border-[#E5E7EB] shadow-md' 
                       : isDisabled
-                        ? 'bg-slate-50 cursor-not-allowed'
-                        : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
+                        ? 'bg-[#F5F0EB] border border-[#E5E7EB]/50 cursor-not-allowed opacity-60'
+                        : 'bg-white border border-[#E5E7EB] hover:border-[#E85A2C]/30 hover:shadow-sm'
                     }
                   `}
                   initial={{ opacity: 0, y: 10 }}
@@ -133,38 +142,38 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                 >
                   {isSelected && (
                     <motion.div 
-                      className="absolute top-4 right-4 w-7 h-7 bg-[#EA2C00] rounded-full flex items-center justify-center"
+                      className="absolute top-2 right-2 w-5 h-5 bg-[#E85A2C] rounded-full flex items-center justify-center"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     >
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
                     </motion.div>
                   )}
 
                   {isDisabled && (
-                    <div className="absolute top-4 right-4 px-2 py-1 bg-slate-200 rounded-md text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#E5E7EB] rounded text-[9px] font-semibold text-[#888888] uppercase tracking-wide">
                       Soon
                     </div>
                   )}
 
                   <div className={`
-                    w-20 h-20 rounded-2xl flex items-center justify-center mb-6
+                    w-12 h-12 rounded-lg flex items-center justify-center mb-3
                     ${isSelected 
-                      ? 'bg-white/10' 
+                      ? 'bg-[#FFF5F2]' 
                       : isDisabled
-                        ? 'bg-slate-100'
+                        ? 'bg-[#F5F0EB]'
                         : 'bg-[#FFF5F2]'
                     }
                   `}>
-                    <Icon className={`w-10 h-10 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-6 h-6 ${isSelected ? 'text-[#E85A2C]' : isDisabled ? 'text-[#888888]' : 'text-[#E85A2C]'}`} />
                   </div>
                   
-                  <h3 className={`text-xl font-bold mb-1 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
+                  <h3 className={`text-sm font-bold mb-0.5 ${isSelected ? 'text-black' : isDisabled ? 'text-[#888888]' : 'text-black'}`}>
                     {setting.label}
                   </h3>
                   
-                  <p className={`text-sm font-medium leading-tight ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs leading-tight ${isSelected ? 'text-[#6B7280]' : isDisabled ? 'text-[#888888]' : 'text-[#888888]'}`}>
                     {setting.shortDesc}
                   </p>
                 </motion.button>
@@ -173,6 +182,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
           </div>
         </motion.div>
 
+        {/* CTA */}
         <motion.div 
           className="flex flex-col items-center"
           initial={{ opacity: 0 }}
@@ -188,8 +198,8 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center gap-3 py-4"
               >
-                <Loader2 className="w-8 h-8 text-[#EA2C00] animate-spin" />
-                <span className="text-sm text-slate-500">Preparing your analysis...</span>
+                <Loader2 className="w-8 h-8 text-[#E85A2C] animate-spin" />
+                <span className="text-sm text-[#888888]">Preparing your analysis...</span>
               </motion.div>
             ) : (
               <motion.div
@@ -200,23 +210,23 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                 className="flex flex-col items-center gap-3"
               >
                 <Button
-                  onClick={handleShowMe}
+                  onClick={handleContinue}
                   disabled={!selectedSetting}
                   className={`
-                    h-12 px-8 font-semibold rounded-full transition-all duration-200
+                    h-11 px-6 font-semibold rounded-full transition-all duration-200 gap-2
                     ${selectedSetting 
-                      ? 'bg-black hover:bg-black/90 text-white' 
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      ? 'bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white' 
+                      : 'bg-[#E5E7EB] text-[#888888] cursor-not-allowed'
                     }
                   `}
-                  data-testid="button-show-me"
+                  data-testid="button-continue"
                 >
                   Continue
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
                 
                 {!selectedSetting && (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-[#888888]">
                     Select a care setting to continue
                   </p>
                 )}
