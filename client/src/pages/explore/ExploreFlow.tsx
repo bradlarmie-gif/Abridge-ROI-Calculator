@@ -428,6 +428,7 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
         <ExploreDocQuality
           state={state}
           updateState={updateState}
+          timeValue={timeValue}
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}

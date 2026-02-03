@@ -8,6 +8,7 @@ import { type ExploreState, type DocQualityInputs } from "./ExploreFlow";
 interface ExploreDocQualityProps {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
+  timeValue: number;
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
@@ -18,6 +19,7 @@ type ScenarioLevel = 'conservative' | 'typical' | 'aggressive';
 export default function ExploreDocQuality({
   state,
   updateState,
+  timeValue,
   onNext,
   onBack,
   onHome,
@@ -83,7 +85,10 @@ export default function ExploreDocQuality({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content - Left Column */}
+          <div className="flex-1 max-w-[700px]">
         {/* Header */}
         <motion.div 
           className="text-center mb-6"
@@ -651,49 +656,9 @@ export default function ExploreDocQuality({
           </AnimatePresence>
         </motion.div>
 
-        {/* Documentation Value Summary */}
-        <motion.div
-          className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-            Documentation Value Summary
-          </p>
-
-          <div className="space-y-2 text-sm mb-4">
-            <div className="flex justify-between">
-              <span className="text-[#666666]">wRVU Improvement:</span>
-              <span className="font-semibold text-black">
-                {docQualityInputs.wrvuEnabled ? formatCurrency(Math.round(wrvuRevenueNet)) : '—'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#666666]">HCC Capture:</span>
-              <span className="font-semibold text-black">
-                {docQualityInputs.hccEnabled ? formatCurrency(Math.round(hccRevenueNet)) : '—'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Denial Prevention:</span>
-              <span className="font-semibold text-black">
-                {docQualityInputs.denialsEnabled ? formatCurrency(Math.round(denialsRevenueNet)) : '—'}
-              </span>
-            </div>
-          </div>
-
-          <div className="h-px bg-[#E5E5E5] my-3" />
-
-          <div className="flex justify-between">
-            <span className="font-semibold text-black">Total Documentation Value</span>
-            <span className="text-xl font-bold text-[#E85A2C]">{formatCurrency(Math.round(totalDocValue))}</span>
-          </div>
-        </motion.div>
-
-        {/* Continue Button */}
+        {/* Continue Button - Mobile */}
         <motion.div 
-          className="flex justify-center"
+          className="flex justify-center lg:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -707,6 +672,95 @@ export default function ExploreDocQuality({
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
+          </div>
+
+          {/* Right Panel - Desktop Only */}
+          <motion.div
+            className="hidden lg:block w-[320px] flex-shrink-0"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
+              {/* Header */}
+              <div className="mb-4">
+                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                  Documentation Value
+                </p>
+                <p className="text-sm text-[#888888] mt-1">Your model so far</p>
+              </div>
+
+              {/* Time Savings Line */}
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm text-[#888888]">Time Savings</span>
+                <span className="text-sm font-semibold text-white">{formatCurrency(timeValue)}</span>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Documentation Drivers */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.wrvuEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                    <span className="text-sm text-[#888888]">wRVU</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${docQualityInputs.wrvuEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                    {docQualityInputs.wrvuEnabled ? formatCurrency(Math.round(wrvuRevenueNet)) : '—'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                    <span className="text-sm text-[#888888]">HCC</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${docQualityInputs.hccEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                    {docQualityInputs.hccEnabled ? formatCurrency(Math.round(hccRevenueNet)) : '—'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.denialsEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                    <span className="text-sm text-[#888888]">Denials</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${docQualityInputs.denialsEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                    {docQualityInputs.denialsEnabled ? formatCurrency(Math.round(denialsRevenueNet)) : '—'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Projected Annual Value */}
+              <div className="text-center mb-4">
+                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                  Projected Annual Value
+                </p>
+                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                  {formatCurrency(Math.round(timeValue + totalDocValue))}
+                </p>
+              </div>
+
+              <p className="text-xs text-[#666666] italic mb-4">
+                All values include conservative realization rates for defensible estimates.
+              </p>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Continue Button */}
+              <Button
+                onClick={onNext}
+                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                data-testid="button-panel-continue"
+              >
+                Continue to Investment
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

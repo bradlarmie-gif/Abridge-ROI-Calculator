@@ -96,6 +96,21 @@ export default function ExploreValueDrivers({
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
+  // Calculate total time value
+  const totalTimeValue = useMemo(() => {
+    let total = 0;
+    if (timeDriverInputs.patientAccessEnabled) {
+      total += potentialRevenue;
+    }
+    if (timeDriverInputs.costReductionEnabled) {
+      total += timeDriverInputs.estimatedCostReduction;
+    }
+    if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+      total += retentionCalcs.retentionValue;
+    }
+    return total;
+  }, [potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue]);
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
@@ -108,7 +123,10 @@ export default function ExploreValueDrivers({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content - Left Column */}
+          <div className="flex-1 max-w-[700px]">
 
         {/* Header */}
         <motion.div 
@@ -605,64 +623,9 @@ export default function ExploreValueDrivers({
           </AnimatePresence>
         </motion.div>
 
-        {/* Time Value Summary */}
-        <motion.div
-          className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-            Time Value Summary
-          </p>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Hours reclaimed:</span>
-              <span className="font-semibold text-black">{formatNumber(totalHoursSaved)}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Patient Access:</span>
-              <span className="font-semibold text-black">
-                {timeDriverInputs.patientAccessEnabled ? formatCurrency(potentialRevenue) : '—'}
-              </span>
-            </div>
-            {timeDriverInputs.patientAccessEnabled && (
-              <p className="text-xs text-[#888888] text-right">(if {timeDriverInputs.capacityPercent}% to capacity)</p>
-            )}
-
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Cost Reduction:</span>
-              <span className="font-semibold text-black">
-                {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
-              </span>
-            </div>
-            {!timeDriverInputs.costReductionEnabled && (
-              <p className="text-xs text-[#888888] text-right">(no estimate provided)</p>
-            )}
-
-            <div className="flex justify-between">
-              <span className="text-[#666666]">Wellbeing:</span>
-              <span className="font-semibold text-black">
-                {timeDriverInputs.wellbeingEnabled 
-                  ? (timeDriverInputs.calculateRetentionValue 
-                      ? formatCurrency(retentionCalcs.retentionValue)
-                      : `${hoursPerProviderPerWeek} hrs/wk back`)
-                  : '—'}
-              </span>
-            </div>
-            {timeDriverInputs.wellbeingEnabled && (
-              <p className="text-xs text-[#888888] text-right">
-                {timeDriverInputs.calculateRetentionValue ? '(retention value)' : '(qualitative)'}
-              </p>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Continue Button */}
+        {/* Continue Button - Mobile */}
         <motion.div 
-          className="flex flex-col items-center gap-2"
+          className="flex flex-col items-center gap-2 lg:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}
@@ -679,6 +642,104 @@ export default function ExploreValueDrivers({
             You can skip documentation drivers if not relevant
           </p>
         </motion.div>
+        </div>
+
+          {/* Right Panel - Desktop Only */}
+          <motion.div
+            className="hidden lg:block w-[320px] flex-shrink-0"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
+              {/* Header */}
+              <div className="mb-4">
+                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                  Time Value
+                </p>
+                <p className="text-sm text-[#888888] mt-1">Value summary</p>
+              </div>
+
+              {/* Hero Value */}
+              <div className="text-center my-4">
+                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                  {formatCurrency(totalTimeValue)}
+                </p>
+                <p className="text-sm text-[#888888] mt-1">
+                  From {formatNumber(totalHoursSaved)} hours saved
+                </p>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Line Items */}
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                      <span className="text-sm text-[#888888]">Patient Access</span>
+                    </div>
+                    <span className={`text-sm font-semibold ${timeDriverInputs.patientAccessEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                      {timeDriverInputs.patientAccessEnabled ? formatCurrency(potentialRevenue) : '—'}
+                    </span>
+                  </div>
+                  {timeDriverInputs.patientAccessEnabled && (
+                    <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.capacityPercent}% to capacity)</p>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                      <span className="text-sm text-[#888888]">Cost Reduction</span>
+                    </div>
+                    <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                      {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
+                    </span>
+                  </div>
+                  {!timeDriverInputs.costReductionEnabled && (
+                    <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                      <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                    </div>
+                    <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                      {timeDriverInputs.wellbeingEnabled 
+                        ? (timeDriverInputs.calculateRetentionValue 
+                            ? formatCurrency(retentionCalcs.retentionValue)
+                            : '—')
+                        : '—'}
+                    </span>
+                  </div>
+                  {timeDriverInputs.wellbeingEnabled && (
+                    <p className="text-xs text-[#666666] ml-4 mt-0.5">
+                      {timeDriverInputs.calculateRetentionValue ? '(retention value)' : `${hoursPerProviderPerWeek} hrs/wk back`}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Continue Button */}
+              <Button
+                onClick={onNext}
+                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                data-testid="button-panel-continue"
+              >
+                Continue to Documentation
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
