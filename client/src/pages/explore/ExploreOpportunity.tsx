@@ -57,7 +57,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const [encountersPerProvider, setEncountersPerProvider] = useState(
     state.numberOfProviders > 0 && state.annualEncounters > 0 
       ? Math.round(state.annualEncounters / state.numberOfProviders) 
-      : defaultEncountersPerProvider
+      : 0  // No default selection - user must choose
   );
   const [totalEncountersInput, setTotalEncountersInput] = useState(state.annualEncounters > 0 ? state.annualEncounters : 0);
   const [usingTotalInput, setUsingTotalInput] = useState(false);
