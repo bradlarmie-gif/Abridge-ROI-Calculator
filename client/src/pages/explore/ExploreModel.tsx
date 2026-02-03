@@ -100,9 +100,9 @@ export default function ExploreModel({
   const year3Value = Math.round(netAnnualValue * 1.21);
   const threeYearTotal = year1Value + year2Value + year3Value;
 
-  // Expansion opportunity (use fullScaleProviders from state, 85% utilization)
+  // Expansion opportunity (use fullScaleProviders from state, editable utilization)
   const expandedProviders = state.fullScaleProviders;
-  const expandedUtilization = 85;
+  const [expandedUtilization, setExpandedUtilization] = useState(80);
   const expansionMultiplier = (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
   const expandedRoi = annualInvestment > 0 ? (totalValue * expansionMultiplier) / (annualInvestment * 3) : 0;
@@ -401,7 +401,15 @@ export default function ExploreModel({
                   data-testid="input-full-scale-providers"
                 />
                 <p className="text-sm text-[#888888]">providers</p>
-                <p className="text-sm text-[#888888]">{expandedUtilization}% util</p>
+                <div className="flex items-center justify-center gap-1">
+                  <FormattedNumberInput
+                    value={expandedUtilization}
+                    onChange={(v: number) => setExpandedUtilization(Math.min(Math.max(v, 1), 100))}
+                    className="h-6 w-12 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                    data-testid="input-full-scale-utilization"
+                  />
+                  <span className="text-sm text-[#888888]">% util</span>
+                </div>
               </div>
             </div>
 
