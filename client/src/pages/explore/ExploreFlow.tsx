@@ -143,8 +143,8 @@ export interface ExploreState {
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
-  numberOfProviders: 80,
-  annualEncounters: 240000,
+  numberOfProviders: 0,
+  annualEncounters: 0,
   utilizationPercent: 70,
   nursingStaffedBeds: 0,
   nursingOccupancyRate: 85,
