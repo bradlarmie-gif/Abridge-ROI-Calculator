@@ -1,0 +1,324 @@
+The New Hierarchy (Top to Bottom):
+
+HERO — The number. The ROI. The headline.
+WHERE THE VALUE COMES FROM — Two columns: Time Back + Documentation Quality
+THE EXPANSION OPPORTUNITY — Today vs. Full Scale comparison
+GROWTH TRAJECTORY — Big, beautiful chart showing the path
+3-YEAR PROJECTION — Year 1, 2, 3, Total
+EXPORT — Prominent, premium CTA
+
+
+Replit Prompt — Full Page Redesign:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                            Explore · Your Model    ●●●●●●●     │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│ ┌─────────────────────────────────────────────────────────────────────────────┐ │
+│ │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│ │
+│ │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░                     Outpatient · 100 providers                        ░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░                       PROJECTED NET VALUE                             ░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░                           $698K                                       ░░│ │
+│ │░░                           / year                                      ░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░                  $950K value – $252K investment                        ░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░     ┌─────────────┐   ┌─────────────┐   ┌─────────────┐               ░░│ │
+│ │░░     │             │   │             │   │             │               ░░│ │
+│ │░░     │    3.8×     │   │    $7K      │   │  14,000     │               ░░│ │
+│ │░░     │    ROI      │   │ per provider│   │ hours saved │               ░░│ │
+│ │░░     │             │   │             │   │             │               ░░│ │
+│ │░░     └─────────────┘   └─────────────┘   └─────────────┘               ░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░   These projections reflect conservative assumptions.                 ░░│ │
+│ │░░   See Methodology for details.                                        ░░│ │
+│ │░░                                                                       ░░│ │
+│ │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│ │
+│ │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│ │
+│ └─────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+│                                                                                 │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                 │
+│                          WHERE THE VALUE COMES FROM                             │
+│                                                                                 │
+│        Ambient AI creates value through two mechanisms—each with its            │
+│                          own drivers and assumptions.                           │
+│                                                                                 │
+│                                                                                 │
+│  ┌──────────────────────────────────────┐  ┌──────────────────────────────────┐ │
+│  │                                      │  │                                  │ │
+│  │  TIME BACK                           │  │  DOCUMENTATION QUALITY           │ │
+│  │                                      │  │                                  │ │
+│  │  ┃ $560K / year                      │  │  ┃ $390K / year                  │ │
+│  │                                      │  │                                  │ │
+│  │  ─────────────────────────────────   │  │  ─────────────────────────────   │ │
+│  │                                      │  │                                  │ │
+│  │  Documentation consumes 1-2 hours    │  │  When documentation is complete  │ │
+│  │  per clinician daily. Ambient AI     │  │  and accurate, downstream        │ │
+│  │  eliminates most of this burden.     │  │  revenue follows.                │ │
+│  │                                      │  │                                  │ │
+│  │  ─────────────────────────────────   │  │  ─────────────────────────────   │ │
+│  │                                      │  │                                  │ │
+│  │  • Patient Access        $560K       │  │  • wRVU Improvement    $390K     │ │
+│  │    (10% to capacity)                 │  │    (5% lift)                     │ │
+│  │                                      │  │                                  │ │
+│  │  • Cost Reduction        —           │  │  • HCC Capture         —         │ │
+│  │                                      │  │                                  │ │
+│  │  • Clinician Wellbeing   —           │  │  • Denial Prevention   —         │ │
+│  │    2.7 hrs/wk back                   │  │                                  │ │
+│  │                                      │  │                                  │ │
+│  └──────────────────────────────────────┘  └──────────────────────────────────┘ │
+│                                                                                 │
+│                                                                                 │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                 │
+│                          THE EXPANSION OPPORTUNITY                              │
+│                                                                                 │
+│          A successful pilot proves value. Strategic expansion multiplies it.    │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                             ││
+│  │                                                                             ││
+│  │   TODAY                                                      FULL SCALE    ││
+│  │                                                                             ││
+│  │   100                        expansion →                         500       ││
+│  │   providers                                                   providers    ││
+│  │   70% util                                                     85% util    ││
+│  │                                                                             ││
+│  │                                                                             ││
+│  │   ┌─────────────────────────────┐    ┌─────────────────────────────────┐   ││
+│  │   │                             │    │                                 │   ││
+│  │   │  TODAY'S VALUE              │    │  FULL SCALE VALUE               │   ││
+│  │   │                             │    │                                 │   ││
+│  │   │  $698K                      │    │  $4.2M                          │   ││
+│  │   │  / year                     │    │  / year                         │   ││
+│  │   │                             │    │                                 │   ││
+│  │   │  3.8× ROI                   │    │  7.6× ROI                       │   ││
+│  │   │                             │    │                                 │   ││
+│  │   └─────────────────────────────┘    └─────────────────────────────────┘   ││
+│  │                                                                             ││
+│  │                                                                             ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│                                                                                 │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                 │
+│                              GROWTH TRAJECTORY                                  │
+│                                                                                 │
+│         Projected value vs. linear scaling as you expand from pilot             │
+│                                  to full scale.                                 │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                             ││
+│  │   Expansion pace:   ┌────────┐  ┌────────┐  ┌────────┐                     ││
+│  │                     │  24mo  │  │  18mo  │  │  12mo  │                     ││
+│  │                     └────────┘  └────────┘  └────────┘                     ││
+│  │                                                                             ││
+│  │         ── Projected          ---- Linear                                  ││
+│  │                                                                             ││
+│  │                                                                             ││
+│  │   $6.0M ┤                                                                  ││
+│  │         │                                                                  ││
+│  │   $4.5M ┤                                                    ●             ││
+│  │         │                                               ●                  ││
+│  │   $3.0M ┤                                          ●    - - - - - - - -    ││
+│  │         │                                     ●                            ││
+│  │   $1.5M ┤                               ●                                  ││
+│  │         │                          ●                                       ││
+│  │      $0 ┼────●────────────────────────────────────────────────────────     ││
+│  │         │                                                                  ││
+│  │         Today        6mo         12mo         18mo        Full Scale       ││
+│  │                                                                             ││
+│  │                                                                             ││
+│  │   Projected value includes utilization improvement and workflow maturity   ││
+│  │   gains over linear provider scaling.                                      ││
+│  │                                                                             ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│                                                                                 │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                 │
+│                              3-YEAR PROJECTION                                  │
+│                                                                                 │
+│                                                                                 │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────────┐    │
+│   │             │   │             │   │             │   │                 │    │
+│   │   Year 1    │   │   Year 2    │   │   Year 3    │   │   3-Year Net    │    │
+│   │             │   │             │   │             │   │                 │    │
+│   │   $673K     │   │   $768K     │   │   $844K     │   │   $2.3M         │    │
+│   │             │   │             │   │             │   │                 │    │
+│   └─────────────┘   └─────────────┘   └─────────────┘   └─────────────────┘    │
+│                                                                                 │
+│   Year 1 includes $25K implementation fee.                                      │
+│   Years 2-3 assume 10% value growth from improved utilization.                  │
+│                                                                                 │
+│                                                                                 │
+│ ═══════════════════════════════════════════════════════════════════════════════ │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                             ││
+│  │   YOUR ANALYSIS                                                             ││
+│  │   Outpatient · 100 providers · $210/provider/mo                             ││
+│  │                                                                             ││
+│  │                                                                             ││
+│  │   ┌─────────────────────┐         ┌─────────────────────────────────────┐  ││
+│  │   │                     │         │                                     │  ││
+│  │   │   ✏️  Edit Model     │         │   ↓  Download PDF                   │  ││
+│  │   │                     │         │                                     │  ││
+│  │   └─────────────────────┘         └─────────────────────────────────────┘  ││
+│  │                                                                             ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │   Methodology & Assumptions — understand how we calculated these        ▼  ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Section-by-Section Styling:
+1. HERO SECTION
+Background: Dark (#1A1A1A) — full width
+Context badge: "Outpatient · 100 providers" — small pill, centered, 12px, gray background
+Label: "PROJECTED NET VALUE" — 12px, ALL CAPS, gray, letter-spacing 2px
+Hero number: $698K — 72-80px, red-orange (#E85A2C), bold
+Unit: "/ year" — 24px, gray
+Subtext: "$950K value – $252K investment" — 16px, gray
+Stat cards: Three cards in a row, dark gray background (#2A2A2A), white text
+
+3.8× ROI
+$7K per provider
+14,000 hours saved
+
+Disclaimer: 14px, gray, italic
+
+2. WHERE THE VALUE COMES FROM
+Section header: "WHERE THE VALUE COMES FROM" — 20px, black, bold, centered
+Subhead: "Ambient AI creates value through two mechanisms—each with its own drivers and assumptions." — 16px, gray, centered
+Two cards side by side:
+Card styling:
+
+Warm beige background (#F5F0EB)
+24px padding
+12px border-radius
+
+Card header:
+
+"TIME BACK" / "DOCUMENTATION QUALITY" — 14px, ALL CAPS, black, bold
+Hero value with red-orange left border: $560K / year
+
+Card body:
+
+Short description paragraph (2-3 lines)
+Divider
+Line items with values or "—"
+For Wellbeing: show "2.7 hrs/wk back" even if no dollar value
+
+
+3. THE EXPANSION OPPORTUNITY
+Section header: "THE EXPANSION OPPORTUNITY" — 20px, black, bold, centered
+Subhead: "A successful pilot proves value. Strategic expansion multiplies it." — 16px, gray, centered
+Expansion visualization:
+
+Warm beige background
+TODAY on left: 100 providers, 70% util
+Arrow in middle: "expansion →"
+FULL SCALE on right: 500 providers, 85% util
+
+Two comparison cards:
+Today's Value card:
+
+White background
+"TODAY'S VALUE" label
+$698K / year — 36px, black
+3.8× ROI — 14px, gray
+
+Full Scale Value card:
+
+Red-orange background (#E85A2C)
+White text
+"FULL SCALE VALUE" label
+$4.2M / year — 36px, white, bold
+7.6× ROI — 14px, white/light
+
+
+4. GROWTH TRAJECTORY
+Section header: "GROWTH TRAJECTORY" — 20px, black, bold, centered
+Subhead: "Projected value vs. linear scaling as you expand from pilot to full scale." — 16px, gray, centered
+Expansion pace selector:
+
+Three pill buttons: 24mo / 18mo / 12mo
+Default selected: 18mo
+Selected state: red-orange fill, white text
+
+Chart:
+
+MUCH BIGGER — minimum 400px height
+White background, subtle border
+Two lines:
+
+Projected (red-orange, solid, with dots at intervals)
+Linear (gray, dashed)
+
+
+X-axis: Today, 6mo, 12mo, 18mo, Full Scale
+Y-axis: $0 to $6.0M (or dynamic based on values)
+Tooltip on hover showing: Month, Providers, Projected Value
+
+Chart footer:
+
+"Projected value includes utilization improvement and workflow maturity gains over linear provider scaling." — 14px, gray, italic
+
+
+5. 3-YEAR PROJECTION
+Section header: "3-YEAR PROJECTION" — 20px, black, bold, centered
+Four cards in a row:
+
+Year 1: $673K — white background, subtle border
+Year 2: $768K — white background, subtle border
+Year 3: $844K — white background, subtle border
+3-Year Net: $2.3M — warm beige background, red-orange value
+
+Footer note:
+
+"Year 1 includes $25K implementation fee. Years 2-3 assume 10% value growth from improved utilization." — 14px, gray
+
+
+6. EXPORT SECTION
+Container:
+
+Warm beige background (#F5F0EB)
+Full width
+24px padding
+
+Layout:
+
+Left side: "YOUR ANALYSIS" label + context line (Outpatient · 100 providers · $210/provider/mo)
+Right side: Two buttons
+
+Buttons:
+
+"Edit Model" — outlined, black border, black text
+"Download PDF" — red-orange fill, white text, icon
+
+
+7. METHODOLOGY
+Expandable footer:
+
+"Methodology & Assumptions — understand how we calculated these" + chevron
+When expanded: Full methodology and assumption list
+
+
+Key Changes Summary:
+ElementBeforeAfterHero number48px72-80pxSection orderValue → Graph → Expansion → 3-YearValue → Expansion → Graph → 3-YearGraph sizeSmall (~200px)Large (400px+)Full Scale cardWhiteRed-orange backgroundExport sectionSmall rowFull-width prominent cardExpansion sectionBelow graphAbove graphSection dividersNoneSubtle horizontal rules

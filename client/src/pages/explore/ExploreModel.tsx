@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Pencil } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -89,6 +89,10 @@ export default function ExploreModel({
     return Math.round(prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100));
   }, [eligibleEncounters, docQualityInputs]);
 
+  const hoursPerProviderPerWeek = state.numberOfProviders > 0 
+    ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
+    : '0';
+
   // 3-year projection (10% growth per year)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
   const year1Value = netAnnualValue - implementationCost;
@@ -102,10 +106,6 @@ export default function ExploreModel({
   const expansionMultiplier = (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
   const expandedRoi = annualInvestment > 0 ? (totalValue * expansionMultiplier) / (annualInvestment * 3) : 0;
-
-  const hoursPerProviderPerWeek = state.numberOfProviders > 0 
-    ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
-    : '0';
 
   // Scaling pace options
   const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');
@@ -219,175 +219,264 @@ export default function ExploreModel({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        {/* Hero Section */}
-        <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <p className="text-sm text-[#888888] mb-2">
-            {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers
-          </p>
+      {/* HERO SECTION - Dark Background */}
+      <motion.div
+        className="bg-[#1A1A1A] py-12 md:py-16"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="max-w-[900px] mx-auto px-4 sm:px-6 text-center">
+          {/* Context Badge */}
+          <div className="inline-block bg-[#2A2A2A] rounded-full px-4 py-1.5 mb-6">
+            <span className="text-xs text-[#888888]">
+              {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers
+            </span>
+          </div>
 
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+          {/* Label */}
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[2px] mb-3">
             Projected Net Value
           </p>
 
-          <p className="text-4xl md:text-5xl font-bold text-[#E85A2C] mb-2">
+          {/* Hero Number */}
+          <p className="text-5xl md:text-7xl font-bold text-[#E85A2C] mb-1" data-testid="text-net-value">
             {formatCurrency(netAnnualValue)}
           </p>
-          <p className="text-sm text-[#888888] mb-4">/ year</p>
+          <p className="text-xl text-[#888888] mb-4">/ year</p>
 
-          <p className="text-sm text-[#666666] mb-4">
+          {/* Subtext */}
+          <p className="text-base text-[#888888] mb-8">
             {formatCurrency(totalValue)} value – {formatCurrency(annualInvestment)} investment
           </p>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white rounded-lg p-3">
-              <p className="text-xl font-bold text-black">{roi.toFixed(1)}×</p>
+          {/* Stat Cards */}
+          <div className="flex justify-center gap-4 flex-wrap">
+            <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-roi">
+              <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
               <p className="text-xs text-[#888888]">ROI</p>
             </div>
-            <div className="bg-white rounded-lg p-3">
-              <p className="text-xl font-bold text-black">{formatCurrency(valuePerProvider)}</p>
+            <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-provider">
+              <p className="text-2xl font-bold text-white">{formatCurrency(valuePerProvider)}</p>
               <p className="text-xs text-[#888888]">per provider</p>
             </div>
-            <div className="bg-white rounded-lg p-3">
-              <p className="text-xl font-bold text-black">{formatNumber(totalHoursSaved)}</p>
+            <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
+              <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
               <p className="text-xs text-[#888888]">hours saved</p>
             </div>
           </div>
 
-          <p className="text-xs text-[#888888] mt-4 italic">
+          {/* Disclaimer */}
+          <p className="text-sm text-[#666666] mt-6 italic">
             These projections reflect conservative assumptions. See Methodology for details.
           </p>
-        </motion.div>
+        </div>
+      </motion.div>
 
-        {/* Where the Value Comes From */}
+      <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-10 md:py-12">
+        
+        {/* WHERE THE VALUE COMES FROM */}
         <motion.div
-          className="mb-6"
+          className="mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-center text-base font-semibold text-black mb-2">
+          <p className="text-center text-xl font-bold text-black mb-2">
             Where the Value Comes From
           </p>
-          <p className="text-center text-sm text-[#888888] mb-4">
+          <p className="text-center text-base text-[#888888] mb-6">
             Abridge creates value through two mechanisms—each with its own drivers and assumptions.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Time Back */}
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5">
-              <p className="font-semibold text-black mb-1">Time Back</p>
-              <p className="text-xl font-bold text-[#E85A2C] mb-3">{formatCurrency(timeValue)} / year</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Time Back Card */}
+            <div className="bg-[#F5F0EB] rounded-xl p-6">
+              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">Time Back</p>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1 h-8 bg-[#E85A2C] rounded-full" />
+                <p className="text-2xl font-bold text-[#E85A2C]">{formatCurrency(timeValue)} / year</p>
+              </div>
 
-              <div className="h-px bg-[#E5E5E5] mb-3" />
+              <div className="h-px bg-[#E5E5E5] mb-4" />
+
+              <p className="text-sm text-[#666666] mb-4">
+                Documentation consumes 1-2 hours per clinician daily. Abridge eliminates most of this burden.
+              </p>
+
+              <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• Patient Access</span>
-                  <span className="text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
+                  <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                 </div>
                 {timeDriverInputs.patientAccessEnabled && (
-                  <p className="text-xs text-[#888888] text-right">({timeDriverInputs.capacityPercent}% to capacity)</p>
+                  <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityPercent}% to capacity)</p>
                 )}
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• Cost Reduction</span>
-                  <span className="text-black">{costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
+                  <span className="font-semibold text-black">{costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• Wellbeing</span>
-                  <span className="text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                  <span className="text-[#666666]">• Clinician Wellbeing</span>
+                  <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                 </div>
                 {timeDriverInputs.wellbeingEnabled && (
-                  <p className="text-xs text-[#888888] text-right">(qualitative)</p>
+                  <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
                 )}
               </div>
             </div>
 
-            {/* Documentation Quality */}
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5">
-              <p className="font-semibold text-black mb-1">Documentation Quality</p>
-              <p className="text-xl font-bold text-[#E85A2C] mb-3">{formatCurrency(docValue)} / year</p>
+            {/* Documentation Quality Card */}
+            <div className="bg-[#F5F0EB] rounded-xl p-6">
+              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">Documentation Quality</p>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1 h-8 bg-[#E85A2C] rounded-full" />
+                <p className="text-2xl font-bold text-[#E85A2C]">{formatCurrency(docValue)} / year</p>
+              </div>
 
-              <div className="h-px bg-[#E5E5E5] mb-3" />
+              <div className="h-px bg-[#E5E5E5] mb-4" />
+
+              <p className="text-sm text-[#666666] mb-4">
+                When documentation is complete and accurate, downstream revenue follows.
+              </p>
+
+              <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• wRVU Improvement</span>
-                  <span className="text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
+                  <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
                 </div>
                 {docQualityInputs.wrvuEnabled && (
-                  <p className="text-xs text-[#888888] text-right">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
+                  <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
                 )}
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• HCC Capture</span>
-                  <span className="text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
+                  <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• Denial Prevention</span>
-                  <span className="text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
+                  <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
                 </div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Growth Trajectory Chart */}
+        {/* THE EXPANSION OPPORTUNITY */}
         <motion.div
-          className="mb-6"
+          className="mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12 }}
+          transition={{ delay: 0.15 }}
         >
-          <p className="text-center text-base font-semibold text-black mb-2">
+          <p className="text-center text-xl font-bold text-black mb-2">
+            The Expansion Opportunity
+          </p>
+          <p className="text-center text-base text-[#888888] mb-6">
+            A successful pilot proves value. Strategic expansion multiplies it.
+          </p>
+
+          <div className="bg-[#F5F0EB] rounded-xl p-6">
+            {/* Today vs Full Scale Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-center">
+                <p className="text-sm font-medium text-[#888888] mb-1">TODAY</p>
+                <p className="text-2xl font-bold text-black">{formatNumber(state.numberOfProviders)}</p>
+                <p className="text-sm text-[#888888]">providers</p>
+                <p className="text-sm text-[#888888]">{state.utilizationPercent}% util</p>
+              </div>
+              
+              <div className="flex-1 px-6 flex items-center justify-center">
+                <span className="text-sm text-[#888888]">expansion →</span>
+              </div>
+
+              <div className="text-center">
+                <p className="text-sm font-medium text-[#888888] mb-1">FULL SCALE</p>
+                <FormattedNumberInput
+                  value={state.fullScaleProviders}
+                  onChange={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
+                  className="h-10 w-24 text-center text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
+                  data-testid="input-full-scale-providers"
+                />
+                <p className="text-sm text-[#888888]">providers</p>
+                <p className="text-sm text-[#888888]">{expandedUtilization}% util</p>
+              </div>
+            </div>
+
+            {/* Comparison Cards */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-white rounded-lg p-5">
+                <p className="text-sm font-medium text-[#888888] mb-2">TODAY'S VALUE</p>
+                <p className="text-3xl font-bold text-black mb-1">{formatCurrency(netAnnualValue)}</p>
+                <p className="text-sm text-[#888888]">/ year</p>
+                <p className="text-base text-[#888888] mt-2">{roi.toFixed(1)}× ROI</p>
+              </div>
+              <div className="bg-[#E85A2C] rounded-lg p-5">
+                <p className="text-sm font-medium text-white/80 mb-2">FULL SCALE VALUE</p>
+                <p className="text-3xl font-bold text-white mb-1">{formatCurrency(expandedValue)}</p>
+                <p className="text-sm text-white/80">/ year</p>
+                <p className="text-base text-white/80 mt-2">{expandedRoi.toFixed(1)}× ROI</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* GROWTH TRAJECTORY */}
+        <motion.div
+          className="mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <p className="text-center text-xl font-bold text-black mb-2">
             Growth Trajectory
           </p>
-          <p className="text-center text-sm text-[#888888] mb-4">
+          <p className="text-center text-base text-[#888888] mb-6">
             Projected value vs. linear scaling as you expand from pilot to full scale.
           </p>
 
-          <div className="bg-[#F5F0EB] rounded-lg p-5">
+          <div className="bg-white rounded-xl border border-[#E5E5E5] p-6">
             {/* Pace Selector */}
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="text-sm text-[#888888]">Expansion pace:</span>
               <div className="flex gap-1">
                 {(['measured', 'steady', 'aggressive'] as const).map((pace) => (
-                  <button
+                  <Button
                     key={pace}
+                    variant={selectedPace === pace ? "default" : "ghost"}
+                    size="sm"
                     onClick={() => setSelectedPace(pace)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    className={`rounded-full ${
                       selectedPace === pace 
                         ? "bg-[#E85A2C] text-white" 
-                        : "bg-white text-[#888888] hover:bg-white/80"
+                        : "bg-[#F5F0EB] text-[#888888]"
                     }`}
                     data-testid={`pace-${pace}`}
                   >
                     {paceConfig[pace].months}mo
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-center gap-6 mb-3 text-sm">
+            <div className="flex items-center justify-center gap-6 mb-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-0.5 bg-[#E85A2C] rounded-full" />
+                <div className="w-8 h-0.5 bg-[#E85A2C] rounded-full" />
                 <span className="text-[#666666]">Projected</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-0.5 border-t-2 border-dashed border-[#D1D5DB]" />
+                <div className="w-8 h-0.5 border-t-2 border-dashed border-[#D1D5DB]" />
                 <span className="text-[#666666]">Linear</span>
               </div>
             </div>
 
-            {/* Chart */}
-            <div className="h-56 bg-white rounded-lg p-3">
+            {/* Chart - BIGGER */}
+            <div className="h-[400px] bg-white rounded-lg">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 10, bottom: 30 }}>
+                <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 10, bottom: 40 }}>
                   <defs>
                     <linearGradient id="projectedGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#E85A2C" stopOpacity={0.15} />
@@ -413,7 +502,7 @@ export default function ExploreModel({
                             y={16} 
                             textAnchor={anchor} 
                             fill={point.isPilot || point.isFullScale ? "#E85A2C" : "#888888"}
-                            fontSize={11}
+                            fontSize={12}
                             fontWeight={point.isPilot || point.isFullScale ? 700 : 400}
                           >
                             {point.milestoneLabel}
@@ -422,15 +511,15 @@ export default function ExploreModel({
                       );
                     }}
                     ticks={chartData.map(d => d.month)}
-                    height={30}
+                    height={40}
                   />
                 
                   <YAxis 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#888888", fontSize: 11 }}
+                    tick={{ fill: "#888888", fontSize: 12 }}
                     tickFormatter={(v) => formatCurrency(v)}
-                    width={55}
+                    width={65}
                   />
                   
                   <Tooltip 
@@ -438,15 +527,15 @@ export default function ExploreModel({
                       if (!active || !payload || !payload.length) return null;
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white border border-[#E5E5E5] rounded-lg p-3 shadow-lg">
-                          <p className="font-semibold text-black text-sm mb-1">{data.milestoneLabel}</p>
-                          <p className="text-xs text-[#888888] mb-2">{data.providers} providers · {data.utilization}% util</p>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex justify-between gap-4">
+                        <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 shadow-lg">
+                          <p className="font-semibold text-black text-base mb-1">{data.milestoneLabel}</p>
+                          <p className="text-sm text-[#888888] mb-3">{data.providers} providers · {data.utilization}% util</p>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between gap-6">
                               <span className="text-[#E85A2C]">Projected:</span>
                               <span className="font-semibold text-[#E85A2C]">{formatCurrency(data.projectedValue)}</span>
                             </div>
-                            <div className="flex justify-between gap-4">
+                            <div className="flex justify-between gap-6">
                               <span className="text-[#888888]">Linear:</span>
                               <span className="text-[#888888]">{formatCurrency(data.linearValue)}</span>
                             </div>
@@ -483,147 +572,85 @@ export default function ExploreModel({
                   <ReferenceDot 
                     x={0} 
                     y={chartData[0]?.projectedValue || 0} 
-                    r={6} 
+                    r={8} 
                     fill="#E85A2C" 
                     stroke="white"
-                    strokeWidth={2}
+                    strokeWidth={3}
                   />
                   
                   <ReferenceDot 
                     x={currentPace.months} 
                     y={chartData[chartData.length - 1]?.projectedValue || 0} 
-                    r={6} 
+                    r={8} 
                     fill="#E85A2C" 
                     stroke="white"
-                    strokeWidth={2}
+                    strokeWidth={3}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
 
-            <p className="text-xs text-[#888888] text-center mt-3">
+            <p className="text-sm text-[#888888] text-center mt-4 italic">
               Projected value includes utilization improvement and workflow maturity gains over linear provider scaling.
             </p>
           </div>
         </motion.div>
 
-        {/* 3-Year Projection */}
+        {/* 3-YEAR PROJECTION */}
         <motion.div
-          className="mb-6"
+          className="mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          transition={{ delay: 0.25 }}
         >
-          <p className="text-center text-base font-semibold text-black mb-4">
+          <p className="text-center text-xl font-bold text-black mb-6">
             3-Year Projection
           </p>
 
-          <div className="grid grid-cols-4 gap-3">
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-4 text-center">
-              <p className="text-sm text-[#888888] mb-1">Year 1</p>
-              <p className="text-lg font-bold text-black">{formatCurrency(year1Value)}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5 text-center">
+              <p className="text-sm text-[#888888] mb-2">Year 1</p>
+              <p className="text-xl font-bold text-black">{formatCurrency(year1Value)}</p>
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-4 text-center">
-              <p className="text-sm text-[#888888] mb-1">Year 2</p>
-              <p className="text-lg font-bold text-black">{formatCurrency(year2Value)}</p>
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5 text-center">
+              <p className="text-sm text-[#888888] mb-2">Year 2</p>
+              <p className="text-xl font-bold text-black">{formatCurrency(year2Value)}</p>
             </div>
-            <div className="bg-white rounded-lg border border-[#E5E5E5] p-4 text-center">
-              <p className="text-sm text-[#888888] mb-1">Year 3</p>
-              <p className="text-lg font-bold text-black">{formatCurrency(year3Value)}</p>
+            <div className="bg-white rounded-lg border border-[#E5E5E5] p-5 text-center">
+              <p className="text-sm text-[#888888] mb-2">Year 3</p>
+              <p className="text-xl font-bold text-black">{formatCurrency(year3Value)}</p>
             </div>
-            <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
-              <p className="text-sm text-[#888888] mb-1">3-Year Net</p>
-              <p className="text-lg font-bold text-[#E85A2C]">{formatCurrency(threeYearTotal)}</p>
+            <div className="bg-[#F5F0EB] rounded-lg p-5 text-center">
+              <p className="text-sm text-[#888888] mb-2">3-Year Net</p>
+              <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(threeYearTotal)}</p>
             </div>
           </div>
 
-          <p className="text-xs text-[#888888] text-center mt-2">
+          <p className="text-sm text-[#888888] text-center mt-4">
             {implementationCost > 0 ? `Year 1 includes ${formatCurrency(implementationCost)} implementation fee. ` : ''}
             Years 2-3 assume 10% value growth from improved utilization.
           </p>
         </motion.div>
 
-        {/* Expansion Opportunity */}
+        {/* EXPORT SECTION */}
         <motion.div
-          className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
+          className="bg-[#F5F0EB] rounded-xl p-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-[#E85A2C]" />
-            <p className="font-semibold text-black">The Expansion Opportunity</p>
-          </div>
-          <p className="text-sm text-[#888888] mb-4">
-            A successful pilot proves value. Strategic expansion multiplies it.
-          </p>
-
-          <div className="bg-[#F5F0EB] rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-center">
-                <p className="text-sm text-[#888888]">Today</p>
-                <p className="text-lg font-bold text-black">{formatNumber(state.numberOfProviders)}</p>
-                <p className="text-xs text-[#888888]">providers</p>
-                <p className="text-xs text-[#888888]">{state.utilizationPercent}% util</p>
-              </div>
-              
-              <div className="flex-1 px-4">
-                <div className="h-px bg-[#D1D5DB] relative">
-                  <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#F5F0EB] px-2 text-xs text-[#888888]">
-                    expansion →
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-[#888888]">Full Scale</p>
-                <div className="flex items-center justify-center gap-1">
-                  <FormattedNumberInput
-                    value={state.fullScaleProviders}
-                    onChange={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
-                    className="h-8 w-20 text-center text-lg font-bold bg-white border border-[#E5E5E5] rounded-md"
-                    data-testid="input-full-scale-providers"
-                  />
-                </div>
-                <p className="text-xs text-[#888888]">providers</p>
-                <p className="text-xs text-[#888888]">{expandedUtilization}% util</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-lg p-4">
-                <p className="text-sm text-[#888888] mb-1">Today's Value</p>
-                <p className="text-xl font-bold text-black">{formatCurrency(netAnnualValue)} / year</p>
-                <p className="text-sm text-[#888888]">{roi.toFixed(1)}× ROI</p>
-              </div>
-              <div className="bg-white rounded-lg p-4">
-                <p className="text-sm text-[#888888] mb-1">Full Scale Value</p>
-                <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(expandedValue)} / year</p>
-                <p className="text-sm text-[#888888]">{expandedRoi.toFixed(1)}× ROI</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Actions */}
-        <motion.div
-          className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-black">Your Analysis</p>
+              <p className="text-sm font-bold text-black uppercase tracking-wide mb-1">Your Analysis</p>
               <p className="text-sm text-[#888888]">
                 {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers · ${formatNumber(state.costPerProvider)}/provider/mo
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="outline"
                 onClick={onEdit}
-                className="gap-2"
+                className="gap-2 border-black text-black"
                 data-testid="button-edit"
               >
                 <Edit className="w-4 h-4" />
@@ -631,7 +658,7 @@ export default function ExploreModel({
               </Button>
               <Button
                 onClick={() => setShowExportModal(true)}
-                className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2"
+                className="bg-[#E85A2C] text-white gap-2"
                 data-testid="button-export"
               >
                 <Download className="w-4 h-4" />
@@ -641,15 +668,15 @@ export default function ExploreModel({
           </div>
         </motion.div>
 
-        {/* Methodology */}
+        {/* METHODOLOGY */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.35 }}
         >
           <button
             onClick={() => setShowMethodology(!showMethodology)}
-            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#D1D5DB] transition-colors text-sm text-[#888888]"
+            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover-elevate text-sm text-[#888888]"
             data-testid="button-methodology"
           >
             <span className="flex items-center gap-2">
@@ -667,7 +694,7 @@ export default function ExploreModel({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="p-5 bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg text-sm text-[#666666] space-y-3">
+                <div className="p-6 bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg text-sm text-[#666666] space-y-3">
                   <p>
                     <strong className="text-black">Time savings:</strong> {state.minutesSavedPerEncounter} min per encounter × {formatNumber(Math.round(state.annualEncounters * state.utilizationPercent / 100))} eligible encounters.
                   </p>
