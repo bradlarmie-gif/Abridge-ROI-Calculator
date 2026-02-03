@@ -220,7 +220,7 @@ export default function ExploreValueDrivers({
               >
                 <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
                   <p className="text-sm text-black mb-4">
-                    What percentage of reclaimed time could go toward patient care?
+                    What percentage of reclaimed time could realistically become additional patient visits?
                   </p>
 
                   <div className="mb-4">
@@ -266,10 +266,10 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityPercent}% of time toward capacity:</p>
+                    <p className="text-sm text-[#888888] mb-2">At {timeDriverInputs.capacityPercent}% conversion to visits:</p>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Hours toward patient care:</span>
+                        <span className="text-[#666666]">Hours available for visits:</span>
                         <span className="font-semibold text-black">{formatNumber(hoursTowardCapacity)}</span>
                       </div>
                       <div className="flex justify-between">
@@ -284,7 +284,7 @@ export default function ExploreValueDrivers({
 
                     <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
                       <AlertTriangle className="w-4 h-4 text-[#E85A2C] flex-shrink-0 mt-0.5" />
-                      <span>This assumes available demand and schedulable time.</span>
+                      <span>This accounts for provider behavior, scheduling constraints, and patient demand. Most organizations see 5-15% of reclaimed time convert to actual visits.</span>
                     </div>
                   </div>
                 </div>
