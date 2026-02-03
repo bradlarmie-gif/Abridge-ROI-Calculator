@@ -219,7 +219,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
                   `}
                   data-testid="button-continue"
                 >
-                  <span className="text-[#E85A2C] font-semibold">Continue</span><span className="text-black">&nbsp;with {selectedSetting ? CARE_SETTINGS.find(s => s.id === selectedSetting)?.label : 'Setting'}</span>
+                  <span className="text-black font-semibold">Continue</span> <span className="text-black">with {selectedSetting ? CARE_SETTINGS.find(s => s.id === selectedSetting)?.label : 'Setting'}</span>
                   <ArrowRight className="w-4 h-4 ml-2 text-[#E85A2C]" />
                 </Button>
               </motion.div>
