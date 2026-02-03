@@ -468,7 +468,7 @@ export default function ScribeAssessment({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 md:p-8 mb-6 text-center relative overflow-hidden"
+              className="bg-black rounded-xl p-6 md:p-8 mb-6 text-center relative overflow-hidden"
             >
               <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-4 left-8 w-32 h-32 rounded-full border border-white" />
@@ -488,7 +488,7 @@ export default function ScribeAssessment({
                 
                 <Button
                   onClick={onNext}
-                  className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full"
+                  className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
                   data-testid="button-see-full-analysis"
                 >
                   See How
