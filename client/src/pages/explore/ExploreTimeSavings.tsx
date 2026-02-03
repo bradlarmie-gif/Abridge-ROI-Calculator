@@ -96,7 +96,7 @@ export default function ExploreTimeSavings({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-10">
           {/* Main Content - Left Column */}
           <div className="flex-1 max-w-[700px]">
             {/* Header */}
@@ -118,15 +118,15 @@ export default function ExploreTimeSavings({
 
             {/* What the Data Shows */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+              className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 WHAT THE DATA SHOWS
               </p>
-              <div className="h-px bg-[#D1D5DB] mb-3" />
+              <div className="h-px bg-[#D1D5DB] mb-6" />
               <p className="text-sm text-black leading-relaxed">
                 {isED 
                   ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
@@ -140,25 +140,25 @@ export default function ExploreTimeSavings({
 
             {/* Choose Your Scenario */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+              className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 CHOOSE YOUR SCENARIO
               </p>
-              <div className="h-px bg-[#D1D5DB] mb-4" />
+              <div className="h-px bg-[#D1D5DB] mb-6" />
 
               {/* Clean Radio Options */}
-              <div className="space-y-2 mb-5">
+              <div className="space-y-3 mb-6">
                 {scenarios.map((scenario) => {
                   const isSelected = state.timePathScenario === scenario.key;
                   return (
                     <button
                       key={scenario.key}
                       onClick={() => handleScenarioSelect(scenario.key)}
-                      className={`w-full py-3 px-4 rounded-lg text-left transition-all ${
+                      className={`w-full py-4 px-5 rounded-lg text-left transition-all ${
                         isSelected
                           ? "bg-white/80"
                           : "bg-transparent hover:bg-white/50"
@@ -201,13 +201,13 @@ export default function ExploreTimeSavings({
               </div>
 
               {/* Custom Value */}
-              <div className="flex items-center gap-3 pt-3 border-t border-[#D1D5DB]">
+              <div className="flex items-center gap-4 pt-5 border-t border-[#D1D5DB]">
                 <span className="text-sm text-[#888888]">Or enter a custom value:</span>
-                <div className="relative w-20">
+                <div className="relative w-24">
                   <FormattedNumberInput
                     value={state.minutesSavedPerEncounter}
                     onChange={(v: number) => updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })}
-                    className="h-10 text-center bg-white border-[#E5E5E5]"
+                    className="h-12 text-center bg-white border-[#E5E5E5]"
                     data-testid="input-custom-minutes"
                   />
                 </div>

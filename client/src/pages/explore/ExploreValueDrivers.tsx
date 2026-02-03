@@ -250,7 +250,7 @@ export default function ExploreValueDrivers({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-10">
           {/* Main Content - Left Column */}
           <div className="flex-1 max-w-[700px]">
 
@@ -299,10 +299,10 @@ export default function ExploreValueDrivers({
           transition={{ delay: 0.15 }}
         >
           <div>
-            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               VALUE DRIVERS
             </p>
-            <div className="h-px bg-[#D1D5DB] mb-4" />
+            <div className="h-px bg-[#D1D5DB] mb-6" />
           </div>
         
         {/* ED: LWBS Reduction */}
@@ -351,39 +351,39 @@ export default function ExploreValueDrivers({
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-1.5">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Current LWBS rate</label>
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.edLwbsRate}
                           onChange={(v: number) => updateTimeDriverInputs({ edLwbsRate: v })}
-                          className="h-10 bg-white pr-8"
+                          className="h-12 bg-white pr-8"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                       </div>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Expected LWBS reduction</label>
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.edLwbsReduction}
                           onChange={(v: number) => updateTimeDriverInputs({ edLwbsReduction: v })}
-                          className="h-10 bg-white pr-8"
+                          className="h-12 bg-white pr-8"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 mb-4">
+                  <div className="space-y-2.5 mb-4">
                     <label className="text-sm text-[#888888]">Revenue per ED visit</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                       <FormattedNumberInput
                         value={timeDriverInputs.edRevenuePerVisit}
                         onChange={(v: number) => updateTimeDriverInputs({ edRevenuePerVisit: v })}
-                        className="h-10 bg-white pl-7"
+                        className="h-12 bg-white pl-7"
                       />
                     </div>
                   </div>
@@ -493,23 +493,23 @@ export default function ExploreValueDrivers({
                     Better documentation supports faster discharges and reduced length of stay.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-1.5">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">LOS reduction per patient (days)</label>
                       <FormattedNumberInput
                         value={timeDriverInputs.ipLosReduction}
                         onChange={(v: number) => updateTimeDriverInputs({ ipLosReduction: v })}
-                        className="h-10 bg-white"
+                        className="h-12 bg-white"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Cost per patient day</label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                         <FormattedNumberInput
                           value={timeDriverInputs.ipCostPerDay}
                           onChange={(v: number) => updateTimeDriverInputs({ ipCostPerDay: v })}
-                          className="h-10 bg-white pl-7"
+                          className="h-12 bg-white pl-7"
                         />
                       </div>
                     </div>
@@ -587,36 +587,36 @@ export default function ExploreValueDrivers({
                     Less documentation time means less overtime required.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-1.5">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">OT hours/nurse/week</label>
                       <FormattedNumberInput
                         value={timeDriverInputs.nursingOtHoursPerNurseWeek}
                         onChange={(v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })}
-                        className="h-10 bg-white"
+                        className="h-12 bg-white"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">OT reduction %</label>
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.nursingOtReductionPercent}
                           onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v })}
-                          className="h-10 bg-white pr-8"
+                          className="h-12 bg-white pr-8"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 mb-4">
+                  <div className="space-y-2.5 mb-4">
                     <label className="text-sm text-[#888888]">OT hourly rate (1.5x applied)</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                       <FormattedNumberInput
                         value={timeDriverInputs.nursingOtHourlyRate}
                         onChange={(v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v })}
-                        className="h-10 bg-white pl-7"
+                        className="h-12 bg-white pl-7"
                       />
                     </div>
                   </div>
@@ -723,26 +723,26 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-1.5">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Average visit duration</label>
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.visitDuration}
                           onChange={(v: number) => updateTimeDriverInputs({ visitDuration: v })}
-                          className="h-10 bg-white pr-12"
+                          className="h-12 bg-white pr-12"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">min</span>
                       </div>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Revenue per visit</label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                         <FormattedNumberInput
                           value={timeDriverInputs.revenuePerVisit}
                           onChange={(v: number) => updateTimeDriverInputs({ revenuePerVisit: v })}
-                          className="h-10 bg-white pl-7"
+                          className="h-12 bg-white pl-7"
                         />
                       </div>
                     </div>
@@ -965,13 +965,13 @@ export default function ExploreValueDrivers({
                     Less documentation time means more efficient rounding.
                   </p>
 
-                  <div className="space-y-1.5 mb-4">
+                  <div className="space-y-2.5 mb-4">
                     <label className="text-sm text-[#888888]">Rounding efficiency gain (%)</label>
                     <div className="relative">
                       <FormattedNumberInput
                         value={timeDriverInputs.ipRoundingEfficiencyGain}
                         onChange={(v: number) => updateTimeDriverInputs({ ipRoundingEfficiencyGain: v })}
-                        className="h-10 bg-white pr-8"
+                        className="h-12 bg-white pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                     </div>
@@ -1045,26 +1045,26 @@ export default function ExploreValueDrivers({
                     Less documentation burden improves retention.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-1.5">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Annual turnover rate</label>
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.nursingTurnoverRate}
                           onChange={(v: number) => updateTimeDriverInputs({ nursingTurnoverRate: v })}
-                          className="h-10 bg-white pr-8"
+                          className="h-12 bg-white pr-8"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                       </div>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Replacement cost</label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                         <FormattedNumberInput
                           value={timeDriverInputs.nursingReplacementCost}
                           onChange={(v: number) => updateTimeDriverInputs({ nursingReplacementCost: v })}
-                          className="h-10 bg-white pl-7"
+                          className="h-12 bg-white pl-7"
                         />
                       </div>
                     </div>
@@ -1156,7 +1156,7 @@ export default function ExploreValueDrivers({
                     But if you have an estimate, enter it here.
                   </p>
 
-                  <div className="space-y-1.5 mb-3">
+                  <div className="space-y-2.5 mb-3">
                     <label className="text-sm text-[#888888]">Estimated annual cost reduction from reclaimed time:</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
@@ -1281,7 +1281,7 @@ export default function ExploreValueDrivers({
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="h-px bg-[#E5E5E5] mb-4" />
+                        <div className="h-px bg-[#E5E5E5] mb-6" />
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                           Your Organization
@@ -1294,7 +1294,7 @@ export default function ExploreValueDrivers({
                             <FormattedNumberInput
                               value={timeDriverInputs.annualTurnoverRate}
                               onChange={(v: number) => updateTimeDriverInputs({ annualTurnoverRate: v })}
-                              className="h-10 bg-white pr-8"
+                              className="h-12 bg-white pr-8"
                               data-testid="input-turnover-rate"
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -1309,7 +1309,7 @@ export default function ExploreValueDrivers({
                             <FormattedNumberInput
                               value={timeDriverInputs.burnoutRelatedTurnover}
                               onChange={(v: number) => updateTimeDriverInputs({ burnoutRelatedTurnover: v })}
-                              className="h-10 bg-white pr-8"
+                              className="h-12 bg-white pr-8"
                               data-testid="input-burnout-turnover"
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -1325,7 +1325,7 @@ export default function ExploreValueDrivers({
                             <FormattedNumberInput
                               value={timeDriverInputs.replacementCost}
                               onChange={(v: number) => updateTimeDriverInputs({ replacementCost: v })}
-                              className="h-10 bg-white pl-7"
+                              className="h-12 bg-white pl-7"
                               data-testid="input-replacement-cost"
                             />
                           </div>
@@ -1355,7 +1355,7 @@ export default function ExploreValueDrivers({
                               }`}
                               data-testid={`button-scenario-${scenario}`}
                             >
-                              <p className="text-xs capitalize mb-1">{scenario}</p>
+                              <p className="text-xs capitalize mb-2">{scenario}</p>
                               <p className="font-semibold">{retentionScenarios[scenario]}%</p>
                             </button>
                           ))}

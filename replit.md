@@ -89,3 +89,12 @@ Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, 
   - Header: `bg-white` or `bg-white/70 hover:bg-white` based on enabled state
   - Expanded content: `bg-white rounded-b-lg p-5` without heavy borders
   - Animation: framer-motion for smooth expand/collapse transitions
+
+### Premium Spacing Updates
+- **Main Card Padding**: Increased from 24-32px to 32-40px (`p-8 md:p-10`)
+- **Section Spacing**: Increased to 40px between sections (`space-y-10`)
+- **Section Labels**: 8px margin-bottom after labels, 24px after dividers (`mb-2`, `mb-6`)
+- **Input Fields**: Taller inputs (48px / `h-12`), more label spacing (`space-y-2.5`)
+- **Segmented Controls**: Larger touch targets with 16px vertical padding (`py-4 px-3`)
+- **Content Gap**: 40px gap between main content and right panel (`gap-10`)
+- **Helper Text**: Increased margin-top for better separation (`mt-3`)

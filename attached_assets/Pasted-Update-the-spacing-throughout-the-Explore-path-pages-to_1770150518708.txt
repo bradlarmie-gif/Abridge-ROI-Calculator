@@ -1,0 +1,112 @@
+Update the spacing throughout the Explore path pages to feel more premium and less cramped:
+
+1. SECTION SPACING
+   - Add 32px margin-bottom after each section (before the next section label)
+   - Currently feels like ~16px, needs to double
+
+2. SECTION LABELS
+   - Add 12px margin-bottom after section labels (before the divider line)
+   - Add 20px margin-bottom after the divider line (before content)
+
+3. INPUT FIELDS
+   - Increase padding inside inputs from 12px to 16px vertical
+   - Add 24px margin-bottom after each input group (currently ~16px)
+
+4. SEGMENTED CONTROLS
+   - Increase padding inside segments from 12px to 16px vertical, 24px horizontal
+   - This will make the buttons feel less cramped
+
+5. HELPER TEXT
+   - Add 12px margin-top between inputs and helper text (currently ~4-8px)
+
+6. OVERALL CARD PADDING
+   - Increase main card padding from 32px to 40px
+   - This gives more breathing room at edges
+
+7. GAP BETWEEN MAIN CONTENT AND RIGHT PANEL
+   - Ensure at least 40px gap between the main content card and the right sidebar
+
+VISUAL COMPARISON
+Current spacing (too tight):
+CopySECTION LABEL
+─────────────
+Input Field
+Helper text
+
+NEXT SECTION
+Better spacing (Abridge style):
+CopySECTION LABEL
+
+─────────────
+
+
+Input Field
+
+
+Helper text
+
+
+
+NEXT SECTION
+
+SPECIFIC CSS UPDATES
+cssCopy/* Main card - more padding */
+.content-card {
+  padding: 40px 48px;  /* was 32px */
+}
+
+/* Section spacing */
+.section-group {
+  margin-bottom: 40px;  /* was ~20px */
+}
+
+.section-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Section label + divider */
+.section-label {
+  margin-bottom: 8px;
+}
+
+.section-divider {
+  margin-bottom: 24px;  /* was ~16px */
+}
+
+/* Input groups */
+.input-group {
+  margin-bottom: 24px;  /* was ~16px */
+}
+
+.input-label {
+  margin-bottom: 10px;  /* was 8px */
+}
+
+.input-field {
+  padding: 16px 18px;  /* was 12px 16px */
+}
+
+/* Helper text */
+.input-helper {
+  margin-top: 10px;  /* was 4px */
+}
+
+/* Segmented control */
+.segment {
+  padding: 16px 28px;  /* was 12px 20px */
+}
+
+/* Row layout */
+.input-row {
+  gap: 24px;  /* was 16px */
+  margin-bottom: 24px;
+}
+
+THE ABRIDGE PRINCIPLE
+Looking at the real Abridge site, they use:
+
+Lots of vertical rhythm — generous space between sections
+Content that breathes — nothing feels cramped
+Clear visual hierarchy — space reinforces structure
+
+The current layout has the right structure, just needs ~50% more vertical spacing between elements to feel premium.

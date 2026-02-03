@@ -138,7 +138,7 @@ export default function ExploreDocQuality({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-10">
           {/* Main Content - Left Column */}
           <div className="flex-1 max-w-[700px]">
         {/* Header */}

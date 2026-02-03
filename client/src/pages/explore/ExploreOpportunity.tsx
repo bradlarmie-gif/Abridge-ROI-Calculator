@@ -152,7 +152,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-10">
           {/* Main Content - Left Column */}
           <div className="flex-1 max-w-[700px]">
             {/* Header */}
@@ -171,36 +171,36 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
             {/* Single Data Entry Card - Measure Style */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-6 md:p-8 space-y-6"
+              className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 space-y-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
               {/* Section 1: Deployment Size */}
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   DEPLOYMENT SIZE
                 </p>
-                <div className="h-px bg-[#D1D5DB] mb-4" />
+                <div className="h-px bg-[#D1D5DB] mb-6" />
                 
                 <div className={`grid ${isNursing ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                   {isNursing && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm font-medium text-black">Staffed Beds</label>
                       <FormattedNumberInput 
                         value={state.nursingStaffedBeds} 
                         onChange={handleBedsChange} 
-                        className="h-10 bg-white border-[#E5E5E5]" 
+                        className="h-12 bg-white border-[#E5E5E5]" 
                         data-testid="input-beds" 
                       />
                     </div>
                   )}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2.5">
                     <label className="text-sm font-medium text-black">{providerLabel}</label>
                     <FormattedNumberInput 
                       value={state.numberOfProviders} 
                       onChange={handleProvidersChange} 
-                      className="h-10 bg-white border-[#E5E5E5]" 
+                      className="h-12 bg-white border-[#E5E5E5]" 
                       data-testid="input-providers" 
                     />
                   </div>
@@ -210,21 +210,21 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* Section 2: Encounter Volume (Non-Nursing) */}
               {!isNursing && (
                 <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                     {encounterLabel.toUpperCase()} VOLUME
                   </p>
-                  <div className="h-px bg-[#D1D5DB] mb-4" />
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     {/* Segmented Control for Busyness */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm font-medium text-black">{encounterLabel} per Provider</label>
                       <div className="flex border border-[#E5E5E5] rounded-lg overflow-hidden bg-white">
                         {BUSYNESS_PRESETS.map((preset, index) => (
                           <button
                             key={preset.value}
                             onClick={() => handleBusynessChange(preset.value)}
-                            className={`flex-1 py-2.5 px-2 text-center transition-all ${
+                            className={`flex-1 py-4 px-3 text-center transition-all ${
                               index < BUSYNESS_PRESETS.length - 1 ? 'border-r border-[#E5E5E5]' : ''
                             } ${
                               isPresetSelected(preset.value)
@@ -243,7 +243,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </div>
 
                     {/* Or Total Volume */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-2.5">
                       <label className="text-sm font-medium text-black">
                         <span className="text-[#888888]">OR</span> Total Practice Volume
                       </label>
@@ -251,7 +251,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         <FormattedNumberInput 
                           value={totalEncountersInput} 
                           onChange={handleTotalEncountersChange} 
-                          className="h-10 bg-white border-[#E5E5E5] pr-12" 
+                          className="h-12 bg-white border-[#E5E5E5] pr-12" 
                           data-testid="input-total-encounters" 
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">/year</span>
@@ -259,7 +259,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </div>
                   </div>
 
-                  <p className="text-xs text-[#888888]">
+                  <p className="text-xs text-[#888888] mt-3">
                     {isED
                       ? "Based on ~220 working days. Typical reflects blended community ED."
                       : isInpatient
@@ -273,10 +273,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
               {/* Section 2 (Nursing): Occupancy */}
               {isNursing && (
                 <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                     BED OCCUPANCY
                   </p>
-                  <div className="h-px bg-[#D1D5DB] mb-4" />
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
                   
                   <div className="space-y-3">
                     <div className="flex items-center gap-4">
@@ -302,21 +302,21 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
               {/* Section 3: Expected Utilization */}
               <div>
-                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                   EXPECTED UTILIZATION
                 </p>
-                <div className="h-px bg-[#D1D5DB] mb-4" />
+                <div className="h-px bg-[#D1D5DB] mb-6" />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   {/* Segmented Control for Utilization */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2.5">
                     <label className="text-sm font-medium text-black">Utilization Rate</label>
                     <div className="flex border border-[#E5E5E5] rounded-lg overflow-hidden bg-white">
                       {UTILIZATION_PRESETS.map((preset, index) => (
                         <button
                           key={preset.value}
                           onClick={() => handleUtilizationChange(preset.value)}
-                          className={`flex-1 py-2.5 px-2 text-center transition-all ${
+                          className={`flex-1 py-4 px-3 text-center transition-all ${
                             index < UTILIZATION_PRESETS.length - 1 ? 'border-r border-[#E5E5E5]' : ''
                           } ${
                             isUtilizationPresetSelected(preset.value)
@@ -335,7 +335,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   </div>
 
                   {/* Or custom value */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2.5">
                     <label className="text-sm font-medium text-black">
                       <span className="text-[#888888]">OR</span> enter custom
                     </label>
@@ -343,7 +343,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <FormattedNumberInput 
                         value={state.utilizationPercent} 
                         onChange={handleUtilizationChange} 
-                        className="h-10 bg-white border-[#E5E5E5] pr-8" 
+                        className="h-12 bg-white border-[#E5E5E5] pr-8" 
                         data-testid="input-utilization" 
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">%</span>
