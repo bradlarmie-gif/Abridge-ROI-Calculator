@@ -62,7 +62,7 @@ export default function ScribeAssessment({
             Scribe Program Analysis
           </h1>
           <p className="text-sm md:text-base text-[#6B7280]">
-            Map your current documentation investment
+            Let's understand your current documentation support
           </p>
         </motion.div>
 
