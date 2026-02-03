@@ -106,7 +106,7 @@ export default function ExploreTimeSavings({
             The range depends on specialty, workflow, and how providers use the time.
           </p>
           <p className="text-xs text-[#888888] mt-2 italic">
-            Source: Abridge customer data, 2023-2024
+            Source: Abridge customer data, 2025
           </p>
         </motion.div>
 
