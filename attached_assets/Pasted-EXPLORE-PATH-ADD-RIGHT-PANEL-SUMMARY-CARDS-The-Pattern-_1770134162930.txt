@@ -1,0 +1,284 @@
+EXPLORE PATH — ADD RIGHT PANEL SUMMARY CARDS
+The Pattern:
+Each page in Explore should have a sticky right panel that shows a live summary of the values being built. This gives users constant feedback as they make selections.
+
+Page 2: Your Practice — Right Panel
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  YOUR BASELINE                          │
+│  Practice summary                       │
+│                                         │
+│  ┃ [value]                              │
+│  ┃ providers                            │
+│                                         │
+│  ┃ [value]                              │
+│  ┃ encounters/year                      │
+│                                         │
+│  ┃ [value]%                             │
+│  ┃ utilization                          │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ELIGIBLE ENCOUNTERS                    │
+│                                         │
+│  [calculated value]                     │
+│                                         │
+│  This is your value multiplier—every    │
+│  calculation downstream uses this       │
+│  number.                                │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue → ]                         │
+│                                         │
+└─────────────────────────────────────────┘
+Styling:
+
+Dark card (#1A1A1A or similar dark gray)
+White text
+Red-orange accent on key values
+Stats have red-orange left border (4px)
+"ELIGIBLE ENCOUNTERS" number is large (32-40px), red-orange
+
+
+Page 3: Time Savings — Right Panel
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  PROJECTED TIME SAVINGS                 │
+│  Based on your scenario                 │
+│                                         │
+│           [value]                       │
+│        hours / year                     │
+│                                         │
+│  [X] min × [Y] encounters               │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Scenario              [Selected]       │
+│  Time Saved            [X] min/encounter│
+│  Eligible Encounters   [Y]              │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Per provider:                          │
+│  [X] hours/year                         │
+│  [X] hours/week                         │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Value Drivers → ]        │
+│                                         │
+└─────────────────────────────────────────┘
+Key values:
+
+Hero number: Hours/year in large red-orange text
+Scenario name: "Conservative" / "Typical" / "Optimistic"
+Per provider breakdown
+
+
+Page 4: Value Drivers (Time) — Right Panel
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  TIME VALUE                       100%  │
+│  Value summary                          │
+│                                         │
+│           [total]                       │
+│                                         │
+│  From [X] hours saved                   │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ● Patient Access         $[value]      │
+│    ([X]% to capacity)                   │
+│                                         │
+│  ● Cost Reduction         $[value]      │
+│    (your estimate)             or —     │
+│                                         │
+│  ● Clinician Wellbeing    $[value]      │
+│    (retention value)           or —     │
+│    [X] hrs/wk back                      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Documentation → ]        │
+│                                         │
+└─────────────────────────────────────────┘
+Key values:
+
+Hero number: Total time value
+Breakdown by driver with values or "—" if not configured
+Show qualitative (hrs/wk back) for wellbeing even if no dollar value
+
+
+Page 5: Documentation Quality — Right Panel
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  DOCUMENTATION VALUE                    │
+│  Your model so far                      │
+│                                         │
+│  Time Savings             $[value]      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  wRVU                     $[value]      │
+│                                or —     │
+│                                         │
+│  HCC                      $[value]      │
+│                                or —     │
+│                                         │
+│  Denials                  $[value]      │
+│                                or —     │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  PROJECTED ANNUAL VALUE                 │
+│                                         │
+│           $[total]                      │
+│                                         │
+│  All values include conservative        │
+│  realization rates for defensible       │
+│  estimates.                             │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue to Investment → ]           │
+│                                         │
+└─────────────────────────────────────────┘
+
+Page 6: Investment — Right Panel
+Copy┌─────────────────────────────────────────┐
+│                                         │
+│  YOUR ROI                               │
+│  Live calculation                       │
+│                                         │
+│  Annual Value             $[value]      │
+│                                         │
+│  Time & Labor             $[value]      │
+│  Documentation            $[value]      │
+│                                         │
+│  Your Investment         -$[value]      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │                                 │    │
+│  │  NET ANNUAL VALUE               │    │
+│  │                                 │    │
+│  │       +$[value]                 │    │
+│  │                                 │    │
+│  └─────────────────────────────────┘    │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Return on Investment                   │
+│  [X]×                                   │
+│                                         │
+│  Every $1 invested                      │
+│  returns $[X]                           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────┐  ┌─────────────┐       │
+│  │ Providers   │  │ Utilization │       │
+│  │    [X]      │  │    [X]%     │       │
+│  └─────────────┘  └─────────────┘       │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  All values include conservative        │
+│  realization rates for defensible       │
+│  estimates.                             │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ View Full Summary → ]                │
+│                                         │
+│  (or disabled state if no pricing)      │
+│  Enter pricing to continue              │
+│                                         │
+└─────────────────────────────────────────┘
+
+Styling for All Right Panels:
+Container:
+
+Dark background (#1A1A1A)
+White primary text
+Gray secondary text (#888)
+24px padding
+12px border-radius
+Sticky position (follows scroll)
+Width: ~300-350px
+
+Section headers:
+
+"YOUR ROI", "TIME VALUE", etc.
+12px, ALL CAPS, white, letter-spacing 1.5px
+Subtext: 14px, gray
+
+Hero values:
+
+Large number: 32-48px, red-orange (#E85A2C), bold
+Unit text below: 14px, gray
+
+Line items:
+
+Label left, value right
+Values: white or red-orange for key figures
+"—" in gray for unconfigured drivers
+
+Stat boxes (providers, utilization):
+
+Small cards within the panel
+Dark gray background (#2A2A2A)
+White text, centered
+
+Disclaimer text:
+
+12px, gray, italic
+"All values include conservative realization rates..."
+
+Button:
+
+Full width of panel
+Red-orange fill when active
+Gray/disabled when incomplete
+
+
+Layout Structure:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Header]                                                                       │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌───────────────────────────────────────────┐  ┌─────────────────────────────┐ │
+│  │                                           │  │                             │ │
+│  │  MAIN CONTENT AREA                        │  │  RIGHT PANEL SUMMARY        │ │
+│  │                                           │  │                             │ │
+│  │  - Inputs                                 │  │  - Live calculations        │ │
+│  │  - Selections                             │  │  - Running totals           │ │
+│  │  - Calculations                           │  │  - CTA button               │ │
+│  │                                           │  │                             │ │
+│  │  (scrollable)                             │  │  (sticky)                   │ │
+│  │                                           │  │                             │ │
+│  └───────────────────────────────────────────┘  └─────────────────────────────┘ │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Main content: ~60-65% width, scrollable
+Right panel: ~35-40% width, sticky (position: sticky, top: 24px)
+
+Replit Implementation Notes:
+
+Create a reusable SummaryPanel component that accepts:
+
+Title
+Subtitle
+Array of line items (label, value, isHighlight)
+Hero value (optional)
+Button text and action
+Disclaimer text
+
+
+Each page passes its relevant data to the SummaryPanel
+Values update live as user makes selections
+On mobile: Panel moves below content (stacks vertically)
