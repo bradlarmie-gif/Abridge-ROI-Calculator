@@ -246,7 +246,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipRoundingEnabled: false,
     ipAnnualTurnoverRate: 8, // Hospitalist turnover: 8%
     ipBurnoutRelatedTurnover: 45, // 45% of turnover is burnout-related
-    ipReplacementCost: 400000, // $400,000 replacement cost
+    ipReplacementCost: 300000, // $300,000 replacement cost
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtHoursPerNurseWeek: 4,
