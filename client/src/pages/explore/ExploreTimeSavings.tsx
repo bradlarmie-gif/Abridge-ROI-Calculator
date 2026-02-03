@@ -207,6 +207,7 @@ export default function ExploreTimeSavings({
                   <FormattedNumberInput
                     value={state.minutesSavedPerEncounter}
                     onChange={(v: number) => updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })}
+                    placeholder="e.g., 5"
                     className="h-12 text-center bg-white border-[#E5E5E5]"
                     data-testid="input-custom-minutes"
                   />

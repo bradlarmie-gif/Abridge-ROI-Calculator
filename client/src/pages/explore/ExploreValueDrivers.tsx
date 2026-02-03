@@ -357,6 +357,7 @@ export default function ExploreValueDrivers({
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.edLwbsRate}
+                          placeholder="e.g., 3"
                           onChange={(v: number) => updateTimeDriverInputs({ edLwbsRate: v })}
                           className="h-12 bg-white pr-8"
                         />
@@ -368,6 +369,7 @@ export default function ExploreValueDrivers({
                       <div className="relative">
                         <FormattedNumberInput
                           value={timeDriverInputs.edLwbsReduction}
+                          placeholder="e.g., 20"
                           onChange={(v: number) => updateTimeDriverInputs({ edLwbsReduction: v })}
                           className="h-12 bg-white pr-8"
                         />
@@ -382,6 +384,7 @@ export default function ExploreValueDrivers({
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                       <FormattedNumberInput
                         value={timeDriverInputs.edRevenuePerVisit}
+                        placeholder="e.g., 350"
                         onChange={(v: number) => updateTimeDriverInputs({ edRevenuePerVisit: v })}
                         className="h-12 bg-white pl-7"
                       />

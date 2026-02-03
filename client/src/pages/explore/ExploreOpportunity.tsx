@@ -190,6 +190,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <FormattedNumberInput 
                         value={state.nursingStaffedBeds} 
                         onChange={handleBedsChange} 
+                        placeholder="e.g., 200"
                         className="h-12 bg-white border-[#E5E5E5]" 
                         data-testid="input-beds" 
                       />
@@ -200,6 +201,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <FormattedNumberInput 
                       value={state.numberOfProviders} 
                       onChange={handleProvidersChange} 
+                      placeholder="e.g., 50"
                       className="h-12 bg-white border-[#E5E5E5]" 
                       data-testid="input-providers" 
                     />
@@ -251,6 +253,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         <FormattedNumberInput 
                           value={totalEncountersInput} 
                           onChange={handleTotalEncountersChange} 
+                          placeholder="e.g., 150,000"
                           className="h-12 bg-white border-[#E5E5E5] pr-12" 
                           data-testid="input-total-encounters" 
                         />
@@ -343,6 +346,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       <FormattedNumberInput 
                         value={state.utilizationPercent} 
                         onChange={handleUtilizationChange} 
+                        placeholder="e.g., 75"
                         className="h-12 bg-white border-[#E5E5E5] pr-8" 
                         data-testid="input-utilization" 
                       />
