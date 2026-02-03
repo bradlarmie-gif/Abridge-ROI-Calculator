@@ -126,7 +126,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           className="text-center mb-10 md:mb-14"
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
-            Model the Impact of
+            Frame the value of
             <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#EA2C00' }}>
               Abridge
             </span>
