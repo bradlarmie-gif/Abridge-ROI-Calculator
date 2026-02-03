@@ -34,8 +34,8 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
   };
 
   const calculateHccValue = () => {
-    // HCC not applicable for ED
-    if (isED || !state.docDrivers.hcc.enabled) return 0;
+    // HCC only applicable for Outpatient (not ED, Inpatient, or Nursing)
+    if (isED || isInpatient || isNursing || !state.docDrivers.hcc.enabled) return 0;
     const avgConditionsPerMember = 3;
     const maPatients = eligibleEncounters * 0.3;
     const conditionsCaptured = maPatients * avgConditionsPerMember * (state.docDrivers.hcc.value / 100);

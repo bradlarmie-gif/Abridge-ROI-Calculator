@@ -96,6 +96,56 @@ export default function ExploreValueDrivers({
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
+  // Care setting-specific labels
+  const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
+
+  const driverConfig = {
+    outpatient: {
+      pageTitle: 'What Could That Time Be Worth?',
+      pageSubtitle: `Your providers could reclaim ${formatNumber(totalHoursSaved)} hours. Different organizations use that time in different ways.`,
+      driver1Title: 'Patient Access',
+      driver1Subtitle: 'If providers use time to see more patients',
+      driver2Title: 'Cost Reduction',
+      driver2Subtitle: 'If time reduces overtime, locums, or other costs',
+      driver3Title: 'Clinician Wellbeing',
+      driver3Subtitle: 'If time improves work-life balance and retention',
+    },
+    ed: {
+      pageTitle: 'What Could That Time Be Worth?',
+      pageSubtitle: `Your ED providers could reclaim ${formatNumber(totalHoursSaved)} hours. Faster documentation means faster throughput.`,
+      driver1Title: 'LWBS Reduction',
+      driver1Subtitle: 'Faster turnaround reduces patients leaving without being seen',
+      driver2Title: 'Throughput Improvement',
+      driver2Subtitle: 'More patients per shift with faster documentation',
+      driver3Title: 'Clinician Wellbeing',
+      driver3Subtitle: 'If time improves work-life balance and retention',
+    },
+    inpatient: {
+      pageTitle: 'What Could That Time Be Worth?',
+      pageSubtitle: `Your hospitalists could reclaim ${formatNumber(totalHoursSaved)} hours. More time for patient care and rounding.`,
+      driver1Title: 'LOS Impact',
+      driver1Subtitle: 'Better documentation supports faster discharges',
+      driver2Title: 'Rounding Efficiency',
+      driver2Subtitle: 'More time at bedside means better patient outcomes',
+      driver3Title: 'Clinician Wellbeing',
+      driver3Subtitle: 'If time improves work-life balance and retention',
+    },
+    nursing: {
+      pageTitle: 'What Could That Time Be Worth?',
+      pageSubtitle: `Your nurses could reclaim ${formatNumber(totalHoursSaved)} hours. More time at the bedside.`,
+      driver1Title: 'OT Reduction',
+      driver1Subtitle: 'Less documentation overtime means lower labor costs',
+      driver2Title: 'Retention Savings',
+      driver2Subtitle: 'Reduced burden helps retain experienced nurses',
+      driver3Title: 'Care Time',
+      driver3Subtitle: 'More time for direct patient care activities',
+    },
+  };
+
+  const config = driverConfig[state.careSetting || 'outpatient'];
+
   // Calculate total time value
   const totalTimeValue = useMemo(() => {
     let total = 0;
@@ -135,11 +185,12 @@ export default function ExploreValueDrivers({
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
-            What Could That Time Be Worth?
+            {config.pageTitle}
           </h1>
           <p className="text-base text-[#888888]">
-            Your providers could reclaim <strong className="text-black">{formatNumber(totalHoursSaved)} hours</strong>. 
-            Different organizations use that time in different ways.
+            {config.pageSubtitle.split(formatNumber(totalHoursSaved))[0]}
+            <strong className="text-black">{formatNumber(totalHoursSaved)}</strong>
+            {config.pageSubtitle.split(formatNumber(totalHoursSaved))[1] || ''}
           </p>
         </motion.div>
 
@@ -178,8 +229,8 @@ export default function ExploreValueDrivers({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">Patient Access</p>
-                <p className="text-sm text-[#888888]">If providers use time to see more patients</p>
+                <p className="font-semibold text-black">{config.driver1Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
                 {timeDriverInputs.patientAccessEnabled && (
@@ -309,8 +360,8 @@ export default function ExploreValueDrivers({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">Cost Reduction</p>
-                <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
+                <p className="font-semibold text-black">{config.driver2Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
                 {timeDriverInputs.costReductionEnabled && (
@@ -393,8 +444,8 @@ export default function ExploreValueDrivers({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">Clinician Wellbeing</p>
-                <p className="text-sm text-[#888888]">If time improves work-life balance and retention</p>
+                <p className="font-semibold text-black">{config.driver3Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
                 {timeDriverInputs.wellbeingEnabled && (

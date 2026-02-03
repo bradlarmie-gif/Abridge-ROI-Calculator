@@ -66,12 +66,64 @@ export default function ExploreDocQuality({
   const denialsRevenueGross = preventedDenials * docQualityInputs.avgClaimValue;
   const denialsRevenueNet = denialsRevenueGross * (docQualityInputs.denialsRealization / 100);
 
-  const totalDocValue = (docQualityInputs.wrvuEnabled ? wrvuRevenueNet : 0) + 
-                        (docQualityInputs.hccEnabled ? hccRevenueNet : 0) + 
-                        (docQualityInputs.denialsEnabled ? denialsRevenueNet : 0);
-
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
+
+  // Care setting-specific configuration
+  const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
+  const showHCC = !isED && !isInpatient && !isNursing; // Only show HCC for Outpatient
+
+  // HCC only applies to Outpatient - include in total only when applicable
+  const totalDocValue = (docQualityInputs.wrvuEnabled ? wrvuRevenueNet : 0) + 
+                        (showHCC && docQualityInputs.hccEnabled ? hccRevenueNet : 0) + 
+                        (docQualityInputs.denialsEnabled ? denialsRevenueNet : 0);
+
+  const docConfig = {
+    outpatient: {
+      pageTitle: 'Documentation Quality',
+      pageSubtitle: 'Better documentation creates downstream revenue. Select the drivers that apply to your organization.',
+      driver1Title: 'wRVU Improvement',
+      driver1Subtitle: 'Capture the complexity you\'re already delivering',
+      driver2Title: 'HCC Capture',
+      driver2Subtitle: 'Recapture missed diagnoses for MA population',
+      driver3Title: 'Denial Prevention',
+      driver3Subtitle: 'Reduce documentation-related claim denials',
+    },
+    ed: {
+      pageTitle: 'Documentation Quality',
+      pageSubtitle: 'Complete documentation supports accurate coding and faster reimbursement.',
+      driver1Title: 'E&M Level Accuracy',
+      driver1Subtitle: 'Capture the true complexity of ED visits',
+      driver2Title: '', // No HCC for ED
+      driver2Subtitle: '',
+      driver3Title: 'Denial Prevention',
+      driver3Subtitle: 'Reduce documentation-related claim denials',
+    },
+    inpatient: {
+      pageTitle: 'Documentation Quality',
+      pageSubtitle: 'Accurate documentation drives CC/MCC capture and reduces denials.',
+      driver1Title: 'CC/MCC Capture',
+      driver1Subtitle: 'Document complications and comorbidities accurately',
+      driver2Title: '', // No HCC for Inpatient
+      driver2Subtitle: '',
+      driver3Title: 'Denial Prevention',
+      driver3Subtitle: 'Reduce documentation-related claim denials',
+    },
+    nursing: {
+      pageTitle: 'Care Quality',
+      pageSubtitle: 'Complete nursing documentation supports better outcomes and reduces adverse events.',
+      driver1Title: 'Care Plan Quality',
+      driver1Subtitle: 'Comprehensive care plans improve patient outcomes',
+      driver2Title: 'Falls Prevention',
+      driver2Subtitle: 'Better documentation supports fall risk assessment',
+      driver3Title: 'HAPI Prevention',
+      driver3Subtitle: 'Pressure injury documentation and prevention',
+    },
+  };
+
+  const config = docConfig[state.careSetting || 'outpatient'];
 
   return (
     <div className="min-h-screen bg-white">
@@ -96,10 +148,10 @@ export default function ExploreDocQuality({
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
-            Documentation Quality
+            {config.pageTitle}
           </h1>
           <p className="text-base text-[#888888]">
-            Better documentation creates downstream revenue. Select the drivers that apply to your organization.
+            {config.pageSubtitle}
           </p>
         </motion.div>
 
@@ -121,8 +173,8 @@ export default function ExploreDocQuality({
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-black">wRVU Improvement</p>
-                <p className="text-sm text-[#888888]">Capture the complexity you're already delivering</p>
+                <p className="font-semibold text-black">{config.driver1Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className={`w-12 h-6 rounded-full relative transition-all ${
                 docQualityInputs.wrvuEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
@@ -239,7 +291,8 @@ export default function ExploreDocQuality({
           </AnimatePresence>
         </motion.div>
 
-        {/* HCC Capture */}
+        {/* HCC Capture - Only show for Outpatient */}
+        {showHCC && (
         <motion.div
           className="mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -461,8 +514,9 @@ export default function ExploreDocQuality({
             )}
           </AnimatePresence>
         </motion.div>
+        )}
 
-        {/* Denial Prevention */}
+        {/* Denial Prevention / Care Quality Driver 3 */}
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -480,8 +534,8 @@ export default function ExploreDocQuality({
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-black">Denial Prevention</p>
-                <p className="text-sm text-[#888888]">Reduce unappealable denials with better documentation</p>
+                <p className="font-semibold text-black">{config.driver3Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
               </div>
               <div className={`w-12 h-6 rounded-full relative transition-all ${
                 docQualityInputs.denialsEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'

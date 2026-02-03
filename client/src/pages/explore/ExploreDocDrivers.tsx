@@ -1373,7 +1373,8 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
       const calc = calculateDriverValue('wrvu');
       wrvuValue = calc?.value || 0;
     }
-    if (docDrivers.hcc?.enabled) {
+    // HCC only applies to Outpatient
+    if (docDrivers.hcc?.enabled && !isED && !isInpatient && !isNursing) {
       const calc = calculateDriverValue('hcc');
       hccValue = calc?.value || 0;
     }

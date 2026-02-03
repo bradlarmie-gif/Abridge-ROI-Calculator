@@ -70,7 +70,9 @@ export default function ExploreModel({
   }, [eligibleEncounters, docQualityInputs]);
 
   const hccValue = useMemo(() => {
-    if (!docQualityInputs.hccEnabled) return 0;
+    // HCC only applies to Outpatient
+    const isOutpatient = state.careSetting === 'outpatient';
+    if (!isOutpatient || !docQualityInputs.hccEnabled) return 0;
     const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
     const maPatients = state.numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
     const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
@@ -220,6 +222,7 @@ export default function ExploreModel({
       docDriver1: 'wRVU Improvement',
       docDriver2: 'HCC Capture',
       docDriver3: 'Denial Prevention',
+      showHCC: true,
     },
     ed: {
       timeCardTitle: 'Efficiency Gains',
@@ -230,8 +233,9 @@ export default function ExploreModel({
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'Complete documentation supports accurate coding and reduces claim denials.',
       docDriver1: 'E&M Level Accuracy',
-      docDriver2: 'HCC Capture',
+      docDriver2: '', // No HCC for ED
       docDriver3: 'Denial Prevention',
+      showHCC: false,
     },
     inpatient: {
       timeCardTitle: 'Clinical Operations',
@@ -242,8 +246,9 @@ export default function ExploreModel({
       docCardTitle: 'Documentation Quality',
       docCardDescription: 'Accurate documentation drives CC/MCC capture and reduces claim denials.',
       docDriver1: 'CC/MCC Capture',
-      docDriver2: 'HCC Capture',
+      docDriver2: '', // No HCC for Inpatient
       docDriver3: 'Denial Prevention',
+      showHCC: false,
     },
     nursing: {
       timeCardTitle: 'Staffing Efficiency',
@@ -256,6 +261,7 @@ export default function ExploreModel({
       docDriver1: 'Care Plan Quality',
       docDriver2: 'Falls Prevention',
       docDriver3: 'HAPI Prevention',
+      showHCC: false,
     },
   };
 
@@ -405,10 +411,12 @@ export default function ExploreModel({
                 {docQualityInputs.wrvuEnabled && (
                   <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
                 )}
+                {labels.showHCC && (
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• {labels.docDriver2}</span>
                   <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
                 </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-[#666666]">• {labels.docDriver3}</span>
                   <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
