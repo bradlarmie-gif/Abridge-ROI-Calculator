@@ -102,29 +102,29 @@ function InsightCard({
   return (
     <div 
       className={`bg-white rounded-xl border overflow-hidden transition-all cursor-pointer ${
-        isExpanded ? 'border-[#EA2C00]/30 shadow-sm' : 'border-slate-200 hover:border-slate-300'
+        isExpanded ? 'border-[#E85A2C]/30' : 'border-[#E5E7EB] hover:border-[#E5E7EB]/80'
       }`}
       onClick={onToggle}
       data-testid={`insight-card-${card.id}`}
     >
-      <div className="p-6">
+      <div className="p-5">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
-            <div className="w-12 h-12 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-              <Icon className="w-6 h-6 text-[#EA2C00]" />
+            <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+              <Icon className="w-5 h-5 text-[#E85A2C]" />
             </div>
           </div>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-1">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Pattern {card.number}
                 </p>
-                <h3 className="font-bold text-black text-lg">{card.challenge.title}</h3>
-                <p className="text-sm text-slate-500 mt-1">{card.challenge.subtitle}</p>
+                <h3 className="font-semibold text-black">{card.challenge.title}</h3>
+                <p className="text-xs text-[#888888] mt-1">{card.challenge.subtitle}</p>
               </div>
-              <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ${
+              <ChevronRight className={`w-5 h-5 text-[#888888] transition-transform flex-shrink-0 ${
                 isExpanded ? 'rotate-90' : ''
               }`} />
             </div>
@@ -132,27 +132,27 @@ function InsightCard({
         </div>
         
         <div className={`overflow-hidden transition-all duration-300 ${
-          isExpanded ? 'max-h-[400px] opacity-100 mt-6' : 'max-h-0 opacity-0'
+          isExpanded ? 'max-h-[400px] opacity-100 mt-5' : 'max-h-0 opacity-0'
         }`}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">
+            <div className="p-4 bg-[#F5F0EB] rounded-lg">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 The Challenge
               </p>
-              <p className="text-sm text-slate-700 leading-relaxed">
+              <p className="text-sm text-[#6B7280] leading-relaxed">
                 {card.challenge.description}
               </p>
             </div>
             
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
-              <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">
+            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#E85A2C]/10">
+              <p className="text-xs font-medium text-[#E85A2C] uppercase tracking-[1.5px] mb-2">
                 {card.solution.title}
               </p>
               <div className="space-y-2">
                 {card.solution.traits.map((trait, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
-                    <span className="text-sm text-slate-700">{trait}</span>
+                    <CheckCircle className="w-4 h-4 text-[#E85A2C] flex-shrink-0" />
+                    <span className="text-sm text-[#6B7280]">{trait}</span>
                   </div>
                 ))}
               </div>
@@ -189,47 +189,41 @@ export default function StepWhyThisHappens({
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <p className="text-sm font-semibold text-[#EA2C00] uppercase tracking-widest mb-2">Implementation Insights</p>
-        <h1 className="font-abridge uppercase text-3xl md:text-4xl font-bold text-black mb-3" data-testid="text-page-title">
+      {/* Header */}
+      <div className="text-left">
+        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2" data-testid="text-page-title">
           What It Takes
         </h1>
-        <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-          Here's what we've learned from hundreds of implementations.
-          <span className="block text-slate-500 mt-1">Tap each pattern to see what makes the difference.</span>
+        <p className="text-base text-[#6B7280]">
+          Here's what we've learned from hundreds of implementations. 
+          <span className="block mt-1">Tap each pattern to see what makes the difference.</span>
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="p-6 md:p-8 border-b border-slate-100">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <p className="text-4xl font-bold text-black">150+</p>
-              <p className="text-sm text-slate-500 mt-1">Health systems</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-black">95%</p>
-              <p className="text-sm text-slate-500 mt-1">Retention rate</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-[#EA2C00]">4</p>
-              <p className="text-sm text-slate-500 mt-1">Key patterns</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-black">90</p>
-              <p className="text-sm text-slate-500 mt-1">Day onboarding</p>
-            </div>
+      {/* Credibility Stats */}
+      <section className="bg-[#F5F0EB] rounded-xl p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+            <p className="text-3xl md:text-4xl font-bold text-black">150+</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Health systems</p>
+          </div>
+          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+            <p className="text-3xl md:text-4xl font-bold text-black">95%</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Retention rate</p>
+          </div>
+          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+            <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">4</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Key patterns</p>
+          </div>
+          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+            <p className="text-3xl md:text-4xl font-bold text-black">90</p>
+            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Day onboarding</p>
           </div>
         </div>
-        
-        <div className="p-4 bg-[#FFF5F2]">
-          <p className="text-sm text-center text-slate-700">
-            <span className="font-semibold text-[#EA2C00]">Why these patterns matter:</span> The organizations that capture full value aren't just buying technology — they're partnering with teams who understand these challenges deeply.
-          </p>
-        </div>
-      </div>
+      </section>
 
-      <div className="space-y-4">
+      {/* Insight Cards */}
+      <div className="space-y-3">
         {INSIGHT_CARDS.map((card) => (
           <InsightCard
             key={card.id}
@@ -240,42 +234,43 @@ export default function StepWhyThisHappens({
         ))}
       </div>
 
+      {/* Progress indicator */}
       {expandedCount > 0 && !allExpanded && (
         <div className="text-center">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-[#888888]">
             {expandedCount} of {INSIGHT_CARDS.length} patterns explored
           </p>
         </div>
       )}
 
+      {/* All explored message */}
       {allExpanded && (
-        <div className="bg-black rounded-xl p-6 md:p-8">
+        <section className="bg-[#F5F0EB] rounded-xl p-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-6 h-6 text-[#E85A2C]" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-1">All Patterns Explored</p>
-              <p className="text-white text-lg font-medium">
-                Implementation matters more than the tool itself.
-              </p>
-              <p className="text-white/70 text-sm mt-1">
-                You now understand why partnership quality determines ROI.
+              <p className="font-semibold text-black">All patterns explored</p>
+              <p className="text-sm text-[#6B7280]">
+                Implementation matters more than the tool itself. Partnership quality determines ROI.
               </p>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
+      {/* Bottom line */}
       {!allExpanded && (
-        <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-center">
-          <p className="text-slate-700 text-sm">
+        <section className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+          <p className="text-sm text-[#6B7280]">
             <span className="font-semibold text-black">The bottom line:</span> capturing the value you saw in The Math 
             requires more than good technology. It requires the right partnership.
           </p>
-        </div>
+        </section>
       )}
 
+      {/* Navigation */}
       <div className="flex justify-between items-center pt-4">
         <Button 
           variant="ghost" 
@@ -289,7 +284,7 @@ export default function StepWhyThisHappens({
         
         <Button
           onClick={onNext}
-          className="bg-black hover:bg-black/90 text-white gap-2 rounded-full px-6"
+          className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
           Your Next Steps

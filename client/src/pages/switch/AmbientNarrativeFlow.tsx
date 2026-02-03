@@ -1,6 +1,4 @@
 import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
 import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
@@ -72,7 +70,6 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    // Show loading overlay before the final step
     if (currentStep === 5) {
       setShowLoadingOverlay(true);
     } else {
@@ -105,43 +102,26 @@ export default function AmbientNarrativeFlow({
   };
 
   const renderProgressIndicator = () => (
-    <div className="flex items-center justify-center mb-6 md:mb-8 overflow-x-auto px-2">
-      {STEPS.map((step, index) => {
+    <div className="flex items-center justify-center gap-2 mb-6 md:mb-8">
+      {STEPS.map((step) => {
         const isActive = step.id === currentStep;
         const isCompleted = completedSteps.has(step.id);
-        const isAccessible = step.id <= currentStep || completedSteps.has(step.id - 1);
         
         return (
-          <div key={step.id} className="flex items-center flex-shrink-0">
-            <button
-              onClick={() => isAccessible && goToStep(step.id)}
-              disabled={!isAccessible}
-              className={`flex items-center justify-center gap-1 min-w-[28px] md:min-w-auto px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
-                isActive 
-                  ? "bg-[#EA2C00] text-white" 
-                  : isCompleted 
-                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-                    : isAccessible
-                      ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      : "bg-slate-50 text-slate-400 cursor-not-allowed"
-              }`}
-              data-testid={`step-indicator-${step.id}`}
-            >
-              {isCompleted && !isActive ? (
-                <Check className="w-3 h-3" />
-              ) : (
-                <span className="w-5 h-5 flex items-center justify-center text-xs font-semibold">
-                  {step.id}
-                </span>
-              )}
-              <span className="hidden md:inline">{step.shortName}</span>
-            </button>
-            {index < STEPS.length - 1 && (
-              <div className={`w-5 md:w-8 h-0.5 flex-shrink-0 ${
-                completedSteps.has(step.id) ? "bg-emerald-300" : "bg-slate-200"
-              }`} />
-            )}
-          </div>
+          <button
+            key={step.id}
+            onClick={() => (isCompleted || step.id <= currentStep) && goToStep(step.id)}
+            disabled={step.id > currentStep && !isCompleted}
+            className={`w-2.5 h-2.5 rounded-full transition-all ${
+              isActive 
+                ? "bg-[#E85A2C] scale-125" 
+                : isCompleted 
+                  ? "bg-[#E85A2C]/40 hover:bg-[#E85A2C]/60"
+                  : "bg-[#D1D5DB] cursor-not-allowed"
+            }`}
+            data-testid={`step-indicator-${step.id}`}
+            aria-label={`Step ${step.id}: ${step.name}`}
+          />
         );
       })}
     </div>
@@ -191,7 +171,7 @@ export default function AmbientNarrativeFlow({
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
       />
-      <div className="min-h-screen bg-[#f8fafc]">
+      <div className="min-h-screen bg-white">
         <UnifiedHeader 
           pathType="switch"
           currentStep={currentStep} 
@@ -202,7 +182,7 @@ export default function AmbientNarrativeFlow({
         />
         <UnifiedHeaderSpacer />
 
-        <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
+        <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
           {renderProgressIndicator()}
           
           <PageTransition pageKey={`narrative-step-${currentStep}`}>

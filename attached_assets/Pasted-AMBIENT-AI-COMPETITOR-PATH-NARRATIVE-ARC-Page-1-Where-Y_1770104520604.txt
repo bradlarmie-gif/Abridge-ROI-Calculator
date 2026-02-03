@@ -1,0 +1,809 @@
+AMBIENT AI COMPETITOR PATH — NARRATIVE ARC
+Page 1: Where You Are (Input)
+You made a choice. You implemented ambient AI. Let's see what you're actually getting.
+Page 2: The Gap (Performance Analysis)
+Here's how your results compare to what's possible. Where are you leaving value?
+Page 3: What Good Looks Like (Benchmarks)
+These aren't aspirational—they're achievable. Here's what mature implementations deliver.
+Page 4: The Math (Financial Analysis)
+Every gap has a dollar value. Here's yours—and why timing matters.
+Page 5: What It Takes (Implementation Insights)
+Technology alone doesn't close the gap. Here's what separates organizations that capture full value.
+Page 6: The Opportunity (Summary + CTA)
+Here's your opportunity. Here's what comes next.
+
+GLOBAL ISSUES ACROSS ALL PAGES:
+
+Step indicator pills (1 Input → 2 Gap → 3 Proof, etc.) are too prominent and use wrong colors. Should be subtle, gray, with only current step highlighted.
+Red/orange label text above headlines ("CURRENT STATE," "PERFORMANCE ANALYSIS," etc.) is competing with the headlines. Should be smaller, grayer, quieter.
+Dark banners (black backgrounds) don't match Abridge brand. Replace with warm beige or white with red-orange accents.
+Slider inputs with red dots feel off-brand. Should be cleaner, more minimal.
+"Benchmark" comparisons use red text that feels like warnings. Should be neutral or use red-orange sparingly.
+Headlines are good but some subheads are too wordy or try too hard.
+CTAs at bottom need consistency—some are black buttons, some are styled differently.
+
+
+PAGE 1: WHERE YOU ARE (Input)
+The Story:
+You did the hard part—implemented ambient AI. Now let's see what you're actually getting back. Be honest. The clearer the picture, the better we can help.
+Current Problems:
+
+Step indicator is too loud
+"CURRENT STATE" label competes with headline
+"Ambient Assessment Score" progress bar feels like a test/grade
+Slider inputs with red dots feel clinical
+After-hours documentation callout at bottom (red banner) is jarring
+"See What You're Missing" button is black—should be red-orange
+
+Revised Layout:
+Header:
+
+Remove step indicator OR make it very subtle (small dots, gray, current = red-orange)
+Remove "CURRENT STATE" label entirely
+
+Headline Section:
+
+White background
+Headline: WHERE YOU ARE
+Subhead: You did the hard part. Let's see what you're getting back.
+
+Input Section:
+
+Warm beige background card
+Small gray ALL CAPS label: YOUR ORGANIZATION
+Two fields side by side:
+
+Providers using ambient AI
+Annual encounters
+
+
+Clean inputs, no red asterisks (if required, use subtle gray asterisk)
+
+Performance Metrics Section:
+
+White background
+Small gray ALL CAPS label: YOUR CURRENT PERFORMANCE
+Subhead: The more accurate you are, the clearer the picture.
+Four metric cards in 2x2 grid, each white with subtle border:
+Utilization
+% of encounters documented
+[Clean slider, no red dot—use gray track with black handle]
+Your value: 45%
+Benchmark: 76%
+Time Saved
+Minutes saved per encounter
+[Same clean slider]
+Your value: 4 min
+Benchmark: 4 min
+Quality
+wRVU lift from documentation
+Your value: +5%
+Benchmark: +5.5%
+Satisfaction
+Would providers recommend?
+Your value: 60%
+Benchmark: 88%
+Below each slider: small gray text showing benchmark
+No "X% of benchmark" calculations here—save that for Page 2
+
+After-Hours Section:
+
+Remove or simplify
+If keeping: Small callout with icon, no red banner
+After-hours documentation: 10 hrs/week across your providers
+
+CTA Section:
+
+White background, centered
+Button (red-orange fill, white text): "See the Gap →"
+
+
+Revised Copy:
+Headline: WHERE YOU ARE
+Subhead: You did the hard part. Let's see what you're getting back.
+Input Section Label: YOUR ORGANIZATION
+Performance Section Label: YOUR CURRENT PERFORMANCE
+Performance Subhead: The more accurate you are, the clearer the picture.
+Metric Labels:
+
+Utilization / % of encounters documented
+Time Saved / Minutes saved per encounter
+Quality / wRVU lift from documentation
+Satisfaction / Would providers recommend?
+
+After-Hours (if keeping): After-hours documentation: 10 hrs/week across your providers
+Button: See the Gap →
+
+PAGE 2: THE GAP (Performance Analysis)
+The Story:
+Here's how you compare to what's achievable. The gap isn't a failure—it's an opportunity. Let's break down where it's coming from.
+Current Problems:
+
+Step indicator too loud
+"PERFORMANCE ANALYSIS" label competes with headline
+"80%" hero number with "OPPORTUNITY AHEAD" pill feels like a grade/judgment
+Four dimension cards are visually inconsistent—one has dark background, others don't
+"Time Efficiency" card with black background breaks brand
+Too much explanation text in each card
+Bottom transition text is too wordy
+"Why This Happens" button is black
+
+Revised Layout:
+Header:
+
+Subtle step indicator (gray dots, current = red-orange)
+Remove "PERFORMANCE ANALYSIS" label
+
+Headline Section:
+
+White background
+Headline: THE GAP
+Subhead: Where you are vs. where you could be.
+
+Value Realization Section:
+
+Warm beige background card, centered
+Small gray ALL CAPS label: VALUE REALIZATION
+Hero number with red-orange left border:
+80%
+of what top-performing organizations achieve
+Horizontal bar: 80% filled (black), 20% unfilled (light beige outline)
+Below bar: Current (left) ... 20% opportunity (right, red-orange text)
+
+Breakdown Section:
+
+White background
+Small gray ALL CAPS label: BREAKING DOWN THE GAP
+Subhead: Four dimensions worth examining.
+Four cards in 2x2 grid, all white background with subtle border:
+Card 1: Utilization
+Small gray label: ADOPTION
+18,600 encounters/year
+where there's opportunity for AI assistance
+Small comparison: 45% current vs. 76% benchmark
+Variability often clusters by specialty, site, or tenure.
+Card 2: Time Saved
+Small gray label: EFFICIENCY
+4 min saved/encounter
+At benchmark performance
+Small comparison: At benchmark
+This dimension is performing well.
+Card 3: Quality
+Small gray label: REVENUE
++5% wRVU lift
+vs. +5.5% for top performers
+The 0.5 point gap represents services rendered but not fully captured.
+Card 4: Satisfaction
+Small gray label: EXPERIENCE
+60% satisfaction
+vs. 88% at top-performing organizations
+60-79% usually means the tool works, but something's off.
+
+After-Hours Callout:
+
+Remove red banner
+Simple line with icon:
+After-hours documentation: 10 hrs/week — that's 520 hours/year that could be reduced.
+
+Transition Section:
+
+White background, centered
+Text: The question isn't whether there's opportunity—it's which levers will move the needle.
+Button (red-orange fill, white text): "See What Good Looks Like →"
+
+
+Revised Copy:
+Headline: THE GAP
+Subhead: Where you are vs. where you could be.
+Value Realization Label: VALUE REALIZATION
+Hero: 80% / of what top-performing organizations achieve
+Breakdown Label: BREAKING DOWN THE GAP
+Breakdown Subhead: Four dimensions worth examining.
+Card Labels: ADOPTION / EFFICIENCY / REVENUE / EXPERIENCE
+After-Hours: After-hours documentation: 10 hrs/week — that's 520 hours/year that could be reduced.
+Transition: The question isn't whether there's opportunity—it's which levers will move the needle.
+Button: See What Good Looks Like →
+
+PAGE 3: WHAT GOOD LOOKS LIKE (Benchmarks)
+The Story:
+These aren't aspirational targets. They're achievable ranges based on mature implementations. Here's where you stand—and what's within reach.
+Current Problems:
+
+Step indicator too loud
+"PERFORMANCE BENCHMARKS" label competes with headline
+"Your Position" card with "2 In Range / 2 Opportunities" feels like a scorecard
+Benchmark range visualizations are good but need refinement
+"The Abridge Difference" section at bottom is too salesy—feels like a pitch
+Four feature pills (90-day onboarding, etc.) feel like marketing
+"See the Math" button is black
+
+Revised Layout:
+Header:
+
+Subtle step indicator
+Remove "PERFORMANCE BENCHMARKS" label
+
+Headline Section:
+
+White background
+Headline: WHAT GOOD LOOKS LIKE
+Subhead: Achievable ranges based on mature implementations.
+
+Position Summary:
+
+Remove the "Your Position" card with "2 In Range / 2 Opportunities"
+Instead, simple centered text:
+You're in range on 2 of 4 dimensions. Two have room to grow.
+
+Benchmark Cards:
+
+Warm beige background for section
+Four cards in 2x2 grid, white background:
+Card 1: Utilization
+Your value: 45%
+[Horizontal range visualization: 0%——●——[70-84%]——100%]
+Benchmark: 70-84%
+Insight box (light beige background):
+Opportunity: Moving to 70%+ means thousands more documented encounters per year.
+Card 2: Time Saved
+Your value: 4 min
+[Horizontal range: 0 min——[2.7-4.1 min]——●——6 min]
+Benchmark: 2.7-4.1 min
+Insight box:
+In range. This dimension is performing well.
+Card 3: wRVU Lift
+Your value: +5%
+[Horizontal range: 0%——●——[4.5-8%]——12%]
+Benchmark: +4.5-8%
+Insight box:
+In range. This dimension is performing well.
+Card 4: Satisfaction
+Your value: 60%
+[Horizontal range: 0%——●——[79-92%]——100%]
+Benchmark: 79-92%
+Insight box:
+Opportunity: When providers love the tool, adoption follows.
+
+Why This Matters Section:
+
+Remove "The Abridge Difference" header
+Remove the four feature pills
+Replace with simpler transition:
+White background, centered:
+Top-performing organizations share something in common: dedicated implementation support and continuous optimization.
+Button (red-orange fill, white text): "See the Math →"
+
+
+Revised Copy:
+Headline: WHAT GOOD LOOKS LIKE
+Subhead: Achievable ranges based on mature implementations.
+Position Summary: You're in range on 2 of 4 dimensions. Two have room to grow.
+Insight - Utilization: Opportunity: Moving to 70%+ means thousands more documented encounters per year.
+Insight - Time Saved: In range. This dimension is performing well.
+Insight - wRVU Lift: In range. This dimension is performing well.
+Insight - Satisfaction: Opportunity: When providers love the tool, adoption follows.
+Transition: Top-performing organizations share something in common: dedicated implementation support and continuous optimization.
+Button: See the Math →
+
+PAGE 4: THE MATH (Financial Analysis)
+The Story:
+Every gap has a dollar value. Here's yours—transparent, editable, yours to challenge. And here's why timing matters.
+Current Problems:
+
+Step indicator too loud
+"FINANCIAL ANALYSIS" label competes with headline
+"Your Annual Value Gap" accordion is good but expandable sections could be cleaner
+Black "TOTAL ANNUAL GAP" banner breaks brand
+"The Compounding Effect" chart is good but could be cleaner
+START NOW / WAIT 6 MONTHS / WAIT 12 MONTHS cards are good concept but visually busy
+"Methodology & Assumptions" expandable is good
+"See Full Analysis" button is black
+
+Revised Layout:
+Header:
+
+Subtle step indicator
+Remove "FINANCIAL ANALYSIS" label
+
+Headline Section:
+
+White background
+Headline: THE MATH
+Subhead: Every number is transparent. Every assumption is yours to challenge.
+
+Value Gap Section:
+
+Warm beige background card
+Small gray ALL CAPS label: YOUR ANNUAL VALUE GAP
+Right-aligned: Click to expand & edit
+Three expandable rows:
+Utilization Gap | 45% → 76% | $28K ↓
+[When expanded: shows inputs, formula, editable fields]
+Efficiency Gap | 4 min → 4 min | $0 ↓
+[Expanded: shows calculation]
+Quality Gap (wRVU) | +5% → +5.5% | $6K ↓
+[Expanded: shows calculation with note about wRVU attribution]
+
+Total Annual Gap:
+
+Remove black banner
+Instead: Warm beige card with red-orange left border
+Small gray label: TOTAL ANNUAL GAP
+Hero number: $34K / Unrealized value per year
+
+Compounding Section:
+
+White background
+Small gray ALL CAPS label: THE COST OF WAITING
+Subhead: Every month of delay shifts your starting point—and shrinks what you capture.
+Line chart: Clean, white background
+
+Gray line: "Continue as-is"
+Red-orange line: "Optimized"
+Shaded area between = value gap
+Markers at 6 mo delay, 12 mo delay
+
+
+
+Timing Cards:
+
+Three cards side by side:
+START NOW (warm beige background, red-orange left border)
+$101K
+3-year value captured
+WAIT 6 MONTHS (white background)
+$84K
+-$17K
+WAIT 12 MONTHS (white background)
+$67K
+-$34K
+Below cards: Every 6 months of delay costs approximately $17K in unrealized value.
+
+Methodology Section:
+
+Expandable: Methodology & Assumptions ↓
+When expanded: Shows assumptions list and benchmark sources
+Keep this—it builds credibility
+
+CTA Section:
+
+White background, centered
+Button (red-orange fill, white text): "See What It Takes →"
+
+
+Revised Copy:
+Headline: THE MATH
+Subhead: Every number is transparent. Every assumption is yours to challenge.
+Value Gap Label: YOUR ANNUAL VALUE GAP
+Total Gap: TOTAL ANNUAL GAP / $34K / Unrealized value per year
+Compounding Label: THE COST OF WAITING
+Compounding Subhead: Every month of delay shifts your starting point—and shrinks what you capture.
+Timing Cards:
+
+START NOW / $101K / 3-year value captured
+WAIT 6 MONTHS / $84K / -$17K
+WAIT 12 MONTHS / $67K / -$34K
+
+Below cards: Every 6 months of delay costs approximately $17K in unrealized value.
+Button: See What It Takes →
+
+PAGE 5: WHAT IT TAKES (Implementation Insights)
+The Story:
+Technology alone doesn't close the gap. Here's what we've learned from hundreds of implementations about what actually makes the difference.
+Current Problems:
+
+Step indicator too loud
+"IMPLEMENTATION INSIGHTS" label competes with headline
+Four stat pills at top (150+ Health systems, 95% Retention, etc.) are good but need refinement
+"Why these patterns matter" red text is too salesy
+Pattern accordions are good concept but:
+
+"PATTERN 01" labels are robotic
+Expanded content is good but "STRATEGIC CHANGE PARTNERS" etc. headers are jargon
+Checkmark lists feel like marketing
+
+
+Black bottom banner "Implementation matters more than the tool itself" is too heavy
+"Your Next Steps" button is black
+
+Revised Layout:
+Header:
+
+Subtle step indicator
+Remove "IMPLEMENTATION INSIGHTS" label
+
+Headline Section:
+
+White background
+Headline: WHAT IT TAKES
+Subhead: What we've learned from hundreds of implementations.
+
+Credibility Stats:
+
+Warm beige background card
+Four stats in a row with red-orange left borders:
+150+
+health systems
+95%
+retention rate
+4
+key patterns
+90
+day onboarding
+Below stats, simple line:
+The organizations that capture full value aren't just buying technology—they're partnering with teams who understand these challenges.
+
+Patterns Section:
+
+White background
+Four expandable cards, each white with subtle border:
+Pattern 1: The Adoption Challenge
+Why technology alone fails
+[Expand arrow]
+[When expanded:]
+Left column: THE CHALLENGE
+Without intentional change management, providers revert to old habits within weeks. Technology alone doesn't change behavior.
+Right column: WHAT WORKS
+✓ Dedicated success partners
+✓ Provider champions program
+✓ Behavioral design expertise
+Pattern 2: The Set-It-and-Forget-It Trap
+Why value erodes over time
+[Expand arrow]
+[Expanded:]
+THE CHALLENGE: Most implementations peak at launch and plateau. Without continuous optimization, value erodes over time.
+WHAT WORKS:
+✓ Quarterly business reviews
+✓ Real-time analytics
+✓ Proactive performance monitoring
+Pattern 3: The One-Size-Fits-All Problem
+Why generic solutions fail
+[Expand arrow]
+[Expanded:]
+THE CHALLENGE: Generic solutions miss the nuances of different specialties, workflows, and organizational cultures.
+WHAT WORKS:
+✓ Specialty-specific templates
+✓ Workflow integration
+✓ EHR-native experience
+Pattern 4: The Missing Executive Sponsor
+Why initiatives lose momentum
+[Expand arrow]
+[Expanded:]
+THE CHALLENGE: Without visible leadership support, initiatives lose momentum. Providers sense when something isn't a priority.
+WHAT WORKS:
+✓ Executive briefings
+✓ ROI dashboards
+✓ Stakeholder alignment
+
+Transition Section:
+
+Remove black banner
+Warm beige background, centered:
+Implementation matters more than the tool itself.
+Partnership quality determines ROI.
+Button (red-orange fill, white text): "See Your Opportunity →"
+
+
+Revised Copy:
+Headline: WHAT IT TAKES
+Subhead: What we've learned from hundreds of implementations.
+Credibility Stats:
+
+150+ / health systems
+95% / retention rate
+4 / key patterns
+90 / day onboarding
+
+Below stats: The organizations that capture full value aren't just buying technology—they're partnering with teams who understand these challenges.
+Pattern Titles:
+
+The Adoption Challenge / Why technology alone fails
+The Set-It-and-Forget-It Trap / Why value erodes over time
+The One-Size-Fits-All Problem / Why generic solutions fail
+The Missing Executive Sponsor / Why initiatives lose momentum
+
+Transition: Implementation matters more than the tool itself. Partnership quality determines ROI.
+Button: See Your Opportunity →
+
+PAGE 6: THE OPPORTUNITY (Summary + CTA)
+The Story:
+Here's where you stand—and what's possible with the right partnership. This is just the starting point.
+Current Problems:
+
+Step indicator too loud
+"YOUR ANALYSIS" label competes with headline
+"$34K" hero number in red-orange is good
+Three stat cards (Year 1 / 3-Year / Monthly Cost) are good
+"VALUE REALIZATION SCORE" section with bar is redundant—we showed this on Page 2
+Four small stats at bottom are repetitive
+Black "WHAT COMES NEXT" banner breaks brand
+"Download Report" button placement is awkward
+Disclaimer at bottom is good—keep it
+
+Revised Layout:
+Header:
+
+Subtle step indicator (all steps completed)
+Remove "YOUR ANALYSIS" label
+
+Headline Section:
+
+White background
+Headline: YOUR OPPORTUNITY
+Subhead: Here's where you stand—and what's possible.
+
+Annual Value Section:
+
+Warm beige background card, centered
+Small gray ALL CAPS label: ANNUAL VALUE TO UNLOCK
+Hero number: $34K (red-orange, massive—72px+)
+Below: Based on your 30 providers across 60,000 annual encounters
+
+Impact Timeline:
+
+White background
+Three stat cards side by side:
+YEAR 1 IMPACT
+$29K
+Accounting for ramp-up
+3-YEAR IMPACT
+$101K
+Compounding value
+MONTHLY COST OF WAITING (red-orange text)
+$3K
+Value left on table
+
+Performance Summary:
+
+Remove the "VALUE REALIZATION SCORE" bar—it's redundant
+Instead, simple warm beige card:
+Small gray label: YOUR CURRENT PERFORMANCE
+Four stats in a row:
+45% Utilization / vs. 76% benchmark
+4 min Time Saved / at benchmark
++5% wRVU Lift / vs. 5.5% benchmark
+60% Satisfaction / vs. 88% benchmark
+
+CTA Section:
+
+Remove black banner
+Warm beige background, full width
+Left side:
+Small gray label: WHAT COMES NEXT
+Headline: Let's explore this together.
+Subtext: This analysis is just the starting point. Our team can help you build a roadmap based on your specific context.
+Right side:
+Button (red-orange fill, white text): "Download Report"
+
+Disclaimer:
+
+Keep the disclaimer at bottom, subtle gray text:
+All calculations are based on your inputs and industry benchmarks. Actual results depend on implementation quality, organizational readiness, and partnership approach. This analysis is for informational purposes.
+
+
+Revised Copy:
+Headline: YOUR OPPORTUNITY
+Subhead: Here's where you stand—and what's possible.
+Annual Value Label: ANNUAL VALUE TO UNLOCK
+Hero: $34K
+Context: Based on your 30 providers across 60,000 annual encounters
+Impact Cards:
+
+YEAR 1 IMPACT / $29K / Accounting for ramp-up
+3-YEAR IMPACT / $101K / Compounding value
+MONTHLY COST OF WAITING / $3K / Value left on table
+
+Performance Label: YOUR CURRENT PERFORMANCE
+CTA Label: WHAT COMES NEXT
+CTA Headline: Let's explore this together.
+CTA Subtext: This analysis is just the starting point. Our team can help you build a roadmap based on your specific context.
+Button: Download Report
+Disclaimer: All calculations are based on your inputs and industry benchmarks. Actual results depend on implementation quality, organizational readiness, and partnership approach. This analysis is for informational purposes.
+
+FULL REPLIT PROMPT — AMBIENT AI COMPETITOR PATH
+Global Style Changes (Apply to all 6 pages):
+
+Page backgrounds: White (#FFFFFF)
+Card backgrounds: Warm beige (#F5F0EB)
+Remove all dark/black background sections
+Section labels: ALL CAPS, 12px, light gray (#888888), letter-spacing 1.5px
+Hero numbers: 48-72px, black (#000000), bold—or red-orange (#E85A2C) for key value figures
+Red-orange left borders: 4px, #E85A2C on key stat blocks
+Buttons: Red-orange (#E85A2C) fill with white text
+Step indicator: Small dots, gray (#CCCCCC), current step = red-orange (#E85A2C), positioned subtly
+Sliders: Gray track, black handle—no red dots
+Font: Manrope throughout
+
+
+Page 1: Where You Are
+Remove: Step indicator pills (Input, Gap, Proof, etc.) or make them small gray dots with current = red-orange
+Remove: "CURRENT STATE" red label above headline
+Headline: WHERE YOU ARE
+Subhead: You did the hard part. Let's see what you're getting back.
+Input Section:
+
+Background: warm beige
+Label: YOUR ORGANIZATION (small, gray, ALL CAPS)
+Fields: Providers using ambient AI, Annual encounters
+Remove red asterisks
+
+Remove: "Ambient Assessment Score" progress bar
+Performance Section:
+
+Background: white
+Label: YOUR CURRENT PERFORMANCE
+Subhead: The more accurate you are, the clearer the picture.
+Four metric cards (2x2), white background, subtle border:
+
+Utilization / % of encounters documented / slider / value / Benchmark: 76%
+Time Saved / Minutes saved per encounter / slider / value / Benchmark: 4 min
+Quality / wRVU lift from documentation / slider / value / Benchmark: +5.5%
+Satisfaction / Would providers recommend? / slider / value / Benchmark: 88%
+
+
+Sliders: gray track, black handle (no red)
+
+Remove: Red after-hours banner
+Replace with: Simple line: After-hours documentation: 10 hrs/week across your providers
+Button: Red-orange fill, white text: "See the Gap →"
+
+Page 2: The Gap
+Remove: "PERFORMANCE ANALYSIS" red label
+Headline: THE GAP
+Subhead: Where you are vs. where you could be.
+Value Realization Section:
+
+Background: warm beige
+Label: VALUE REALIZATION
+Hero: 80% with red-orange left border
+Below: of what top-performing organizations achieve
+Horizontal bar: 80% black, 20% outlined
+Below bar: Current (left) ... 20% opportunity (right, red-orange)
+
+Breakdown Section:
+
+Background: white
+Label: BREAKING DOWN THE GAP
+Subhead: Four dimensions worth examining.
+Four cards (2x2), white, subtle border:
+
+ADOPTION / 18,600 encounters/year / 45% vs. 76% / Variability often clusters by specialty, site, or tenure.
+EFFICIENCY / 4 min / At benchmark / This dimension is performing well.
+REVENUE / +5% / vs. +5.5% / The 0.5 point gap represents services not fully captured.
+EXPERIENCE / 60% / vs. 88% / 60-79% usually means the tool works, but something's off.
+
+
+
+Remove: Dark "Time Efficiency" card—make all four cards consistent (white)
+After-Hours: Simple line with icon, no red banner
+Transition:
+
+Text: The question isn't whether there's opportunity—it's which levers will move the needle.
+Button: Red-orange fill: "See What Good Looks Like →"
+
+
+Page 3: What Good Looks Like
+Remove: "PERFORMANCE BENCHMARKS" red label
+Headline: WHAT GOOD LOOKS LIKE
+Subhead: Achievable ranges based on mature implementations.
+Remove: "Your Position" card with "2 In Range / 2 Opportunities"
+Replace with: Centered text: You're in range on 2 of 4 dimensions. Two have room to grow.
+Benchmark Cards:
+
+Background: warm beige for section
+Four cards (2x2), white:
+
+Utilization / 45% / range visualization / Benchmark: 70-84% / Insight box
+Time Saved / 4 min / range visualization / Benchmark: 2.7-4.1 min / Insight box
+wRVU Lift / +5% / range visualization / Benchmark: +4.5-8% / Insight box
+Satisfaction / 60% / range visualization / Benchmark: 79-92% / Insight box
+
+
+
+Remove: "The Abridge Difference" section with feature pills
+Transition:
+
+Text: Top-performing organizations share something in common: dedicated implementation support and continuous optimization.
+Button: Red-orange fill: "See the Math →"
+
+
+Page 4: The Math
+Remove: "FINANCIAL ANALYSIS" red label
+Headline: THE MATH
+Subhead: Every number is transparent. Every assumption is yours to challenge.
+Value Gap Section:
+
+Background: warm beige
+Label: YOUR ANNUAL VALUE GAP
+Three expandable rows (keep accordion functionality)
+When expanded: show editable inputs and formulas
+
+Total Annual Gap:
+
+Remove black banner
+Replace with: warm beige card, red-orange left border
+Label: TOTAL ANNUAL GAP
+Hero: $34K / Unrealized value per year
+
+Compounding Section:
+
+Background: white
+Label: THE COST OF WAITING
+Subhead: Every month of delay shifts your starting point—and shrinks what you capture.
+Chart: clean, gray "continue as-is" line, red-orange "optimized" line
+
+Timing Cards:
+
+START NOW: warm beige, red-orange left border / $101K
+WAIT 6 MONTHS: white / $84K / -$17K
+WAIT 12 MONTHS: white / $67K / -$34K
+
+Below cards: Every 6 months of delay costs approximately $17K in unrealized value.
+Methodology: Keep expandable section
+Button: Red-orange fill: "See What It Takes →"
+
+Page 5: What It Takes
+Remove: "IMPLEMENTATION INSIGHTS" red label
+Headline: WHAT IT TAKES
+Subhead: What we've learned from hundreds of implementations.
+Credibility Stats:
+
+Background: warm beige
+Four stats with red-orange left borders: 150+ / 95% / 4 / 90
+Below: The organizations that capture full value aren't just buying technology—they're partnering with teams who understand these challenges.
+
+Patterns Section:
+
+Background: white
+Four expandable cards:
+
+The Adoption Challenge / Why technology alone fails
+The Set-It-and-Forget-It Trap / Why value erodes over time
+The One-Size-Fits-All Problem / Why generic solutions fail
+The Missing Executive Sponsor / Why initiatives lose momentum
+
+
+Change "STRATEGIC CHANGE PARTNERS" etc. to "WHAT WORKS"
+Keep checkmark lists
+
+Remove: Black bottom banner
+Transition:
+
+Background: warm beige
+Text: Implementation matters more than the tool itself. Partnership quality determines ROI.
+Button: Red-orange fill: "See Your Opportunity →"
+
+
+Page 6: The Opportunity
+Remove: "YOUR ANALYSIS" red label
+Headline: YOUR OPPORTUNITY
+Subhead: Here's where you stand—and what's possible.
+Annual Value Section:
+
+Background: warm beige
+Label: ANNUAL VALUE TO UNLOCK
+Hero: $34K (red-orange, 72px)
+Below: Based on your 30 providers across 60,000 annual encounters
+
+Impact Cards:
+
+Three cards: YEAR 1 / 3-YEAR / MONTHLY COST OF WAITING
+Monthly cost in red-orange
+
+Remove: VALUE REALIZATION SCORE bar (redundant)
+Performance Summary:
+
+Background: warm beige
+Label: YOUR CURRENT PERFORMANCE
+Four stats: 45% / 4 min / +5% / 60% with benchmark comparisons
+
+CTA Section:
+
+Remove black banner
+Background: warm beige
+Label: WHAT COMES NEXT
+Headline: Let's explore this together.
+Subtext: This analysis is just the starting point. Our team can help you build a roadmap based on your specific context.
+Button: Red-orange fill: "Download Report"
+
+Keep: Disclaimer at bottom
