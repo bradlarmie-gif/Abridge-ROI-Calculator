@@ -76,8 +76,11 @@ export interface TimeDriverInputs {
   edLwbsRate: number; // Current LWBS rate %
   edLwbsReduction: number; // Expected reduction %
   edRevenuePerVisit: number;
+  edLwbsRealization: number; // Realization rate for LWBS recovery (not all patients return)
   edThroughputEnabled: boolean;
-  edAdditionalPatientsPercent: number;
+  edAdmissionRate: number; // % of recovered patients who get admitted
+  edAdmissionRevenue: number; // Revenue per admission
+  edAdmissionRealization: number; // Realization rate for admission capture
   
   // Inpatient-specific inputs
   ipLosEnabled: boolean;
@@ -221,8 +224,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     edLwbsRate: 3, // 3% baseline LWBS rate
     edLwbsReduction: 20, // 20% reduction in LWBS
     edRevenuePerVisit: 450, // Higher than outpatient
+    edLwbsRealization: 75, // 75% realization (not all recovered patients complete visits)
     edThroughputEnabled: false,
-    edAdditionalPatientsPercent: 5, // 5% more patients
+    edAdmissionRate: 18, // 18% of recovered patients get admitted
+    edAdmissionRevenue: 8000, // Average admission revenue
+    edAdmissionRealization: 40, // 40% realization (bed availability, payer mix)
     // Inpatient-specific defaults
     ipLosEnabled: false,
     ipLosReduction: 0.25, // 0.25 day reduction per patient
@@ -394,11 +400,16 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
       if (timeDriverInputs.edLwbsEnabled) {
         const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
         const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-        total += recoveredPatients * timeDriverInputs.edRevenuePerVisit;
+        const grossValue = recoveredPatients * timeDriverInputs.edRevenuePerVisit;
+        total += grossValue * (timeDriverInputs.edLwbsRealization / 100);
       }
-      if (timeDriverInputs.edThroughputEnabled) {
-        const additionalPatients = annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100);
-        total += additionalPatients * timeDriverInputs.edRevenuePerVisit;
+      if (timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled) {
+        // Admission Capture uses LWBS recovered patients as base
+        const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+        const admittedPatients = recoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
+        const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
+        total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
     } else if (isInpatient) {
       // Inpatient: LOS and Rounding

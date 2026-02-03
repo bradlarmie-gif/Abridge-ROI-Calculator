@@ -55,18 +55,24 @@ export default function ExploreModel({
   const costReductionValue = timeDriverInputs.costReductionEnabled ? timeDriverInputs.estimatedCostReduction : 0;
 
   // ED-specific value calculations
+  const edRecoveredPatients = useMemo(() => {
+    const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+    return lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+  }, [state.annualEncounters, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction]);
+
   const edLwbsValue = useMemo(() => {
     if (!timeDriverInputs.edLwbsEnabled) return 0;
-    const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
-    const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
-    return Math.round(recoveredPatients * timeDriverInputs.edRevenuePerVisit);
-  }, [state.annualEncounters, timeDriverInputs]);
+    const grossValue = edRecoveredPatients * timeDriverInputs.edRevenuePerVisit;
+    return Math.round(grossValue * (timeDriverInputs.edLwbsRealization / 100));
+  }, [edRecoveredPatients, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edRevenuePerVisit, timeDriverInputs.edLwbsRealization]);
 
+  // Admission Capture uses LWBS recovered patients as base
   const edAdmissionCaptureValue = useMemo(() => {
-    if (!timeDriverInputs.edThroughputEnabled) return 0;
-    const admittedPatients = state.annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100);
-    return Math.round(admittedPatients * timeDriverInputs.edRevenuePerVisit);
-  }, [state.annualEncounters, timeDriverInputs]);
+    if (!timeDriverInputs.edThroughputEnabled || !timeDriverInputs.edLwbsEnabled) return 0;
+    const admittedPatients = edRecoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
+    const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
+    return Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
+  }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
 
   const isED = state.careSetting === 'ed';
 
@@ -393,10 +399,10 @@ export default function ExploreModel({
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver2}</span>
-                      <span className="font-semibold text-black">{timeDriverInputs.edThroughputEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'}</span>
                     </div>
-                    {timeDriverInputs.edThroughputEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAdditionalPatientsPercent}% admission rate)</p>
+                    {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAdmissionRate}% admission rate)</p>
                     )}
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver3}</span>
@@ -478,53 +484,53 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="bg-[#F5F0EB] rounded-xl p-8">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
-                  <Link className="w-5 h-5 text-[#EA2C00]" />
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+                  <Link className="w-5 h-5 text-[#E85A2C]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-black">Downstream Value</h3>
-                  <p className="text-sm text-slate-500">The ED admission note is just the beginning</p>
+                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Downstream Value</h3>
+                  <p className="text-sm text-[#888888] italic">The ED admission note is just the beginning</p>
                 </div>
               </div>
               
-              <p className="text-sm text-slate-600 mb-5">
+              <p className="text-sm text-[#666666] mb-5">
                 When an ED physician decides to admit a patient, their documentation becomes the foundation for 
                 inpatient revenue. The conditions they capture, the medical necessity they establish, and the clinical 
                 reasoning they document all determine what happens downstream.
               </p>
 
-              <p className="text-sm font-semibold text-slate-700 mb-3">Better ED documentation directly impacts:</p>
+              <p className="text-sm font-semibold text-black mb-3">Better ED documentation directly impacts:</p>
               
               <div className="space-y-3 mb-5">
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-[#EA2C00]">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
                   <div className="flex items-center gap-2 mb-1">
-                    <BarChart3 className="w-4 h-4 text-[#EA2C00]" />
+                    <BarChart3 className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">DRG & CMI Capture</span>
                   </div>
-                  <p className="text-sm text-slate-600">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.</p>
+                  <p className="text-sm text-[#666666]">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-green-500">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
                   <div className="flex items-center gap-2 mb-1">
-                    <Check className="w-4 h-4 text-green-600" />
+                    <Check className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">Medical Necessity</span>
                   </div>
-                  <p className="text-sm text-slate-600">The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.</p>
+                  <p className="text-sm text-[#666666]">The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-blue-500">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
                   <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-blue-600" />
+                    <FileText className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">CDI Efficiency</span>
                   </div>
-                  <p className="text-sm text-slate-600">When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.</p>
+                  <p className="text-sm text-[#666666]">When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-amber-500">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
                   <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <AlertTriangle className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">Denial Prevention</span>
                   </div>
-                  <p className="text-sm text-slate-600">Payer audits start with the admission note. Complete documentation from day one means stronger appeals.</p>
+                  <p className="text-sm text-[#666666]">Payer audits start with the admission note. Complete documentation from day one means stronger appeals.</p>
                 </div>
               </div>
               
