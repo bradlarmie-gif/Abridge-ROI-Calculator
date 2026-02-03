@@ -775,7 +775,7 @@ export default function SummaryCommandCenter({
                   Where the Value Comes From
                 </h2>
                 <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                  Ambient AI creates value through two distinct mechanisms—each with its own drivers and assumptions
+                  Abridge creates value through two distinct mechanisms—each with its own drivers and assumptions
                 </p>
               </div>
               

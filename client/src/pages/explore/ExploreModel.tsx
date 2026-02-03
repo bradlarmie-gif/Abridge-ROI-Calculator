@@ -275,7 +275,7 @@ export default function ExploreModel({
             Where the Value Comes From
           </p>
           <p className="text-center text-sm text-[#888888] mb-4">
-            Ambient AI creates value through two mechanisms—each with its own drivers and assumptions.
+            Abridge creates value through two mechanisms—each with its own drivers and assumptions.
           </p>
 
           <div className="grid md:grid-cols-2 gap-4">
