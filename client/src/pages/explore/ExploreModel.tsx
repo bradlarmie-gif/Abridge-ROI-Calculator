@@ -111,9 +111,9 @@ export default function ExploreModel({
   const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');
   
   const paceConfig = {
-    measured: { months: 24, label: '24mo', maturityMultiplier: 1.05 },
-    steady: { months: 18, label: '18mo', maturityMultiplier: 1.10 },
-    aggressive: { months: 12, label: '12mo', maturityMultiplier: 1.15 },
+    measured: { months: 36, label: '36mo', maturityMultiplier: 1.05 },
+    steady: { months: 24, label: '24mo', maturityMultiplier: 1.10 },
+    aggressive: { months: 18, label: '18mo', maturityMultiplier: 1.15 },
   };
 
   const currentPace = paceConfig[selectedPace];
