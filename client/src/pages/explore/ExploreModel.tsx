@@ -207,6 +207,60 @@ export default function ExploreModel({
     state.careSetting === 'ed' ? 'Emergency Department' :
     state.careSetting === 'inpatient' ? 'Inpatient' : 'Nursing';
 
+  // Care setting-specific driver labels
+  const driverLabels = {
+    outpatient: {
+      timeCardTitle: 'Time Back',
+      timeCardDescription: 'Documentation consumes 1-2 hours per clinician daily. Abridge eliminates most of this burden.',
+      driver1: 'Patient Access',
+      driver2: 'Cost Reduction',
+      driver3: 'Clinician Wellbeing',
+      docCardTitle: 'Documentation Quality',
+      docCardDescription: 'When documentation is complete and accurate, downstream revenue follows.',
+      docDriver1: 'wRVU Improvement',
+      docDriver2: 'HCC Capture',
+      docDriver3: 'Denial Prevention',
+    },
+    ed: {
+      timeCardTitle: 'Efficiency Gains',
+      timeCardDescription: 'Faster documentation means shorter door-to-doc times and reduced LWBS rates.',
+      driver1: 'LWBS Reduction',
+      driver2: 'Throughput Gain',
+      driver3: 'Clinician Wellbeing',
+      docCardTitle: 'Documentation Quality',
+      docCardDescription: 'Complete documentation supports accurate coding and reduces claim denials.',
+      docDriver1: 'E&M Level Accuracy',
+      docDriver2: 'HCC Capture',
+      docDriver3: 'Denial Prevention',
+    },
+    inpatient: {
+      timeCardTitle: 'Clinical Operations',
+      timeCardDescription: 'Reduced documentation burden allows hospitalists to focus on patient care and rounding.',
+      driver1: 'LOS Impact',
+      driver2: 'Rounding Efficiency',
+      driver3: 'Clinician Wellbeing',
+      docCardTitle: 'Documentation Quality',
+      docCardDescription: 'Accurate documentation drives CC/MCC capture and reduces claim denials.',
+      docDriver1: 'CC/MCC Capture',
+      docDriver2: 'HCC Capture',
+      docDriver3: 'Denial Prevention',
+    },
+    nursing: {
+      timeCardTitle: 'Staffing Efficiency',
+      timeCardDescription: 'Less time documenting means more time at the bedside and reduced overtime.',
+      driver1: 'OT Reduction',
+      driver2: 'Retention Savings',
+      driver3: 'Care Time',
+      docCardTitle: 'Care Quality',
+      docCardDescription: 'Complete documentation supports better care plans and reduces adverse events.',
+      docDriver1: 'Care Plan Quality',
+      docDriver2: 'Falls Prevention',
+      docDriver3: 'HAPI Prevention',
+    },
+  };
+
+  const labels = driverLabels[state.careSetting || 'outpatient'];
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
@@ -289,9 +343,9 @@ export default function ExploreModel({
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Time Back Card */}
+            {/* Time/Efficiency Card */}
             <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">Time Back</p>
+              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.timeCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-8 bg-[#E85A2C] rounded-full" />
                 <p className="text-2xl font-bold text-[#E85A2C]">{formatCurrency(timeValue)} / year</p>
@@ -300,25 +354,25 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <p className="text-sm text-[#666666] mb-4">
-                Documentation consumes 1-2 hours per clinician daily. Abridge eliminates most of this burden.
+                {labels.timeCardDescription}
               </p>
 
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• Patient Access</span>
+                  <span className="text-[#666666]">• {labels.driver1}</span>
                   <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
                 </div>
                 {timeDriverInputs.patientAccessEnabled && (
                   <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityPercent}% to capacity)</p>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• Cost Reduction</span>
+                  <span className="text-[#666666]">• {labels.driver2}</span>
                   <span className="font-semibold text-black">{costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• Clinician Wellbeing</span>
+                  <span className="text-[#666666]">• {labels.driver3}</span>
                   <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
                 </div>
                 {timeDriverInputs.wellbeingEnabled && (
@@ -329,7 +383,7 @@ export default function ExploreModel({
 
             {/* Documentation Quality Card */}
             <div className="bg-[#F5F0EB] rounded-xl p-6">
-              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">Documentation Quality</p>
+              <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.docCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-8 bg-[#E85A2C] rounded-full" />
                 <p className="text-2xl font-bold text-[#E85A2C]">{formatCurrency(docValue)} / year</p>
@@ -338,25 +392,25 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <p className="text-sm text-[#666666] mb-4">
-                When documentation is complete and accurate, downstream revenue follows.
+                {labels.docCardDescription}
               </p>
 
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• wRVU Improvement</span>
+                  <span className="text-[#666666]">• {labels.docDriver1}</span>
                   <span className="font-semibold text-black">{docQualityInputs.wrvuEnabled ? formatCurrency(wrvuValue) : '—'}</span>
                 </div>
                 {docQualityInputs.wrvuEnabled && (
                   <p className="text-xs text-[#888888] pl-4">({wrvuScenarios[docQualityInputs.wrvuScenario]}% lift)</p>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• HCC Capture</span>
+                  <span className="text-[#666666]">• {labels.docDriver2}</span>
                   <span className="font-semibold text-black">{docQualityInputs.hccEnabled ? formatCurrency(hccValue) : '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#666666]">• Denial Prevention</span>
+                  <span className="text-[#666666]">• {labels.docDriver3}</span>
                   <span className="font-semibold text-black">{docQualityInputs.denialsEnabled ? formatCurrency(denialsValue) : '—'}</span>
                 </div>
               </div>
