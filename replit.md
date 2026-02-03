@@ -13,7 +13,11 @@ The application supports multiple distinct user journeys:
 -   **Expand Path**: A 5-step narrative journey for existing Abridge customers to document and share their value story.
 
 ### Technical Implementations
--   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings. This includes specific time allocation categories and documentation drivers for each setting (e.g., ED-specific throughput calculations, Nursing-specific staffing efficiency and care quality metrics).
+-   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings. This includes specific time allocation categories and documentation drivers for each setting.
+    - **Outpatient**: Patient Access (capacity-to-visits conversion), Cost Reduction (user-estimated), Clinician Wellbeing (retention)
+    - **Emergency Department**: LWBS Reduction (recovered patients from lower left-without-being-seen rates), Throughput Improvement (additional patients per shift), Clinician Wellbeing
+    - **Inpatient**: LOS Impact (length of stay reduction savings), Rounding Efficiency (time-to-value conversion), Clinician Wellbeing
+    - **Nursing**: OT Reduction (overtime cost savings with 1.5x multiplier), Retention Savings (nurse turnover reduction), Care Time (qualitative - bedside time returned)
 -   **Defensible Math with Realization Rates**: All ROI calculations incorporate conservative realization rates for defensible estimates across all benefit categories (e.g., Patient Access, Locum Reduction, wRVU, HCC, Denials, Wellbeing).
 -   **Simplified Wellbeing Retention Model**: A conservative threshold-based approach to calculate retention lift based on saved hours per provider, categorized into minimal, moderate, significant, and maximum tiers.
 -   **Expandable Math Breakdowns**: "See the math" functionality provides step-by-step calculations with highlighted realization rates.

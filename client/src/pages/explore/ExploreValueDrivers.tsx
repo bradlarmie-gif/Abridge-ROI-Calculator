@@ -93,6 +93,55 @@ export default function ExploreValueDrivers({
     };
   }, [state.numberOfProviders, timeDriverInputs.annualTurnoverRate, timeDriverInputs.burnoutRelatedTurnover, timeDriverInputs.retentionImpactScenario, timeDriverInputs.replacementCost]);
 
+  // ED-specific calculations
+  const edLwbsValue = useMemo(() => {
+    if (!timeDriverInputs.edLwbsEnabled) return 0;
+    const annualPatients = state.annualEncounters;
+    const lwbsPatients = annualPatients * (timeDriverInputs.edLwbsRate / 100);
+    const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+    return Math.round(recoveredPatients * timeDriverInputs.edRevenuePerVisit);
+  }, [state.annualEncounters, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edLwbsRate, timeDriverInputs.edLwbsReduction, timeDriverInputs.edRevenuePerVisit]);
+
+  const edThroughputValue = useMemo(() => {
+    if (!timeDriverInputs.edThroughputEnabled) return 0;
+    const additionalPatients = state.annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100);
+    return Math.round(additionalPatients * timeDriverInputs.edRevenuePerVisit);
+  }, [state.annualEncounters, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edAdditionalPatientsPercent, timeDriverInputs.edRevenuePerVisit]);
+
+  // Inpatient-specific calculations
+  const ipLosValue = useMemo(() => {
+    if (!timeDriverInputs.ipLosEnabled) return 0;
+    const annualAdmissions = state.annualEncounters;
+    const daysSaved = annualAdmissions * timeDriverInputs.ipLosReduction;
+    return Math.round(daysSaved * timeDriverInputs.ipCostPerDay);
+  }, [state.annualEncounters, timeDriverInputs.ipLosEnabled, timeDriverInputs.ipLosReduction, timeDriverInputs.ipCostPerDay]);
+
+  const ipRoundingValue = useMemo(() => {
+    if (!timeDriverInputs.ipRoundingEnabled) return 0;
+    // Efficiency gain translates to time savings - conservative value estimate
+    const efficiencyHours = totalHoursSaved * (timeDriverInputs.ipRoundingEfficiencyGain / 100);
+    const hourlyValue = 150; // Hospitalist hourly value
+    return Math.round(efficiencyHours * hourlyValue);
+  }, [totalHoursSaved, timeDriverInputs.ipRoundingEnabled, timeDriverInputs.ipRoundingEfficiencyGain]);
+
+  // Nursing-specific calculations
+  const nursingOtValue = useMemo(() => {
+    if (!timeDriverInputs.nursingOtEnabled) return 0;
+    const nurses = state.numberOfProviders;
+    const weeksPerYear = 52;
+    const totalOtHoursYear = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
+    return Math.round(reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5); // 1.5x for OT
+  }, [state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
+
+  const nursingRetentionValue = useMemo(() => {
+    if (!timeDriverInputs.nursingRetentionEnabled) return 0;
+    const nurses = state.numberOfProviders;
+    const leavingPerYear = nurses * (timeDriverInputs.nursingTurnoverRate / 100);
+    const retained = leavingPerYear * 0.15; // Conservative 15% impact
+    return Math.round(retained * timeDriverInputs.nursingReplacementCost);
+  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
+
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
@@ -146,20 +195,40 @@ export default function ExploreValueDrivers({
 
   const config = driverConfig[state.careSetting || 'outpatient'];
 
-  // Calculate total time value
+  // Calculate total time value based on care setting
   const totalTimeValue = useMemo(() => {
     let total = 0;
-    if (timeDriverInputs.patientAccessEnabled) {
-      total += potentialRevenue;
-    }
-    if (timeDriverInputs.costReductionEnabled) {
-      total += timeDriverInputs.estimatedCostReduction;
-    }
-    if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-      total += retentionCalcs.retentionValue;
+    
+    if (isED) {
+      // ED uses LWBS and Throughput
+      total += edLwbsValue + edThroughputValue;
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        total += retentionCalcs.retentionValue;
+      }
+    } else if (isInpatient) {
+      // Inpatient uses LOS and Rounding
+      total += ipLosValue + ipRoundingValue;
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        total += retentionCalcs.retentionValue;
+      }
+    } else if (isNursing) {
+      // Nursing uses OT Reduction, Retention, and Care Time
+      total += nursingOtValue + nursingRetentionValue;
+      // Care time is qualitative, not added to monetary value
+    } else {
+      // Outpatient uses Patient Access and Cost Reduction
+      if (timeDriverInputs.patientAccessEnabled) {
+        total += potentialRevenue;
+      }
+      if (timeDriverInputs.costReductionEnabled) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        total += retentionCalcs.retentionValue;
+      }
     }
     return total;
-  }, [potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue]);
+  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edThroughputValue, ipLosValue, ipRoundingValue, nursingOtValue, nursingRetentionValue]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -213,7 +282,319 @@ export default function ExploreValueDrivers({
           </p>
         </motion.div>
 
-        {/* Patient Access Toggle */}
+        {/* DRIVER 1 - Care Setting Specific */}
+        
+        {/* ED: LWBS Reduction */}
+        {isED && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.edLwbsEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver1Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ edLwbsEnabled: !timeDriverInputs.edLwbsEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.edLwbsEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-lwbs"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.edLwbsEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.edLwbsEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    Faster documentation reduces wait times and LWBS rates.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">Current LWBS rate</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={timeDriverInputs.edLwbsRate}
+                          onChange={(v: number) => updateTimeDriverInputs({ edLwbsRate: v })}
+                          className="h-10 bg-white pr-8"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">Expected LWBS reduction</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={timeDriverInputs.edLwbsReduction}
+                          onChange={(v: number) => updateTimeDriverInputs({ edLwbsReduction: v })}
+                          className="h-10 bg-white pr-8"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 mb-4">
+                    <label className="text-sm text-[#888888]">Revenue per ED visit</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                      <FormattedNumberInput
+                        value={timeDriverInputs.edRevenuePerVisit}
+                        onChange={(v: number) => updateTimeDriverInputs({ edRevenuePerVisit: v })}
+                        className="h-10 bg-white pl-7"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Annual LWBS patients:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Patients recovered:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edLwbsRate / 100) * (timeDriverInputs.edLwbsReduction / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">LWBS value:</span>
+                        <span className="font-bold text-[#E85A2C]">{formatCurrency(edLwbsValue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Inpatient: LOS Impact */}
+        {isInpatient && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.ipLosEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver1Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ ipLosEnabled: !timeDriverInputs.ipLosEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.ipLosEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-los"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.ipLosEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.ipLosEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    Better documentation supports faster discharges and reduced length of stay.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">LOS reduction per patient (days)</label>
+                      <FormattedNumberInput
+                        value={timeDriverInputs.ipLosReduction}
+                        onChange={(v: number) => updateTimeDriverInputs({ ipLosReduction: v })}
+                        className="h-10 bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">Cost per patient day</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                        <FormattedNumberInput
+                          value={timeDriverInputs.ipCostPerDay}
+                          onChange={(v: number) => updateTimeDriverInputs({ ipCostPerDay: v })}
+                          className="h-10 bg-white pl-7"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Annual admissions:</span>
+                        <span className="font-semibold text-black">{formatNumber(state.annualEncounters)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Days saved:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * timeDriverInputs.ipLosReduction))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">LOS value:</span>
+                        <span className="font-bold text-[#E85A2C]">{formatCurrency(ipLosValue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Nursing: OT Reduction */}
+        {isNursing && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.nursingOtEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver1Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ nursingOtEnabled: !timeDriverInputs.nursingOtEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.nursingOtEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-ot"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.nursingOtEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.nursingOtEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    Less documentation time means less overtime required.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">OT hours/nurse/week</label>
+                      <FormattedNumberInput
+                        value={timeDriverInputs.nursingOtHoursPerNurseWeek}
+                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })}
+                        className="h-10 bg-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">OT reduction %</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={timeDriverInputs.nursingOtReductionPercent}
+                          onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v })}
+                          className="h-10 bg-white pr-8"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 mb-4">
+                    <label className="text-sm text-[#888888]">OT hourly rate (1.5x applied)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                      <FormattedNumberInput
+                        value={timeDriverInputs.nursingOtHourlyRate}
+                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v })}
+                        className="h-10 bg-white pl-7"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Annual OT hours:</span>
+                        <span className="font-semibold text-black">{formatNumber(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">OT hours reduced:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52 * (timeDriverInputs.nursingOtReductionPercent / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">OT savings:</span>
+                        <span className="font-bold text-[#E85A2C]">{formatCurrency(nursingOtValue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Outpatient: Patient Access Toggle */}
+        {!isED && !isInpatient && !isNursing && (
         <motion.div
           className="mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -343,8 +724,269 @@ export default function ExploreValueDrivers({
             )}
           </AnimatePresence>
         </motion.div>
+        )}
 
-        {/* Cost Reduction Toggle */}
+        {/* DRIVER 2 - Care Setting Specific */}
+        
+        {/* ED: Throughput */}
+        {isED && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.edThroughputEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver2Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ edThroughputEnabled: !timeDriverInputs.edThroughputEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.edThroughputEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-throughput"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.edThroughputEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.edThroughputEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    Faster documentation enables physicians to see more patients.
+                  </p>
+
+                  <div className="space-y-1.5 mb-4">
+                    <label className="text-sm text-[#888888]">Additional patients seen (%)</label>
+                    <div className="relative">
+                      <FormattedNumberInput
+                        value={timeDriverInputs.edAdditionalPatientsPercent}
+                        onChange={(v: number) => updateTimeDriverInputs({ edAdditionalPatientsPercent: v })}
+                        className="h-10 bg-white pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Additional patients/year:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Throughput value:</span>
+                        <span className="font-bold text-[#E85A2C]">{formatCurrency(edThroughputValue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Inpatient: Rounding Efficiency */}
+        {isInpatient && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.ipRoundingEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver2Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.ipRoundingEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-rounding"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.ipRoundingEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.ipRoundingEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    Less documentation time means more efficient rounding.
+                  </p>
+
+                  <div className="space-y-1.5 mb-4">
+                    <label className="text-sm text-[#888888]">Rounding efficiency gain (%)</label>
+                    <div className="relative">
+                      <FormattedNumberInput
+                        value={timeDriverInputs.ipRoundingEfficiencyGain}
+                        onChange={(v: number) => updateTimeDriverInputs({ ipRoundingEfficiencyGain: v })}
+                        className="h-10 bg-white pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Hours saved annually:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(totalHoursSaved))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Rounding value:</span>
+                        <span className="font-bold text-[#E85A2C]">{formatCurrency(ipRoundingValue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Nursing: Retention */}
+        {isNursing && (
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.nursingRetentionEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver2Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ nursingRetentionEnabled: !timeDriverInputs.nursingRetentionEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.nursingRetentionEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-nursing-retention"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.nursingRetentionEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.nursingRetentionEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    Less documentation burden improves retention.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">Annual turnover rate</label>
+                      <div className="relative">
+                        <FormattedNumberInput
+                          value={timeDriverInputs.nursingTurnoverRate}
+                          onChange={(v: number) => updateTimeDriverInputs({ nursingTurnoverRate: v })}
+                          className="h-10 bg-white pr-8"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm text-[#888888]">Replacement cost</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                        <FormattedNumberInput
+                          value={timeDriverInputs.nursingReplacementCost}
+                          onChange={(v: number) => updateTimeDriverInputs({ nursingReplacementCost: v })}
+                          className="h-10 bg-white pl-7"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Nurses leaving/year:</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Nurses retained (15% impact):</span>
+                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.15).toFixed(1)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Retention value:</span>
+                        <span className="font-bold text-[#E85A2C]">{formatCurrency(nursingRetentionValue)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
+
+        {/* Outpatient: Cost Reduction Toggle */}
+        {!isED && !isInpatient && !isNursing && (
         <motion.div
           className="mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -427,8 +1069,10 @@ export default function ExploreValueDrivers({
             )}
           </AnimatePresence>
         </motion.div>
+        )}
 
-        {/* Clinician Wellbeing Toggle */}
+        {/* Clinician Wellbeing Toggle - Not shown for Nursing (has own retention driver) */}
+        {!isNursing && (
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -673,6 +1317,75 @@ export default function ExploreValueDrivers({
             )}
           </AnimatePresence>
         </motion.div>
+        )}
+
+        {/* Nursing: Care Time - Qualitative Driver */}
+        {isNursing && (
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.nursingCareTimeEnabled 
+                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">{config.driver3Title}</p>
+                <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => updateTimeDriverInputs({ nursingCareTimeEnabled: !timeDriverInputs.nursingCareTimeEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-care-time"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.nursingCareTimeEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.nursingCareTimeEnabled && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                  <p className="text-sm text-black mb-4">
+                    More time at the bedside improves patient outcomes and satisfaction.
+                  </p>
+
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="text-center py-2">
+                      <p className="text-3xl font-bold text-[#E85A2C]">{hoursPerProviderPerWeek} hours</p>
+                      <p className="text-sm text-[#666666] mt-1">per nurse per week returned to direct care</p>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
+                      <p className="text-xs text-[#888888] italic text-center">
+                        Research shows increased bedside time correlates with reduced falls, 
+                        improved patient satisfaction scores, and better clinical outcomes.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+        )}
 
         {/* Continue Button - Mobile */}
         <motion.div 

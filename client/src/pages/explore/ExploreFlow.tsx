@@ -70,6 +70,31 @@ export interface TimeDriverInputs {
   burnoutRelatedTurnover: number;
   replacementCost: number;
   retentionImpactScenario: 'conservative' | 'typical' | 'optimistic';
+  
+  // ED-specific inputs
+  edLwbsEnabled: boolean;
+  edLwbsRate: number; // Current LWBS rate %
+  edLwbsReduction: number; // Expected reduction %
+  edRevenuePerVisit: number;
+  edThroughputEnabled: boolean;
+  edAdditionalPatientsPercent: number;
+  
+  // Inpatient-specific inputs
+  ipLosEnabled: boolean;
+  ipLosReduction: number; // Days reduction per patient
+  ipCostPerDay: number;
+  ipRoundingEnabled: boolean;
+  ipRoundingEfficiencyGain: number; // % efficiency gain
+  
+  // Nursing-specific inputs
+  nursingOtEnabled: boolean;
+  nursingOtHoursPerNurseWeek: number;
+  nursingOtReductionPercent: number;
+  nursingOtHourlyRate: number;
+  nursingRetentionEnabled: boolean;
+  nursingTurnoverRate: number;
+  nursingReplacementCost: number;
+  nursingCareTimeEnabled: boolean;
 }
 
 // Documentation Quality inputs
@@ -191,6 +216,28 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     burnoutRelatedTurnover: 40,
     replacementCost: 350000,
     retentionImpactScenario: 'typical',
+    // ED-specific defaults
+    edLwbsEnabled: false,
+    edLwbsRate: 3, // 3% baseline LWBS rate
+    edLwbsReduction: 20, // 20% reduction in LWBS
+    edRevenuePerVisit: 450, // Higher than outpatient
+    edThroughputEnabled: false,
+    edAdditionalPatientsPercent: 5, // 5% more patients
+    // Inpatient-specific defaults
+    ipLosEnabled: false,
+    ipLosReduction: 0.25, // 0.25 day reduction per patient
+    ipCostPerDay: 2500,
+    ipRoundingEnabled: false,
+    ipRoundingEfficiencyGain: 10, // 10% efficiency
+    // Nursing-specific defaults
+    nursingOtEnabled: false,
+    nursingOtHoursPerNurseWeek: 4,
+    nursingOtReductionPercent: 25,
+    nursingOtHourlyRate: 75,
+    nursingRetentionEnabled: false,
+    nursingTurnoverRate: 18, // 18% annual turnover
+    nursingReplacementCost: 50000,
+    nursingCareTimeEnabled: false,
   },
   // Documentation quality inputs
   docQualityInputs: {
@@ -305,25 +352,63 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
     }
   }, [state.careSetting, state.annualEncounters, state.utilizationPercent, state.minutesSavedPerEncounter, state.numberOfProviders, state.nursingShiftsPerNurseYear, state.nursingMinutesPerShift]);
 
-  // Calculate time value (from patient access and cost reduction)
+  // Calculate time value based on care setting
   const timeValue = useMemo(() => {
-    const { timeDriverInputs } = state;
+    const { timeDriverInputs, careSetting, annualEncounters, numberOfProviders } = state;
     let total = 0;
+    const isED = careSetting === 'ed';
+    const isInpatient = careSetting === 'inpatient';
+    const isNursing = careSetting === 'nursing';
     
-    // Patient Access value
-    if (timeDriverInputs.patientAccessEnabled) {
-      const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
-      const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
-      total += potentialVisits * timeDriverInputs.revenuePerVisit;
-    }
-    
-    // Cost Reduction value (user's direct estimate)
-    if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
-      total += timeDriverInputs.estimatedCostReduction;
+    if (isED) {
+      // ED: LWBS and Throughput
+      if (timeDriverInputs.edLwbsEnabled) {
+        const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+        const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+        total += recoveredPatients * timeDriverInputs.edRevenuePerVisit;
+      }
+      if (timeDriverInputs.edThroughputEnabled) {
+        const additionalPatients = annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100);
+        total += additionalPatients * timeDriverInputs.edRevenuePerVisit;
+      }
+    } else if (isInpatient) {
+      // Inpatient: LOS and Rounding
+      if (timeDriverInputs.ipLosEnabled) {
+        const daysSaved = annualEncounters * timeDriverInputs.ipLosReduction;
+        total += daysSaved * timeDriverInputs.ipCostPerDay;
+      }
+      if (timeDriverInputs.ipRoundingEnabled) {
+        const efficiencyHours = totalHoursSaved * (timeDriverInputs.ipRoundingEfficiencyGain / 100);
+        const hourlyValue = 150;
+        total += efficiencyHours * hourlyValue;
+      }
+    } else if (isNursing) {
+      // Nursing: OT Reduction and Retention
+      if (timeDriverInputs.nursingOtEnabled) {
+        const weeksPerYear = 52;
+        const totalOtHoursYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+        const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
+        total += reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5;
+      }
+      if (timeDriverInputs.nursingRetentionEnabled) {
+        const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
+        const retained = leavingPerYear * 0.15;
+        total += retained * timeDriverInputs.nursingReplacementCost;
+      }
+    } else {
+      // Outpatient: Patient Access and Cost Reduction
+      if (timeDriverInputs.patientAccessEnabled) {
+        const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
+        const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
+        total += potentialVisits * timeDriverInputs.revenuePerVisit;
+      }
+      if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
     }
     
     return Math.round(total);
-  }, [totalHoursSaved, state.timeDriverInputs]);
+  }, [totalHoursSaved, state.timeDriverInputs, state.careSetting, state.annualEncounters, state.numberOfProviders]);
 
   // Calculate doc value using state inputs
   const docValue = useMemo(() => {
