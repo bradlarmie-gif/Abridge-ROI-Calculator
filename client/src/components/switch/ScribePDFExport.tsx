@@ -604,9 +604,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
         </View>
 
         <View style={styles.footer}>
-          <View style={styles.footerLeft}>
-            <Image src={abridgeLogoPath} style={styles.footerLogo} />
-          </View>
+          <View style={styles.footerLeft} />
           <Text style={styles.footerPage}>Page 2 of 3</Text>
         </View>
       </Page>
