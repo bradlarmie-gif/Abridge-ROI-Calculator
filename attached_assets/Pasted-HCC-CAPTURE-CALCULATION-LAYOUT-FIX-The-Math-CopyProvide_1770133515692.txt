@@ -1,0 +1,164 @@
+HCC CAPTURE — CALCULATION LAYOUT FIX
+The Math:
+CopyProviders × Panel Size = Total Patients
+Total Patients × MA % = MA Patient Panel
+MA Patient Panel × Gap Rate = Patients with Documentation Gaps
+Patients with Gaps × Avg Missed HCCs = Total Recapture Opportunity
+Total Opportunity × Recapture Target % = HCCs You'll Document
+HCCs Documented × RAF Impact × Annual Payment per RAF = Gross Value
+Gross Value × Realization Rate = Net Annual Value
+Default Values:
+InputDefaultEditableProviders(from Page 2)NoPanel size per provider1,500YesMedicare Advantage %30%YesDocumentation gap rate40%YesAvg missed HCCs per patient1.5YesRecapture target10% / 15% / 25%Scenario selectorRAF impact per HCC0.4YesAnnual payment per RAF$12,000YesRealization rate60%Yes
+
+Replit Prompt — HCC Capture Section:
+Replace the current HCC Capture expanded state with:
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  HCC Capture                                                      [On]    │
+│  ┃  Recapture missed diagnoses for MA population                              │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  For Medicare Advantage populations, better documentation captures more       │
+│  HCCs. Risk adjustment pays based on documented conditions—many MA patients   │
+│  have documentation gaps where conditions were discussed but not captured.    │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Recapture target:                                                            │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │    10%      │  │    15%      │  │    25%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Providers                                                    100             │
+│  × Panel size per provider                              1,500 ✏️  pts         │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Total patients                                         150,000             │
+│                                                                               │
+│  × Medicare Advantage %                                    30% ✏️             │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = MA patient panel                                        45,000             │
+│                                                                               │
+│  × Documentation gap rate                                  40% ✏️             │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Patients with gaps                                      18,000             │
+│                                                                               │
+│  × Avg missed HCCs per patient                             1.5 ✏️             │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Total recapture opportunity                          27,000 HCCs           │
+│                                                                               │
+│  × Your recapture target                                     15%              │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = HCCs you'll document                                  4,050 HCCs           │
+│                                                                               │
+│  × RAF impact per HCC                                      0.4 ✏️             │
+│  × Annual payment per RAF                             $12,000 ✏️              │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Gross value                                        $19,440,000             │
+│                                                                               │
+│  × Realization rate                                        60% ✏️             │
+│    (RADV audits, payment delays, rejections)                                  │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual HCC Value                                     $11,664,000             │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+DENIAL PREVENTION — CALCULATION LAYOUT FIX
+The Math:
+CopyEligible Encounters × Baseline Denial Rate = Total Denials
+Total Denials × Unappealable Rate = Unrecoverable Denials (Abridge prevents these)
+Unrecoverable Denials × Prevention Target % = Denials Prevented
+Denials Prevented × Avg Claim Value = Gross Value
+Gross Value × Realization Rate = Net Annual Value
+Default Values:
+InputDefaultEditableEligible encounters(from Page 2)NoBaseline denial rate8%YesUnappealable rate40%YesPrevention target25% / 50% / 75%Scenario selectorAvg denied claim value$250YesRealization rate85%Yes
+
+Replit Prompt — Denial Prevention Section:
+Replace the current Denial Prevention expanded state with:
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  ┃  Denial Prevention                                                [On]    │
+│  ┃  Reduce unappealable denials with better documentation                     │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Documentation gaps drive 30-40% of denials that cannot be appealed—          │
+│  permanent revenue loss. Abridge captures clinical reasoning and medical      │
+│  necessity in real-time, preventing denials before they occur.                │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  Prevention target:                                                           │
+│                                                                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                            │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                            │
+│  │    25%      │  │    50%      │  │    75%      │                            │
+│  └─────────────┘  └─────────────┘  └─────────────┘                            │
+│                                                                               │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  CALCULATION                                        Click values to edit      │
+│                                                                               │
+│  Eligible encounters                                         150,000          │
+│  × Baseline denial rate                                       8% ✏️           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Total denials                                          12,000 claims       │
+│                                                                               │
+│  Denial breakdown:                                                            │
+│  ├─ Appealable (60%): 7,200 — Recovered through appeals                       │
+│  └─ Unappealable (40%): 4,800 — Abridge prevents these                        │
+│                                                                               │
+│  Unappealable rate                                           40% ✏️           │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Unrecoverable denials                                  4,800 claims        │
+│                                                                               │
+│  × Your prevention target                                      50%            │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Denials prevented                                      2,400 claims        │
+│                                                                               │
+│  × Avg denied claim value                                  $250 ✏️            │
+│  ───────────────────────────────────────────────────────────────────────      │
+│  = Gross value                                            $600,000            │
+│                                                                               │
+│  × Realization rate                                          85% ✏️           │
+│    (Clean claims payment rate)                                                │
+│  ───────────────────────────────────────────────────────────────────────      │
+│                                                                               │
+│  Annual Denial Prevention Value                           $510,000            │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+Styling Notes (same as wRVU):
+Calculation section:
+
+Light warm beige background (#F5F0EB)
+"CALCULATION" label: 11px, ALL CAPS, gray, letter-spacing 1.5px
+"Click values to edit" — right-aligned, 12px, gray
+
+Row layout:
+
+Label left-aligned, value right-aligned
+Editable values: show ✏️ icon, clickable to edit in modal or inline
+Divider lines between logical groups: thin gray (#E0E0E0)
+
+Calculated rows (with = prefix):
+
+Slightly bolder or use a subtle left indent to show it's a result
+
+Final value row:
+
+"Annual HCC Value" or "Annual Denial Prevention Value"
+Value in red-orange (#E85A2C), bold, 20px
+
+Denial breakdown mini-section:
+
+Indented with tree-style lines (├─ and └─)
+Gray text, 14px
+Shows the split between appealable and unappealable
