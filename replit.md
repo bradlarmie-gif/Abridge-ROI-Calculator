@@ -76,8 +76,13 @@ Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, 
 
 ## Recent Changes (February 2026)
 
+### Brand Color Update
+- **Abridge Cadmium Red**: Updated all instances of the brand accent color from #E85A2C to the correct Abridge Cadmium Red (#EA2C00)
+- Global change applied across all components, pages, and styling files
+- This color is used for: primary buttons, accent highlights, icons, progress indicators, and key value displays
+
 ### Explore Path Styling Redesign
-- **Toggle Accordions**: Removed heavy left borders (`border-l-4 border-l-[#E85A2C]`) from all value driver and documentation quality toggle sections
+- **Toggle Accordions**: Removed heavy left borders (`border-l-4`) from all value driver and documentation quality toggle sections
 - **Clean Card Design**: Toggle sections now use clean white backgrounds (`bg-white`) with subtle hover states
 - **Consistent Styling**: Applied unified styling across ExploreValueDrivers.tsx and ExploreDocQuality.tsx for all care settings
 - **Design Pattern**: Toggle sections use:

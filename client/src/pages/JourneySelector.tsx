@@ -39,7 +39,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       className={`
         group relative rounded-2xl p-6 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out
         ${isSelected 
-          ? 'bg-white border-l-4 border-l-[#E85A2C] border-t border-r border-b border-[#E5E7EB] shadow-lg' 
+          ? 'bg-white border-l-4 border-l-[#EA2C00] border-t border-r border-b border-[#E5E7EB] shadow-lg' 
           : 'bg-white border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300'
         }
       `}
@@ -49,7 +49,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       {/* Selection indicator */}
       {isSelected && (
         <motion.div 
-          className="absolute top-4 right-4 w-6 h-6 bg-[#E85A2C] rounded-full flex items-center justify-center"
+          className="absolute top-4 right-4 w-6 h-6 bg-[#EA2C00] rounded-full flex items-center justify-center"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -65,7 +65,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
           ${isSelected ? 'bg-[#FFF5F2]' : 'bg-[#FFF5F2]'}
         `}
       >
-        <Icon className={`w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 ${isSelected ? 'text-[#E85A2C]' : 'text-[#E85A2C]'}`} />
+        <Icon className={`w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 ${isSelected ? 'text-[#EA2C00]' : 'text-[#EA2C00]'}`} />
       </div>
       
       <h3 className="text-lg md:text-xl font-semibold mb-1 text-black">
@@ -79,7 +79,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       </p>
       
       <Button
-        className="w-full font-medium transition-all duration-200 rounded-full bg-[#E85A2C] text-white hover:bg-[#E85A2C]/90"
+        className="w-full font-medium transition-all duration-200 rounded-full bg-[#EA2C00] text-white hover:bg-[#EA2C00]/90"
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -121,7 +121,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-3 tracking-tight px-2 font-abridge uppercase">
             The value of
-            <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#E85A2C' }}>
+            <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#EA2C00' }}>
               Abridge
             </span>
           </h1>
@@ -193,7 +193,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           </p>
           <button
             onClick={onSelectLearn}
-            className="inline-flex items-center gap-1.5 text-xs text-[#888888] hover:text-[#E85A2C] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[#888888] hover:text-[#EA2C00] transition-colors"
             data-testid="link-learn"
           >
             <BookOpen className="w-3.5 h-3.5" />

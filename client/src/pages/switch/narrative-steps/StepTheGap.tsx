@@ -177,7 +177,7 @@ export default function StepTheGap({
       {/* Value Realization Hero */}
       <section className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="border-l-4 border-[#E85A2C] pl-5">
+          <div className="border-l-4 border-[#EA2C00] pl-5">
             <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               VALUE REALIZATION
             </p>
@@ -193,7 +193,7 @@ export default function StepTheGap({
             <span className="inline-block px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] text-sm font-semibold text-black">
               {performanceInfo.label}
             </span>
-            <p className="text-sm text-[#E85A2C] font-semibold mt-3">
+            <p className="text-sm text-[#EA2C00] font-semibold mt-3">
               {gapPercentage}% opportunity remaining
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function StepTheGap({
         <div className="mt-6">
           <div className="relative h-2 bg-white rounded-full overflow-hidden">
             <div 
-              className="absolute inset-y-0 left-0 bg-[#E85A2C] transition-all duration-1000 ease-out rounded-full"
+              className="absolute inset-y-0 left-0 bg-[#EA2C00] transition-all duration-1000 ease-out rounded-full"
               style={{ width: `${calculations.realizationScore}%` }}
             />
           </div>
@@ -224,7 +224,7 @@ export default function StepTheGap({
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5 text-[#E85A2C]" />
+              <Clock className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <h3 className="font-semibold text-black text-sm">{dynamicMessaging.timeTitle}</h3>
@@ -234,8 +234,8 @@ export default function StepTheGap({
           
           {storyMetrics.efficiencyGapHours > 0 ? (
             <>
-              <div className="border-l-4 border-[#E85A2C] pl-4 mb-4">
-                <span className="text-3xl md:text-4xl font-bold text-[#E85A2C]">{storyMetrics.efficiencyGapHours.toLocaleString()}</span>
+              <div className="border-l-4 border-[#EA2C00] pl-4 mb-4">
+                <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{storyMetrics.efficiencyGapHours.toLocaleString()}</span>
                 <span className="text-sm text-[#888888] ml-2">hours/year</span>
               </div>
               <p className="text-sm text-[#6B7280]">
@@ -255,7 +255,7 @@ export default function StepTheGap({
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-              <Users className="w-5 h-5 text-[#E85A2C]" />
+              <Users className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <h3 className="font-semibold text-black text-sm">{dynamicMessaging.utilizationTitle}</h3>
@@ -265,12 +265,12 @@ export default function StepTheGap({
           
           {storyMetrics.utilizationGapEncounters > 0 ? (
             <>
-              <div className="border-l-4 border-[#E85A2C] pl-4 mb-4">
-                <span className="text-3xl md:text-4xl font-bold text-[#E85A2C]">{storyMetrics.utilizationGapEncounters.toLocaleString()}</span>
+              <div className="border-l-4 border-[#EA2C00] pl-4 mb-4">
+                <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{storyMetrics.utilizationGapEncounters.toLocaleString()}</span>
                 <span className="text-sm text-[#888888] ml-2">encounters/year</span>
               </div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-semibold text-[#E85A2C] bg-[#FFF5F2] px-2 py-1 rounded">{inputs.utilization}% current</span>
+                <span className="text-xs font-semibold text-[#EA2C00] bg-[#FFF5F2] px-2 py-1 rounded">{inputs.utilization}% current</span>
                 <span className="text-xs text-[#888888]">vs.</span>
                 <span className="text-xs font-semibold text-black bg-[#F5F0EB] px-2 py-1 rounded">{ABRIDGE_BENCHMARKS.utilization}% benchmark</span>
               </div>
@@ -288,7 +288,7 @@ export default function StepTheGap({
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-5 h-5 text-[#E85A2C]" />
+              <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <h3 className="font-semibold text-black text-sm">{dynamicMessaging.wrvuTitle}</h3>
@@ -298,8 +298,8 @@ export default function StepTheGap({
           
           {storyMetrics.wrvuGapPercent > 0 ? (
             <>
-              <div className="border-l-4 border-[#E85A2C] pl-4 mb-4">
-                <span className="text-3xl md:text-4xl font-bold text-[#E85A2C]">+{inputs.wrvuLift || 0}%</span>
+              <div className="border-l-4 border-[#EA2C00] pl-4 mb-4">
+                <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">+{inputs.wrvuLift || 0}%</span>
                 <span className="text-sm text-[#888888] ml-2">wRVU lift</span>
               </div>
               <div className="flex items-center gap-2 mb-2">
@@ -321,7 +321,7 @@ export default function StepTheGap({
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-              <Heart className="w-5 h-5 text-[#E85A2C]" />
+              <Heart className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <h3 className="font-semibold text-black text-sm">{dynamicMessaging.satisfactionTitle}</h3>
@@ -331,8 +331,8 @@ export default function StepTheGap({
           
           {storyMetrics.satisfactionGap > 0 ? (
             <>
-              <div className="border-l-4 border-[#E85A2C] pl-4 mb-4">
-                <span className="text-3xl md:text-4xl font-bold text-[#E85A2C]">{inputs.satisfaction || 0}%</span>
+              <div className="border-l-4 border-[#EA2C00] pl-4 mb-4">
+                <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{inputs.satisfaction || 0}%</span>
                 <span className="text-sm text-[#888888] ml-2">satisfaction</span>
               </div>
               <div className="flex items-center gap-2 mb-2">
@@ -363,7 +363,7 @@ export default function StepTheGap({
                 PAJAMA TIME
               </p>
               <p className="text-base text-black">
-                <span className="font-bold text-[#E85A2C]">{storyMetrics.afterHoursTotal.toLocaleString()} hours/year</span> spent charting at home
+                <span className="font-bold text-[#EA2C00]">{storyMetrics.afterHoursTotal.toLocaleString()} hours/year</span> spent charting at home
               </p>
               <p className="text-sm text-[#6B7280] mt-1">
                 {inputs.afterHoursPerWeek} hours/week × {storyMetrics.providers} providers × 52 weeks
@@ -394,7 +394,7 @@ export default function StepTheGap({
         
         <Button
           onClick={onNext}
-          className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11"
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
           See the Benchmarks

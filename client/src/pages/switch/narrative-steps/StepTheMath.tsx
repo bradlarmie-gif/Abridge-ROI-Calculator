@@ -49,7 +49,7 @@ function GapAccordion({
   children,
 }: GapAccordionProps) {
   return (
-    <div className={`rounded-xl border overflow-hidden transition-all ${isOpen ? 'border-[#E85A2C]/30' : 'border-[#E5E7EB]'}`}>
+    <div className={`rounded-xl border overflow-hidden transition-all ${isOpen ? 'border-[#EA2C00]/30' : 'border-[#E5E7EB]'}`}>
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 bg-white hover:bg-[#F5F0EB]/50 transition-all"
@@ -57,7 +57,7 @@ function GapAccordion({
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-            <Icon className="w-5 h-5 text-[#E85A2C]" />
+            <Icon className="w-5 h-5 text-[#EA2C00]" />
           </div>
           <div className="text-left">
             <h3 className="font-semibold text-black text-sm">{title}</h3>
@@ -65,7 +65,7 @@ function GapAccordion({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xl font-bold text-[#E85A2C]">{formatCurrency(value)}</span>
+          <span className="text-xl font-bold text-[#EA2C00]">{formatCurrency(value)}</span>
           {isOpen ? (
             <ChevronUp className="w-5 h-5 text-[#888888]" />
           ) : (
@@ -94,16 +94,16 @@ interface InlineEditProps {
 
 function InlineEdit({ value, onChange, prefix = "", suffix = "", width = "w-16", testId }: InlineEditProps) {
   return (
-    <span className="inline-flex items-center gap-0.5 bg-[#FFF5F2] border border-[#E85A2C]/20 rounded px-1 py-0.5">
-      {prefix && <span className="text-[#E85A2C]">{prefix}</span>}
+    <span className="inline-flex items-center gap-0.5 bg-[#FFF5F2] border border-[#EA2C00]/20 rounded px-1 py-0.5">
+      {prefix && <span className="text-[#EA2C00]">{prefix}</span>}
       <input
         type="number"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-        className={`${width} bg-transparent text-[#E85A2C] font-bold text-center focus:outline-none focus:bg-white rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+        className={`${width} bg-transparent text-[#EA2C00] font-bold text-center focus:outline-none focus:bg-white rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
         data-testid={testId}
       />
-      {suffix && <span className="text-[#E85A2C]">{suffix}</span>}
+      {suffix && <span className="text-[#EA2C00]">{suffix}</span>}
     </span>
   );
 }
@@ -184,7 +184,7 @@ export default function StepTheMath({
           cx={cx} 
           cy={cy} 
           r={isTop ? 6 : 5} 
-          fill={isTop ? "#E85A2C" : "#888888"}
+          fill={isTop ? "#EA2C00" : "#888888"}
           stroke="white" 
           strokeWidth={2}
         />
@@ -210,7 +210,7 @@ export default function StepTheMath({
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-              <Calculator className="w-5 h-5 text-[#E85A2C]" />
+              <Calculator className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">VALUE BREAKDOWN</p>
@@ -281,7 +281,7 @@ export default function StepTheMath({
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-[#E85A2C] pt-1">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function StepTheMath({
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-[#E85A2C] pt-1">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -416,7 +416,7 @@ export default function StepTheMath({
                     />
                     attribution
                   </p>
-                  <p className="font-bold text-[#E85A2C] pt-1">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
                 </div>
               </div>
             </div>
@@ -428,14 +428,14 @@ export default function StepTheMath({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#E85A2C]" />
+                <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
               </div>
               <div>
                 <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">TOTAL ANNUAL GAP</p>
                 <p className="text-sm text-[#6B7280]">Unrealized value per year</p>
               </div>
             </div>
-            <span className="text-3xl font-bold text-[#E85A2C]">{formatCurrency(recalculatedValues.annualGap)}</span>
+            <span className="text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.annualGap)}</span>
           </div>
         </div>
       </section>
@@ -453,8 +453,8 @@ export default function StepTheMath({
             <AreaChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
               <defs>
                 <linearGradient id="gapGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#E85A2C" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#E85A2C" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#EA2C00" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <XAxis 
@@ -511,7 +511,7 @@ export default function StepTheMath({
               <Area 
                 type="monotone" 
                 dataKey="potential" 
-                stroke="#E85A2C" 
+                stroke="#EA2C00" 
                 strokeWidth={2}
                 fill="none"
                 name="potential"
@@ -534,7 +534,7 @@ export default function StepTheMath({
         {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-[#E85A2C]" />
+            <div className="w-4 h-0.5 bg-[#EA2C00]" />
             <span className="text-[#6B7280]">Optimized</span>
           </div>
           <div className="flex items-center gap-2">
@@ -556,12 +556,12 @@ export default function StepTheMath({
           <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
             <p className="text-xs text-[#888888] mb-1">Wait 6 months</p>
             <p className="text-xl font-bold text-black">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
-            <p className="text-xs text-[#E85A2C] font-medium">-{formatCurrency(recalculatedValues.wait6MonthsLoss)}</p>
+            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait6MonthsLoss)}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
             <p className="text-xs text-[#888888] mb-1">Wait 12 months</p>
             <p className="text-xl font-bold text-black">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
-            <p className="text-xs text-[#E85A2C] font-medium">-{formatCurrency(recalculatedValues.wait12MonthsLoss)}</p>
+            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait12MonthsLoss)}</p>
           </div>
         </div>
       </section>
@@ -580,7 +580,7 @@ export default function StepTheMath({
         
         <Button
           onClick={onNext}
-          className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11"
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
           What It Takes

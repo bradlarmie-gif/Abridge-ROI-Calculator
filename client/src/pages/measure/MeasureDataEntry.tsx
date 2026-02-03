@@ -235,7 +235,7 @@ export default function MeasureDataEntry({
             className={`
               h-11 px-8 font-medium rounded-md transition-all duration-200 gap-2
               ${hasMinimumData 
-                ? 'bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white' 
+                ? 'bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white' 
                 : 'bg-[#E5E5E5] text-[#888888] cursor-not-allowed'
               }
             `}

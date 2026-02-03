@@ -165,7 +165,7 @@ export default function MeasureAllocate({
 
           <div className="space-y-4">
             {/* Capacity */}
-            <div className="border-l-4 border-[#E85A2C] pl-4 py-2">
+            <div className="border-l-4 border-[#EA2C00] pl-4 py-2">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-black">Capacity</p>
@@ -174,14 +174,14 @@ export default function MeasureAllocate({
                   </p>
                   <p className="text-xs text-[#888888] mt-0.5">{capacityPercent}% of time saved</p>
                 </div>
-                <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(results.capacityValue)}</p>
+                <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.capacityValue)}</p>
               </div>
             </div>
 
             <div className="h-px bg-[#E5E5E5]" />
 
             {/* Savings */}
-            <div className="border-l-4 border-[#E85A2C] pl-4 py-2">
+            <div className="border-l-4 border-[#EA2C00] pl-4 py-2">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-black">Savings</p>
@@ -190,14 +190,14 @@ export default function MeasureAllocate({
                   </p>
                   <p className="text-xs text-[#888888] mt-0.5">{savingsPercent}% of time saved</p>
                 </div>
-                <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(results.savingsValue)}</p>
+                <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.savingsValue)}</p>
               </div>
             </div>
 
             <div className="h-px bg-[#E5E5E5]" />
 
             {/* Wellbeing */}
-            <div className="border-l-4 border-[#E85A2C] pl-4 py-2">
+            <div className="border-l-4 border-[#EA2C00] pl-4 py-2">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-black">Wellbeing</p>
@@ -218,7 +218,7 @@ export default function MeasureAllocate({
             {/* Subtotal */}
             <div className="flex items-center justify-between pt-2">
               <p className="font-semibold text-black">Time Value Subtotal</p>
-              <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(results.timeValueSubtotal)}</p>
+              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.timeValueSubtotal)}</p>
             </div>
           </div>
         </motion.div>
@@ -271,7 +271,7 @@ export default function MeasureAllocate({
           <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
             Total Annual Value
           </p>
-          <p className="text-3xl md:text-4xl font-bold text-[#E85A2C] mb-3">
+          <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3">
             {formatCurrency(results.totalValueLow)} – {formatCurrency(results.totalValueHigh)}
           </p>
           <div className="text-sm text-[#666666] space-y-1">
@@ -396,7 +396,7 @@ export default function MeasureAllocate({
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-see-story"
           >
             See Your Story

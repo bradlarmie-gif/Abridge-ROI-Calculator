@@ -52,7 +52,7 @@ function ComparisonCard({
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-9 h-9 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-          <Icon className="w-4 h-4 text-[#E85A2C]" />
+          <Icon className="w-4 h-4 text-[#EA2C00]" />
         </div>
         <h3 className="text-base font-semibold text-black">{title}</h3>
       </div>
@@ -80,7 +80,7 @@ function ComparisonCard({
           <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">After</span>
           <div className="flex-1 h-8 bg-[#FFF5F2] rounded overflow-hidden relative">
             <motion.div 
-              className="h-full bg-[#E85A2C] rounded flex items-center px-3"
+              className="h-full bg-[#EA2C00] rounded flex items-center px-3"
               initial={{ width: 0 }}
               animate={{ width: `${afterWidth}%` }}
               transition={{ delay: delay + 0.3, duration: 0.5, ease: "easeOut" }}
@@ -156,19 +156,19 @@ export default function MeasureTransformation({
           transition={{ delay: 0.1, duration: 0.5 }}
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="border-l-4 border-[#E85A2C] pl-3">
+            <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
               <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Providers</p>
             </div>
-            <div className="border-l-4 border-[#E85A2C] pl-3">
+            <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
               <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Encounters</p>
             </div>
-            <div className="border-l-4 border-[#E85A2C] pl-3">
+            <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
               <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Utilization</p>
             </div>
-            <div className="border-l-4 border-[#E85A2C] pl-3">
+            <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
               <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
             </div>
@@ -247,7 +247,7 @@ export default function MeasureTransformation({
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-see-value"
           >
             See the Value

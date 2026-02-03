@@ -228,7 +228,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                               index < BUSYNESS_PRESETS.length - 1 ? 'border-r border-[#E5E5E5]' : ''
                             } ${
                               isPresetSelected(preset.value)
-                                ? 'bg-[#E85A2C] text-white'
+                                ? 'bg-[#EA2C00] text-white'
                                 : 'bg-white text-black hover:bg-gray-50'
                             }`}
                             data-testid={`preset-busyness-${preset.label.toLowerCase()}`}
@@ -286,11 +286,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         max={100}
                         value={state.nursingOccupancyRate}
                         onChange={(e) => handleOccupancyChange(Number(e.target.value))}
-                        className="flex-1 h-2 bg-[#E5E5E5] rounded-lg appearance-none cursor-pointer accent-[#E85A2C]"
+                        className="flex-1 h-2 bg-[#E5E5E5] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
                         data-testid="slider-occupancy-rate"
                       />
                       <div className="flex items-center gap-1 bg-white rounded-lg px-3 py-2 border border-[#E5E5E5]">
-                        <span className="text-lg font-bold text-[#E85A2C]">{state.nursingOccupancyRate}%</span>
+                        <span className="text-lg font-bold text-[#EA2C00]">{state.nursingOccupancyRate}%</span>
                       </div>
                     </div>
                     <p className="text-xs text-[#888888]">
@@ -320,7 +320,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                             index < UTILIZATION_PRESETS.length - 1 ? 'border-r border-[#E5E5E5]' : ''
                           } ${
                             isUtilizationPresetSelected(preset.value)
-                              ? 'bg-[#E85A2C] text-white'
+                              ? 'bg-[#EA2C00] text-white'
                               : 'bg-white text-black hover:bg-gray-50'
                           }`}
                           data-testid={`preset-utilization-${preset.label.toLowerCase()}`}
@@ -461,7 +461,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <span className="text-sm font-medium text-white/70">
                       {isNursing ? 'Eligible Shifts' : `Eligible ${encounterLabel}`}
                     </span>
-                    <span className="text-2xl font-bold text-[#E85A2C]">
+                    <span className="text-2xl font-bold text-[#EA2C00]">
                       {isNursing 
                         ? (state.numberOfProviders > 0 ? formatNumber(nursingEligibleShifts) : '—')
                         : (state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—')

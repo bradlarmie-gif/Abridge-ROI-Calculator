@@ -91,17 +91,17 @@ export default function ExploreInvestment({
               onClick={() => updateState({ pricingModel: 'perProvider' })}
               className={`w-full p-4 rounded-lg text-left transition-all ${
                 state.pricingModel === 'perProvider'
-                  ? "bg-white border-l-4 border-[#E85A2C]"
+                  ? "bg-white border-l-4 border-[#EA2C00]"
                   : "bg-white hover:bg-white/80"
               }`}
               data-testid="button-pricing-provider"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                  state.pricingModel === 'perProvider' ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
+                  state.pricingModel === 'perProvider' ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                 }`}>
                   {state.pricingModel === 'perProvider' && (
-                    <div className="w-2 h-2 rounded-full bg-[#E85A2C]" />
+                    <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                   )}
                 </div>
                 <div>
@@ -116,17 +116,17 @@ export default function ExploreInvestment({
               onClick={() => updateState({ pricingModel: 'annual' })}
               className={`w-full p-4 rounded-lg text-left transition-all ${
                 state.pricingModel === 'annual'
-                  ? "bg-white border-l-4 border-[#E85A2C]"
+                  ? "bg-white border-l-4 border-[#EA2C00]"
                   : "bg-white hover:bg-white/80"
               }`}
               data-testid="button-pricing-annual"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                  state.pricingModel === 'annual' ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
+                  state.pricingModel === 'annual' ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                 }`}>
                   {state.pricingModel === 'annual' && (
-                    <div className="w-2 h-2 rounded-full bg-[#E85A2C]" />
+                    <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
                   )}
                 </div>
                 <div>
@@ -222,7 +222,7 @@ export default function ExploreInvestment({
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-continue"
           >
             View Full Summary
@@ -280,7 +280,7 @@ export default function ExploreInvestment({
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Net Annual Value
                 </p>
-                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
                   {formatCurrency(netAnnualValue)}
                 </p>
               </div>
@@ -302,7 +302,7 @@ export default function ExploreInvestment({
               {/* Continue Button */}
               <Button
                 onClick={onNext}
-                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                className="w-full h-11 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
                 data-testid="button-panel-continue"
               >
                 View Full Summary

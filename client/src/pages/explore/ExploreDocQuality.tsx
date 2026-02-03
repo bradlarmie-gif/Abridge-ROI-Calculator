@@ -177,7 +177,7 @@ export default function ExploreDocQuality({
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.wrvuEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
               }`}>
                 <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
                   docQualityInputs.wrvuEnabled ? 'right-0.5' : 'left-0.5'
@@ -208,7 +208,7 @@ export default function ExploreDocQuality({
                         onClick={() => updateDocInputs({ wrvuScenario: level })}
                         className={`p-3 rounded-lg border-2 transition-all text-center ${
                           docQualityInputs.wrvuScenario === level
-                            ? "border-[#E85A2C] bg-white"
+                            ? "border-[#EA2C00] bg-white"
                             : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
                         }`}
                       >
@@ -281,7 +281,7 @@ export default function ExploreDocQuality({
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
                         <span className="font-semibold text-black">Annual wRVU Value</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(Math.round(wrvuRevenueNet))}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(wrvuRevenueNet))}</span>
                       </div>
                     </div>
                   </div>
@@ -314,7 +314,7 @@ export default function ExploreDocQuality({
                 <p className="text-sm text-[#888888]">Recapture missed diagnoses for MA population</p>
               </div>
               <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.hccEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
               }`}>
                 <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
                   docQualityInputs.hccEnabled ? 'right-0.5' : 'left-0.5'
@@ -348,7 +348,7 @@ export default function ExploreDocQuality({
                         onClick={() => updateDocInputs({ hccScenario: level })}
                         className={`p-3 rounded-lg border transition-all text-center ${
                           docQualityInputs.hccScenario === level
-                            ? "bg-[#E85A2C] border-[#E85A2C] text-white"
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                             : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                         }`}
                         data-testid={`button-hcc-${level}`}
@@ -505,7 +505,7 @@ export default function ExploreDocQuality({
                       <div className="h-px bg-[#888888] my-2" />
                       <div className="flex justify-between font-semibold">
                         <span className="text-black">Annual HCC Value</span>
-                        <span className="text-[#E85A2C]">{formatCurrency(Math.round(hccRevenueNet))}</span>
+                        <span className="text-[#EA2C00]">{formatCurrency(Math.round(hccRevenueNet))}</span>
                       </div>
                     </div>
                   </div>
@@ -538,7 +538,7 @@ export default function ExploreDocQuality({
                 <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
               </div>
               <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.denialsEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
               }`}>
                 <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
                   docQualityInputs.denialsEnabled ? 'right-0.5' : 'left-0.5'
@@ -571,7 +571,7 @@ export default function ExploreDocQuality({
                         onClick={() => updateDocInputs({ denialsScenario: level })}
                         className={`p-3 rounded-lg border transition-all text-center ${
                           docQualityInputs.denialsScenario === level
-                            ? "bg-[#E85A2C] border-[#E85A2C] text-white"
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
                             : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                         }`}
                         data-testid={`button-denials-${level}`}
@@ -700,7 +700,7 @@ export default function ExploreDocQuality({
                       <div className="h-px bg-[#888888] my-2" />
                       <div className="flex justify-between font-semibold">
                         <span className="text-black">Annual Denial Prevention Value</span>
-                        <span className="text-[#E85A2C]">{formatCurrency(Math.round(denialsRevenueNet))}</span>
+                        <span className="text-[#EA2C00]">{formatCurrency(Math.round(denialsRevenueNet))}</span>
                       </div>
                     </div>
                   </div>
@@ -719,7 +719,7 @@ export default function ExploreDocQuality({
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-continue"
           >
             Continue to Investment
@@ -756,7 +756,7 @@ export default function ExploreDocQuality({
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.wrvuEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                     <span className="text-sm text-[#888888]">{isED ? 'E&M Accuracy' : 'wRVU'}</span>
                   </div>
                   <span className={`text-sm font-semibold ${docQualityInputs.wrvuEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -768,7 +768,7 @@ export default function ExploreDocQuality({
                 {showHCC && (
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                      <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                       <span className="text-sm text-[#888888]">HCC</span>
                     </div>
                     <span className={`text-sm font-semibold ${docQualityInputs.hccEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -779,7 +779,7 @@ export default function ExploreDocQuality({
 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.denialsEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                     <span className="text-sm text-[#888888]">{isED ? 'Denial Prevention' : 'Denials'}</span>
                   </div>
                   <span className={`text-sm font-semibold ${docQualityInputs.denialsEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -795,7 +795,7 @@ export default function ExploreDocQuality({
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Projected Annual Value
                 </p>
-                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
                   {formatCurrency(Math.round(timeValue + totalDocValue))}
                 </p>
               </div>
@@ -809,7 +809,7 @@ export default function ExploreDocQuality({
               {/* Continue Button */}
               <Button
                 onClick={onNext}
-                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                className="w-full h-11 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
                 data-testid="button-panel-continue"
               >
                 Continue to Investment

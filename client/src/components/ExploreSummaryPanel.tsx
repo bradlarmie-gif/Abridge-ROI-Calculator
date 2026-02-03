@@ -67,8 +67,8 @@ export function ExploreSummaryPanel({
       {stats && stats.length > 0 && (
         <div className="space-y-3 mb-4">
           {stats.map((stat, i) => (
-            <div key={i} className="border-l-4 border-[#E85A2C] pl-3">
-              <p className={`text-lg font-bold ${stat.highlight ? 'text-[#E85A2C]' : 'text-white'}`}>
+            <div key={i} className="border-l-4 border-[#EA2C00] pl-3">
+              <p className={`text-lg font-bold ${stat.highlight ? 'text-[#EA2C00]' : 'text-white'}`}>
                 {stat.value}
               </p>
               <p className="text-sm text-[#888888]">{stat.label}</p>
@@ -87,7 +87,7 @@ export function ExploreSummaryPanel({
                 {heroLabel}
               </p>
             )}
-            <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+            <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
               {heroValue}
             </p>
             {heroSubtext && (
@@ -160,7 +160,7 @@ export function ExploreSummaryPanel({
           className={`w-full h-11 font-medium rounded-md gap-2 ${
             buttonDisabled
               ? "bg-[#333333] text-[#666666] cursor-not-allowed"
-              : "bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white"
+              : "bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white"
           }`}
           data-testid="button-panel-continue"
         >
@@ -196,11 +196,11 @@ interface SummaryHighlightBoxProps {
 
 export function SummaryHighlightBox({ label, value }: SummaryHighlightBoxProps) {
   return (
-    <div className="bg-[#2A2A2A] rounded-lg p-4 text-center border border-[#E85A2C]/30">
+    <div className="bg-[#2A2A2A] rounded-lg p-4 text-center border border-[#EA2C00]/30">
       <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
         {label}
       </p>
-      <p className="text-2xl font-bold text-[#E85A2C]">{value}</p>
+      <p className="text-2xl font-bold text-[#EA2C00]">{value}</p>
     </div>
   );
 }

@@ -140,20 +140,20 @@ export default function ScribeAssessment({
                       exit={{ opacity: 0 }}
                       className="space-y-6"
                     >
-                      <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                      <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
                         <div className="text-5xl font-bold text-black">{inputs.scribeCount}</div>
                         <div className="text-sm text-[#888888]">scribes employed</div>
                       </div>
                       
                       {hasCostInfo && (
-                        <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                        <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
                           <div className="text-4xl font-bold text-black">{formatCurrency(calculations.totalScribeCost)}</div>
                           <div className="text-sm text-[#888888]">annual investment</div>
                         </div>
                       )}
                       
                       {inputs.providersWithScribes > 0 && (
-                        <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                        <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
                           <div className="text-4xl font-bold text-black">{calculations.coveragePercent}%</div>
                           <div className="text-sm text-[#888888]">provider coverage</div>
                           <div className="text-xs text-[#888888] italic mt-1">
@@ -246,7 +246,7 @@ export default function ScribeAssessment({
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
                   <div className="text-4xl font-bold text-black">
                     {calculations.unsupportedDocTimeHours.toLocaleString()}
                   </div>
@@ -258,7 +258,7 @@ export default function ScribeAssessment({
                   </div>
                 </div>
 
-                <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
                   <div className="text-4xl font-bold text-black">
                     {calculations.pajamaTimeHours.toLocaleString()}
                   </div>
@@ -270,7 +270,7 @@ export default function ScribeAssessment({
                   </div>
                 </div>
 
-                <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
                   <div className="text-4xl font-bold text-black">
                     {calculations.docTimePerUnsupportedProvider}
                   </div>
@@ -320,7 +320,7 @@ export default function ScribeAssessment({
                   <div className="text-sm text-[#888888]">
                     {calculations.scribesNeededForFullCoverage} scribes · 100% coverage
                   </div>
-                  <div className="text-sm font-semibold text-[#E85A2C] mt-2">
+                  <div className="text-sm font-semibold text-[#EA2C00] mt-2">
                     +{formatCurrency(calculations.costToScale)} additional
                   </div>
                 </div>
@@ -351,7 +351,7 @@ export default function ScribeAssessment({
               
               <Button
                 onClick={onNext}
-                className="h-12 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-semibold rounded-full"
+                className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
                 data-testid="button-see-full-analysis"
               >
                 Continue

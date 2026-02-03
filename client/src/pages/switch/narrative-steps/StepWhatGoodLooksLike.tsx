@@ -48,8 +48,8 @@ function BenchmarkCard({
           <h3 className="font-semibold text-black text-sm">{label}</h3>
         </div>
         
-        <div className={`text-right border-l-4 pl-3 ${isBelowRange ? 'border-[#E85A2C]' : 'border-green-500'}`}>
-          <span className={`text-2xl font-bold ${isBelowRange ? 'text-[#E85A2C]' : 'text-green-600'}`}>
+        <div className={`text-right border-l-4 pl-3 ${isBelowRange ? 'border-[#EA2C00]' : 'border-green-500'}`}>
+          <span className={`text-2xl font-bold ${isBelowRange ? 'text-[#EA2C00]' : 'text-green-600'}`}>
             {prefix}{currentValue}{unit}
           </span>
           <p className="text-xs text-[#888888] uppercase tracking-wider">Current</p>
@@ -85,9 +85,9 @@ function BenchmarkCard({
       </div>
 
       {isBelowRange && (
-        <div className="mt-3 p-3 bg-[#FFF5F2] rounded-lg border border-[#E85A2C]/10">
+        <div className="mt-3 p-3 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
           <p className="text-xs text-[#6B7280]">
-            <span className="font-semibold text-[#E85A2C]">{Math.round(benchmarkMin - currentValue)}{unit} gap</span> to reach benchmark range
+            <span className="font-semibold text-[#EA2C00]">{Math.round(benchmarkMin - currentValue)}{unit} gap</span> to reach benchmark range
           </p>
         </div>
       )}
@@ -111,7 +111,7 @@ export default function StepWhatGoodLooksLike({
 }: StepWhatGoodLooksLikeProps) {
   const dimensions = [
     {
-      icon: <BarChart3 className="w-5 h-5 text-[#E85A2C]" />,
+      icon: <BarChart3 className="w-5 h-5 text-[#EA2C00]" />,
       label: "Utilization",
       currentValue: inputs.utilization || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.utilization - 10,
@@ -120,7 +120,7 @@ export default function StepWhatGoodLooksLike({
       maxScale: 100,
     },
     {
-      icon: <Clock className="w-5 h-5 text-[#E85A2C]" />,
+      icon: <Clock className="w-5 h-5 text-[#EA2C00]" />,
       label: "Time Saved",
       currentValue: inputs.timeSavedPerEncounter || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.timeSavedAvg - 1,
@@ -129,7 +129,7 @@ export default function StepWhatGoodLooksLike({
       maxScale: 6,
     },
     {
-      icon: <DollarSign className="w-5 h-5 text-[#E85A2C]" />,
+      icon: <DollarSign className="w-5 h-5 text-[#EA2C00]" />,
       label: "wRVU Lift",
       currentValue: inputs.wrvuLift || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.wrvuLift - 2,
@@ -139,7 +139,7 @@ export default function StepWhatGoodLooksLike({
       maxScale: 12,
     },
     {
-      icon: <Heart className="w-5 h-5 text-[#E85A2C]" />,
+      icon: <Heart className="w-5 h-5 text-[#EA2C00]" />,
       label: "Provider Satisfaction",
       currentValue: inputs.satisfaction || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.satisfaction - 10,
@@ -169,7 +169,7 @@ export default function StepWhatGoodLooksLike({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
-              <Target className="w-6 h-6 text-[#E85A2C]" />
+              <Target className="w-6 h-6 text-[#EA2C00]" />
             </div>
             <div>
               <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
@@ -186,8 +186,8 @@ export default function StepWhatGoodLooksLike({
               <span className="text-2xl font-bold text-green-600">{inRangeCount}</span>
               <p className="text-xs text-[#888888]">In Range</p>
             </div>
-            <div className={`text-center px-4 py-2 rounded-lg border ${belowRangeCount > 0 ? 'bg-[#FFF5F2] border-[#E85A2C]/20' : 'bg-white border-[#E5E7EB]'}`}>
-              <span className={`text-2xl font-bold ${belowRangeCount > 0 ? 'text-[#E85A2C]' : 'text-black'}`}>{belowRangeCount}</span>
+            <div className={`text-center px-4 py-2 rounded-lg border ${belowRangeCount > 0 ? 'bg-[#FFF5F2] border-[#EA2C00]/20' : 'bg-white border-[#E5E7EB]'}`}>
+              <span className={`text-2xl font-bold ${belowRangeCount > 0 ? 'text-[#EA2C00]' : 'text-black'}`}>{belowRangeCount}</span>
               <p className="text-xs text-[#888888]">Opportunities</p>
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function StepWhatGoodLooksLike({
               key={trait}
               className="flex items-center gap-3 p-3 rounded-lg bg-[#F5F0EB]"
             >
-              <CheckCircle className="w-4 h-4 text-[#E85A2C] flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
               <span className="text-sm text-black font-medium">{trait}</span>
             </div>
           ))}
@@ -246,7 +246,7 @@ export default function StepWhatGoodLooksLike({
         
         <Button
           onClick={onNext}
-          className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11"
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
           See the Math

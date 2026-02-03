@@ -86,7 +86,7 @@ export default function ScribeFullAnalysis({
           <button
             onClick={() => setShowExportModal(true)}
             disabled={isExporting}
-            className="flex items-center gap-2 text-sm font-medium text-[#E85A2C] hover:text-[#E85A2C]/80 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-[#EA2C00] hover:text-[#EA2C00]/80 transition-colors"
             data-testid="button-export-pdf-hero"
           >
             {isExporting ? (
@@ -106,25 +106,25 @@ export default function ScribeFullAnalysis({
           className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-8"
         >
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+            <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
               <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(calculations.totalScribeCost)}</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">Annual Investment</div>
               <div className="text-xs text-[#888888] italic mt-1">{inputs.scribeCount} scribes</div>
             </div>
 
-            <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+            <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
               <div className="text-4xl md:text-5xl font-bold text-black">{calculations.coveragePercent}%</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">Provider Coverage</div>
               <div className="text-xs text-[#888888] italic mt-1">{inputs.providersWithScribes} of {inputs.totalProviders}</div>
             </div>
 
-            <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+            <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
               <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(totalHiddenCosts)}</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">Indirect Costs</div>
               <div className="text-xs text-[#888888] italic mt-1">Turnover & overhead</div>
             </div>
 
-            <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+            <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
               <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(trueTotalCost)}</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">True Total Cost</div>
               <div className="text-xs text-[#888888] italic mt-1">{formatCurrency(costPerProvider)} per covered provider</div>
@@ -133,7 +133,7 @@ export default function ScribeFullAnalysis({
 
           <p className="text-sm text-[#6B7280]">
             Your scribe program costs <strong>{formatCurrency(costPerProvider)}/provider/year</strong> when you factor in turnover and overhead. 
-            Scaling to 100% coverage would require an additional <strong className="text-[#E85A2C]">{formatCurrency(calculations.costToScale)}/year</strong>.
+            Scaling to 100% coverage would require an additional <strong className="text-[#EA2C00]">{formatCurrency(calculations.costToScale)}/year</strong>.
           </p>
         </motion.section>
 
@@ -196,11 +196,11 @@ export default function ScribeFullAnalysis({
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="h-full bg-[#E85A2C] rounded-lg"
+                  className="h-full bg-[#EA2C00] rounded-lg"
                 />
               </div>
               <div className="w-32 text-right">
-                <span className="text-xs font-medium text-[#E85A2C]">{formatCurrency(calculations.fullScribeCost)} · Full coverage</span>
+                <span className="text-xs font-medium text-[#EA2C00]">{formatCurrency(calculations.fullScribeCost)} · Full coverage</span>
               </div>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function ScribeFullAnalysis({
             <div className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-                  <RefreshCw className="w-5 h-5 text-[#E85A2C]" />
+                  <RefreshCw className="w-5 h-5 text-[#EA2C00]" />
                 </div>
               </div>
               <div className="text-2xl font-bold text-black mb-1">{formatCurrency(annualTurnoverCost)}</div>
@@ -242,7 +242,7 @@ export default function ScribeFullAnalysis({
             <div className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-                  <Users className="w-5 h-5 text-[#E85A2C]" />
+                  <Users className="w-5 h-5 text-[#EA2C00]" />
                 </div>
               </div>
               <div className="text-2xl font-bold text-black mb-1">{formatCurrency(managementOverhead)}</div>
@@ -267,7 +267,7 @@ export default function ScribeFullAnalysis({
           </p>
 
           <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-16">
-            <div className="border-l-[3px] border-l-[#E85A2C] pl-4 text-left">
+            <div className="border-l-[3px] border-l-[#EA2C00] pl-4 text-left">
               <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(trueTotalCost)}</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-2">Total Annual Cost</div>
               <div className="text-xs text-[#888888] italic mt-1">
@@ -275,7 +275,7 @@ export default function ScribeFullAnalysis({
               </div>
             </div>
 
-            <div className="border-l-[3px] border-l-[#E85A2C] pl-4 text-left">
+            <div className="border-l-[3px] border-l-[#EA2C00] pl-4 text-left">
               <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(costPerProvider)}</div>
               <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-2">Per Covered Provider</div>
               <div className="text-xs text-[#888888] italic mt-1">
@@ -302,7 +302,7 @@ export default function ScribeFullAnalysis({
 
             <Button
               onClick={() => onExploreAmbientAI(inputs.totalProviders, inputs.annualEncounters)}
-              className="h-12 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-semibold rounded-full"
+              className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
               data-testid="button-explore-ambient"
             >
               See How Abridge Compares

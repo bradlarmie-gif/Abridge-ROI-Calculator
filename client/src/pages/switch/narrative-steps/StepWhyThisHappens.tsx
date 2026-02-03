@@ -102,7 +102,7 @@ function InsightCard({
   return (
     <div 
       className={`bg-white rounded-xl border overflow-hidden transition-all cursor-pointer ${
-        isExpanded ? 'border-[#E85A2C]/30' : 'border-[#E5E7EB] hover:border-[#E5E7EB]/80'
+        isExpanded ? 'border-[#EA2C00]/30' : 'border-[#E5E7EB] hover:border-[#E5E7EB]/80'
       }`}
       onClick={onToggle}
       data-testid={`insight-card-${card.id}`}
@@ -111,7 +111,7 @@ function InsightCard({
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
-              <Icon className="w-5 h-5 text-[#E85A2C]" />
+              <Icon className="w-5 h-5 text-[#EA2C00]" />
             </div>
           </div>
           
@@ -144,14 +144,14 @@ function InsightCard({
               </p>
             </div>
             
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#E85A2C]/10">
-              <p className="text-xs font-medium text-[#E85A2C] uppercase tracking-[1.5px] mb-2">
+            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
+              <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
                 {card.solution.title}
               </p>
               <div className="space-y-2">
                 {card.solution.traits.map((trait, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-[#E85A2C] flex-shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
                     <span className="text-sm text-[#6B7280]">{trait}</span>
                   </div>
                 ))}
@@ -203,19 +203,19 @@ export default function StepWhyThisHappens({
       {/* Credibility Stats */}
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
             <p className="text-3xl md:text-4xl font-bold text-black">150+</p>
             <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Health systems</p>
           </div>
-          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
             <p className="text-3xl md:text-4xl font-bold text-black">95%</p>
             <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Retention rate</p>
           </div>
-          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
-            <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">4</p>
+          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
+            <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">4</p>
             <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Key patterns</p>
           </div>
-          <div className="text-center border-l-4 border-[#E85A2C] pl-3 text-left">
+          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
             <p className="text-3xl md:text-4xl font-bold text-black">90</p>
             <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Day onboarding</p>
           </div>
@@ -248,7 +248,7 @@ export default function StepWhyThisHappens({
         <section className="bg-[#F5F0EB] rounded-xl p-5">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-6 h-6 text-[#E85A2C]" />
+              <CheckCircle className="w-6 h-6 text-[#EA2C00]" />
             </div>
             <div>
               <p className="font-semibold text-black">All patterns explored</p>
@@ -284,7 +284,7 @@ export default function StepWhyThisHappens({
         
         <Button
           onClick={onNext}
-          className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11"
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
           Your Next Steps

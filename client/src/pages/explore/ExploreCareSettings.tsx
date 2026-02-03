@@ -121,7 +121,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   className={`
                     relative flex flex-col items-center text-center w-full md:w-[180px] lg:w-[220px] py-6 md:py-8 px-4 md:px-6 rounded-xl md:rounded-2xl transition-all duration-200
                     ${isSelected 
-                      ? 'bg-[#F5F0EB] border-2 border-[#E85A2C] shadow-xl' 
+                      ? 'bg-[#F5F0EB] border-2 border-[#EA2C00] shadow-xl' 
                       : isDisabled
                         ? 'bg-slate-50 cursor-not-allowed'
                         : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
@@ -158,7 +158,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                         : 'bg-[#FFF5F2]'
                     }
                   `}>
-                    <Icon className={`w-6 h-6 md:w-8 md:h-8 ${isSelected ? 'text-[#E85A2C]' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-6 h-6 md:w-8 md:h-8 ${isSelected ? 'text-[#EA2C00]' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
                   </div>
                   
                   <h3 className={`text-base md:text-lg font-bold mb-0.5 ${isSelected ? 'text-black' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
@@ -206,14 +206,14 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   className={`
                     h-12 px-8 font-semibold rounded-full transition-all duration-200
                     ${selectedSetting 
-                      ? 'bg-[#F5F0EB] hover:bg-[#EDE5DB] text-[#E85A2C] border border-[#E5E5E5]' 
+                      ? 'bg-[#F5F0EB] hover:bg-[#EDE5DB] text-[#EA2C00] border border-[#E5E5E5]' 
                       : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }
                   `}
                   data-testid="button-continue"
                 >
                   <span className="text-black font-semibold">Continue</span> <span className="text-black">with {selectedSetting ? CARE_SETTINGS.find(s => s.id === selectedSetting)?.label : 'Setting'}</span>
-                  <ArrowRight className="w-4 h-4 ml-2 text-[#E85A2C]" />
+                  <ArrowRight className="w-4 h-4 ml-2 text-[#EA2C00]" />
                 </Button>
                 
                 {!selectedSetting && (

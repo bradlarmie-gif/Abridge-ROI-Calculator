@@ -96,8 +96,8 @@ export default function StepTheInvitation({
         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
           ANNUAL VALUE TO UNLOCK
         </p>
-        <div className="border-l-4 border-[#E85A2C] pl-5">
-          <p className="text-5xl md:text-6xl font-bold text-[#E85A2C]">
+        <div className="border-l-4 border-[#EA2C00] pl-5">
+          <p className="text-5xl md:text-6xl font-bold text-[#EA2C00]">
             {formatCurrency(calculations.annualGap)}
           </p>
           <p className="text-sm text-[#6B7280] mt-2">
@@ -119,9 +119,9 @@ export default function StepTheInvitation({
             <p className="text-2xl md:text-3xl font-bold text-black">{formatCurrency(calculations.threeYearGap)}</p>
             <p className="text-xs text-[#6B7280] mt-1">Compounding value</p>
           </div>
-          <div className="p-5 text-center border-l-4 border-[#E85A2C] md:border-l-0">
-            <p className="text-xs font-medium text-[#E85A2C] uppercase tracking-[1.5px] mb-2">Monthly Cost of Waiting</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#E85A2C]">{formatCurrency(calculations.monthlyGap)}</p>
+          <div className="p-5 text-center border-l-4 border-[#EA2C00] md:border-l-0">
+            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Monthly Cost of Waiting</p>
+            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(calculations.monthlyGap)}</p>
             <p className="text-xs text-[#6B7280] mt-1">Value left on table</p>
           </div>
         </div>
@@ -137,9 +137,9 @@ export default function StepTheInvitation({
               <span className="text-base font-medium text-[#6B7280]">{scoreContext.status}</span>
             </div>
           </div>
-          <div className="text-right border-l-4 border-[#E85A2C] pl-3">
-            <p className="text-xs font-medium text-[#E85A2C] uppercase tracking-[1.5px] mb-1">Room to Grow</p>
-            <span className="text-2xl font-bold text-[#E85A2C]">{gapPercentage}%</span>
+          <div className="text-right border-l-4 border-[#EA2C00] pl-3">
+            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Room to Grow</p>
+            <span className="text-2xl font-bold text-[#EA2C00]">{gapPercentage}%</span>
           </div>
         </div>
         
@@ -158,7 +158,7 @@ export default function StepTheInvitation({
         <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <Users className="w-5 h-5 text-[#E85A2C]" />
+              <Users className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <p className="text-xl font-bold text-black">{inputs.utilization}%</p>
             <p className="text-xs text-[#888888]">Utilization</p>
@@ -166,7 +166,7 @@ export default function StepTheInvitation({
           </div>
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <Clock className="w-5 h-5 text-[#E85A2C]" />
+              <Clock className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <p className="text-xl font-bold text-black">{inputs.timeSavedPerEncounter} min</p>
             <p className="text-xs text-[#888888]">Time Saved</p>
@@ -174,7 +174,7 @@ export default function StepTheInvitation({
           </div>
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <DollarSign className="w-5 h-5 text-[#E85A2C]" />
+              <DollarSign className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <p className="text-xl font-bold text-black">+{inputs.wrvuLift}%</p>
             <p className="text-xs text-[#888888]">wRVU Lift</p>
@@ -182,7 +182,7 @@ export default function StepTheInvitation({
           </div>
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-5 h-5 text-[#E85A2C]" />
+              <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <p className="text-xl font-bold text-black">{inputs.satisfaction}%</p>
             <p className="text-xs text-[#888888]">Satisfaction</p>
@@ -207,7 +207,7 @@ export default function StepTheInvitation({
           <div className="flex-shrink-0">
             <Button
               onClick={() => setShowExportModal(true)}
-              className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11"
+              className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
               data-testid="button-export-pdf"
             >
               {isGeneratingPDF ? (
@@ -224,7 +224,7 @@ export default function StepTheInvitation({
       {/* Disclaimer */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5">
         <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-[#E85A2C] flex-shrink-0 mt-0.5" />
+          <CheckCircle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
           <p className="text-sm text-[#6B7280]">
             <span className="font-semibold text-black">All calculations are based on your inputs and industry benchmarks.</span>
             {' '}Actual results depend on implementation quality, organizational readiness, and partnership approach.

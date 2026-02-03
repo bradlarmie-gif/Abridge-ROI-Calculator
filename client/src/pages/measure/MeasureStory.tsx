@@ -136,7 +136,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           <h1 className="text-3xl md:text-4xl font-bold text-black leading-tight mb-4">
             <span className="block">{state.deployment.providers} providers.</span>
             <span className="block">{state.deployment.monthsOnAbridge} months.</span>
-            <span className="block text-[#E85A2C]">{formatNumber(Math.round(results.totalHoursSaved))} hours back.</span>
+            <span className="block text-[#EA2C00]">{formatNumber(Math.round(results.totalHoursSaved))} hours back.</span>
           </h1>
 
           <p className="text-base text-[#666666] italic">
@@ -218,7 +218,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           <div className="pt-4">
             <div className="flex items-center justify-between">
               <span className="text-base font-semibold text-black uppercase tracking-wide">Total Annual Value</span>
-              <span className="text-xl font-bold text-[#E85A2C]">
+              <span className="text-xl font-bold text-[#EA2C00]">
                 {formatCurrency(results.totalValueLow)} – {formatCurrency(results.totalValueHigh)}
               </span>
             </div>
@@ -239,7 +239,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#FFF5F2] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#E85A2C]" />
+                <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
               </div>
               <div className="text-left">
                 <p className="font-semibold text-black text-sm">What if you expanded?</p>
@@ -272,7 +272,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                         step={Math.max(10, Math.round(state.deployment.providers / 10) * 10)}
                         value={expandedProviders}
                         onChange={(e) => setExpandedProviders(Number(e.target.value))}
-                        className="flex-1 accent-[#E85A2C] h-2"
+                        className="flex-1 accent-[#EA2C00] h-2"
                         data-testid="slider-expansion"
                       />
                     </div>
@@ -297,7 +297,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                       <p className="text-sm text-[#666666] mb-3">
                         {formatNumber(projectedResults.projectedHours)} hours reclaimed
                       </p>
-                      <p className="text-2xl md:text-3xl font-bold text-[#E85A2C]">
+                      <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">
                         {formatCurrency(projectedResults.projectedValueLow)} – {formatCurrency(projectedResults.projectedValueHigh)}
                       </p>
                     </div>
@@ -324,7 +324,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             </div>
             <Button
               onClick={() => setShowExportModal(true)}
-              className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white rounded-md px-5 h-10 gap-2"
+              className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white rounded-md px-5 h-10 gap-2"
               data-testid="button-export"
             >
               <Download className="w-4 h-4" />

@@ -80,7 +80,7 @@ function MetricInput({
             min={minValue}
             max={maxValue}
             step={step}
-            className="w-12 text-lg font-bold text-center bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 focus:border-[#E85A2C] focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-12 text-lg font-bold text-center bg-white border border-[#E5E7EB] rounded-lg px-2 py-1 focus:border-[#EA2C00] focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             data-testid={`${testId}-input`}
           />
           <span className="text-sm text-[#888888]">{unit}</span>
@@ -158,7 +158,7 @@ export default function StepWhereYouAre({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricInput
-            icon={<Users className="w-5 h-5 text-[#E85A2C]" />}
+            icon={<Users className="w-5 h-5 text-[#EA2C00]" />}
             title="Utilization"
             description="% of encounters documented"
             value={inputs.utilization}
@@ -172,7 +172,7 @@ export default function StepWhereYouAre({
           />
 
           <MetricInput
-            icon={<Clock className="w-5 h-5 text-[#E85A2C]" />}
+            icon={<Clock className="w-5 h-5 text-[#EA2C00]" />}
             title="Time Saved"
             description="Minutes saved per encounter"
             value={inputs.timeSavedPerEncounter}
@@ -186,7 +186,7 @@ export default function StepWhereYouAre({
           />
 
           <MetricInput
-            icon={<TrendingUp className="w-5 h-5 text-[#E85A2C]" />}
+            icon={<TrendingUp className="w-5 h-5 text-[#EA2C00]" />}
             title="Quality"
             description="wRVU lift from documentation"
             value={inputs.wrvuLift}
@@ -201,7 +201,7 @@ export default function StepWhereYouAre({
           />
 
           <MetricInput
-            icon={<Heart className="w-5 h-5 text-[#E85A2C]" />}
+            icon={<Heart className="w-5 h-5 text-[#EA2C00]" />}
             title="Satisfaction"
             description="Would providers recommend?"
             value={inputs.satisfaction}
@@ -269,7 +269,7 @@ export default function StepWhereYouAre({
         <Button
           onClick={onNext}
           disabled={!canProceed}
-          className="bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white gap-2 rounded-full px-6 h-11 disabled:opacity-50"
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11 disabled:opacity-50"
           data-testid="button-next"
         >
           See the Gap

@@ -168,10 +168,10 @@ export default function ExploreTimeSavings({
                       <div className="flex items-start gap-3">
                         {/* Radio Circle */}
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                          isSelected ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
+                          isSelected ? 'border-[#EA2C00]' : 'border-[#D1D5DB]'
                         }`}>
                           {isSelected && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-[#E85A2C]" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#EA2C00]" />
                           )}
                         </div>
                         
@@ -181,11 +181,11 @@ export default function ExploreTimeSavings({
                             <span className={`font-semibold ${isSelected ? 'text-black' : 'text-black/80'}`}>
                               {scenario.label}
                             </span>
-                            <span className={`text-lg font-bold ${isSelected ? 'text-[#E85A2C]' : 'text-black/70'}`}>
+                            <span className={`text-lg font-bold ${isSelected ? 'text-[#EA2C00]' : 'text-black/70'}`}>
                               {scenarioMinutes[scenario.key]} min
                             </span>
                             {scenario.recommended && (
-                              <span className="text-[10px] font-semibold text-[#E85A2C] uppercase tracking-wide">
+                              <span className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-wide">
                                 RECOMMENDED
                               </span>
                             )}
@@ -251,7 +251,7 @@ export default function ExploreTimeSavings({
 
               {/* Hero Value */}
               <div className="text-center my-5">
-                <p className="text-5xl font-bold text-[#E85A2C]">
+                <p className="text-5xl font-bold text-[#EA2C00]">
                   {formatNumber(hoursSaved)}
                 </p>
                 <p className="text-sm text-white/50 mt-1">hours / year</p>
@@ -291,7 +291,7 @@ export default function ExploreTimeSavings({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/50">Hours/week</span>
-                    <span className="text-[#E85A2C] font-semibold">{hoursPerWeek}</span>
+                    <span className="text-[#EA2C00] font-semibold">{hoursPerWeek}</span>
                   </div>
                 </div>
               </div>

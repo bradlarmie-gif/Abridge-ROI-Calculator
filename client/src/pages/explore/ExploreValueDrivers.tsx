@@ -324,7 +324,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ edLwbsEnabled: !timeDriverInputs.edLwbsEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.edLwbsEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.edLwbsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-lwbs"
                 >
@@ -438,7 +438,7 @@ export default function ExploreValueDrivers({
                       
                       <div className="flex justify-between">
                         <span className="font-semibold text-black">Net LWBS Value</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(edLwbsValue)}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(edLwbsValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -468,7 +468,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ ipLosEnabled: !timeDriverInputs.ipLosEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.ipLosEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.ipLosEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-los"
                 >
@@ -527,7 +527,7 @@ export default function ExploreValueDrivers({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#666666]">LOS value:</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(ipLosValue)}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(ipLosValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -562,7 +562,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingOtEnabled: !timeDriverInputs.nursingOtEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.nursingOtEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-ot"
                 >
@@ -633,7 +633,7 @@ export default function ExploreValueDrivers({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#666666]">OT savings:</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(nursingOtValue)}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -681,7 +681,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ patientAccessEnabled: !timeDriverInputs.patientAccessEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.patientAccessEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-patient-access"
                 >
@@ -713,7 +713,7 @@ export default function ExploreValueDrivers({
                       max={50}
                       value={timeDriverInputs.capacityPercent}
                       onChange={(e) => updateTimeDriverInputs({ capacityPercent: Number(e.target.value) })}
-                      className="w-full accent-[#E85A2C] h-2"
+                      className="w-full accent-[#EA2C00] h-2"
                       data-testid="slider-capacity"
                     />
                     <div className="flex justify-between text-xs text-[#888888] mt-1">
@@ -761,12 +761,12 @@ export default function ExploreValueDrivers({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#666666]">Potential revenue:</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(potentialRevenue)}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(potentialRevenue)}</span>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-2 mt-3 text-xs text-[#888888]">
-                      <AlertTriangle className="w-4 h-4 text-[#E85A2C] flex-shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
                       <span>This accounts for provider behavior, scheduling constraints, and patient demand. Most organizations see 5-15% of reclaimed time convert to actual visits.</span>
                     </div>
                   </div>
@@ -803,7 +803,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ edThroughputEnabled: !timeDriverInputs.edThroughputEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.edThroughputEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.edThroughputEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-admission-capture"
                 >
@@ -903,7 +903,7 @@ export default function ExploreValueDrivers({
                           
                           <div className="flex justify-between">
                             <span className="font-semibold text-black">Annual Admission Capture Value</span>
-                            <span className="font-bold text-[#E85A2C]">{formatCurrency(edAdmissionCaptureValue)}</span>
+                            <span className="font-bold text-[#EA2C00]">{formatCurrency(edAdmissionCaptureValue)}</span>
                           </div>
                         </div>
                       </div>
@@ -940,7 +940,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.ipRoundingEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-rounding"
                 >
@@ -985,7 +985,7 @@ export default function ExploreValueDrivers({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#666666]">Rounding value:</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(ipRoundingValue)}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(ipRoundingValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -1020,7 +1020,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingRetentionEnabled: !timeDriverInputs.nursingRetentionEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.nursingRetentionEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.nursingRetentionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-nursing-retention"
                 >
@@ -1082,7 +1082,7 @@ export default function ExploreValueDrivers({
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#666666]">Retention value:</span>
-                        <span className="font-bold text-[#E85A2C]">{formatCurrency(nursingRetentionValue)}</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingRetentionValue)}</span>
                       </div>
                     </div>
                   </div>
@@ -1130,7 +1130,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.costReductionEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.costReductionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-cost-reduction"
                 >
@@ -1216,7 +1216,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ wellbeingEnabled: !timeDriverInputs.wellbeingEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-wellbeing"
                 >
@@ -1240,7 +1240,7 @@ export default function ExploreValueDrivers({
                   <p className="text-sm text-[#888888] mb-3">Your providers would get back:</p>
 
                   <div className="text-center mb-4">
-                    <p className="text-3xl font-bold text-[#E85A2C]">{hoursPerProviderPerWeek} hours per week</p>
+                    <p className="text-3xl font-bold text-[#EA2C00]">{hoursPerProviderPerWeek} hours per week</p>
                     <p className="text-sm text-[#888888]">per provider</p>
                   </div>
 
@@ -1260,12 +1260,12 @@ export default function ExploreValueDrivers({
                   {/* Calculate retention checkbox */}
                   <button
                     onClick={() => updateTimeDriverInputs({ calculateRetentionValue: !timeDriverInputs.calculateRetentionValue })}
-                    className="flex items-center gap-3 text-sm text-black hover:text-[#E85A2C] transition-colors mb-4"
+                    className="flex items-center gap-3 text-sm text-black hover:text-[#EA2C00] transition-colors mb-4"
                     data-testid="checkbox-calculate-retention"
                   >
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                       timeDriverInputs.calculateRetentionValue 
-                        ? 'bg-[#E85A2C] border-[#E85A2C]' 
+                        ? 'bg-[#EA2C00] border-[#EA2C00]' 
                         : 'border-[#D1D5DB] bg-white'
                     }`}>
                       {timeDriverInputs.calculateRetentionValue && <Check className="w-3.5 h-3.5 text-white" />}
@@ -1350,7 +1350,7 @@ export default function ExploreValueDrivers({
                               onClick={() => updateTimeDriverInputs({ retentionImpactScenario: scenario })}
                               className={`p-3 rounded-lg border text-center transition-all ${
                                 timeDriverInputs.retentionImpactScenario === scenario
-                                  ? 'bg-[#E85A2C] border-[#E85A2C] text-white'
+                                  ? 'bg-[#EA2C00] border-[#EA2C00] text-white'
                                   : 'bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]'
                               }`}
                               data-testid={`button-scenario-${scenario}`}
@@ -1408,12 +1408,12 @@ export default function ExploreValueDrivers({
                             <div className="h-px bg-[#888888] my-2" />
                             <div className="flex justify-between font-semibold">
                               <span className="text-black">= Retention value</span>
-                              <span className="text-[#E85A2C]">{formatCurrency(retentionCalcs.retentionValue)}</span>
+                              <span className="text-[#EA2C00]">{formatCurrency(retentionCalcs.retentionValue)}</span>
                             </div>
                           </div>
 
                           <div className="flex items-start gap-2 mt-4 text-xs text-[#888888] italic">
-                            <AlertTriangle className="w-4 h-4 text-[#E85A2C] flex-shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
                             <span>This assumes Abridge meaningfully reduces documentation burden for providers at risk of leaving due to burnout.</span>
                           </div>
                         </div>
@@ -1451,7 +1451,7 @@ export default function ExploreValueDrivers({
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingCareTimeEnabled: !timeDriverInputs.nursingCareTimeEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#E85A2C]' : 'bg-[#D1D5DB]'
+                    timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid="toggle-care-time"
                 >
@@ -1478,7 +1478,7 @@ export default function ExploreValueDrivers({
 
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="text-center py-2">
-                      <p className="text-3xl font-bold text-[#E85A2C]">{hoursPerProviderPerWeek} hours</p>
+                      <p className="text-3xl font-bold text-[#EA2C00]">{hoursPerProviderPerWeek} hours</p>
                       <p className="text-sm text-[#666666] mt-1">per nurse per week returned to direct care</p>
                     </div>
                     <div className="mt-4 pt-4 border-t border-[#E5E5E5]">
@@ -1504,7 +1504,7 @@ export default function ExploreValueDrivers({
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
             data-testid="button-continue"
           >
             Continue to Documentation Quality
@@ -1535,7 +1535,7 @@ export default function ExploreValueDrivers({
 
               {/* Hero Value */}
               <div className="text-center my-4">
-                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
                   {formatCurrency(totalTimeValue)}
                 </p>
                 <p className="text-sm text-[#888888] mt-1">
@@ -1552,7 +1552,7 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edLwbsEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edLwbsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">LWBS Recovery</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.edLwbsEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -1567,7 +1567,7 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Admission Capture</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -1582,7 +1582,7 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -1605,7 +1605,7 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.patientAccessEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Patient Access</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.patientAccessEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -1620,7 +1620,7 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Cost Reduction</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
@@ -1635,7 +1635,7 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
@@ -1661,7 +1661,7 @@ export default function ExploreValueDrivers({
               {/* Continue Button */}
               <Button
                 onClick={onNext}
-                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                className="w-full h-11 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
                 data-testid="button-panel-continue"
               >
                 Continue to Documentation

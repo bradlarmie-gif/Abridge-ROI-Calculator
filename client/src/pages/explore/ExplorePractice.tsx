@@ -161,7 +161,7 @@ export default function ExplorePractice({
                       onClick={() => handleEncounterPreset(preset)}
                       className={`p-3 rounded-lg border-2 transition-all text-center ${
                         selectedEncounterPreset === preset
-                          ? "border-[#E85A2C] bg-white"
+                          ? "border-[#EA2C00] bg-white"
                           : "border-transparent bg-white hover:border-[#D1D5DB]"
                       }`}
                       data-testid={`button-encounter-${preset}`}
@@ -211,7 +211,7 @@ export default function ExplorePractice({
                       onClick={() => handleUtilizationPreset(preset)}
                       className={`p-3 rounded-lg border-2 transition-all text-center ${
                         selectedUtilizationPreset === preset
-                          ? "border-[#E85A2C] bg-white"
+                          ? "border-[#EA2C00] bg-white"
                           : "border-transparent bg-white hover:border-[#D1D5DB]"
                       }`}
                       data-testid={`button-utilization-${preset}`}
@@ -242,7 +242,7 @@ export default function ExplorePractice({
               <Button
                 onClick={onNext}
                 disabled={!canContinue}
-                className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2 disabled:opacity-50"
+                className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2 disabled:opacity-50"
                 data-testid="button-continue"
               >
                 Continue
@@ -269,19 +269,19 @@ export default function ExplorePractice({
 
               {/* Stats with left border */}
               <div className="space-y-3 mb-4">
-                <div className="border-l-4 border-[#E85A2C] pl-3">
+                <div className="border-l-4 border-[#EA2C00] pl-3">
                   <p className="text-lg font-bold text-white">
                     {providers > 0 ? formatNumber(providers) : '—'}
                   </p>
                   <p className="text-sm text-[#888888]">providers</p>
                 </div>
-                <div className="border-l-4 border-[#E85A2C] pl-3">
+                <div className="border-l-4 border-[#EA2C00] pl-3">
                   <p className="text-lg font-bold text-white">
                     {state.annualEncounters > 0 ? formatNumber(state.annualEncounters) : '—'}
                   </p>
                   <p className="text-sm text-[#888888]">encounters/year</p>
                 </div>
-                <div className="border-l-4 border-[#E85A2C] pl-3">
+                <div className="border-l-4 border-[#EA2C00] pl-3">
                   <p className="text-lg font-bold text-white">
                     {state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : '—'}
                   </p>
@@ -296,7 +296,7 @@ export default function ExplorePractice({
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Eligible Encounters
                 </p>
-                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
                   {canContinue ? formatNumber(eligibleEncounters) : '—'}
                 </p>
                 <p className="text-sm text-[#888888] mt-2">
@@ -313,7 +313,7 @@ export default function ExplorePractice({
                 className={`w-full h-11 font-medium rounded-md gap-2 ${
                   !canContinue
                     ? "bg-[#333333] text-[#666666] cursor-not-allowed"
-                    : "bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white"
+                    : "bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white"
                 }`}
                 data-testid="button-panel-continue"
               >

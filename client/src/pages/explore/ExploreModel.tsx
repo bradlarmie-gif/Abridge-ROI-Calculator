@@ -325,7 +325,7 @@ export default function ExploreModel({
           </p>
 
           {/* Hero Number */}
-          <p className="text-5xl md:text-7xl font-bold text-[#E85A2C] mb-1" data-testid="text-net-value">
+          <p className="text-5xl md:text-7xl font-bold text-[#EA2C00] mb-1" data-testid="text-net-value">
             {formatCurrency(netAnnualValue)}
           </p>
           <p className="text-xl text-[#888888] mb-4">/ year</p>
@@ -379,8 +379,8 @@ export default function ExploreModel({
             <div className="bg-[#F5F0EB] rounded-xl p-6">
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.timeCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-1 h-8 bg-[#E85A2C] rounded-full" />
-                <p className="text-2xl font-bold text-[#E85A2C]">{formatCurrency(timeValue)} / year</p>
+                <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
+                <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(timeValue)} / year</p>
               </div>
 
               <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -445,8 +445,8 @@ export default function ExploreModel({
             <div className="bg-[#F5F0EB] rounded-xl p-6">
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.docCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-1 h-8 bg-[#E85A2C] rounded-full" />
-                <p className="text-2xl font-bold text-[#E85A2C]">{formatCurrency(docValue)} / year</p>
+                <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
+                <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(docValue)} / year</p>
               </div>
 
               <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -491,7 +491,7 @@ export default function ExploreModel({
             <div className="bg-[#F5F0EB] rounded-xl p-8">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
-                  <Link className="w-5 h-5 text-[#E85A2C]" />
+                  <Link className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-black uppercase tracking-wide">Downstream Value</h3>
@@ -508,28 +508,28 @@ export default function ExploreModel({
               <p className="text-sm font-semibold text-black mb-3">Better ED documentation directly impacts:</p>
               
               <div className="space-y-3 mb-5">
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
                     <BarChart3 className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">DRG & CMI Capture</span>
                   </div>
                   <p className="text-sm text-[#666666]">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines your case mix.</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
                     <Check className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">Medical Necessity</span>
                   </div>
                   <p className="text-sm text-[#666666]">The admission decision is documented in ED. This is your first line of defense against status denials and downgrades.</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
                     <FileText className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">CDI Efficiency</span>
                   </div>
                   <p className="text-sm text-[#666666]">When the ED note is complete, CDI teams spend less time querying physicians and more time on complex cases.</p>
                 </div>
-                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
                     <AlertTriangle className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">Denial Prevention</span>
@@ -669,7 +669,7 @@ export default function ExploreModel({
                 <p className="text-sm text-[#888888]">/ year</p>
                 <p className="text-base text-[#888888] mt-2">{roi.toFixed(1)}× ROI</p>
               </div>
-              <div className="bg-[#E85A2C] rounded-lg p-5">
+              <div className="bg-[#EA2C00] rounded-lg p-5">
                 <p className="text-sm font-medium text-white/80 mb-2">FULL SCALE VALUE</p>
                 <p className="text-3xl font-bold text-white mb-1">{formatCurrency(expandedValue)}</p>
                 <p className="text-sm text-white/80">/ year</p>
@@ -706,7 +706,7 @@ export default function ExploreModel({
                     onClick={() => setSelectedPace(pace)}
                     className={`rounded-full ${
                       selectedPace === pace 
-                        ? "bg-[#E85A2C] text-white" 
+                        ? "bg-[#EA2C00] text-white" 
                         : "bg-[#F5F0EB] text-[#888888]"
                     }`}
                     data-testid={`pace-${pace}`}
@@ -720,7 +720,7 @@ export default function ExploreModel({
             {/* Legend */}
             <div className="flex items-center justify-center gap-6 mb-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-0.5 bg-[#E85A2C] rounded-full" />
+                <div className="w-8 h-0.5 bg-[#EA2C00] rounded-full" />
                 <span className="text-[#666666]">Projected</span>
               </div>
               <div className="flex items-center gap-2">
@@ -735,8 +735,8 @@ export default function ExploreModel({
                 <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 10, bottom: 40 }}>
                   <defs>
                     <linearGradient id="projectedGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#E85A2C" stopOpacity={0.15} />
-                      <stop offset="100%" stopColor="#E85A2C" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#EA2C00" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#EA2C00" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   
@@ -757,7 +757,7 @@ export default function ExploreModel({
                             x={0} 
                             y={16} 
                             textAnchor={anchor} 
-                            fill={point.isPilot || point.isFullScale ? "#E85A2C" : "#888888"}
+                            fill={point.isPilot || point.isFullScale ? "#EA2C00" : "#888888"}
                             fontSize={12}
                             fontWeight={point.isPilot || point.isFullScale ? 700 : 400}
                           >
@@ -788,8 +788,8 @@ export default function ExploreModel({
                           <p className="text-sm text-[#888888] mb-3">{data.providers} providers · {data.utilization}% util</p>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-6">
-                              <span className="text-[#E85A2C]">Projected:</span>
-                              <span className="font-semibold text-[#E85A2C]">{formatCurrency(data.projectedValue)}</span>
+                              <span className="text-[#EA2C00]">Projected:</span>
+                              <span className="font-semibold text-[#EA2C00]">{formatCurrency(data.projectedValue)}</span>
                             </div>
                             <div className="flex justify-between gap-6">
                               <span className="text-[#888888]">Linear:</span>
@@ -820,7 +820,7 @@ export default function ExploreModel({
                   <Line 
                     type="monotone" 
                     dataKey="projectedValue" 
-                    stroke="#E85A2C" 
+                    stroke="#EA2C00" 
                     strokeWidth={3}
                     dot={false}
                   />
@@ -829,7 +829,7 @@ export default function ExploreModel({
                     x={0} 
                     y={chartData[0]?.projectedValue || 0} 
                     r={8} 
-                    fill="#E85A2C" 
+                    fill="#EA2C00" 
                     stroke="white"
                     strokeWidth={3}
                   />
@@ -838,7 +838,7 @@ export default function ExploreModel({
                     x={currentPace.months} 
                     y={chartData[chartData.length - 1]?.projectedValue || 0} 
                     r={8} 
-                    fill="#E85A2C" 
+                    fill="#EA2C00" 
                     stroke="white"
                     strokeWidth={3}
                   />
@@ -878,7 +878,7 @@ export default function ExploreModel({
             </div>
             <div className="bg-[#F5F0EB] rounded-lg p-5 text-center">
               <p className="text-sm text-[#888888] mb-2">3-Year Net</p>
-              <p className="text-xl font-bold text-[#E85A2C]">{formatCurrency(threeYearTotal)}</p>
+              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(threeYearTotal)}</p>
             </div>
           </div>
 
@@ -914,7 +914,7 @@ export default function ExploreModel({
               </Button>
               <Button
                 onClick={() => setShowExportModal(true)}
-                className="bg-[#E85A2C] text-white gap-2"
+                className="bg-[#EA2C00] text-white gap-2"
                 data-testid="button-export"
               >
                 <Download className="w-4 h-4" />

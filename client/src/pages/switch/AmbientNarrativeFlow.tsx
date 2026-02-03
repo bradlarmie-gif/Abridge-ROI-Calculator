@@ -114,9 +114,9 @@ export default function AmbientNarrativeFlow({
             disabled={step.id > currentStep && !isCompleted}
             className={`w-2.5 h-2.5 rounded-full transition-all ${
               isActive 
-                ? "bg-[#E85A2C] scale-125" 
+                ? "bg-[#EA2C00] scale-125" 
                 : isCompleted 
-                  ? "bg-[#E85A2C]/40 hover:bg-[#E85A2C]/60"
+                  ? "bg-[#EA2C00]/40 hover:bg-[#EA2C00]/60"
                   : "bg-[#D1D5DB] cursor-not-allowed"
             }`}
             data-testid={`step-indicator-${step.id}`}
