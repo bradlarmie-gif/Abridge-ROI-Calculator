@@ -1,13 +1,8 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, Calendar, AlertTriangle, Timer, Moon, TrendingUp, Lightbulb, Info, FileEdit, RefreshCw } from "lucide-react";
+import { ArrowRight, Users, DollarSign, Clock, Building2, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   type ScribeInputs,
   calculateScribeGap,
@@ -30,6 +25,7 @@ export default function ScribeAssessment({
   onBackToJourney,
 }: ScribeAssessmentProps) {
   const calculations = useMemo(() => calculateScribeGap(inputs), [inputs]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const updateInput = <K extends keyof ScribeInputs>(key: K, value: ScribeInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
@@ -40,7 +36,7 @@ export default function ScribeAssessment({
   const hasFullInfo = hasBasicInfo && hasCostInfo && inputs.providersWithScribes > 0 && inputs.annualEncounters > 0;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="min-h-screen bg-white">
       <UnifiedHeader 
         pathType="switch"
         currentStep={1} 
@@ -52,134 +48,114 @@ export default function ScribeAssessment({
       <UnifiedHeaderSpacer />
 
       <main className="py-6 md:py-8 pb-8 px-4 md:px-6 lg:px-8 max-w-6xl mx-auto">
+        {/* Header - smaller, wayfinding label */}
         <motion.div 
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-8 md:mb-10"
+          className="mb-8"
         >
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-[#111827] mb-2">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">
             Scribe Program Analysis
-          </h1>
-          <p className="text-sm md:text-base text-[#6B7280]">
-            Let's understand your current documentation support
           </p>
         </motion.div>
 
+        {/* Section 2 & 3: Your Program (Inputs) + Your Program Today (Summary) */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="bg-[#F5F0E8] rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
+          className="mb-8"
         >
-          <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">Your Scribe Program</h2>
-          <p className="text-sm text-[#6B7280] mb-5">Your program details</p>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InputCard
-                icon={<Users className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Number of scribes"
-                value={inputs.scribeCount}
-                onChange={(v) => updateInput("scribeCount", v)}
-                unit="scribes"
-                placeholder="e.g. 5-50"
-                hint="Typical: 5-100 scribes"
-                testId="input-scribe-count"
-              />
+            {/* Input Card - Warm Beige */}
+            <div className="lg:col-span-2 bg-[#F5F0EB] rounded-xl p-6 md:p-8">
+              <h2 className="text-lg font-semibold text-black mb-6">Your Scribe Program</h2>
 
-              <InputCard
-                icon={<DollarSign className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Cost per scribe"
-                value={inputs.scribeCostPerHour}
-                onChange={(v) => updateInput("scribeCostPerHour", v)}
-                unit="$/hour"
-                placeholder="e.g. 18-35"
-                hint="Range: $15-$45/hr"
-                testId="input-scribe-cost"
-              />
+              {/* 4 Essential Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <InputField
+                  label="Number of scribes"
+                  value={inputs.scribeCount}
+                  onChange={(v) => updateInput("scribeCount", v)}
+                  testId="input-scribe-count"
+                />
+                <InputField
+                  label="Cost per scribe ($/hour)"
+                  value={inputs.scribeCostPerHour}
+                  onChange={(v) => updateInput("scribeCostPerHour", v)}
+                  testId="input-scribe-cost"
+                />
+                <InputField
+                  label="Providers with scribes"
+                  value={inputs.providersWithScribes}
+                  onChange={(v) => updateInput("providersWithScribes", v)}
+                  testId="input-providers-with-scribes"
+                />
+                <InputField
+                  label="Total providers"
+                  value={inputs.totalProviders}
+                  onChange={(v) => updateInput("totalProviders", v)}
+                  testId="input-total-providers"
+                />
+              </div>
 
-              <InputCard
-                icon={<Clock className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Hours per week"
-                value={inputs.scribeHoursPerWeek}
-                onChange={(v) => updateInput("scribeHoursPerWeek", v)}
-                unit="hrs/week"
-                placeholder="e.g. 40"
-                hint="Full-time: 40 hrs"
-                testId="input-scribe-hours"
-              />
+              {/* Expandable Advanced Settings */}
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center gap-2 text-sm text-[#888888] hover:text-[#111827] transition-colors mt-2"
+                data-testid="button-toggle-advanced"
+              >
+                <span>Adjust additional assumptions</span>
+                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
 
-              <InputCard
-                icon={<UserCheck className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Providers with scribes"
-                value={inputs.providersWithScribes}
-                onChange={(v) => updateInput("providersWithScribes", v)}
-                unit="providers"
-                placeholder="e.g. 10-30"
-                hint="Currently supported"
-                testId="input-providers-with-scribes"
-              />
+              <AnimatePresence>
+                {showAdvanced && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-[#E5E7EB]">
+                      <InputField
+                        label="Hours per week"
+                        value={inputs.scribeHoursPerWeek}
+                        onChange={(v) => updateInput("scribeHoursPerWeek", v)}
+                        testId="input-scribe-hours"
+                      />
+                      <InputField
+                        label="Annual encounters"
+                        value={inputs.annualEncounters}
+                        onChange={(v) => updateInput("annualEncounters", v)}
+                        testId="input-annual-encounters"
+                      />
+                      <InputField
+                        label="Doc time per encounter (min)"
+                        value={inputs.minutesPerEncounter}
+                        onChange={(v) => updateInput("minutesPerEncounter", v)}
+                        testId="input-minutes-per-encounter"
+                      />
+                      <InputField
+                        label="Scribe turnover rate (%)"
+                        value={inputs.turnoverRate}
+                        onChange={(v) => updateInput("turnoverRate", v)}
+                        testId="input-turnover-rate"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              <InputCard
-                icon={<Building2 className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Total providers"
-                value={inputs.totalProviders}
-                onChange={(v) => updateInput("totalProviders", v)}
-                unit="providers"
-                placeholder="e.g. 50-500"
-                hint="All physicians & APPs"
-                testId="input-total-providers"
-              />
-
-              <InputCard
-                icon={<Calendar className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Annual encounters"
-                value={inputs.annualEncounters}
-                onChange={(v) => updateInput("annualEncounters", v)}
-                unit="per year"
-                placeholder="e.g. 100K-1M"
-                hint="Org-wide volume"
-                testId="input-annual-encounters"
-              />
-
-              <InputCard
-                icon={<FileEdit className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Doc time per encounter"
-                value={inputs.minutesPerEncounter}
-                onChange={(v) => updateInput("minutesPerEncounter", v)}
-                unit="minutes"
-                placeholder="e.g. 8-15"
-                hint="Without scribe support"
-                testId="input-minutes-per-encounter"
-              />
-
-              <InputCard
-                icon={<RefreshCw className="w-4 h-4 text-[#EA2C00]" />}
-                iconBg="bg-[#FFF5F2]"
-                label="Scribe turnover rate"
-                value={inputs.turnoverRate}
-                onChange={(v) => updateInput("turnoverRate", v)}
-                unit="%/year"
-                placeholder="e.g. 30-50"
-                hint="Annual replacement rate"
-                testId="input-turnover-rate"
-              />
-
-                          </div>
-
+            {/* Your Program Today - White with red-orange left borders */}
             <div className="lg:col-span-1">
-              <div className="bg-[#FFF5F2] border border-[#EA2C00]/10 rounded-xl p-5 lg:sticky lg:top-24">
-                <div className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-4">
+              <div className="bg-white rounded-xl p-6 lg:sticky lg:top-24 border border-[#E5E7EB]">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-6">
                   Your Program Today
-                </div>
+                </p>
                 
                 <AnimatePresence mode="wait">
                   {hasBasicInfo ? (
@@ -188,28 +164,26 @@ export default function ScribeAssessment({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="space-y-4"
+                      className="space-y-6"
                     >
-                      <div>
-                        <div className="text-3xl font-bold text-[#111827]">{inputs.scribeCount}</div>
-                        <div className="text-sm text-[#6B7280]">scribes employed</div>
+                      <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                        <div className="text-5xl font-bold text-black">{inputs.scribeCount}</div>
+                        <div className="text-sm text-[#888888]">scribes employed</div>
                       </div>
                       
                       {hasCostInfo && (
-                        <div className="border-t border-[#E2E8F0] pt-4">
-                          <div className="text-2xl font-bold text-[#111827]">{formatCurrency(calculations.totalScribeCost)}</div>
-                          <div className="text-sm text-[#6B7280]">annual investment</div>
+                        <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                          <div className="text-4xl font-bold text-black">{formatCurrency(calculations.totalScribeCost)}</div>
+                          <div className="text-sm text-[#888888]">annual investment</div>
                         </div>
                       )}
                       
                       {inputs.providersWithScribes > 0 && (
-                        <div className="border-t border-[#E2E8F0] pt-4">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-[#111827]">{calculations.coveragePercent}%</span>
-                            <span className="text-sm text-[#6B7280]">coverage</span>
-                          </div>
-                          <div className="text-xs text-[#9CA3AF] mt-1">
-                            {inputs.providersWithScribes} of {inputs.totalProviders} providers supported
+                        <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                          <div className="text-4xl font-bold text-black">{calculations.coveragePercent}%</div>
+                          <div className="text-sm text-[#888888]">provider coverage</div>
+                          <div className="text-xs text-[#888888] italic mt-1">
+                            {inputs.providersWithScribes} of {inputs.totalProviders} providers
                           </div>
                         </div>
                       )}
@@ -220,12 +194,9 @@ export default function ScribeAssessment({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="text-center py-6"
+                      className="text-center py-8"
                     >
-                      <div className="w-12 h-12 rounded-full bg-white/50 flex items-center justify-center mx-auto mb-3">
-                        <Lightbulb className="w-5 h-5 text-[#EA2C00]/50" />
-                      </div>
-                      <p className="text-sm text-[#9CA3AF]">
+                      <p className="text-sm text-[#888888]">
                         Enter your scribe program details to see your current state
                       </p>
                     </motion.div>
@@ -236,6 +207,7 @@ export default function ScribeAssessment({
           </div>
         </motion.section>
 
+        {/* Section 4: The Coverage Gap */}
         <AnimatePresence>
           {hasBasicInfo && inputs.providersWithScribes > 0 && (
             <motion.section 
@@ -243,149 +215,104 @@ export default function ScribeAssessment({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
+              className="bg-white rounded-xl p-6 md:p-8 mb-8 border border-[#E5E7EB]"
             >
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-base md:text-lg font-bold text-[#111827]">The Coverage Gap</h2>
-                {calculations.providersWithoutSupport > 0 && (
-                  <span className="px-2 py-0.5 bg-[#FFF5F2] text-[#EA2C00] text-xs font-semibold rounded-full">
-                    {calculations.providersWithoutSupport} providers without support
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-[#6B7280] mb-6">Providers your program doesn't reach</p>
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                The Coverage Gap
+              </p>
+              <p className="text-sm text-[#6B7280] mb-6">
+                Your program covers {inputs.providersWithScribes} providers. {calculations.providersWithoutSupport} are documenting on their own.
+              </p>
 
-              <div className="mb-6">
-                <div className="relative h-14 bg-[#F1F5F9] rounded-xl overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.max(calculations.coveragePercent, 2)}%` }}
-                    transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="absolute top-0 left-0 h-full bg-black flex items-center"
-                  />
-                  {calculations.coveragePercent >= 15 && (
-                    <span className="absolute top-1/2 -translate-y-1/2 left-4 text-sm font-semibold text-white z-10">
+              {/* Horizontal Bar Visualization */}
+              <div className="relative h-12 rounded-lg overflow-hidden mb-2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.max(calculations.coveragePercent, 5)}%` }}
+                  transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="absolute top-0 left-0 h-full bg-black flex items-center justify-center"
+                >
+                  {calculations.coveragePercent >= 12 && (
+                    <span className="text-xs font-medium text-white">
                       {inputs.providersWithScribes} with scribes
                     </span>
                   )}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.5 }}
-                    className="absolute top-0 h-full bg-slate-200 flex items-center justify-center"
-                    style={{
-                      left: `${calculations.coveragePercent}%`,
-                      width: `${100 - calculations.coveragePercent}%`,
-                    }}
-                  >
-                    <span className="text-sm font-semibold text-slate-600">
-                      {calculations.providersWithoutSupport} without support
-                    </span>
-                  </motion.div>
+                </motion.div>
+                <div
+                  className="absolute top-0 h-full bg-[#F5F0EB] flex items-center justify-center"
+                  style={{
+                    left: `${calculations.coveragePercent}%`,
+                    width: `${100 - calculations.coveragePercent}%`,
+                  }}
+                >
+                  <span className="text-xs font-medium text-[#6B7280]">
+                    {calculations.providersWithoutSupport} without support
+                  </span>
                 </div>
               </div>
-
-              {inputs.annualEncounters > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.3 }}
-                  className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5"
-                >
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-                      <AlertTriangle className="w-4 h-4 text-[#EA2C00]" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[#111827] mb-1">The Documentation Burden</div>
-                      <p className="text-sm text-[#6B7280]">
-                        What happens when {calculations.providersWithoutSupport} providers document alone
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center cursor-help relative group">
-                          <Info className="w-3.5 h-3.5 text-[#9CA3AF] absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity" />
-                          <div className="flex justify-center mb-2">
-                            <Timer className="w-5 h-5 text-[#EA2C00]" />
-                          </div>
-                          <div className="text-2xl font-bold text-[#111827]">
-                            {calculations.unsupportedDocTimeHours.toLocaleString()}
-                          </div>
-                          <div className="text-xs text-[#6B7280] mb-1">hours/year documenting</div>
-                          <div className="text-xs font-medium text-[#EA2C00]">
-                            {Math.round(calculations.unsupportedDocTimeHours / 2080)} FTEs worth of time
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-xs p-3">
-                        <div className="text-sm space-y-2">
-                          <p className="font-semibold">How we calculate this:</p>
-                          <p>{calculations.providersWithoutSupport} unsupported providers × {calculations.encountersPerProvider} encounters each × {inputs.minutesPerEncounter} min per encounter ÷ 60</p>
-                          <p className="text-xs text-muted-foreground">Based on {inputs.minutesPerEncounter} minutes of documentation time per patient encounter without scribe support.</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center cursor-help relative group">
-                          <Info className="w-3.5 h-3.5 text-[#9CA3AF] absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity" />
-                          <div className="flex justify-center mb-2">
-                            <Moon className="w-5 h-5 text-[#EA2C00]" />
-                          </div>
-                          <div className="text-2xl font-bold text-[#111827]">
-                            {calculations.pajamaTimeHours.toLocaleString()}
-                          </div>
-                          <div className="text-xs text-[#6B7280] mb-1">hours/year after hours</div>
-                          <div className="text-xs font-medium text-[#EA2C00]">
-                            Work taken home
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-xs p-3">
-                        <div className="text-sm space-y-2">
-                          <p className="font-semibold">How we calculate this:</p>
-                          <p>{calculations.unsupportedDocTimeHours.toLocaleString()} total doc hours × 25% = {calculations.pajamaTimeHours.toLocaleString()} hours</p>
-                          <p className="text-xs text-muted-foreground">Research shows ~25% of documentation work happens outside clinic hours ("pajama time").</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center cursor-help relative group">
-                          <Info className="w-3.5 h-3.5 text-[#9CA3AF] absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity" />
-                          <div className="flex justify-center mb-2">
-                            <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
-                          </div>
-                          <div className="text-2xl font-bold text-[#111827]">
-                            {calculations.docTimePerUnsupportedProvider}
-                          </div>
-                          <div className="text-xs text-[#6B7280] mb-1">hrs/year per provider</div>
-                          <div className="text-xs font-medium text-[#EA2C00]">
-                            {Math.round(calculations.docTimePerUnsupportedProvider / 40)} {Math.round(calculations.docTimePerUnsupportedProvider / 40) === 1 ? 'week' : 'weeks'} of their year
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-xs p-3">
-                        <div className="text-sm space-y-2">
-                          <p className="font-semibold">How we calculate this:</p>
-                          <p>{calculations.unsupportedDocTimeHours.toLocaleString()} total hours ÷ {calculations.providersWithoutSupport} providers = {calculations.docTimePerUnsupportedProvider} hours each</p>
-                          <p className="text-xs text-muted-foreground">That's {Math.round(calculations.docTimePerUnsupportedProvider / 40)} full work weeks spent on documentation annually.</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </motion.div>
-              )}
             </motion.section>
           )}
         </AnimatePresence>
 
+        {/* Section 5: The Documentation Burden */}
+        <AnimatePresence>
+          {hasBasicInfo && inputs.providersWithScribes > 0 && inputs.annualEncounters > 0 && (
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 mb-8"
+            >
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                The Documentation Burden
+              </p>
+              <p className="text-sm text-[#6B7280] mb-6">
+                {calculations.providersWithoutSupport} providers. No documentation support. Here's what that costs them.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                  <div className="text-4xl font-bold text-black">
+                    {calculations.unsupportedDocTimeHours.toLocaleString()}
+                  </div>
+                  <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">
+                    Hours/year documenting
+                  </div>
+                  <div className="text-xs text-[#888888] italic mt-1">
+                    {Math.round(calculations.unsupportedDocTimeHours / 2080)} FTEs worth of time
+                  </div>
+                </div>
+
+                <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                  <div className="text-4xl font-bold text-black">
+                    {calculations.pajamaTimeHours.toLocaleString()}
+                  </div>
+                  <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">
+                    Hours/year after hours
+                  </div>
+                  <div className="text-xs text-[#888888] italic mt-1">
+                    Work taken home
+                  </div>
+                </div>
+
+                <div className="border-l-[3px] border-l-[#E85A2C] pl-4">
+                  <div className="text-4xl font-bold text-black">
+                    {calculations.docTimePerUnsupportedProvider}
+                  </div>
+                  <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-1">
+                    Hours/year per provider
+                  </div>
+                  <div className="text-xs text-[#888888] italic mt-1">
+                    {Math.round(calculations.docTimePerUnsupportedProvider / 40)} {Math.round(calculations.docTimePerUnsupportedProvider / 40) === 1 ? 'week' : 'weeks'} of their year
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* Section 6: Scaling to Full Coverage */}
         <AnimatePresence>
           {hasFullInfo && (
             <motion.section 
@@ -393,67 +320,34 @@ export default function ScribeAssessment({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
+              className="bg-white rounded-xl p-6 md:p-8 mb-8 border border-[#E5E7EB]"
             >
-              <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">Scaling to Full Coverage</h2>
-              <p className="text-sm text-[#6B7280] mb-6">What it would cost to cover every provider</p>
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                Scaling to Full Coverage
+              </p>
+              <p className="text-sm text-[#6B7280] mb-6">
+                What it would cost to cover every provider with scribes.
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-slate-400" />
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Today</span>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <div className="text-3xl font-bold text-[#111827]">{formatCurrency(calculations.totalScribeCost)}</div>
-                    <div className="text-sm text-[#6B7280]">annual scribe investment</div>
-                  </div>
-
-                  <div className="space-y-2 text-sm border-t border-[#E5E7EB] pt-4">
-                    <div className="flex justify-between">
-                      <span className="text-[#6B7280]">Scribes</span>
-                      <span className="font-semibold text-[#111827]">{inputs.scribeCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#6B7280]">Coverage</span>
-                      <span className="font-semibold text-[#111827]">{calculations.coveragePercent}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#6B7280]">Ratio</span>
-                      <span className="font-semibold text-[#111827]">1:{calculations.scribeRatio}</span>
-                    </div>
+                {/* Today Card - White */}
+                <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-3">Today</p>
+                  <div className="text-3xl font-bold text-black mb-1">{formatCurrency(calculations.totalScribeCost)}/year</div>
+                  <div className="text-sm text-[#888888]">
+                    {inputs.scribeCount} scribes · {calculations.coveragePercent}% coverage
                   </div>
                 </div>
 
-                <div className="bg-[#FEF7F5] border border-[#FECDC4] rounded-xl p-5 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#FEE4DE] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
-                  
-                  <div className="relative">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
-                      <span className="text-xs font-semibold text-[#EA2C00] uppercase tracking-wide">Full Coverage</span>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <div className="text-3xl font-bold text-[#111827]">{formatCurrency(calculations.fullScribeCost)}</div>
-                      <div className="text-sm text-[#6B7280]">to reach 100% coverage</div>
-                    </div>
-
-                    <div className="space-y-2 text-sm border-t border-[#FECDC4] pt-4">
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Scribes needed</span>
-                        <span className="font-semibold text-[#111827]">{calculations.scribesNeededForFullCoverage}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Coverage</span>
-                        <span className="font-semibold text-emerald-600">100%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#6B7280]">Additional cost</span>
-                        <span className="font-semibold text-[#EA2C00]">+{formatCurrency(calculations.costToScale)}</span>
-                      </div>
-                    </div>
+                {/* Full Coverage Card - Warm Beige */}
+                <div className="bg-[#F5F0EB] rounded-xl p-5">
+                  <p className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-3">Full Coverage</p>
+                  <div className="text-3xl font-bold text-black mb-1">{formatCurrency(calculations.fullScribeCost)}/year</div>
+                  <div className="text-sm text-[#888888]">
+                    {calculations.scribesNeededForFullCoverage} scribes · 100% coverage
+                  </div>
+                  <div className="text-sm font-semibold text-[#E85A2C] mt-2">
+                    +{formatCurrency(calculations.costToScale)} additional
                   </div>
                 </div>
               </div>
@@ -461,6 +355,7 @@ export default function ScribeAssessment({
           )}
         </AnimatePresence>
 
+        {/* Section 7: Transition CTA */}
         <AnimatePresence>
           {hasFullInfo && (
             <motion.section 
@@ -468,135 +363,58 @@ export default function ScribeAssessment({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="bg-black rounded-xl p-6 md:p-8 mb-6 text-center relative overflow-hidden"
+              className="bg-white rounded-xl p-8 md:p-12 text-center border border-[#E5E7EB]"
             >
-              <div className="absolute inset-0 opacity-5">
-                <div className="absolute top-4 left-8 w-32 h-32 rounded-full border border-white" />
-                <div className="absolute bottom-4 right-12 w-24 h-24 rounded-full border border-white" />
-              </div>
+              <p className="text-[#6B7280] text-base mb-2">
+                Scaling your scribe program to full coverage would require an additional
+              </p>
+              <p className="text-3xl md:text-4xl font-bold text-black mb-4">
+                {formatCurrency(calculations.costToScale)}/year
+              </p>
+              <p className="text-lg font-medium text-black mb-6">
+                There's another way.
+              </p>
               
-              <div className="relative">
-                <p className="text-slate-300 text-sm md:text-base mb-3">
-                  Scaling your scribe program to full coverage would cost an additional
-                </p>
-                <div className="text-3xl md:text-4xl font-bold text-white mb-3">
-                  {formatCurrency(calculations.costToScale)}/year
-                </div>
-                <p className="text-slate-400 text-sm md:text-base mb-6 max-w-lg mx-auto">
-                  There's another way to cover every provider—without adding {calculations.scribesNeededForFullCoverage - inputs.scribeCount} more scribes.
-                </p>
-                
-                <Button
-                  onClick={onNext}
-                  className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
-                  data-testid="button-see-full-analysis"
-                >
-                  Continue
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
+              <Button
+                onClick={onNext}
+                className="h-12 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-semibold rounded-full"
+                data-testid="button-see-full-analysis"
+              >
+                Continue
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </motion.section>
           )}
         </AnimatePresence>
 
-        {!hasFullInfo && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-[#FFF5F2] border border-[#EA2C00]/10 rounded-xl p-6 text-center"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#FFF5F2] flex items-center justify-center mx-auto mb-3">
-              <Lightbulb className="w-5 h-5 text-[#EA2C00]" />
-            </div>
-            <p className="text-[#6B7280] text-sm">
-              Complete the inputs above to see your full analysis
-            </p>
-            <p className="text-[#9CA3AF] text-xs mt-1">
-              We'll show your coverage gap, documentation burden, and scaling costs
-            </p>
-          </motion.div>
-        )}
       </main>
     </div>
   );
 }
 
-interface InputCardProps {
-  icon: React.ReactNode;
-  iconBg?: string;
+// Simple Input Field Component
+function InputField({
+  label,
+  value,
+  onChange,
+  testId,
+}: {
   label: string;
   value: number;
   onChange: (value: number) => void;
-  unit: string;
-  placeholder?: string;
-  hint?: string;
   testId: string;
-}
-
-function InputCard({ icon, iconBg = "bg-slate-100", label, value, onChange, unit, placeholder, hint, testId }: InputCardProps) {
-  const [localValue, setLocalValue] = useState(value > 0 ? String(value) : "");
-  const [isFocused, setIsFocused] = useState(false);
-
-  const isEmpty = value === 0 && localValue === "";
-  const displayValue = isFocused ? localValue : (value > 0 ? value.toLocaleString() : "");
-
-  if (!isFocused && value > 0 && localValue !== String(value)) {
-    setLocalValue(String(value));
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.replace(/,/g, "");
-    setLocalValue(inputValue);
-    const parsed = parseFloat(inputValue);
-    if (!isNaN(parsed) && parsed >= 0) {
-      onChange(parsed);
-    } else if (inputValue === "") {
-      onChange(0);
-    }
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    const parsed = parseFloat(localValue.replace(/,/g, ""));
-    if (isNaN(parsed) || localValue === "" || parsed < 0) {
-      setLocalValue("");
-      onChange(0);
-    } else {
-      setLocalValue(String(parsed));
-      onChange(parsed);
-    }
-  };
-
+}) {
   return (
-    <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-3.5 transition-all duration-200 hover:border-[#D1D5DB] hover:shadow-sm">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
-          <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center`}>
-            {icon}
-          </div>
-          <label className="text-sm font-medium text-[#111827]">{label}</label>
-        </div>
-        {hint && isEmpty && (
-          <span className="text-[10px] text-[#9CA3AF] font-medium">{hint}</span>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          inputMode="decimal"
-          value={displayValue}
-          onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          autoComplete="off"
-          data-lpignore="true"
-          data-form-type="other"
-          className="flex-1 px-3 py-2 text-base font-semibold border border-[#E5E7EB] rounded-lg focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 outline-none bg-white transition-all duration-200 placeholder:text-[#C4C8CC] placeholder:font-normal"
-          data-testid={testId}
-        />
-        <span className="text-xs text-[#9CA3AF] font-medium whitespace-nowrap">{unit}</span>
-      </div>
+    <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
+      <label className="block text-xs text-[#888888] mb-2">{label}</label>
+      <input
+        type="number"
+        value={value || ""}
+        onChange={(e) => onChange(Number(e.target.value) || 0)}
+        className="w-full text-right text-lg font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0"
+        placeholder="0"
+        data-testid={testId}
+      />
     </div>
   );
 }

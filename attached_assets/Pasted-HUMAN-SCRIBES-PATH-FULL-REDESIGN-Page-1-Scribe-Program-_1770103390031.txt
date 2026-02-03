@@ -1,0 +1,420 @@
+HUMAN SCRIBES PATH — FULL REDESIGN
+Page 1: Scribe Program Analysis (Input Page)
+The Story This Page Tells:
+You have a scribe program. Let's map it. As you do, you'll see what it actually costs, who it covers, and who it doesn't.
+
+Current Problems:
+
+Too dense. Six input fields visible at once feels like a form, not a conversation.
+Dark "YOUR CURRENT STATE" card doesn't match Abridge's warm, light aesthetic.
+"The Coverage Gap" and "The Documentation Burden" sections are doing good work but the hierarchy is off—too many competing elements.
+Bottom dark banner with "$10.5M/year" is heavy. Abridge doesn't do dark banners like this.
+Labels are too loud. Should be small, gray, ALL CAPS, quiet.
+Numbers aren't heroic. They should be massive and breathe.
+
+
+Revised Layout:
+Section 1: Header
+
+"Scribe Program Analysis" — keep, but make it smaller, lighter (it's a wayfinding label, not a headline)
+Below it, no subhead. Let the page content speak.
+
+Section 2: Your Program (Inputs)
+
+Warm beige (#F5F0EB) background card
+Header inside card: "Your Scribe Program" (black, medium weight)
+Show only 4 essential fields:
+
+Number of scribes
+Cost per scribe ($/hour)
+Providers with scribes
+Total providers
+
+
+Below the 4 fields, a subtle expandable row: "Adjust additional assumptions →" (clicking expands: Hours per week, Doc time per encounter, Scribe turnover rate — pre-filled with defaults)
+Inputs: clean, minimal border, values right-aligned
+
+Section 3: Your Program Today (Live Summary)
+
+White background, sits to the right of the inputs OR directly below on mobile
+Small gray ALL CAPS label: YOUR PROGRAM TODAY
+Three hero stats, vertical stack, each with a red-orange left border (3-4px):
+50
+scribes employed
+$2.6M
+annual investment
+20%
+provider coverage
+100 of 500 providers
+Numbers are massive (48-64px), black, bold
+Labels below are small, gray, lowercase
+Subtle context in light gray italic where needed
+
+Section 4: The Coverage Gap
+
+White background
+Small gray ALL CAPS label: THE COVERAGE GAP
+One line of context: Your program covers 100 providers. 400 are documenting on their own.
+Horizontal bar visualization:
+
+Black segment: 100 with scribes
+Light beige/gray segment: 400 without support
+Clean, minimal, no heavy borders
+
+
+
+Section 5: The Burden on Unsupported Providers
+
+Warm beige background card
+Small gray ALL CAPS label: THE DOCUMENTATION BURDEN
+One line of context: 400 providers. No documentation support. Here's what that costs them.
+Three stats in a row, each with red-orange left border:
+13,333
+HOURS/YEAR DOCUMENTING
+6 FTEs worth of time
+3,333
+HOURS/YEAR AFTER HOURS
+Work taken home
+33
+HOURS/YEAR PER PROVIDER
+1 week of their year
+
+Section 6: The Cost to Scale
+
+White background
+Small gray ALL CAPS label: SCALING TO FULL COVERAGE
+One line of context: What it would cost to cover every provider with scribes.
+Two cards side by side:
+Card 1 (white, subtle border):
+Small gray label: TODAY
+$2.6M/year
+50 scribes · 20% coverage
+Card 2 (warm beige background):
+Small gray label: FULL COVERAGE
+$13.1M/year
+250 scribes · 100% coverage
++$10.5M additional
+
+Section 7: Transition CTA
+
+White background, centered
+One line: Scaling your scribe program to full coverage would require an additional $10.5M/year.
+Below: "There's another way."
+Button (red-orange filled, white text): "Continue"
+
+
+Revised Copy:
+Section 2: Your Program
+
+Card header: "Your Scribe Program"
+No subhead needed
+Expandable row: "Adjust additional assumptions →"
+
+Section 3: Your Program Today
+
+Label: YOUR PROGRAM TODAY
+Stats:
+
+50 / scribes employed
+$2.6M / annual investment
+20% / provider coverage / 100 of 500 providers
+
+
+
+Section 4: The Coverage Gap
+
+Label: THE COVERAGE GAP
+Context: Your program covers 100 providers. 400 are documenting on their own.
+
+Section 5: The Documentation Burden
+
+Label: THE DOCUMENTATION BURDEN
+Context: 400 providers. No documentation support. Here's what that costs them.
+Stats:
+
+13,333 / HOURS/YEAR DOCUMENTING / 6 FTEs worth of time
+3,333 / HOURS/YEAR AFTER HOURS / Work taken home
+33 / HOURS/YEAR PER PROVIDER / 1 week of their year
+
+
+
+Section 6: Scaling to Full Coverage
+
+Label: SCALING TO FULL COVERAGE
+Context: What it would cost to cover every provider with scribes.
+Card 1: TODAY / $2.6M/year / 50 scribes · 20% coverage
+Card 2: FULL COVERAGE / $13.1M/year / 250 scribes · 100% coverage / +$10.5M additional
+
+Section 7: Transition CTA
+
+Line 1: Scaling your scribe program to full coverage would require an additional $10.5M/year.
+Line 2: "There's another way."
+Button: "Continue"
+
+
+Page 2: Full Analysis (Results Page)
+The Story This Page Tells:
+Here's the full picture of your scribe investment. The real cost. Why it doesn't scale. And the opening for something better.
+
+Current Problems:
+
+Dark header card is too heavy for Abridge's aesthetic.
+"Hidden Costs" language is slightly accusatory.
+"The Problem With Scaling Scribes" section is good but the bar chart colors are off-brand.
+"The costs you're not seeing" section is solid but labels are too loud.
+"YOUR TRUE ANNUAL COST" black banner doesn't fit.
+Final CTA section with the gradient/sparkle is trying too hard.
+
+
+Revised Layout:
+Section 1: Header
+
+White background
+Small gray ALL CAPS label: YOUR SCRIBE PROGRAM ANALYSIS
+Below: "Export PDF →" link (red-orange text, right-aligned)
+
+Section 2: The Full Picture (Summary Stats)
+
+Warm beige background card
+Four stats in a row, each with red-orange left border:
+$2.6M
+ANNUAL INVESTMENT
+50 scribes
+20%
+PROVIDER COVERAGE
+100 of 500
+$494K
+INDIRECT COSTS
+Turnover & overhead
+$3.1M
+TRUE TOTAL COST
+$31K per covered provider
+Below the stats, one line summary:
+Your scribe program costs $31K/provider/year when you factor in turnover and overhead. Scaling to 100% coverage would require an additional $10.5M/year.
+
+Section 3: Why Scribes Don't Scale
+
+White background
+Small gray ALL CAPS label: WHY SCRIBES DON'T SCALE
+One line context: Double the coverage, double the cost. No economies of scale.
+Horizontal bar chart:
+
+20% bar: Black, labeled "$2.6M · Today"
+50% bar: Gray, labeled "$6.6M"
+100% bar: Red-orange, labeled "$13.1M · Full coverage"
+
+
+Below chart, one line: To cover all 500 providers, you'd need 250 scribes at $13.1M/year—an additional $10.5M.
+
+Section 4: The Costs Beyond Salary
+
+Warm beige background card
+Small gray ALL CAPS label: COSTS BEYOND SALARY
+One line context: Scribe programs carry operational overhead.
+Two stat cards side by side (white background, subtle shadow):
+Card 1:
+$100K
+TURNOVER & TRAINING
+~40% annual turnover
+~20 scribes replaced/year at ~$5K each
+Card 2:
+$394K
+MANAGEMENT OVERHEAD
+~15% of program cost
+Scheduling, supervision, QA, admin
+
+Section 5: True Annual Cost
+
+White background
+Centered layout
+Small gray ALL CAPS label: YOUR TRUE ANNUAL COST
+Two hero numbers side by side with red-orange left borders:
+$3.1M
+TOTAL ANNUAL COST
+$2.6M salaries + $494K overhead
+$31K
+PER COVERED PROVIDER
+Annual cost per provider with scribe support
+
+Section 6: Transition CTA
+
+Warm beige background, full width
+Centered text:
+"There's a better way to scale."
+Abridge supports every provider—without the linear cost curve.
+Button (red-orange filled, white text): "See How Abridge Compares"
+
+
+Revised Copy:
+Section 1: Header
+
+Label: YOUR SCRIBE PROGRAM ANALYSIS
+Link: "Export PDF →"
+
+Section 2: The Full Picture
+
+Stats:
+
+$2.6M / ANNUAL INVESTMENT / 50 scribes
+20% / PROVIDER COVERAGE / 100 of 500
+$494K / INDIRECT COSTS / Turnover & overhead
+$3.1M / TRUE TOTAL COST / $31K per covered provider
+
+
+Summary: Your scribe program costs $31K/provider/year when you factor in turnover and overhead. Scaling to 100% coverage would require an additional $10.5M/year.
+
+Section 3: Why Scribes Don't Scale
+
+Label: WHY SCRIBES DON'T SCALE
+Context: Double the coverage, double the cost. No economies of scale.
+Chart labels: "$2.6M · Today" / "$6.6M" / "$13.1M · Full coverage"
+Below chart: To cover all 500 providers, you'd need 250 scribes at $13.1M/year—an additional $10.5M.
+
+Section 4: Costs Beyond Salary
+
+Label: COSTS BEYOND SALARY
+Context: Scribe programs carry operational overhead.
+Card 1: $100K / TURNOVER & TRAINING / ~40% annual turnover / ~20 scribes replaced/year at ~$5K each
+Card 2: $394K / MANAGEMENT OVERHEAD / ~15% of program cost / Scheduling, supervision, QA, admin
+
+Section 5: True Annual Cost
+
+Label: YOUR TRUE ANNUAL COST
+Stat 1: $3.1M / TOTAL ANNUAL COST / $2.6M salaries + $494K overhead
+Stat 2: $31K / PER COVERED PROVIDER / Annual cost per provider with scribe support
+
+Section 6: Transition CTA
+
+Headline: "There's a better way to scale."
+Subtext: Abridge supports every provider—without the linear cost curve.
+Button: "See How Abridge Compares"
+
+
+Full Replit Prompt:
+Global Style Changes:
+
+Change page background to white (#FFFFFF)
+Change all card backgrounds from white to warm beige (#F5F0EB)
+Remove all dark/black background sections
+Change all section labels to: ALL CAPS, small (12-14px), light gray (#888888), letter-spacing 1-2px
+Change all hero numbers to: 48-64px, black (#000000), bold
+Add 3-4px red-orange (#E85A2C) left border to all hero stat blocks
+Change all stat sublabels to: small, gray, lowercase
+Change all buttons to: red-orange (#E85A2C) fill with white text, or red-orange outline with red-orange text
+Ensure font is Manrope throughout
+
+
+Page 1 Specific Changes:
+Header:
+
+Make "Scribe Program Analysis" smaller and lighter (wayfinding label, not headline)
+Remove subhead "Let's understand your current documentation support"
+
+Input Section:
+
+Change background to warm beige (#F5F0EB)
+Change header to: "Your Scribe Program"
+Remove subhead "Tell us about your current setup"
+Show only 4 fields: Number of scribes, Cost per scribe, Providers with scribes, Total providers
+Add expandable row below fields: "Adjust additional assumptions →" — when expanded, shows: Hours per week, Doc time per encounter, Scribe turnover rate (pre-filled with defaults)
+
+Your Current State Card:
+
+Change label from "YOUR CURRENT STATE" to: "YOUR PROGRAM TODAY"
+Change background to white
+Stack stats vertically with red-orange left border on each:
+
+50 / scribes employed
+$2.6M / annual investment
+20% / provider coverage / 100 of 500 providers
+
+
+Make numbers 48-64px, black, bold
+Make labels small, gray, lowercase
+
+Coverage Gap Section:
+
+Change label to: "THE COVERAGE GAP"
+Change subtext to: Your program covers 100 providers. 400 are documenting on their own.
+Keep horizontal bar visualization but simplify: black segment for covered, light beige for uncovered
+
+Documentation Burden Section:
+
+Change background to warm beige
+Change label to: "THE DOCUMENTATION BURDEN"
+Change subtext to: 400 providers. No documentation support. Here's what that costs them.
+Add red-orange left border to each stat
+Fix "1 weeks" to "1 week"
+
+What Would It Take Section:
+
+Change label from "What Would It Take?" to: "SCALING TO FULL COVERAGE"
+Change subtext to: What it would cost to cover every provider with scribes.
+Card 1 (TODAY): white background, subtle border
+Card 2 (FULL COVERAGE): warm beige background
+
+Bottom CTA Section:
+
+Remove dark background
+Change to white background, centered
+Line 1: Scaling your scribe program to full coverage would require an additional $10.5M/year.
+Line 2: "There's another way."
+Button: red-orange fill, white text, "Continue"
+
+
+Page 2 Specific Changes:
+Header:
+
+Remove dark card
+White background
+Small gray label: "YOUR SCRIBE PROGRAM ANALYSIS"
+Right-aligned link: "Export PDF →" (red-orange text)
+
+Summary Stats Section:
+
+Warm beige background card
+Four stats in a row with red-orange left borders:
+
+$2.6M / ANNUAL INVESTMENT / 50 scribes
+20% / PROVIDER COVERAGE / 100 of 500
+$494K / INDIRECT COSTS / Turnover & overhead
+$3.1M / TRUE TOTAL COST / $31K per covered provider
+
+
+Below stats, summary line: Your scribe program costs $31K/provider/year when you factor in turnover and overhead. Scaling to 100% coverage would require an additional $10.5M/year.
+
+Why Scribes Don't Scale Section:
+
+Change label from "The Problem With Scaling Scribes" to: "WHY SCRIBES DON'T SCALE"
+Change subtext to: Double the coverage, double the cost. No economies of scale.
+Change 100% bar color to red-orange (#E85A2C)
+Simplify below-chart text to: To cover all 500 providers, you'd need 250 scribes at $13.1M/year—an additional $10.5M.
+
+Costs Beyond Salary Section:
+
+Change label from "The costs you're not seeing" to: "COSTS BEYOND SALARY"
+Change subtext to: Scribe programs carry operational overhead.
+Change card backgrounds to white with subtle shadow
+Warm beige background for the overall section
+
+True Annual Cost Section:
+
+Remove black banner
+White background, centered
+Small gray label: "YOUR TRUE ANNUAL COST"
+Two stats side by side with red-orange left borders:
+
+$3.1M / TOTAL ANNUAL COST / $2.6M salaries + $494K overhead
+$31K / PER COVERED PROVIDER / Annual cost per provider with scribe support
+
+
+
+Final CTA Section:
+
+Remove gradient/sparkle background
+Warm beige background, full width
+Centered:
+
+Headline: "There's a better way to scale."
+Subtext: Abridge supports every provider—without the linear cost curve.
+Button: red-orange fill, white text, "See How Abridge Compares"
