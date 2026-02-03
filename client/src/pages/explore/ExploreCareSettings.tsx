@@ -121,7 +121,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   className={`
                     relative flex flex-col items-center text-center w-full md:w-[180px] lg:w-[220px] py-6 md:py-8 px-4 md:px-6 rounded-xl md:rounded-2xl transition-all duration-200
                     ${isSelected 
-                      ? 'bg-black text-white shadow-xl' 
+                      ? 'bg-[#F5F0EB] border-2 border-[#E85A2C] shadow-xl' 
                       : isDisabled
                         ? 'bg-slate-50 cursor-not-allowed'
                         : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
@@ -152,20 +152,20 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   <div className={`
                     w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-5
                     ${isSelected 
-                      ? 'bg-white/10' 
+                      ? 'bg-white' 
                       : isDisabled
                         ? 'bg-slate-100'
                         : 'bg-[#FFF5F2]'
                     }
                   `}>
-                    <Icon className={`w-6 h-6 md:w-8 md:h-8 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-6 h-6 md:w-8 md:h-8 ${isSelected ? 'text-[#E85A2C]' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
                   </div>
                   
-                  <h3 className={`text-base md:text-lg font-bold mb-0.5 ${isSelected ? 'text-white' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
+                  <h3 className={`text-base md:text-lg font-bold mb-0.5 ${isSelected ? 'text-black' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
                     {setting.label}
                   </h3>
                   
-                  <p className={`text-xs md:text-sm font-medium leading-tight ${isSelected ? 'text-white/70' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs md:text-sm font-medium leading-tight ${isSelected ? 'text-[#666666]' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
                     {setting.shortDesc}
                   </p>
                 </motion.button>
@@ -206,17 +206,15 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   className={`
                     h-12 px-8 font-semibold rounded-full transition-all duration-200
                     ${selectedSetting 
-                      ? 'bg-black hover:bg-black/90 text-white' 
+                      ? 'bg-[#F5F0EB] hover:bg-[#EDE5DB] text-[#E85A2C] border border-[#E5E5E5]' 
                       : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }
                   `}
                   data-testid="button-continue"
                 >
-                  {selectedSetting 
-                    ? `Continue with ${CARE_SETTINGS.find(s => s.id === selectedSetting)?.label || 'Setting'}`
-                    : 'Continue'
-                  }
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <span className="text-[#E85A2C] font-semibold">Continue</span>
+                  <span className="text-black ml-1">with {selectedSetting ? CARE_SETTINGS.find(s => s.id === selectedSetting)?.label : 'Setting'}</span>
+                  <ArrowRight className="w-4 h-4 ml-2 text-[#E85A2C]" />
                 </Button>
                 
                 {!selectedSetting && (
