@@ -1,0 +1,720 @@
+MEASURE PATH — THE SOUL VERSION
+THE STORY WE'RE TELLING
+This is a tool for validation and celebration. The client already chose Abridge. They already went through implementation. They already lived the change.
+Now they need to:
+
+See the change reflected back to them in data
+Understand what it means
+Feel proud of what they accomplished
+Take a story back to their team that's credible and compelling
+
+The emotional arc:
+Page 1: "Let's look at your results" (anticipation)
+Page 2: "Here's what you measured" (grounding)
+Page 3: "Look what changed" (wow)
+Page 4: "Here's what we can prove—and here's how to think about the rest" (clarity)
+Page 5: "Here's your story to tell" (empowerment)
+
+THE CORE PHILOSOPHY
+What we measure, we state.
+What we can't measure, we frame.
+We don't inflate. We don't guess. We show what's real, then help them think about what it means.
+
+PAGE 1: SELECT YOUR SETTING
+Purpose:
+Quick, functional. Pick where you're measuring.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                              Measure · Select Setting    ○○○○○  │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│                          MEASURE YOUR RESULTS                                   │
+│                                                                                 │
+│                   Select the care setting you're measuring.                     │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│      ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐     │
+│      │             │   │             │   │             │   │             │     │
+│      │     🩺      │   │     🚨      │   │     👩‍⚕️      │   │     🏥      │     │
+│      │             │   │             │   │             │   │             │     │
+│      │ Outpatient  │   │ Emergency   │   │  Nursing    │   │ Inpatient   │     │
+│      │             │   │             │   │             │   │             │     │
+│      │ Clinic &    │   │ Emergency   │   │  Nursing    │   │ Hospital &  │     │
+│      │ Ambulatory  │   │ Department  │   │  Docs       │   │ Acute Care  │     │
+│      │             │   │             │   │             │   │             │     │
+│      │             │   │ COMING SOON │   │ COMING SOON │   │ COMING SOON │     │
+│      └─────────────┘   └─────────────┘   └─────────────┘   └─────────────┘     │
+│                                                                                 │
+│                                                                                 │
+│                            [ Continue → ]                                       │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Styling:
+Header:
+
+Abridge logo (left)
+Breadcrumb: "Measure · Select Setting" (right, gray, 14px)
+Step indicator: 5 dots, first filled red-orange, rest gray
+
+Headline:
+
+"MEASURE YOUR RESULTS" — 32px, black, bold, centered
+Subhead: "Select the care setting you're measuring." — 18px, gray, centered
+
+Cards:
+
+4 cards in a row (responsive to 2x2 on mobile)
+White background, subtle gray border (#E5E5E5), 16px padding, 8px border-radius
+Icon: 32px, centered
+Title: 16px, black, bold, centered
+Subtitle: 14px, gray, centered
+Selected state: White background, 4px red-orange left border, subtle shadow (0 2px 8px rgba(0,0,0,0.08))
+Disabled state: #F9F9F9 background, gray text, "COMING SOON" badge (10px, uppercase, gray background)
+
+Button:
+
+"Continue →" — Red-orange fill (#E85A2C), white text, centered, 48px height, 200px width
+
+
+PAGE 2: YOUR DATA
+Purpose:
+Collect before/after metrics. Clean, organized, respectful of their time.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                                  Measure · Your Data    ●○○○○  │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                                YOUR DATA                                        │
+│                                                                                 │
+│                    Enter your before and after metrics.                         │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  YOUR DEPLOYMENT                                                          │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Providers on Abridge              Months on Abridge                      │  │
+│  │  ┌─────────────────────┐           ┌─────────────────────┐                │  │
+│  │  │ 80                  │           │ 6                   │                │  │
+│  │  └─────────────────────┘           └─────────────────────┘                │  │
+│  │                                                                           │  │
+│  │  Total Encounters                  Utilization Rate                       │  │
+│  │  ┌─────────────────────┐           ┌─────────────────────┐                │  │
+│  │  │ 47,000              │           │ 72                % │                │  │
+│  │  └─────────────────────┘           └─────────────────────┘                │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  TIME & EFFICIENCY                                                        │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │                                    BEFORE            AFTER                │  │
+│  │                                                                           │  │
+│  │  Time in Notes (min)          ┌──────────┐      ┌──────────┐             │  │
+│  │                               │ 12       │      │ 4        │             │  │
+│  │                               └──────────┘      └──────────┘             │  │
+│  │                                                                           │  │
+│  │  Same-Day Closure (%)         ┌──────────┐      ┌──────────┐             │  │
+│  │                               │ 41       │      │ 78       │             │  │
+│  │                               └──────────┘      └──────────┘             │  │
+│  │                                                                           │  │
+│  │  After-Hours Charting         ┌──────────┐      ┌──────────┐             │  │
+│  │  (hrs/day)                    │ 2.1      │      │ 0.4      │             │  │
+│  │                               └──────────┘      └──────────┘             │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  DOCUMENTATION QUALITY                                                    │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │                                    BEFORE            AFTER                │  │
+│  │                                                                           │  │
+│  │  wRVU per Encounter           ┌──────────┐      ┌──────────┐             │  │
+│  │                               │ 2.10     │      │ 2.30     │             │  │
+│  │                               └──────────┘      └──────────┘             │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│                          [ See What Changed → ]                                 │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Styling:
+Card:
+
+Warm beige background (#F5F0EB)
+32px padding
+12px border-radius
+Max-width: 700px, centered
+
+Section Labels:
+
+"YOUR DEPLOYMENT" etc. — 11px, ALL CAPS, gray (#888), letter-spacing 2px
+Thin divider line below: 1px, #E0E0E0
+
+Column Headers:
+
+"BEFORE" / "AFTER" — 11px, ALL CAPS, gray (#888), letter-spacing 1.5px
+AFTER column header in red-orange (#E85A2C)
+
+Inputs:
+
+White background
+1px gray border (#E0E0E0)
+12px padding
+16px font
+Right-aligned values
+AFTER inputs: subtle red-orange left border (2px)
+
+Field Labels:
+
+14px, black, left-aligned
+
+Button:
+
+"See What Changed →" — Red-orange fill, white text
+
+
+PAGE 3: WHAT CHANGED
+Purpose:
+The emotional payoff. Visual proof that something happened. The "wow" moment.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                            Measure · What Changed    ●●○○○     │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                              WHAT CHANGED                                       │
+│                                                                                 │
+│                  Same providers. Same patients. Different outcomes.             │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │    ┃ 80              ┃ 47,000          ┃ 72%             ┃ 6mo            │  │
+│  │    ┃ providers       ┃ encounters      ┃ utilization     ┃ on Abridge     │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ⏱  Time in Notes                                                         │  │
+│  │                                                                           │  │
+│  │  BEFORE  ████████████████████████████████████████████████████   12 min   │  │
+│  │                                                                           │  │
+│  │  AFTER   ████████████████                                        4 min   │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────┐                                                  │  │
+│  │  │ ↓ 8 min per note    │                    Less time satisfies charts.   │  │
+│  │  └─────────────────────┘                    More time for patients.       │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  📄  Documentation Quality                                                │  │
+│  │                                                                           │  │
+│  │  BEFORE  ████████████████████████████████████████████████████   2.10     │  │
+│  │                                                                           │  │
+│  │  AFTER   ██████████████████████████████████████████████████████  2.30    │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────┐                                                  │  │
+│  │  │ ↑ +0.20 wRVU        │                    Complexity captured.          │  │
+│  │  └─────────────────────┘                    Not missed.                   │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ✓  Same-Day Closure                                                      │  │
+│  │                                                                           │  │
+│  │  BEFORE  █████████████████████████                                41%    │  │
+│  │                                                                           │  │
+│  │  AFTER   ████████████████████████████████████████████████████     78%    │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────┐                                                  │  │
+│  │  │ ↑ +37 points        │                    Notes done before             │  │
+│  │  └─────────────────────┘                    leaving the building.         │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ❤️  After-Hours Charting                                                  │  │
+│  │                                                                           │  │
+│  │  BEFORE  ████████████████████████████████████████████████████   2.1 hrs  │  │
+│  │                                                                           │  │
+│  │  AFTER   ████████                                               0.4 hrs  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────┐                                                  │  │
+│  │  │ ↓ 1.7 hrs back      │                    Evenings returned.            │  │
+│  │  └─────────────────────┘                    Dinner with family.           │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│                          [ See What It's Worth → ]                              │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Styling:
+Context Stats Bar:
+
+Warm beige background (#F5F0EB)
+4 stats in a row, each with red-orange left border (4px)
+Number: 32px, black, bold
+Label: 12px, gray, ALL CAPS
+
+Comparison Cards:
+
+White background
+Subtle border (#F0F0F0)
+24px padding
+8px border-radius
+16px gap between cards
+
+Bars:
+
+BEFORE: Gray (#D1D5DB), full-width relative to max value
+AFTER: Red-orange (#E85A2C), proportional width
+Height: 12px
+Border-radius: 6px
+Value label at end: 14px, black
+
+Delta Pills:
+
+Light gray background (#F5F5F5)
+1px gray border
+12px padding horizontal, 6px vertical
+Arrow icon + text
+13px, black
+
+Context Lines:
+
+Right-aligned (or below on mobile)
+14px, gray (#666), italic
+Two lines stacked
+
+Button:
+
+"See What It's Worth →" — Red-orange fill, white text
+
+
+PAGE 4: WHAT IT'S WORTH
+Purpose:
+Translate changes into value. Lead with what's provable. Offer frameworks for the rest.
+The Philosophy:
+We show two things:
+
+What we can measure — Hours saved, wRVU value
+How to think about the time — Not assertions, but frameworks
+
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                          Measure · What It's Worth    ●●●○○    │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                            WHAT IT'S WORTH                                      │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │                          WHAT WE CAN MEASURE                              │  │
+│  │                                                                           │  │
+│  │         These numbers come directly from your before/after data.          │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐  │
+│  │                                 │  │                                     │  │
+│  │  TIME RECLAIMED                 │  │  REVENUE CAPTURED                   │  │
+│  │                                 │  │                                     │  │
+│  │         6,267                   │  │     $112K – $168K                   │  │
+│  │         hours                   │  │                                     │  │
+│  │                                 │  │  +0.20 wRVU × 33,840 encounters     │  │
+│  │  8 min saved × 47,000           │  │  × $33 × 50-75% attribution         │  │
+│  │  encounters                     │  │                                     │  │
+│  │                                 │  │  This is revenue from documentation │  │
+│  │  This is time your providers    │  │  that would have been missed.       │  │
+│  │  got back from documentation.   │  │                                     │  │
+│  │                                 │  │                                     │  │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │                          WHAT THAT TIME MEANS                             │  │
+│  │                                                                           │  │
+│  │    Every organization uses reclaimed time differently. Here's how to      │  │
+│  │    think about what 6,267 hours could mean for yours.                     │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  IF TIME WENT TO CAPACITY                                          ▼  │  │
+│  │  ┃  More patients, more visits, more access                              │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [Expanded state:]                                                              │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  IF TIME WENT TO CAPACITY                                          ▲  │  │
+│  │  ┃  More patients, more visits, more access                              │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  If providers used this time to see more patients:                        │  │
+│  │                                                                           │  │
+│  │  What % of reclaimed time went to patient care?                           │  │
+│  │                                                                           │  │
+│  │  ○────────────────────●───────────────────────────────○                   │  │
+│  │  0%                   20%                            100%                 │  │
+│  │                                                                           │  │
+│  │  Average visit duration (min)     Revenue per visit ($)                   │  │
+│  │  ┌──────────────┐                 ┌──────────────┐                        │  │
+│  │  │ 30           │                 │ 200          │                        │  │
+│  │  └──────────────┘                 └──────────────┘                        │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  At 20% of time toward capacity:                                    │  │  │
+│  │  │                                                                     │  │  │
+│  │  │  2,507 additional visits possible                                   │  │  │
+│  │  │  $501K potential revenue                                            │  │  │
+│  │  │                                                                     │  │  │
+│  │  │  This assumes all additional time could be scheduled and billed.    │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  IF TIME REDUCED COSTS                                             ▼  │  │
+│  │  ┃  Less overtime, fewer locums, lower burden                            │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [Expanded state:]                                                              │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  IF TIME REDUCED COSTS                                             ▲  │  │
+│  │  ┃  Less overtime, fewer locums, lower burden                            │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  If your organization saw direct cost reductions:                         │  │
+│  │                                                                           │  │
+│  │  Estimated annual savings from reduced OT, locums, or other costs ($)     │  │
+│  │  ┌──────────────────────────────────────────────┐                        │  │
+│  │  │ 0                                            │                        │  │
+│  │  └──────────────────────────────────────────────┘                        │  │
+│  │                                                                           │  │
+│  │  We don't calculate this for you because every organization is            │  │
+│  │  different. If you've seen savings, enter them here to include            │  │
+│  │  in your value story.                                                     │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  IF TIME IMPROVED LIVES                                            ▼  │  │
+│  │  ┃  Better work-life balance, reduced burnout, retention                 │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [Expanded state:]                                                              │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  IF TIME IMPROVED LIVES                                            ▲  │  │
+│  │  ┃  Better work-life balance, reduced burnout, retention                 │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Your providers are getting back:                                         │  │
+│  │                                                                           │  │
+│  │         1.7 hours per day                                                │  │
+│  │         less after-hours charting                                         │  │
+│  │                                                                           │  │
+│  │         0.5 hours per week                                               │  │
+│  │         per provider in reclaimed time                                    │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  We don't put a dollar figure on this because it's personal.              │  │
+│  │                                                                           │  │
+│  │  But consider: the cost to replace one provider is $300K–$500K.           │  │
+│  │  Burnout is the #1 reason physicians leave.                               │  │
+│  │  Documentation burden is the #1 driver of burnout.                        │  │
+│  │                                                                           │  │
+│  │  If Abridge helps you keep even one provider who would have left,         │  │
+│  │  that's the value.                                                        │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│                          [ See Your Story → ]                                   │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Styling:
+Section Headers:
+
+"WHAT WE CAN MEASURE" / "WHAT THAT TIME MEANS" — centered, 12px, ALL CAPS, gray, letter-spacing 2px
+Subtext: 16px, gray, centered, max-width 500px
+
+Metric Cards (Time Reclaimed / Revenue Captured):
+
+White background, subtle border
+Side by side (stacked on mobile)
+Label: 11px, ALL CAPS, gray
+Hero number: 48px, black (Time) or red-orange (Revenue)
+Unit: 20px, gray
+Calculation: 14px, gray
+Context: 14px, gray, italic
+
+Framework Accordions:
+
+White background, subtle border
+Red-orange left border (4px)
+Collapsed: Title + subtitle visible, arrow indicator
+Expanded: Full content with inputs/outputs
+16px padding
+
+Expanded Content:
+
+Slider: Gray track, red-orange handle
+Inputs: White, gray border, 14px
+Output card: Warm beige background, results displayed
+Caveat text: 13px, gray, italic
+
+Button:
+
+"See Your Story →" — Red-orange fill, white text
+
+
+PAGE 5: YOUR STORY
+Purpose:
+The shareable artifact. Lead with soul, support with numbers.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                             Measure · Your Story    ●●●●●      │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│                             80 providers.                                       │
+│                             6 months.                                           │
+│                             6,267 hours back.                                   │
+│                                                                                 │
+│                                                                                 │
+│               That's 1.7 fewer hours of charting every night.                   │
+│               Dinner with family instead of documentation.                      │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  THE NUMBERS                                                              │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Time Reclaimed                                         6,267 hours       │  │
+│  │  8 min saved per note × 47,000 encounters                                 │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Revenue Captured                                   $112K – $168K         │  │
+│  │  +0.20 wRVU lift × $33 Medicare rate × 50-75% attribution                 │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Same-Day Closure                                          41% → 78%     │  │
+│  │  Notes completed before leaving the building                              │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  After-Hours Charting                                  2.1 hrs → 0.4 hrs │  │
+│  │  Per provider, per day                                                    │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  [If user entered capacity or cost values on Page 4:]                           │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ADDITIONAL VALUE (based on your inputs)                                  │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Capacity Opportunity                                        $501K       │  │
+│  │  2,507 additional visits at $200/visit                                    │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Cost Reduction                                              $75K        │  │
+│  │  Reported savings from reduced overtime                                   │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  WHAT IF YOU EXPANDED?                                             ▼  │  │
+│  │  ┃  See projected value at scale                                         │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [Expanded:]                                                                    │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  If you deployed to...                                                    │  │
+│  │                                                                           │  │
+│  │  ○───────────────●───────────────────────────────────────○               │  │
+│  │  80              200                                    500               │  │
+│  │  Current                                                                  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  At 200 providers:                                                  │  │  │
+│  │  │                                                                     │  │  │
+│  │  │  15,668 hours reclaimed                                             │  │  │
+│  │  │  $280K – $420K in captured revenue                                  │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │                                     │                                     │  │
+│  │  Share Your Story                   │     [ Export PDF ]                 │  │
+│  │  A polished summary for             │                                     │  │
+│  │  leadership and stakeholders        │                                     │  │
+│  │                                     │                                     │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │  Methodology & Assumptions                                            ▼  │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│                                Start Over                                       │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Styling:
+Hero Section:
+
+"80 providers." — 36px, black, bold
+"6 months." — 36px, black, bold
+"6,267 hours back." — 36px, red-orange (#E85A2C), bold
+Stacked, centered, line-height 1.4
+Subtext: 20px, gray, italic, centered, max-width 450px
+
+The Numbers Card:
+
+White background
+Subtle border
+32px padding
+"THE NUMBERS" label: 11px, ALL CAPS, gray
+Each row: Label (16px black) + Value (18px black or red-orange, right-aligned)
+Subtext below each: 14px, gray
+Thin dividers between rows
+
+Additional Value Card (conditional):
+
+Only shows if user entered values on Page 4
+Same styling as Numbers card
+"ADDITIONAL VALUE (based on your inputs)" label
+
+Expansion Section:
+
+Red-orange left border
+Slider for provider count
+Output card with projected values
+
+Export Section:
+
+White background, subtle border
+Left: "Share Your Story" + subtext
+Right: "Export PDF" button (red-orange fill)
+
+Footer:
+
+"Methodology & Assumptions" expandable
+"Start Over" link — 14px, gray, centered
+
+
+SUMMARY: THE SOUL OF THIS PATH
+Page 1: "Let's see your results" → Anticipation
+Page 2: "Here's what you measured" → Grounding
+Page 3: "Look what changed" → Wonder
+
+The bars. The deltas. The human context lines.
+"Less time charting, more time for patients."
+"Evenings returned. Dinner with family."
+
+Page 4: "Here's what we can prove—and how to think about the rest" → Clarity
+
+Time reclaimed: undeniable
+Revenue captured: provable
+Everything else: frameworks, not assertions
+
+Page 5: "Here's your story" → Empowerment
+
+Lead with the human truth
+Support with numbers
+Enable sharing
+
+
+THE MATH (Final Version)
+Time Reclaimed:
+Copy(Before time - After time) × Total Encounters ÷ 60 = Hours
+Revenue Captured (wRVU):
+CopywRVU Lift × Documented Encounters × $33 × Attribution %
+- Documented Encounters = Total Encounters × Utilization Rate
+- Default Attribution: 50% (show range at 50-75%)
+Capacity (Optional, user-driven):
+CopyHours × Capacity % × (60 ÷ Visit Duration) × Revenue per Visit
+- User inputs: Capacity %, Visit Duration, Revenue per Visit
+- Defaults: 0%, 30 min, $200
+Cost Reduction (Optional, user-driven):
+CopyDirect input from user
+- No calculation—they tell us what they saved
+Wellbeing (No dollar figure):
+CopyShow: Hours per week back per provider
+Context: "1 provider retained = $300-500K"

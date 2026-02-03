@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import ExploreCareSettings from "./ExploreCareSettings";
-import ExploreOpportunity from "./ExploreOpportunity";
-import ExploreTimePath from "./ExploreTimePath";
-import ExploreTimeAllocation from "./ExploreTimeAllocation";
-import ExploreDocDrivers from "./ExploreDocDrivers";
+import ExplorePractice from "./ExplorePractice";
+import ExploreTimeSavings from "./ExploreTimeSavings";
+import ExploreValueDrivers from "./ExploreValueDrivers";
+import ExploreDocQuality from "./ExploreDocQuality";
+import ExploreInvestment from "./ExploreInvestment";
+import ExploreModel from "./ExploreModel";
 
 export type ExploreCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
@@ -11,7 +13,6 @@ export type TimePathScenario = 'conservative' | 'typical' | 'aggressive';
 
 export type TimeAllocationFocus = 'patientAccess' | 'reducingLocums' | 'clinicianWellbeing';
 
-// ED-specific time allocation types
 export type EDTimeAllocationFocus = 'throughput' | 'retention' | 'clinicianWellbeing';
 
 export type DocPathFocus = 'wrvu' | 'hcc' | 'denials';
@@ -23,10 +24,9 @@ export interface TimeAllocation {
   clinicianWellbeing: number;
 }
 
-// ED-specific time allocation
 export interface EDTimeAllocation {
-  throughput: number;  // LWBS reduction / patient throughput
-  retention: number;   // Physician retention
+  throughput: number;
+  retention: number;
   clinicianWellbeing: number;
 }
 
@@ -41,7 +41,6 @@ export interface DocDriversState {
   denials: DocDriverSettings;
 }
 
-// Pre-calculated values from wizard steps to pass to Investment page
 export interface CalculatedValues {
   timeValue: number;
   docValue: number;
@@ -55,8 +54,47 @@ export interface CalculatedValues {
   };
 }
 
-// Nursing-specific types
-// NursingUnitType removed - no longer used in setup
+// Value Drivers - Time inputs
+export interface TimeDriverInputs {
+  patientAccessEnabled: boolean;
+  capacityPercent: number;
+  visitDuration: number;
+  revenuePerVisit: number;
+  
+  costReductionEnabled: boolean;
+  estimatedCostReduction: number;
+  
+  wellbeingEnabled: boolean;
+}
+
+// Documentation Quality inputs
+export interface DocQualityInputs {
+  // wRVU
+  wrvuEnabled: boolean;
+  wrvuScenario: 'conservative' | 'typical' | 'aggressive';
+  currentWrvu: number;
+  conversionFactor: number;
+  wrvuRealization: number;
+  
+  // HCC
+  hccEnabled: boolean;
+  hccScenario: 'conservative' | 'typical' | 'aggressive';
+  panelSize: number;
+  maPercent: number;
+  gapRate: number;
+  avgHccs: number;
+  rafImpact: number;
+  annualPayment: number;
+  hccRealization: number;
+  
+  // Denials
+  denialsEnabled: boolean;
+  denialsScenario: 'conservative' | 'typical' | 'aggressive';
+  denialRate: number;
+  unappealableRate: number;
+  avgClaimValue: number;
+  denialsRealization: number;
+}
 
 export interface ExploreState {
   careSetting: ExploreCareSetting | null;
@@ -65,49 +103,57 @@ export interface ExploreState {
   annualEncounters: number;
   utilizationPercent: number;
   
-  // Nursing-specific fields (per-shift model)
   nursingStaffedBeds: number;
-  nursingOccupancyRate: number; // Bed occupancy rate (default 85%)
-  nursingShiftsPerNurseYear: number; // Default 156 (3 shifts/week × 52 weeks)
-  nursingMinutesPerShift: number; // Time saved per shift (15/30/45)
+  nursingOccupancyRate: number;
+  nursingShiftsPerNurseYear: number;
+  nursingMinutesPerShift: number;
   
   timePathScenario: TimePathScenario;
   minutesSavedPerEncounter: number;
   
-  // Outpatient time allocation
   timeAllocation: TimeAllocation;
-  
-  // ED-specific time allocation
   edTimeAllocation: EDTimeAllocation;
   
-  docPathFocus: DocPathFocus | null; // Keep for backwards compat
+  docPathFocus: DocPathFocus | null;
   docDrivers: DocDriversState;
   
   wrvuPctIncrease: number;
   hccPctRecaptured: number;
   denialsPctReduced: number;
   
-  // Pre-calculated values from wizard (set by ExploreDocDrivers before continuing)
+  // Time value driver inputs
+  timeDriverInputs: TimeDriverInputs;
+  
+  // Documentation quality inputs
+  docQualityInputs: DocQualityInputs;
+  
+  // Investment values
+  pricingModel: 'perProvider' | 'annual';
+  costPerProvider: number;
+  annualLicenseFee: number;
+  implementationFee: number;
+  includeImplementation: boolean;
+  
+  // Calculated values
   calculatedValues?: CalculatedValues;
 }
 
 export const DEFAULT_EXPLORE_STATE: ExploreState = {
   careSetting: null,
-  numberOfProviders: 0,
-  annualEncounters: 0,
+  numberOfProviders: 80,
+  annualEncounters: 240000,
   utilizationPercent: 70,
-  // Nursing-specific defaults
   nursingStaffedBeds: 0,
-  nursingOccupancyRate: 85, // Most hospitals run 75-90%
-  nursingShiftsPerNurseYear: 156, // 3 shifts/week × 52 weeks
-  nursingMinutesPerShift: 30, // Typical: 30 min/shift
+  nursingOccupancyRate: 85,
+  nursingShiftsPerNurseYear: 156,
+  nursingMinutesPerShift: 30,
   timePathScenario: 'typical',
-  minutesSavedPerEncounter: 5,
+  minutesSavedPerEncounter: 4,
   timeAllocation: {
-    patientAccess: 40,
-    patientExperience: 30,
+    patientAccess: 15,
+    patientExperience: 0,
     reducingLocums: 0,
-    clinicianWellbeing: 30,
+    clinicianWellbeing: 100,
   },
   edTimeAllocation: {
     throughput: 50,
@@ -116,28 +162,68 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   },
   docPathFocus: null,
   docDrivers: {
-    wrvu: { enabled: false, value: 2 },
+    wrvu: { enabled: false, value: 5 },
     hcc: { enabled: false, value: 15 },
-    denials: { enabled: false, value: 25 },
+    denials: { enabled: false, value: 50 },
   },
-  wrvuPctIncrease: 2,
+  wrvuPctIncrease: 5,
   hccPctRecaptured: 15,
-  denialsPctReduced: 25,
+  denialsPctReduced: 50,
+  // Time value driver inputs
+  timeDriverInputs: {
+    patientAccessEnabled: false,
+    capacityPercent: 15,
+    visitDuration: 30,
+    revenuePerVisit: 200,
+    costReductionEnabled: false,
+    estimatedCostReduction: 0,
+    wellbeingEnabled: false,
+  },
+  // Documentation quality inputs
+  docQualityInputs: {
+    wrvuEnabled: false,
+    wrvuScenario: 'typical',
+    currentWrvu: 1.5,
+    conversionFactor: 33,
+    wrvuRealization: 75,
+    hccEnabled: false,
+    hccScenario: 'typical',
+    panelSize: 1500,
+    maPercent: 30,
+    gapRate: 40,
+    avgHccs: 1.5,
+    rafImpact: 0.4,
+    annualPayment: 12000,
+    hccRealization: 60,
+    denialsEnabled: false,
+    denialsScenario: 'typical',
+    denialRate: 8,
+    unappealableRate: 40,
+    avgClaimValue: 250,
+    denialsRealization: 85,
+  },
+  pricingModel: 'perProvider',
+  costPerProvider: 210,
+  annualLicenseFee: 0,
+  implementationFee: 25000,
+  includeImplementation: false,
 };
 
 type ExplorePhase = 
   | 'careSetting' 
-  | 'opportunity' 
-  | 'timePath' 
-  | 'timeAllocation' 
-  | 'docDrivers';
+  | 'practice' 
+  | 'timeSavings' 
+  | 'valueDrivers' 
+  | 'docQuality'
+  | 'investment'
+  | 'model';
 
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
   onContinueToInvestment?: (state: ExploreState) => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>('careSetting');
   const [state, setState] = useState<ExploreState>(DEFAULT_EXPLORE_STATE);
 
@@ -145,14 +231,11 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Handle browser back button within explore flow
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      // Check if we're navigating within explore flow
       if (event.state?.view === 'explore' && event.state?.explorePhase) {
         setPhase(event.state.explorePhase);
       } else if (event.state?.view === 'journey' || !event.state?.view) {
-        // Going back to journey or initial state - trigger navigation
         if (onBackToJourney) {
           onBackToJourney();
         }
@@ -161,7 +244,6 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     
     window.addEventListener('popstate', handlePopState);
     
-    // Initialize with current phase (preserve view state)
     const currentState = window.history.state || {};
     if (!currentState.explorePhase || currentState.view !== 'explore') {
       window.history.replaceState({ 
@@ -172,7 +254,7 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     }
     
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [onBackToJourney]); // Include onBackToJourney in deps
+  }, [onBackToJourney]);
 
   const goHome = useCallback(() => {
     if (onBackToJourney) {
@@ -184,7 +266,6 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
 
   const navigate = useCallback((nextPhase: ExplorePhase) => {
     setPhase(nextPhase);
-    // Push browser history with both view and phase for consistent state
     window.history.pushState({ 
       view: 'explore', 
       explorePhase: nextPhase 
@@ -192,7 +273,8 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const calculateTotalHoursSaved = useCallback(() => {
+  // Calculate total hours saved
+  const totalHoursSaved = useMemo(() => {
     const isNursing = state.careSetting === 'nursing';
     
     if (isNursing) {
@@ -209,16 +291,75 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     }
   }, [state.careSetting, state.annualEncounters, state.utilizationPercent, state.minutesSavedPerEncounter, state.numberOfProviders, state.nursingShiftsPerNurseYear, state.nursingMinutesPerShift]);
 
-  const handleContinueToInvestment = useCallback((calculatedValues?: CalculatedValues) => {
-    if (onContinueToInvestment) {
-      // Pass state with calculated values merged in synchronously
-      const stateWithValues: ExploreState = {
-        ...state,
-        calculatedValues: calculatedValues || state.calculatedValues,
-      };
-      onContinueToInvestment(stateWithValues);
+  // Calculate time value (from patient access and cost reduction)
+  const timeValue = useMemo(() => {
+    const { timeDriverInputs } = state;
+    let total = 0;
+    
+    // Patient Access value
+    if (timeDriverInputs.patientAccessEnabled) {
+      const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
+      const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
+      total += potentialVisits * timeDriverInputs.revenuePerVisit;
     }
-  }, [state, onContinueToInvestment]);
+    
+    // Cost Reduction value (user's direct estimate)
+    if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
+      total += timeDriverInputs.estimatedCostReduction;
+    }
+    
+    return Math.round(total);
+  }, [totalHoursSaved, state.timeDriverInputs]);
+
+  // Calculate doc value using state inputs
+  const docValue = useMemo(() => {
+    const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
+    const { docQualityInputs } = state;
+    let total = 0;
+    
+    const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
+    const hccScenarios: Record<string, number> = { conservative: 10, typical: 15, aggressive: 25 };
+    const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
+
+    // wRVU
+    if (docQualityInputs.wrvuEnabled) {
+      const wrvuLiftPercent = wrvuScenarios[docQualityInputs.wrvuScenario];
+      const wrvuLift = docQualityInputs.currentWrvu * (wrvuLiftPercent / 100);
+      const totalWrvus = eligibleEncounters * wrvuLift;
+      const grossValue = totalWrvus * docQualityInputs.conversionFactor;
+      total += grossValue * (docQualityInputs.wrvuRealization / 100);
+    }
+
+    // HCC
+    if (docQualityInputs.hccEnabled) {
+      const recapturePercent = hccScenarios[docQualityInputs.hccScenario];
+      const maPatients = state.numberOfProviders * docQualityInputs.panelSize * (docQualityInputs.maPercent / 100);
+      const gapPatients = maPatients * (docQualityInputs.gapRate / 100);
+      const recaptured = gapPatients * (recapturePercent / 100);
+      const hccsRecaptured = recaptured * docQualityInputs.avgHccs;
+      const rafValue = hccsRecaptured * docQualityInputs.rafImpact * docQualityInputs.annualPayment;
+      total += rafValue * (docQualityInputs.hccRealization / 100);
+    }
+
+    // Denials
+    if (docQualityInputs.denialsEnabled) {
+      const preventionPercent = denialsScenarios[docQualityInputs.denialsScenario];
+      const totalDenials = eligibleEncounters * (docQualityInputs.denialRate / 100);
+      const unappealable = totalDenials * (docQualityInputs.unappealableRate / 100);
+      const prevented = unappealable * (preventionPercent / 100);
+      total += prevented * docQualityInputs.avgClaimValue * (docQualityInputs.denialsRealization / 100);
+    }
+
+    return Math.round(total);
+  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs]);
+
+  // Calculate annual investment
+  const annualInvestment = useMemo(() => {
+    if (state.pricingModel === 'perProvider') {
+      return state.numberOfProviders * state.costPerProvider * 12;
+    }
+    return state.annualLicenseFee;
+  }, [state.pricingModel, state.numberOfProviders, state.costPerProvider, state.annualLicenseFee]);
 
   switch (phase) {
     case 'careSetting':
@@ -226,111 +367,83 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
         <ExploreCareSettings
           selectedSetting={state.careSetting}
           onSelectSetting={(setting: ExploreCareSetting) => {
-            // When switching to ED, disable HCC since it's not applicable
-            // For inpatient, reset drivers to inpatient defaults
-            if (setting === 'ed') {
-              updateState({ 
-                careSetting: setting,
-                docDrivers: {
-                  ...state.docDrivers,
-                  hcc: { enabled: false, value: state.docDrivers.hcc.value }
-                }
-              });
-            } else if (setting === 'inpatient') {
-              // Inpatient uses CC/MCC (wrvu slot), CDI (hcc slot), and denials
-              updateState({ 
-                careSetting: setting,
-                // Set inpatient-appropriate default values
-                minutesSavedPerEncounter: 10, // Higher per-admission savings
-                timeAllocation: {
-                  patientAccess: 30,
-                  patientExperience: 0, // Not used in inpatient
-                  reducingLocums: 40,
-                  clinicianWellbeing: 30,
-                },
-                docDrivers: {
-                  wrvu: { enabled: false, value: 5 }, // CC/MCC capture
-                  hcc: { enabled: false, value: 30 },  // CDI query reduction
-                  denials: { enabled: false, value: 25 }
-                }
-              });
-            } else if (setting === 'nursing') {
-              // Nursing uses Care Plan Compliance (wrvu slot), Care Coordination (hcc slot), and Regulatory Compliance
-              updateState({ 
-                careSetting: setting,
-                // Set nursing-appropriate default values
-                minutesSavedPerEncounter: 20, // Higher per-patient savings for nursing
-                timeAllocation: {
-                  patientAccess: 35, // Direct Patient Care
-                  patientExperience: 0, // Not used in nursing
-                  reducingLocums: 35, // Nurse Retention
-                  clinicianWellbeing: 30, // Wellbeing
-                },
-                docDrivers: {
-                  wrvu: { enabled: false, value: 20 }, // Care Plan Compliance
-                  hcc: { enabled: false, value: 25 },  // Care Coordination
-                  denials: { enabled: false, value: 30 } // Regulatory Compliance
-                }
-              });
-            } else {
-              updateState({ careSetting: setting });
-            }
+            updateState({ careSetting: setting });
           }}
-          onNext={() => navigate('opportunity')}
+          onNext={() => navigate('practice')}
           onBack={goHome}
           onHome={goHome}
         />
       );
     
-    case 'opportunity':
+    case 'practice':
       return (
-        <ExploreOpportunity
+        <ExplorePractice
           state={state}
           updateState={updateState}
-          onNext={() => navigate('timePath')}
+          onNext={() => navigate('timeSavings')}
           onBack={() => navigate('careSetting')}
           onHome={goHome}
         />
       );
     
-    case 'timePath':
+    case 'timeSavings':
       return (
-        <ExploreTimePath
+        <ExploreTimeSavings
           state={state}
           updateState={updateState}
-          onNext={() => navigate('timeAllocation')}
-          onBack={() => navigate('opportunity')}
+          onNext={() => navigate('valueDrivers')}
+          onBack={() => navigate('practice')}
           onHome={goHome}
         />
       );
     
-    case 'timeAllocation':
+    case 'valueDrivers':
       return (
-        <ExploreTimeAllocation
+        <ExploreValueDrivers
           state={state}
           updateState={updateState}
-          totalHoursSaved={calculateTotalHoursSaved()}
-          onNext={() => {
-            // Nursing skips Documentation Quality and goes directly to Investment
-            if (state.careSetting === 'nursing') {
-              handleContinueToInvestment();
-            } else {
-              navigate('docDrivers');
-            }
-          }}
-          onBack={() => navigate('timePath')}
+          totalHoursSaved={totalHoursSaved}
+          onNext={() => navigate('docQuality')}
+          onBack={() => navigate('timeSavings')}
           onHome={goHome}
         />
       );
     
-    case 'docDrivers':
+    case 'docQuality':
       return (
-        <ExploreDocDrivers
+        <ExploreDocQuality
           state={state}
           updateState={updateState}
-          totalHoursSaved={calculateTotalHoursSaved()}
-          onNext={handleContinueToInvestment}
-          onBack={() => navigate('timeAllocation')}
+          onNext={() => navigate('investment')}
+          onBack={() => navigate('valueDrivers')}
+          onHome={goHome}
+        />
+      );
+    
+    case 'investment':
+      return (
+        <ExploreInvestment
+          state={state}
+          updateState={updateState}
+          totalHoursSaved={totalHoursSaved}
+          timeValue={timeValue}
+          docValue={docValue}
+          onNext={() => navigate('model')}
+          onBack={() => navigate('docQuality')}
+          onHome={goHome}
+        />
+      );
+    
+    case 'model':
+      return (
+        <ExploreModel
+          state={state}
+          totalHoursSaved={totalHoursSaved}
+          timeValue={timeValue}
+          docValue={docValue}
+          annualInvestment={annualInvestment}
+          onEdit={() => navigate('practice')}
+          onBack={() => navigate('investment')}
           onHome={goHome}
         />
       );

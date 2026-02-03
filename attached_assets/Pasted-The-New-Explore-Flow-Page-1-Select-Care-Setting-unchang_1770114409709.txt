@@ -1,0 +1,876 @@
+The New Explore Flow
+Page 1: Select Care Setting (unchanged)
+Page 2: Your Practice
+
+Providers
+Encounters
+Utilization expectation
+
+Page 3: Time Savings
+
+Choose your scenario (Conservative 2 min / Typical 4 min / Optimistic 6 min)
+See projected hours reclaimed
+NO dollar value yet — just time
+
+Page 4: What That Time Could Mean
+
+Similar to Measure: Three frameworks, not assertions
+"If time went to capacity" — optional, user-driven inputs
+"If time reduced costs" — optional, user enters their own estimate
+"If time improved lives" — qualitative framing, no dollar figure
+They can engage with 0, 1, 2, or all 3
+
+Page 5: Documentation Quality (Optional)
+
+wRVU improvement — if relevant
+HCC capture — if MA population
+Denial prevention — if relevant
+Each is a toggle: on/off with scenario selection
+
+Page 6: Your Investment
+
+Enter pricing
+See ROI based on what they chose to include
+
+Page 7: Your Model
+
+Summary of what's provable
+Summary of what's possible (with clear caveats)
+Expansion opportunity
+Export
+
+
+The Math — What's Actually Defensible
+Time Savings (Provable)
+CopyHours Saved = Time Saved per Encounter × Eligible Encounters ÷ 60
+
+Where:
+- Time Saved: 2 / 4 / 6 min (user choice)
+- Eligible Encounters = Total Encounters × Utilization Rate
+wRVU Improvement (Provable with caveats)
+CopyAdditional wRVUs = Eligible Encounters × wRVU Lift × Realization Rate
+Revenue = Additional wRVUs × $33
+
+Where:
+- wRVU Lift: 2% / 5% / 7% (user choice)
+- Realization Rate: 75% (conservative default)
+- $33 = Medicare conversion factor
+HCC Capture (Provable if MA population)
+CopyHCC Value = MA Patients × Gap Rate × Recapture Target × Avg HCCs × RAF Impact × Annual Payment × Realization
+
+Where:
+- MA Patients = Providers × Panel Size × MA %
+- Gap Rate: 40% (industry average)
+- Recapture Target: 10% / 15% / 25% (user choice)
+- Avg HCCs per gap patient: 1.5
+- RAF Impact: 0.4
+- Annual Payment per RAF: $12,000
+- Realization: 60% (RADV audits, etc.)
+Denial Prevention (Provable if they have denial data)
+CopyDenial Value = Eligible Encounters × Denial Rate × Unappealable % × Prevention Target × Avg Claim Value × Realization
+
+Where:
+- Denial Rate: 8% (industry average, editable)
+- Unappealable %: 40%
+- Prevention Target: 25% / 50% / 75% (user choice)
+- Avg Claim Value: $250 (editable)
+- Realization: 85%
+Time Value — NOT PROVABLE, BUT FRAMEABLE
+Instead of calculating "Patient Access = $X," we say:
+"If your organization used reclaimed time for additional patient visits:"
+
+User inputs: % of time toward capacity, visit duration, revenue per visit
+We calculate: Potential visits × Revenue per visit
+We caveat: "This assumes schedulable time and available demand"
+
+"If your organization saw direct cost reductions:"
+
+User inputs: Estimated annual savings (direct input)
+We display: Their number
+We caveat: "Based on your estimate"
+
+"If this time improved clinician wellbeing:"
+
+We calculate: Hours/week back per provider
+We don't monetize it
+We note: "1 provider retained = $300-500K in replacement costs"
+
+
+The Defensibility Framework
+Value DriverPre-Sale DefensibilityHow We Present ItHours SavedHIGHPrimary metric, prominently displayedwRVU LiftMEDIUMOptional driver, with realization rateHCC CaptureMEDIUMOptional driver, requires MA populationDenial PreventionMEDIUMOptional driver, requires denial dataCapacity RevenueLOWFramework only, user-driven inputsCost ReductionLOWFramework only, user enters their estimateRetention ValueVERY LOWQualitative only, no dollar figure
+
+Now I'll write the comprehensive Replit prompt. This is going to be long but complete.
+
+EXPLORE PATH — COMPREHENSIVE REPLIT PROMPT
+THE OBJECTIVE
+A prospect is evaluating Abridge. They want to understand:
+
+What time savings they might expect
+What documentation quality improvements are possible
+How to think about the value of those improvements
+Whether the investment makes sense
+
+This is a modeling tool, not a promise. We show what's possible based on defensible assumptions, and we're transparent about what's certain vs. speculative.
+
+GLOBAL DESIGN SYSTEM
+(Same as Measure path)
+Colors:
+
+Page background: White (#FFFFFF)
+Card backgrounds: Warm beige (#F5F0EB)
+Primary accent: Cadmium red-orange (#E85A2C)
+Primary text: Black (#000000)
+Secondary text: Gray (#888888)
+Positive values: Red-orange (#E85A2C)
+Negative values: Black
+Bars: Gray (#D1D5DB) for "before/baseline", Red-orange for "after/projected"
+
+Typography:
+
+Font: Manrope
+Hero numbers: 48-64px, bold
+Section labels: 11-12px, ALL CAPS, gray, letter-spacing 1.5px
+Body: 16px
+Subtext: 14px, gray
+
+Components:
+
+Cards: Warm beige background, 24px padding, 8px border-radius
+Stat blocks: Red-orange left border (4px)
+Buttons: Red-orange fill, white text
+Inputs: White background, gray border
+Step indicator: 6 dots, gray, current = red-orange
+
+
+PAGE 1: SELECT CARE SETTING
+(No changes needed — keep as is)
+
+PAGE 2: YOUR PRACTICE
+Purpose:
+Establish the baseline: providers, encounters, utilization. This defines the denominator for all calculations.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                           Explore · Your Practice    ●●○○○○○   │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                              YOUR PRACTICE                                      │
+│                                                                                 │
+│                    Tell us about your starting point.                           │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  DEPLOYMENT SIZE                                                          │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Number of Providers                                                      │  │
+│  │  Clinicians who would use Abridge                                         │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │ 80                                                                  │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  ENCOUNTER VOLUME                                                         │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  How busy is your practice?                                               │  │
+│  │                                                                           │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                       │  │
+│  │  │   Lighter   │  │   Typical   │  │    Busy     │                       │  │
+│  │  │ 2,000/prov  │  │ 3,000/prov  │  │ 4,000/prov  │                       │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                       │  │
+│  │                                                                           │  │
+│  │  Or enter your total practice volume:                                     │  │
+│  │  ┌─────────────────────────────────────────────┐                         │  │
+│  │  │ 240,000                            /year    │                         │  │
+│  │  └─────────────────────────────────────────────┘                         │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  EXPECTED UTILIZATION                                                     │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  What percentage of encounters will use Abridge?                          │  │
+│  │                                                                           │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                       │  │
+│  │  │Conservative │  │   Typical   │  │ Aggressive  │                       │  │
+│  │  │    50%      │  │    70%      │  │    85%      │                       │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                       │  │
+│  │                                                                           │  │
+│  │  Utilization typically starts at 50-60% and grows to 75-85%               │  │
+│  │  as workflows mature.                                                     │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│           ┌───────────────────────────────────────────────────────┐             │
+│           │                                                       │             │
+│           │  YOUR BASELINE                                        │             │
+│           │                                                       │             │
+│           │  80 providers                                         │             │
+│           │  240,000 annual encounters                            │             │
+│           │  70% utilization                                      │             │
+│           │                                                       │             │
+│           │  ─────────────────────────────────────────────────    │             │
+│           │                                                       │             │
+│           │  ELIGIBLE ENCOUNTERS                                  │             │
+│           │  168,000                                              │             │
+│           │                                                       │             │
+│           │  This is your value multiplier.                       │             │
+│           │  Every calculation downstream uses this number.       │             │
+│           │                                                       │             │
+│           └───────────────────────────────────────────────────────┘             │
+│                                                                                 │
+│                                                                                 │
+│                          [ Continue → ]                                         │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Copy:
+
+Headline: YOUR PRACTICE
+Subhead: Tell us about your starting point.
+Section labels: DEPLOYMENT SIZE / ENCOUNTER VOLUME / EXPECTED UTILIZATION
+Encounter options: Lighter (2,000/prov) / Typical (3,000/prov) / Busy (4,000/prov)
+Utilization options: Conservative (50%) / Typical (70%) / Aggressive (85%)
+Utilization note: Utilization typically starts at 50-60% and grows to 75-85% as workflows mature.
+Baseline card label: YOUR BASELINE
+Eligible encounters label: ELIGIBLE ENCOUNTERS
+Eligible encounters note: This is your value multiplier. Every calculation downstream uses this number.
+
+
+PAGE 3: TIME SAVINGS
+Purpose:
+Model the time savings. This is the foundation of the value story.
+The Math:
+CopyHours Saved = Time Saved per Encounter × Eligible Encounters ÷ 60
+
+Conservative: 2 min → 5,600 hours
+Typical: 4 min → 11,200 hours
+Optimistic: 6 min → 16,800 hours
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                           Explore · Time Savings    ●●●○○○○    │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                              TIME SAVINGS                                       │
+│                                                                                 │
+│              How much time could your providers get back?                       │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  WHAT THE DATA SHOWS                                                      │  │
+│  │                                                                           │  │
+│  │  Across implementations, providers typically save 2-6 minutes per         │  │
+│  │  encounter on documentation. The range depends on specialty, workflow,    │  │
+│  │  and how providers use the time.                                          │  │
+│  │                                                                           │  │
+│  │  Source: Abridge customer data, 2023-2024                                 │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  CHOOSE YOUR SCENARIO                                                     │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  ○  Conservative                                        2 min       │  │  │
+│  │  │     For skeptical stakeholders. Under-promise to over-deliver.      │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  ┃                                                                  │  │  │
+│  │  │  ┃  ●  Typical                                 RECOMMENDED  4 min   │  │  │
+│  │  │  ┃     Based on average outcomes across similar implementations.    │  │  │
+│  │  │  ┃                                                                  │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  ○  Optimistic                                          6 min       │  │  │
+│  │  │     For high-adoption organizations with strong change management.  │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  Or enter a custom value:  ┌──────┐  min/encounter                       │  │
+│  │                            │  4   │                                       │  │
+│  │                            └──────┘                                       │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│           ┌───────────────────────────────────────────────────────┐             │
+│           │                                                       │             │
+│           │  PROJECTED TIME SAVINGS                               │             │
+│           │                                                       │             │
+│           │               11,200                                  │             │
+│           │            hours / year                               │             │
+│           │                                                       │             │
+│           │  4 min × 168,000 encounters ÷ 60                      │             │
+│           │                                                       │             │
+│           │  ─────────────────────────────────────────────────    │             │
+│           │                                                       │             │
+│           │  That's 140 hours per provider per year.              │             │
+│           │  Or about 2.7 hours per week.                         │             │
+│           │                                                       │             │
+│           └───────────────────────────────────────────────────────┘             │
+│                                                                                 │
+│                                                                                 │
+│                  [ Continue to Value Drivers → ]                                │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Copy:
+
+Headline: TIME SAVINGS
+Subhead: How much time could your providers get back?
+Data box: "WHAT THE DATA SHOWS" — explanation of 2-6 min range with source
+Scenario options:
+
+Conservative (2 min): For skeptical stakeholders. Under-promise to over-deliver.
+Typical (4 min): Based on average outcomes across similar implementations. [RECOMMENDED]
+Optimistic (6 min): For high-adoption organizations with strong change management.
+
+
+Result card label: PROJECTED TIME SAVINGS
+Result context: That's X hours per provider per year. Or about X hours per week.
+
+
+PAGE 4: VALUE DRIVERS — TIME
+Purpose:
+Help them think about what the time could be worth. NOT assertions — frameworks.
+The Philosophy:
+We present three lenses. Each is optional. They engage with what's relevant to them.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                         Explore · Value Drivers    ●●●●○○○     │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                         WHAT COULD THAT TIME BE WORTH?                          │
+│                                                                                 │
+│         Your providers could reclaim 11,200 hours. Different organizations      │
+│                       use that time in different ways.                          │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  HOW TO USE THIS SECTION                                                  │  │
+│  │                                                                           │  │
+│  │  We can't tell you exactly how your organization will use reclaimed       │  │
+│  │  time. But we can help you model different scenarios.                     │  │
+│  │                                                                           │  │
+│  │  Engage with the drivers that are relevant to your situation.             │  │
+│  │  Skip the ones that aren't.                                               │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  PATIENT ACCESS                                            [Toggle]   │  │
+│  │  ┃  If providers use time to see more patients                            │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [When expanded/toggled on:]                                                    │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  PATIENT ACCESS                                              [On]     │  │
+│  │  ┃  If providers use time to see more patients                            │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  What percentage of reclaimed time could go toward patient care?          │  │
+│  │                                                                           │  │
+│  │  ○───────────────────●───────────────────────────────────────○            │  │
+│  │  0%                  15%                                    50%           │  │
+│  │                                                                           │  │
+│  │  Average visit duration          Revenue per visit                        │  │
+│  │  ┌──────────────┐                 ┌──────────────┐                        │  │
+│  │  │ 30      min  │                 │ $200         │                        │  │
+│  │  └──────────────┘                 └──────────────┘                        │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  At 15% of time toward capacity:                                    │  │  │
+│  │  │                                                                     │  │  │
+│  │  │  Hours toward patient care:     1,680                               │  │  │
+│  │  │  Potential additional visits:   3,360                               │  │  │
+│  │  │  Potential revenue:             $672,000                            │  │  │
+│  │  │                                                                     │  │  │
+│  │  │  ⚠️ This assumes available demand and schedulable time.              │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  COST REDUCTION                                            [Toggle]   │  │
+│  │  ┃  If time reduces overtime, locums, or other costs                      │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [When expanded/toggled on:]                                                    │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  COST REDUCTION                                              [On]     │  │
+│  │  ┃  If time reduces overtime, locums, or other costs                      │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  We can't calculate your cost reduction — every organization is           │  │
+│  │  different. But if you have an estimate, enter it here.                   │  │
+│  │                                                                           │  │
+│  │  Estimated annual cost reduction from reclaimed time:                     │  │
+│  │  ┌──────────────────────────────────────────────┐                        │  │
+│  │  │ $                                            │                        │  │
+│  │  └──────────────────────────────────────────────┘                        │  │
+│  │                                                                           │  │
+│  │  Common sources: Reduced overtime, fewer locums, deferred hiring          │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  CLINICIAN WELLBEING                                       [Toggle]   │  │
+│  │  ┃  If time improves work-life balance and retention                      │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [When expanded/toggled on:]                                                    │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  CLINICIAN WELLBEING                                         [On]     │  │
+│  │  ┃  If time improves work-life balance and retention                      │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  Your providers would get back:                                           │  │
+│  │                                                                           │  │
+│  │                     2.7 hours per week                                    │  │
+│  │                     per provider                                          │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  We don't assign a dollar value to this.                                  │  │
+│  │                                                                           │  │
+│  │  But consider:                                                            │  │
+│  │  • Documentation burden is the #1 driver of burnout                       │  │
+│  │  • Burnout is the #1 reason physicians leave                              │  │
+│  │  • Cost to replace one provider: $300K–$500K                              │  │
+│  │                                                                           │  │
+│  │  If Abridge helps retain even one provider who would have left,           │  │
+│  │  that's the value.                                                        │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│           ┌───────────────────────────────────────────────────────┐             │
+│           │                                                       │             │
+│           │  TIME VALUE SUMMARY                                   │             │
+│           │                                                       │             │
+│           │  Hours reclaimed:          11,200                     │             │
+│           │                                                       │             │
+│           │  Patient Access:           $672,000                   │             │
+│           │  (if 15% to capacity)                                 │             │
+│           │                                                       │             │
+│           │  Cost Reduction:           —                          │             │
+│           │  (no estimate provided)                               │             │
+│           │                                                       │             │
+│           │  Wellbeing:                2.7 hrs/wk back            │             │
+│           │  (qualitative)                                        │             │
+│           │                                                       │             │
+│           └───────────────────────────────────────────────────────┘             │
+│                                                                                 │
+│                                                                                 │
+│                [ Continue to Documentation Quality → ]                          │
+│                                                                                 │
+│                  You can skip documentation drivers if not relevant             │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Key Changes from Current:
+
+No forced percentage allocation. They toggle on what's relevant.
+Patient Access requires them to input assumptions. We don't guess.
+Cost Reduction is their estimate. We don't calculate it.
+Wellbeing has no dollar figure. Just context.
+Clear caveats on everything speculative.
+
+
+PAGE 5: VALUE DRIVERS — DOCUMENTATION QUALITY
+Purpose:
+Model revenue impact from better documentation. These are more defensible because they're based on coding/billing data.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                     Explore · Documentation Quality  ●●●●●○○   │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                          DOCUMENTATION QUALITY                                  │
+│                                                                                 │
+│         Better documentation creates downstream revenue. Select the             │
+│                     drivers that apply to your organization.                    │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  wRVU IMPROVEMENT                                          [Toggle]   │  │
+│  │  ┃  Capture the complexity you're already delivering                      │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [When toggled on:]                                                             │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  wRVU IMPROVEMENT                                            [On]     │  │
+│  │  ┃  Capture the complexity you're already delivering                      │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  When notes fully reflect visit complexity, E/M levels often code         │  │
+│  │  higher. Industry data shows 2-7% wRVU lift from better documentation.    │  │
+│  │                                                                           │  │
+│  │  Choose your scenario:                                                    │  │
+│  │                                                                           │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                       │  │
+│  │  │Conservative │  │   Typical   │  │ Aggressive  │                       │  │
+│  │  │     2%      │  │     5%      │  │     7%      │                       │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                       │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │                                                                     │  │  │
+│  │  │  CALCULATION                                    Click values to edit│  │  │
+│  │  │                                                                     │  │  │
+│  │  │  Eligible encounters               168,000                          │  │  │
+│  │  │  Current avg wRVU/visit            1.5 wRVU ✏️                       │  │  │
+│  │  │  Documentation improvement         5%                               │  │  │
+│  │  │  = wRVU lift per visit             0.075 wRVU                       │  │  │
+│  │  │  = Total additional wRVUs          12,600                           │  │  │
+│  │  │  × Conversion rate                 $33/wRVU ✏️                      │  │  │
+│  │  │  = Gross value                     $415,800                         │  │  │
+│  │  │  × Realization rate                75% ✏️                           │  │  │
+│  │  │  ─────────────────────────────────────────────────────────────────  │  │  │
+│  │  │  = Net annual value                $311,850                         │  │  │
+│  │  │                                                                     │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  HCC CAPTURE                                               [Toggle]   │  │
+│  │  ┃  Document chronic conditions that affect risk adjustment               │  │
+│  │  ┃  Most relevant for Medicare Advantage populations                      │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [Full HCC calculation when toggled - similar structure to current]             │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  ┃  DENIAL PREVENTION                                         [Toggle]   │  │
+│  │  ┃  Prevent unappealable denials from documentation gaps                  │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  [Full denial prevention calculation when toggled - similar to current]         │
+│                                                                                 │
+│                                                                                 │
+│           ┌───────────────────────────────────────────────────────┐             │
+│           │                                                       │             │
+│           │  DOCUMENTATION VALUE SUMMARY                          │             │
+│           │                                                       │             │
+│           │  wRVU Improvement:         $311,850                   │             │
+│           │  HCC Capture:              —                          │             │
+│           │  Denial Prevention:        —                          │             │
+│           │                                                       │             │
+│           │  ─────────────────────────────────────────────────    │             │
+│           │                                                       │             │
+│           │  Documentation Value:      $311,850                   │             │
+│           │                                                       │             │
+│           └───────────────────────────────────────────────────────┘             │
+│                                                                                 │
+│                                                                                 │
+│                     [ Continue to Investment → ]                                │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Documentation Drivers — Defaults:
+wRVU:
+
+Scenarios: 2% / 5% / 7%
+Editable: Current wRVU (default 1.5), Conversion rate (default $33), Realization (default 75%)
+
+HCC:
+
+Scenarios: 10% / 15% / 25% recapture
+Editable: Panel size (default 1,500), MA % (default 30%), Gap rate (default 40%), Avg HCCs (default 1.5), RAF impact (default 0.4), Annual payment (default $12,000), Realization (default 60%)
+
+Denials:
+
+Scenarios: 25% / 50% / 75% prevention
+Editable: Denial rate (default 8%), Unappealable rate (default 40%), Avg claim value (default $250), Realization (default 85%)
+
+
+PAGE 6: YOUR INVESTMENT
+Purpose:
+Enter pricing, calculate ROI.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                           Explore · Investment    ●●●●●●○      │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│                                                                                 │
+│                            YOUR INVESTMENT                                      │
+│                                                                                 │
+│                   Enter your pricing to see the complete picture.               │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  PRICING MODEL                                                            │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  ○  Per Provider / Month                                            │  │  │
+│  │  │     Pay per active provider. Scale up or down as needed.            │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │  ○  Annual License                                                  │  │  │
+│  │  │     Fixed annual fee for your deployment.                           │  │  │
+│  │  └─────────────────────────────────────────────────────────────────────┘  │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  [If Per Provider/Month selected:]                                        │  │
+│  │                                                                           │  │
+│  │  Cost per provider per month                                              │  │
+│  │  ┌──────────────────────────────────────────────┐                        │  │
+│  │  │ $ 210                              /month    │                        │  │
+│  │  └──────────────────────────────────────────────┘                        │  │
+│  │                                                                           │  │
+│  │  80 providers × $210/mo × 12 = $201,600/year                             │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  [If Annual License selected:]                                            │  │
+│  │                                                                           │  │
+│  │  Annual license fee                                                       │  │
+│  │  ┌──────────────────────────────────────────────┐                        │  │
+│  │  │ $                                   /year    │                        │  │
+│  │  └──────────────────────────────────────────────┘                        │  │
+│  │                                                                           │  │
+│  │                                                                           │  │
+│  │  IMPLEMENTATION FEE (optional)                                            │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  ☐  Add implementation fee                                                │  │
+│  │                                                                           │  │
+│  │  [If checked:]                                                            │  │
+│  │  ┌──────────────────────────────────────────────┐                        │  │
+│  │  │ $ 25,000                           one-time  │                        │  │
+│  │  └──────────────────────────────────────────────┘                        │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│           ┌───────────────────────────────────────────────────────┐             │
+│           │                                                       │             │
+│           │  YOUR ROI                                             │             │
+│           │                                                       │             │
+│           │  Annual Value                    $983,850              │             │
+│           │  (Time + Documentation)                               │             │
+│           │                                                       │             │
+│           │  Annual Investment               -$201,600             │             │
+│           │                                                       │             │
+│           │  ─────────────────────────────────────────────────    │             │
+│           │                                                       │             │
+│           │  NET ANNUAL VALUE                                     │             │
+│           │  $782,250                                             │             │
+│           │                                                       │             │
+│           │  ─────────────────────────────────────────────────    │             │
+│           │                                                       │             │
+│           │  ROI                             4.9×                  │             │
+│           │  Value per Provider              $12,298               │             │
+│           │                                                       │             │
+│           └───────────────────────────────────────────────────────┘             │
+│                                                                                 │
+│                                                                                 │
+│                        [ View Full Summary → ]                                  │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+Changes:
+
+Removed "Contract Term" selector — we always show 3-year view on summary
+Implementation fee is optional, added to Year 1 only
+
+
+PAGE 7: YOUR ROI MODEL (Summary)
+Purpose:
+The boardroom-ready summary. What's provable, what's possible, expansion opportunity.
+Layout:
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Abridge logo]                          Explore · Your Model    ●●●●●●●       │
+│  ← Back                                                                         │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│ ┌─────────────────────────────────────────────────────────────────────────────┐ │
+│ │                                                                             │ │
+│ │                        Outpatient · 80 providers                            │ │
+│ │                                                                             │ │
+│ │                         PROJECTED NET VALUE                                 │ │
+│ │                                                                             │ │
+│ │                            $782,250                                         │ │
+│ │                             / year                                          │ │
+│ │                                                                             │ │
+│ │                $983,850 value – $201,600 investment                         │ │
+│ │                                                                             │ │
+│ │     ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                     │ │
+│ │     │    4.9×     │   │  $12,298    │   │   11,200    │                     │ │
+│ │     │     ROI     │   │ per provider│   │ hours saved │                     │ │
+│ │     └─────────────┘   └─────────────┘   └─────────────┘                     │ │
+│ │                                                                             │ │
+│ │   These projections reflect conservative assumptions.                       │ │
+│ │   See Methodology for details.                                              │ │
+│ │                                                                             │ │
+│ └─────────────────────────────────────────────────────────────────────────────┘ │
+│                                                                                 │
+│                                                                                 │
+│                        WHERE THE VALUE COMES FROM                               │
+│                                                                                 │
+│       Ambient AI creates value through two mechanisms—each with its             │
+│                          own drivers and assumptions.                           │
+│                                                                                 │
+│                                                                                 │
+│  ┌──────────────────────────────────┐  ┌──────────────────────────────────┐    │
+│  │                                  │  │                                  │    │
+│  │  TIME BACK                       │  │  DOCUMENTATION QUALITY           │    │
+│  │                                  │  │                                  │    │
+│  │  $672,000 / year                 │  │  $311,850 / year                 │    │
+│  │                                  │  │                                  │    │
+│  │  ─────────────────────────────   │  │  ─────────────────────────────   │    │
+│  │                                  │  │                                  │    │
+│  │  • Patient Access    $672,000    │  │  • wRVU Improvement  $311,850    │    │
+│  │    (15% to capacity)             │  │    (5% lift)                     │    │
+│  │                                  │  │                                  │    │
+│  │  • Cost Reduction    —           │  │  • HCC Capture       —           │    │
+│  │                                  │  │                                  │    │
+│  │  • Wellbeing         2.7 hrs/wk  │  │  • Denial Prevention —           │    │
+│  │    (qualitative)                 │  │                                  │    │
+│  │                                  │  │                                  │    │
+│  └──────────────────────────────────┘  └──────────────────────────────────┘    │
+│                                                                                 │
+│                                                                                 │
+│                              3-YEAR PROJECTION                                  │
+│                                                                                 │
+│        ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────────┐        │
+│        │  Year 1  │    │  Year 2  │    │  Year 3  │    │  3-Year Net  │        │
+│        │          │    │          │    │          │    │              │        │
+│        │ $757,250 │    │ $832,975 │    │ $916,273 │    │  $2.5M       │        │
+│        │          │    │          │    │          │    │              │        │
+│        └──────────┘    └──────────┘    └──────────┘    └──────────────┘        │
+│                                                                                 │
+│        Year 1 includes $25K implementation fee.                                 │
+│        Years 2-3 assume 10% value growth from improved utilization.             │
+│                                                                                 │
+│                                                                                 │
+│                         THE EXPANSION OPPORTUNITY                               │
+│                                                                                 │
+│           A successful pilot proves value. Strategic expansion                  │
+│                              multiplies it.                                     │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  TODAY                                              FULL SCALE            │  │
+│  │                                                                           │  │
+│  │   80                           ───────────────        240                 │  │
+│  │  providers                     expansion →           providers            │  │
+│  │  70% util                                            85% util             │  │
+│  │                                                                           │  │
+│  │  ─────────────────────────────────────────────────────────────────────    │  │
+│  │                                                                           │  │
+│  │  ┌─────────────────────┐            ┌─────────────────────────────────┐   │  │
+│  │  │                     │            │                                 │   │  │
+│  │  │  TODAY'S VALUE      │            │  FULL SCALE VALUE               │   │  │
+│  │  │  $782K / year       │            │  $2.9M / year                   │   │  │
+│  │  │                     │            │                                 │   │  │
+│  │  │  4.9× ROI           │            │  5.8× ROI                       │   │  │
+│  │  │                     │            │                                 │   │  │
+│  │  └─────────────────────┘            └─────────────────────────────────┘   │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  Your Analysis                        [ Edit Model ]  [ Download PDF ]   │  │
+│  │  Outpatient · 80 providers · $210/provider/mo                             │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │  Methodology & Assumptions — understand how we calculated these       ▼  │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SUMMARY OF CHANGES FROM CURRENT
+What's Removed:
+
+Forced percentage allocation — No more "40% Patient Access, 30% Experience, 30% Wellbeing"
+"Patient Experience" as a value driver — Absorbed into Wellbeing (qualitative)
+Contract term selector — Always show 3-year projection
+Speculative retention calculations — No more "MINIMAL/MODERATE/SIGNIFICANT" impact tiers
+"Locum Cost Reduction" math — Now user enters their own estimate
+
+What's Changed:
+
+Time value drivers are optional toggles — Engage with what's relevant
+Patient Access requires user inputs — We don't assume realization rate
+Cost Reduction is user's estimate — We don't calculate it
+Wellbeing is qualitative only — No dollar figure
+wRVU default lifted — Typical is now 5% (was lower)
+Clearer caveats throughout — We're honest about what's provable
+
+What's Added:
+
+"WHAT THE DATA SHOWS" boxes — Source our claims
+Framework language — "If time went to X" not "X% of time went to X"
+Caveat text on speculative calculations
+Clear separation of Time vs. Documentation value
+
