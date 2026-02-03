@@ -84,7 +84,7 @@ export default function ScribeFullAnalysis({
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="relative mb-10 overflow-hidden"
         >
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 md:p-10 shadow-xl relative">
+          <div className="bg-black rounded-2xl p-6 md:p-10 shadow-xl relative">
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
               <img src={patternV} alt="" className="absolute w-32 -top-8 -left-8 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
               <img src={patternCorner} alt="" className="absolute w-40 -top-10 right-4 rotate-90" style={{ filter: 'grayscale(100%) brightness(2)' }} />
@@ -313,7 +313,7 @@ export default function ScribeFullAnalysis({
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-5 text-white">
+          <div className="bg-black rounded-xl p-5 text-white">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <div className="text-slate-400 text-xs uppercase tracking-wide mb-1">Your true annual cost</div>
@@ -336,7 +336,7 @@ export default function ScribeFullAnalysis({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="bg-gradient-to-br from-[#111827] to-[#1e293b] rounded-xl p-6 md:p-10 text-center relative overflow-hidden"
+            className="bg-black rounded-xl p-6 md:p-10 text-center relative overflow-hidden"
           >
             <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
               <img src={patternV} alt="" className="absolute w-20 md:w-28 -top-4 -left-4 -rotate-12" style={{ filter: 'grayscale(100%) brightness(2)' }} />
