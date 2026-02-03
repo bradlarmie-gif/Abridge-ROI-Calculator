@@ -752,32 +752,35 @@ export default function ExploreDocQuality({
 
               <div className="h-px bg-[#333333] my-4" />
 
-              {/* Documentation Drivers */}
+              {/* Documentation Drivers - Care Setting Specific */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${docQualityInputs.wrvuEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
-                    <span className="text-sm text-[#888888]">wRVU</span>
+                    <span className="text-sm text-[#888888]">{isED ? 'E&M Accuracy' : 'wRVU'}</span>
                   </div>
                   <span className={`text-sm font-semibold ${docQualityInputs.wrvuEnabled ? 'text-white' : 'text-[#666666]'}`}>
                     {docQualityInputs.wrvuEnabled ? formatCurrency(Math.round(wrvuRevenueNet)) : '—'}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
-                    <span className="text-sm text-[#888888]">HCC</span>
+                {/* Only show HCC for non-ED settings */}
+                {showHCC && (
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${docQualityInputs.hccEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                      <span className="text-sm text-[#888888]">HCC</span>
+                    </div>
+                    <span className={`text-sm font-semibold ${docQualityInputs.hccEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                      {docQualityInputs.hccEnabled ? formatCurrency(Math.round(hccRevenueNet)) : '—'}
+                    </span>
                   </div>
-                  <span className={`text-sm font-semibold ${docQualityInputs.hccEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                    {docQualityInputs.hccEnabled ? formatCurrency(Math.round(hccRevenueNet)) : '—'}
-                  </span>
-                </div>
+                )}
 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${docQualityInputs.denialsEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
-                    <span className="text-sm text-[#888888]">Denials</span>
+                    <span className="text-sm text-[#888888]">{isED ? 'Denial Prevention' : 'Denials'}</span>
                   </div>
                   <span className={`text-sm font-semibold ${docQualityInputs.denialsEnabled ? 'text-white' : 'text-[#666666]'}`}>
                     {docQualityInputs.denialsEnabled ? formatCurrency(Math.round(denialsRevenueNet)) : '—'}

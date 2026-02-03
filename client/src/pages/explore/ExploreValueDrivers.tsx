@@ -1442,58 +1442,115 @@ export default function ExploreValueDrivers({
 
               <div className="h-px bg-[#333333] my-4" />
 
-              {/* Line Items */}
+              {/* Line Items - Care Setting Specific */}
               <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
-                      <span className="text-sm text-[#888888]">Patient Access</span>
+                {isED ? (
+                  <>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edLwbsEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">LWBS Recovery</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.edLwbsEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.edLwbsEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.edLwbsReduction}% reduction)</p>
+                      )}
                     </div>
-                    <span className={`text-sm font-semibold ${timeDriverInputs.patientAccessEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                      {timeDriverInputs.patientAccessEnabled ? formatCurrency(potentialRevenue) : '—'}
-                    </span>
-                  </div>
-                  {timeDriverInputs.patientAccessEnabled && (
-                    <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.capacityPercent}% to capacity)</p>
-                  )}
-                </div>
 
-                <div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
-                      <span className="text-sm text-[#888888]">Cost Reduction</span>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.edThroughputEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Admission Capture</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.edThroughputEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.edThroughputEnabled ? formatCurrency(edThroughputValue) : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.edThroughputEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.edAdditionalPatientsPercent}% admission rate)</p>
+                      )}
                     </div>
-                    <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
-                      {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
-                    </span>
-                  </div>
-                  {!timeDriverInputs.costReductionEnabled && (
-                    <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
-                  )}
-                </div>
 
-                <div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
-                      <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.wellbeingEnabled 
+                            ? (timeDriverInputs.calculateRetentionValue 
+                                ? formatCurrency(retentionCalcs.retentionValue)
+                                : '—')
+                            : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.wellbeingEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">
+                          {timeDriverInputs.calculateRetentionValue ? '(retention value)' : `${hoursPerProviderPerWeek} hrs/wk back`}
+                        </p>
+                      )}
                     </div>
-                    <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                      {timeDriverInputs.wellbeingEnabled 
-                        ? (timeDriverInputs.calculateRetentionValue 
-                            ? formatCurrency(retentionCalcs.retentionValue)
-                            : '—')
-                        : '—'}
-                    </span>
-                  </div>
-                  {timeDriverInputs.wellbeingEnabled && (
-                    <p className="text-xs text-[#666666] ml-4 mt-0.5">
-                      {timeDriverInputs.calculateRetentionValue ? '(retention value)' : `${hoursPerProviderPerWeek} hrs/wk back`}
-                    </p>
-                  )}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.patientAccessEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Patient Access</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.patientAccessEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.patientAccessEnabled ? formatCurrency(potentialRevenue) : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.patientAccessEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.capacityPercent}% to capacity)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Cost Reduction</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
+                        </span>
+                      </div>
+                      {!timeDriverInputs.costReductionEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#E85A2C]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.wellbeingEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.wellbeingEnabled 
+                            ? (timeDriverInputs.calculateRetentionValue 
+                                ? formatCurrency(retentionCalcs.retentionValue)
+                                : '—')
+                            : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.wellbeingEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">
+                          {timeDriverInputs.calculateRetentionValue ? '(retention value)' : `${hoursPerProviderPerWeek} hrs/wk back`}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="h-px bg-[#333333] my-4" />

@@ -1,0 +1,293 @@
+ED PATH — STYLING & MATH FIXES
+ISSUE 1: Right Panel shows wrong drivers
+Current (Wrong):
+The right panel on Value Drivers page shows:
+
+Patient Access
+Cost Reduction
+Clinician Wellbeing
+
+Should be (Correct for ED):
+
+LWBS Recovery
+Admission Capture
+Clinician Wellbeing
+
+Replit Prompt:
+CopyOn the ED Value Drivers page (ExploreValueDrivers.tsx), update the right panel 
+summary card to show ED-specific drivers instead of Outpatient drivers:
+
+Change:
+- "Patient Access" → "LWBS Recovery"
+- "Cost Reduction" → "Admission Capture"  
+- Keep "Clinician Wellbeing"
+
+The panel should dynamically show values when each driver is toggled on,
+and show "—" when toggled off.
+
+ISSUE 2: Admission Capture math is wrong
+Current (Wrong):
+
+Shows "Patients admitted/year: 4,500"
+Taking 5% admission rate × total ED volume
+This is not connected to LWBS
+
+Should be (Correct):
+
+Admission Capture should ONLY calculate admissions from RECOVERED patients
+It should use the LWBS recovered patients as the base
+Default admission rate should be 15-18%, not 5%
+
+Replit Prompt:
+CopyFix the Admission Capture calculation on the ED Value Drivers page:
+
+1. The base for Admission Capture should be "Patients recovered" from LWBS,
+   NOT total ED volume or a separate patient count.
+
+2. If LWBS Recovery is disabled, Admission Capture should show a disabled state
+   with message: "Enable LWBS Recovery first to calculate admission value"
+
+3. Update the calculation display:
+
+   CALCULATION                                        
+   
+   Recovered ED patients                          540
+   (from LWBS Recovery)
+   
+   × Admission rate                               18% ✏️
+   ───────────────────────────────────────────────────────────
+   = Potential additional admissions              97
+   
+   × Avg admission revenue                        $8,000 ✏️
+   ───────────────────────────────────────────────────────────
+   = Gross value                                  $776,000
+   
+   × Realization rate                             40% ✏️
+     (Bed availability, payer mix)
+   ───────────────────────────────────────────────────────────
+   
+   Annual Admission Capture Value                 $310,400
+
+4. Update defaults:
+   - Admission rate: 18% (was showing 5%)
+   - Avg admission revenue: $8,000
+   - Realization rate: 40%
+
+5. Remove the standalone "Admission rate (%)" input at the top.
+   The admission rate should be in the calculation section, not a separate input.
+
+ISSUE 3: Documentation Quality right panel shows HCC
+Current (Wrong):
+Right panel shows:
+
+wRVU ✓
+HCC —
+Denials —
+
+Should be (Correct for ED):
+
+E&M Accuracy (wRVU)
+Denial Prevention
+NO HCC (ED doesn't have HCC driver)
+
+Replit Prompt:
+CopyOn the ED Documentation Quality page, update the right panel to NOT show HCC:
+
+For ED setting only:
+- Show: wRVU (or "E&M Accuracy")
+- Show: Denials
+- Do NOT show: HCC
+
+The HCC line item should be conditionally hidden when care setting is "Emergency".
+
+ISSUE 4: Downstream Value section styling
+Current (Wrong):
+
+Multi-colored left borders (red, green, blue, amber) on impact cards
+Doesn't match Abridge brand
+
+Should be (Correct):
+
+All impact cards should have consistent red-orange left border (#E85A2C)
+White card backgrounds
+Single accent color throughout
+
+Replit Prompt:
+CopyUpdate the Downstream Value section styling on the ED summary page:
+
+1. Section container:
+   - Background: Warm beige (#F5F0EB)
+   - Padding: 32px
+   - Border-radius: 12px
+
+2. Section header:
+   - Icon: Link icon (🔗) in red-orange (#E85A2C)
+   - Title: "DOWNSTREAM VALUE" — 16px, bold, black
+   - Subtitle: "The ED admission note is just the beginning" — 14px, gray, italic
+
+3. Impact cards (DRG & CMI Capture, Medical Necessity, CDI Efficiency, Denial Prevention):
+   - Background: White (#FFFFFF)
+   - Border: 1px solid #E5E5E5
+   - Left border: 4px solid red-orange (#E85A2C) — ALL CARDS SAME COLOR
+   - Padding: 16px
+   - Border-radius: 8px
+   - Margin-bottom: 12px
+   
+   - Title: 14px, bold, black
+   - Description: 14px, gray
+   - Icon: Gray or red-orange, NOT multiple colors
+
+4. CTA callout at bottom:
+   - Background: Light blue (#E8F4F8)
+   - Left border: 4px solid blue (#3B82F6)
+   - Padding: 16px
+   - Text: 14px
+   - "Inpatient Setting" should be bold
+
+Remove all the colored borders (red, green, blue, amber) on the individual cards.
+Use consistent red-orange (#E85A2C) for all card left borders.
+
+ISSUE 5: Summary page "Where the Value Comes From" cards need ED drivers
+Current (Wrong):
+The Time Back card shows generic labels that don't match ED drivers
+Should be (Correct):
+Time Back card should show:
+
+LWBS Recovery: $[value]
+Admission Capture: $[value]
+Clinician Wellbeing: $[value] or "X hrs/wk back"
+
+Replit Prompt:
+CopyOn the ED summary page (ExploreModel.tsx), update the "Where the Value Comes From" 
+section to show ED-specific drivers:
+
+TIME BACK card should show:
+- "LWBS Recovery" with value or "—"
+- "Admission Capture" with value or "—"  
+- "Clinician Wellbeing" with value or "X hrs/wk back" if qualitative only
+
+DOCUMENTATION QUALITY card should show:
+- "E&M Level Accuracy" with value and "(X% lift)" note
+- "Denial Prevention" with value or "—"
+- Do NOT show HCC for ED
+
+Update the card descriptions:
+- TIME BACK: "Faster documentation means shorter door-to-doc times and reduced LWBS rates."
+- DOCUMENTATION QUALITY: "Complete documentation supports accurate coding and reduces claim denials."
+
+ISSUE 6: LWBS calculation needs realization rate
+Current:
+Shows raw calculation without realization rate
+Should be:
+Add 75% realization rate to account for patients who don't actually return
+Replit Prompt:
+CopyUpdate the LWBS Recovery calculation to include a realization rate:
+
+Add this line to the calculation:
+
+× Realization rate                             75% ✏️
+  (Not all recovered patients complete visits)
+───────────────────────────────────────────────────────────
+= Net LWBS value                               $[calculated]
+
+The calculation should be:
+Patients recovered × Revenue per visit × Realization rate = Net value
+
+Default realization rate: 75%
+Make it editable via the ✏️ click-to-edit pattern
+
+ISSUE 7: Step indicator dots inconsistency
+Current:
+Some pages show colored dots in header, positioning varies
+Should be:
+Consistent step indicator across all ED pages matching Outpatient style
+Replit Prompt:
+CopyEnsure all ED Explore pages have consistent step indicator styling:
+
+- Position: Top right of header, after breadcrumb
+- Style: Small circles (8px)
+- Current step: Red-orange fill (#E85A2C)
+- Completed steps: Red-orange fill (#E85A2C)
+- Upcoming steps: Gray (#D1D5DB)
+- Spacing: 8px gap between dots
+
+Pages in order:
+1. Your ED (Opportunity Size)
+2. Time Savings
+3. Value Drivers
+4. Documentation Quality
+5. Investment
+6. Your Model (Summary)
+
+COMPLETE STYLING REFERENCE
+Apply these styles consistently across all ED pages:
+cssCopy/* Colors */
+--primary-accent: #E85A2C;      /* Red-orange */
+--background-page: #FFFFFF;      /* White */
+--background-card: #F5F0EB;      /* Warm beige */
+--background-dark: #1A1A1A;      /* Dark (for right panels, hero) */
+--text-primary: #000000;         /* Black */
+--text-secondary: #888888;       /* Gray */
+--text-on-dark: #FFFFFF;         /* White */
+--border-light: #E5E5E5;         /* Light gray border */
+--positive-value: #E85A2C;       /* Red-orange for values */
+
+/* Typography */
+--font-family: 'Manrope', sans-serif;
+--heading-large: 32px bold;
+--heading-medium: 20px bold;
+--label-caps: 11px uppercase, letter-spacing 1.5px;
+--body: 16px;
+--body-small: 14px;
+
+/* Components */
+/* Scenario buttons */
+.scenario-button {
+  background: white;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  padding: 16px;
+}
+.scenario-button.selected {
+  background: #E85A2C;
+  color: white;
+  border-color: #E85A2C;
+}
+
+/* Toggle switches */
+.toggle-on {
+  background: #E85A2C;
+}
+
+/* Cards with left accent */
+.accent-card {
+  background: white;
+  border: 1px solid #E5E5E5;
+  border-left: 4px solid #E85A2C;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* Right panel */
+.right-panel {
+  background: #1A1A1A;
+  color: white;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* Calculation section */
+.calculation-section {
+  background: #F5F0EB;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* Primary button */
+.btn-primary {
+  background: #E85A2C;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+}
