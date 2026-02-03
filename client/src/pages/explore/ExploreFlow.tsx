@@ -134,6 +134,9 @@ export interface ExploreState {
   implementationFee: number;
   includeImplementation: boolean;
   
+  // Full scale projection
+  fullScaleProviders: number;
+  
   // Calculated values
   calculatedValues?: CalculatedValues;
 }
@@ -207,6 +210,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   annualLicenseFee: 0,
   implementationFee: 25000,
   includeImplementation: false,
+  fullScaleProviders: 500,
 };
 
 type ExplorePhase = 
@@ -438,6 +442,7 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
       return (
         <ExploreModel
           state={state}
+          updateState={updateState}
           totalHoursSaved={totalHoursSaved}
           timeValue={timeValue}
           docValue={docValue}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -7,9 +7,11 @@ import { type ExploreState } from "./ExploreFlow";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
+import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
 interface ExploreModelProps {
   state: ExploreState;
+  updateState: (updates: Partial<ExploreState>) => void;
   totalHoursSaved: number;
   timeValue: number;
   docValue: number;
@@ -21,6 +23,7 @@ interface ExploreModelProps {
 
 export default function ExploreModel({
   state,
+  updateState,
   totalHoursSaved,
   timeValue,
   docValue,
@@ -93,8 +96,8 @@ export default function ExploreModel({
   const year3Value = Math.round(netAnnualValue * 1.21);
   const threeYearTotal = year1Value + year2Value + year3Value;
 
-  // Expansion opportunity (3x providers, 85% utilization)
-  const expandedProviders = state.numberOfProviders * 3;
+  // Expansion opportunity (use fullScaleProviders from state, 85% utilization)
+  const expandedProviders = state.fullScaleProviders;
   const expandedUtilization = 85;
   const expansionMultiplier = (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
@@ -584,7 +587,14 @@ export default function ExploreModel({
 
               <div className="text-center">
                 <p className="text-sm text-[#888888]">Full Scale</p>
-                <p className="text-lg font-bold text-black">{formatNumber(expandedProviders)}</p>
+                <div className="flex items-center justify-center gap-1">
+                  <FormattedNumberInput
+                    value={state.fullScaleProviders}
+                    onChange={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
+                    className="h-8 w-20 text-center text-lg font-bold bg-white border border-[#E5E5E5] rounded-md"
+                    data-testid="input-full-scale-providers"
+                  />
+                </div>
                 <p className="text-xs text-[#888888]">providers</p>
                 <p className="text-xs text-[#888888]">{expandedUtilization}% util</p>
               </div>
