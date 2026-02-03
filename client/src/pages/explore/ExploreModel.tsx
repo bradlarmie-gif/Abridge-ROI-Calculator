@@ -634,53 +634,53 @@ export default function ExploreModel({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
           >
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="bg-[#F5F0EB] rounded-xl p-8">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FFF5F2] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
                   <Link className="w-5 h-5 text-[#EA2C00]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-black">Connected Value</h3>
-                  <p className="text-sm text-slate-500">ED + Inpatient compounds your results</p>
+                  <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
+                  <p className="text-sm text-[#888888] italic">ED + Inpatient compounds your results</p>
                 </div>
               </div>
               
-              <p className="text-sm text-slate-600 mb-5">
+              <p className="text-sm text-[#666666] mb-5">
                 When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts 
                 in ED flows directly into inpatient coding, CDI workflows, and denial defense.
               </p>
               
               <div className="space-y-3 mb-5">
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-[#EA2C00]">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
-                    <BarChart3 className="w-4 h-4 text-[#EA2C00]" />
+                    <BarChart3 className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">DRG Capture</span>
                   </div>
-                  <p className="text-sm text-slate-600">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
+                  <p className="text-sm text-[#666666]">CCs/MCCs documented in ED carry forward — your case mix starts stronger from admission.</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-blue-500">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
-                    <FileText className="w-4 h-4 text-blue-600" />
+                    <FileText className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">CDI Efficiency</span>
                   </div>
-                  <p className="text-sm text-slate-600">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
+                  <p className="text-sm text-[#666666]">When the ED note is complete, CDI teams query less and focus on complex cases.</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-4 border-l-4 border-amber-500">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
                   <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <AlertTriangle className="w-4 h-4 text-[#888888]" />
                     <span className="font-semibold text-black">Denial Prevention</span>
                   </div>
-                  <p className="text-sm text-slate-600">Medical necessity documented at admission is your first line of defense against payer audits.</p>
+                  <p className="text-sm text-[#666666]">Medical necessity documented at admission is your first line of defense against payer audits.</p>
                 </div>
               </div>
               
-              <div className="bg-[#EEF2FF] rounded-xl p-4 border border-[#C7D2FE]">
+              <div className="bg-[#5B4FE9] rounded-xl p-4 text-white">
                 <div className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-[#5B4FE9] mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-[#3730A3]">
-                    <span className="font-semibold">If you're also using Abridge in ED</span>, the documentation quality benefits below are amplified — 
-                    you're building on a stronger foundation.
-                  </p>
+                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">If you're also using Abridge in <span className="font-bold">ED</span>, the documentation quality benefits are amplified.</p>
+                    <p className="text-sm opacity-80 mt-1">The admission documentation that starts in ED flows directly into inpatient coding and denial defense.</p>
+                  </div>
                 </div>
               </div>
             </div>
