@@ -148,9 +148,14 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
   // Handle browser back button within explore flow
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      // Only handle explore phase if we're still in explore view
+      // Check if we're navigating within explore flow
       if (event.state?.view === 'explore' && event.state?.explorePhase) {
         setPhase(event.state.explorePhase);
+      } else if (event.state?.view === 'journey' || !event.state?.view) {
+        // Going back to journey or initial state - trigger navigation
+        if (onBackToJourney) {
+          onBackToJourney();
+        }
       }
     };
     
@@ -167,7 +172,7 @@ export default function ExploreFlow({ onBackToJourney, onContinueToInvestment }:
     }
     
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []); // Register once
+  }, [onBackToJourney]); // Include onBackToJourney in deps
 
   const goHome = useCallback(() => {
     if (onBackToJourney) {
