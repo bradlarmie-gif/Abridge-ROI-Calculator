@@ -1,0 +1,86 @@
+DRG ACCURACY
+Capture clinical complexity that's discussed but not documented
+
+───────────────────────────────────────────────────────────────────────────────
+
+Documentation gaps cost you twice—first at coding, then at audit. 
+Abridge captures the clinical conversations that close these gaps.
+
+STEP 1: YOUR DOCUMENTATION OPPORTUNITY
+───────────────────────────────────────
+
+How often does CDI identify documentation opportunities?
+
+Eligible Admissions              CDI Opportunity Rate
+[84,000]                    ×    [25] %
+
+= 21,000 admissions with documentation opportunities
+
+Your benchmark: If CDI queries 30% of admissions, you have at least 
+30% with documentation gaps. 25% is moderate.
+
+
+STEP 2: THE GAP ABRIDGE CLOSES
+───────────────────────────────────────
+
+Not all gaps are the same. Abridge specifically captures 
+"discussed but not documented"—clinical reasoning that happened 
+verbally but didn't make the note.
+
+What portion of your documentation gaps are verbal-to-written gaps?
+
+[Conservative]  [Typical]  [Aggressive]
+     15%          25%          35%
+
+21,000 × 25% = 5,250 admissions where Abridge captures what was missed
+
+Conservative: Only clear verbal discussions
+Typical: Includes clinical reasoning that supports specificity  
+Aggressive: Strong adoption, comprehensive capture
+
+
+STEP 3: REVENUE IMPACT
+───────────────────────────────────────
+
+When a missed CC/MCC is captured, DRG weight increases.
+
+Admissions Captured    Avg DRG Weight Lift    Base DRG Payment
+[5,250]           ×    [0.4]              ×   [$6,000]
+
+= $12,600,000 gross value
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📊 Common Documentation Gaps                                               │
+│                                                                            │
+│ These conditions are frequently discussed but under-documented.            │
+│ When captured, they change DRG assignment.                                 │
+│                                                                            │
+│ Acute respiratory failure                    +0.3 to +0.5                  │
+│ Sepsis / Severe sepsis                       +0.4 to +0.6                  │
+│ Malnutrition                                 +0.2 to +0.4                  │
+│ Acute encephalopathy                         +0.3 to +0.5                  │
+│ Acute kidney injury                          +0.1 to +0.3                  │
+│                                                                            │
+│ 0.4 is a blended average across common missed CCs/MCCs.                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+STEP 4: WHAT YOU CAN COUNT ON
+───────────────────────────────────────
+
+Not all captured documentation changes the final code.
+
+Gross Value              Realization Rate
+[$12,600,000]       ×    [50] %
+
+= $6,300,000 net
+
+50% accounts for audit risk, coder judgment, and cases where 
+documentation doesn't change final DRG. This is conservative.
+
+───────────────────────────────────────────────────────────────────────────────
+
+Annual DRG Value                                         $6,300,000
+
+⚠️ Validate with your CDI team. They know your case mix and 
+   current gap rates better than any benchmark.
