@@ -221,22 +221,20 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     {/* Segmented Control for Busyness */}
                     <div className="space-y-2.5">
                       <label className="text-sm font-medium text-black">{encounterLabel} per Provider</label>
-                      <div className="flex border border-[#E5E5E5] rounded-lg overflow-hidden bg-white">
-                        {BUSYNESS_PRESETS.map((preset, index) => (
+                      <div className="grid grid-cols-3 gap-3">
+                        {BUSYNESS_PRESETS.map((preset) => (
                           <button
                             key={preset.value}
                             onClick={() => handleBusynessChange(preset.value)}
-                            className={`flex-1 py-4 px-3 text-center transition-all ${
-                              index < BUSYNESS_PRESETS.length - 1 ? 'border-r border-[#E5E5E5]' : ''
-                            } ${
+                            className={`py-4 px-3 rounded-lg border-2 text-center transition-all ${
                               isPresetSelected(preset.value)
-                                ? 'bg-[#EA2C00] text-white'
-                                : 'bg-white text-black hover:bg-gray-50'
+                                ? 'border-[#EA2C00] bg-white'
+                                : 'border-transparent bg-white hover:border-[#D1D5DB]'
                             }`}
                             data-testid={`preset-busyness-${preset.label.toLowerCase()}`}
                           >
-                            <span className="block text-sm font-semibold">{preset.label}</span>
-                            <span className={`block text-xs ${isPresetSelected(preset.value) ? 'text-white/70' : 'text-[#888888]'}`}>
+                            <span className="block text-sm font-semibold text-black">{preset.label}</span>
+                            <span className="block text-xs text-[#888888]">
                               {preset.value.toLocaleString()}
                             </span>
                           </button>
@@ -314,22 +312,20 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   {/* Segmented Control for Utilization */}
                   <div className="space-y-2.5">
                     <label className="text-sm font-medium text-black">Utilization Rate</label>
-                    <div className="flex border border-[#E5E5E5] rounded-lg overflow-hidden bg-white">
-                      {UTILIZATION_PRESETS.map((preset, index) => (
+                    <div className="grid grid-cols-3 gap-3">
+                      {UTILIZATION_PRESETS.map((preset) => (
                         <button
                           key={preset.value}
                           onClick={() => handleUtilizationChange(preset.value)}
-                          className={`flex-1 py-4 px-3 text-center transition-all ${
-                            index < UTILIZATION_PRESETS.length - 1 ? 'border-r border-[#E5E5E5]' : ''
-                          } ${
+                          className={`py-4 px-3 rounded-lg border-2 text-center transition-all ${
                             isUtilizationPresetSelected(preset.value)
-                              ? 'bg-[#EA2C00] text-white'
-                              : 'bg-white text-black hover:bg-gray-50'
+                              ? 'border-[#EA2C00] bg-white'
+                              : 'border-transparent bg-white hover:border-[#D1D5DB]'
                           }`}
                           data-testid={`preset-utilization-${preset.label.toLowerCase()}`}
                         >
-                          <span className="block text-sm font-semibold">{preset.label}</span>
-                          <span className={`block text-xs ${isUtilizationPresetSelected(preset.value) ? 'text-white/70' : 'text-[#888888]'}`}>
+                          <span className="block text-sm font-semibold text-black">{preset.label}</span>
+                          <span className="block text-xs text-[#888888]">
                             {preset.value}%
                           </span>
                         </button>
