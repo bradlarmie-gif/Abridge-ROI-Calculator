@@ -220,16 +220,6 @@ export default function ExploreModel({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        {/* Step Indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3, 4, 5, 6, 7].map((step) => (
-            <div
-              key={step}
-              className={`w-2 h-2 rounded-full bg-[#E85A2C]`}
-            />
-          ))}
-        </div>
-
         {/* Hero Section */}
         <motion.div
           className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-6"
