@@ -55,20 +55,23 @@ export default function ExploreInvestment({
       />
       <UnifiedHeaderSpacer />
 
-      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        {/* Header */}
-        <motion.div 
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
-            Your Investment
-          </h1>
-          <p className="text-base text-[#888888]">
-            Enter your pricing to see the complete picture.
-          </p>
-        </motion.div>
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content - Left Column */}
+          <div className="flex-1 max-w-[700px]">
+            {/* Header */}
+            <motion.div 
+              className="text-center mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
+                Your Investment
+              </h1>
+              <p className="text-base text-[#888888]">
+                Enter your pricing to see the complete picture.
+              </p>
+            </motion.div>
 
         {/* Pricing Model */}
         <motion.div
@@ -259,9 +262,9 @@ export default function ExploreInvestment({
           </div>
         </motion.div>
 
-        {/* Continue Button */}
+        {/* Continue Button - Mobile */}
         <motion.div 
-          className="flex justify-center"
+          className="flex justify-center lg:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.25 }}
@@ -275,6 +278,88 @@ export default function ExploreInvestment({
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>
+          </div>
+
+          {/* Right Panel - Desktop Only */}
+          <motion.div
+            className="hidden lg:block w-[320px] flex-shrink-0"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
+              {/* Header */}
+              <div className="mb-4">
+                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                  Your Model
+                </p>
+                <p className="text-sm text-[#888888] mt-1">Complete value summary</p>
+              </div>
+
+              {/* Value Breakdown */}
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#888888]">Time Savings</span>
+                  <span className="text-sm font-semibold text-white">{formatCurrency(timeValue)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#888888]">Doc Quality</span>
+                  <span className="text-sm font-semibold text-white">{formatCurrency(docValue)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-white">Total Value</span>
+                  <span className="text-sm font-semibold text-white">{formatCurrency(totalValue)}</span>
+                </div>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Investment */}
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#888888]">Investment</span>
+                  <span className="text-sm font-semibold text-white">-{formatCurrency(annualInvestment)}</span>
+                </div>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Net Value Hero */}
+              <div className="text-center mb-4">
+                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                  Net Annual Value
+                </p>
+                <p className="text-3xl md:text-4xl font-bold text-[#E85A2C]">
+                  {formatCurrency(netAnnualValue)}
+                </p>
+              </div>
+
+              {/* ROI Stats */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+                  <p className="text-xs text-[#888888]">ROI</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+                  <p className="text-xs text-[#888888]">hours saved</p>
+                </div>
+              </div>
+
+              <div className="h-px bg-[#333333] my-4" />
+
+              {/* Continue Button */}
+              <Button
+                onClick={onNext}
+                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                data-testid="button-panel-continue"
+              >
+                View Full Summary
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
