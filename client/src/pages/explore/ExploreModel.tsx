@@ -6,6 +6,7 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ExploreState } from "./ExploreFlow";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
+import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 
 interface ExploreModelProps {
   state: ExploreState;
@@ -102,6 +103,74 @@ export default function ExploreModel({
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
     : '0';
+
+  // Scaling pace options
+  const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');
+  
+  const paceConfig = {
+    measured: { months: 24, label: '24mo', maturityMultiplier: 1.05 },
+    steady: { months: 18, label: '18mo', maturityMultiplier: 1.10 },
+    aggressive: { months: 12, label: '12mo', maturityMultiplier: 1.15 },
+  };
+
+  const currentPace = paceConfig[selectedPace];
+
+  // Chart data for growth trajectory
+  const chartData = useMemo(() => {
+    const points: Array<{
+      month: number;
+      linearValue: number;
+      projectedValue: number;
+      providers: number;
+      utilization: number;
+      milestoneLabel: string;
+      isPilot: boolean;
+      isFullScale: boolean;
+    }> = [];
+
+    const totalMonths = currentPace.months;
+    const pilotValue = netAnnualValue;
+    const pilotProviders = state.numberOfProviders;
+    const pilotUtil = state.utilizationPercent;
+    const fullScaleProviders = expandedProviders;
+    const fullScaleUtil = expandedUtilization;
+
+    // Create milestone points
+    const milestones = [0, 6, 12, 18, 24].filter(m => m <= totalMonths);
+    if (!milestones.includes(totalMonths)) {
+      milestones.push(totalMonths);
+    }
+    milestones.sort((a, b) => a - b);
+
+    milestones.forEach((month) => {
+      const progress = month / totalMonths;
+      
+      const providers = Math.round(pilotProviders + (fullScaleProviders - pilotProviders) * progress);
+      const utilizationProgress = Math.pow(progress, 0.8);
+      const utilization = Math.round(pilotUtil + (fullScaleUtil - pilotUtil) * utilizationProgress);
+      
+      // Linear value: simple provider scaling
+      const linearValue = Math.round(pilotValue * (providers / pilotProviders));
+      
+      // Projected value: includes utilization boost and maturity gains
+      const utilizationBoost = utilization / pilotUtil;
+      const maturityBoost = 1 + ((currentPace.maturityMultiplier - 1) * Math.pow(progress, 1.5));
+      const projectedValue = Math.round(linearValue * utilizationBoost * maturityBoost);
+
+      points.push({
+        month,
+        linearValue,
+        projectedValue,
+        providers,
+        utilization,
+        milestoneLabel: month === 0 ? 'Today' : month === totalMonths ? 'Full Scale' : `${month}mo`,
+        isPilot: month === 0,
+        isFullScale: month === totalMonths,
+      });
+    });
+
+    return points;
+  }, [netAnnualValue, state.numberOfProviders, state.utilizationPercent, expandedProviders, expandedUtilization, currentPace]);
 
   const formatCurrency = (n: number) => {
     if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
@@ -271,6 +340,177 @@ export default function ExploreModel({
                 </div>
               </div>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Growth Trajectory Chart */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
+          <p className="text-center text-base font-semibold text-black mb-2">
+            Growth Trajectory
+          </p>
+          <p className="text-center text-sm text-[#888888] mb-4">
+            Projected value vs. linear scaling as you expand from pilot to full scale.
+          </p>
+
+          <div className="bg-[#F5F0EB] rounded-lg p-5">
+            {/* Pace Selector */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="text-sm text-[#888888]">Expansion pace:</span>
+              <div className="flex gap-1">
+                {(['measured', 'steady', 'aggressive'] as const).map((pace) => (
+                  <button
+                    key={pace}
+                    onClick={() => setSelectedPace(pace)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                      selectedPace === pace 
+                        ? "bg-[#E85A2C] text-white" 
+                        : "bg-white text-[#888888] hover:bg-white/80"
+                    }`}
+                    data-testid={`pace-${pace}`}
+                  >
+                    {paceConfig[pace].months}mo
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-6 mb-3 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-0.5 bg-[#E85A2C] rounded-full" />
+                <span className="text-[#666666]">Projected</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-0.5 border-t-2 border-dashed border-[#D1D5DB]" />
+                <span className="text-[#666666]">Linear</span>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="h-56 bg-white rounded-lg p-3">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 10, bottom: 30 }}>
+                  <defs>
+                    <linearGradient id="projectedGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#E85A2C" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#E85A2C" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  
+                  <XAxis 
+                    dataKey="month"
+                    type="number"
+                    domain={[0, currentPace.months]}
+                    axisLine={{ stroke: '#E5E5E5', strokeWidth: 1 }}
+                    tickLine={false}
+                    tick={(props: { x: number; y: number; payload: { value: number } }) => {
+                      const { x, y, payload } = props;
+                      const point = chartData.find(d => d.month === payload.value);
+                      if (!point) return <g />;
+                      const anchor = point.isFullScale ? "end" : point.isPilot ? "start" : "middle";
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text 
+                            x={0} 
+                            y={16} 
+                            textAnchor={anchor} 
+                            fill={point.isPilot || point.isFullScale ? "#E85A2C" : "#888888"}
+                            fontSize={11}
+                            fontWeight={point.isPilot || point.isFullScale ? 700 : 400}
+                          >
+                            {point.milestoneLabel}
+                          </text>
+                        </g>
+                      );
+                    }}
+                    ticks={chartData.map(d => d.month)}
+                    height={30}
+                  />
+                
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#888888", fontSize: 11 }}
+                    tickFormatter={(v) => formatCurrency(v)}
+                    width={55}
+                  />
+                  
+                  <Tooltip 
+                    content={({ active, payload }) => {
+                      if (!active || !payload || !payload.length) return null;
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white border border-[#E5E5E5] rounded-lg p-3 shadow-lg">
+                          <p className="font-semibold text-black text-sm mb-1">{data.milestoneLabel}</p>
+                          <p className="text-xs text-[#888888] mb-2">{data.providers} providers · {data.utilization}% util</p>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between gap-4">
+                              <span className="text-[#E85A2C]">Projected:</span>
+                              <span className="font-semibold text-[#E85A2C]">{formatCurrency(data.projectedValue)}</span>
+                            </div>
+                            <div className="flex justify-between gap-4">
+                              <span className="text-[#888888]">Linear:</span>
+                              <span className="text-[#888888]">{formatCurrency(data.linearValue)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }}
+                  />
+                  
+                  <Area 
+                    type="monotone" 
+                    dataKey="projectedValue" 
+                    stroke="none"
+                    fill="url(#projectedGradient)"
+                  />
+                  
+                  <Line 
+                    type="monotone" 
+                    dataKey="linearValue" 
+                    stroke="#D1D5DB" 
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    dot={false}
+                  />
+                  
+                  <Line 
+                    type="monotone" 
+                    dataKey="projectedValue" 
+                    stroke="#E85A2C" 
+                    strokeWidth={3}
+                    dot={false}
+                  />
+                  
+                  <ReferenceDot 
+                    x={0} 
+                    y={chartData[0]?.projectedValue || 0} 
+                    r={6} 
+                    fill="#E85A2C" 
+                    stroke="white"
+                    strokeWidth={2}
+                  />
+                  
+                  <ReferenceDot 
+                    x={currentPace.months} 
+                    y={chartData[chartData.length - 1]?.projectedValue || 0} 
+                    r={6} 
+                    fill="#E85A2C" 
+                    stroke="white"
+                    strokeWidth={2}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            <p className="text-xs text-[#888888] text-center mt-3">
+              Projected value includes utilization improvement and workflow maturity gains over linear provider scaling.
+            </p>
           </div>
         </motion.div>
 
