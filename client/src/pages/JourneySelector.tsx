@@ -39,7 +39,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       className={`
         group relative rounded-2xl p-6 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out
         ${isSelected 
-          ? 'bg-black text-white shadow-2xl' 
+          ? 'bg-white border-l-4 border-l-[#E85A2C] border-t border-r border-b border-[#E5E7EB] shadow-lg' 
           : 'bg-white border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300'
         }
       `}
@@ -49,7 +49,7 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       {/* Selection indicator */}
       {isSelected && (
         <motion.div 
-          className="absolute top-4 right-4 w-6 h-6 bg-[#EA2C00] rounded-full flex items-center justify-center"
+          className="absolute top-4 right-4 w-6 h-6 bg-[#E85A2C] rounded-full flex items-center justify-center"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -62,30 +62,24 @@ function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClic
       <div 
         className={`
           relative w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-5 md:mb-6 transition-all duration-300 ease-out
-          ${isSelected ? 'bg-white/10' : 'bg-[#FFF5F2]'}
+          ${isSelected ? 'bg-[#FFF5F2]' : 'bg-[#FFF5F2]'}
         `}
       >
-        <Icon className={`w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 ${isSelected ? 'text-white' : 'text-[#EA2C00]'}`} />
+        <Icon className={`w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 ${isSelected ? 'text-[#E85A2C]' : 'text-[#E85A2C]'}`} />
       </div>
       
-      <h3 className={`text-lg md:text-xl font-semibold mb-1 ${isSelected ? 'text-white' : 'text-black'}`}>
+      <h3 className="text-lg md:text-xl font-semibold mb-1 text-black">
         {title}
       </h3>
-      <p className={`text-xs md:text-sm font-medium mb-2 md:mb-3 ${isSelected ? 'text-[#F07B5F]' : 'text-[#EA2C00]'}`}>
+      <p className="text-xs md:text-sm font-medium mb-2 md:mb-3 text-[#888888]">
         {subtitle}
       </p>
-      <p className={`text-xs md:text-sm leading-relaxed flex-1 mb-5 md:mb-6 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
+      <p className="text-xs md:text-sm leading-relaxed flex-1 mb-5 md:mb-6 text-[#6B7280]">
         {description}
       </p>
       
       <Button
-        className={`
-          w-full font-medium transition-all duration-200 rounded-full
-          ${isSelected 
-            ? 'bg-white text-black hover:bg-white/90' 
-            : 'bg-black text-white hover:bg-black/90'
-          }
-        `}
+        className="w-full font-medium transition-all duration-200 rounded-full bg-[#E85A2C] text-white hover:bg-[#E85A2C]/90"
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -125,21 +119,15 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center mb-10 md:mb-14"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 md:mb-6 tracking-tight px-2 font-abridge uppercase">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-3 tracking-tight px-2 font-abridge uppercase">
             Frame the value of
-            <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#EA2C00' }}>
+            <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#E85A2C' }}>
               Abridge
             </span>
           </h1>
-          <button
-            onClick={onSelectLearn}
-            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#EA2C00] transition-colors"
-            data-testid="link-learn"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Learn the methodology</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <p className="text-base md:text-lg text-[#6B7280]">
+            Build a value story that resonates.
+          </p>
         </motion.section>
 
         <section className="mb-8 md:mb-12">
@@ -147,7 +135,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-xs md:text-sm text-slate-400 uppercase tracking-widest font-semibold text-center mb-6 md:mb-8"
+            className="text-xs md:text-sm text-[#888888] uppercase tracking-widest font-semibold text-center mb-6 md:mb-8"
           >
             What brings you here today?
           </motion.p>
@@ -170,7 +158,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               icon={TrendingUp}
               title="Measure"
               subtitle="Already using Abridge?"
-              description="Capture what you've built and frame your value story with data"
+              description="Measure your impact and frame your value story"
               buttonText="Start Your Story"
               onClick={onSelectExpand}
               onSelect={() => setSelectedPath('measure')}
@@ -198,11 +186,20 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="text-center pt-4 md:pt-6"
+          className="text-center pt-4 md:pt-6 space-y-3"
         >
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#888888]">
             Estimates are for planning purposes. Results should be validated with your organization's data.
           </p>
+          <button
+            onClick={onSelectLearn}
+            className="inline-flex items-center gap-1.5 text-xs text-[#888888] hover:text-[#E85A2C] transition-colors"
+            data-testid="link-learn"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Learn the methodology</span>
+            <ChevronRight className="w-3 h-3" />
+          </button>
         </motion.footer>
       </div>
     </div>
