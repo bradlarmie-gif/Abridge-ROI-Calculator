@@ -230,7 +230,7 @@ export default function ExploreModel({
       driver1: 'LWBS Reduction',
       driver2: 'Throughput Gain',
       driver3: 'Clinician Wellbeing',
-      docCardTitle: 'Documentation Quality',
+      docCardTitle: 'Downstream Value',
       docCardDescription: 'Complete documentation supports accurate coding and reduces claim denials.',
       docDriver1: 'E&M Level Accuracy',
       docDriver2: '', // No HCC for ED
@@ -243,7 +243,7 @@ export default function ExploreModel({
       driver1: 'LOS Impact',
       driver2: 'Rounding Efficiency',
       driver3: 'Clinician Wellbeing',
-      docCardTitle: 'Documentation Quality',
+      docCardTitle: 'Connected Value',
       docCardDescription: 'Accurate documentation drives CC/MCC capture and reduces claim denials.',
       docDriver1: 'CC/MCC Capture',
       docDriver2: '', // No HCC for Inpatient
