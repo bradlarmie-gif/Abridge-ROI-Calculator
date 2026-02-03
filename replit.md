@@ -73,3 +73,14 @@ Features a premium restructured layout with a Hero Section (dark gradient backgr
 
 ### PDF Generator Architecture
 Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, `ed-pdf-generator.tsx`, `inpatient-pdf-generator.tsx`, `nursing-pdf-generator.tsx`) with corresponding data transformers. PDF designs prioritize a narrative arc, emotional anchors, sophisticated visual hierarchy, transparent calculations, and industry benchmarks.
+
+## Recent Changes (February 2026)
+
+### Explore Path Styling Redesign
+- **Toggle Accordions**: Removed heavy left borders (`border-l-4 border-l-[#E85A2C]`) from all value driver and documentation quality toggle sections
+- **Clean Card Design**: Toggle sections now use clean white backgrounds (`bg-white`) with subtle hover states
+- **Consistent Styling**: Applied unified styling across ExploreValueDrivers.tsx and ExploreDocQuality.tsx for all care settings
+- **Design Pattern**: Toggle sections use:
+  - Header: `bg-white` or `bg-white/70 hover:bg-white` based on enabled state
+  - Expanded content: `bg-white rounded-b-lg p-5` without heavy borders
+  - Animation: framer-motion for smooth expand/collapse transitions

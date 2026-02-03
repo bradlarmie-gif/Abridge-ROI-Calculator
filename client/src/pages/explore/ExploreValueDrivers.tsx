@@ -291,21 +291,28 @@ export default function ExploreValueDrivers({
           </p>
         </motion.div>
 
-        {/* DRIVER 1 - Care Setting Specific */}
-        
-        {/* ED: LWBS Reduction */}
-        {isED && (
+        {/* VALUE DRIVERS - Wrapped in beige card */}
         <motion.div
-          className="mb-4"
+          className="bg-[#F5F0EB] rounded-lg p-6 space-y-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
+          <div>
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+              VALUE DRIVERS
+            </p>
+            <div className="h-px bg-[#D1D5DB] mb-4" />
+          </div>
+        
+        {/* ED: LWBS Reduction */}
+        {isED && (
+        <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 rounded-t-lg text-left transition-all ${
               timeDriverInputs.edLwbsEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? "bg-white" 
+                : "bg-white/70 hover:bg-white"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -337,7 +344,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
                   </p>
@@ -439,22 +446,17 @@ export default function ExploreValueDrivers({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
         )}
 
         {/* Inpatient: LOS Impact */}
         {isInpatient && (
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
+        <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 rounded-t-lg text-left transition-all ${
               timeDriverInputs.ipLosEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? "bg-white" 
+                : "bg-white/70 hover:bg-white"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -486,7 +488,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     Better documentation supports faster discharges and reduced length of stay.
                   </p>
@@ -533,7 +535,7 @@ export default function ExploreValueDrivers({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
         )}
 
         {/* Nursing: OT Reduction */}
@@ -547,7 +549,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.nursingOtEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -580,7 +582,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     Less documentation time means less overtime required.
                   </p>
@@ -653,7 +655,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.patientAccessEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -699,7 +701,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     What percentage of reclaimed time could realistically become additional patient visits?
                   </p>
@@ -788,7 +790,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.edThroughputEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -821,7 +823,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   {!timeDriverInputs.edLwbsEnabled ? (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
                       <p className="text-sm text-amber-800">
@@ -925,7 +927,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.ipRoundingEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -958,7 +960,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     Less documentation time means more efficient rounding.
                   </p>
@@ -1005,7 +1007,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.nursingRetentionEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -1038,7 +1040,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     Less documentation burden improves retention.
                   </p>
@@ -1102,7 +1104,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.costReductionEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -1148,7 +1150,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-3">
                     We can't calculate your cost reduction — every organization is different. 
                     But if you have an estimate, enter it here.
@@ -1188,7 +1190,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.wellbeingEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -1234,7 +1236,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-[#888888] mb-3">Your providers would get back:</p>
 
                   <div className="text-center mb-4">
@@ -1436,7 +1438,7 @@ export default function ExploreValueDrivers({
           <div
             className={`w-full p-4 rounded-lg text-left transition-all ${
               timeDriverInputs.nursingCareTimeEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
           >
@@ -1469,7 +1471,7 @@ export default function ExploreValueDrivers({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     More time at the bedside improves patient outcomes and satisfaction.
                   </p>
@@ -1511,6 +1513,7 @@ export default function ExploreValueDrivers({
           <p className="text-xs text-[#888888]">
             You can skip documentation drivers if not relevant
           </p>
+        </motion.div>
         </motion.div>
         </div>
 

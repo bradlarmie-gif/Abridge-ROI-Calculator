@@ -166,7 +166,7 @@ export default function ExploreDocQuality({
             onClick={() => updateDocInputs({ wrvuEnabled: !docQualityInputs.wrvuEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
               docQualityInputs.wrvuEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
             data-testid="toggle-wrvu"
@@ -194,7 +194,7 @@ export default function ExploreDocQuality({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-black mb-4">
                     When notes fully reflect visit complexity, E/M levels often code higher. 
                     Industry data shows 2-7% wRVU lift from better documentation.
@@ -303,7 +303,7 @@ export default function ExploreDocQuality({
             onClick={() => updateDocInputs({ hccEnabled: !docQualityInputs.hccEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
               docQualityInputs.hccEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
             data-testid="toggle-hcc"
@@ -331,7 +331,7 @@ export default function ExploreDocQuality({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-[#666666] leading-relaxed mb-4">
                     For Medicare Advantage populations, better documentation captures more HCCs. 
                     Risk adjustment pays based on documented conditions—many MA patients have 
@@ -527,7 +527,7 @@ export default function ExploreDocQuality({
             onClick={() => updateDocInputs({ denialsEnabled: !docQualityInputs.denialsEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
               docQualityInputs.denialsEnabled 
-                ? "bg-white border border-[#E5E5E5] border-l-4 border-l-[#E85A2C]" 
+                ? "bg-white" 
                 : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
             }`}
             data-testid="toggle-denials"
@@ -555,7 +555,7 @@ export default function ExploreDocQuality({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 border-l-4 border-l-[#E85A2C]">
+                <div className="bg-white rounded-b-lg p-5">
                   <p className="text-sm text-[#666666] leading-relaxed mb-4">
                     Documentation gaps drive 30-40% of denials that cannot be appealed—permanent revenue loss. 
                     Abridge captures clinical reasoning and medical necessity in real-time, preventing denials before they occur.

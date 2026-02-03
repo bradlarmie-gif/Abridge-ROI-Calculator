@@ -29,7 +29,6 @@ export default function ExploreTimeSavings({
     return Math.round(state.annualEncounters * (state.utilizationPercent / 100));
   }, [state.annualEncounters, state.utilizationPercent]);
 
-  // ED has smaller time savings (1/2/3 min) vs Outpatient (2/4/6 min)
   const scenarioMinutes: Record<string, number> = isED 
     ? { conservative: 1, typical: 2, aggressive: 3 }
     : { conservative: 2, typical: 4, aggressive: 6 };
@@ -60,6 +59,29 @@ export default function ExploreTimeSavings({
     typical: 'Typical',
     aggressive: 'Optimistic',
   };
+
+  const scenarios: { key: 'conservative' | 'typical' | 'aggressive'; label: string; description: string; recommended?: boolean }[] = [
+    {
+      key: 'conservative',
+      label: 'Conservative',
+      description: 'For skeptical stakeholders. Under-promise to over-deliver.',
+    },
+    {
+      key: 'typical',
+      label: 'Typical',
+      description: isED 
+        ? 'Based on average outcomes across similar ED implementations.'
+        : 'Based on average outcomes across similar implementations.',
+      recommended: true,
+    },
+    {
+      key: 'aggressive',
+      label: 'Optimistic',
+      description: isED 
+        ? 'For high-adoption EDs with strong change management.'
+        : 'For high-adoption organizations with strong change management.',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -96,14 +118,15 @@ export default function ExploreTimeSavings({
 
             {/* What the Data Shows */}
             <motion.div
-              className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
+              className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                What the Data Shows
+              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                WHAT THE DATA SHOWS
               </p>
+              <div className="h-px bg-[#D1D5DB] mb-3" />
               <p className="text-sm text-black leading-relaxed">
                 {isED 
                   ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
@@ -122,114 +145,69 @@ export default function ExploreTimeSavings({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                Choose Your Scenario
+              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                CHOOSE YOUR SCENARIO
               </p>
+              <div className="h-px bg-[#D1D5DB] mb-4" />
 
-              <div className="space-y-3 mb-5">
-                {/* Conservative */}
-                <button
-                  onClick={() => handleScenarioSelect('conservative')}
-                  className={`w-full p-4 rounded-lg text-left transition-all ${
-                    state.timePathScenario === 'conservative'
-                      ? "bg-white border-l-4 border-[#E85A2C]"
-                      : "bg-white hover:bg-white/80"
-                  }`}
-                  data-testid="button-scenario-conservative"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        state.timePathScenario === 'conservative' ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
-                      }`}>
-                        {state.timePathScenario === 'conservative' && (
-                          <div className="w-2 h-2 rounded-full bg-[#E85A2C]" />
-                        )}
+              {/* Clean Radio Options */}
+              <div className="space-y-2 mb-5">
+                {scenarios.map((scenario) => {
+                  const isSelected = state.timePathScenario === scenario.key;
+                  return (
+                    <button
+                      key={scenario.key}
+                      onClick={() => handleScenarioSelect(scenario.key)}
+                      className={`w-full py-3 px-4 rounded-lg text-left transition-all ${
+                        isSelected
+                          ? "bg-white/80"
+                          : "bg-transparent hover:bg-white/50"
+                      }`}
+                      data-testid={`button-scenario-${scenario.key}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Radio Circle */}
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          isSelected ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
+                        }`}>
+                          {isSelected && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#E85A2C]" />
+                          )}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`font-semibold ${isSelected ? 'text-black' : 'text-black/80'}`}>
+                              {scenario.label}
+                            </span>
+                            <span className={`text-lg font-bold ${isSelected ? 'text-[#E85A2C]' : 'text-black/70'}`}>
+                              {scenarioMinutes[scenario.key]} min
+                            </span>
+                            {scenario.recommended && (
+                              <span className="text-[10px] font-semibold text-[#E85A2C] uppercase tracking-wide">
+                                RECOMMENDED
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-[#888888] mt-0.5">
+                            {scenario.description}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-black">Conservative</p>
-                        <p className="text-sm text-[#888888]">For skeptical stakeholders. Under-promise to over-deliver.</p>
-                      </div>
-                    </div>
-                    <span className="text-lg font-bold text-black">{scenarioMinutes.conservative} min</span>
-                  </div>
-                </button>
-
-                {/* Typical */}
-                <button
-                  onClick={() => handleScenarioSelect('typical')}
-                  className={`w-full p-4 rounded-lg text-left transition-all ${
-                    state.timePathScenario === 'typical'
-                      ? "bg-white border-l-4 border-[#E85A2C]"
-                      : "bg-white hover:bg-white/80"
-                  }`}
-                  data-testid="button-scenario-typical"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        state.timePathScenario === 'typical' ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
-                      }`}>
-                        {state.timePathScenario === 'typical' && (
-                          <div className="w-2 h-2 rounded-full bg-[#E85A2C]" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-black">Typical <span className="text-xs text-[#E85A2C] font-normal ml-2">RECOMMENDED</span></p>
-                        <p className="text-sm text-[#888888]">
-                          {isED 
-                            ? "Based on average outcomes across similar ED implementations."
-                            : "Based on average outcomes across similar implementations."
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-lg font-bold text-black">{scenarioMinutes.typical} min</span>
-                  </div>
-                </button>
-
-                {/* Optimistic */}
-                <button
-                  onClick={() => handleScenarioSelect('aggressive')}
-                  className={`w-full p-4 rounded-lg text-left transition-all ${
-                    state.timePathScenario === 'aggressive'
-                      ? "bg-white border-l-4 border-[#E85A2C]"
-                      : "bg-white hover:bg-white/80"
-                  }`}
-                  data-testid="button-scenario-aggressive"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        state.timePathScenario === 'aggressive' ? 'border-[#E85A2C]' : 'border-[#D1D5DB]'
-                      }`}>
-                        {state.timePathScenario === 'aggressive' && (
-                          <div className="w-2 h-2 rounded-full bg-[#E85A2C]" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-black">Optimistic</p>
-                        <p className="text-sm text-[#888888]">
-                          {isED 
-                            ? "For high-adoption EDs with strong change management."
-                            : "For high-adoption organizations with strong change management."
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-lg font-bold text-black">{scenarioMinutes.aggressive} min</span>
-                  </div>
-                </button>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Custom Value */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pt-3 border-t border-[#D1D5DB]">
                 <span className="text-sm text-[#888888]">Or enter a custom value:</span>
-                <div className="relative w-24">
+                <div className="relative w-20">
                   <FormattedNumberInput
                     value={state.minutesSavedPerEncounter}
-                    onChange={(v: number) => updateState({ minutesSavedPerEncounter: v })}
-                    className="h-10 text-center bg-white"
+                    onChange={(v: number) => updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })}
+                    className="h-10 text-center bg-white border-[#E5E5E5]"
                     data-testid="input-custom-minutes"
                   />
                 </div>
@@ -246,7 +224,7 @@ export default function ExploreTimeSavings({
             >
               <Button
                 onClick={onNext}
-                className="h-11 px-8 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                className="h-12 px-8 bg-black hover:bg-black/90 text-white font-semibold rounded-full gap-2"
                 data-testid="button-continue"
               >
                 Continue to Value Drivers
@@ -265,65 +243,65 @@ export default function ExploreTimeSavings({
             <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
               {/* Header */}
               <div className="mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
-                  Projected Time Savings
+                <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px]">
+                  PROJECTED TIME SAVINGS
                 </p>
-                <p className="text-sm text-[#888888] mt-1">Based on your scenario</p>
+                <p className="text-sm text-white/50 mt-1">Based on your scenario</p>
               </div>
 
               {/* Hero Value */}
-              <div className="text-center my-4">
-                <p className="text-4xl md:text-5xl font-bold text-[#E85A2C]">
+              <div className="text-center my-5">
+                <p className="text-5xl font-bold text-[#E85A2C]">
                   {formatNumber(hoursSaved)}
                 </p>
-                <p className="text-sm text-[#888888] mt-1">hours / year</p>
+                <p className="text-sm text-white/50 mt-1">hours / year</p>
               </div>
 
-              <p className="text-xs text-[#666666] text-center mb-4">
+              <p className="text-xs text-white/40 text-center mb-4">
                 {state.minutesSavedPerEncounter} min × {formatNumber(eligibleEncounters)} encounters
               </p>
 
-              <div className="h-px bg-[#333333] my-4" />
+              <div className="h-px bg-white/10 my-4" />
 
               {/* Stats */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#888888]">Scenario</span>
-                  <span className="text-white font-medium">{state.timePathScenario ? scenarioLabels[state.timePathScenario] : '—'}</span>
+                  <span className="text-white/50">Scenario</span>
+                  <span className="text-white font-medium">{state.timePathScenario ? scenarioLabels[state.timePathScenario] || 'Custom' : '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#888888]">Time Saved</span>
+                  <span className="text-white/50">Time Saved</span>
                   <span className="text-white">{state.minutesSavedPerEncounter} min/encounter</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#888888]">Eligible Encounters</span>
+                  <span className="text-white/50">Eligible Encounters</span>
                   <span className="text-white">{formatNumber(eligibleEncounters)}</span>
                 </div>
               </div>
 
-              <div className="h-px bg-[#333333] my-4" />
+              <div className="h-px bg-white/10 my-4" />
 
               {/* Per Provider */}
               <div className="mb-4">
-                <p className="text-xs text-[#888888] mb-2">Per provider:</p>
+                <p className="text-xs text-white/50 mb-2">Per provider:</p>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-[#888888]">Hours/year</span>
+                    <span className="text-white/50">Hours/year</span>
                     <span className="text-white font-semibold">{formatNumber(hoursPerProvider)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#888888]">Hours/week</span>
+                    <span className="text-white/50">Hours/week</span>
                     <span className="text-[#E85A2C] font-semibold">{hoursPerWeek}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="h-px bg-[#333333] my-4" />
+              <div className="h-px bg-white/10 my-4" />
 
               {/* Continue Button */}
               <Button
                 onClick={onNext}
-                className="w-full h-11 bg-[#E85A2C] hover:bg-[#E85A2C]/90 text-white font-medium rounded-md gap-2"
+                className="w-full h-12 bg-white hover:bg-white/90 text-black font-semibold rounded-full gap-2"
                 data-testid="button-panel-continue"
               >
                 Continue to Value Drivers
