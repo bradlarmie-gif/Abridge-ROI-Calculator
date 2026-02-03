@@ -183,8 +183,6 @@ export default function AmbientNarrativeFlow({
         <UnifiedHeaderSpacer />
 
         <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
-          {renderProgressIndicator()}
-          
           <PageTransition pageKey={`narrative-step-${currentStep}`}>
             {renderStep()}
           </PageTransition>
