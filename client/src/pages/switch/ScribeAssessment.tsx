@@ -385,7 +385,7 @@ function InputField({
         type="number"
         value={value || ""}
         onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className="w-full text-right text-lg font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0"
+        className="w-full text-right text-lg font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         placeholder="0"
         data-testid={testId}
       />
