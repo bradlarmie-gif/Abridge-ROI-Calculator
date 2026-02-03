@@ -54,6 +54,22 @@ export default function ExploreModel({
 
   const costReductionValue = timeDriverInputs.costReductionEnabled ? timeDriverInputs.estimatedCostReduction : 0;
 
+  // ED-specific value calculations
+  const edLwbsValue = useMemo(() => {
+    if (!timeDriverInputs.edLwbsEnabled) return 0;
+    const lwbsPatients = state.annualEncounters * (timeDriverInputs.edLwbsRate / 100);
+    const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
+    return Math.round(recoveredPatients * timeDriverInputs.edRevenuePerVisit);
+  }, [state.annualEncounters, timeDriverInputs]);
+
+  const edAdmissionCaptureValue = useMemo(() => {
+    if (!timeDriverInputs.edThroughputEnabled) return 0;
+    const admittedPatients = state.annualEncounters * (timeDriverInputs.edAdditionalPatientsPercent / 100);
+    return Math.round(admittedPatients * timeDriverInputs.edRevenuePerVisit);
+  }, [state.annualEncounters, timeDriverInputs]);
+
+  const isED = state.careSetting === 'ed';
+
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
@@ -225,12 +241,12 @@ export default function ExploreModel({
       showHCC: true,
     },
     ed: {
-      timeCardTitle: 'Efficiency Gains',
+      timeCardTitle: 'Time Back',
       timeCardDescription: 'Faster documentation means shorter door-to-doc times and reduced LWBS rates.',
-      driver1: 'LWBS Reduction',
-      driver2: 'Throughput Gain',
+      driver1: 'LWBS Recovery',
+      driver2: 'Admission Capture',
       driver3: 'Clinician Wellbeing',
-      docCardTitle: 'Downstream Value',
+      docCardTitle: 'Documentation Quality',
       docCardDescription: 'Complete documentation supports accurate coding and reduces claim denials.',
       docDriver1: 'E&M Level Accuracy',
       docDriver2: '', // No HCC for ED
@@ -366,23 +382,51 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#666666]">• {labels.driver1}</span>
-                  <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
-                </div>
-                {timeDriverInputs.patientAccessEnabled && (
-                  <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityPercent}% to capacity)</p>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-[#666666]">• {labels.driver2}</span>
-                  <span className="font-semibold text-black">{costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#666666]">• {labels.driver3}</span>
-                  <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
-                </div>
-                {timeDriverInputs.wellbeingEnabled && (
-                  <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                {isED ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver1}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.edLwbsEnabled ? formatCurrency(edLwbsValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.edLwbsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edLwbsReduction}% LWBS reduction)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver2}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.edThroughputEnabled ? formatCurrency(edAdmissionCaptureValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.edThroughputEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.edAdditionalPatientsPercent}% admission rate)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver3}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                    </div>
+                    {timeDriverInputs.wellbeingEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver1}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.patientAccessEnabled ? formatCurrency(patientAccessValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.patientAccessEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.capacityPercent}% to capacity)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver2}</span>
+                      <span className="font-semibold text-black">{costReductionValue > 0 ? formatCurrency(costReductionValue) : '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver3}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                    </div>
+                    {timeDriverInputs.wellbeingEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
