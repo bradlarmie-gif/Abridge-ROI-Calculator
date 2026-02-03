@@ -119,12 +119,13 @@ export default function ExploreModel({
   // Inpatient: Clinician Wellbeing Retention Value
   const ipWellbeingRetentionValue = useMemo(() => {
     if (!isInpatient || !timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
-    const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, aggressive: 40 };
-    const retentionPercent = retentionScenarios[timeDriverInputs.ipRetentionScenario];
-    const providersLeaving = state.numberOfProviders * (timeDriverInputs.ipAnnualTurnover / 100);
-    const burnoutRelated = providersLeaving * (timeDriverInputs.ipBurnoutRelated / 100);
+    const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+    const retentionPercent = retentionScenarios[timeDriverInputs.retentionImpactScenario] || 30;
+    // Use the same property names as ExploreFlow for consistency
+    const providersLeaving = state.numberOfProviders * (timeDriverInputs.annualTurnoverRate / 100);
+    const burnoutRelated = providersLeaving * (timeDriverInputs.burnoutRelatedTurnover / 100);
     const retained = burnoutRelated * (retentionPercent / 100);
-    return Math.round(retained * timeDriverInputs.ipReplacementCost);
+    return Math.round(retained * timeDriverInputs.replacementCost);
   }, [isInpatient, state.numberOfProviders, timeDriverInputs]);
 
   // Inpatient: DRG Accuracy Value
@@ -463,7 +464,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue ? formatCurrency(ipWellbeingRetentionValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && (
-                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.ipRetentionScenario === 'conservative' ? '20' : timeDriverInputs.ipRetentionScenario === 'typical' ? '30' : '40'}% retention lift)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
                     )}
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
