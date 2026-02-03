@@ -126,7 +126,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             </span>
           </h1>
           <p className="text-base md:text-lg text-[#6B7280]">
-            Modeled for your organization.
+            See what's possible for your organization.
           </p>
         </motion.section>
 
