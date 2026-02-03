@@ -19,6 +19,13 @@ The application supports multiple distinct user journeys:
     - **Inpatient**: LOS Impact (length of stay reduction savings), Rounding Efficiency (time-to-value conversion), Clinician Wellbeing
     - **Nursing**: OT Reduction (overtime cost savings with 1.5x multiplier), Retention Savings (nurse turnover reduction), Care Time (qualitative - bedside time returned)
 -   **Defensible Math with Realization Rates**: All ROI calculations incorporate conservative realization rates for defensible estimates across all benefit categories (e.g., Patient Access, Locum Reduction, wRVU, HCC, Denials, Wellbeing).
+-   **ROI Calculation Logic**:
+    - **Today's ROI**: `totalValue / annualInvestment` (gross value multiplier)
+    - **Full Scale ROI**: `(totalValue × expansionMultiplier) / expandedInvestment`
+      - `expansionMultiplier = (expandedProviders / numberOfProviders) × (expandedUtilization / currentUtilization)`
+      - `expandedInvestment = annualInvestment × (expandedProviders / numberOfProviders)`
+      - Investment scales with provider count; utilization improvement only affects value, not cost
+    - This ensures Full Scale ROI = Today's ROI × utilization improvement factor (e.g., 80%/70% = 1.14×)
 -   **Simplified Wellbeing Retention Model**: A conservative threshold-based approach to calculate retention lift based on saved hours per provider, categorized into minimal, moderate, significant, and maximum tiers.
 -   **Expandable Math Breakdowns**: "See the math" functionality provides step-by-step calculations with highlighted realization rates.
 -   **Component-Driven UI**: Utilizes `PathwayCard` components for progressive disclosure.

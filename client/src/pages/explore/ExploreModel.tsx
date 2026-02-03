@@ -129,7 +129,11 @@ export default function ExploreModel({
   const [expandedUtilization, setExpandedUtilization] = useState(80);
   const expansionMultiplier = (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
-  const expandedRoi = annualInvestment > 0 ? (totalValue * expansionMultiplier) / (annualInvestment * 3) : 0;
+  
+  // Full scale investment scales with provider count (not utilization - you pay per provider)
+  const providerExpansionRatio = expandedProviders / state.numberOfProviders;
+  const expandedInvestment = annualInvestment * providerExpansionRatio;
+  const expandedRoi = expandedInvestment > 0 ? (totalValue * expansionMultiplier) / expandedInvestment : 0;
 
   // Scaling pace options
   const [selectedPace, setSelectedPace] = useState<'measured' | 'steady' | 'aggressive'>('steady');

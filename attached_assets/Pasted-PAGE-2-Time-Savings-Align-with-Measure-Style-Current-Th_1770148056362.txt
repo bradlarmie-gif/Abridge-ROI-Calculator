@@ -1,0 +1,425 @@
+PAGE 2: "Time Savings" — Align with Measure Style
+Current:
+The Time Savings page is actually okay but the scenario selection could be cleaner.
+Keep:
+
+The "WHAT THE DATA SHOWS" box
+The "CHOOSE YOUR SCENARIO" section
+The right panel
+
+Improve:
+
+Make the scenario options more like a segmented control or cleaner radio cards
+Remove the heavy card styling with colored left borders on the radio options
+
+CopyCHOOSE YOUR SCENARIO
+─────────────────────────────────────────────────────────────────────
+
+○  Conservative        1 min
+   For skeptical stakeholders. Under-promise to over-deliver.
+
+●  Typical             2 min      RECOMMENDED
+   Based on average outcomes across similar implementations.
+
+○  Optimistic          3 min
+   For high-adoption organizations with strong change management.
+
+Or enter a custom value:  [    ] min/encounter
+Styling:
+
+Remove the card borders around each radio option
+Simple radio button + text layout
+Selected option has subtle background highlight, not heavy border
+"RECOMMENDED" badge is small, red-orange text
+
+
+PAGE 3: "Value Drivers" — Major Cleanup
+Current (Wrong):
+
+Driver toggles are cards with white background
+Expanded drivers show inputs in a scattered way
+Doesn't match the Measure aesthetic
+
+Should be:
+
+Drivers as clean accordion sections within the beige card
+When expanded, inputs are organized in the same style as Measure
+
+Copy┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  WHAT COULD THAT TIME BE WORTH?                                               │
+│                                                                               │
+│  Your providers could reclaim 7,000 hours. Different organizations use        │
+│  that time in different ways.                                                 │
+│                                                                               │
+│  ───────────────────────────────────────────────────────────────────────────  │
+│                                                                               │
+│  HOW TO USE THIS SECTION                                                      │
+│                                                                               │
+│  We can't tell you exactly how your organization will use reclaimed time.     │
+│  But we can help you model different scenarios. Engage with the drivers       │
+│  that are relevant to your situation.                                         │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  VALUE DRIVERS                                                                │
+│  ─────────────────────────────────────────────────────────────────────────    │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Patient Access                                              [Toggle]   │  │
+│  │  If providers use time to see more patients                              │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  [When expanded:]                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Patient Access                                                 [On]    │  │
+│  │  If providers use time to see more patients                              │  │
+│  │  ───────────────────────────────────────────────────────────────────    │  │
+│  │                                                                         │  │
+│  │  YOUR INPUTS                                                            │  │
+│  │  ───────────────────────────────────────────────────────────────────    │  │
+│  │                                                                         │  │
+│  │  % of time toward capacity          Revenue per visit                   │  │
+│  │  ┌─────────────────────┐            ┌─────────────────────┐             │  │
+│  │  │ 10               %  │            │ $ 200               │             │  │
+│  │  └─────────────────────┘            └─────────────────────┘             │  │
+│  │                                                                         │  │
+│  │  Average visit duration                                                 │  │
+│  │  ┌─────────────────────┐                                                │  │
+│  │  │ 30              min │                                                │  │
+│  │  └─────────────────────┘                                                │  │
+│  │                                                                         │  │
+│  │  ───────────────────────────────────────────────────────────────────    │  │
+│  │                                                                         │  │
+│  │  CALCULATION                                                            │  │
+│  │  ───────────────────────────────────────────────────────────────────    │  │
+│  │                                                                         │  │
+│  │  Hours toward capacity              700                                 │  │
+│  │  Potential additional visits        1,400                               │  │
+│  │  Gross value                        $280,000                            │  │
+│  │  × Realization rate                 25%                                 │  │
+│  │  ───────────────────────────────────────────────────────────────────    │  │
+│  │  Annual Patient Access Value        $70,000                             │  │
+│  │                                                                         │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Cost Reduction                                              [Toggle]   │  │
+│  │  If time reduces overtime, locums, or other costs                        │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐  │
+│  │  Clinician Wellbeing                                         [Toggle]   │  │
+│  │  If time improves work-life balance and retention                        │  │
+│  └─────────────────────────────────────────────────────────────────────────┘  │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+Key styling points:
+
+Collapsed driver: Simple row with label, subtitle, and toggle. Light background (#F9F9F9 or white), subtle border.
+Expanded driver: Same container expands to show content. Section dividers inside.
+Input layout: Two inputs per row where logical, matching Measure style.
+Calculation section: Clearly separated with section label, table-style layout with labels left and values right.
+Final value: Bold, red-orange, at bottom of calculation.
+
+
+PAGE 4: "Documentation Quality" — Same Treatment
+Apply the same accordion + clean input styling to wRVU, HCC (for OP), and Denial Prevention drivers.
+
+PAGE 5: "Investment" — Already Good
+The Investment page looks fine — clean layout, good hierarchy.
+
+GLOBAL CSS UPDATE
+cssCopy/* ============================================
+   EXPLORE PATH - ALIGNED WITH MEASURE STYLE
+   ============================================ */
+
+/* Page layout */
+.explore-page {
+  display: flex;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.explore-main {
+  flex: 1;
+  max-width: 700px;
+}
+
+.explore-sidebar {
+  width: 320px;
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+}
+
+/* Main content card */
+.content-card {
+  background: #F5F0EB;
+  border-radius: 12px;
+  padding: 32px;
+}
+
+/* Page title */
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #666666;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+/* Section labels */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #888888;
+  margin-bottom: 4px;
+}
+
+.section-divider {
+  height: 1px;
+  background: #D1D5DB;
+  margin-bottom: 20px;
+}
+
+/* Input groups */
+.input-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  flex: 1;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8px;
+}
+
+.input-field {
+  width: 100%;
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #E85A2C;
+}
+
+.input-helper {
+  font-size: 12px;
+  color: #888888;
+  margin-top: 4px;
+}
+
+/* Segmented control */
+.segmented-control {
+  display: inline-flex;
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segment {
+  padding: 12px 20px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 1px solid #E0E0E0;
+  transition: all 0.15s ease;
+}
+
+.segment:last-child {
+  border-right: none;
+}
+
+.segment:hover {
+  background: #F9F9F9;
+}
+
+.segment.selected {
+  background: #E85A2C;
+  color: white;
+}
+
+.segment-main {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.segment-sub {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Driver accordion */
+.driver-accordion {
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.driver-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.driver-header:hover {
+  background: #FAFAFA;
+}
+
+.driver-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.driver-subtitle {
+  font-size: 13px;
+  color: #888888;
+  margin-top: 2px;
+}
+
+.driver-toggle {
+  /* Toggle switch styles */
+}
+
+.driver-content {
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid #E0E0E0;
+}
+
+.driver-content .section-label {
+  margin-top: 20px;
+}
+
+/* Calculation table */
+.calculation-table {
+  width: 100%;
+}
+
+.calculation-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.calculation-row:last-child {
+  border-bottom: none;
+}
+
+.calculation-label {
+  font-size: 14px;
+  color: #333333;
+}
+
+.calculation-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+}
+
+.calculation-value.editable {
+  color: #E85A2C;
+  cursor: pointer;
+}
+
+.calculation-row.total {
+  border-top: 2px solid #E0E0E0;
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.calculation-row.total .calculation-label {
+  font-weight: 600;
+}
+
+.calculation-row.total .calculation-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E85A2C;
+}
+
+/* Info box */
+.info-box {
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.info-box-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #888888;
+  margin-bottom: 8px;
+}
+
+.info-box-content {
+  font-size: 14px;
+  color: #333333;
+  line-height: 1.5;
+}
+
+/* Right panel (keep existing dark styling) */
+.right-panel {
+  background: #1A1A1A;
+  border-radius: 12px;
+  padding: 24px;
+  color: white;
+}
+
+/* Primary button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #E85A2C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: #D14D22;
+}
+
+.btn-primary:disabled {
+  background: #CCCCCC;
+  cursor: not-allowed;
+}

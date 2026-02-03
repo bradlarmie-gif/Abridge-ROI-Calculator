@@ -1,0 +1,197 @@
+
+  margin-top: 4px;
+}
+
+/* Segmented control */
+.segmented-control {
+  display: inline-flex;
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segment {
+  padding: 12px 20px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 1px solid #E0E0E0;
+  transition: all 0.15s ease;
+}
+
+.segment:last-child {
+  border-right: none;
+}
+
+.segment:hover {
+  background: #F9F9F9;
+}
+
+.segment.selected {
+  background: #E85A2C;
+  color: white;
+}
+
+.segment-main {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.segment-sub {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Driver accordion */
+.driver-accordion {
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.driver-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.driver-header:hover {
+  background: #FAFAFA;
+}
+
+.driver-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.driver-subtitle {
+  font-size: 13px;
+  color: #888888;
+  margin-top: 2px;
+}
+
+.driver-toggle {
+  /* Toggle switch styles */
+}
+
+.driver-content {
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid #E0E0E0;
+}
+
+.driver-content .section-label {
+  margin-top: 20px;
+}
+
+/* Calculation table */
+.calculation-table {
+  width: 100%;
+}
+
+.calculation-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.calculation-row:last-child {
+  border-bottom: none;
+}
+
+.calculation-label {
+  font-size: 14px;
+  color: #333333;
+}
+
+.calculation-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+}
+
+.calculation-value.editable {
+  color: #E85A2C;
+  cursor: pointer;
+}
+
+.calculation-row.total {
+  border-top: 2px solid #E0E0E0;
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.calculation-row.total .calculation-label {
+  font-weight: 600;
+}
+
+.calculation-row.total .calculation-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E85A2C;
+}
+
+/* Info box */
+.info-box {
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.info-box-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #888888;
+  margin-bottom: 8px;
+}
+
+.info-box-content {
+  font-size: 14px;
+  color: #333333;
+  line-height: 1.5;
+}
+
+/* Right panel (keep existing dark styling) */
+.right-panel {
+  background: #1A1A1A;
+  border-radius: 12px;
+  padding: 24px;
+  color: white;
+}
+
+/* Primary button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #E85A2C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: #D14D22;
+}
+
+.btn-primary:disabled {
+  background: #CCCCCC;
+  cursor: not-allowed;
+}
+
+SUMMARY OF CHANGES
+ElementCurrentShould BeMain containerWhite/mixedWarm beige (#F5F0EB) cardInput cardsFloating cards with iconsClean sections with dividersScenario buttonsHeavy card stylingSimple segmented controlDriver sectionsWhite cards with bordersAccordion within beige cardSection organizationScatteredClear sections with ALL CAPS labelsInput layoutSingle column scatteredTwo-column rows where logicalOverall feelDisjointedUnified, matches Measure path
