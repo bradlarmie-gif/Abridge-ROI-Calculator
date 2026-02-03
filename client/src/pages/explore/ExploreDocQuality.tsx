@@ -219,30 +219,38 @@ export default function ExploreDocQuality({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-black mb-4">
+                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
                     Incomplete documentation costs you twice. First, at coding—when conditions discussed at bedside aren't captured. Second, after submission—when payers deny claims. Abridge captures the clinical reasoning that prevents both.
                   </p>
 
-                  <p className="text-sm font-medium text-black mb-2">How many can Abridge protect?</p>
-                  <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
+                  <p className="text-sm font-medium text-black mb-3">Protection target:</p>
+                  <div className="grid grid-cols-3 gap-2 mb-4">
                     {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ ipDrgScenario: level })}
-                        className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        className={`p-3 rounded-lg border transition-all text-center ${
                           docQualityInputs.ipDrgScenario === level
-                            ? "border-[#EA2C00] bg-white"
-                            : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                         }`}
+                        data-testid={`button-drg-${level}`}
                       >
-                        <p className="font-medium text-black capitalize">{level === 'aggressive' ? 'Optimistic' : level}</p>
-                        <p className="text-sm text-[#888888]">{ipDrgProtectionScenarios[level]}%</p>
+                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === level ? 'text-white/80' : ''}`}>{level === 'aggressive' ? 'Optimistic' : level}</p>
+                        <p className="font-semibold">{ipDrgProtectionScenarios[level]}%</p>
                       </button>
                     ))}
                   </div>
 
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
                   <div className="bg-[#F5F0EB] rounded-lg p-4 mb-4">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
+                      <span className="text-xs text-[#888888]">Click values to edit</span>
+                    </div>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[#666666]">Eligible admissions</span>
@@ -377,30 +385,38 @@ export default function ExploreDocQuality({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-black mb-4">
+                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
                     Many CDI queries simply ask physicians to document what they already discussed with the patient. When Abridge captures these conversations automatically, the query becomes unnecessary—freeing CDI to focus on complex cases.
                   </p>
 
-                  <p className="text-sm font-medium text-black mb-2">How many queries can be avoided?</p>
-                  <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
+                  <p className="text-sm font-medium text-black mb-3">Reduction target:</p>
+                  <div className="grid grid-cols-3 gap-2 mb-4">
                     {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateDocInputs({ ipCdiScenario: level })}
-                        className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        className={`p-3 rounded-lg border transition-all text-center ${
                           docQualityInputs.ipCdiScenario === level
-                            ? "border-[#EA2C00] bg-white"
-                            : "border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]"
+                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
                         }`}
+                        data-testid={`button-cdi-${level}`}
                       >
-                        <p className="font-medium text-black capitalize">{level === 'aggressive' ? 'Optimistic' : level}</p>
-                        <p className="text-sm text-[#888888]">{ipCdiReductionScenarios[level]}%</p>
+                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === level ? 'text-white/80' : ''}`}>{level === 'aggressive' ? 'Optimistic' : level}</p>
+                        <p className="font-semibold">{ipCdiReductionScenarios[level]}%</p>
                       </button>
                     ))}
                   </div>
 
+                  <div className="h-px bg-[#E5E5E5] my-4" />
+
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
+                      <span className="text-xs text-[#888888]">Click values to edit</span>
+                    </div>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[#666666]">Eligible admissions</span>

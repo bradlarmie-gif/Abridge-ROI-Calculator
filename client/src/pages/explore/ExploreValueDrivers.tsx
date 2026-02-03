@@ -478,9 +478,11 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-black mb-4">
+                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
                     When documentation happens automatically, hospitalists spend less time charting during and after rounds. This time returns to patient care, teaching, or work-life balance.
                   </p>
+
+                  <div className="h-px bg-[#E5E5E5] my-4" />
 
                   {/* Hours Summary */}
                   <div className="bg-[#F5F0EB] rounded-lg p-6 mb-6 text-center">
