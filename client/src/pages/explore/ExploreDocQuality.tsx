@@ -126,11 +126,11 @@ export default function ExploreDocQuality({
     },
     inpatient: {
       pageTitle: 'Documentation Quality',
-      pageSubtitle: 'Better documentation at bedside → Better DRG capture → Real revenue.',
+      pageSubtitle: 'Complete documentation drives revenue integrity.',
       driver1Title: 'DRG Accuracy',
       driver1Subtitle: 'Capture clinical complexity that drives reimbursement',
       driver2Title: 'CDI Query Reduction',
-      driver2Subtitle: 'Fewer queries when documentation is complete from the start',
+      driver2Subtitle: 'Fewer queries when documentation is complete upfront',
       driver3Title: '', // Denials handled within DRG Accuracy
       driver3Subtitle: '',
     },
@@ -218,123 +218,208 @@ export default function ExploreDocQuality({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
-                    Incomplete documentation costs you twice. First, at coding—when conditions discussed at bedside aren't captured. Second, after submission—when payers deny claims. Abridge captures the clinical reasoning that prevents both.
+                <div className="bg-white rounded-b-lg p-6 md:p-8">
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                    Documentation gaps cause downcoding and denials. Abridge captures the clinical reasoning that prevents both.
                   </p>
 
-                  <div className="h-px bg-[#E5E5E5] my-4" />
-
-                  <p className="text-sm font-medium text-black mb-3">Protection target:</p>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
-                      <button
-                        key={level}
-                        onClick={() => updateDocInputs({ ipDrgScenario: level })}
-                        className={`p-3 rounded-lg border transition-all text-center ${
-                          docQualityInputs.ipDrgScenario === level
-                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
-                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
-                        }`}
-                        data-testid={`button-drg-${level}`}
-                      >
-                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === level ? 'text-white/80' : ''}`}>{level === 'aggressive' ? 'Optimistic' : level}</p>
-                        <p className="font-semibold">{ipDrgProtectionScenarios[level]}%</p>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="h-px bg-[#E5E5E5] my-4" />
-
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
-                      <span className="text-xs text-[#888888]">Click values to edit</span>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Eligible admissions</span>
-                        <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">At-risk rate</span>
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            step="1"
-                            value={docQualityInputs.ipDrgAtRiskRate}
-                            onChange={(e) => updateDocInputs({ ipDrgAtRiskRate: parseFloat(e.target.value) || 0 })}
-                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                          />
-                          <span className="text-[#888888]">%</span>
+                  {/* STEP 1: ADMISSIONS AT RISK */}
+                  <div className="mb-10">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 1: Admissions at Risk
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Eligible Admissions</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">At-Risk Rate</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="1"
+                              value={docQualityInputs.ipDrgAtRiskRate}
+                              onChange={(e) => updateDocInputs({ ipDrgAtRiskRate: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold"
+                              data-testid="input-drg-at-risk"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Admissions at risk</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsAtRisk))}</span>
+                      <div className="text-center py-2">
+                        <span className="text-[13px] text-[#666666]">= </span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsAtRisk))} admissions at risk</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× Abridge protection</span>
-                        <span className="font-semibold text-black">{ipDrgProtectionPercent}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Admissions protected</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))}</span>
-                      </div>
-                      <div className="h-px bg-[#D1D5DB] my-2" />
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">DRG weight increase</span>
-                        <div className="flex items-center gap-1">
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        20-30% of admissions have documentation gaps that affect DRG assignment. 25% is moderate.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* STEP 2: ABRIDGE PROTECTION */}
+                  <div className="mb-10">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 2: Abridge Protection
+                    </p>
+                    <p className="text-[13px] text-[#666666] mb-4">How many can Abridge protect?</p>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => updateDocInputs({ ipDrgScenario: level })}
+                          className={`p-4 rounded-lg border transition-all text-center ${
+                            docQualityInputs.ipDrgScenario === level
+                              ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                              : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                          }`}
+                          data-testid={`button-drg-${level}`}
+                        >
+                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipDrgScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
+                            {level === 'aggressive' ? 'Optimistic' : level}
+                          </p>
+                          <p className="font-semibold text-lg">{ipDrgProtectionScenarios[level]}%</p>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
+                      <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipAdmissionsAtRisk))} × {ipDrgProtectionPercent}% = </span>
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))} admissions protected</span>
+                    </div>
+                  </div>
+
+                  {/* STEP 3: REVENUE PROTECTED */}
+                  <div className="mb-10">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 3: Revenue Protected
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions Protected</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatNumber(Math.round(ipAdmissionsProtected))}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">DRG Weight Lift</label>
                           <input
                             type="number"
                             step="0.1"
                             value={docQualityInputs.ipDrgWeightIncrease}
                             onChange={(e) => updateDocInputs({ ipDrgWeightIncrease: parseFloat(e.target.value) || 0 })}
-                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 text-black font-semibold"
+                            data-testid="input-drg-weight"
                           />
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">Base DRG payment</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[#888888]">$</span>
-                          <input
-                            type="number"
-                            step="100"
-                            value={docQualityInputs.ipDrgBasePayment}
-                            onChange={(e) => updateDocInputs({ ipDrgBasePayment: parseFloat(e.target.value) || 0 })}
-                            className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                          />
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Base DRG Payment</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
+                            <input
+                              type="number"
+                              step="100"
+                              value={docQualityInputs.ipDrgBasePayment}
+                              onChange={(e) => updateDocInputs({ ipDrgBasePayment: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold"
+                              data-testid="input-drg-base"
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Gross value</span>
-                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))}</span>
+                      <div className="text-center py-2">
+                        <span className="text-[13px] text-[#666666]">= </span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))} gross</span>
                       </div>
-                      <div className="h-px bg-[#D1D5DB] my-2" />
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">× Realization rate</span>
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            step="5"
-                            value={docQualityInputs.ipDrgRealization}
-                            onChange={(e) => updateDocInputs({ ipDrgRealization: parseFloat(e.target.value) || 0 })}
-                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                          />
-                          <span className="text-[#888888]">%</span>
+                    </div>
+
+                    {/* Benchmark Table */}
+                    <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-4 mb-4">
+                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3 flex items-center gap-2">
+                        <span>📊</span> Benchmark: DRG Weight Impact
+                      </p>
+                      <div className="space-y-2 text-[13px]">
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">Acute respiratory failure</span>
+                          <span className="text-black">+0.3 to +0.5</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">Sepsis / Severe sepsis</span>
+                          <span className="text-black">+0.4 to +0.6</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">Malnutrition</span>
+                          <span className="text-black">+0.2 to +0.4</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">Acute encephalopathy</span>
+                          <span className="text-black">+0.3 to +0.5</span>
                         </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-[#666666]">= Net revenue protected</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipDrgNetValue))}</span>
-                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        0.4 is average. Higher acuity facilities may see 0.5-0.6.
+                      </p>
                     </div>
                   </div>
 
-                  <div className="bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg p-3">
-                    <p className="text-xs text-[#888888]">
-                      <strong>What's included:</strong> DRG Accuracy (conditions discussed but not documented) + Denial Prevention (medical necessity, level of care). Combined to avoid double-counting—both stem from the same Abridge capability.
+                  {/* STEP 4: REALIZATION */}
+                  <div className="mb-8">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 4: Realization
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Gross Value</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgGrossValue))}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Realization Rate</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="5"
+                              value={docQualityInputs.ipDrgRealization}
+                              onChange={(e) => updateDocInputs({ ipDrgRealization: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold"
+                              data-testid="input-drg-realization"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center py-2">
+                        <span className="text-[13px] text-[#666666]">= </span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgNetValue))} net</span>
+                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        50% accounts for audits, coder discretion, and cases where documentation doesn't change final code.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Final Value */}
+                  <div className="border-t border-[#E5E5E5] pt-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-semibold text-black">Annual DRG Value</span>
+                      <span className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipDrgNetValue))}</span>
+                    </div>
+                    <p className="text-[13px] text-[#666666] mb-4">
+                      Includes DRG accuracy improvement and denial prevention from complete documentation.
+                    </p>
+                    <p className="text-[13px] text-[#888888] flex items-start gap-2">
+                      <span>⚠️</span>
+                      <span>Validate capture rates with your CDI team for your case mix.</span>
                     </p>
                   </div>
                 </div>
@@ -384,87 +469,124 @@ export default function ExploreDocQuality({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-[#666666] leading-relaxed mb-4">
-                    Many CDI queries simply ask physicians to document what they already discussed with the patient. When Abridge captures these conversations automatically, the query becomes unnecessary—freeing CDI to focus on complex cases.
+                <div className="bg-white rounded-b-lg p-6 md:p-8">
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                    When Abridge captures clinical conversations, many queries become unnecessary—freeing CDI to focus on complex cases.
                   </p>
 
-                  <div className="h-px bg-[#E5E5E5] my-4" />
-
-                  <p className="text-sm font-medium text-black mb-3">Reduction target:</p>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
-                      <button
-                        key={level}
-                        onClick={() => updateDocInputs({ ipCdiScenario: level })}
-                        className={`p-3 rounded-lg border transition-all text-center ${
-                          docQualityInputs.ipCdiScenario === level
-                            ? "bg-[#EA2C00] border-[#EA2C00] text-white"
-                            : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
-                        }`}
-                        data-testid={`button-cdi-${level}`}
-                      >
-                        <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === level ? 'text-white/80' : ''}`}>{level === 'aggressive' ? 'Optimistic' : level}</p>
-                        <p className="font-semibold">{ipCdiReductionScenarios[level]}%</p>
-                      </button>
-                    ))}
+                  {/* STEP 1: CURRENT QUERY VOLUME */}
+                  <div className="mb-10">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 1: Current Query Volume
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Query Rate</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="5"
+                              value={docQualityInputs.ipCdiQueryRate}
+                              onChange={(e) => updateDocInputs({ ipCdiQueryRate: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 pr-8 text-black font-semibold"
+                              data-testid="input-cdi-query-rate"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888]">%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center py-2">
+                        <span className="text-[13px] text-[#666666]">= </span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(ipTotalQueries))} queries/year</span>
+                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        CDI query rates typically range 20-40%. 30% is average.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="h-px bg-[#E5E5E5] my-4" />
-
-                  <div className="bg-[#F5F0EB] rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px]">Calculation</p>
-                      <span className="text-xs text-[#888888]">Click values to edit</span>
+                  {/* STEP 2: QUERIES AVOIDED */}
+                  <div className="mb-10">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 2: Queries Avoided
+                    </p>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {(['conservative', 'typical', 'aggressive'] as const).map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => updateDocInputs({ ipCdiScenario: level })}
+                          className={`p-4 rounded-lg border transition-all text-center ${
+                            docQualityInputs.ipCdiScenario === level
+                              ? "bg-[#EA2C00] border-[#EA2C00] text-white"
+                              : "bg-white border-[#E5E5E5] text-black hover:border-[#D1D5DB]"
+                          }`}
+                          data-testid={`button-cdi-${level}`}
+                        >
+                          <p className={`text-xs capitalize mb-1 ${docQualityInputs.ipCdiScenario === level ? 'text-white/80' : 'text-[#888888]'}`}>
+                            {level === 'aggressive' ? 'Optimistic' : level}
+                          </p>
+                          <p className="font-semibold text-lg">{ipCdiReductionScenarios[level]}%</p>
+                        </button>
+                      ))}
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Eligible admissions</span>
-                        <span className="font-semibold text-black">{formatNumber(eligibleEncounters)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">Query rate</span>
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="number"
-                            step="5"
-                            value={docQualityInputs.ipCdiQueryRate}
-                            onChange={(e) => updateDocInputs({ ipCdiQueryRate: parseFloat(e.target.value) || 0 })}
-                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                          />
-                          <span className="text-[#888888]">%</span>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
+                      <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipTotalQueries))} × {ipCdiReductionPercent}% = </span>
+                      <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))} queries avoided</span>
+                    </div>
+                  </div>
+
+                  {/* STEP 3: SAVINGS */}
+                  <div className="mb-8">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+                      Step 3: Savings
+                    </p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Queries Avoided</label>
+                          <div className="h-12 bg-white border border-[#E5E5E5] rounded-lg px-4 flex items-center">
+                            <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))}</span>
+                          </div>
+                        </div>
+                        <span className="text-[#888888] text-xl hidden sm:block">×</span>
+                        <div className="flex-1">
+                          <label className="text-[13px] text-[#666666] mb-1.5 block">Cost per Query</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
+                            <input
+                              type="number"
+                              step="10"
+                              value={docQualityInputs.ipCdiCostPerQuery}
+                              onChange={(e) => updateDocInputs({ ipCdiCostPerQuery: parseFloat(e.target.value) || 0 })}
+                              className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold"
+                              data-testid="input-cdi-cost"
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Total queries/year</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(ipTotalQueries))}</span>
+                      <div className="text-center py-2">
+                        <span className="text-[13px] text-[#666666]">= </span>
+                        <span className="font-semibold text-black">{formatCurrency(Math.round(ipCdiSavingsValue))}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× Reduction rate</span>
-                        <span className="font-semibold text-black">{ipCdiReductionPercent}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Queries avoided</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))}</span>
-                      </div>
-                      <div className="h-px bg-[#D1D5DB] my-2" />
-                      <div className="flex justify-between items-center">
-                        <span className="text-[#666666]">× Cost per query</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[#888888]">$</span>
-                          <input
-                            type="number"
-                            step="10"
-                            value={docQualityInputs.ipCdiCostPerQuery}
-                            onChange={(e) => updateDocInputs({ ipCdiCostPerQuery: parseFloat(e.target.value) || 0 })}
-                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-[#666666]">= CDI savings</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipCdiSavingsValue))}</span>
-                      </div>
+                      <p className="text-[13px] text-[#888888] mt-3">
+                        Fully loaded cost per query: $50-$100. We use $50 conservatively.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Final Value */}
+                  <div className="border-t border-[#E5E5E5] pt-6">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-black">Annual CDI Savings</span>
+                      <span className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(Math.round(ipCdiSavingsValue))}</span>
                     </div>
                   </div>
                 </div>
