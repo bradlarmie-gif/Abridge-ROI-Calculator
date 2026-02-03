@@ -684,7 +684,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
             </Text>
           </View>
 
-          <View style={styles.summaryBox}>
+          <View style={styles.summaryBox} wrap={false}>
             <Text style={styles.summaryTitle}>YOUR SUMMARY TO SHARE</Text>
             <View style={styles.summaryGrid}>
               <View style={styles.summaryItem}>
@@ -703,11 +703,6 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
                 <Text style={styles.summaryItemSubtext}>{formatCurrency(calculations.costToScale)} additional</Text>
               </View>
             </View>
-          </View>
-
-          <View style={styles.ctaSection}>
-            <Text style={styles.ctaText}>Ready to explore how AI can scale your documentation support?</Text>
-            <Text style={styles.ctaLink}>Contact your Abridge partner to learn more</Text>
           </View>
         </View>
 
