@@ -40,7 +40,7 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
 const UTILIZATION_PRESETS = [
   { label: "Conservative", value: 50 },
   { label: "Typical", value: 70 },
-  { label: "Aggressive", value: 85 },
+  { label: "Optimistic", value: 85 },
 ];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
@@ -221,19 +221,19 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     {/* Segmented Control for Busyness */}
                     <div className="space-y-2.5">
                       <label className="text-sm font-medium text-black">{encounterLabel} per Provider</label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-3 gap-2">
                         {BUSYNESS_PRESETS.map((preset) => (
                           <button
                             key={preset.value}
                             onClick={() => handleBusynessChange(preset.value)}
-                            className={`py-4 px-3 rounded-lg border-2 text-center transition-all ${
+                            className={`py-3 px-2 rounded-lg border-2 text-center transition-all ${
                               isPresetSelected(preset.value)
                                 ? 'border-[#EA2C00] bg-white'
                                 : 'border-transparent bg-white hover:border-[#D1D5DB]'
                             }`}
                             data-testid={`preset-busyness-${preset.label.toLowerCase()}`}
                           >
-                            <span className="block text-sm font-semibold text-black">{preset.label}</span>
+                            <span className="block text-xs font-semibold text-black">{preset.label}</span>
                             <span className="block text-xs text-[#888888]">
                               {preset.value.toLocaleString()}
                             </span>
@@ -312,19 +312,19 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   {/* Segmented Control for Utilization */}
                   <div className="space-y-2.5">
                     <label className="text-sm font-medium text-black">Utilization Rate</label>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                       {UTILIZATION_PRESETS.map((preset) => (
                         <button
                           key={preset.value}
                           onClick={() => handleUtilizationChange(preset.value)}
-                          className={`py-4 px-3 rounded-lg border-2 text-center transition-all ${
+                          className={`py-3 px-2 rounded-lg border-2 text-center transition-all ${
                             isUtilizationPresetSelected(preset.value)
                               ? 'border-[#EA2C00] bg-white'
                               : 'border-transparent bg-white hover:border-[#D1D5DB]'
                           }`}
                           data-testid={`preset-utilization-${preset.label.toLowerCase()}`}
                         >
-                          <span className="block text-sm font-semibold text-black">{preset.label}</span>
+                          <span className="block text-xs font-semibold text-black">{preset.label}</span>
                           <span className="block text-xs text-[#888888]">
                             {preset.value}%
                           </span>
