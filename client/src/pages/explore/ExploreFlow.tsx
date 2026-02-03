@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import ExploreCareSettings from "./ExploreCareSettings";
-import ExplorePractice from "./ExplorePractice";
+import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimeSavings from "./ExploreTimeSavings";
 import ExploreValueDrivers from "./ExploreValueDrivers";
 import ExploreDocQuality from "./ExploreDocQuality";
@@ -476,7 +476,7 @@ export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
     
     case 'practice':
       return (
-        <ExplorePractice
+        <ExploreOpportunity
           state={state}
           updateState={updateState}
           onNext={() => navigate('timeSavings')}
