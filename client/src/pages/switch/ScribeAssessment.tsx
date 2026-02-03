@@ -62,7 +62,7 @@ export default function ScribeAssessment({
             Scribe Program Analysis
           </h1>
           <p className="text-sm md:text-base text-[#6B7280]">
-            Let's understand your current documentation support
+            Map your current documentation investment
           </p>
         </motion.div>
 
@@ -73,7 +73,7 @@ export default function ScribeAssessment({
           className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
         >
           <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">Your Scribe Program</h2>
-          <p className="text-sm text-[#6B7280] mb-5">Tell us about your current setup</p>
+          <p className="text-sm text-[#6B7280] mb-5">Start with what you have today</p>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -253,7 +253,7 @@ export default function ScribeAssessment({
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[#6B7280] mb-6">Where your documentation support falls short</p>
+              <p className="text-sm text-[#6B7280] mb-6">The providers your current program doesn't reach</p>
 
               <div className="mb-6">
                 <div className="relative h-14 bg-[#F1F5F9] rounded-xl overflow-hidden">
@@ -297,9 +297,9 @@ export default function ScribeAssessment({
                       <AlertTriangle className="w-4 h-4 text-[#EA2C00]" />
                     </div>
                     <div>
-                      <div className="font-semibold text-[#111827] mb-1">The documentation burden</div>
+                      <div className="font-semibold text-[#111827] mb-1">The Documentation Burden</div>
                       <p className="text-sm text-[#6B7280]">
-                        {calculations.providersWithoutSupport} providers handling all documentation themselves
+                        What happens when {calculations.providersWithoutSupport} providers document alone
                       </p>
                     </div>
                   </div>
@@ -367,7 +367,7 @@ export default function ScribeAssessment({
                           </div>
                           <div className="text-xs text-[#6B7280] mb-1">hrs/year per provider</div>
                           <div className="text-xs font-medium text-[#EA2C00]">
-                            {Math.round(calculations.docTimePerUnsupportedProvider / 40)} weeks of their year
+                            {Math.round(calculations.docTimePerUnsupportedProvider / 40)} {Math.round(calculations.docTimePerUnsupportedProvider / 40) === 1 ? 'week' : 'weeks'} of their year
                           </div>
                         </div>
                       </TooltipTrigger>
@@ -395,8 +395,8 @@ export default function ScribeAssessment({
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 lg:p-8 mb-6 shadow-sm"
             >
-              <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">What Would It Take?</h2>
-              <p className="text-sm text-[#6B7280] mb-6">The cost to give every provider scribe support</p>
+              <h2 className="text-base md:text-lg font-bold text-[#111827] mb-1">The Cost to Scale</h2>
+              <p className="text-sm text-[#6B7280] mb-6">What it would take to cover every provider with scribes</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-5">
@@ -437,7 +437,7 @@ export default function ScribeAssessment({
                     
                     <div className="mb-4">
                       <div className="text-3xl font-bold text-[#111827]">{formatCurrency(calculations.fullScribeCost)}</div>
-                      <div className="text-sm text-[#6B7280]">annual investment required</div>
+                      <div className="text-sm text-[#6B7280]">annual investment to reach 100%</div>
                     </div>
 
                     <div className="space-y-2 text-sm border-t border-[#FECDC4] pt-4">
@@ -483,7 +483,7 @@ export default function ScribeAssessment({
                   {formatCurrency(calculations.costToScale)}/year
                 </div>
                 <p className="text-slate-400 text-sm md:text-base mb-6 max-w-lg mx-auto">
-                  But what if you could give every provider documentation support—without adding {calculations.scribesNeededForFullCoverage - inputs.scribeCount} more scribes?
+                  What if you could cover every provider—without adding {calculations.scribesNeededForFullCoverage - inputs.scribeCount} more scribes?
                 </p>
                 
                 <Button
@@ -491,7 +491,7 @@ export default function ScribeAssessment({
                   className="h-12 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-semibold rounded-full"
                   data-testid="button-see-full-analysis"
                 >
-                  See How
+                  See What's Possible
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>

@@ -1,0 +1,110 @@
+PAGE 1: Scribe Program Analysis (Input Page)
+Header Section
+
+Change "Scribe Program Analysis" headline — keep as is
+Change subhead from "Let's understand your current documentation support" to: "Map your current documentation investment"
+
+Input Section
+
+Change "Your Scribe Program" — keep as is
+Change "Tell us about your current setup" to: "Start with what you have today"
+
+The Coverage Gap Section
+
+Keep "The Coverage Gap" and "400 providers without support" as is
+Change "Where your documentation support falls short" to: "The providers your current program doesn't reach"
+
+The Documentation Burden Section
+
+Change "The documentation burden" to: "The Documentation Burden" (capitalize for consistency)
+Change "400 providers handling all documentation themselves" to: "What happens when 400 providers document alone"
+In the third stat card, fix "1 weeks of their year" to: "1 week of their year"
+
+What Would It Take Section
+
+Change "What Would It Take?" to: "The Cost to Scale"
+Change "The cost to give every provider scribe support" to: "What it would take to cover every provider with scribes"
+
+TODAY vs FULL COVERAGE Cards
+
+In the FULL COVERAGE card, change "annual investment required" to: "annual investment to reach 100%"
+
+Bottom CTA Banner (Dark Section)
+
+Keep "Scaling your scribe program to full coverage would cost an additional" as is
+Keep "$10.5M/year" as is
+Change "But what if you could give every provider documentation support—without adding 200 more scribes?" to: "What if you could cover every provider—without adding 200 more scribes?"
+Change button text from "See How" to: "See What's Possible"
+
+
+PAGE 2: Full Analysis (Results Page)
+Header Card (Dark Section at Top)
+
+Keep "Your Scribe Program Analysis" as is
+Change "Complete evaluation of your documentation investment" to: "The full picture of your documentation investment"
+
+Stat Labels in Header Card
+
+Change "Hidden Costs" label to: "Indirect Costs"
+Keep "+$494K" as is
+Keep "Turnover & overhead" as is
+Keep "True Total Cost" / "$3.1M" / "$31K/provider" as is
+
+Bottom Line Statement in Header Card
+
+Change "The bottom line: Your scribe program costs $31K/provider/year when you include hidden costs. Scaling to 100% coverage would require an additional $10.5M/year." to: "The bottom line: Your scribe program costs $31K/provider/year when you account for turnover and overhead. Scaling to 100% coverage would require an additional $10.5M/year."
+
+The Problem With Scaling Scribes Section
+
+Keep "The Problem With Scaling Scribes" as is
+Keep "You're spending $2.6M/year to cover 20% of your providers. Here's why that math never gets better." as is
+
+Scribe Programs Scale Linearly Subsection
+
+Keep "Scribe programs scale linearly" as is
+Change "Double the coverage = double the cost. There are no economies of scale." to: "Double the coverage = double the cost. No economies of scale."
+
+The Costs You're Not Seeing Section
+
+Change "The costs you're not seeing" to: "The Costs That Don't Show Up in Salary"
+Change "Beyond salaries, scribe programs carry hidden operational costs" to: "Beyond wages, scribe programs carry operational overhead"
+
+Turnover & Training Card
+
+Keep "Turnover & Training" as is
+Keep "~40% annual turnover rate" as is
+Keep "$100K" as is
+Keep "You'll replace ~20 scribes this year at ~$5K each in training costs" as is
+
+Management Overhead Card
+
+Keep "Management Overhead" as is
+Keep "~15% of program cost" as is
+Keep "$394K" as is
+Change "Scheduling, supervision, quality assurance, and administrative support" to: "Scheduling, supervision, QA, and admin support"
+
+YOUR TRUE ANNUAL COST Banner
+
+Keep "YOUR TRUE ANNUAL COST" as is
+Keep "$3.1M" as is
+Change "$2.6M salaries + $494K hidden costs" to: "$2.6M salaries + $494K in overhead"
+Keep "PER COVERED PROVIDER" / "$31K/year" as is
+
+Final CTA Section
+
+Change "What if documentation support didn't scale this way?" to: "What if you could cover every provider—without the linear cost curve?"
+Change "Abridge can support every provider without the linear cost curve." to: "Abridge can support your entire organization at a fraction of the cost."
+Change button text from "Explore Ambient AI" to: "See the Abridge Model"
+
+
+Layout/Hierarchy Changes
+Page 1
+
+Coverage Gap section: Consider adding a subtle divider line or additional padding above this section to visually separate the input fields from the analysis that follows. This creates a clear "you entered this" → "here's what it means" narrative break.
+Documentation Burden stat cards: Add a subtle info icon (tooltip) on each card that explains the calculation when hovered. This is ambient documentation—available if they want it, invisible if they don't.
+
+Page 2
+
+YOUR TRUE ANNUAL COST Banner: Change the background color from black to Abridge cadmium red. This makes the summary moment feel like a climax and ties the brand in more strongly. Keep the text white for contrast.
+Final CTA Section: This section uses a gradient/illustrated background which is nice, but ensure the Abridge logo or a subtle brand element is present here since this is the transition moment to the Abridge solution. The sparkle icon is good—keep it.
+Visual hierarchy on "The Problem With Scaling Scribes": The horizontal bar chart is effective. Consider making the "100%" / "$13.1M" bar use Abridge cadmium red instead of the current red-orange to keep brand colors consistent.
