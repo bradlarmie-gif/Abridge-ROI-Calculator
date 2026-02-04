@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   calloutText: {
     fontSize: 8,
-    fontStyle: "italic",
+    fontFamily: "Helvetica-Oblique",
     lineHeight: 1.35,
     color: brand.darkGray,
   },
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   quoteText: {
     fontSize: 9,
-    fontStyle: "italic",
+    fontFamily: "Helvetica-Oblique",
     lineHeight: 1.4,
     color: brand.darkGray,
     textAlign: "center" as const,
@@ -488,10 +488,10 @@ function Page1() {
       {/* Context Section */}
       <Text style={styles.sectionHeader}>THE CONTEXT</Text>
       <Text style={styles.bodyText}>
-        Nursing is the hardest setting to model ROI—and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain.
+        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain.
       </Text>
       <Text style={styles.bodyText}>
-        Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive—25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
+        Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
       </Text>
       
       {/* Two Value Buckets */}
@@ -508,7 +508,7 @@ function Page1() {
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>CARE QUALITY ENABLEMENT</Text>
           <Text style={styles.cardText}>
-            Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect—documentation supports care, it doesn't replace it.
+            Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect--documentation supports care, it doesn't replace it.
           </Text>
           <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Potential value (we show separately)</Text>
@@ -517,7 +517,7 @@ function Page1() {
       </View>
       
       {/* Labor Economics Section */}
-      <Text style={styles.sectionHeader}>VALUE MECHANISMS — LABOR ECONOMICS</Text>
+      <Text style={styles.sectionHeader}>VALUE MECHANISMS -- LABOR ECONOMICS</Text>
       
       <View style={styles.twoColumn}>
         {/* Overtime Reduction */}
@@ -527,7 +527,7 @@ function Page1() {
           
           <Text style={styles.cardLabel}>THE MECHANISM</Text>
           <Text style={styles.cardText}>
-            When nurses spend less time documenting, they complete shifts on time. Not all time saved becomes OT reduction—some goes to care—but a portion does.
+            When nurses spend less time documenting, they complete shifts on time. Not all time saved becomes OT reduction--some goes to care--but a portion does.
           </Text>
           
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
@@ -573,7 +573,7 @@ function Page1() {
           When nurses leave, hospitals fill gaps with agency/travel nurses at 2-3× the cost. Improved retention directly reduces this premium labor dependency.
         </Text>
         <Text style={[styles.cardText, { marginTop: 6 }]}>
-          <Text style={{ fontFamily: "Helvetica-Bold" }}>Calculation:</Text> Nurses retained × Weeks of coverage (8-16) × Weekly premium ($2-4K) = Agency savings. This is separate from replacement cost—retention captures replacement, agency captures premium labor during vacancy.
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>Calculation:</Text> Nurses retained × Weeks of coverage (8-16) × Weekly premium ($2-4K) = Agency savings. This is separate from replacement cost--retention captures replacement, agency captures premium labor during vacancy.
         </Text>
       </View>
       
@@ -591,12 +591,12 @@ function Page2() {
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <Text style={styles.sectionHeader}>VALUE MECHANISMS — CARE QUALITY ENABLEMENT</Text>
+      <Text style={styles.sectionHeader}>VALUE MECHANISMS -- CARE QUALITY ENABLEMENT</Text>
       
       {/* Why Potential Value */}
       <Text style={styles.subSectionHeader}>WHY WE CALL THIS "POTENTIAL" VALUE</Text>
       <Text style={styles.bodyText}>
-        The link between documentation and care quality is indirect. We don't cause fewer falls—we enable the visibility that helps prevent them.
+        The link between documentation and care quality is indirect. We don't cause fewer falls--we enable the visibility that helps prevent them.
       </Text>
       
       {/* Flow Diagram */}
@@ -605,17 +605,17 @@ function Page2() {
           <Text style={styles.flowBoxText}>Documentation</Text>
           <Text style={styles.flowCaption}>We control this</Text>
         </View>
-        <Text style={styles.flowArrow}>→</Text>
+        <Text style={styles.flowArrow}>&gt;</Text>
         <View style={styles.flowBox}>
           <Text style={styles.flowBoxText}>Visibility</Text>
           <Text style={styles.flowCaption}>We support this</Text>
         </View>
-        <Text style={styles.flowArrow}>→</Text>
+        <Text style={styles.flowArrow}>&gt;</Text>
         <View style={styles.flowBox}>
           <Text style={styles.flowBoxText}>Intervention</Text>
           <Text style={styles.flowCaption}>Clinical team controls</Text>
         </View>
-        <Text style={styles.flowArrow}>→</Text>
+        <Text style={styles.flowArrow}>&gt;</Text>
         <View style={styles.flowBox}>
           <Text style={styles.flowBoxText}>Outcome</Text>
           <Text style={styles.flowCaption}>Patient experiences</Text>
@@ -634,7 +634,7 @@ function Page2() {
           
           <Text style={styles.cardLabel}>THE MECHANISM</Text>
           <Text style={styles.cardText}>
-            HAPIs happen when assessments are missed or interventions delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured—enabling earlier intervention.
+            HAPIs happen when assessments are missed or interventions delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured--enabling earlier intervention.
           </Text>
           
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
@@ -647,8 +647,8 @@ function Page2() {
             Not all HAPIs are doc-preventable. 5% represents cases where real-time assessment would have triggered earlier intervention.
           </Text>
           
-          <Text style={[styles.cardText, { marginTop: 6, fontStyle: "italic" }]}>
-            HONEST TRUTH: HAPIs are prevented through clinical care—turning, positioning, nutrition. Doc SUPPORTS this, doesn't REPLACE it.
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>
+            HONEST TRUTH: HAPIs are prevented through clinical care--turning, positioning, nutrition. Doc SUPPORTS this, doesn't REPLACE it.
           </Text>
         </View>
         
@@ -659,7 +659,7 @@ function Page2() {
           
           <Text style={styles.cardLabel}>THE MECHANISM</Text>
           <Text style={styles.cardText}>
-            Falls happen when risk assessments are missed or interventions delayed. Real-time documentation ensures fall risk scores, mobility status, and environmental factors are captured—enabling earlier action.
+            Falls happen when risk assessments are missed or interventions delayed. Real-time documentation ensures fall risk scores, mobility status, and environmental factors are captured--enabling earlier action.
           </Text>
           
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
@@ -672,7 +672,7 @@ function Page2() {
             Not all falls are doc-preventable. 5% represents cases where real-time risk documentation would have triggered intervention.
           </Text>
           
-          <Text style={[styles.cardText, { marginTop: 6, fontStyle: "italic" }]}>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>
             CMS does NOT reimburse for hospital-acquired fall injuries. This is pure cost to the hospital.
           </Text>
         </View>
@@ -685,7 +685,7 @@ function Page2() {
           <Badge type="qualitative" />
         </View>
         <Text style={styles.cardText}>
-          When nurses spend less time documenting, they spend more time with patients. Research shows bedside time correlates with satisfaction. But HCAHPS is influenced by dozens of factors—wait times, pain management, communication, environment, staffing. We can't credibly attribute improvement to docs alone.
+          When nurses spend less time documenting, they spend more time with patients. Research shows bedside time correlates with satisfaction. But HCAHPS is influenced by dozens of factors--wait times, pain management, communication, environment, staffing. We can't credibly attribute improvement to docs alone.
         </Text>
         <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>
           BUT CONSIDER: Top quartile HCAHPS = ~2% higher reimbursement via VBP. Track as leading indicator post-implementation.
@@ -697,26 +697,26 @@ function Page2() {
       
       <View style={styles.threeColumn}>
         <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>✓ WHAT WE MEASURE</Text>
+          <Text style={styles.limitsHeader}>[+] WHAT WE MEASURE</Text>
           <Text style={styles.limitsSubtext}>Direct attribution</Text>
-          <Text style={styles.limitsBullet}>• OT hours pre/post</Text>
-          <Text style={styles.limitsBullet}>• Doc time per shift</Text>
-          <Text style={styles.limitsBullet}>• Shift completion</Text>
-          <Text style={styles.limitsBullet}>• Chart completion</Text>
+          <Text style={styles.limitsBullet}>- OT hours pre/post</Text>
+          <Text style={styles.limitsBullet}>- Doc time per shift</Text>
+          <Text style={styles.limitsBullet}>- Shift completion</Text>
+          <Text style={styles.limitsBullet}>- Chart completion</Text>
         </View>
         <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>~ WHAT WE INFLUENCE</Text>
+          <Text style={styles.limitsHeader}>[~] WHAT WE INFLUENCE</Text>
           <Text style={styles.limitsSubtext}>Indirect attribution</Text>
-          <Text style={styles.limitsBullet}>• Turnover rates (one factor of many)</Text>
-          <Text style={styles.limitsBullet}>• Agency utilization (tied to retention)</Text>
-          <Text style={styles.limitsBullet}>• Nurse satisfaction (doc burden is one)</Text>
+          <Text style={styles.limitsBullet}>- Turnover rates (one factor of many)</Text>
+          <Text style={styles.limitsBullet}>- Agency utilization (tied to retention)</Text>
+          <Text style={styles.limitsBullet}>- Nurse satisfaction (doc burden is one)</Text>
         </View>
         <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>○ WHAT WE ENABLE</Text>
+          <Text style={styles.limitsHeader}>[ ] WHAT WE ENABLE</Text>
           <Text style={styles.limitsSubtext}>Supportive only</Text>
-          <Text style={styles.limitsBullet}>• Falls prevention (clinical practice)</Text>
-          <Text style={styles.limitsBullet}>• HAPI prevention (clinical practice)</Text>
-          <Text style={styles.limitsBullet}>• HCAHPS improvement (many factors)</Text>
+          <Text style={styles.limitsBullet}>- Falls prevention (clinical practice)</Text>
+          <Text style={styles.limitsBullet}>- HAPI prevention (clinical practice)</Text>
+          <Text style={styles.limitsBullet}>- HCAHPS improvement (many factors)</Text>
         </View>
       </View>
       
@@ -736,7 +736,7 @@ function Page3() {
       
       <Text style={styles.sectionHeader}>KEY ASSUMPTIONS</Text>
       <Text style={styles.bodyText}>
-        Every number has a source. We don't hide assumptions—we highlight them.
+        Every number has a source. We don't hide assumptions--we highlight them.
       </Text>
       
       {/* Time Savings Table */}
@@ -864,21 +864,21 @@ function Page3() {
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>TIME SAVINGS</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>• Survey nurses on doc time/shift</Text>
-          <Text style={styles.cardText}>• Review EHR session data</Text>
+          <Text style={styles.cardText}>- Survey nurses on doc time/shift</Text>
+          <Text style={styles.cardText}>- Review EHR session data</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>• Repeat measurements</Text>
-          <Text style={styles.cardText}>• Compare with utilization data</Text>
+          <Text style={styles.cardText}>- Repeat measurements</Text>
+          <Text style={styles.cardText}>- Compare with utilization data</Text>
           <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>• Baseline OT hours per unit/month</Text>
-          <Text style={styles.cardText}>• Note seasonal patterns</Text>
+          <Text style={styles.cardText}>- Baseline OT hours per unit/month</Text>
+          <Text style={styles.cardText}>- Note seasonal patterns</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>• Track OT on Abridge vs. control</Text>
-          <Text style={styles.cardText}>• Control for census/acuity changes</Text>
+          <Text style={styles.cardText}>- Track OT on Abridge vs. control</Text>
+          <Text style={styles.cardText}>- Control for census/acuity changes</Text>
           <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
@@ -887,22 +887,22 @@ function Page3() {
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>RETENTION</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>• Baseline turnover by unit</Text>
-          <Text style={styles.cardText}>• Exit interview data on burnout</Text>
+          <Text style={styles.cardText}>- Baseline turnover by unit</Text>
+          <Text style={styles.cardText}>- Exit interview data on burnout</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>• Track turnover Abridge vs control</Text>
-          <Text style={styles.cardText}>• Survey on burnout/doc satisfaction</Text>
+          <Text style={styles.cardText}>- Track turnover Abridge vs control</Text>
+          <Text style={styles.cardText}>- Survey on burnout/doc satisfaction</Text>
           <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>CARE QUALITY</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>• Baseline HAPI/falls rates by unit</Text>
-          <Text style={styles.cardText}>• Baseline HCAHPS scores</Text>
+          <Text style={styles.cardText}>- Baseline HAPI/falls rates by unit</Text>
+          <Text style={styles.cardText}>- Baseline HCAHPS scores</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>• Track rates Abridge vs control</Text>
-          <Text style={styles.cardText}>• Be cautious about attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontStyle: "italic" }]}>Recommendation: Treat quality improvements as bonus, not promise.</Text>
+          <Text style={styles.cardText}>- Track rates Abridge vs control</Text>
+          <Text style={styles.cardText}>- Be cautious about attribution</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>Recommendation: Treat quality improvements as bonus, not promise.</Text>
         </View>
       </View>
       
@@ -937,7 +937,7 @@ function Page4() {
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>MEDICAL NECESSITY SUPPORT</Text>
           <Text style={styles.cardText}>
-            Real-time nursing documentation provides contemporaneous evidence of patient acuity and care needs—critical for payer appeals.
+            Real-time nursing documentation provides contemporaneous evidence of patient acuity and care needs--critical for payer appeals.
           </Text>
           <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>CDI EFFICIENCY</Text>
@@ -1012,7 +1012,7 @@ function Page4() {
       </View>
       
       <Text style={styles.bodyText}>
-        We model all three—but we're honest about which is measurable, which is influenceable, and which is only enabled.
+        We model all three--but we're honest about which is measurable, which is influenceable, and which is only enabled.
       </Text>
       
       {/* Quote Box */}
