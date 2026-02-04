@@ -1,0 +1,782 @@
+INPATIENT: HOW WE THINK ABOUT VALUE
+Full Methodology Page
+
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back to Methodology                                                          │
+│                                                                                 │
+│                     INPATIENT: HOW WE THINK ABOUT VALUE                         │
+│                                                                                 │
+│           Understanding where value lives in DRG-based reimbursement            │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 1: THE CONTEXT
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE CONTEXT                                                                    │
+│  Why inpatient value is different                                               │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Inpatient medicine operates on a fundamentally different economic model        │
+│  than outpatient care.                                                          │
+│                                                                                 │
+│  In outpatient settings, physicians bill for each visit. More visits, more      │
+│  wRVUs, more revenue. The relationship between work and payment is direct.      │
+│                                                                                 │
+│  Inpatient reimbursement works differently. Hospitals are paid a fixed          │
+│  amount per admission based on the DRG—the Diagnosis Related Group. That        │
+│  payment is determined by:                                                      │
+│                                                                                 │
+│  • The principal diagnosis                                                      │
+│  • Complications and comorbidities (CCs and MCCs)                               │
+│  • Procedures performed                                                         │
+│  • Patient characteristics                                                      │
+│                                                                                 │
+│  Here's what matters: **The DRG is assigned based on what's documented.**       │
+│                                                                                 │
+│  If a condition was discussed at bedside but not documented, it doesn't         │
+│  exist for coding purposes. If clinical complexity isn't captured in the        │
+│  note, the DRG may be assigned lower than it should be.                         │
+│                                                                                 │
+│  This is where ambient documentation creates value.                             │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE TWO VALUE PATHS                                                            │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  1. DOCUMENTATION QUALITY → REVENUE ACCURACY                            │    │
+│  │                                                                         │    │
+│  │  When documentation fully captures clinical complexity, DRGs are        │    │
+│  │  assigned accurately. This isn't about "upcoding"—it's about ensuring   │    │
+│  │  the code reflects the actual care delivered.                           │    │
+│  │                                                                         │    │
+│  │  Incomplete documentation leads to:                                     │    │
+│  │  • DRG downcoding (lower payment than warranted)                        │    │
+│  │  • Claim denials (payer rejects for insufficient documentation)         │    │
+│  │  • CDI query burden (teams asking physicians to document what           │    │
+│  │    they already discussed)                                              │    │
+│  │                                                                         │    │
+│  │  Better documentation prevents all three.                               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  2. TIME SAVINGS → CLINICIAN WELLBEING                                  │    │
+│  │                                                                         │    │
+│  │  Hospitalists spend significant time on documentation—H&Ps, daily       │    │
+│  │  progress notes, discharge summaries. Reducing this burden can          │    │
+│  │  improve work-life balance and retention.                               │    │
+│  │                                                                         │    │
+│  │  Unlike outpatient, time savings don't translate to "more patients"     │    │
+│  │  in the same way. Hospitalists have a census, not a schedule. The       │    │
+│  │  value shows up primarily in wellbeing and operational efficiency.      │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  We focus primarily on documentation quality for inpatient value—that's         │
+│  where the clearest, most measurable ROI lives.                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 2: THE VALUE MECHANISMS
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE VALUE MECHANISMS                                                           │
+│  How documentation quality becomes dollars                                      │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  DOCUMENTATION → REVENUE ACCURACY                                               │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  DRG ACCURACY (CC/MCC CAPTURE)                                          │    │
+│  │                                                                         │    │
+│  │  The mechanism:                                                         │    │
+│  │  Every inpatient stay is assigned a DRG based on documented diagnoses.  │    │
+│  │  Complications and comorbidities (CCs) and major complications (MCCs)   │    │
+│  │  increase the DRG weight—and the payment.                               │    │
+│  │                                                                         │    │
+│  │  When a hospitalist discusses a patient's acute kidney injury,          │    │
+│  │  malnutrition, or respiratory failure at bedside but doesn't fully      │    │
+│  │  document it, that clinical complexity doesn't get coded. The DRG       │    │
+│  │  is assigned lower than it should be.                                   │    │
+│  │                                                                         │    │
+│  │  Ambient documentation captures these conversations as they happen,     │    │
+│  │  ensuring clinical complexity is documented—not because we're adding    │    │
+│  │  things that weren't there, but because we're capturing what was        │    │
+│  │  actually discussed.                                                    │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  The calculation:                                                       │    │
+│  │                                                                         │    │
+│  │  Step 1: Admissions at risk of downcoding                               │    │
+│  │  Admissions × At-Risk Rate = Admissions at risk                         │    │
+│  │                                                                         │    │
+│  │  Not every admission has documentation gaps. Research suggests          │    │
+│  │  20-30% of admissions have some level of under-documentation that       │    │
+│  │  affects DRG assignment.                                                │    │
+│  │                                                                         │    │
+│  │  Step 2: Abridge protection                                             │    │
+│  │  At-Risk Admissions × Protection Rate = Admissions protected            │    │
+│  │                                                                         │    │
+│  │  Not every at-risk admission will be "saved" by better documentation.   │    │
+│  │  We estimate Abridge captures 15-25% of these opportunities through     │    │
+│  │  more complete initial documentation.                                   │    │
+│  │                                                                         │    │
+│  │  Step 3: Revenue protected                                              │    │
+│  │  Admissions protected × DRG Weight Increase × Base DRG Payment          │    │
+│  │  = Gross value                                                          │    │
+│  │                                                                         │    │
+│  │  When a CC or MCC is captured, DRG weight increases. The average        │    │
+│  │  increase is 0.3-0.6 depending on the condition. We use 0.4 as          │    │
+│  │  a blended average.                                                     │    │
+│  │                                                                         │    │
+│  │  Step 4: Realization rate                                               │    │
+│  │  Gross value × Realization Rate = Net value                             │    │
+│  │                                                                         │    │
+│  │  Not every documented condition survives the coding and billing         │    │
+│  │  process. RAC audits, coder discretion, payer edits, and retrospective  │    │
+│  │  adjustments all take a cut. We apply a 50% realization rate—           │    │
+│  │  conservative, but realistic.                                           │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Example:                                                               │    │
+│  │  10,000 admissions × 25% at-risk = 2,500 at-risk admissions             │    │
+│  │  2,500 × 20% protection rate = 500 admissions protected                 │    │
+│  │  500 × 0.4 weight increase × $6,000 base payment = $1.2M gross          │    │
+│  │  $1.2M × 50% realization = $600K net value                              │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Why this is defensible:                                                │    │
+│  │  • Documentation gaps are well-established in literature                │    │
+│  │  • CC/MCC impact on DRG weight is mathematically certain                │    │
+│  │  • Organizations can validate with pre/post CMI comparison              │    │
+│  │  • We apply conservative rates at every step                            │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  DENIAL PREVENTION                                                      │    │
+│  │                                                                         │    │
+│  │  The mechanism:                                                         │    │
+│  │  Payers deny claims for insufficient documentation. Common reasons:     │    │
+│  │                                                                         │    │
+│  │  • Medical necessity not supported                                      │    │
+│  │  • Level of care not justified (IP vs. Observation)                     │    │
+│  │  • Clinical indicators not documented                                   │    │
+│  │  • Status criteria not met                                              │    │
+│  │                                                                         │    │
+│  │  These denials often stem from the same root cause as DRG downcoding:   │    │
+│  │  documentation gaps. The clinical reasoning was there—it just wasn't    │    │
+│  │  captured in the note.                                                  │    │
+│  │                                                                         │    │
+│  │  Complete documentation from admission through discharge provides       │    │
+│  │  contemporaneous evidence of patient acuity and care necessity—         │    │
+│  │  critical for both avoiding denials and winning appeals.                │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Why we combine this with DRG Accuracy:                                 │    │
+│  │                                                                         │    │
+│  │  DRG downcoding and documentation-related denials share the same        │    │
+│  │  root cause. The same complete documentation that improves DRG          │    │
+│  │  accuracy also prevents denials.                                        │    │
+│  │                                                                         │    │
+│  │  Rather than calculate them separately (and risk double-counting),      │    │
+│  │  we include denial prevention as part of the DRG Accuracy value         │    │
+│  │  through a combined "documentation-driven revenue leakage" framework.   │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │  DOCUMENTATION-DRIVEN REVENUE LEAKAGE                           │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  DRG downcoding:          2-4% of inpatient revenue             │    │    │
+│  │  │  Denial write-offs:       1-2% of inpatient revenue             │    │    │
+│  │  │  ──────────────────────────────────────────────────────────     │    │    │
+│  │  │  Combined opportunity:    3-6% of inpatient revenue             │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  We conservatively estimate Abridge captures 15-25% of this.    │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  CDI QUERY REDUCTION                                                    │    │
+│  │                                                                         │    │
+│  │  The mechanism:                                                         │    │
+│  │  Clinical Documentation Improvement (CDI) teams review charts and       │    │
+│  │  query physicians to clarify or add documentation that supports         │    │
+│  │  accurate coding.                                                       │    │
+│  │                                                                         │    │
+│  │  Many of these queries are asking physicians to document what they      │    │
+│  │  already discussed with the patient:                                    │    │
+│  │                                                                         │    │
+│  │  "Can you clarify the severity of the patient's malnutrition?"          │    │
+│  │  "Please document the clinical indicators for acute respiratory         │    │
+│  │   failure."                                                             │    │
+│  │  "Can you specify the type of encephalopathy?"                          │    │
+│  │                                                                         │    │
+│  │  When Abridge captures these clinical discussions in real-time,         │    │
+│  │  the query becomes unnecessary. The information is already there.       │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  The calculation:                                                       │    │
+│  │                                                                         │    │
+│  │  Admissions × Query Rate = Total queries                                │    │
+│  │  Total queries × Reduction Rate = Queries avoided                       │    │
+│  │  Queries avoided × Cost per Query = Operational savings                 │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Key assumptions:                                                       │    │
+│  │  • Query rate: 20-40% of admissions receive at least one query          │    │
+│  │  • Reduction rate: 20-30% of queries could be avoided with better       │    │
+│  │    initial documentation                                                │    │
+│  │  • Cost per query: $50-$100 (CDI time + physician time + follow-up)     │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Why this matters beyond the dollars:                                   │    │
+│  │                                                                         │    │
+│  │  Query reduction isn't just about saving $50 per query. It's about:     │    │
+│  │  • Faster DRG finalization                                              │    │
+│  │  • Shorter billing cycles                                               │    │
+│  │  • Less physician interruption                                          │    │
+│  │  • CDI teams focusing on complex cases, not routine clarifications      │    │
+│  │                                                                         │    │
+│  │  The operational value often exceeds the calculated savings.            │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  TIME SAVINGS → WELLBEING                                                       │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  CLINICIAN WELLBEING                                                    │    │
+│  │                                                                         │    │
+│  │  The mechanism:                                                         │    │
+│  │  Hospitalists document multiple notes per patient across a stay—        │    │
+│  │  H&P at admission, daily progress notes, discharge summary. This        │    │
+│  │  adds up.                                                               │    │
+│  │                                                                         │    │
+│  │  Reducing documentation time per admission gives hospitalists time      │    │
+│  │  back. In the inpatient setting, this doesn't translate to "more        │    │
+│  │  patients" the way it might in outpatient—hospitalists have a           │    │
+│  │  census, not open appointment slots.                                    │    │
+│  │                                                                         │    │
+│  │  Instead, time savings show up as:                                      │    │
+│  │  • Less after-hours documentation                                       │    │
+│  │  • More time for patient communication and care coordination            │    │
+│  │  • Reduced burnout and improved retention                               │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  The calculation:                                                       │    │
+│  │  Same retention model as other settings:                                │    │
+│  │                                                                         │    │
+│  │  Hospitalists × Turnover Rate × Burnout % × Abridge Impact %            │    │
+│  │  × Replacement Cost = Retention Value                                   │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Why we don't model capacity or LOS:                                    │    │
+│  │                                                                         │    │
+│  │  Some ROI models claim that faster documentation leads to shorter       │    │
+│  │  length of stay. We don't make this claim because:                      │    │
+│  │                                                                         │    │
+│  │  • LOS is driven by clinical factors, not documentation speed           │    │
+│  │  • Discharge timing depends on bed availability, care coordination,     │    │
+│  │    insurance authorization, and patient readiness                       │    │
+│  │  • The causal chain from "faster notes" to "shorter stays" is too       │    │
+│  │    indirect to model credibly                                           │    │
+│  │                                                                         │    │
+│  │  Could complete documentation support faster discharge planning?        │    │
+│  │  Perhaps. But we won't calculate dollars we can't defend.               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 3: THE ASSUMPTIONS
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE ASSUMPTIONS                                                                │
+│  What we assume and why                                                         │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Every model has assumptions. We make ours visible.                             │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  DRG ACCURACY ASSUMPTIONS                                               │    │
+│  │                                                                         │    │
+│  │  ASSUMPTION                     DEFAULT    RANGE       RATIONALE        │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  At-risk rate                   25%        20-30%      % of admissions  │    │
+│  │  (admissions with                                      with doc gaps    │    │
+│  │  documentation gaps)                                   affecting DRG    │    │
+│  │                                                                         │    │
+│  │  Protection rate                20%        15-25%      % of at-risk     │    │
+│  │  (Abridge capture rate)                                cases where      │    │
+│  │                                                        Abridge helps    │    │
+│  │                                                                         │    │
+│  │  DRG weight increase            0.4        0.3-0.6     Average weight   │    │
+│  │                                                        lift from        │    │
+│  │                                                        capturing CC/MCC │    │
+│  │                                                                         │    │
+│  │  Base DRG payment               $6,000     $5K-$8K     Blended average  │    │
+│  │                                                        across payer mix │    │
+│  │                                                                         │    │
+│  │  Realization rate               50%        40-60%      Accounts for     │    │
+│  │                                                        audits, coder    │    │
+│  │                                                        discretion,      │    │
+│  │                                                        payer edits      │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  CDI ASSUMPTIONS                                                        │    │
+│  │                                                                         │    │
+│  │  ASSUMPTION                     DEFAULT    RANGE       RATIONALE        │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Query rate                     30%        20-40%      % of admissions  │    │
+│  │                                                        receiving CDI    │    │
+│  │                                                        queries          │    │
+│  │                                                                         │    │
+│  │  Reduction rate                 25%        20-30%      % of queries     │    │
+│  │                                                        avoidable with   │    │
+│  │                                                        better initial   │    │
+│  │                                                        documentation    │    │
+│  │                                                                         │    │
+│  │  Cost per query                 $50        $50-$100    CDI time +       │    │
+│  │                                                        physician time + │    │
+│  │                                                        follow-up        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  TIME & RETENTION ASSUMPTIONS                                           │    │
+│  │                                                                         │    │
+│  │  ASSUMPTION                     DEFAULT    RANGE       RATIONALE        │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Time saved per admission       30 min     15-45 min   Total across     │    │
+│  │                                                        H&P, progress    │    │
+│  │                                                        notes, discharge │    │
+│  │                                                                         │    │
+│  │  Hospitalist turnover           8%         6-12%       Industry data    │    │
+│  │                                                        for hospitalist  │    │
+│  │                                                        medicine         │    │
+│  │                                                                         │    │
+│  │  Burnout-related turnover       45%        35-50%      Research on      │    │
+│  │                                                        hospitalist      │    │
+│  │                                                        burnout drivers  │    │
+│  │                                                                         │    │
+│  │  Abridge retention impact       15%        10-25%      Conservative     │    │
+│  │                                                        estimate of      │    │
+│  │                                                        doc burden       │    │
+│  │                                                        impact           │    │
+│  │                                                                         │    │
+│  │  Replacement cost               $400K      $300-500K   Hospitalist      │    │
+│  │                                                        recruitment,     │    │
+│  │                                                        onboarding,      │    │
+│  │                                                        lost revenue     │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  WHY THE REALIZATION RATE MATTERS                                              │
+│                                                                                 │
+│  The 50% realization rate on DRG accuracy is our most important                │
+│  conservative assumption. Here's why we use it:                                 │
+│                                                                                 │
+│  Even when documentation improves, not every improvement translates            │
+│  to revenue:                                                                   │
+│                                                                                 │
+│  • Coders may not capture every documented CC/MCC                              │
+│  • Some documented conditions don't change the DRG                             │
+│  • RAC audits may challenge some claims                                        │
+│  • Payer edits may reject some codes                                           │
+│  • Retrospective adjustments happen                                            │
+│                                                                                 │
+│  A 50% haircut accounts for all of this. It's aggressive, but it means         │
+│  the number that survives is defensible.                                       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 4: THE HONEST LIMITS
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE HONEST LIMITS                                                              │
+│  What we can measure vs. what we removed from the model                         │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  WHAT WE CAN MEASURE                                                    │    │
+│  │  Strong causal chain, direct attribution                                │    │
+│  │                                                                         │    │
+│  │  ✓ Documentation completeness                                           │    │
+│  │    (Before/after comparison of note content)                            │    │
+│  │                                                                         │    │
+│  │  ✓ Case Mix Index changes                                               │    │
+│  │    (CMI is directly calculated from DRG assignments)                    │    │
+│  │                                                                         │    │
+│  │  ✓ CDI query volume                                                     │    │
+│  │    (Queries are tracked; reduction is measurable)                       │    │
+│  │                                                                         │    │
+│  │  ✓ Time to chart completion                                             │    │
+│  │    (EHR metadata provides this)                                         │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  WHAT WE CAN INFLUENCE                                                  │    │
+│  │  Correlated, but indirect attribution                                   │    │
+│  │                                                                         │    │
+│  │  ~ Denial rates                                                         │    │
+│  │    (Documentation is one factor; payer behavior varies)                 │    │
+│  │                                                                         │    │
+│  │  ~ Hospitalist retention                                                │    │
+│  │    (Documentation burden is one burnout factor among many)              │    │
+│  │                                                                         │    │
+│  │  ~ DRG finalization speed                                               │    │
+│  │    (Depends on coding team, CDI workflow, and billing processes)        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  WHAT WE REMOVED FROM THE MODEL                                         │    │
+│  │  Claims we don't make because we can't defend them                      │    │
+│  │                                                                         │    │
+│  │  ✗ Length of Stay reduction                                             │    │
+│  │    We removed this driver entirely. The claim that "better              │    │
+│  │    documentation leads to shorter stays" sounds logical but             │    │
+│  │    isn't supportable:                                                   │    │
+│  │                                                                         │    │
+│  │    • LOS is driven by clinical readiness, not documentation speed       │    │
+│  │    • Discharge depends on bed availability, care coordination,          │    │
+│  │      insurance authorization, and patient/family factors                │    │
+│  │    • The causal chain has too many confounding variables                │    │
+│  │                                                                         │    │
+│  │    Could complete documentation support discharge planning?             │    │
+│  │    Possibly. But we won't model dollars we can't prove.                 │    │
+│  │                                                                         │    │
+│  │  ✗ Capacity expansion                                                   │    │
+│  │    Unlike outpatient, hospitalists can't "see more patients" with       │    │
+│  │    saved time. They have an assigned census. Time savings go to         │    │
+│  │    wellbeing and efficiency, not throughput.                            │    │
+│  │                                                                         │    │
+│  │  ✗ Readmission reduction                                                │    │
+│  │    Better documentation could theoretically support better handoffs     │    │
+│  │    and reduce readmissions. But the causal chain is too long and        │    │
+│  │    too many other factors matter. We don't calculate this.              │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  WHY WE REMOVE DRIVERS RATHER THAN INFLATE THEM                                │
+│                                                                                 │
+│  It's tempting to include every possible value path. More drivers =            │
+│  bigger ROI = easier sale.                                                     │
+│                                                                                 │
+│  But inflated projections create problems:                                     │
+│  • They don't survive CFO scrutiny                                             │
+│  • They set unrealistic expectations                                           │
+│  • They erode trust when actuals don't match                                   │
+│                                                                                 │
+│  We'd rather show a smaller number that's bulletproof than a larger            │
+│  number that falls apart.                                                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 5: THE VALIDATION PATH
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE VALIDATION PATH                                                            │
+│  How to prove this with your own data                                           │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Our projections are starting points. The real answers come from your           │
+│  organization's experience.                                                     │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  DRG ACCURACY                                                           │    │
+│  │                                                                         │    │
+│  │  Before:                                                                │    │
+│  │  • Establish baseline CMI by unit/service line                          │    │
+│  │  • Document CC/MCC capture rates                                        │    │
+│  │  • Note any seasonal or case-mix trends                                 │    │
+│  │                                                                         │    │
+│  │  After:                                                                 │    │
+│  │  • Track CMI on units using Abridge vs. control units                   │    │
+│  │  • Compare CC/MCC capture rates pre/post                                │    │
+│  │  • Control for changes in patient population or acuity                  │    │
+│  │                                                                         │    │
+│  │  Key metric: CMI lift on Abridge units vs. baseline/control             │    │
+│  │                                                                         │    │
+│  │  Timeline: Meaningful CMI data requires 3-6 months of volume            │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  CDI QUERY REDUCTION                                                    │    │
+│  │                                                                         │    │
+│  │  Before:                                                                │    │
+│  │  • Baseline query rate by unit (queries per admission)                  │    │
+│  │  • Categorize queries by reason (clarification, specificity, etc.)      │    │
+│  │  • Track query response time and resolution rate                        │    │
+│  │                                                                         │    │
+│  │  After:                                                                 │    │
+│  │  • Compare query rate on Abridge units vs. control                      │    │
+│  │  • Note which query types decrease most                                 │    │
+│  │  • Track impact on DRG finalization time                                │    │
+│  │                                                                         │    │
+│  │  Key metric: Query rate reduction on Abridge units                      │    │
+│  │                                                                         │    │
+│  │  Timeline: 2-3 months of data shows meaningful trends                   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  DENIAL RATES                                                           │    │
+│  │                                                                         │    │
+│  │  Before:                                                                │    │
+│  │  • Baseline denial rate by reason code                                  │    │
+│  │  • Focus on documentation-related denials:                              │    │
+│  │    - Medical necessity not supported                                    │    │
+│  │    - Level of care not justified                                        │    │
+│  │    - Clinical indicators missing                                        │    │
+│  │                                                                         │    │
+│  │  After:                                                                 │    │
+│  │  • Track denial rate by reason on Abridge units vs. control             │    │
+│  │  • Note appeal success rates (better documentation = stronger appeals)  │    │
+│  │                                                                         │    │
+│  │  Key metric: Documentation-related denial rate reduction                │    │
+│  │                                                                         │    │
+│  │  Timeline: 6-12 months (denials lag billing by 30-90 days)              │    │
+│  │                                                                         │    │
+│  │  Caution: Denial rates are influenced by payer behavior. Compare        │    │
+│  │  Abridge vs. control units, not just pre/post.                          │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  HOSPITALIST WELLBEING                                                  │    │
+│  │                                                                         │    │
+│  │  Before:                                                                │    │
+│  │  • Survey hospitalists on documentation burden (time, frustration)      │    │
+│  │  • Baseline turnover rate                                               │    │
+│  │  • Exit interview data on reasons for leaving                           │    │
+│  │                                                                         │    │
+│  │  After:                                                                 │    │
+│  │  • Repeat documentation burden survey                                   │    │
+│  │  • Track turnover on Abridge service lines vs. control                  │    │
+│  │  • Monitor satisfaction scores                                          │    │
+│  │                                                                         │    │
+│  │  Key metrics: Documentation time, satisfaction scores, turnover         │    │
+│  │                                                                         │    │
+│  │  Timeline: Retention impact takes 12-18 months to measure               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  WORKING WITH YOUR CDI TEAM                                                    │
+│                                                                                 │
+│  Your CDI team is your best partner for validating documentation value.        │
+│  They see the gaps. They know which queries repeat. They understand your       │
+│  case mix better than anyone.                                                  │
+│                                                                                 │
+│  Before implementation:                                                        │
+│  • Meet with CDI leadership to establish baseline metrics                      │
+│  • Identify which query types are most common                                  │    │
+│  • Understand your current CC/MCC capture performance                          │
+│                                                                                 │
+│  After implementation:                                                         │
+│  • Regular check-ins on query trends                                           │
+│  • Collaborative review of documentation quality                               │
+│  • Joint celebration when metrics improve                                      │
+│                                                                                 │
+│  CDI teams often become Abridge's strongest internal advocates—because         │
+│  they see the documentation improvement directly.                              │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+SECTION 6: THE ED CONNECTION
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE ED CONNECTION                                                              │
+│  How ED documentation compounds inpatient value                                 │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  If your organization also uses Abridge in the Emergency Department,           │
+│  there's a compounding effect on inpatient value.                              │
+│                                                                                 │
+│  Here's why:                                                                    │
+│                                                                                 │
+│  When an ED physician decides to admit a patient, their documentation          │
+│  becomes the foundation for the inpatient stay. The admission note             │
+│  establishes:                                                                   │
+│                                                                                 │
+│  • The conditions present at admission                                         │
+│  • The clinical reasoning for admission                                        │
+│  • The medical necessity justification                                         │
+│  • The baseline complexity that will grow during the stay                      │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  WHAT ED DOCUMENTATION AFFECTS IN INPATIENT                             │    │
+│  │                                                                         │    │
+│  │  ┃ DRG & CMI Capture                                                    │    │
+│  │  ┃ CCs and MCCs documented in ED carry forward to inpatient coding.     │    │
+│  │  ┃ If the ED note captures "acute respiratory failure" or "severe       │    │
+│  │  ┃ sepsis," that complexity is established from day one.                │    │
+│  │                                                                         │    │
+│  │  ┃ Medical Necessity                                                    │    │
+│  │  ┃ The admission decision is documented in ED. This is your first       │    │
+│  │  ┃ line of defense against "not medically necessary" denials.           │    │
+│  │                                                                         │    │
+│  │  ┃ Status Determination                                                 │    │
+│  │  ┃ IP vs. Observation status is often established in ED. Complete       │    │
+│  │  ┃ documentation supports the correct status assignment.                │    │
+│  │                                                                         │    │
+│  │  ┃ CDI Efficiency                                                       │    │
+│  │  ┃ When the ED note is complete, CDI teams have better source           │    │
+│  │  ┃ material for the entire stay.                                        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE COMPOUNDING EFFECT                                                        │
+│                                                                                 │
+│  Organizations using Abridge in both ED and Inpatient see:                     │
+│                                                                                 │
+│  • More complete admission documentation (complexity captured early)           │
+│  • Fewer queries on ED-originated information                                  │
+│  • Stronger medical necessity support for the entire stay                      │
+│  • Better continuity between ED and hospitalist documentation                  │
+│                                                                                 │
+│  We don't double-count this value—the ED model captures ED value, the          │
+│  Inpatient model captures Inpatient value. But the combined effect             │
+│  is greater than the sum of parts.                                             │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE NURSING CONNECTION                                                        │
+│                                                                                 │
+│  Similarly, nursing documentation supports inpatient coding:                   │
+│                                                                                 │
+│  • Nursing assessments capture clinical indicators                             │
+│  • Flowsheets document severity and progression                                │
+│  • Care documentation supports medical necessity                               │
+│                                                                                 │
+│  When nurses document "patient appears malnourished" or "skin                  │
+│  breakdown observed," that information supports accurate DRG assignment.       │
+│                                                                                 │
+│  Complete documentation across all roles creates a comprehensive               │
+│  clinical picture that supports accurate coding and stronger appeals.          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+CLOSING
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  SUMMARY                                                                        │
+│                                                                                 │
+│  Inpatient value is fundamentally about documentation accuracy.                │
+│                                                                                 │
+│  In a DRG-based payment model, you get paid for what you document—not          │
+│  for what you discussed, not for what you did, but for what's captured         │
+│  in the clinical record.                                                       │
+│                                                                                 │
+│  Ambient documentation ensures clinical complexity is captured as it's         │
+│  discussed—not because we're adding things that weren't there, but             │
+│  because we're capturing what actually happened at bedside.                    │
+│                                                                                 │
+│  The primary value drivers:                                                    │
+│                                                                                 │
+│  • DRG ACCURACY: Capturing CCs and MCCs that would otherwise be missed         │
+│  • CDI EFFICIENCY: Reducing queries by documenting completely upfront          │
+│  • DENIAL PREVENTION: Stronger documentation for medical necessity             │
+│  • CLINICIAN WELLBEING: Less documentation burden for hospitalists             │
+│                                                                                 │
+│  What we don't claim:                                                          │
+│                                                                                 │
+│  • LOS reduction (causal chain too weak)                                       │
+│  • Capacity expansion (hospitalists have census, not appointments)             │
+│  • Readmission reduction (too many confounding factors)                        │
+│                                                                                 │
+│  That discipline—claiming what's defensible and nothing more—is the            │
+│  methodology.                                                                  │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [ Build an Inpatient Model → ]        [ Back to Methodology ]          │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+DESIGN NOTES
+Visual hierarchy:
+
+Section headers are bold, black, with subtle divider below
+Subsection headers (like "DRG ACCURACY") are slightly smaller, also bold
+Body text is readable 16px
+Boxed content (assumptions tables, callouts) use warm beige background
+Key insights get red-orange left border accent
+
+Interactive elements:
+
+Assumptions tables could expand to show sources on click
+"Build an Inpatient Model" CTA is prominent at bottom
+Navigation between methodology pages is easy
+
+Tone consistency:
+
+Educational, not defensive
+"Here's how we think about it" not "Here's why we're right"
+Acknowledges complexity without hiding behind it
+Respects the reader's intelligence

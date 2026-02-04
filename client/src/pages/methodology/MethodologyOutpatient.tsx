@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Activity, Building2, Heart } from "lucide-react";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateMethodologyPDF, outpatientMethodologyData } from "@/lib/methodology-pdf-generator";
 
 interface MethodologyOutpatientProps {
   onBack: () => void;
+  onNavigateToSetting?: (setting: string) => void;
 }
 
 interface SectionProps {
@@ -58,12 +61,23 @@ function MechanismCard({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export function MethodologyOutpatient({ onBack }: MethodologyOutpatientProps) {
+export function MethodologyOutpatient({ onBack, onNavigateToSetting }: MethodologyOutpatientProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateMethodologyPDF(outpatientMethodologyData);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[800px] mx-auto px-6 py-4">
+        <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors"
@@ -71,6 +85,15 @@ export function MethodologyOutpatient({ onBack }: MethodologyOutpatientProps) {
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back to Methodology</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50"
+            data-testid="button-export-pdf"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
           </button>
         </div>
       </header>
@@ -328,41 +351,90 @@ export function MethodologyOutpatient({ onBack }: MethodologyOutpatientProps) {
                       </tr>
                     </thead>
                     <tbody className="text-[#666666]">
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Time saved per encounter</td>
-                        <td className="py-3">2-6 minutes</td>
-                        <td className="py-3">4 minutes</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">wRVU baseline per visit</td>
-                        <td className="py-3">1.5-2.5</td>
-                        <td className="py-3">1.8</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">wRVU lift %</td>
-                        <td className="py-3">2-7%</td>
-                        <td className="py-3">4%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">wRVU conversion factor</td>
-                        <td className="py-3">$35-$50</td>
-                        <td className="py-3">$42</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">HCC gap rate</td>
-                        <td className="py-3">25-35%</td>
-                        <td className="py-3">33%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Denial rate</td>
-                        <td className="py-3">5-12%</td>
-                        <td className="py-3">8%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Physician replacement cost</td>
-                        <td className="py-3">$500k-$1M</td>
-                        <td className="py-3">$750,000</td>
-                      </tr>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Time saved per encounter</td>
+                            <td className="py-3">2-6 minutes</td>
+                            <td className="py-3">4 minutes</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Based on time-motion studies across outpatient implementations. Primary care typically 4-6 min, specialists 2-4 min.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">wRVU baseline per visit</td>
+                            <td className="py-3">1.5-2.5</td>
+                            <td className="py-3">1.8</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">MGMA median wRVU per visit. Varies significantly by specialty and payer mix.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">wRVU lift %</td>
+                            <td className="py-3">2-7%</td>
+                            <td className="py-3">4%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Better documentation captures visit complexity more accurately. Studies show 2-7% improvement in E&M level accuracy.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">wRVU conversion factor</td>
+                            <td className="py-3">$35-$50</td>
+                            <td className="py-3">$42</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">CMS Medicare conversion factor ~$35. Commercial payers often 20-40% higher. Blended rate depends on payer mix.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">HCC gap rate</td>
+                            <td className="py-3">25-35%</td>
+                            <td className="py-3">33%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Percentage of chronic conditions not captured in documentation. Industry research shows 25-40% gap rate in typical practices.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Denial rate</td>
+                            <td className="py-3">5-12%</td>
+                            <td className="py-3">8%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">MGMA data shows average denial rates 5-12%. Documentation-related denials are a subset but often preventable.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Physician replacement cost</td>
+                            <td className="py-3">$500k-$1M</td>
+                            <td className="py-3">$750,000</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">AMGA/MGMA studies show total replacement cost including recruiting, onboarding, and lost productivity. Varies by specialty.</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </tbody>
                   </table>
                 </div>
@@ -452,6 +524,78 @@ export function MethodologyOutpatient({ onBack }: MethodologyOutpatientProps) {
                 </div>
               </div>
             </CollapsibleSection>
+          </div>
+        </div>
+
+        {/* Build a Model CTA */}
+        <motion.div 
+          className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+          <p className="text-[#999999] mb-6 text-sm">
+            Use these methodology principles to create a customized ROI model for your outpatient practice.
+          </p>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            data-testid="button-build-model"
+          >
+            Build an Outpatient Model
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </motion.div>
+
+        {/* Related Care Settings */}
+        <div className="mt-12 mb-8">
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+            Related Methodologies
+          </p>
+          <p className="text-sm text-[#666666] mb-6">
+            Outpatient documentation connects to other care settings. Explore how value flows in related contexts.
+          </p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <button
+              onClick={() => onNavigateToSetting?.("ed")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-ed"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Activity className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Emergency</p>
+                <p className="text-xs text-[#888888]">Throughput & LWBS</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("inpatient")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-inpatient"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Inpatient</p>
+                <p className="text-xs text-[#888888]">DRG & documentation quality</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("nursing")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-nursing"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Heart className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Nursing</p>
+                <p className="text-xs text-[#888888]">OT reduction & retention</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>

@@ -26,16 +26,20 @@ export default function LearnPath({ onBack }: LearnPathProps) {
     setCurrentScreen("home");
   };
 
+  const handleNavigateToSetting = (setting: string) => {
+    setCurrentScreen(setting as LearnScreen);
+  };
+
   // Render the appropriate methodology page based on current screen
   switch (currentScreen) {
     case "outpatient":
-      return <MethodologyOutpatient onBack={handleBackToHome} />;
+      return <MethodologyOutpatient onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
     case "ed":
-      return <MethodologyED onBack={handleBackToHome} />;
+      return <MethodologyED onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
     case "inpatient":
-      return <MethodologyInpatient onBack={handleBackToHome} />;
+      return <MethodologyInpatient onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
     case "nursing":
-      return <MethodologyNursing onBack={handleBackToHome} />;
+      return <MethodologyNursing onBack={handleBackToHome} onNavigateToSetting={handleNavigateToSetting} />;
     case "home":
     default:
       return (

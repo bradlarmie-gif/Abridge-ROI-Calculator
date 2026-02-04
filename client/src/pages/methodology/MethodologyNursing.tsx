@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Activity, Building2 } from "lucide-react";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateMethodologyPDF, nursingMethodologyData } from "@/lib/methodology-pdf-generator";
 
 interface MethodologyNursingProps {
   onBack: () => void;
+  onNavigateToSetting?: (setting: string) => void;
 }
 
 interface SectionProps {
@@ -58,12 +61,23 @@ function MechanismCard({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export function MethodologyNursing({ onBack }: MethodologyNursingProps) {
+export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyNursingProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateMethodologyPDF(nursingMethodologyData);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[800px] mx-auto px-6 py-4">
+        <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors"
@@ -71,6 +85,15 @@ export function MethodologyNursing({ onBack }: MethodologyNursingProps) {
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back to Methodology</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50"
+            data-testid="button-export-pdf"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
           </button>
         </div>
       </header>
@@ -356,48 +379,97 @@ export function MethodologyNursing({ onBack }: MethodologyNursingProps) {
                       </tr>
                     </thead>
                     <tbody className="text-[#666666]">
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Time saved per shift</td>
-                        <td className="py-3">15-30 minutes</td>
-                        <td className="py-3">20 minutes</td>
-                        <td className="py-3">Abridge customer data</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">OT conversion rate</td>
-                        <td className="py-3">15-40%</td>
-                        <td className="py-3">25%</td>
-                        <td className="py-3">Implementation studies</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Nurse turnover rate</td>
-                        <td className="py-3">15-25%</td>
-                        <td className="py-3">18%</td>
-                        <td className="py-3">NSI Nursing Solutions</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Burnout-related %</td>
-                        <td className="py-3">30-50%</td>
-                        <td className="py-3">40%</td>
-                        <td className="py-3">ANA surveys</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Abridge retention impact</td>
-                        <td className="py-3">10-25%</td>
-                        <td className="py-3">15%</td>
-                        <td className="py-3">Conservative estimate</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Replacement cost</td>
-                        <td className="py-3">$40k-$65k</td>
-                        <td className="py-3">$52,000</td>
-                        <td className="py-3">NSI benchmark</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Documentation-preventable HAE</td>
-                        <td className="py-3">3-10%</td>
-                        <td className="py-3">5%</td>
-                        <td className="py-3">Conservative estimate</td>
-                      </tr>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Time saved per shift</td>
+                            <td className="py-3">15-30 minutes</td>
+                            <td className="py-3">20 minutes</td>
+                            <td className="py-3">Abridge customer data</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Based on time-motion studies across 12+ nursing implementations. Varies by unit type and existing documentation workflows.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">OT conversion rate</td>
+                            <td className="py-3">15-40%</td>
+                            <td className="py-3">25%</td>
+                            <td className="py-3">Implementation studies</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Not all saved time converts to OT reduction. Accounts for nurses already leaving on time, shift overlap, and other documentation tasks.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Nurse turnover rate</td>
+                            <td className="py-3">15-25%</td>
+                            <td className="py-3">18%</td>
+                            <td className="py-3">NSI Nursing Solutions</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">NSI 2023 National Healthcare Retention & RN Staffing Report. National average ~22.5%, we use conservative 18%.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Burnout-related %</td>
+                            <td className="py-3">30-50%</td>
+                            <td className="py-3">40%</td>
+                            <td className="py-3">ANA surveys</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">American Nurses Association workplace surveys indicate burnout contributes to 30-50% of voluntary turnover. Documentation burden is a key burnout driver.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Abridge retention impact</td>
+                            <td className="py-3">10-25%</td>
+                            <td className="py-3">15%</td>
+                            <td className="py-3">Conservative estimate</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Conservative estimate of retention improvement from reduced documentation burden. Actual impact depends on baseline burden and organizational factors.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Replacement cost</td>
+                            <td className="py-3">$40k-$65k</td>
+                            <td className="py-3">$52,000</td>
+                            <td className="py-3">NSI benchmark</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">NSI 2023 Report: Average cost of turnover for bedside RN is $46,100-$51,700. Includes recruiting, training, and productivity loss.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Documentation-preventable HAE</td>
+                            <td className="py-3">3-10%</td>
+                            <td className="py-3">5%</td>
+                            <td className="py-3">Conservative estimate</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Percentage of hospital-acquired events where better real-time documentation could have enabled earlier intervention. Intentionally conservative.</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </tbody>
                   </table>
                 </div>
@@ -522,6 +594,78 @@ export function MethodologyNursing({ onBack }: MethodologyNursingProps) {
                 </div>
               </div>
             </CollapsibleSection>
+          </div>
+        </div>
+
+        {/* Build a Model CTA */}
+        <motion.div 
+          className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+          <p className="text-[#999999] mb-6 text-sm">
+            Use these methodology principles to create a customized ROI model for your nursing program.
+          </p>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            data-testid="button-build-model"
+          >
+            Build a Nursing Model
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </motion.div>
+
+        {/* Related Care Settings */}
+        <div className="mt-12 mb-8">
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+            Related Methodologies
+          </p>
+          <p className="text-sm text-[#666666] mb-6">
+            Nursing documentation often connects to broader care settings. Explore how value flows in related contexts.
+          </p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <button
+              onClick={() => onNavigateToSetting?.("inpatient")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-inpatient"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Inpatient</p>
+                <p className="text-xs text-[#888888]">DRG & documentation quality</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("ed")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-ed"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Activity className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Emergency</p>
+                <p className="text-xs text-[#888888]">Throughput & LWBS</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("outpatient")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-outpatient"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Stethoscope className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Outpatient</p>
+                <p className="text-xs text-[#888888]">wRVU & patient access</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>

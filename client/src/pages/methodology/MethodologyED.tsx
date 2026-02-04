@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Building2, Heart } from "lucide-react";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateMethodologyPDF, edMethodologyData } from "@/lib/methodology-pdf-generator";
 
 interface MethodologyEDProps {
   onBack: () => void;
+  onNavigateToSetting?: (setting: string) => void;
 }
 
 interface SectionProps {
@@ -58,12 +61,23 @@ function MechanismCard({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export function MethodologyED({ onBack }: MethodologyEDProps) {
+export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateMethodologyPDF(edMethodologyData);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[800px] mx-auto px-6 py-4">
+        <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors"
@@ -71,6 +85,15 @@ export function MethodologyED({ onBack }: MethodologyEDProps) {
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back to Methodology</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50"
+            data-testid="button-export-pdf"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
           </button>
         </div>
       </header>
@@ -309,41 +332,90 @@ export function MethodologyED({ onBack }: MethodologyEDProps) {
                       </tr>
                     </thead>
                     <tbody className="text-[#666666]">
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Time saved per encounter</td>
-                        <td className="py-3">1-3 minutes</td>
-                        <td className="py-3">2 minutes</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">ED wRVU baseline</td>
-                        <td className="py-3">2.0-3.0</td>
-                        <td className="py-3">2.5</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">wRVU lift %</td>
-                        <td className="py-3">2-4%</td>
-                        <td className="py-3">3%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">LWBS rate</td>
-                        <td className="py-3">2-4%</td>
-                        <td className="py-3">3%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">LWBS recovery rate</td>
-                        <td className="py-3">5-15%</td>
-                        <td className="py-3">10%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Avg ED visit revenue</td>
-                        <td className="py-3">$300-$500</td>
-                        <td className="py-3">$400</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">ED admission rate</td>
-                        <td className="py-3">15-25%</td>
-                        <td className="py-3">20%</td>
-                      </tr>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Time saved per encounter</td>
+                            <td className="py-3">1-3 minutes</td>
+                            <td className="py-3">2 minutes</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">ED documentation is faster-paced with more templated workflows. Time savings are smaller per encounter but high volume amplifies impact.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">ED wRVU baseline</td>
+                            <td className="py-3">2.0-3.0</td>
+                            <td className="py-3">2.5</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">ACEP benchmarks for ED encounters. Higher than outpatient due to acuity and complexity of ED visits.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">wRVU lift %</td>
+                            <td className="py-3">2-4%</td>
+                            <td className="py-3">3%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">ED coding often under-captures complexity. Better documentation supports higher E&M levels when clinically appropriate.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">LWBS rate</td>
+                            <td className="py-3">2-4%</td>
+                            <td className="py-3">3%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Left Without Being Seen rate. National benchmark is ~2-3%. High-volume urban EDs may see 4-5%+.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">LWBS recovery rate</td>
+                            <td className="py-3">5-15%</td>
+                            <td className="py-3">10%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Percentage of LWBS patients recovered through reduced wait times. Conservative estimate—actual recovery depends on throughput improvement.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Avg ED visit revenue</td>
+                            <td className="py-3">$300-$500</td>
+                            <td className="py-3">$400</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Blended average across facility and professional fees. Varies significantly by payer mix and acuity.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">ED admission rate</td>
+                            <td className="py-3">15-25%</td>
+                            <td className="py-3">20%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Percentage of ED visits resulting in inpatient admission. Higher rates correlate with higher acuity patient population.</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </tbody>
                   </table>
                 </div>
@@ -433,6 +505,78 @@ export function MethodologyED({ onBack }: MethodologyEDProps) {
                 </div>
               </div>
             </CollapsibleSection>
+          </div>
+        </div>
+
+        {/* Build a Model CTA */}
+        <motion.div 
+          className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+          <p className="text-[#999999] mb-6 text-sm">
+            Use these methodology principles to create a customized ROI model for your emergency department.
+          </p>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            data-testid="button-build-model"
+          >
+            Build an ED Model
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </motion.div>
+
+        {/* Related Care Settings */}
+        <div className="mt-12 mb-8">
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+            Related Methodologies
+          </p>
+          <p className="text-sm text-[#666666] mb-6">
+            ED patients often flow to inpatient. Explore how value chains connect across settings.
+          </p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <button
+              onClick={() => onNavigateToSetting?.("inpatient")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-inpatient"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Inpatient</p>
+                <p className="text-xs text-[#888888]">ED admissions flow here</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("outpatient")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-outpatient"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Stethoscope className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Outpatient</p>
+                <p className="text-xs text-[#888888]">wRVU & patient access</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("nursing")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-nursing"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Heart className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Nursing</p>
+                <p className="text-xs text-[#888888]">ED nursing documentation</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>

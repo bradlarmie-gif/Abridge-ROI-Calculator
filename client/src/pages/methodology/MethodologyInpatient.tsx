@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Activity, Heart } from "lucide-react";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateMethodologyPDF, inpatientMethodologyData } from "@/lib/methodology-pdf-generator";
 
 interface MethodologyInpatientProps {
   onBack: () => void;
+  onNavigateToSetting?: (setting: string) => void;
 }
 
 interface SectionProps {
@@ -58,12 +61,23 @@ function MechanismCard({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export function MethodologyInpatient({ onBack }: MethodologyInpatientProps) {
+export function MethodologyInpatient({ onBack, onNavigateToSetting }: MethodologyInpatientProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateMethodologyPDF(inpatientMethodologyData);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[800px] mx-auto px-6 py-4">
+        <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors"
@@ -71,6 +85,15 @@ export function MethodologyInpatient({ onBack }: MethodologyInpatientProps) {
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back to Methodology</span>
+          </button>
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50"
+            data-testid="button-export-pdf"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
           </button>
         </div>
       </header>
@@ -309,46 +332,102 @@ export function MethodologyInpatient({ onBack }: MethodologyInpatientProps) {
                       </tr>
                     </thead>
                     <tbody className="text-[#666666]">
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Time saved per admission</td>
-                        <td className="py-3">15-45 minutes</td>
-                        <td className="py-3">30 minutes</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Admissions with documentation opportunity</td>
-                        <td className="py-3">20-30%</td>
-                        <td className="py-3">25%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">DRG protection rate (Typical)</td>
-                        <td className="py-3">15-25%</td>
-                        <td className="py-3">20%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">DRG weight improvement</td>
-                        <td className="py-3">0.3-0.5</td>
-                        <td className="py-3">0.4</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Base DRG payment</td>
-                        <td className="py-3">$5,500-$7,500</td>
-                        <td className="py-3">$6,000</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">CDI query rate</td>
-                        <td className="py-3">25-35%</td>
-                        <td className="py-3">30%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Query reduction %</td>
-                        <td className="py-3">15-35%</td>
-                        <td className="py-3">25%</td>
-                      </tr>
-                      <tr className="border-b border-[#E5E5E5]">
-                        <td className="py-3">Cost per query</td>
-                        <td className="py-3">$40-$60</td>
-                        <td className="py-3">$50</td>
-                      </tr>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Time saved per admission</td>
+                            <td className="py-3">15-45 minutes</td>
+                            <td className="py-3">30 minutes</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Total documentation time saved across H&P, progress notes, and discharge summary. Higher for complex admissions.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Admissions with documentation opportunity</td>
+                            <td className="py-3">20-30%</td>
+                            <td className="py-3">25%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Percentage of admissions where better documentation could protect or improve DRG assignment. Based on CDI opportunity assessments.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">DRG protection rate (Typical)</td>
+                            <td className="py-3">15-25%</td>
+                            <td className="py-3">20%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Percentage of at-risk admissions where documentation successfully protects appropriate DRG assignment.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">DRG weight improvement</td>
+                            <td className="py-3">0.3-0.5</td>
+                            <td className="py-3">0.4</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Average DRG weight increase when documentation captures CC/MCC appropriately. Based on CMS DRG weight differentials.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Base DRG payment</td>
+                            <td className="py-3">$5,500-$7,500</td>
+                            <td className="py-3">$6,000</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">CMS base rate varies by hospital. Actual payment = base rate × DRG weight × wage index adjustments.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">CDI query rate</td>
+                            <td className="py-3">25-35%</td>
+                            <td className="py-3">30%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">ACDIS benchmark for percentage of admissions requiring CDI queries. Real-time documentation reduces need for retrospective queries.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Query reduction %</td>
+                            <td className="py-3">15-35%</td>
+                            <td className="py-3">25%</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">Expected reduction in CDI queries when documentation is more complete at point of care.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
+                            <td className="py-3">Cost per query</td>
+                            <td className="py-3">$40-$60</td>
+                            <td className="py-3">$50</td>
+                          </tr>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          <p className="text-xs">CDI specialist time cost per query including creation, tracking, and follow-up. Based on ACDIS productivity benchmarks.</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </tbody>
                   </table>
                 </div>
@@ -440,6 +519,78 @@ export function MethodologyInpatient({ onBack }: MethodologyInpatientProps) {
                 </div>
               </div>
             </CollapsibleSection>
+          </div>
+        </div>
+
+        {/* Build a Model CTA */}
+        <motion.div 
+          className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-lg p-8 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <h3 className="text-xl font-bold text-white mb-2">Ready to Build Your Model?</h3>
+          <p className="text-[#999999] mb-6 text-sm">
+            Use these methodology principles to create a customized ROI model for your hospitalist program.
+          </p>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            data-testid="button-build-model"
+          >
+            Build an Inpatient Model
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </motion.div>
+
+        {/* Related Care Settings */}
+        <div className="mt-12 mb-8">
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
+            Related Methodologies
+          </p>
+          <p className="text-sm text-[#666666] mb-6">
+            Inpatient connects to ED admissions and nursing care. Explore how value chains connect.
+          </p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <button
+              onClick={() => onNavigateToSetting?.("ed")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-ed"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Activity className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Emergency</p>
+                <p className="text-xs text-[#888888]">Admissions originate here</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("nursing")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-nursing"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Heart className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Nursing</p>
+                <p className="text-xs text-[#888888]">Inpatient nursing documentation</p>
+              </div>
+            </button>
+            <button
+              onClick={() => onNavigateToSetting?.("outpatient")}
+              className="flex items-center gap-3 p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#EA2C00]/30 hover:bg-[#FFF8F0] transition-colors text-left"
+              data-testid="link-setting-outpatient"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center">
+                <Stethoscope className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <p className="font-medium text-black text-sm">Outpatient</p>
+                <p className="text-xs text-[#888888]">Post-discharge follow-up</p>
+              </div>
+            </button>
           </div>
         </div>
       </div>
