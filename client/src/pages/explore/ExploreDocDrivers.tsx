@@ -286,7 +286,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   // HCC panel-based defaults
   panelSizePerProvider: 1500,
   maPatientPct: 30,
-  hccGapRate: 40,
+  hccGapRate: 33,
   avgMissedHccsPerPatient: 1.5,
   rafImpactPerHcc: 0.4,
   annualPaymentPerRaf: 12000,
