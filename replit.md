@@ -107,3 +107,17 @@ Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, 
   - **CDI Query Reduction**: 30% query rate, 15%/25%/35% reduction by scenario, $50 cost per query
 - **Calculation Flow**: Admissions at risk × Protection rate × DRG weight increase × Base payment × Realization = Net DRG value
 - **Scenario Labels**: "Aggressive" renamed to "Optimistic" throughout
+
+### Nursing Care Quality Section
+- **Value vs Potential Distinction**: Nursing care quality drivers are shown as "potential value" rather than "hard value" to acknowledge that clinical practice matters more than documentation alone
+- **Visual Treatment for Potential Value**:
+  - Dashed borders (`border-2 border-dashed border-[#EA2C00]/30`) instead of solid
+  - "POTENTIAL" badges in red (`bg-[#EA2C00]/10 text-[#EA2C00]`)
+  - Outlined cards instead of filled
+  - Right panel shows separate "Time Savings Value" (hard) vs "Care Quality Potential" sections
+- **Care Quality Drivers**:
+  - **HAPI Prevention**: 2.5 per 1,000 patient days (default), 5% prevention rate, $40,000 per HAPI. Step-by-step calculation with patient days × HAPI rate × prevention rate × cost
+  - **Falls Prevention**: 3.5 per 1,000 patient days (default), 5% prevention rate, $6,500 per fall. Similar step-by-step calculation
+  - **Patient Experience (HCAHPS)**: Qualitative-only driver with "QUALITATIVE" badge. Shows hours back at bedside but no dollar calculation
+- **Intro Box**: Explains that documentation enables visibility for prevention but doesn't directly cause outcomes
+- **Right Panel**: Shows "Time Savings Value" prominently, with "Care Quality Potential" in a separate dashed-border section below

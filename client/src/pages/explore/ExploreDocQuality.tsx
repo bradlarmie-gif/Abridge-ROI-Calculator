@@ -90,6 +90,31 @@ export default function ExploreDocQuality({
   const isNursing = state.careSetting === 'nursing';
   const showHCC = !isED && !isInpatient && !isNursing; // Only show HCC for Outpatient
 
+  // Nursing: Patient Days calculation
+  const nursingPatientDays = useMemo(() => {
+    return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+  }, [state.nursingStaffedBeds, state.nursingOccupancyRate]);
+
+  // Nursing: HAPI Prevention calculation (potential value)
+  const nursingHapiValue = useMemo(() => {
+    const hapisPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingHapiRate;
+    const hapisPrevented = hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
+    return Math.round(hapisPrevented * docQualityInputs.nursingHapiCost);
+  }, [nursingPatientDays, docQualityInputs.nursingHapiRate, docQualityInputs.nursingHapiPreventionRate, docQualityInputs.nursingHapiCost]);
+
+  // Nursing: Falls Prevention calculation (potential value)
+  const nursingFallsValue = useMemo(() => {
+    const fallsPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingFallsRate;
+    const fallsPrevented = fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
+    return Math.round(fallsPrevented * docQualityInputs.nursingFallsCost);
+  }, [nursingPatientDays, docQualityInputs.nursingFallsRate, docQualityInputs.nursingFallsPreventionRate, docQualityInputs.nursingFallsCost]);
+
+  // Nursing: Total Care Quality Potential (separate from hard value)
+  const nursingCareQualityPotential = useMemo(() => {
+    return (docQualityInputs.nursingHapiEnabled ? nursingHapiValue : 0) + 
+           (docQualityInputs.nursingFallsEnabled ? nursingFallsValue : 0);
+  }, [docQualityInputs.nursingHapiEnabled, docQualityInputs.nursingFallsEnabled, nursingHapiValue, nursingFallsValue]);
+
   // Calculate total based on care setting
   const totalDocValue = useMemo(() => {
     if (isInpatient) {
@@ -97,11 +122,15 @@ export default function ExploreDocQuality({
       return (docQualityInputs.ipDrgEnabled ? ipDrgNetValue : 0) + 
              (docQualityInputs.ipCdiEnabled ? ipCdiSavingsValue : 0);
     }
+    if (isNursing) {
+      // Nursing: Return 0 for doc quality (all care quality is "potential" and shown separately)
+      return 0;
+    }
     // Other settings: wRVU + HCC (if applicable) + Denials
     return (docQualityInputs.wrvuEnabled ? wrvuRevenueNet : 0) + 
            (showHCC && docQualityInputs.hccEnabled ? hccRevenueNet : 0) + 
            (docQualityInputs.denialsEnabled ? denialsRevenueNet : 0);
-  }, [isInpatient, docQualityInputs, ipDrgNetValue, ipCdiSavingsValue, wrvuRevenueNet, hccRevenueNet, denialsRevenueNet, showHCC]);
+  }, [isInpatient, isNursing, docQualityInputs, ipDrgNetValue, ipCdiSavingsValue, wrvuRevenueNet, hccRevenueNet, denialsRevenueNet, showHCC]);
 
   const docConfig = {
     outpatient: {
@@ -177,6 +206,401 @@ export default function ExploreDocQuality({
             {config.pageSubtitle}
           </p>
         </motion.div>
+
+        {/* Nursing: Care Quality Potential Section */}
+        {isNursing && (
+        <>
+        {/* Intro Box - Explaining Potential Value */}
+        <motion.div
+          className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            How to Use This Section
+          </p>
+          <p className="text-sm text-black leading-relaxed">
+            The link between documentation and outcomes is <strong>indirect</strong>—we don't cause 
+            fewer falls, we enable the visibility that helps prevent them.
+          </p>
+          <p className="text-sm text-[#888888] mt-2">
+            We show these as <strong>potential value</strong> because clinical practice matters more 
+            than documentation alone. This value is real, just harder to attribute directly to Abridge.
+          </p>
+        </motion.div>
+
+        {/* Potential Value Drivers Container */}
+        <motion.div
+          className="bg-[#F5F0EB] rounded-lg p-6 space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div>
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              Care Quality Potential
+            </p>
+            <div className="h-px bg-[#D1D5DB] mb-6" />
+          </div>
+
+          {/* HAPI Prevention - Potential Value */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all border-2 border-dashed ${
+                docQualityInputs.nursingHapiEnabled 
+                  ? "bg-white border-[#EA2C00]/30" 
+                  : "bg-white/70 hover:bg-white border-transparent"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-black">HAPI Prevention</p>
+                    <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
+                  </div>
+                  <p className="text-sm text-[#888888]">Real-time documentation enables earlier intervention</p>
+                </div>
+                <button
+                  onClick={() => updateDocInputs({ nursingHapiEnabled: !docQualityInputs.nursingHapiEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.nursingHapiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-nursing-hapi"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.nursingHapiEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {docQualityInputs.nursingHapiEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
+                    <p className="text-sm text-black mb-6">
+                      HAPIs happen when assessments are missed or interventions are delayed. Real-time 
+                      documentation ensures skin assessments, turning schedules, and risk factors are 
+                      captured as they're observed—enabling earlier intervention.
+                    </p>
+
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 1: Current HAPI Volume</p>
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">Patient Days/Year</label>
+                        <div className="h-12 bg-[#F5F0EB] rounded-lg flex items-center px-3">
+                          <span className="font-semibold text-black">
+                            {formatNumber(Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365))}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">HAPI Rate (per 1,000)</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={docQualityInputs.nursingHapiRate}
+                            onChange={(e) => updateDocInputs({ nursingHapiRate: Number(e.target.value) })}
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 text-black"
+                            data-testid="input-nursing-hapi-rate"
+                          />
+                        </div>
+                        <p className="text-xs text-[#888888]">National: 2-5%</p>
+                      </div>
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">HAPIs/Year</label>
+                        <div className="h-12 bg-[#F5F0EB] rounded-lg flex items-center px-3">
+                          <span className="font-semibold text-black">
+                            {formatNumber(Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingHapiRate))}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 2: Documentation-Preventable</p>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">Prevention Rate</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={docQualityInputs.nursingHapiPreventionRate}
+                            onChange={(e) => updateDocInputs({ nursingHapiPreventionRate: Number(e.target.value) })}
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-black"
+                            data-testid="input-nursing-hapi-prevention-rate"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                        </div>
+                        <p className="text-xs text-[#888888]">5% is conservative</p>
+                      </div>
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">Cost per HAPI</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                          <input
+                            type="number"
+                            value={docQualityInputs.nursingHapiCost}
+                            onChange={(e) => updateDocInputs({ nursingHapiCost: Number(e.target.value) })}
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black"
+                            data-testid="input-nursing-hapi-cost"
+                          />
+                        </div>
+                        <p className="text-xs text-[#888888]">CMS: $20k-$70k</p>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Step 3: Potential Value</p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">HAPIs/year × Prevention rate</span>
+                          <span className="font-semibold text-black">
+                            {((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingHapiRate * (docQualityInputs.nursingHapiPreventionRate / 100)).toFixed(1)} prevented
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">× Cost per HAPI</span>
+                          <span className="font-semibold text-black">{formatCurrency(docQualityInputs.nursingHapiCost)}</span>
+                        </div>
+                        <div className="h-px bg-[#E5E5E5] my-2" />
+                        <div className="flex justify-between">
+                          <span className="text-[#666666] font-medium">Potential HAPI Value</span>
+                          <span className="font-bold text-[#EA2C00]">
+                            {formatCurrency(Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingHapiRate * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost))}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-3 bg-[#FFF8F0] rounded-lg border border-[#EA2C00]/20">
+                      <p className="text-xs text-[#666666] italic">
+                        This is <strong>potential</strong> value. Not all HAPIs are documentation-preventable. 
+                        5% represents cases where real-time assessment documentation would have triggered earlier intervention.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Falls Prevention - Potential Value */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all border-2 border-dashed ${
+                docQualityInputs.nursingFallsEnabled 
+                  ? "bg-white border-[#EA2C00]/30" 
+                  : "bg-white/70 hover:bg-white border-transparent"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-black">Falls Prevention</p>
+                    <span className="text-xs font-medium text-[#EA2C00] uppercase tracking-wide bg-[#EA2C00]/10 px-2 py-0.5 rounded">Potential</span>
+                  </div>
+                  <p className="text-sm text-[#888888]">Better visibility enables faster intervention</p>
+                </div>
+                <button
+                  onClick={() => updateDocInputs({ nursingFallsEnabled: !docQualityInputs.nursingFallsEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.nursingFallsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-nursing-falls"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.nursingFallsEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {docQualityInputs.nursingFallsEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
+                    <p className="text-sm text-black mb-6">
+                      Falls often happen when risk factors aren't visible or communicated in real-time. 
+                      When nurses document assessments as they observe them, high-risk patients get 
+                      the attention they need faster.
+                    </p>
+
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">Falls Rate (per 1,000 patient days)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={docQualityInputs.nursingFallsRate}
+                          onChange={(e) => updateDocInputs({ nursingFallsRate: Number(e.target.value) })}
+                          className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 text-black"
+                          data-testid="input-nursing-falls-rate"
+                        />
+                        <p className="text-xs text-[#888888]">National: 3-5 per 1,000</p>
+                      </div>
+                      <div className="space-y-2.5">
+                        <label className="text-sm text-[#888888]">Cost per Fall</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                          <input
+                            type="number"
+                            value={docQualityInputs.nursingFallsCost}
+                            onChange={(e) => updateDocInputs({ nursingFallsCost: Number(e.target.value) })}
+                            className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black"
+                            data-testid="input-nursing-falls-cost"
+                          />
+                        </div>
+                        <p className="text-xs text-[#888888]">Avg: $6,500</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5 mb-6">
+                      <label className="text-sm text-[#888888]">Prevention Rate</label>
+                      <div className="relative w-48">
+                        <input
+                          type="number"
+                          value={docQualityInputs.nursingFallsPreventionRate}
+                          onChange={(e) => updateDocInputs({ nursingFallsPreventionRate: Number(e.target.value) })}
+                          className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg px-3 pr-8 text-black"
+                          data-testid="input-nursing-falls-prevention-rate"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                      </div>
+                      <p className="text-xs text-[#888888]">5% is conservative—represents documentation-preventable falls</p>
+                    </div>
+
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">Patient days × Falls rate / 1,000</span>
+                          <span className="font-semibold text-black">
+                            {Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate)} falls/year
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">× Prevention rate</span>
+                          <span className="font-semibold text-black">{docQualityInputs.nursingFallsPreventionRate}%</span>
+                        </div>
+                        <div className="h-px bg-[#E5E5E5] my-2" />
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">= Falls prevented</span>
+                          <span className="font-semibold text-black">
+                            {((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate * (docQualityInputs.nursingFallsPreventionRate / 100)).toFixed(1)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#666666]">× Cost per fall</span>
+                          <span className="font-semibold text-black">{formatCurrency(docQualityInputs.nursingFallsCost)}</span>
+                        </div>
+                        <div className="h-px bg-[#E5E5E5] my-2" />
+                        <div className="flex justify-between">
+                          <span className="text-[#666666] font-medium">Potential Falls Value</span>
+                          <span className="font-bold text-[#EA2C00]">
+                            {formatCurrency(Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost))}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Patient Experience (HCAHPS) - Qualitative Only */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all border-2 border-dashed ${
+                docQualityInputs.nursingHcahpsEnabled 
+                  ? "bg-white border-[#EA2C00]/30" 
+                  : "bg-white/70 hover:bg-white border-transparent"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-black">Patient Experience (HCAHPS)</p>
+                    <span className="text-xs font-medium text-[#888888] uppercase tracking-wide bg-[#F5F0EB] px-2 py-0.5 rounded">Qualitative</span>
+                  </div>
+                  <p className="text-sm text-[#888888]">More bedside time correlates with better satisfaction</p>
+                </div>
+                <button
+                  onClick={() => updateDocInputs({ nursingHcahpsEnabled: !docQualityInputs.nursingHcahpsEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.nursingHcahpsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-nursing-hcahps"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.nursingHcahpsEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {docQualityInputs.nursingHcahpsEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white rounded-b-lg p-5 border-2 border-t-0 border-dashed border-[#EA2C00]/30">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Connection</p>
+                    <p className="text-sm text-black mb-6">
+                      When nurses spend less time on documentation, they spend more time with patients. 
+                      Research consistently shows bedside time correlates with patient satisfaction.
+                    </p>
+
+                    <div className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-6">
+                      <p className="text-4xl font-bold text-[#EA2C00]">
+                        {state.numberOfProviders > 0 ? ((state.nursingMinutesPerShift * state.nursingShiftsPerNurseYear / 60 / 52) * 0.75).toFixed(1) : '—'}
+                      </p>
+                      <p className="text-lg font-medium text-black mt-1">hours at bedside</p>
+                      <p className="text-sm text-[#666666] mt-1">per nurse per week</p>
+                    </div>
+
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">We Don't Calculate This</p>
+                    <p className="text-sm text-[#666666] mb-4">
+                      HCAHPS scores are influenced by dozens of factors—wait times, pain management, 
+                      communication, environment, and more. We can't credibly attribute HCAHPS improvement 
+                      to documentation alone.
+                    </p>
+
+                    <div className="p-4 bg-[#E8F4F8] rounded-lg border-l-4 border-[#0094D9]">
+                      <p className="text-sm text-[#333333]">
+                        <strong>But consider:</strong> Hospitals in the top quartile of HCAHPS receive 
+                        ~2% higher reimbursement through Value-Based Purchasing. Even small improvements matter.
+                      </p>
+                    </div>
+
+                    <p className="text-sm text-[#888888] italic mt-4">
+                      Track HCAHPS as a leading indicator after implementation.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+        </>
+        )}
 
         {/* Inpatient: DRG Accuracy */}
         {isInpatient && (
@@ -1215,8 +1639,44 @@ export default function ExploreDocQuality({
 
               {/* Documentation Drivers - Care Setting Specific */}
               <div className="space-y-3">
-                {/* Inpatient-specific drivers */}
-                {isInpatient ? (
+                {/* Nursing-specific drivers */}
+                {isNursing ? (
+                  <>
+                    <div>
+                      <p className="text-[10px] font-medium text-[#666666] uppercase tracking-wide mb-2">Care Quality Potential</p>
+                      
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full border border-dashed ${docQualityInputs.nursingHapiEnabled ? 'border-[#EA2C00] bg-[#EA2C00]/20' : 'border-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">HAPI Prevention</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${docQualityInputs.nursingHapiEnabled ? 'text-[#EA2C00]/80' : 'text-[#666666]'}`}>
+                          {docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full border border-dashed ${docQualityInputs.nursingFallsEnabled ? 'border-[#EA2C00] bg-[#EA2C00]/20' : 'border-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Falls Prevention</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${docQualityInputs.nursingFallsEnabled ? 'text-[#EA2C00]/80' : 'text-[#666666]'}`}>
+                          {docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${docQualityInputs.nursingHcahpsEnabled ? 'bg-[#666666]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">HCAHPS</span>
+                        </div>
+                        <span className="text-xs font-medium text-[#666666]">
+                          {docQualityInputs.nursingHcahpsEnabled ? 'Qualitative' : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : isInpatient ? (
                   <>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
@@ -1278,18 +1738,50 @@ export default function ExploreDocQuality({
 
               <div className="h-px bg-[#333333] my-4" />
 
-              {/* Projected Annual Value */}
-              <div className="text-center mb-4">
-                <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
-                  Projected Annual Value
-                </p>
-                <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
-                  {formatCurrency(Math.round(timeValue + totalDocValue))}
-                </p>
-              </div>
+              {/* Projected Annual Value - Special for Nursing */}
+              {isNursing ? (
+                <>
+                  <div className="text-center mb-4">
+                    <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                      Time Savings Value
+                    </p>
+                    <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
+                      {formatCurrency(Math.round(timeValue))}
+                    </p>
+                    <p className="text-xs text-[#666666] mt-1">Hard value from efficiency gains</p>
+                  </div>
+
+                  {nursingCareQualityPotential > 0 && (
+                    <>
+                      <div className="h-px bg-[#333333] my-4" />
+                      <div className="text-center mb-4 p-3 border border-dashed border-[#EA2C00]/30 rounded-lg bg-[#EA2C00]/5">
+                        <p className="text-[10px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-1">
+                          + Potential Value
+                        </p>
+                        <p className="text-xl font-bold text-[#EA2C00]/80">
+                          {formatCurrency(Math.round(nursingCareQualityPotential))}
+                        </p>
+                        <p className="text-[10px] text-[#666666] mt-1">Harder to attribute to documentation</p>
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="text-center mb-4">
+                  <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
+                    Projected Annual Value
+                  </p>
+                  <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
+                    {formatCurrency(Math.round(timeValue + totalDocValue))}
+                  </p>
+                </div>
+              )}
 
               <p className="text-xs text-[#666666] italic mb-4">
-                All values include conservative realization rates for defensible estimates.
+                {isNursing 
+                  ? 'Time savings are conservative. Potential value requires clinical practice changes.'
+                  : 'All values include conservative realization rates for defensible estimates.'
+                }
               </p>
 
               <div className="h-px bg-[#333333] my-4" />

@@ -140,6 +140,21 @@ export interface DocQualityInputs {
   ipCdiScenario: 'conservative' | 'typical' | 'aggressive';
   ipCdiQueryRate: number; // % of admissions that generate queries
   ipCdiCostPerQuery: number; // Cost per query
+  
+  // Nursing: HAPI Prevention (potential value)
+  nursingHapiEnabled: boolean;
+  nursingHapiRate: number; // HAPIs per 1,000 patient days
+  nursingHapiPreventionRate: number; // % prevented with better documentation
+  nursingHapiCost: number; // Cost per HAPI
+  
+  // Nursing: Falls Prevention (potential value)
+  nursingFallsEnabled: boolean;
+  nursingFallsRate: number; // Falls per 1,000 patient days
+  nursingFallsPreventionRate: number; // % prevented with better documentation
+  nursingFallsCost: number; // Cost per fall
+  
+  // Nursing: Patient Experience (qualitative only)
+  nursingHcahpsEnabled: boolean;
 }
 
 export interface ExploreState {
@@ -291,6 +306,18 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipCdiScenario: 'typical',
     ipCdiQueryRate: 30, // 30% of admissions generate queries
     ipCdiCostPerQuery: 50, // $50 per query
+    // Nursing: HAPI Prevention defaults
+    nursingHapiEnabled: false,
+    nursingHapiRate: 2.5, // 2.5 per 1,000 patient days
+    nursingHapiPreventionRate: 5, // 5% prevention rate (conservative)
+    nursingHapiCost: 40000, // $40,000 per HAPI
+    // Nursing: Falls Prevention defaults
+    nursingFallsEnabled: false,
+    nursingFallsRate: 3.5, // 3.5 per 1,000 patient days
+    nursingFallsPreventionRate: 5, // 5% prevention rate (conservative)
+    nursingFallsCost: 6500, // $6,500 per fall
+    // Nursing: Patient Experience defaults
+    nursingHcahpsEnabled: false,
   },
   pricingModel: 'perProvider',
   costPerProvider: 0,
