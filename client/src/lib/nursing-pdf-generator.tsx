@@ -186,16 +186,13 @@ const styles = StyleSheet.create({
     color: brand.black,
     letterSpacing: 0.3,
     marginTop: 12,
-    marginBottom: 3,
+    marginBottom: 8,
+    paddingBottom: 3,
+    borderBottomWidth: 2,
+    borderBottomColor: brand.black,
   },
   sectionHeaderFirst: {
     marginTop: 0,
-  },
-  sectionHeaderLine: {
-    height: 2,
-    backgroundColor: brand.abridgeRed,
-    marginBottom: 8,
-    width: 40,
   },
   
   bodyText: {
@@ -393,10 +390,7 @@ function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitat
 
 function SectionHeader({ title, isFirst = false }: { title: string; isFirst?: boolean }) {
   return (
-    <View>
-      <Text style={[styles.sectionHeader, isFirst ? styles.sectionHeaderFirst : {}]}>{title}</Text>
-      <View style={styles.sectionHeaderLine} />
-    </View>
+    <Text style={[styles.sectionHeader, isFirst ? styles.sectionHeaderFirst : {}]}>{title}</Text>
   );
 }
 
@@ -719,53 +713,45 @@ function Page3() {
       </View>
       
       <SectionHeader title="VALIDATION PATH" />
-      <Text style={[styles.bodyText, { marginBottom: 8 }]}>
+      <Text style={[styles.bodyText, { marginBottom: 6 }]}>
         Our projections are starting points. The real answers come from your data.
       </Text>
       
-      <View style={styles.twoColumn}>
-        <View style={[styles.card, styles.column]}>
+      <View style={{ flexDirection: "row", gap: 10, marginBottom: 6 }}>
+        <View style={[styles.card, styles.column, { padding: 7 }]}>
           <Text style={styles.cardTitle}>TIME SAVINGS</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>- Survey nurses on doc time/shift</Text>
-          <Text style={styles.cardText}>- Review EHR session data</Text>
+          <Text style={styles.cardText}>- Survey nurses on doc time/shift; Review EHR session data</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>- Repeat measurements</Text>
-          <Text style={styles.cardText}>- Compare with utilization data</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+          <Text style={styles.cardText}>- Repeat measurements; Compare with utilization data</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
-        <View style={[styles.card, styles.column]}>
+        <View style={[styles.card, styles.column, { padding: 7 }]}>
           <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>- Baseline OT hours per unit/month</Text>
-          <Text style={styles.cardText}>- Note seasonal patterns</Text>
+          <Text style={styles.cardText}>- Baseline OT hours per unit/month; Note seasonal patterns</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>- Track OT on Abridge vs. control</Text>
-          <Text style={styles.cardText}>- Control for census/acuity changes</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={styles.cardText}>- Track OT Abridge vs. control; Control for census/acuity</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
-      <View style={styles.twoColumn}>
-        <View style={[styles.card, styles.column]}>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={[styles.card, styles.column, { padding: 7 }]}>
           <Text style={styles.cardTitle}>RETENTION</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>- Baseline turnover by unit</Text>
-          <Text style={styles.cardText}>- Exit interview data on burnout</Text>
+          <Text style={styles.cardText}>- Baseline turnover by unit; Exit interview data on burnout</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>- Track turnover Abridge vs control</Text>
-          <Text style={styles.cardText}>- Survey on burnout/doc satisfaction</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={styles.cardText}>- Track turnover Abridge vs control; Survey on satisfaction</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
-        <View style={[styles.card, styles.column]}>
+        <View style={[styles.card, styles.column, { padding: 7 }]}>
           <Text style={styles.cardTitle}>CARE QUALITY</Text>
           <Text style={styles.cardLabel}>Before:</Text>
-          <Text style={styles.cardText}>- Baseline HAPI/falls rates by unit</Text>
-          <Text style={styles.cardText}>- Baseline HCAHPS scores</Text>
+          <Text style={styles.cardText}>- Baseline HAPI/falls rates by unit; Baseline HCAHPS scores</Text>
           <Text style={styles.cardLabel}>After:</Text>
-          <Text style={styles.cardText}>- Track rates Abridge vs control</Text>
-          <Text style={styles.cardText}>- Be cautious about attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
+          <Text style={styles.cardText}>- Track rates Abridge vs control; Be cautious on attribution</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
         </View>
       </View>
       
