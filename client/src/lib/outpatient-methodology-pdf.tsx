@@ -289,12 +289,13 @@ const styles = StyleSheet.create({
   },
 });
 
-function Badge({ type }: { type: "direct" | "indirect" | "potential" | "user" }) {
+function Badge({ type }: { type: "direct" | "indirect" | "potential" | "user" | "connected" }) {
   const config = {
     direct: { bg: brand.directMeasurableBg, text: brand.directMeasurableText, label: "DIRECTLY MEASURABLE" },
     indirect: { bg: brand.indirectBg, text: brand.indirectText, label: "INDIRECTLY ATTRIBUTABLE" },
     potential: { bg: brand.potentialBg, text: brand.potentialText, label: "POTENTIAL VALUE" },
     user: { bg: brand.potentialBg, text: brand.potentialText, label: "USER-DEFINED" },
+    connected: { bg: "#E3F2FD", text: "#1565C0", label: "CONNECTED VALUE" },
   };
   const c = config[type];
   return (
