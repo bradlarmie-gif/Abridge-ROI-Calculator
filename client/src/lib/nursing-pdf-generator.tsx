@@ -9,7 +9,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
-import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
     borderBottomColor: brand.borderGray,
   },
   logo: {
-    width: 60,
-    height: 15,
+    width: 70,
+    height: 14,
   },
   headerTitle: {
     fontSize: 9,
