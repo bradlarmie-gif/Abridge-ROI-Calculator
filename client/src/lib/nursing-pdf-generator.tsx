@@ -99,7 +99,6 @@ const brand = {
   warmBeige: "#F5F0EB",
   calloutBg: "#FFF8F6",
   
-  // Badge colors with borders
   directBg: "#E8F5E9",
   directText: "#1B5E20",
   directBorder: "#C8E6C9",
@@ -122,7 +121,7 @@ const brand = {
 };
 
 // ============================================================================
-// PREMIUM TYPOGRAPHY - Magazine Style
+// STYLES
 // ============================================================================
 
 const styles = StyleSheet.create({
@@ -136,7 +135,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   
-  // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -159,30 +157,28 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.mediumGray,
-    letterSpacing: 1,
+    letterSpacing: 0,
   },
   
-  // Main title
   mainTitle: {
     fontSize: 20,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   subtitle: {
     fontSize: 11,
     fontFamily: "Helvetica",
     color: brand.mediumGray,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   
-  // Section headers
   sectionHeader: {
     fontSize: 12,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
     letterSpacing: 0.5,
-    marginTop: 16,
+    marginTop: 14,
     marginBottom: 8,
     paddingBottom: 4,
     borderBottomWidth: 2,
@@ -195,7 +191,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   
-  // Body text
   bodyText: {
     fontSize: 10,
     lineHeight: 1.5,
@@ -203,27 +198,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   
-  // Layouts
   twoColumn: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   threeColumn: {
     flexDirection: "row",
     gap: 10,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   column: {
     flex: 1,
   },
   
-  // Cards
   card: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 4,
-    padding: 12,
+    padding: 10,
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
@@ -236,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 8,
+    marginTop: 6,
     marginBottom: 2,
   },
   cardText: {
@@ -245,15 +238,14 @@ const styles = StyleSheet.create({
     color: brand.darkGray,
   },
   
-  // Callout
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
     backgroundColor: brand.calloutBg,
-    paddingLeft: 14,
-    paddingVertical: 10,
-    paddingRight: 14,
-    marginVertical: 12,
+    paddingLeft: 12,
+    paddingVertical: 8,
+    paddingRight: 12,
+    marginVertical: 10,
   },
   calloutLabel: {
     fontSize: 9,
@@ -267,11 +259,10 @@ const styles = StyleSheet.create({
     color: brand.darkGray,
   },
   
-  // Tables
   table: {
     borderWidth: 1,
     borderColor: brand.tableBorder,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   tableHeader: {
     flexDirection: "row",
@@ -283,8 +274,8 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
   },
   tableRow: {
     flexDirection: "row",
@@ -300,81 +291,35 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 9,
     color: brand.darkGray,
-    paddingVertical: 5,
-    paddingHorizontal: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   
-  // Limits columns
   limitsColumn: {
     flex: 1,
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 4,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   limitsSubtext: {
     fontSize: 8,
     color: brand.mediumGray,
-    marginBottom: 6,
+    marginBottom: 5,
   },
   limitsBullet: {
-    fontSize: 9,
+    fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   
-  // Summary box
-  summaryBox: {
-    borderWidth: 1,
-    borderColor: brand.borderGray,
-    borderRadius: 4,
-    padding: 14,
-    marginBottom: 12,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  summaryColumn: {
-    flex: 1,
-  },
-  summaryLabel: {
-    fontSize: 9,
-    fontFamily: "Helvetica-Bold",
-    color: brand.black,
-    marginBottom: 4,
-    textDecoration: "underline",
-  },
-  summaryItem: {
-    fontSize: 9,
-    color: brand.darkGray,
-    marginBottom: 2,
-  },
-  
-  // Quote box
-  quoteBox: {
-    borderWidth: 1,
-    borderColor: brand.borderGray,
-    borderRadius: 4,
-    padding: 16,
-    marginVertical: 12,
-  },
-  quoteText: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.5,
-    color: brand.darkGray,
-    textAlign: "center" as const,
-  },
-  
-  // Footer
   footer: {
     position: "absolute",
     bottom: 24,
@@ -398,7 +343,7 @@ const styles = StyleSheet.create({
 });
 
 // ============================================================================
-// BADGE COMPONENT - Refined with borders
+// BADGE COMPONENT
 // ============================================================================
 
 function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitative" | "connected" }) {
@@ -415,10 +360,10 @@ function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitat
     <Text style={{
       fontSize: 7,
       fontFamily: "Helvetica-Bold",
-      letterSpacing: 0.5,
-      marginBottom: 8,
+      letterSpacing: 0.3,
+      marginBottom: 6,
       paddingVertical: 2,
-      paddingHorizontal: 6,
+      paddingHorizontal: 5,
       borderRadius: 2,
       alignSelf: "flex-start" as const,
       backgroundColor: c.bg,
@@ -448,17 +393,17 @@ function PageHeader() {
 // PAGE FOOTER
 // ============================================================================
 
-function PageFooter({ pageNum }: { pageNum: number }) {
+function PageFooter({ pageNum, totalPages }: { pageNum: number; totalPages: number }) {
   return (
     <View style={styles.footer}>
       <Text style={styles.footerText}>Abridge ROI Methodology | Nursing</Text>
-      <Text style={styles.footerPage}>Page {pageNum} of 4</Text>
+      <Text style={styles.footerPage}>Page {pageNum} of {totalPages}</Text>
     </View>
   );
 }
 
 // ============================================================================
-// PAGE 1: Title + Context + Two Categories + Start Mechanisms
+// PAGE 1: Context + Two Categories + Honest Limits + Connected Value
 // ============================================================================
 
 function Page1() {
@@ -471,10 +416,7 @@ function Page1() {
       
       <Text style={styles.sectionHeader}>THE CONTEXT</Text>
       <Text style={styles.bodyText}>
-        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain.
-      </Text>
-      <Text style={styles.bodyText}>
-        Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
+        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain. Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
       </Text>
       
       <Text style={styles.sectionHeader}>TWO VALUE CATEGORIES</Text>
@@ -485,7 +427,7 @@ function Page1() {
           <Text style={styles.cardText}>
             Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses.
           </Text>
-          <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
           </View>
         </View>
@@ -494,7 +436,7 @@ function Page1() {
           <Text style={styles.cardText}>
             Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect--documentation supports care, it doesn't replace it.
           </Text>
-          <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Potential value (shown separately)</Text>
           </View>
         </View>
@@ -506,6 +448,54 @@ function Page1() {
           We model both categories--but we're honest about what's directly measurable versus what we only enable. Labor economics value is defensible in CFO conversations. Care quality potential is real but requires clinical practice to realize.
         </Text>
       </View>
+      
+      <Text style={styles.sectionHeader}>THE HONEST LIMITS</Text>
+      
+      <View style={styles.threeColumn}>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>[+] WHAT WE MEASURE</Text>
+          <Text style={styles.limitsSubtext}>Direct attribution</Text>
+          <Text style={styles.limitsBullet}>- OT hours pre/post</Text>
+          <Text style={styles.limitsBullet}>- Doc time per shift</Text>
+          <Text style={styles.limitsBullet}>- Shift completion rates</Text>
+          <Text style={styles.limitsBullet}>- Chart completion timing</Text>
+        </View>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>[~] WHAT WE INFLUENCE</Text>
+          <Text style={styles.limitsSubtext}>Indirect attribution</Text>
+          <Text style={styles.limitsBullet}>- Turnover rates (one factor)</Text>
+          <Text style={styles.limitsBullet}>- Agency utilization</Text>
+          <Text style={styles.limitsBullet}>- Nurse satisfaction</Text>
+          <Text style={styles.limitsBullet}>- Burnout indicators</Text>
+        </View>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>[ ] WHAT WE ENABLE</Text>
+          <Text style={styles.limitsSubtext}>Supportive only</Text>
+          <Text style={styles.limitsBullet}>- Falls prevention</Text>
+          <Text style={styles.limitsBullet}>- HAPI prevention</Text>
+          <Text style={styles.limitsBullet}>- HCAHPS improvement</Text>
+          <Text style={styles.limitsBullet}>- Clinical outcomes</Text>
+        </View>
+      </View>
+      
+      <Text style={styles.sectionHeader}>CONNECTED VALUE</Text>
+      <Text style={styles.bodyText}>
+        When nurses document thoroughly and in real-time, it directly impacts inpatient revenue. Complete nursing documentation creates a clinical picture that supports accurate coding and stronger appeals. Nursing assessments capture clinical indicators (CC/MCC) that support accurate DRG assignment, and provide contemporaneous evidence for payer appeals. These benefits are quantified in the Inpatient Setting methodology.
+      </Text>
+      
+      <PageFooter pageNum={1} totalPages={3} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// PAGE 2: All Value Mechanisms
+// ============================================================================
+
+function Page2() {
+  return (
+    <Page size="LETTER" style={styles.page}>
+      <PageHeader />
       
       <Text style={styles.sectionHeader}>VALUE MECHANISMS</Text>
       
@@ -535,22 +525,6 @@ function Page1() {
           </Text>
         </View>
       </View>
-      
-      <PageFooter pageNum={1} />
-    </Page>
-  );
-}
-
-// ============================================================================
-// PAGE 2: Remaining Mechanisms + Why Potential + Honest Limits
-// ============================================================================
-
-function Page2() {
-  return (
-    <Page size="LETTER" style={styles.page}>
-      <PageHeader />
-      
-      <Text style={styles.sectionHeader}>VALUE MECHANISMS (CONTINUED)</Text>
       
       <View style={styles.twoColumn}>
         <View style={[styles.card, styles.column]}>
@@ -591,7 +565,7 @@ function Page2() {
           <Text style={styles.cardText}>
             Current falls x Doc-preventable rate (5%) x Cost per fall ($3-30K)
           </Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique", fontSize: 8 }]}>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique", fontSize: 8 }]}>
             Note: CMS does NOT reimburse for hospital-acquired fall injuries.
           </Text>
         </View>
@@ -606,7 +580,7 @@ function Page2() {
           <Text style={styles.cardText}>
             HCAHPS is influenced by dozens of factors. Track as directional indicator.
           </Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique", fontSize: 8 }]}>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique", fontSize: 8 }]}>
             Top quartile HCAHPS = ~2% higher reimbursement via VBP.
           </Text>
         </View>
@@ -619,46 +593,13 @@ function Page2() {
         </Text>
       </View>
       
-      <Text style={styles.sectionHeader}>THE HONEST LIMITS</Text>
-      
-      <View style={styles.threeColumn}>
-        <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>[+] WHAT WE MEASURE</Text>
-          <Text style={styles.limitsSubtext}>Direct attribution</Text>
-          <Text style={styles.limitsBullet}>- OT hours pre/post</Text>
-          <Text style={styles.limitsBullet}>- Doc time per shift</Text>
-          <Text style={styles.limitsBullet}>- Shift completion rates</Text>
-          <Text style={styles.limitsBullet}>- Chart completion timing</Text>
-        </View>
-        <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>[~] WHAT WE INFLUENCE</Text>
-          <Text style={styles.limitsSubtext}>Indirect attribution</Text>
-          <Text style={styles.limitsBullet}>- Turnover rates (one factor)</Text>
-          <Text style={styles.limitsBullet}>- Agency utilization</Text>
-          <Text style={styles.limitsBullet}>- Nurse satisfaction</Text>
-          <Text style={styles.limitsBullet}>- Burnout indicators</Text>
-        </View>
-        <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>[ ] WHAT WE ENABLE</Text>
-          <Text style={styles.limitsSubtext}>Supportive only</Text>
-          <Text style={styles.limitsBullet}>- Falls prevention</Text>
-          <Text style={styles.limitsBullet}>- HAPI prevention</Text>
-          <Text style={styles.limitsBullet}>- HCAHPS improvement</Text>
-          <Text style={styles.limitsBullet}>- Clinical outcomes</Text>
-        </View>
-      </View>
-      
-      <Text style={[styles.bodyText, { fontSize: 9 }]}>
-        We are explicit about these limits because credibility matters. When we say something is measurable, it is. When we say something is influenced, we acknowledge the complexity. When we say we only enable something, we're being honest that clinical practice is what delivers outcomes.
-      </Text>
-      
-      <PageFooter pageNum={2} />
+      <PageFooter pageNum={2} totalPages={3} />
     </Page>
   );
 }
 
 // ============================================================================
-// PAGE 3: Assumptions + Conservative + Connected Value
+// PAGE 3: Assumptions + Validation Path
 // ============================================================================
 
 function Page3() {
@@ -749,48 +690,9 @@ function Page3() {
       <View style={styles.callout}>
         <Text style={styles.calloutText}>
           <Text style={styles.calloutLabel}>WHY WE DEFAULT CONSERVATIVE: </Text>
-          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If conservative projection shows positive ROI, you can be confident. If experience exceeds it, that's upside.
+          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If conservative projection shows positive ROI, you can be confident.
         </Text>
       </View>
-      
-      <Text style={styles.sectionHeader}>CONNECTED VALUE</Text>
-      <Text style={styles.subSectionHeader}>Nursing Documentation Feeds the Revenue Cycle</Text>
-      <Text style={styles.bodyText}>
-        When nurses document thoroughly and in real-time, it directly impacts inpatient revenue. Complete nursing documentation creates a clinical picture that supports accurate coding and stronger appeals.
-      </Text>
-      
-      <View style={styles.twoColumn}>
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>CC/MCC CAPTURE</Text>
-          <Text style={styles.cardText}>
-            Nursing assessments capture clinical indicators that support accurate DRG assignment. "Patient appears malnourished" or "skin breakdown observed" feeds coding directly.
-          </Text>
-        </View>
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>MEDICAL NECESSITY SUPPORT</Text>
-          <Text style={styles.cardText}>
-            Real-time nursing documentation provides contemporaneous evidence of patient acuity and care needs--critical for payer appeals.
-          </Text>
-        </View>
-      </View>
-      
-      <Text style={[styles.bodyText, { fontSize: 9 }]}>
-        These benefits are quantified in the Inpatient Setting methodology. If your organization uses Abridge for both Nursing and Hospitalists, documentation creates a complete clinical picture supporting accurate coding from admission through discharge.
-      </Text>
-      
-      <PageFooter pageNum={3} />
-    </Page>
-  );
-}
-
-// ============================================================================
-// PAGE 4: Validation Path + Timelines + Summary + Quote
-// ============================================================================
-
-function Page4() {
-  return (
-    <Page size="LETTER" style={styles.page}>
-      <PageHeader />
       
       <Text style={styles.sectionHeader}>VALIDATION PATH</Text>
       <Text style={styles.bodyText}>
@@ -806,7 +708,7 @@ function Page4() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Repeat measurements</Text>
           <Text style={styles.cardText}>- Compare with utilization data</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
@@ -816,7 +718,7 @@ function Page4() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track OT on Abridge vs. control</Text>
           <Text style={styles.cardText}>- Control for census/acuity changes</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
@@ -829,7 +731,7 @@ function Page4() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track turnover Abridge vs control</Text>
           <Text style={styles.cardText}>- Survey on burnout/doc satisfaction</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>CARE QUALITY</Text>
@@ -839,77 +741,11 @@ function Page4() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track rates Abridge vs control</Text>
           <Text style={styles.cardText}>- Be cautious about attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
         </View>
       </View>
       
-      <Text style={styles.sectionHeader}>VALIDATION TIMELINES</Text>
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Metric</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Timeline to Meaningful Data</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Documentation time</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-4 weeks</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowAlt]}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Overtime reduction</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-3 months</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Nurse satisfaction</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>3-6 months</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowAlt]}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>HAC rates (HAPI/Falls)</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>6-12 months</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Retention impact</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>12-18 months</Text>
-        </View>
-      </View>
-      
-      <Text style={styles.sectionHeader}>SUMMARY</Text>
-      <Text style={styles.bodyText}>
-        Nursing ROI is harder to model than physician ROI because nurses don't bill. But the value is real.
-      </Text>
-      
-      <View style={styles.summaryBox}>
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryColumn}>
-            <Text style={styles.summaryLabel}>TIME VALUE (Direct)</Text>
-            <Text style={styles.summaryItem}>OT reduction</Text>
-            <Text style={styles.summaryItem}>Retention savings</Text>
-            <Text style={styles.summaryItem}>Agency avoidance</Text>
-          </View>
-          <View style={styles.summaryColumn}>
-            <Text style={styles.summaryLabel}>CARE QUALITY (Potential)</Text>
-            <Text style={styles.summaryItem}>Falls prevention</Text>
-            <Text style={styles.summaryItem}>HAPI prevention</Text>
-            <Text style={styles.summaryItem}>Patient experience</Text>
-          </View>
-          <View style={styles.summaryColumn}>
-            <Text style={styles.summaryLabel}>CONNECTED VALUE</Text>
-            <Text style={styles.summaryItem}>Nursing documentation</Text>
-            <Text style={styles.summaryItem}>feeds inpatient</Text>
-            <Text style={styles.summaryItem}>revenue cycle</Text>
-          </View>
-        </View>
-      </View>
-      
-      <View style={styles.quoteBox}>
-        <Text style={styles.quoteText}>
-          "The goal isn't to prove our model right. It's to build your organization's understanding of what ambient documentation actually delivers in your context. Adjust the model based on what you learn."
-        </Text>
-      </View>
-      
-      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold", marginTop: 8 }]}>
-        That honesty is the methodology.
-      </Text>
-      
-      <PageFooter pageNum={4} />
+      <PageFooter pageNum={3} totalPages={3} />
     </Page>
   );
 }
@@ -924,7 +760,6 @@ function NursingMethodologyDocument() {
       <Page1 />
       <Page2 />
       <Page3 />
-      <Page4 />
     </Document>
   );
 }
