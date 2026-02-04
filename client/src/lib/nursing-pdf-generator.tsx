@@ -121,16 +121,16 @@ const brand = {
 };
 
 // ============================================================================
-// STYLES
+// STYLES - COMPACT VERSION
 // ============================================================================
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    paddingBottom: 50,
+    padding: 36,
+    paddingBottom: 45,
     fontFamily: "Helvetica",
-    fontSize: 10,
-    lineHeight: 1.4,
+    fontSize: 9,
+    lineHeight: 1.35,
     color: brand.darkGray,
     backgroundColor: "#FFFFFF",
   },
@@ -139,74 +139,71 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-    marginTop: -40,
-    marginLeft: -40,
-    marginRight: -40,
-    paddingVertical: 10,
-    paddingHorizontal: 40,
+    marginBottom: 12,
+    marginTop: -36,
+    marginLeft: -36,
+    marginRight: -36,
+    paddingVertical: 8,
+    paddingHorizontal: 36,
     backgroundColor: brand.warmBeige,
     borderBottomWidth: 1,
     borderBottomColor: brand.borderGray,
   },
   logo: {
-    width: 70,
-    height: 14,
+    width: 65,
+    height: 13,
   },
   headerTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.mediumGray,
     letterSpacing: 0,
   },
   
   mainTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: "Helvetica",
     color: brand.mediumGray,
-    marginBottom: 20,
+    marginBottom: 14,
   },
   
   sectionHeader: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    color: brand.black,
-    letterSpacing: 0.5,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingBottom: 4,
-    borderBottomWidth: 2,
-    borderBottomColor: brand.black,
-  },
-  subSectionHeader: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
+    letterSpacing: 0.5,
+    marginTop: 10,
     marginBottom: 6,
+    paddingBottom: 3,
+    borderBottomWidth: 2,
+    borderBottomColor: brand.black,
+  },
+  sectionHeaderFirst: {
+    marginTop: 0,
   },
   
   bodyText: {
-    fontSize: 10,
-    lineHeight: 1.5,
+    fontSize: 9,
+    lineHeight: 1.4,
     color: brand.darkGray,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   
   twoColumn: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 10,
+    gap: 10,
+    marginBottom: 8,
   },
   threeColumn: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   column: {
     flex: 1,
@@ -215,26 +212,26 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 4,
-    padding: 10,
+    borderRadius: 3,
+    padding: 8,
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   cardLabel: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 6,
-    marginBottom: 2,
+    marginTop: 4,
+    marginBottom: 1,
   },
   cardText: {
-    fontSize: 9,
-    lineHeight: 1.4,
+    fontSize: 8,
+    lineHeight: 1.35,
     color: brand.darkGray,
   },
   
@@ -242,27 +239,28 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
     backgroundColor: brand.calloutBg,
-    paddingLeft: 12,
-    paddingVertical: 8,
-    paddingRight: 12,
-    marginVertical: 10,
+    paddingLeft: 10,
+    paddingVertical: 6,
+    paddingRight: 10,
+    marginTop: 8,
+    marginBottom: 6,
   },
   calloutLabel: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.abridgeRed,
   },
   calloutText: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.4,
+    lineHeight: 1.35,
     color: brand.darkGray,
   },
   
   table: {
     borderWidth: 1,
     borderColor: brand.tableBorder,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   tableHeader: {
     flexDirection: "row",
@@ -271,11 +269,11 @@ const styles = StyleSheet.create({
     borderBottomColor: brand.tableBorder,
   },
   tableHeaderCell: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 5,
-    paddingHorizontal: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 5,
   },
   tableRow: {
     flexDirection: "row",
@@ -289,55 +287,55 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   tableCell: {
-    fontSize: 9,
+    fontSize: 8,
     color: brand.darkGray,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   
   limitsColumn: {
     flex: 1,
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 4,
-    padding: 8,
+    borderRadius: 3,
+    padding: 6,
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   limitsSubtext: {
-    fontSize: 8,
+    fontSize: 7,
     color: brand.mediumGray,
-    marginBottom: 5,
+    marginBottom: 4,
   },
   limitsBullet: {
-    fontSize: 8,
+    fontSize: 7,
     color: brand.darkGray,
     marginBottom: 1,
   },
   
   footer: {
     position: "absolute",
-    bottom: 24,
-    left: 40,
-    right: 40,
+    bottom: 20,
+    left: 36,
+    right: 36,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: "#EEEEEE",
-    paddingTop: 8,
+    paddingTop: 6,
   },
   footerText: {
-    fontSize: 8,
+    fontSize: 7,
     color: brand.lightGray,
   },
   footerPage: {
-    fontSize: 8,
+    fontSize: 7,
     color: brand.lightGray,
   },
 });
@@ -358,12 +356,12 @@ function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitat
   
   return (
     <Text style={{
-      fontSize: 7,
+      fontSize: 6,
       fontFamily: "Helvetica-Bold",
-      letterSpacing: 0.3,
-      marginBottom: 6,
+      letterSpacing: 0.2,
+      marginBottom: 4,
       paddingVertical: 2,
-      paddingHorizontal: 5,
+      paddingHorizontal: 4,
       borderRadius: 2,
       alignSelf: "flex-start" as const,
       backgroundColor: c.bg,
@@ -403,7 +401,7 @@ function PageFooter({ pageNum, totalPages }: { pageNum: number; totalPages: numb
 }
 
 // ============================================================================
-// PAGE 1: Context + Two Categories + Honest Limits + Connected Value
+// PAGE 1: Context + Categories + Honest Limits + Connected Value
 // ============================================================================
 
 function Page1() {
@@ -414,9 +412,9 @@ function Page1() {
       <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
       <Text style={styles.subtitle}>A transparent methodology for calculating return on investment</Text>
       
-      <Text style={styles.sectionHeader}>THE CONTEXT</Text>
+      <Text style={[styles.sectionHeader, styles.sectionHeaderFirst]}>THE CONTEXT</Text>
       <Text style={styles.bodyText}>
-        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain. Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
+        Nursing is the hardest setting to model ROI--and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive--25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
       </Text>
       
       <Text style={styles.sectionHeader}>TWO VALUE CATEGORIES</Text>
@@ -427,7 +425,7 @@ function Page1() {
           <Text style={styles.cardText}>
             Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
           </View>
         </View>
@@ -436,7 +434,7 @@ function Page1() {
           <Text style={styles.cardText}>
             Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect--documentation supports care, it doesn't replace it.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Potential value (shown separately)</Text>
           </View>
         </View>
@@ -497,7 +495,7 @@ function Page2() {
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <Text style={styles.sectionHeader}>VALUE MECHANISMS</Text>
+      <Text style={[styles.sectionHeader, styles.sectionHeaderFirst]}>VALUE MECHANISMS</Text>
       
       <View style={styles.twoColumn}>
         <View style={[styles.card, styles.column]}>
@@ -565,7 +563,7 @@ function Page2() {
           <Text style={styles.cardText}>
             Current falls x Doc-preventable rate (5%) x Cost per fall ($3-30K)
           </Text>
-          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique", fontSize: 8 }]}>
+          <Text style={[styles.cardText, { marginTop: 2, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>
             Note: CMS does NOT reimburse for hospital-acquired fall injuries.
           </Text>
         </View>
@@ -580,7 +578,7 @@ function Page2() {
           <Text style={styles.cardText}>
             HCAHPS is influenced by dozens of factors. Track as directional indicator.
           </Text>
-          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique", fontSize: 8 }]}>
+          <Text style={[styles.cardText, { marginTop: 2, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>
             Top quartile HCAHPS = ~2% higher reimbursement via VBP.
           </Text>
         </View>
@@ -607,8 +605,8 @@ function Page3() {
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <Text style={styles.sectionHeader}>KEY ASSUMPTIONS</Text>
-      <Text style={styles.bodyText}>
+      <Text style={[styles.sectionHeader, styles.sectionHeaderFirst]}>KEY ASSUMPTIONS</Text>
+      <Text style={[styles.bodyText, { marginBottom: 6 }]}>
         Every number has a source. We don't hide assumptions--we highlight them so you can adjust based on your reality.
       </Text>
       
@@ -690,12 +688,12 @@ function Page3() {
       <View style={styles.callout}>
         <Text style={styles.calloutText}>
           <Text style={styles.calloutLabel}>WHY WE DEFAULT CONSERVATIVE: </Text>
-          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If conservative projection shows positive ROI, you can be confident.
+          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny.
         </Text>
       </View>
       
       <Text style={styles.sectionHeader}>VALIDATION PATH</Text>
-      <Text style={styles.bodyText}>
+      <Text style={[styles.bodyText, { marginBottom: 6 }]}>
         Our projections are starting points. The real answers come from your data.
       </Text>
       
@@ -708,7 +706,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Repeat measurements</Text>
           <Text style={styles.cardText}>- Compare with utilization data</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
@@ -718,7 +716,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track OT on Abridge vs. control</Text>
           <Text style={styles.cardText}>- Control for census/acuity changes</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
@@ -731,7 +729,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track turnover Abridge vs control</Text>
           <Text style={styles.cardText}>- Survey on burnout/doc satisfaction</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>CARE QUALITY</Text>
@@ -741,7 +739,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track rates Abridge vs control</Text>
           <Text style={styles.cardText}>- Be cautious about attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
+          <Text style={[styles.cardText, { marginTop: 3, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
         </View>
       </View>
       
