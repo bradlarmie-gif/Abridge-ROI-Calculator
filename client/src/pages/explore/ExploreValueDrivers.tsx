@@ -196,17 +196,26 @@ export default function ExploreValueDrivers({
     if (isED) {
       // ED uses LWBS and Admission Capture
       total += edLwbsValue + edAdmissionCaptureValue;
+      if (timeDriverInputs.costReductionEnabled) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         total += retentionCalcs.retentionValue;
       }
     } else if (isInpatient) {
       // Inpatient: Rounding is qualitative (no dollar value), only Wellbeing has $ value
+      if (timeDriverInputs.costReductionEnabled) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         total += retentionCalcs.retentionValue;
       }
     } else if (isNursing) {
       // Nursing uses OT Reduction, Retention, and Care Time
       total += nursingOtValue + nursingRetentionValue;
+      if (timeDriverInputs.costReductionEnabled) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
       // Care time is qualitative, not added to monetary value
     } else {
       // Outpatient uses Patient Access and Cost Reduction
@@ -1013,8 +1022,7 @@ export default function ExploreValueDrivers({
         </motion.div>
         )}
 
-        {/* Outpatient: Cost Reduction Toggle */}
-        {!isED && !isInpatient && !isNursing && (
+        {/* Cost Reduction Toggle - Available for all care settings */}
         <motion.div
           className="mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -1030,8 +1038,8 @@ export default function ExploreValueDrivers({
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">{config.driver2Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
+                <p className="font-semibold text-black">Cost Reduction</p>
+                <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
               </div>
               <div className="flex items-center gap-3">
                 {timeDriverInputs.costReductionEnabled && (
@@ -1097,7 +1105,6 @@ export default function ExploreValueDrivers({
             )}
           </AnimatePresence>
         </motion.div>
-        )}
 
         {/* Clinician Wellbeing Toggle - Not shown for Nursing (has own retention driver) */}
         {!isNursing && (
@@ -1502,6 +1509,21 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Cost Reduction</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
+                        </span>
+                      </div>
+                      {!timeDriverInputs.costReductionEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
                         </div>
@@ -1540,6 +1562,21 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Cost Reduction</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
+                        </span>
+                      </div>
+                      {!timeDriverInputs.costReductionEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
                           <span className="text-sm text-[#888888]">Clinician Wellbeing</span>
                         </div>
@@ -1555,6 +1592,68 @@ export default function ExploreValueDrivers({
                         <p className="text-xs text-[#666666] ml-4 mt-0.5">
                           {timeDriverInputs.calculateRetentionValue ? '(retention value)' : `${hoursPerProviderPerWeek} hrs/wk back`}
                         </p>
+                      )}
+                    </div>
+                  </>
+                ) : isNursing ? (
+                  <>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">OT Reduction</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingOtEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.nursingOtEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.nursingOtReductionPercent}% reduction)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingRetentionEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Retention Savings</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingRetentionEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.nursingRetentionEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(turnover reduction)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Cost Reduction</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
+                        </span>
+                      </div>
+                      {!timeDriverInputs.costReductionEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Care Time</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingCareTimeEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                          —
+                        </span>
+                      </div>
+                      {timeDriverInputs.nursingCareTimeEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(qualitative)</p>
                       )}
                     </div>
                   </>
