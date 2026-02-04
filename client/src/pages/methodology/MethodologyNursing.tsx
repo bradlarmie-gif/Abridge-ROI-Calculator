@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Activity, Building2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Activity, Building2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF, nursingMethodologyData } from "@/lib/methodology-pdf-generator";
-import abridgeLogoWhite from '@assets/abridge-logo-wordmark-white_1769912213277.png';
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyNursingProps {
   onBack: () => void;
@@ -103,7 +103,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#EA2C00]">
+      <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
         <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <a
@@ -112,12 +112,12 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
               className="flex items-center"
               data-testid="link-home-logo"
             >
-              <img src={abridgeLogoWhite} alt="Abridge" className="h-5 md:h-6" />
+              <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
             </a>
-            <span className="text-white/40">|</span>
+            <span className="text-[#E5E5E5]">|</span>
             <button
               onClick={onBack}
-              className="flex items-center gap-1 text-white/80 hover:text-white transition-colors"
+              className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors"
               data-testid="button-back"
             >
               <ArrowLeft className="w-3 h-3" />
@@ -127,7 +127,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
           <button
             onClick={handleExportPDF}
             disabled={isExporting}
-            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm disabled:opacity-50"
+            className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors text-sm disabled:opacity-50"
             data-testid="button-export-pdf"
           >
             <Download className="w-4 h-4" />
@@ -707,6 +707,17 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
           </div>
         </div>
       </div>
+      
+      {/* Download toast notification */}
+      {isExporting && (
+        <div 
+          className="fixed bottom-4 right-4 bg-[#EA2C00] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300 z-50"
+          data-testid="toast-pdf-download"
+        >
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span className="text-sm font-medium">Preparing your PDF...</span>
+        </div>
+      )}
     </div>
   );
 }
