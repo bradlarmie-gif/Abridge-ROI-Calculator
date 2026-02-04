@@ -383,10 +383,16 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     }
   }, [state.careSetting]);
 
+  // Scroll to top on every phase change (mobile fix)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [phase]);
+
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state?.view === 'explore' && event.state?.explorePhase) {
         setPhase(event.state.explorePhase);
+        window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (event.state?.view === 'journey' || !event.state?.view) {
         if (onBackToJourney) {
           onBackToJourney();

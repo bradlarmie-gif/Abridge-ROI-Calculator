@@ -23,6 +23,11 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const [state, setState] = useState<MeasureState>(DEFAULT_MEASURE_STATE);
   const [isLoadedFromUrl, setIsLoadedFromUrl] = useState(false);
 
+  // Scroll to top on every phase change (mobile fix)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [phase]);
+
   // Load state from URL on mount
   useEffect(() => {
     const urlState = getStateFromCurrentUrl();

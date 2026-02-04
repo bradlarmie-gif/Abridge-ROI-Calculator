@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
@@ -164,6 +164,11 @@ export interface ExpandFlowProps {
 export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlowProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  
+  // Scroll to top on every step change (mobile fix)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentStep]);
   
   // Deployment configuration - starts BLANK
   const [deploymentData, setDeploymentData] = useState<DeploymentData>({

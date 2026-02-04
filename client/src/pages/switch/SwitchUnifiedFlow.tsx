@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import SwitchPathSelection from "./SwitchPathSelection";
 import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
@@ -19,6 +19,11 @@ type FlowPhase = "path-selection" | "ambient-flow" | "scribe-assessment" | "scri
 export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAmbientAI }: SwitchUnifiedFlowProps) {
   const [phase, setPhase] = useState<FlowPhase>("path-selection");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  
+  // Scroll to top on every phase change (mobile fix)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [phase]);
   
   const [ambientInputs, setAmbientInputs] = useState<SwitchInputs>({
     solution: "ambient-ai" as SolutionType,

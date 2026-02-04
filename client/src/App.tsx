@@ -123,11 +123,17 @@ export default function App() {
   // Track navigation history for browser back button support
   const [viewHistory, setViewHistory] = useState<AppView[]>(["splash"]);
 
+  // Scroll to top on every view change (global mobile fix)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentView]);
+
   // Handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state?.view) {
         setCurrentView(event.state.view);
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
       // If no view in state, preserve current view (don't force splash)
     };
