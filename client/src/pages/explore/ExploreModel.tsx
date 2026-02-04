@@ -258,62 +258,10 @@ export default function ExploreModel({
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      // Build driver results based on care setting
+      // Build driver results with care-setting-specific keys that match what transformers expect
       const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
       
-      // Add time/labor drivers
-      if (timeDriverInputs.patientAccessEnabled) {
-        driverResults.patientAccess = { 
-          name: state.careSetting === 'ed' ? 'LWBS Recovery' : 'Patient Access', 
-          value: patientAccessValue 
-        };
-      }
-      if (timeDriverInputs.costReductionEnabled) {
-        driverResults.overtime = { 
-          name: state.careSetting === 'nursing' ? 'OT Reduction' : 'Overtime Reduction', 
-          value: costReductionValue 
-        };
-      }
-      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
-        driverResults.workforce = { 
-          name: 'Workforce Retention', 
-          value: ipWellbeingRetentionValue 
-        };
-      }
-      
-      // Add documentation/revenue drivers
-      if (docQualityInputs.wrvuEnabled) {
-        driverResults.wrvu = { 
-          name: state.careSetting === 'ed' ? 'E&M Level Accuracy' : 'wRVU Improvement', 
-          value: wrvuValue 
-        };
-      }
-      if (docQualityInputs.hccEnabled && state.careSetting !== 'ed') {
-        driverResults.hcc = { 
-          name: 'HCC Capture', 
-          value: hccValue 
-        };
-      }
-      if (docQualityInputs.denialsEnabled) {
-        driverResults.denials = { 
-          name: 'Denial Prevention', 
-          value: denialsValue 
-        };
-      }
-      
-      // Common model results
-      const modelResults = {
-        totalBenefit: totalValue,
-        investment: annualInvestment,
-        providers: state.numberOfProviders,
-        encounters: state.annualEncounters,
-        utilizationRate: state.utilizationPercent,
-        costPerMonth: state.costPerProvider,
-        timeSavedPerEncounter: 2.5,
-        driverResults,
-      };
-      
-      // Journey inputs for scaling projection
+      // Journey inputs for scaling projection (common to all)
       const journeyInputs = {
         pilotProviders: state.numberOfProviders,
         pilotEncounters: state.annualEncounters,
@@ -326,18 +274,181 @@ export default function ExploreModel({
         networkEffect: 0,
       };
       
-      // Generate PDF based on care setting
       if (state.careSetting === 'outpatient') {
+        // Outpatient uses keys: patientAccess, overtime, workforce, wrvu, hcc, denials
+        if (timeDriverInputs.patientAccessEnabled && patientAccessValue > 0) {
+          driverResults.patientAccess = { name: 'Patient Access', value: patientAccessValue };
+        }
+        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
+          driverResults.overtime = { name: 'Overtime Reduction', value: costReductionValue };
+        }
+        if (docQualityInputs.wrvuEnabled && wrvuValue > 0) {
+          driverResults.wrvu = { name: 'wRVU Improvement', value: wrvuValue };
+        }
+        if (docQualityInputs.hccEnabled && hccValue > 0) {
+          driverResults.hcc = { name: 'HCC Capture', value: hccValue };
+        }
+        if (docQualityInputs.denialsEnabled && denialsValue > 0) {
+          driverResults.denials = { name: 'Denial Prevention', value: denialsValue };
+        }
+        
+        const modelResults = {
+          totalBenefit: totalValue,
+          investment: annualInvestment,
+          providers: state.numberOfProviders,
+          encounters: state.annualEncounters,
+          utilizationRate: state.utilizationPercent,
+          costPerMonth: state.costPerProvider,
+          timeSavedPerEncounter: 2.5,
+          driverResults,
+        };
         const pdfData = transformToOutpatientPDFData(modelResults, journeyInputs, 'Outpatient', clientName, preparedBy);
         await generateOutpatientROIPDF(pdfData);
+        
       } else if (state.careSetting === 'ed') {
+        // ED uses keys: edThroughput, edRetention, edLevelOfService, edDenials
+        if (timeDriverInputs.edLwbsEnabled && edLwbsValue > 0) {
+          driverResults.edThroughput = { 
+            name: 'Patient Throughput (LWBS)', 
+            value: edLwbsValue + edAdmissionCaptureValue,
+            inputs: {
+              lwbsRate: timeDriverInputs.edLwbsRate,
+              lwbsReduction: timeDriverInputs.edLwbsReduction,
+              revenuePerVisit: timeDriverInputs.edRevenuePerVisit,
+              realizationRate: timeDriverInputs.edLwbsRealization,
+            }
+          };
+        }
+        if (docQualityInputs.wrvuEnabled && wrvuValue > 0) {
+          driverResults.edLevelOfService = { 
+            name: 'Level-of-Service Accuracy', 
+            value: wrvuValue,
+            inputs: {
+              scenario: docQualityInputs.wrvuScenario,
+              currentWrvu: docQualityInputs.currentWrvu,
+              conversionFactor: docQualityInputs.conversionFactor,
+              realizationRate: docQualityInputs.wrvuRealization,
+            }
+          };
+        }
+        if (docQualityInputs.denialsEnabled && denialsValue > 0) {
+          driverResults.edDenials = { 
+            name: 'Denial Prevention', 
+            value: denialsValue,
+            inputs: {
+              scenario: docQualityInputs.denialsScenario,
+              denialRate: docQualityInputs.denialRate,
+              avgClaimValue: docQualityInputs.avgClaimValue,
+            }
+          };
+        }
+        
+        const modelResults = {
+          totalBenefit: totalValue,
+          investment: annualInvestment,
+          providers: state.numberOfProviders,
+          encounters: state.annualEncounters,
+          utilizationRate: state.utilizationPercent,
+          costPerMonth: state.costPerProvider,
+          timeSavedPerEncounter: 2.5,
+          driverResults,
+        };
         const pdfData = transformToEDPDFData(modelResults, journeyInputs, undefined, clientName, preparedBy);
         await generateEDROIPDF(pdfData);
+        
       } else if (state.careSetting === 'inpatient') {
+        // Inpatient uses keys: inpatientRetention, inpatientCCMCC, inpatientCDI, inpatientDenials
+        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0) {
+          driverResults.inpatientRetention = { 
+            name: 'Hospitalist Retention', 
+            value: ipWellbeingRetentionValue,
+            inputs: {
+              turnoverRate: timeDriverInputs.annualTurnoverRate,
+              burnoutPct: timeDriverInputs.burnoutRelatedTurnover,
+              abridgeImpact: timeDriverInputs.retentionImpactScenario === 'conservative' ? 20 : 
+                             timeDriverInputs.retentionImpactScenario === 'typical' ? 30 : 40,
+              replacementCost: timeDriverInputs.replacementCost,
+            }
+          };
+        }
+        if (docQualityInputs.ipDrgEnabled && ipDrgValue > 0) {
+          driverResults.inpatientCCMCC = { 
+            name: 'DRG Accuracy (Prevent Downcoding)', 
+            value: ipDrgValue,
+            inputs: {
+              gapRate: docQualityInputs.ipDrgAtRiskRate,
+              captureRate: docQualityInputs.ipDrgScenario === 'conservative' ? 15 : 
+                           docQualityInputs.ipDrgScenario === 'typical' ? 20 : 25,
+              drgWeightIncrease: docQualityInputs.ipDrgWeightIncrease,
+              baseDrgPayment: docQualityInputs.ipDrgBasePayment,
+              realizationRate: docQualityInputs.ipDrgRealization,
+            }
+          };
+        }
+        if (docQualityInputs.ipCdiEnabled && ipCdiValue > 0) {
+          driverResults.inpatientCDI = { 
+            name: 'CDI Query Reduction', 
+            value: ipCdiValue,
+            inputs: {
+              queryRate: docQualityInputs.ipCdiQueryRate,
+              reductionRate: docQualityInputs.ipCdiScenario === 'conservative' ? 15 : 
+                             docQualityInputs.ipCdiScenario === 'typical' ? 25 : 35,
+              costPerQuery: docQualityInputs.ipCdiCostPerQuery,
+            }
+          };
+        }
+        if (docQualityInputs.denialsEnabled && denialsValue > 0) {
+          driverResults.inpatientDenials = { 
+            name: 'Documentation-Related Denials', 
+            value: denialsValue,
+            inputs: {
+              denialRate: docQualityInputs.denialRate,
+              docRelatedPct: docQualityInputs.unappealableRate,
+              captureRate: docQualityInputs.denialsScenario === 'conservative' ? 25 : 
+                           docQualityInputs.denialsScenario === 'typical' ? 50 : 75,
+              avgClaimValue: docQualityInputs.avgClaimValue,
+            }
+          };
+        }
+        
+        const modelResults = {
+          totalBenefit: totalValue,
+          investment: annualInvestment,
+          providers: state.numberOfProviders,
+          encounters: state.annualEncounters,
+          utilizationRate: state.utilizationPercent,
+          costPerMonth: state.costPerProvider,
+          timeSavedPerEncounter: 2.5,
+          driverResults,
+        };
         const pdfData = transformToInpatientPDFData(modelResults, journeyInputs, undefined, clientName, preparedBy);
         await generateInpatientROIPDF(pdfData);
+        
       } else if (state.careSetting === 'nursing') {
-        // Nursing uses different model structure
+        // Nursing uses keys: nursingOvertime, nursingAgency, nursingRetention, etc.
+        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
+          driverResults.nursingOvertime = { 
+            name: 'Overtime Reduction', 
+            value: costReductionValue,
+            inputs: {
+              estimatedSavings: costReductionValue,
+            }
+          };
+        }
+        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0) {
+          driverResults.nursingRetention = { 
+            name: 'Nurse Retention', 
+            value: ipWellbeingRetentionValue,
+            inputs: {
+              turnoverRate: timeDriverInputs.annualTurnoverRate,
+              burnoutPct: timeDriverInputs.burnoutRelatedTurnover,
+              retentionLift: timeDriverInputs.retentionImpactScenario === 'conservative' ? 20 : 
+                             timeDriverInputs.retentionImpactScenario === 'typical' ? 30 : 40,
+              replacementCost: timeDriverInputs.replacementCost,
+            }
+          };
+        }
+        
         const nursingModelResults = {
           totalBenefit: totalValue,
           investment: annualInvestment,
