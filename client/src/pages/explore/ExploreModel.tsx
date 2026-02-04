@@ -530,7 +530,7 @@ export default function ExploreModel({
       driver1: 'Rounding Efficiency',
       driver2: 'Clinician Wellbeing',
       driver3: '',
-      docCardTitle: 'Connected Value',
+      docCardTitle: 'Documentation Quality',
       docCardDescription: 'Accurate documentation drives DRG accuracy and reduces CDI queries.',
       docDriver1: 'DRG Accuracy',
       docDriver2: 'CDI Query Reduction',
