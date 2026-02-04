@@ -126,24 +126,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
-    marginTop: -36, // Extend to page edge
+    marginBottom: 8,
+    marginTop: -36,
     marginLeft: -36,
     marginRight: -36,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 36,
     backgroundColor: brand.warmBeige,
     borderBottomWidth: 1,
     borderBottomColor: brand.borderGray,
   },
   logo: {
-    width: 72, // Smaller logo
+    width: 72,
     height: 18,
   },
   headerTitle: {
     fontSize: 10,
     fontFamily: "Helvetica",
-    fontWeight: 500,
     color: brand.mediumGray,
     letterSpacing: 1.5,
   },
@@ -154,9 +153,9 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     color: brand.black,
     letterSpacing: 0.5,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingBottom: 4,
+    marginTop: 12,
+    marginBottom: 6,
+    paddingBottom: 3,
     borderBottomWidth: 2,
     borderBottomColor: brand.black,
   },
@@ -164,7 +163,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   
   // Title section
@@ -172,13 +171,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   subtitle: {
     fontSize: 10,
     fontFamily: "Helvetica",
     color: brand.mediumGray,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   
   // Body text - readable
@@ -186,14 +185,14 @@ const styles = StyleSheet.create({
     fontSize: 9,
     lineHeight: 1.4,
     color: brand.darkGray,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   
   // Two-column layout
   twoColumn: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   column: {
     flex: 1,
@@ -202,8 +201,8 @@ const styles = StyleSheet.create({
   // Three-column layout
   threeColumn: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
+    gap: 6,
+    marginBottom: 8,
   },
   thirdColumn: {
     flex: 1,
@@ -214,22 +213,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   cardSubtitle: {
     fontSize: 7,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 6,
     paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     borderRadius: 2,
     alignSelf: "flex-start",
   },
@@ -237,12 +236,12 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 8,
-    marginBottom: 2,
+    marginTop: 6,
+    marginBottom: 1,
   },
   cardText: {
     fontSize: 8,
-    lineHeight: 1.35,
+    lineHeight: 1.3,
     color: brand.darkGray,
   },
   
@@ -251,24 +250,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   
   // Callout box - beige background
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
-    paddingLeft: 12,
-    paddingVertical: 8,
+    paddingLeft: 10,
+    paddingVertical: 6,
     backgroundColor: brand.warmBeige,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   calloutText: {
     fontSize: 8,
     fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.4,
+    lineHeight: 1.35,
     color: brand.darkGray,
   },
   
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
   table: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   tableHeader: {
     flexDirection: "row",
@@ -288,8 +287,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   tableRow: {
     flexDirection: "row",
@@ -302,8 +301,8 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 8,
     color: brand.darkGray,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   
   // Flow diagram
@@ -311,12 +310,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 8,
-    gap: 6,
+    marginVertical: 6,
+    gap: 5,
   },
   flowBox: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 2,
@@ -334,7 +333,7 @@ const styles = StyleSheet.create({
     fontSize: 7,
     color: brand.lightGray,
     textAlign: "center" as const,
-    marginTop: 2,
+    marginTop: 1,
   },
   
   // Honest limits columns
@@ -343,24 +342,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 8,
+    padding: 6,
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   limitsSubtext: {
     fontSize: 7,
     color: brand.mediumGray,
-    marginBottom: 5,
+    marginBottom: 4,
   },
   limitsBullet: {
     fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   
   // Summary box
@@ -368,13 +367,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 12,
-    marginBottom: 10,
+    padding: 10,
+    marginBottom: 8,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
   },
   summaryColumn: {
     flex: 1,
@@ -383,13 +381,13 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
     textDecoration: "underline",
   },
   summaryItem: {
     fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   
   // Quote box
@@ -397,9 +395,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 12,
-    marginTop: 8,
-    marginBottom: 10,
+    padding: 10,
+    marginTop: 6,
+    marginBottom: 8,
   },
   quoteText: {
     fontSize: 9,
@@ -412,7 +410,7 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 20,
     left: 36,
     right: 36,
     flexDirection: "row",
@@ -420,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: brand.borderGray,
-    paddingTop: 8,
+    paddingTop: 6,
   },
   footerText: {
     fontSize: 8,

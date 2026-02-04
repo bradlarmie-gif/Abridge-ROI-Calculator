@@ -44,11 +44,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 8,
     marginTop: -36,
     marginLeft: -36,
     marginRight: -36,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 36,
     backgroundColor: brand.warmBeige,
     borderBottomWidth: 1,
@@ -69,9 +69,9 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     color: brand.black,
     letterSpacing: 0.5,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingBottom: 4,
+    marginTop: 12,
+    marginBottom: 6,
+    paddingBottom: 3,
     borderBottomWidth: 2,
     borderBottomColor: brand.black,
   },
@@ -79,59 +79,59 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   mainTitle: {
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   subtitle: {
     fontSize: 10,
     fontFamily: "Helvetica",
     color: brand.mediumGray,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   bodyText: {
     fontSize: 9,
     lineHeight: 1.4,
     color: brand.darkGray,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   twoColumn: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   column: {
     flex: 1,
   },
   threeColumn: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
+    gap: 6,
+    marginBottom: 8,
   },
   card: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   cardSubtitle: {
     fontSize: 7,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 6,
     paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     borderRadius: 2,
     alignSelf: "flex-start",
   },
@@ -139,40 +139,40 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 8,
-    marginBottom: 2,
+    marginTop: 6,
+    marginBottom: 1,
   },
   cardText: {
     fontSize: 8,
-    lineHeight: 1.35,
+    lineHeight: 1.3,
     color: brand.darkGray,
   },
   fullWidthCard: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
-    paddingLeft: 12,
-    paddingVertical: 8,
+    paddingLeft: 10,
+    paddingVertical: 6,
     backgroundColor: brand.warmBeige,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   calloutText: {
     fontSize: 8,
     fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.4,
+    lineHeight: 1.35,
     color: brand.darkGray,
   },
   table: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   tableHeader: {
     flexDirection: "row",
@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   tableRow: {
     flexDirection: "row",
@@ -198,44 +198,43 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 8,
     color: brand.darkGray,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   limitsColumn: {
     flex: 1,
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 8,
+    padding: 6,
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   limitsSubtext: {
     fontSize: 7,
     color: brand.mediumGray,
-    marginBottom: 5,
+    marginBottom: 4,
   },
   limitsBullet: {
     fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   summaryBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 12,
-    marginBottom: 10,
+    padding: 10,
+    marginBottom: 8,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
   },
   summaryColumn: {
     flex: 1,
@@ -244,21 +243,21 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
     textDecoration: "underline",
   },
   summaryItem: {
     fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   quoteBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 12,
-    marginTop: 8,
-    marginBottom: 10,
+    padding: 10,
+    marginTop: 6,
+    marginBottom: 8,
   },
   quoteText: {
     fontSize: 9,
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 20,
     left: 36,
     right: 36,
     flexDirection: "row",
@@ -277,7 +276,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: brand.borderGray,
-    paddingTop: 8,
+    paddingTop: 6,
   },
   footerText: {
     fontSize: 8,
@@ -335,7 +334,7 @@ function Page1() {
         Inpatient medicine operates on a fundamentally different economic model than outpatient care. Hospitals are paid a fixed amount per admission based on the DRG--the Diagnosis Related Group. That payment is determined by what's documented.
       </Text>
       <Text style={styles.bodyText}>
-        If a condition was discussed at bedside but not documented, it doesn't exist for coding purposes. If clinical complexity isn't captured in the note, the DRG may be assigned lower than warranted. This is where ambient documentation creates value. Not by adding things that weren't there--but by capturing what was actually discussed.
+        If a condition was discussed at bedside but not documented, it doesn't exist for coding purposes. If clinical complexity isn't captured in the note, the DRG may be assigned lower than warranted. This is where ambient documentation creates value--not by adding things that weren't there, but by capturing what was actually discussed.
       </Text>
       
       <View style={styles.twoColumn}>
@@ -344,7 +343,7 @@ function Page1() {
           <Text style={styles.cardText}>
             DRG accuracy, denial prevention, CDI efficiency. When documentation captures clinical complexity, revenue follows. The notes drive the payment.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
           </View>
         </View>
@@ -353,7 +352,7 @@ function Page1() {
           <Text style={styles.cardText}>
             Hospitalists document multiple notes per patient--H&P, daily progress, discharge summary. Reducing this burden improves work-life balance and retention.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Indirect value (no capacity expansion)</Text>
           </View>
         </View>
@@ -367,11 +366,11 @@ function Page1() {
           <Badge type="direct" />
           <Text style={styles.cardLabel}>THE MECHANISM</Text>
           <Text style={styles.cardText}>
-            CCs and MCCs increase DRG weight and payment. When hospitalists discuss acute kidney injury, malnutrition, or respiratory failure at bedside but don't fully document it, that complexity isn't coded. Abridge captures these conversations.
+            CCs and MCCs increase DRG weight and payment. When hospitalists discuss acute kidney injury, malnutrition, or respiratory failure at bedside but don't fully document it, that complexity isn't coded.
           </Text>
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
           <Text style={styles.cardText}>
-            Admissions x At-risk rate (25%) x Protection rate (20%) x DRG weight increase (0.4) x Base payment ($6K) x Realization (50%) = Value
+            Admissions x At-risk rate (25%) x Protection rate (20%) x DRG weight increase (0.4) x Base payment ($6K) x Realization (50%)
           </Text>
           <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
           <Text style={styles.cardText}>
@@ -388,7 +387,7 @@ function Page1() {
           </Text>
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
           <Text style={styles.cardText}>
-            Admissions x Query rate (30%) x Reduction rate (25%) x Cost per query ($50) = Savings
+            Admissions x Query rate (30%) x Reduction rate (25%) x Cost per query ($50)
           </Text>
           <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
           <Text style={styles.cardText}>
@@ -398,7 +397,7 @@ function Page1() {
       </View>
       
       <View style={styles.fullWidthCard}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <Text style={styles.cardTitle}>DENIAL PREVENTION</Text>
           <Badge type="connected" />
         </View>
@@ -420,7 +419,7 @@ function Page2() {
       <Text style={styles.sectionHeader}>VALUE MECHANISMS -- CLINICIAN WELLBEING</Text>
       
       <View style={styles.fullWidthCard}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <Text style={styles.cardTitle}>RETENTION SAVINGS</Text>
           <Text style={[styles.cardSubtitle, { backgroundColor: brand.indirectBg, color: brand.indirectText }]}>INDIRECTLY ATTRIBUTABLE</Text>
         </View>
@@ -442,7 +441,7 @@ function Page2() {
       
       <View style={styles.threeColumn}>
         <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>[X] LENGTH OF STAY REDUCTION</Text>
+          <Text style={styles.limitsHeader}>[X] LENGTH OF STAY</Text>
           <Text style={styles.cardText}>
             We removed this driver. "Faster documentation = shorter stays" sounds logical but isn't supportable. LOS is driven by clinical readiness, not documentation speed.
           </Text>
@@ -454,7 +453,7 @@ function Page2() {
           </Text>
         </View>
         <View style={styles.limitsColumn}>
-          <Text style={styles.limitsHeader}>[X] READMISSION REDUCTION</Text>
+          <Text style={styles.limitsHeader}>[X] READMISSION</Text>
           <Text style={styles.cardText}>
             Better documentation could theoretically improve handoffs and reduce readmissions. But the causal chain is too long. We don't calculate it.
           </Text>
@@ -484,6 +483,7 @@ function Page2() {
           <Text style={styles.limitsBullet}>- Denial rates (payer varies)</Text>
           <Text style={styles.limitsBullet}>- Hospitalist retention</Text>
           <Text style={styles.limitsBullet}>- DRG finalization speed</Text>
+          <Text style={styles.limitsBullet}>- Coder productivity</Text>
         </View>
         <View style={styles.limitsColumn}>
           <Text style={styles.limitsHeader}>[ ] WHAT WE REMOVED</Text>
@@ -491,7 +491,15 @@ function Page2() {
           <Text style={styles.limitsBullet}>- LOS reduction</Text>
           <Text style={styles.limitsBullet}>- Capacity expansion</Text>
           <Text style={styles.limitsBullet}>- Readmission reduction</Text>
+          <Text style={styles.limitsBullet}>- Throughput gains</Text>
         </View>
+      </View>
+      
+      <View style={styles.callout}>
+        <Text style={styles.calloutText}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>THE INPATIENT REALITY: </Text>
+          Documentation value in inpatient is about accuracy, not speed. We capture what was discussed--that's where the DRG value lives.
+        </Text>
       </View>
       
       <PageFooter pageNum={2} />
@@ -615,7 +623,7 @@ function Page3() {
           <Text style={styles.cardText}>Baseline CMI by unit, CC/MCC capture rates</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Track CMI on Abridge units vs. control</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 3-6 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 3-6 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>CDI QUERIES</Text>
@@ -623,7 +631,7 @@ function Page3() {
           <Text style={styles.cardText}>Query rate by unit, query types</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Compare query rates pre/post</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
@@ -634,7 +642,7 @@ function Page3() {
           <Text style={styles.cardText}>Denial rate by reason code</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Track doc-related denials Abridge vs. control</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 6-12 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 6-12 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>RETENTION</Text>
@@ -642,7 +650,7 @@ function Page3() {
           <Text style={styles.cardText}>Turnover rate, exit interviews</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Track turnover on Abridge services</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
       </View>
       
@@ -732,6 +740,7 @@ function Page4() {
             <Text style={styles.summaryLabel}>WELLBEING (Indirect)</Text>
             <Text style={styles.summaryItem}>Retention value</Text>
             <Text style={styles.summaryItem}>Time back</Text>
+            <Text style={styles.summaryItem}>Work-life balance</Text>
           </View>
           <View style={styles.summaryColumn}>
             <Text style={styles.summaryLabel}>WHAT WE DON'T CLAIM</Text>
@@ -752,7 +761,7 @@ function Page4() {
         </Text>
       </View>
       
-      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold" }]}>
+      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold", marginBottom: 0 }]}>
         That honesty is the methodology.
       </Text>
       

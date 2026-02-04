@@ -44,11 +44,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 8,
     marginTop: -36,
     marginLeft: -36,
     marginRight: -36,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 36,
     backgroundColor: brand.warmBeige,
     borderBottomWidth: 1,
@@ -69,9 +69,9 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     color: brand.black,
     letterSpacing: 0.5,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingBottom: 4,
+    marginTop: 12,
+    marginBottom: 6,
+    paddingBottom: 3,
     borderBottomWidth: 2,
     borderBottomColor: brand.black,
   },
@@ -79,59 +79,59 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   mainTitle: {
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   subtitle: {
     fontSize: 10,
     fontFamily: "Helvetica",
     color: brand.mediumGray,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   bodyText: {
     fontSize: 9,
     lineHeight: 1.4,
     color: brand.darkGray,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   twoColumn: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   column: {
     flex: 1,
   },
   threeColumn: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
+    gap: 6,
+    marginBottom: 8,
   },
   card: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   cardSubtitle: {
     fontSize: 7,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 6,
     paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     borderRadius: 2,
     alignSelf: "flex-start",
   },
@@ -139,40 +139,40 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 8,
-    marginBottom: 2,
+    marginTop: 6,
+    marginBottom: 1,
   },
   cardText: {
     fontSize: 8,
-    lineHeight: 1.35,
+    lineHeight: 1.3,
     color: brand.darkGray,
   },
   fullWidthCard: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
+    padding: 8,
     backgroundColor: brand.cardBg,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
-    paddingLeft: 12,
-    paddingVertical: 8,
+    paddingLeft: 10,
+    paddingVertical: 6,
     backgroundColor: brand.warmBeige,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   calloutText: {
     fontSize: 8,
     fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.4,
+    lineHeight: 1.35,
     color: brand.darkGray,
   },
   table: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   tableHeader: {
     flexDirection: "row",
@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   tableRow: {
     flexDirection: "row",
@@ -198,44 +198,43 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 8,
     color: brand.darkGray,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   limitsColumn: {
     flex: 1,
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 8,
+    padding: 6,
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   limitsSubtext: {
     fontSize: 7,
     color: brand.mediumGray,
-    marginBottom: 5,
+    marginBottom: 4,
   },
   limitsBullet: {
     fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   summaryBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 12,
-    marginBottom: 10,
+    padding: 10,
+    marginBottom: 8,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
   },
   summaryColumn: {
     flex: 1,
@@ -244,21 +243,21 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,
     textDecoration: "underline",
   },
   summaryItem: {
     fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   quoteBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 12,
-    marginTop: 8,
-    marginBottom: 10,
+    padding: 10,
+    marginTop: 6,
+    marginBottom: 8,
   },
   quoteText: {
     fontSize: 9,
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 20,
     left: 36,
     right: 36,
     flexDirection: "row",
@@ -277,7 +276,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: brand.borderGray,
-    paddingTop: 8,
+    paddingTop: 6,
   },
   footerText: {
     fontSize: 8,
@@ -345,7 +344,7 @@ function Page1() {
           <Text style={styles.cardText}>
             Capacity expansion, cost reduction, clinician wellbeing. When documentation is faster, physicians can see more patients, reduce burnout, or both. The time has measurable value.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
           </View>
         </View>
@@ -354,7 +353,7 @@ function Page1() {
           <Text style={styles.cardText}>
             wRVU accuracy, HCC capture, denial prevention. When documentation is complete, coding is accurate, and revenue follows. The notes drive the billing.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
           </View>
         </View>
@@ -385,7 +384,7 @@ function Page1() {
           <Badge type="indirect" />
           <Text style={styles.cardLabel}>THE MECHANISM</Text>
           <Text style={styles.cardText}>
-            Documentation burden is the #1 driver of physician burnout. Burnout drives turnover. Reducing burden can help retain physicians who would otherwise leave.
+            Documentation burden is the #1 driver of physician burnout. Burnout drives turnover. Reducing burden helps retain physicians.
           </Text>
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
           <Text style={styles.cardText}>
@@ -393,13 +392,13 @@ function Page1() {
           </Text>
           <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
           <Text style={styles.cardText}>
-            Link between doc burden and burnout is well-established. The question is magnitude of impact.
+            Link between doc burden and burnout is well-established. The question is magnitude.
           </Text>
         </View>
       </View>
       
       <View style={styles.fullWidthCard}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <Text style={styles.cardTitle}>COST REDUCTION</Text>
           <Badge type="user" />
         </View>
@@ -443,7 +442,7 @@ function Page2() {
           <Badge type="direct" />
           <Text style={styles.cardLabel}>THE MECHANISM</Text>
           <Text style={styles.cardText}>
-            For Medicare Advantage patients, complete documentation captures HCCs that affect risk adjustment. Conditions discussed but not documented don't count for RAF.
+            For Medicare Advantage patients, complete documentation captures HCCs that affect risk adjustment. Conditions discussed but not documented don't count.
           </Text>
           <Text style={styles.cardLabel}>THE CALCULATION</Text>
           <Text style={styles.cardText}>
@@ -457,7 +456,7 @@ function Page2() {
       </View>
       
       <View style={styles.fullWidthCard}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <Text style={styles.cardTitle}>DENIAL PREVENTION</Text>
           <Badge type="direct" />
         </View>
@@ -468,10 +467,6 @@ function Page2() {
         <Text style={styles.cardLabel}>THE CALCULATION</Text>
         <Text style={styles.cardText}>
           Encounters x Denial rate x Unappealable % x Prevention target x Avg claim value x Realization = Denial value
-        </Text>
-        <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
-        <Text style={styles.cardText}>
-          Denial rates are tracked. Denial reasons are categorized. Documentation-related denials are identifiable.
         </Text>
       </View>
       
@@ -492,6 +487,7 @@ function Page2() {
           <Text style={styles.limitsBullet}>- Retention rates</Text>
           <Text style={styles.limitsBullet}>- Patient satisfaction</Text>
           <Text style={styles.limitsBullet}>- Denial rates (payer varies)</Text>
+          <Text style={styles.limitsBullet}>- Referral patterns</Text>
         </View>
         <View style={styles.limitsColumn}>
           <Text style={styles.limitsHeader}>[ ] DEPENDS ON BEHAVIOR</Text>
@@ -499,7 +495,15 @@ function Page2() {
           <Text style={styles.limitsBullet}>- Capacity utilization</Text>
           <Text style={styles.limitsBullet}>- How time is used</Text>
           <Text style={styles.limitsBullet}>- Org priorities</Text>
+          <Text style={styles.limitsBullet}>- Scheduling changes</Text>
         </View>
+      </View>
+      
+      <View style={styles.callout}>
+        <Text style={styles.calloutText}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>THE OUTPATIENT REALITY: </Text>
+          Outpatient is the clearest ROI story because every visit generates revenue. But how that value shows up depends on organizational choices.
+        </Text>
       </View>
       
       <PageFooter pageNum={2} />
@@ -639,7 +643,7 @@ function Page3() {
           <Text style={styles.cardText}>Time-motion studies, EHR session data</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Repeat measurements, compare Abridge vs. control</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>wRVU ACCURACY</Text>
@@ -647,7 +651,7 @@ function Page3() {
           <Text style={styles.cardText}>wRVU distribution by physician</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Compare distribution pre/post</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
@@ -658,7 +662,7 @@ function Page3() {
           <Text style={styles.cardText}>RAF gap analysis, recapture rates</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Track recapture on Abridge patients</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 6-12 months (RAF lag)</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 6-12 months (RAF lag)</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>RETENTION</Text>
@@ -666,7 +670,7 @@ function Page3() {
           <Text style={styles.cardText}>Turnover rate, exit interviews</Text>
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>Track turnover, satisfaction</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
       </View>
       
@@ -713,6 +717,26 @@ function Page4() {
         </View>
       </View>
       
+      <Text style={styles.sectionHeader}>CONNECTED VALUE</Text>
+      <Text style={styles.bodyText}>
+        Outpatient documentation quality affects multiple revenue streams simultaneously:
+      </Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>FEE-FOR-SERVICE</Text>
+          <Text style={styles.cardText}>
+            wRVU accuracy directly impacts reimbursement. Complete documentation of complexity = accurate coding = appropriate payment.
+          </Text>
+        </View>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>VALUE-BASED CARE</Text>
+          <Text style={styles.cardText}>
+            HCC capture affects risk adjustment. Quality measures require documentation. Care coordination depends on complete notes.
+          </Text>
+        </View>
+      </View>
+      
       <Text style={styles.sectionHeader}>SUMMARY</Text>
       <Text style={styles.bodyText}>
         Outpatient has the clearest ROI story because billing creates a direct value chain. Time saved can become capacity or wellbeing. Complete documentation drives accurate coding and revenue capture.
@@ -727,7 +751,7 @@ function Page4() {
             <Text style={styles.summaryItem}>Clinician wellbeing</Text>
           </View>
           <View style={styles.summaryColumn}>
-            <Text style={styles.summaryLabel}>DOCUMENTATION QUALITY</Text>
+            <Text style={styles.summaryLabel}>DOCUMENTATION</Text>
             <Text style={styles.summaryItem}>wRVU improvement</Text>
             <Text style={styles.summaryItem}>HCC capture</Text>
             <Text style={styles.summaryItem}>Denial prevention</Text>
@@ -742,7 +766,7 @@ function Page4() {
       </View>
       
       <Text style={styles.bodyText}>
-        We model all drivers--but let users choose which apply to their situation. Not every organization wants capacity expansion. Not every population is Medicare Advantage.
+        We model all drivers--but let users choose which apply to their situation.
       </Text>
       
       <View style={styles.quoteBox}>
@@ -751,7 +775,7 @@ function Page4() {
         </Text>
       </View>
       
-      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold" }]}>
+      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold", marginBottom: 0 }]}>
         That honesty is the methodology.
       </Text>
       
