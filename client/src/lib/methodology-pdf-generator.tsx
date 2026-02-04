@@ -395,6 +395,27 @@ export async function generateMethodologyPDF(data: MethodologyPDFData): Promise<
   const filename = `abridge-methodology-${data.careSetting}-${new Date().toISOString().split("T")[0]}.pdf`;
   
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile && navigator.share && navigator.canShare) {
+    const file = new File([blob], filename, { type: 'application/pdf' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: `${data.settingLabel} Methodology`,
+          text: `Abridge ${data.settingLabel} ROI Methodology`,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          const blobUrl = URL.createObjectURL(blob);
+          window.open(blobUrl, '_blank');
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        }
+        return;
+      }
+    }
+  }
+  
   if (isMobile) {
     const blobUrl = URL.createObjectURL(blob);
     window.open(blobUrl, '_blank');

@@ -1329,6 +1329,27 @@ export async function generateInpatientROIPDF(data: InpatientPDFData): Promise<v
   const fileName = `Inpatient_ROI_Model_${orgName.replace(/\s+/g, "_")}_${today}.pdf`;
   
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile && navigator.share && navigator.canShare) {
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Inpatient ROI Model',
+          text: `Abridge Inpatient ROI Assessment for ${orgName}`,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          const blobUrl = URL.createObjectURL(blob);
+          window.open(blobUrl, '_blank');
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        }
+        return;
+      }
+    }
+  }
+  
   if (isMobile) {
     const blobUrl = URL.createObjectURL(blob);
     window.open(blobUrl, '_blank');

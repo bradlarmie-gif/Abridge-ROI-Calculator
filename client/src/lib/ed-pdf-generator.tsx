@@ -1620,6 +1620,27 @@ export async function generateEDROIPDF(data: EDPDFData): Promise<void> {
     : "Abridge_ED_Value_Assessment.pdf";
   
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile && navigator.share && navigator.canShare) {
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Emergency Department ROI Model',
+          text: `Abridge ED ROI Assessment${data.clientName ? ` for ${data.clientName}` : ''}`,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          const blobUrl = URL.createObjectURL(blob);
+          window.open(blobUrl, '_blank');
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+        }
+        return;
+      }
+    }
+  }
+  
   if (isMobile) {
     const blobUrl = URL.createObjectURL(blob);
     window.open(blobUrl, '_blank');
