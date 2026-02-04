@@ -1327,7 +1327,15 @@ export async function generateInpatientROIPDF(data: InpatientPDFData): Promise<v
   const today = new Date().toISOString().split("T")[0];
   const orgName = data.clientName || data.organizationName || "Organization";
   const fileName = `Inpatient_ROI_Model_${orgName.replace(/\s+/g, "_")}_${today}.pdf`;
-  saveAs(blob, fileName);
+  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+  } else {
+    saveAs(blob, fileName);
+  }
 }
 
 export async function generateInpatientROIPDFBlob(data: InpatientPDFData): Promise<Blob> {

@@ -393,7 +393,15 @@ export async function generateMethodologyPDF(data: MethodologyPDFData): Promise<
   const doc = <MethodologyDocument data={data} />;
   const blob = await pdf(doc).toBlob();
   const filename = `abridge-methodology-${data.careSetting}-${new Date().toISOString().split("T")[0]}.pdf`;
-  saveAs(blob, filename);
+  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+  } else {
+    saveAs(blob, filename);
+  }
 }
 
 export const nursingMethodologyData: MethodologyPDFData = {

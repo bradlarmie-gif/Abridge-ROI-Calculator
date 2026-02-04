@@ -1618,7 +1618,15 @@ export async function generateEDROIPDF(data: EDPDFData): Promise<void> {
   const fileName = data.clientName 
     ? `Abridge_ED_Value_Assessment_${data.clientName.replace(/\s+/g, "_")}.pdf`
     : "Abridge_ED_Value_Assessment.pdf";
-  saveAs(blob, fileName);
+  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+  } else {
+    saveAs(blob, fileName);
+  }
 }
 
 export async function generateEDROIPDFBlob(data: EDPDFData): Promise<Blob> {
