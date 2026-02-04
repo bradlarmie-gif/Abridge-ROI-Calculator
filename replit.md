@@ -137,3 +137,41 @@ Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, 
   - **Patient Experience (HCAHPS)**: Qualitative-only driver with "QUALITATIVE" badge. Shows hours back at bedside but no dollar calculation
 - **Intro Box**: Explains that documentation enables visibility for prevention but doesn't directly cause outcomes
 - **Right Panel**: Shows "Time Savings Value" prominently, with "Care Quality Potential" in a separate dashed-border section below
+
+### Learn Methodology Section Restructure
+- **Complete Restructure**: Replaced 2369-line LearnPath.tsx with modular methodology pages
+- **New Architecture**:
+  - `LearnPath.tsx`: Simple router (~50 lines) that switches between methodology pages
+  - `client/src/pages/methodology/MethodologyHome.tsx`: Landing page "How We Think About Value"
+  - `client/src/pages/methodology/MethodologyNursing.tsx`: Nursing-specific methodology
+  - `client/src/pages/methodology/MethodologyOutpatient.tsx`: Outpatient-specific methodology
+  - `client/src/pages/methodology/MethodologyED.tsx`: Emergency Department methodology
+  - `client/src/pages/methodology/MethodologyInpatient.tsx`: Inpatient methodology
+  - `client/src/pages/methodology/index.ts`: Barrel export file
+- **Consistent 5-Section Structure** (all setting pages):
+  1. THE CONTEXT - Why this setting is unique
+  2. THE VALUE MECHANISMS - How time saved becomes dollars
+  3. THE ASSUMPTIONS - Key assumptions with ranges, not point estimates
+  4. THE HONEST LIMITS - Direct vs. indirect measurability
+  5. THE VALIDATION PATH - How to validate with your own data
+- **Home Page Features**:
+  - Hero section with "How We Think About Value" title
+  - Introduction text on warm beige background (#F5F0EB)
+  - Four care setting cards with icons and hover states
+  - "Our Principles" section with 4 principles (Show our work, Conservative by default, Honest about limits, Validate with your data)
+- **Setting Page Design**:
+  - Sticky header with back button
+  - Hero section with setting-specific title
+  - Collapsible sections using framer-motion
+  - MechanismCard components for detailed content
+  - Tables for assumptions
+  - Color-coded measurability indicators (green/yellow/red)
+- **Styling**:
+  - Brand colors: Abridge Cadmium Red (#EA2C00), warm beige (#F5F0EB)
+  - 11px ALL CAPS section labels with 1.5px letter-spacing
+  - Consistent typography hierarchy
+  - White cards on beige backgrounds
+- **Data-testid Attributes**:
+  - `button-back`: Back navigation buttons
+  - `button-setting-{setting}`: Care setting cards
+  - `button-section-{sectionId}`: Collapsible section buttons
