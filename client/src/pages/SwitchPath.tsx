@@ -1314,11 +1314,11 @@ export default function SwitchPath({ onBack }: SwitchPathProps) {
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-6">
             <button 
-              onClick={onBack}
-              className="hover:opacity-70 transition-opacity cursor-pointer"
-              data-testid="button-logo-home"
+              onClick={() => { window.location.href = '/'; }}
+              className="cursor-pointer"
+              data-testid="link-logo-home"
             >
-              <img src={abridgeLogo} alt="Abridge" className="h-6 md:h-7" />
+              <img src={abridgeLogo} alt="Abridge" className="h-6 md:h-7 hover:opacity-70 transition-opacity" />
             </button>
             <span className="text-xs md:text-sm font-medium text-neutral-400 tracking-wide">SWITCH</span>
           </div>

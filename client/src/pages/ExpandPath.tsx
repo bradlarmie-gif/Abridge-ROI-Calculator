@@ -12,10 +12,14 @@ export default function ExpandPath({ onBack }: ExpandPathProps) {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <header className="mb-16">
           <div className="flex items-center justify-between">
-            <div>
-              <img src={abridgeLogo} alt="Abridge" className="h-7 mb-1" data-testid="img-logo" />
+            <button 
+              onClick={() => { window.location.href = '/'; }}
+              className="cursor-pointer text-left"
+              data-testid="link-logo-home"
+            >
+              <img src={abridgeLogo} alt="Abridge" className="h-7 mb-1" />
               <p className="text-sm text-[#6B7280] font-medium tracking-wide">ROI Calculator</p>
-            </div>
+            </button>
             <Button
               variant="ghost"
               onClick={onBack}

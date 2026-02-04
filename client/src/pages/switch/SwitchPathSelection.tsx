@@ -27,7 +27,13 @@ export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPath
           <ArrowRight className="w-4 h-4 rotate-180" />
           Back
         </button>
-        <img src={abridgeLogoPath} alt="Abridge" className="h-6 md:h-7" />
+        <button 
+          onClick={() => { window.location.href = '/'; }}
+          className="cursor-pointer"
+          data-testid="link-logo-home"
+        >
+          <img src={abridgeLogoPath} alt="Abridge" className="h-6 md:h-7" />
+        </button>
         <div className="w-16" />
       </header>
 
