@@ -179,7 +179,7 @@ const DRIVER_INPUT_CONFIGS: Record<string, DriverInputConfig[]> = {
     { key: "turnoverRate", label: "Annual turnover rate (%)", defaultValue: 10, type: "percent", min: 0, max: 50 },
     { key: "burnoutAttribution", label: "Burnout-related (%)", defaultValue: 50, type: "percent", min: 0, max: 100 },
     { key: "abridgeImpact", label: "Abridge prevention rate (%)", defaultValue: 30, type: "percent", min: 0, max: 100 },
-    { key: "replacementCost", label: "Replacement cost ($)", defaultValue: 350000, type: "currency", min: 100000, max: 800000 },
+    { key: "replacementCost", label: "Replacement cost ($)", defaultValue: 400000, type: "currency", min: 100000, max: 800000 },
   ],
   edLevelOfService: [
     { key: "avgWrvuPerEncounter", label: "Avg wRVU per encounter", defaultValue: 2.5, type: "number", min: 1, max: 5, step: 0.1 },

@@ -911,7 +911,7 @@ function getDriverLogic(driver: DriverCalculation, data: InpatientPDFData): Driv
       const burnoutDepartures = (inputs.burnoutDepartures as number) || (annualDepartures * (burnoutAttribution / 100));
       const retentionLift = (inputs.retentionLift as number) || 15;
       const departuresAvoided = (inputs.departuresAvoided as number) || (burnoutDepartures * (retentionLift / 100));
-      const replacementCost = (inputs.replacementCost as number) || (inputs.turnoverCost as number) || 350000;
+      const replacementCost = (inputs.replacementCost as number) || (inputs.turnoverCost as number) || 400000;
       
       const weeklyMinutes = Math.round(hoursPerProvider * 60 / 52);
       const tier = hoursPerProvider < 50 ? "MINIMAL (3-5% turnover reduction)" 

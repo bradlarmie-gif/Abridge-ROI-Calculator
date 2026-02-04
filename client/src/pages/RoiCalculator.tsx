@@ -331,7 +331,7 @@ export default function RoiCalculator({
     edThroughput: { minutesSaved: 20, lwbsImprovement: 0.5 },
     edLevelOfService: { baselineWrvu: 2.6, qualityLift: 5, revenuePerWrvu: 34 },
     edDenialReduction: { denialRate: 12, preventionRate: 40 },
-    edRetention: { burnoutReduction: 25, costPerDeparture: 350000 },
+    edRetention: { burnoutReduction: 25, costPerDeparture: 400000 },
   });
   const [expandedCareSettingDriver, setExpandedCareSettingDriver] = useState<LeverId | null>(null);
 
@@ -1060,7 +1060,7 @@ export default function RoiCalculator({
         baselineAttritionRate: 5,
         pctTurnoverFromBurnout: 31,
         pctBurnoutReduction: careSettingDriverAdjustments.edRetention?.burnoutReduction ?? 25,
-        costPerDeparture: careSettingDriverAdjustments.edRetention?.costPerDeparture ?? 350000,
+        costPerDeparture: careSettingDriverAdjustments.edRetention?.costPerDeparture ?? 400000,
       };
       
       // Call calculateRoi with ED setting

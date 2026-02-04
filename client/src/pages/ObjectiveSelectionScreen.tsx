@@ -733,7 +733,7 @@ const DRIVER_CONTENT: Record<string, DriverContent> = {
       {
         title: "STEP 4: COST SAVINGS",
         steps: [
-          { label: "Cost per ED departure", value: "$350,000", note: "(typical)" },
+          { label: "Cost per ED departure", value: "$400,000", note: "(typical)" },
           { label: "Annual value", value: "$98,000" },
         ],
       },

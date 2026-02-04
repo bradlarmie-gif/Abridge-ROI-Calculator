@@ -245,7 +245,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     calculateRetentionValue: false,
     annualTurnoverRate: 6,
     burnoutRelatedTurnover: 40,
-    replacementCost: 350000,
+    replacementCost: 400000,
     retentionImpactScenario: 'typical',
     // ED-specific defaults
     edLwbsEnabled: false,

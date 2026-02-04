@@ -543,7 +543,7 @@ const DEFAULT_ASSUMPTIONS = {
     // Single pathway - burnout reduction
     retentionEnabled: true,
     turnoverRate: 8, // %
-    replacementCost: 350000, // $
+    replacementCost: 400000, // $
     realizationRate: 20, // %
     burnoutReduction: 25, // %
   },
