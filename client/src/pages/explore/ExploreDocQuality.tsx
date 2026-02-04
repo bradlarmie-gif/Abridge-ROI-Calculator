@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ExploreState, type DocQualityInputs } from "./ExploreFlow";
+import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
 interface ExploreDocQualityProps {
   state: ExploreState;
@@ -343,11 +344,10 @@ export default function ExploreDocQuality({
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Cost per HAPI</label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                          <input
-                            type="number"
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10">$</span>
+                          <FormattedNumberInput
                             value={docQualityInputs.nursingHapiCost}
-                            onChange={(e) => updateDocInputs({ nursingHapiCost: Number(e.target.value) })}
+                            onChange={(val) => updateDocInputs({ nursingHapiCost: val })}
                             className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black"
                             data-testid="input-nursing-hapi-cost"
                           />
@@ -455,11 +455,10 @@ export default function ExploreDocQuality({
                       <div className="space-y-2.5">
                         <label className="text-sm text-[#888888]">Cost per Fall</label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                          <input
-                            type="number"
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888] z-10">$</span>
+                          <FormattedNumberInput
                             value={docQualityInputs.nursingFallsCost}
-                            onChange={(e) => updateDocInputs({ nursingFallsCost: Number(e.target.value) })}
+                            onChange={(val) => updateDocInputs({ nursingFallsCost: val })}
                             className="h-12 w-full bg-white border border-[#E5E5E5] rounded-lg pl-7 pr-3 text-black"
                             data-testid="input-nursing-falls-cost"
                           />
@@ -999,12 +998,10 @@ export default function ExploreDocQuality({
                         <div className="flex-1">
                           <label className="text-[13px] text-[#666666] mb-1.5 block">Cost per Query</label>
                           <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
-                            <input
-                              type="number"
-                              step="10"
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] z-10">$</span>
+                            <FormattedNumberInput
                               value={docQualityInputs.ipCdiCostPerQuery}
-                              onChange={(e) => updateDocInputs({ ipCdiCostPerQuery: parseFloat(e.target.value) || 0 })}
+                              onChange={(val) => updateDocInputs({ ipCdiCostPerQuery: val })}
                               className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold"
                               data-testid="input-cdi-cost"
                             />
