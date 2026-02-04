@@ -313,7 +313,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   ipProtectionRate: 25,
   ipDrgWeightLift: 0.4,
   ipBaseDrgPayment: 6000,
-  ipDrgRealization: 50,
+  ipDrgRealization: 33,
   // Inpatient CDI Query Reduction assumptions
   ipQueryRate: 30,
   ipQueryReductionRate: 25,

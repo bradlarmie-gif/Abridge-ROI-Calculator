@@ -300,7 +300,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipDrgAtRiskRate: 25, // 25% of admissions have documentation gaps
     ipDrgWeightIncrease: 0.4, // Average DRG weight difference
     ipDrgBasePayment: 6000, // $6,000 base DRG payment
-    ipDrgRealization: 50, // 50% realization (RAC/PEPPER audits)
+    ipDrgRealization: 33, // 33% realization (RAC/PEPPER audits) - conservative
     // Inpatient: CDI Query Reduction defaults
     ipCdiEnabled: false,
     ipCdiScenario: 'typical',

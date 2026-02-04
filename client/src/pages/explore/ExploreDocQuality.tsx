@@ -845,7 +845,7 @@ export default function ExploreDocQuality({
                         <span className="font-semibold text-black">{formatCurrency(Math.round(ipDrgNetValue))} net</span>
                       </div>
                       <p className="text-[13px] text-[#888888] mt-3">
-                        50% accounts for audit risk, coder judgment, and cases where documentation doesn't change final DRG. This is conservative.
+                        33% is a conservative realization rate that accounts for audit risk, coder judgment, and cases where documentation doesn't change final DRG.
                       </p>
                     </div>
                   </div>
