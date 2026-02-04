@@ -1035,8 +1035,8 @@ export default function ExploreDocQuality({
         </motion.div>
         )}
 
-        {/* wRVU Improvement - Not for Inpatient */}
-        {!isInpatient && (
+        {/* wRVU Improvement - Not for Inpatient or Nursing (Nursing has its own Care Quality section) */}
+        {!isInpatient && !isNursing && (
         <motion.div
           className="mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -1399,8 +1399,8 @@ export default function ExploreDocQuality({
         </motion.div>
         )}
 
-        {/* Denial Prevention / Care Quality Driver 3 - Not for Inpatient */}
-        {!isInpatient && (
+        {/* Denial Prevention / Care Quality Driver 3 - Not for Inpatient or Nursing (Nursing has its own Care Quality section) */}
+        {!isInpatient && !isNursing && (
         <motion.div
           className="mb-6"
           initial={{ opacity: 0, y: 20 }}
