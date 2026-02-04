@@ -478,7 +478,7 @@ function PageFooter({ pageNum }: { pageNum: number }) {
 }
 
 // ============================================================================
-// PAGE 1: COVER + CONTEXT + LABOR ECONOMICS
+// PAGE 1: COVER + CONTEXT (breathing room)
 // ============================================================================
 
 function Page1() {
@@ -488,7 +488,7 @@ function Page1() {
       
       {/* Title Section */}
       <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
-      <Text style={styles.subtitle}>A framework for understanding where value lives when there's no billing</Text>
+      <Text style={styles.subtitle}>A transparent methodology for calculating return on investment</Text>
       
       {/* Context Section */}
       <Text style={styles.sectionHeader}>THE CONTEXT</Text>
@@ -500,13 +500,15 @@ function Page1() {
       </Text>
       
       {/* Two Value Buckets */}
+      <Text style={styles.sectionHeader}>TWO VALUE CATEGORIES</Text>
+      
       <View style={styles.twoColumn}>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>LABOR ECONOMICS</Text>
           <Text style={styles.cardText}>
             Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
           </View>
         </View>
@@ -515,71 +517,43 @@ function Page1() {
           <Text style={styles.cardText}>
             Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect--documentation supports care, it doesn't replace it.
           </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+          <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
             <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Potential value (we show separately)</Text>
           </View>
         </View>
       </View>
       
-      {/* Labor Economics Section */}
-      <Text style={styles.sectionHeader}>VALUE MECHANISMS -- LABOR ECONOMICS</Text>
-      
-      <View style={styles.twoColumn}>
-        {/* Overtime Reduction */}
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
-          <Badge type="direct" />
-          
-          <Text style={styles.cardLabel}>THE MECHANISM</Text>
-          <Text style={styles.cardText}>
-            When nurses spend less time documenting, they complete shifts on time. Not all time saved becomes OT reduction--some goes to care--but a portion does.
-          </Text>
-          
-          <Text style={styles.cardLabel}>THE CALCULATION</Text>
-          <Text style={styles.cardText}>
-            Hours saved × Conversion rate (15-40%) × OT rate (1.5× base) = OT Savings
-          </Text>
-          
-          <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
-          <Text style={styles.cardText}>
-            OT hours and doc time are both measurable. The link is logical and validatable post-implementation.
-          </Text>
-        </View>
-        
-        {/* Retention Savings */}
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>RETENTION SAVINGS</Text>
-          <Badge type="indirect" />
-          
-          <Text style={styles.cardLabel}>THE MECHANISM</Text>
-          <Text style={styles.cardText}>
-            Documentation burden is a top driver of nurse burnout. Burnout drives turnover. Reducing burden can help retain nurses who would otherwise leave.
-          </Text>
-          
-          <Text style={styles.cardLabel}>THE CALCULATION</Text>
-          <Text style={styles.cardText}>
-            FTEs × Turnover × Burnout% × Abridge impact (10-25%) × Replacement cost = Retention value
-          </Text>
-          
-          <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
-          <Text style={styles.cardText}>
-            Link between doc burden and burnout is well-established in nursing research. Question is magnitude, not direction.
-          </Text>
-        </View>
+      {/* Key Philosophy */}
+      <View style={styles.callout}>
+        <Text style={styles.calloutText}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>OUR APPROACH: </Text>
+          We model both categories--but we're honest about what's directly measurable versus what we only enable. Labor economics value is defensible in CFO conversations. Care quality potential is real but requires clinical practice to realize.
+        </Text>
       </View>
       
-      {/* Agency Labor - Full Width */}
-      <View style={styles.fullWidthCard}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <Text style={styles.cardTitle}>AGENCY LABOR REDUCTION</Text>
-          <Badge type="connected" />
+      {/* Framework Preview */}
+      <Text style={styles.sectionHeader}>WHAT WE MODEL</Text>
+      
+      <View style={styles.threeColumn}>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>DIRECT VALUE</Text>
+          <Text style={styles.limitsSubtext}>Measurable, attributable</Text>
+          <Text style={styles.limitsBullet}>- Overtime reduction</Text>
+          <Text style={styles.limitsBullet}>- Agency labor avoidance</Text>
         </View>
-        <Text style={styles.cardText}>
-          When nurses leave, hospitals fill gaps with agency/travel nurses at 2-3× the cost. Improved retention directly reduces this premium labor dependency.
-        </Text>
-        <Text style={[styles.cardText, { marginTop: 6 }]}>
-          <Text style={{ fontFamily: "Helvetica-Bold" }}>Calculation:</Text> Nurses retained × Weeks of coverage (8-16) × Weekly premium ($2-4K) = Agency savings. This is separate from replacement cost--retention captures replacement, agency captures premium labor during vacancy.
-        </Text>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>INDIRECT VALUE</Text>
+          <Text style={styles.limitsSubtext}>Influenced, not controlled</Text>
+          <Text style={styles.limitsBullet}>- Retention savings</Text>
+          <Text style={styles.limitsBullet}>- Burnout reduction</Text>
+        </View>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>POTENTIAL VALUE</Text>
+          <Text style={styles.limitsSubtext}>Enabled, not caused</Text>
+          <Text style={styles.limitsBullet}>- Falls prevention</Text>
+          <Text style={styles.limitsBullet}>- HAPI prevention</Text>
+          <Text style={styles.limitsBullet}>- Patient experience</Text>
+        </View>
       </View>
       
       <PageFooter pageNum={1} />
@@ -588,7 +562,7 @@ function Page1() {
 }
 
 // ============================================================================
-// PAGE 2: CARE QUALITY + HONEST LIMITS
+// PAGE 2: ALL VALUE MECHANISMS
 // ============================================================================
 
 function Page2() {
@@ -596,104 +570,209 @@ function Page2() {
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <Text style={styles.sectionHeader}>VALUE MECHANISMS -- CARE QUALITY ENABLEMENT</Text>
+      <Text style={styles.sectionHeader}>VALUE MECHANISMS</Text>
       
-      {/* Why Potential Value */}
-      <Text style={styles.subSectionHeader}>WHY WE CALL THIS "POTENTIAL" VALUE</Text>
-      <Text style={styles.bodyText}>
-        The link between documentation and care quality is indirect. We don't cause fewer falls--we enable the visibility that helps prevent them.
-      </Text>
-      
-      {/* Flow Diagram */}
-      <View style={styles.flowDiagram}>
-        <View style={styles.flowBox}>
-          <Text style={styles.flowBoxText}>Documentation</Text>
-          <Text style={styles.flowCaption}>We control this</Text>
-        </View>
-        <Text style={styles.flowArrow}>&gt;</Text>
-        <View style={styles.flowBox}>
-          <Text style={styles.flowBoxText}>Visibility</Text>
-          <Text style={styles.flowCaption}>We support this</Text>
-        </View>
-        <Text style={styles.flowArrow}>&gt;</Text>
-        <View style={styles.flowBox}>
-          <Text style={styles.flowBoxText}>Intervention</Text>
-          <Text style={styles.flowCaption}>Clinical team controls</Text>
-        </View>
-        <Text style={styles.flowArrow}>&gt;</Text>
-        <View style={styles.flowBox}>
-          <Text style={styles.flowBoxText}>Outcome</Text>
-          <Text style={styles.flowCaption}>Patient experiences</Text>
-        </View>
-      </View>
-      
-      <Text style={[styles.bodyText, { fontSize: 8 }]}>
-        We show care quality separately because: clinical practice matters more than documentation, many factors influence outcomes, and we want to be honest.
-      </Text>
-      
+      {/* Row 1: Overtime + Retention */}
       <View style={styles.twoColumn}>
-        {/* HAPI Prevention */}
         <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>HAPI PREVENTION</Text>
-          <Badge type="potential" />
-          
-          <Text style={styles.cardLabel}>THE MECHANISM</Text>
+          <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
+          <Badge type="direct" />
+          <Text style={styles.cardLabel}>MECHANISM</Text>
           <Text style={styles.cardText}>
-            HAPIs happen when assessments are missed or interventions delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured--enabling earlier intervention.
+            When nurses spend less time documenting, they complete shifts on time. Not all time saved becomes OT reduction--some goes to care--but a measurable portion does.
           </Text>
-          
-          <Text style={styles.cardLabel}>THE CALCULATION</Text>
+          <Text style={styles.cardLabel}>CALCULATION</Text>
           <Text style={styles.cardText}>
-            Current HAPIs × Documentation-preventable rate (5%) × Cost per HAPI ($10-50K) = Potential value
-          </Text>
-          
-          <Text style={styles.cardLabel}>WHY 5%?</Text>
-          <Text style={styles.cardText}>
-            Not all HAPIs are doc-preventable. 5% represents cases where real-time assessment would have triggered earlier intervention.
-          </Text>
-          
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>
-            HONEST TRUTH: HAPIs are prevented through clinical care--turning, positioning, nutrition. Doc SUPPORTS this, doesn't REPLACE it.
+            Hours saved × Conversion rate (15-40%) × OT rate (1.5× base) = OT Savings
           </Text>
         </View>
         
-        {/* Falls Prevention */}
         <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>FALLS PREVENTION</Text>
-          <Badge type="potential" />
-          
-          <Text style={styles.cardLabel}>THE MECHANISM</Text>
+          <Text style={styles.cardTitle}>RETENTION SAVINGS</Text>
+          <Badge type="indirect" />
+          <Text style={styles.cardLabel}>MECHANISM</Text>
           <Text style={styles.cardText}>
-            Falls happen when risk assessments are missed or interventions delayed. Real-time documentation ensures fall risk scores, mobility status, and environmental factors are captured--enabling earlier action.
+            Documentation burden is a top driver of nurse burnout. Burnout drives turnover. Reducing burden can help retain nurses who would otherwise leave.
           </Text>
-          
-          <Text style={styles.cardLabel}>THE CALCULATION</Text>
+          <Text style={styles.cardLabel}>CALCULATION</Text>
           <Text style={styles.cardText}>
-            Current falls × Documentation-preventable rate (5%) × Cost per fall ($3-30K) = Potential value
-          </Text>
-          
-          <Text style={styles.cardLabel}>WHY 5%?</Text>
-          <Text style={styles.cardText}>
-            Not all falls are doc-preventable. 5% represents cases where real-time risk documentation would have triggered intervention.
-          </Text>
-          
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>
-            CMS does NOT reimburse for hospital-acquired fall injuries. This is pure cost to the hospital.
+            FTEs × Turnover × Burnout% × Abridge impact (10-25%) × Replacement cost
           </Text>
         </View>
       </View>
       
-      {/* HCAHPS - Full Width */}
-      <View style={styles.fullWidthCard}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <Text style={styles.cardTitle}>PATIENT EXPERIENCE (HCAHPS)</Text>
-          <Badge type="qualitative" />
+      {/* Row 2: Agency + HAPI */}
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>AGENCY LABOR REDUCTION</Text>
+          <Badge type="connected" />
+          <Text style={styles.cardLabel}>MECHANISM</Text>
+          <Text style={styles.cardText}>
+            When nurses leave, hospitals fill gaps with agency/travel nurses at 2-3× the cost. Improved retention directly reduces premium labor dependency.
+          </Text>
+          <Text style={styles.cardLabel}>CALCULATION</Text>
+          <Text style={styles.cardText}>
+            Nurses retained × Weeks of coverage (8-16) × Weekly premium ($2-4K)
+          </Text>
         </View>
-        <Text style={styles.cardText}>
-          When nurses spend less time documenting, they spend more time with patients. Research shows bedside time correlates with satisfaction. But HCAHPS is influenced by dozens of factors--wait times, pain management, communication, environment, staffing. We can't credibly attribute improvement to docs alone.
+        
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>HAPI PREVENTION</Text>
+          <Badge type="potential" />
+          <Text style={styles.cardLabel}>MECHANISM</Text>
+          <Text style={styles.cardText}>
+            Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured--enabling earlier intervention for pressure injuries.
+          </Text>
+          <Text style={styles.cardLabel}>CALCULATION</Text>
+          <Text style={styles.cardText}>
+            Current HAPIs × Doc-preventable rate (5%) × Cost per HAPI ($10-50K)
+          </Text>
+        </View>
+      </View>
+      
+      {/* Row 3: Falls + HCAHPS */}
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>FALLS PREVENTION</Text>
+          <Badge type="potential" />
+          <Text style={styles.cardLabel}>MECHANISM</Text>
+          <Text style={styles.cardText}>
+            Real-time documentation ensures fall risk scores, mobility status, and environmental factors are captured--enabling earlier preventive action.
+          </Text>
+          <Text style={styles.cardLabel}>CALCULATION</Text>
+          <Text style={styles.cardText}>
+            Current falls × Doc-preventable rate (5%) × Cost per fall ($3-30K)
+          </Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>
+            CMS does NOT reimburse for hospital-acquired fall injuries.
+          </Text>
+        </View>
+        
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>PATIENT EXPERIENCE</Text>
+          <Badge type="qualitative" />
+          <Text style={styles.cardLabel}>MECHANISM</Text>
+          <Text style={styles.cardText}>
+            When nurses spend less time documenting, they spend more time with patients. Research shows bedside time correlates with satisfaction scores.
+          </Text>
+          <Text style={styles.cardLabel}>CONSIDERATION</Text>
+          <Text style={styles.cardText}>
+            HCAHPS is influenced by dozens of factors. Track as directional indicator.
+          </Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>
+            Top quartile HCAHPS = ~2% higher reimbursement via VBP.
+          </Text>
+        </View>
+      </View>
+      
+      {/* Why Potential Value Callout */}
+      <View style={styles.callout}>
+        <Text style={styles.calloutText}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>WHY "POTENTIAL" VALUE: </Text>
+          The link between documentation and care quality is indirect. We don't cause fewer falls--we enable the visibility that helps prevent them. Clinical practice matters more than documentation.
         </Text>
-        <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>
-          BUT CONSIDER: Top quartile HCAHPS = ~2% higher reimbursement via VBP. Track as leading indicator post-implementation.
+      </View>
+      
+      <PageFooter pageNum={2} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// PAGE 3: ASSUMPTIONS + HONEST LIMITS
+// ============================================================================
+
+function Page3() {
+  return (
+    <Page size="LETTER" style={styles.page}>
+      <PageHeader />
+      
+      <Text style={styles.sectionHeader}>KEY ASSUMPTIONS</Text>
+      <Text style={styles.bodyText}>
+        Every number has a source. We don't hide assumptions--we highlight them so you can adjust based on your reality.
+      </Text>
+      
+      {/* Combined Assumptions Table */}
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 2.5 }]}>Assumption</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Source</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Time saved per shift</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15-30 min</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>20 min</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Abridge customer data</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>OT conversion rate</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15-40%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>25%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Implementation studies</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Nurse turnover rate</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15-25%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>18%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>NSI Nursing Solutions 2024</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Burnout-related turnover %</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>30-50%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>40%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>ANA research</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Abridge retention impact</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>10-25%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Conservative estimate</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Nurse replacement cost</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$40-65K</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$52K</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>NSI 2024 Report</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Agency coverage weeks</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>8-16 wks</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>12 wks</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Industry average</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Weekly agency premium</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$2-4K</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$2,500</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Travel nurse rates</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Doc-preventable HAC rate</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>3-8%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>5%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Conservative estimate</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Cost per HAPI</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$10-50K</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$26K</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>AHRQ data</Text>
+        </View>
+        <View style={[styles.tableRow, styles.tableRowLast]}>
+          <Text style={[styles.tableCell, { flex: 2.5 }]}>Cost per fall with injury</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$3-30K</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$6.5K</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>CMS data</Text>
+        </View>
+      </View>
+      
+      {/* Conservative Callout */}
+      <View style={styles.callout}>
+        <Text style={styles.calloutText}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>WHY WE DEFAULT CONSERVATIVE: </Text>
+          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If conservative projection shows positive ROI, you can be confident. If experience exceeds it, that's upside.
         </Text>
       </View>
       
@@ -706,160 +785,45 @@ function Page2() {
           <Text style={styles.limitsSubtext}>Direct attribution</Text>
           <Text style={styles.limitsBullet}>- OT hours pre/post</Text>
           <Text style={styles.limitsBullet}>- Doc time per shift</Text>
-          <Text style={styles.limitsBullet}>- Shift completion</Text>
-          <Text style={styles.limitsBullet}>- Chart completion</Text>
+          <Text style={styles.limitsBullet}>- Shift completion rates</Text>
+          <Text style={styles.limitsBullet}>- Chart completion timing</Text>
         </View>
         <View style={styles.limitsColumn}>
           <Text style={styles.limitsHeader}>[~] WHAT WE INFLUENCE</Text>
           <Text style={styles.limitsSubtext}>Indirect attribution</Text>
-          <Text style={styles.limitsBullet}>- Turnover rates (one factor of many)</Text>
-          <Text style={styles.limitsBullet}>- Agency utilization (tied to retention)</Text>
-          <Text style={styles.limitsBullet}>- Nurse satisfaction (doc burden is one)</Text>
+          <Text style={styles.limitsBullet}>- Turnover rates (one factor)</Text>
+          <Text style={styles.limitsBullet}>- Agency utilization</Text>
+          <Text style={styles.limitsBullet}>- Nurse satisfaction</Text>
+          <Text style={styles.limitsBullet}>- Burnout indicators</Text>
         </View>
         <View style={styles.limitsColumn}>
           <Text style={styles.limitsHeader}>[ ] WHAT WE ENABLE</Text>
           <Text style={styles.limitsSubtext}>Supportive only</Text>
-          <Text style={styles.limitsBullet}>- Falls prevention (clinical practice)</Text>
-          <Text style={styles.limitsBullet}>- HAPI prevention (clinical practice)</Text>
-          <Text style={styles.limitsBullet}>- HCAHPS improvement (many factors)</Text>
+          <Text style={styles.limitsBullet}>- Falls prevention</Text>
+          <Text style={styles.limitsBullet}>- HAPI prevention</Text>
+          <Text style={styles.limitsBullet}>- HCAHPS improvement</Text>
+          <Text style={styles.limitsBullet}>- Clinical outcomes</Text>
         </View>
       </View>
       
-      <PageFooter pageNum={2} />
+      <Text style={[styles.bodyText, { fontSize: 8, marginTop: 6 }]}>
+        We are explicit about these limits because credibility matters. When we say something is measurable, it is. When we say something is influenced, we acknowledge the complexity. When we say we only enable something, we're being honest that clinical practice is what delivers outcomes.
+      </Text>
+      
+      <PageFooter pageNum={3} />
     </Page>
   );
 }
 
 // ============================================================================
-// PAGE 3: ASSUMPTIONS + VALIDATION PATH
+// PAGE 4: VALIDATION PATH + SUMMARY
 // ============================================================================
 
-function Page3() {
+function Page4() {
   return (
     <Page size="LETTER" style={styles.page}>
       <PageHeader />
       
-      <Text style={styles.sectionHeader}>KEY ASSUMPTIONS</Text>
-      <Text style={styles.bodyText}>
-        Every number has a source. We don't hide assumptions--we highlight them.
-      </Text>
-      
-      {/* Time Savings Table */}
-      <Text style={styles.subSectionHeader}>TIME SAVINGS</Text>
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Source</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Time saved per shift</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>15-30 min</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>20 min</Text>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Abridge customer data</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>OT conversion rate</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>15-40%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>25%</Text>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Implementation studies</Text>
-        </View>
-      </View>
-      
-      {/* Retention Table */}
-      <Text style={styles.subSectionHeader}>RETENTION</Text>
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Source</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Nurse turnover rate</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>15-25%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>18%</Text>
-          <Text style={[styles.tableCell, { flex: 2 }]}>NSI Nursing Solutions '24</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Burnout-related %</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>30-50%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>40%</Text>
-          <Text style={[styles.tableCell, { flex: 2 }]}>ANA research</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Abridge retention impact</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>10-25%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>15%</Text>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Conservative estimate</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Replacement cost</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>$40-65K</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>$52K</Text>
-          <Text style={[styles.tableCell, { flex: 2 }]}>NSI 2024 Report</Text>
-        </View>
-      </View>
-      
-      {/* Agency & Care Quality Tables - Side by Side */}
-      <View style={styles.twoColumn}>
-        <View style={styles.column}>
-          <Text style={styles.subSectionHeader}>AGENCY</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>Weeks of coverage</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>8-16 wks</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>12 wks</Text>
-            </View>
-            <View style={[styles.tableRow, styles.tableRowLast]}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>Weekly agency premium</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>$2-4K</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>$2,500</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.column}>
-          <Text style={styles.subSectionHeader}>CARE QUALITY</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>Doc-preventable rate</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>3-8%</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>5%</Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>Cost per HAPI</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>$10-50K</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>$26K</Text>
-            </View>
-            <View style={[styles.tableRow, styles.tableRowLast]}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>Cost per fall</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>$3-30K</Text>
-              <Text style={[styles.tableCell, { flex: 1 }]}>$6.5K</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-      
-      {/* Conservative Callout */}
-      <View style={styles.callout}>
-        <Text style={styles.calloutText}>
-          <Text style={{ fontFamily: "Helvetica-Bold" }}>WHY WE DEFAULT CONSERVATIVE: </Text>
-          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If conservative projection shows positive ROI, you can be confident. If experience exceeds it, that's upside.
-        </Text>
-      </View>
-      
-      {/* Validation Path Section */}
       <Text style={styles.sectionHeader}>VALIDATION PATH</Text>
       <Text style={styles.bodyText}>
         Our projections are starting points. The real answers come from your data.
@@ -874,7 +838,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Repeat measurements</Text>
           <Text style={styles.cardText}>- Compare with utilization data</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
@@ -884,7 +848,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track OT on Abridge vs. control</Text>
           <Text style={styles.cardText}>- Control for census/acuity changes</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
@@ -897,7 +861,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track turnover Abridge vs control</Text>
           <Text style={styles.cardText}>- Survey on burnout/doc satisfaction</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
           <Text style={styles.cardTitle}>CARE QUALITY</Text>
@@ -907,83 +871,7 @@ function Page3() {
           <Text style={styles.cardLabel}>After:</Text>
           <Text style={styles.cardText}>- Track rates Abridge vs control</Text>
           <Text style={styles.cardText}>- Be cautious about attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
-        </View>
-      </View>
-      
-      <PageFooter pageNum={3} />
-    </Page>
-  );
-}
-
-// ============================================================================
-// PAGE 4: CONNECTED VALUE + SUMMARY
-// ============================================================================
-
-function Page4() {
-  return (
-    <Page size="LETTER" style={styles.page}>
-      <PageHeader />
-      
-      <Text style={styles.sectionHeader}>CONNECTED VALUE</Text>
-      
-      <Text style={styles.subSectionHeader}>NURSING DOCUMENTATION FEEDS THE REVENUE CYCLE</Text>
-      <Text style={styles.bodyText}>
-        When nurses document thoroughly and in real-time, it directly impacts inpatient revenue. Complete nursing documentation creates a clinical picture that supports accurate coding and stronger appeals.
-      </Text>
-      
-      <View style={styles.twoColumn}>
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>CC/MCC CAPTURE</Text>
-          <Text style={styles.cardText}>
-            Nursing assessments capture clinical indicators that support accurate DRG assignment. "Patient appears malnourished" or "skin breakdown observed" feeds coding directly.
-          </Text>
-        </View>
-        <View style={[styles.card, styles.column]}>
-          <Text style={styles.cardTitle}>MEDICAL NECESSITY SUPPORT</Text>
-          <Text style={styles.cardText}>
-            Real-time nursing documentation provides contemporaneous evidence of patient acuity and care needs--critical for payer appeals.
-          </Text>
-          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
-            <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>CDI EFFICIENCY</Text>
-            <Text style={styles.cardText}>
-              When nursing documentation is complete, CDI teams have better source material for identifying coding opportunities.
-            </Text>
-          </View>
-        </View>
-      </View>
-      
-      <Text style={[styles.bodyText, { marginTop: 4 }]}>
-        These benefits are quantified in the Inpatient Setting methodology. If your organization uses Abridge for both Nursing and Hospitalists, documentation creates a complete clinical picture supporting accurate coding from admission through discharge.
-      </Text>
-      
-      {/* Validation Timelines Table */}
-      <Text style={styles.sectionHeader}>VALIDATION TIMELINES</Text>
-      
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Metric</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Timeline to Meaningful Data</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Documentation time</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-4 weeks</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Overtime reduction</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2-3 months</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Nurse satisfaction</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>3-6 months</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>HAC rates</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>6-12 months</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 1 }]}>Retention impact</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>12-18 months</Text>
+          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
         </View>
       </View>
       
@@ -1027,7 +915,7 @@ function Page4() {
         </Text>
       </View>
       
-      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold" }]}>
+      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold", marginTop: 4 }]}>
         That honesty is the methodology.
       </Text>
       
