@@ -148,15 +148,15 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   
-  // Section headers - Tighter spacing
+  // Section headers
   sectionHeader: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
     letterSpacing: 0.5,
-    marginTop: 12,
-    marginBottom: 6,
-    paddingBottom: 3,
+    marginTop: 14,
+    marginBottom: 8,
+    paddingBottom: 4,
     borderBottomWidth: 2,
     borderBottomColor: brand.black,
   },
@@ -164,119 +164,119 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
-  },
-  
-  // Title section - Tighter
-  mainTitle: {
-    fontSize: 16,
-    fontFamily: "Helvetica-Bold",
-    color: brand.black,
-    marginBottom: 2,
-  },
-  subtitle: {
-    fontSize: 9,
-    fontFamily: "Helvetica",
-    color: brand.mediumGray,
-    marginBottom: 10,
-  },
-  
-  // Body text - Tighter
-  bodyText: {
-    fontSize: 9,
-    lineHeight: 1.3,
-    color: brand.darkGray,
     marginBottom: 6,
   },
   
-  // Two-column layout - Tighter gaps
+  // Title section
+  mainTitle: {
+    fontSize: 18,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 10,
+    fontFamily: "Helvetica",
+    color: brand.mediumGray,
+    marginBottom: 14,
+  },
+  
+  // Body text - readable
+  bodyText: {
+    fontSize: 9,
+    lineHeight: 1.4,
+    color: brand.darkGray,
+    marginBottom: 8,
+  },
+  
+  // Two-column layout
   twoColumn: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 8,
+    gap: 10,
+    marginBottom: 10,
   },
   column: {
     flex: 1,
   },
   
-  // Three-column layout - Tighter gaps
+  // Three-column layout
   threeColumn: {
     flexDirection: "row",
-    gap: 6,
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 10,
   },
   thirdColumn: {
     flex: 1,
   },
   
-  // Cards - tighter padding
+  // Cards - readable
   card: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 2,
-    padding: 8,
+    borderRadius: 3,
+    padding: 10,
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
-    fontSize: 9,
+    fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 2,
+    marginBottom: 3,
   },
   cardSubtitle: {
-    fontSize: 6,
+    fontSize: 7,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.5,
-    marginBottom: 6,
+    marginBottom: 8,
     paddingVertical: 2,
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
     borderRadius: 2,
     alignSelf: "flex-start",
   },
   cardLabel: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 6,
-    marginBottom: 1,
+    marginTop: 8,
+    marginBottom: 2,
   },
   cardText: {
     fontSize: 8,
-    lineHeight: 1.25,
+    lineHeight: 1.35,
     color: brand.darkGray,
   },
   
-  // Full-width card - tighter
+  // Full-width card
   fullWidthCard: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 2,
-    padding: 8,
+    borderRadius: 3,
+    padding: 10,
     backgroundColor: brand.cardBg,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   
   // Callout box - beige background
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
-    paddingLeft: 10,
-    paddingVertical: 6,
+    paddingLeft: 12,
+    paddingVertical: 8,
     backgroundColor: brand.warmBeige,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   calloutText: {
     fontSize: 8,
     fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.3,
+    lineHeight: 1.4,
     color: brand.darkGray,
   },
   
-  // Tables - tighter
+  // Tables - readable
   table: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   tableHeader: {
     flexDirection: "row",
@@ -285,11 +285,11 @@ const styles = StyleSheet.create({
     borderBottomColor: brand.borderGray,
   },
   tableHeaderCell: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 3,
-    paddingHorizontal: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   tableRow: {
     flexDirection: "row",
@@ -300,119 +300,119 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   tableCell: {
-    fontSize: 7,
+    fontSize: 8,
     color: brand.darkGray,
-    paddingVertical: 3,
-    paddingHorizontal: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   
-  // Flow diagram - compact
+  // Flow diagram
   flowDiagram: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 6,
-    gap: 4,
+    marginVertical: 8,
+    gap: 6,
   },
   flowBox: {
-    paddingVertical: 3,
-    paddingHorizontal: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 2,
   },
   flowBoxText: {
-    fontSize: 7,
+    fontSize: 8,
     color: brand.darkGray,
     textAlign: "center" as const,
   },
   flowArrow: {
-    fontSize: 9,
+    fontSize: 10,
     color: brand.lightGray,
   },
   flowCaption: {
-    fontSize: 6,
+    fontSize: 7,
     color: brand.lightGray,
     textAlign: "center" as const,
-    marginTop: 1,
+    marginTop: 2,
   },
   
-  // Honest limits columns - compact
+  // Honest limits columns
   limitsColumn: {
     flex: 1,
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 2,
-    padding: 6,
+    borderRadius: 3,
+    padding: 8,
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 2,
+    marginBottom: 3,
   },
   limitsSubtext: {
-    fontSize: 6,
+    fontSize: 7,
     color: brand.mediumGray,
-    marginBottom: 4,
+    marginBottom: 5,
   },
   limitsBullet: {
-    fontSize: 7,
+    fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 1,
+    marginBottom: 2,
   },
   
-  // Summary box - compact
+  // Summary box
   summaryBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 2,
-    padding: 8,
-    marginBottom: 8,
+    borderRadius: 3,
+    padding: 12,
+    marginBottom: 10,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   summaryColumn: {
     flex: 1,
   },
   summaryLabel: {
-    fontSize: 7,
+    fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 2,
+    marginBottom: 4,
     textDecoration: "underline",
   },
   summaryItem: {
-    fontSize: 7,
+    fontSize: 8,
     color: brand.darkGray,
-    marginBottom: 1,
+    marginBottom: 2,
   },
   
-  // Quote box - compact
+  // Quote box
   quoteBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    borderRadius: 2,
-    padding: 10,
-    marginTop: 6,
-    marginBottom: 8,
+    borderRadius: 3,
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 10,
   },
   quoteText: {
-    fontSize: 8,
+    fontSize: 9,
     fontFamily: "Helvetica-Oblique",
-    lineHeight: 1.3,
+    lineHeight: 1.4,
     color: brand.darkGray,
     textAlign: "center" as const,
   },
   
-  // Footer - compact
+  // Footer
   footer: {
     position: "absolute",
-    bottom: 20,
+    bottom: 24,
     left: 36,
     right: 36,
     flexDirection: "row",
@@ -420,31 +420,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: brand.borderGray,
-    paddingTop: 6,
+    paddingTop: 8,
   },
   footerText: {
-    fontSize: 7,
+    fontSize: 8,
     color: brand.lightGray,
   },
   footerPage: {
-    fontSize: 7,
+    fontSize: 8,
     color: brand.lightGray,
-  },
-  
-  // Validation 2x2 grid
-  validationGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginBottom: 8,
-  },
-  validationCard: {
-    width: "48%",
-    borderWidth: 1,
-    borderColor: brand.borderGray,
-    borderRadius: 2,
-    padding: 6,
-    backgroundColor: brand.cardBg,
   },
 });
 
@@ -877,39 +861,55 @@ function Page3() {
         </Text>
       </View>
       
-      {/* Validation Path Section - 2x2 Grid */}
+      {/* Validation Path Section */}
       <Text style={styles.sectionHeader}>VALIDATION PATH</Text>
-      <Text style={[styles.bodyText, { marginBottom: 4 }]}>
+      <Text style={styles.bodyText}>
         Our projections are starting points. The real answers come from your data.
       </Text>
       
       <View style={styles.twoColumn}>
         <View style={[styles.card, styles.column]}>
-          <Text style={[styles.cardTitle, { fontSize: 8 }]}>TIME SAVINGS</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>Before: Survey nurses, review EHR data</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>After: Repeat measurements</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold", fontSize: 7 }]}>Timeline: 2-4 weeks</Text>
+          <Text style={styles.cardTitle}>TIME SAVINGS</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>- Survey nurses on doc time/shift</Text>
+          <Text style={styles.cardText}>- Review EHR session data</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>- Repeat measurements</Text>
+          <Text style={styles.cardText}>- Compare with utilization data</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
         </View>
         <View style={[styles.card, styles.column]}>
-          <Text style={[styles.cardTitle, { fontSize: 8 }]}>OVERTIME REDUCTION</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>Before: Baseline OT hours/unit</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>After: Track Abridge vs control</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold", fontSize: 7 }]}>Timeline: 2-3 months</Text>
+          <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>- Baseline OT hours per unit/month</Text>
+          <Text style={styles.cardText}>- Note seasonal patterns</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>- Track OT on Abridge vs. control</Text>
+          <Text style={styles.cardText}>- Control for census/acuity changes</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
         </View>
       </View>
       
       <View style={styles.twoColumn}>
         <View style={[styles.card, styles.column]}>
-          <Text style={[styles.cardTitle, { fontSize: 8 }]}>RETENTION</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>Before: Baseline turnover, exit data</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>After: Track turnover, survey burnout</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Bold", fontSize: 7 }]}>Timeline: 12-18 months</Text>
+          <Text style={styles.cardTitle}>RETENTION</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>- Baseline turnover by unit</Text>
+          <Text style={styles.cardText}>- Exit interview data on burnout</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>- Track turnover Abridge vs control</Text>
+          <Text style={styles.cardText}>- Survey on burnout/doc satisfaction</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
         </View>
         <View style={[styles.card, styles.column]}>
-          <Text style={[styles.cardTitle, { fontSize: 8 }]}>CARE QUALITY</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>Before: Baseline HAPI/falls rates</Text>
-          <Text style={[styles.cardText, { fontSize: 7 }]}>After: Track rates, be cautious on attribution</Text>
-          <Text style={[styles.cardText, { marginTop: 4, fontFamily: "Helvetica-Oblique", fontSize: 7 }]}>Treat quality as bonus, not promise</Text>
+          <Text style={styles.cardTitle}>CARE QUALITY</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>- Baseline HAPI/falls rates by unit</Text>
+          <Text style={styles.cardText}>- Baseline HCAHPS scores</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>- Track rates Abridge vs control</Text>
+          <Text style={styles.cardText}>- Be cautious about attribution</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Oblique" }]}>Treat quality as bonus, not promise</Text>
         </View>
       </View>
       

@@ -1,0 +1,552 @@
+Create Methodology PDFs for ED, Inpatient, and Outpatient that match the exact same structure, styling, and density as the Nursing Methodology PDF.
+
+## GLOBAL STYLING (Apply to ALL methodology PDFs)
+
+### Header (every page)
+- Background: #F5F0EB (warm beige)
+- Abridge logo: 18px height, left aligned
+- "ROI METHODOLOGY" text: 10px, uppercase, letter-spacing 1.5px, #666666, right aligned
+- Bottom border: 1px solid #E0E0E0
+- Padding: 12px 24px
+
+### Typography
+- Font: Manrope (load from Google Fonts, fallback to Inter, Helvetica Neue, system)
+- Body: 9px, line-height 1.3, color #333333
+- Section headers: 11px bold, uppercase, letter-spacing 1px
+- Subsection headers: 10px semibold
+- Table text: 8px
+- Footer: 8px, #999999
+
+### Page Control
+- Exactly 4 pages per methodology
+- page-break-inside: avoid on all containers
+- overflow: hidden on all sections
+- NO blank pages allowed
+
+### Colors
+- Accent: #EA2C00 (Abridge red)
+- Warm beige: #F5F0EB
+- Card backgrounds: #FFFFFF with 1px #E0E0E0 border
+- Table header bg: #F8F8F8
+- Callout boxes: #F5F0EB bg with 3px left border #EA2C00
+
+### Badges
+- DIRECTLY MEASURABLE: bg #E8F5E9, text #2E7D32
+- INDIRECTLY ATTRIBUTABLE: bg #FFF3E0, text #E65100
+- POTENTIAL VALUE: bg #F5F5F5, text #666666
+- QUALITATIVE: bg #FAFAFA, text #999999
+- CONNECTED TO [X]: bg #E3F2FD, text #1565C0
+
+---
+
+## ED METHODOLOGY PDF
+
+### Page 1: Context + Time Value Mechanisms
+
+**Title:** ED: HOW WE THINK ABOUT VALUE
+**Subtitle:** A framework for understanding value in high-volume, fast-paced emergency settings
+
+**THE CONTEXT:**
+Emergency departments operate differently than any other care setting. High volume, unpredictable flow, and templated workflows mean documentation happens in compressed windows—often after the patient encounter, sometimes hours later.
+
+ED physicians don't lack time per encounter the way outpatient physicians do. They lack time in aggregate—the cumulative burden of documentation across a shift of 20-40 patients creates fatigue, extends shifts, and contributes to the highest burnout rates in medicine.
+
+Value in the ED shows up in two places:
+
+**Two-column boxes:**
+
+| THROUGHPUT & EFFICIENCY | DOCUMENTATION QUALITY |
+|------------------------|----------------------|
+| LWBS reduction, faster door-to-doc, admission capture. When documentation doesn't bottleneck the department, patients move through faster. The ED is a flow problem—documentation is often the constraint. | E&M accuracy, denial prevention, and downstream inpatient revenue. ED documentation is the foundation for admitted patients—what's captured here affects the entire inpatient stay. |
+| Direct, measurable value | Direct + downstream value |
+
+**VALUE MECHANISMS — THROUGHPUT & EFFICIENCY**
+
+**Two-column:**
+
+| LWBS REDUCTION | ADMISSION CAPTURE |
+|----------------|-------------------|
+| DIRECTLY MEASURABLE | INDIRECTLY ATTRIBUTABLE |
+| **THE MECHANISM:** When ED physicians document faster, they can see the next patient sooner. Reduced wait times mean fewer patients leave without being seen. Every LWBS patient is lost revenue and a liability risk. | **THE MECHANISM:** Patients who might be discharged due to documentation burden or shift-end pressure can be properly worked up and admitted when appropriate. Documentation isn't the bottleneck. |
+| **THE CALCULATION:** Current LWBS rate × Reduction % (10-30%) × Avg ED revenue per visit = LWBS value | **THE CALCULATION:** Potential admissions captured × Admission revenue = Capture value. This is harder to measure—we show it as directional. |
+| **WHY DEFENSIBLE:** LWBS is tracked. Door-to-doc time is tracked. The link between documentation speed and throughput is operational reality. | **WHY DEFENSIBLE:** Requires baseline data on admission patterns. Best validated through physician feedback on "patients I would have admitted with more time." |
+
+**Full-width box:**
+
+| CLINICIAN WELLBEING | CONNECTED TO RETENTION |
+|---------------------|------------------------|
+| ED has the highest burnout rate of any specialty (65%+). Documentation burden is a primary driver. Time saved per shift directly impacts whether physicians finish on time or stay late charting. |
+| Calculation: Same retention model as other settings but with ED-specific defaults: 12% turnover, 50% burnout-related, $500K replacement cost. |
+
+---
+
+### Page 2: Documentation Quality + Honest Limits
+
+**VALUE MECHANISMS — DOCUMENTATION QUALITY**
+
+**Section intro:**
+WHY ED DOCUMENTATION MATTERS BEYOND THE ED
+
+For patients who are admitted, ED documentation becomes the foundation of the inpatient record. What's captured in the ED affects DRG assignment, medical necessity justification, and denial risk for the entire stay.
+
+**Two-column:**
+
+| E&M ACCURACY | DENIAL PREVENTION |
+|--------------|-------------------|
+| DIRECTLY MEASURABLE | DIRECTLY MEASURABLE |
+| **THE MECHANISM:** ED E&M coding is driven by documentation of medical decision-making, history, and exam. Templated workflows often under-capture complexity. Ambient documentation captures the full clinical picture. | **THE MECHANISM:** ED encounters face high denial rates—medical necessity, level of care, observation vs. inpatient status. Complete documentation at the point of care creates contemporaneous evidence for appeals. |
+| **THE CALCULATION:** Encounters × Current E&M distribution × Lift % × Revenue difference = E&M value | **THE CALCULATION:** Denial rate × Documentation-preventable % × Avg claim value = Denial prevention value |
+| **WHY DEFENSIBLE:** E&M distribution is measurable. Level changes are trackable. Pre/post comparison is straightforward. | **WHY DEFENSIBLE:** Denial rates by reason code are tracked. Documentation-related denials are identifiable. |
+
+**Full-width box:**
+
+| DOWNSTREAM INPATIENT VALUE | CONNECTED TO INPATIENT |
+|---------------------------|------------------------|
+| For admitted patients, ED documentation affects the entire inpatient stay. Conditions documented in ED carry forward to coding. Medical necessity established in ED supports the admission. This value is quantified in the Inpatient methodology—we note it here as connected value. |
+
+**THE HONEST LIMITS (3-column):**
+
+| ✓ WHAT WE MEASURE | ~ WHAT WE INFLUENCE | ○ WHAT WE ENABLE |
+|-------------------|---------------------|------------------|
+| Direct attribution | Indirect attribution | Supportive only |
+| • Door-to-doc time | • LWBS rates (many factors) | • Downstream DRG accuracy |
+| • Documentation time | • Admission decisions | • Inpatient denial prevention |
+| • E&M level distribution | • Physician retention | • Patient experience |
+| • Shift end time | | |
+
+---
+
+### Page 3: Assumptions + Validation
+
+**KEY ASSUMPTIONS**
+
+**TIME SAVINGS**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| Time saved per encounter | 1-3 min | 2 min | Abridge ED data |
+| Encounters per shift | 15-30 | 22 | ED benchmarks |
+| Shift time savings | 22-66 min | 44 min | Calculated |
+
+**THROUGHPUT**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| Baseline LWBS rate | 2-5% | 3% | ED benchmarks |
+| LWBS reduction | 10-30% | 20% | Conservative estimate |
+| Avg ED visit revenue | $400-800 | $500 | Facility average |
+
+**RETENTION**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| ED physician turnover | 10-15% | 12% | ACEP data |
+| Burnout-related % | 40-60% | 50% | Research literature |
+| Abridge retention impact | 10-25% | 15% | Conservative estimate |
+| Replacement cost | $400-600K | $500K | Recruitment data |
+
+**DOCUMENTATION QUALITY**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| E&M uplift potential | 3-8% | 5% | Coding analysis |
+| Denial rate | 5-10% | 7% | Industry average |
+| Doc-preventable denials | 20-40% | 30% | Revenue cycle data |
+| Realization rate | 70-85% | 75% | Conservative |
+
+**Callout:** WHY WE DEFAULT CONSERVATIVE: We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny.
+
+**VALIDATION PATH (2x2 grid):**
+
+| TIME SAVINGS | LWBS REDUCTION |
+|--------------|----------------|
+| Before: Track door-to-doc, doc time per encounter, shift end times | Before: Baseline LWBS rate by shift/day |
+| After: Compare Abridge shifts vs. control | After: Track LWBS on Abridge shifts |
+| Timeline: 2-4 weeks | Timeline: 2-3 months |
+
+| E&M ACCURACY | RETENTION |
+|--------------|-----------|
+| Before: E&M level distribution by physician | Before: Turnover rate, exit interview data |
+| After: Compare distribution pre/post | After: Track turnover, satisfaction surveys |
+| Timeline: 2-3 months | Timeline: 12-18 months |
+
+---
+
+### Page 4: Connected Value + Summary
+
+**CONNECTED VALUE**
+
+**ED DOCUMENTATION FEEDS INPATIENT REVENUE**
+
+For patients admitted through the ED, documentation quality at admission directly impacts inpatient value:
+
+**Two-column:**
+
+| ADMISSION DOCUMENTATION | MEDICAL NECESSITY |
+|------------------------|-------------------|
+| Conditions documented in ED carry forward to inpatient coding. "Acute respiratory failure" or "severe sepsis" captured at admission establishes complexity from day one. | The admission decision and its justification are documented in ED. This is your first line of defense against "not medically necessary" denials. |
+
+| STATUS DETERMINATION | CDI FOUNDATION |
+|---------------------|----------------|
+| IP vs. Observation status is often established in ED. Complete documentation supports correct status assignment. | When ED documentation is complete, CDI teams have better source material for the entire stay. |
+
+These benefits are quantified in the Inpatient Setting methodology. If your organization uses Abridge in both ED and Inpatient, documentation creates continuity from arrival through discharge.
+
+**VALIDATION TIMELINES**
+| Metric | Timeline |
+|--------|----------|
+| Documentation time | 2-4 weeks |
+| LWBS reduction | 2-3 months |
+| E&M distribution | 2-3 months |
+| Denial rates | 6-12 months |
+| Retention impact | 12-18 months |
+
+**SUMMARY**
+
+ED value shows up in throughput and documentation quality. The fast pace makes both harder—and more valuable.
+
+**3-column:**
+| TIME VALUE (Direct) | DOCUMENTATION QUALITY (Direct) | CONNECTED VALUE |
+|--------------------|-------------------------------|-----------------|
+| LWBS reduction | E&M accuracy | ED documentation |
+| Shift efficiency | Denial prevention | feeds inpatient |
+| Retention savings | | revenue cycle |
+
+We model all three—but we're honest about which is measurable, which is influenceable, and which connects to other settings.
+
+**Closing quote:** "The goal isn't to prove our model right. It's to build your organization's understanding of what ambient documentation actually delivers in your context."
+
+**That honesty is the methodology.**
+
+---
+
+## INPATIENT METHODOLOGY PDF
+
+### Page 1: Context + Documentation Quality Mechanisms
+
+**Title:** INPATIENT: HOW WE THINK ABOUT VALUE
+**Subtitle:** A framework for understanding value in DRG-based reimbursement
+
+**THE CONTEXT:**
+Inpatient medicine operates on a fundamentally different economic model than outpatient care. Hospitals are paid a fixed amount per admission based on the DRG—the Diagnosis Related Group. That payment is determined by what's documented.
+
+If a condition was discussed at bedside but not documented, it doesn't exist for coding purposes. If clinical complexity isn't captured in the note, the DRG may be assigned lower than warranted.
+
+This is where ambient documentation creates value. Not by adding things that weren't there—but by capturing what was actually discussed.
+
+**Two-column boxes:**
+
+| DOCUMENTATION QUALITY | CLINICIAN WELLBEING |
+|----------------------|---------------------|
+| DRG accuracy, denial prevention, CDI efficiency. When documentation captures clinical complexity, revenue follows. The notes drive the payment. | Hospitalists document multiple notes per patient—H&P, daily progress, discharge summary. Reducing this burden improves work-life balance and retention. |
+| Direct, measurable value | Indirect value (no capacity expansion) |
+
+**VALUE MECHANISMS — DOCUMENTATION QUALITY**
+
+**Two-column:**
+
+| DRG ACCURACY (CC/MCC CAPTURE) | CDI QUERY REDUCTION |
+|------------------------------|---------------------|
+| DIRECTLY MEASURABLE | DIRECTLY MEASURABLE |
+| **THE MECHANISM:** CCs and MCCs increase DRG weight and payment. When hospitalists discuss acute kidney injury, malnutrition, or respiratory failure at bedside but don't fully document it, that complexity isn't coded. Abridge captures these conversations. | **THE MECHANISM:** CDI queries often ask physicians to document what they already discussed. "Can you clarify the severity of malnutrition?" When Abridge captures these discussions, the query becomes unnecessary. |
+| **THE CALCULATION:** Admissions × At-risk rate (25%) × Protection rate (20%) × DRG weight increase (0.4) × Base payment ($6K) × Realization (50%) = Value | **THE CALCULATION:** Admissions × Query rate (30%) × Reduction rate (25%) × Cost per query ($50) = Savings |
+| **WHY DEFENSIBLE:** Documentation gaps are well-established. CC/MCC impact on DRG weight is mathematical. CMI changes are measurable. | **WHY DEFENSIBLE:** Query volume is tracked. Query types are categorized. Reduction is measurable post-implementation. |
+
+**Full-width box:**
+
+| DENIAL PREVENTION | COMBINED WITH DRG ACCURACY |
+|-------------------|---------------------------|
+| Documentation gaps cause denials—medical necessity not supported, level of care not justified, clinical indicators missing. The same complete documentation that improves DRG accuracy also prevents denials. We combine these rather than double-count. |
+| DRG downcoding: 2-4% of inpatient revenue. Denial write-offs: 1-2%. Combined opportunity: 3-6%. We conservatively estimate Abridge captures 15-25% of this leakage. |
+
+---
+
+### Page 2: Clinician Wellbeing + Honest Limits
+
+**VALUE MECHANISMS — CLINICIAN WELLBEING**
+
+**Full-width:**
+
+| RETENTION SAVINGS | INDIRECTLY ATTRIBUTABLE |
+|-------------------|------------------------|
+| **THE MECHANISM:** Hospitalists document H&Ps, daily progress notes, and discharge summaries—significant time each day. Reducing this burden means less after-hours documentation, more time for patient care, and reduced burnout. |
+| **THE CALCULATION:** Hospitalists × Turnover (8%) × Burnout % (45%) × Abridge impact (15%) × Replacement cost ($400K) = Retention value |
+| **WHY DEFENSIBLE:** Documentation burden and burnout are linked in research. Turnover is measurable. The question is magnitude of impact. |
+
+**WHAT WE DON'T CLAIM**
+
+| ✗ LENGTH OF STAY REDUCTION | ✗ CAPACITY EXPANSION | ✗ READMISSION REDUCTION |
+|---------------------------|---------------------|------------------------|
+| We removed this driver. "Faster documentation → shorter stays" sounds logical but isn't supportable. LOS is driven by clinical readiness, not documentation speed. | Unlike outpatient, hospitalists can't "see more patients" with saved time. They have an assigned census. Time savings go to wellbeing, not throughput. | Better documentation could theoretically improve handoffs and reduce readmissions. But the causal chain is too long. We don't calculate it. |
+
+Could complete documentation support faster discharge planning? Perhaps. But we won't model dollars we can't prove.
+
+**THE HONEST LIMITS (3-column):**
+
+| ✓ WHAT WE MEASURE | ~ WHAT WE INFLUENCE | ○ WHAT WE REMOVED |
+|-------------------|---------------------|-------------------|
+| Direct attribution | Indirect attribution | Not defensible |
+| • Documentation completeness | • Denial rates (payer behavior varies) | • LOS reduction |
+| • CMI changes | • Hospitalist retention | • Capacity expansion |
+| • CDI query volume | • DRG finalization speed | • Readmission reduction |
+| • Chart completion time | | |
+
+---
+
+### Page 3: Assumptions + Validation
+
+**KEY ASSUMPTIONS**
+
+**DRG ACCURACY**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| At-risk rate | 20-30% | 25% | Industry research |
+| Protection rate | 15-25% | 20% | Conservative estimate |
+| DRG weight increase | 0.3-0.6 | 0.4 | Blended CC/MCC impact |
+| Base DRG payment | $5-8K | $6K | Payer mix average |
+| Realization rate | 40-60% | 50% | Accounts for audits, coder discretion |
+
+**CDI**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| Query rate | 20-40% | 30% | Industry average |
+| Reduction rate | 20-30% | 25% | Conservative estimate |
+| Cost per query | $50-100 | $50 | CDI + physician time |
+
+**TIME & RETENTION**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| Time saved per admission | 15-45 min | 30 min | Across all notes |
+| Hospitalist turnover | 6-12% | 8% | Industry data |
+| Burnout-related % | 35-50% | 45% | Research literature |
+| Abridge retention impact | 10-25% | 15% | Conservative |
+| Replacement cost | $300-500K | $400K | Recruitment data |
+
+**Callout:** WHY 50% REALIZATION ON DRG? Not every documented condition becomes revenue. RAC audits, coder discretion, payer edits—we account for all of it. This is the number you can actually count on.
+
+**VALIDATION PATH (2x2 grid):**
+
+| DRG ACCURACY | CDI QUERIES |
+|--------------|-------------|
+| Before: Baseline CMI by unit, CC/MCC capture rates | Before: Query rate by unit, query types |
+| After: Track CMI on Abridge units vs. control | After: Compare query rates pre/post |
+| Timeline: 3-6 months | Timeline: 2-3 months |
+
+| DENIALS | RETENTION |
+|---------|-----------|
+| Before: Denial rate by reason code | Before: Turnover rate, exit interviews |
+| After: Track doc-related denials Abridge vs. control | After: Track turnover on Abridge services |
+| Timeline: 6-12 months | Timeline: 12-18 months |
+
+---
+
+### Page 4: Connected Value + Summary
+
+**CONNECTED VALUE**
+
+**ED + NURSING DOCUMENTATION COMPOUNDS INPATIENT VALUE**
+
+**Two-column:**
+
+| ED DOCUMENTATION | NURSING DOCUMENTATION |
+|------------------|----------------------|
+| For admitted patients, ED documentation establishes complexity from admission. Conditions documented in ED carry forward to inpatient coding. Medical necessity is established at arrival. | Nursing assessments capture clinical indicators that support DRG assignment. "Patient appears malnourished" or "skin breakdown observed" feeds coding. Real-time nursing docs provide contemporaneous evidence. |
+
+If your organization uses Abridge across ED, Inpatient, and Nursing, documentation creates a complete clinical picture from arrival through discharge—supporting accurate coding at every stage.
+
+**WORKING WITH YOUR CDI TEAM**
+
+Your CDI team is your best partner for validating documentation value. They see the gaps. They know which queries repeat. Before implementation: baseline metrics, common query types, current capture rates. After: regular check-ins, collaborative review, joint celebration when metrics improve.
+
+**VALIDATION TIMELINES**
+| Metric | Timeline |
+|--------|----------|
+| Documentation completeness | 2-4 weeks |
+| CDI query reduction | 2-3 months |
+| CMI changes | 3-6 months |
+| Denial rate changes | 6-12 months |
+| Retention impact | 12-18 months |
+
+**SUMMARY**
+
+Inpatient value is fundamentally about documentation accuracy. In DRG-based payment, you get paid for what you document—not what you discussed, not what you did.
+
+**3-column:**
+| DOCUMENTATION QUALITY (Direct) | CLINICIAN WELLBEING (Indirect) | WHAT WE DON'T CLAIM |
+|-------------------------------|-------------------------------|---------------------|
+| DRG accuracy | Retention value | LOS reduction |
+| CDI efficiency | Time back | Capacity expansion |
+| Denial prevention | | Readmission impact |
+
+We model what's defensible and remove what's not. That discipline is the methodology.
+
+**Closing quote:** "The goal isn't to prove our model right. It's to build your organization's understanding of what ambient documentation actually delivers in your context."
+
+**That honesty is the methodology.**
+
+---
+
+## OUTPATIENT METHODOLOGY PDF
+
+### Page 1: Context + Time Value Mechanisms
+
+**Title:** OUTPATIENT: HOW WE THINK ABOUT VALUE
+**Subtitle:** A framework for understanding value when billing creates a clear value chain
+
+**THE CONTEXT:**
+Outpatient medicine has the clearest path from documentation time to revenue. Physicians bill for each encounter. More encounters, more wRVUs, more revenue. This billing relationship creates a direct value chain.
+
+When a physician saves 4 minutes per visit, that time can become additional patient capacity, or it can stay in their pocket as work-life balance. Either way, the value is traceable.
+
+Documentation quality also matters—wRVU lift from accurate coding, HCC capture for MA populations, denial prevention. Complete documentation drives complete revenue.
+
+**Two-column boxes:**
+
+| TIME BACK | DOCUMENTATION QUALITY |
+|-----------|----------------------|
+| Capacity expansion, cost reduction, clinician wellbeing. When documentation is faster, physicians can see more patients, reduce burnout, or both. The time has measurable value. | wRVU accuracy, HCC capture, denial prevention. When documentation is complete, coding is accurate, and revenue follows. The notes drive the billing. |
+| Direct, measurable value | Direct, measurable value |
+
+**VALUE MECHANISMS — TIME BACK**
+
+**Two-column:**
+
+| PATIENT ACCESS (CAPACITY) | CLINICIAN WELLBEING |
+|--------------------------|---------------------|
+| DIRECTLY MEASURABLE | INDIRECTLY ATTRIBUTABLE |
+| **THE MECHANISM:** If physicians use saved time to see more patients, that's additional revenue. 4 min/visit × 20 visits = 80 min/day. Convert some portion to additional visits. | **THE MECHANISM:** Documentation burden is the #1 driver of physician burnout. Burnout drives turnover. Reducing burden can help retain physicians who would otherwise leave. |
+| **THE CALCULATION:** Hours saved × % to capacity (5-15%) × Revenue per visit × Realization = Access value | **THE CALCULATION:** Physicians × Turnover × Burnout % × Abridge impact × Replacement cost = Retention value |
+| **WHY DEFENSIBLE:** Time savings are measurable. Capacity conversion is a business decision. Revenue per visit is known. | **WHY DEFENSIBLE:** Link between doc burden and burnout is well-established. The question is magnitude of impact. |
+
+**Full-width box:**
+
+| COST REDUCTION | USER-DEFINED |
+|----------------|--------------|
+| Some organizations use time savings for cost reduction—reduced overtime, avoided hires, scribe replacement. We don't calculate this automatically because every organization is different. Users enter their own estimate if applicable. |
+
+---
+
+### Page 2: Documentation Quality + Honest Limits
+
+**VALUE MECHANISMS — DOCUMENTATION QUALITY**
+
+**Two-column:**
+
+| wRVU IMPROVEMENT | HCC CAPTURE (MA Populations) |
+|------------------|------------------------------|
+| DIRECTLY MEASURABLE | DIRECTLY MEASURABLE |
+| **THE MECHANISM:** Better documentation supports accurate coding. When the note fully captures medical decision-making and complexity, codes reflect actual work performed. | **THE MECHANISM:** For Medicare Advantage patients, complete documentation captures HCCs that affect risk adjustment. Conditions discussed but not documented don't count for RAF. |
+| **THE CALCULATION:** Encounters × Current avg wRVU × Lift % (2-7%) × Conversion factor × Realization = wRVU value | **THE CALCULATION:** MA patients × Gap rate × Recapture target × RAF impact × Annual payment × Realization = HCC value |
+| **WHY DEFENSIBLE:** wRVU is tracked. Distribution by complexity level is measurable. Pre/post comparison is straightforward. | **WHY DEFENSIBLE:** HCC gaps are identifiable. RAF impact is mathematical. Recapture is measurable. |
+
+**Full-width:**
+
+| DENIAL PREVENTION | DIRECTLY MEASURABLE |
+|-------------------|---------------------|
+| **THE MECHANISM:** Documentation gaps drive 30-40% of denials that cannot be appealed—permanent revenue loss. Abridge captures clinical reasoning and medical necessity in real-time, preventing denials before they occur. |
+| **THE CALCULATION:** Encounters × Denial rate × Unappealable % × Prevention target × Avg claim value × Realization = Denial value |
+| **WHY DEFENSIBLE:** Denial rates are tracked. Denial reasons are categorized. Documentation-related denials are identifiable. |
+
+**THE HONEST LIMITS (3-column):**
+
+| ✓ WHAT WE MEASURE | ~ WHAT WE INFLUENCE | ○ DEPENDS ON BEHAVIOR |
+|-------------------|---------------------|----------------------|
+| Direct attribution | Indirect attribution | User decision |
+| • Documentation time | • Retention rates | • Capacity utilization |
+| • wRVU distribution | • Patient satisfaction | • How time is used |
+| • HCC capture rates | • Denial rates (payer varies) | • Org priorities |
+| • Same-day closure | | |
+
+---
+
+### Page 3: Assumptions + Validation
+
+**KEY ASSUMPTIONS**
+
+**TIME SAVINGS**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| Time saved per encounter | 2-6 min | 4 min | Abridge customer data |
+| Visits per day | 15-25 | 20 | Specialty dependent |
+
+**CAPACITY (IF ENABLED)**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| % of time to capacity | 5-25% | 10% | Conservative estimate |
+| Realization rate | 15-25% | 20% | Accounts for demand, scheduling |
+| Revenue per visit | $150-300 | $200 | Specialty dependent |
+
+**RETENTION**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| Physician turnover | 6-9% | 7% | Industry average |
+| Burnout-related % | 30-50% | 40% | Research literature |
+| Abridge retention impact | 15-35% | 25% | Conservative estimate |
+| Replacement cost | $250-500K | $350K | Recruitment data |
+
+**DOCUMENTATION QUALITY**
+| Assumption | Range | Default | Source |
+|------------|-------|---------|--------|
+| wRVU lift | 2-7% | 5% | Coding analysis |
+| Realization rate | 70-80% | 75% | Conservative |
+| HCC gap rate | 30-50% | 40% | MA population studies |
+| HCC recapture target | 10-25% | 15% | Conservative |
+| Denial prevention target | 25-75% | 50% | Conservative |
+
+**Callout:** WHY WE DEFAULT CONSERVATIVE: We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny.
+
+**VALIDATION PATH (2x2 grid):**
+
+| TIME SAVINGS | wRVU ACCURACY |
+|--------------|---------------|
+| Before: Time-motion studies, EHR session data | Before: wRVU distribution by physician |
+| After: Repeat measurements, compare Abridge vs. control | After: Compare distribution pre/post |
+| Timeline: 2-4 weeks | Timeline: 2-3 months |
+
+| HCC CAPTURE | RETENTION |
+|-------------|-----------|
+| Before: RAF gap analysis, recapture rates | Before: Turnover rate, exit interviews |
+| After: Track recapture on Abridge patients | After: Track turnover, satisfaction |
+| Timeline: 6-12 months (RAF lag) | Timeline: 12-18 months |
+
+---
+
+### Page 4: Summary
+
+**VALIDATION TIMELINES**
+| Metric | Timeline |
+|--------|----------|
+| Documentation time | 2-4 weeks |
+| Same-day closure | 4-6 weeks |
+| wRVU distribution | 2-3 months |
+| HCC recapture | 6-12 months |
+| Denial rates | 6-12 months |
+| Retention impact | 12-18 months |
+
+**SUMMARY**
+
+Outpatient has the clearest ROI story because billing creates a direct value chain. Time saved can become capacity or wellbeing. Complete documentation drives accurate coding and revenue capture.
+
+**3-column:**
+| TIME VALUE | DOCUMENTATION QUALITY | CONNECTED VALUE |
+|------------|----------------------|-----------------|
+| Patient access | wRVU improvement | Complete notes |
+| Cost reduction | HCC capture | support revenue |
+| Clinician wellbeing | Denial prevention | across all payers |
+
+We model all drivers—but let users choose which apply to their situation. Not every organization wants capacity expansion. Not every population is Medicare Advantage.
+
+**Closing quote:** "The goal isn't to prove our model right. It's to build your organization's understanding of what ambient documentation actually delivers in your context."
+
+**That honesty is the methodology.**
+
+---
+
+## FINAL CHECKLIST FOR ALL METHODOLOGY PDFs
+
+□ Exactly 4 pages each
+□ Warm beige header with small logo
+□ Manrope font throughout
+□ No blank pages
+□ Dense, premium feel
+□ Consistent badge styling
+□ Two-column layouts where appropriate
+□ Tables with tight row heights
+□ Callout boxes with red-orange left border
+□ Footer: "Abridge ROI Methodology · [Setting]" left, "Page X/4" right
