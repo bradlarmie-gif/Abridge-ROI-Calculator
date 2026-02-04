@@ -870,10 +870,15 @@ export default function ExploreModel({
                 </div>
               </div>
               
-              <p className="text-sm text-[#666666] mb-5">
-                When both ED and Inpatient use Abridge, the value compounds. The admission documentation that starts 
-                in ED flows directly into inpatient coding, CDI workflows, and denial defense.
-              </p>
+              <div className="bg-black rounded-xl p-4 text-white mb-5">
+                <div className="flex items-start gap-3">
+                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">If you're also using Abridge in <span className="font-bold">ED</span>, the documentation quality benefits are amplified.</p>
+                    <p className="text-sm opacity-80 mt-1">The admission documentation that starts in ED flows directly into inpatient coding and denial defense.</p>
+                  </div>
+                </div>
+              </div>
               
               <div className="space-y-3 mb-5">
                 <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
@@ -896,16 +901,6 @@ export default function ExploreModel({
                     <span className="font-semibold text-black">Denial Prevention</span>
                   </div>
                   <p className="text-sm text-[#666666]">Medical necessity documented at admission is your first line of defense against payer audits.</p>
-                </div>
-              </div>
-              
-              <div className="bg-[#5B4FE9] rounded-xl p-4 text-white">
-                <div className="flex items-start gap-3">
-                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">If you're also using Abridge in <span className="font-bold">ED</span>, the documentation quality benefits are amplified.</p>
-                    <p className="text-sm opacity-80 mt-1">The admission documentation that starts in ED flows directly into inpatient coding and denial defense.</p>
-                  </div>
                 </div>
               </div>
             </div>
