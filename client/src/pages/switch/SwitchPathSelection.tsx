@@ -41,7 +41,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPath
         <div className="text-center mb-12 md:mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-sm text-slate-600 mb-6">
             <Sparkles className="w-4 h-4 text-[#EA2C00]" />
-            Value Realization Assessment
+            Ambient Assessment
           </div>
           
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 tracking-tight font-abridge uppercase">
