@@ -108,6 +108,22 @@ Dedicated PDF generators for each care setting (`outpatient-pdf-generator.tsx`, 
 - **Calculation Flow**: Admissions at risk × Protection rate × DRG weight increase × Base payment × Realization = Net DRG value
 - **Scenario Labels**: "Aggressive" renamed to "Optimistic" throughout
 
+### Nursing Pages Updates
+- **Your Nursing Program Page (ExploreOpportunity.tsx)**:
+  - Added "Patient Days Per Year" as a prominent calculated field
+  - Formula: Staffed Beds × 365 × Occupancy Rate
+  - Shows step-by-step calculation breakdown
+  - Only appears when nursingStaffedBeds > 0
+  - Includes helper text explaining this is the denominator for HAC rates and quality metrics
+- **Time Savings Page (ExploreTimeSavings.tsx)**:
+  - Complete reframe from "minutes per encounter" to "time saved per shift" for nursing
+  - Scenarios: Conservative 15 min/shift, Typical 20 min/shift, Optimistic 30 min/shift
+  - Header: "How much documentation time could your nurses get back each shift?"
+  - Data section: "Nurses spend 25-35% of their shift on documentation..."
+  - Right panel shows "Eligible Shifts" instead of "Eligible Encounters"
+  - Per-unit labels show "Per nurse:" instead of "Per provider:"
+  - Calculation: Nursing Shifts Per Year = Nurse FTEs × 365
+
 ### Nursing Care Quality Section
 - **Value vs Potential Distinction**: Nursing care quality drivers are shown as "potential value" rather than "hard value" to acknowledge that clinical practice matters more than documentation alone
 - **Visual Treatment for Potential Value**:

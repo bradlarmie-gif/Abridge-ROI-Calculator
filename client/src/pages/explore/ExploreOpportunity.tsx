@@ -295,7 +295,43 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       </div>
                     </div>
                     <p className="text-xs text-[#888888]">
-                      Most hospitals run 75-90% occupancy. Patient days/year: {state.nursingStaffedBeds} beds × {state.nursingOccupancyRate}% × 365 = {Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365).toLocaleString()}
+                      Most hospitals run 75-90% occupancy
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Section 3 (Nursing): Patient Days Calculated Field */}
+              {isNursing && state.nursingStaffedBeds > 0 && (
+                <div>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                    PATIENT DAYS PER YEAR
+                  </p>
+                  <div className="h-px bg-[#D1D5DB] mb-6" />
+                  
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-2xl font-bold text-[#EA2C00]" data-testid="text-patient-days">
+                        {Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365).toLocaleString()}
+                      </span>
+                      <span className="text-sm text-[#888888]">patient days/year</span>
+                    </div>
+                    <div className="text-xs text-[#888888] space-y-1">
+                      <div className="flex justify-between">
+                        <span>Staffed Beds</span>
+                        <span className="font-medium text-black">{state.nursingStaffedBeds}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>× Days per Year</span>
+                        <span className="font-medium text-black">365</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>× Occupancy Rate</span>
+                        <span className="font-medium text-black">{state.nursingOccupancyRate}%</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-[#888888] mt-4 italic">
+                      This becomes the denominator for HAC rates and other quality metrics.
                     </p>
                   </div>
                 </div>

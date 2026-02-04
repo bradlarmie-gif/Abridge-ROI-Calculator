@@ -33,11 +33,27 @@ export default function ExploreTimeSavings({
     ? { conservative: 1, typical: 2, aggressive: 3 }
     : isInpatient
       ? { conservative: 15, typical: 30, aggressive: 45 }  // Per admission for hospitalists
-      : { conservative: 2, typical: 4, aggressive: 6 };
+      : isNursing
+        ? { conservative: 15, typical: 20, aggressive: 30 }  // Per shift for nursing
+        : { conservative: 2, typical: 4, aggressive: 6 };
+
+  // Nursing: Shift-based calculation
+  const nursingShiftsPerYear = useMemo(() => {
+    // Nurse FTEs × 365 × coverage factor (assuming 1 shift/day per FTE equivalent)
+    return state.numberOfProviders * 365;
+  }, [state.numberOfProviders]);
+
+  const nursingEligibleShifts = useMemo(() => {
+    return Math.round(nursingShiftsPerYear * (state.utilizationPercent / 100));
+  }, [nursingShiftsPerYear, state.utilizationPercent]);
 
   const hoursSaved = useMemo(() => {
+    if (isNursing) {
+      // Nursing: time per shift × eligible shifts
+      return Math.round((state.minutesSavedPerEncounter * nursingEligibleShifts) / 60);
+    }
     return Math.round((state.minutesSavedPerEncounter * eligibleEncounters) / 60);
-  }, [state.minutesSavedPerEncounter, eligibleEncounters]);
+  }, [isNursing, state.minutesSavedPerEncounter, eligibleEncounters, nursingEligibleShifts]);
 
   const hoursPerProvider = useMemo(() => {
     return state.numberOfProviders > 0 ? Math.round(hoursSaved / state.numberOfProviders) : 0;
@@ -66,28 +82,34 @@ export default function ExploreTimeSavings({
     {
       key: 'conservative',
       label: 'Conservative',
-      description: isInpatient
-        ? 'Per admission (combined across all notes). For skeptical stakeholders.'
-        : 'For skeptical stakeholders. Under-promise to over-deliver.',
+      description: isNursing
+        ? 'Minimal adoption, limited flowsheet coverage.'
+        : isInpatient
+          ? 'Per admission (combined across all notes). For skeptical stakeholders.'
+          : 'For skeptical stakeholders. Under-promise to over-deliver.',
     },
     {
       key: 'typical',
       label: 'Typical',
-      description: isED 
-        ? 'Based on average outcomes across similar ED implementations.'
-        : isInpatient
-          ? 'Based on average outcomes across similar hospitalist implementations.'
-          : 'Based on average outcomes across similar implementations.',
+      description: isNursing
+        ? 'Standard adoption across key flowsheets.'
+        : isED 
+          ? 'Based on average outcomes across similar ED implementations.'
+          : isInpatient
+            ? 'Based on average outcomes across similar hospitalist implementations.'
+            : 'Based on average outcomes across similar implementations.',
       recommended: true,
     },
     {
       key: 'aggressive',
       label: 'Optimistic',
-      description: isED 
-        ? 'For high-adoption EDs with strong change management.'
-        : isInpatient
-          ? 'For high-adoption programs with strong workflows.'
-          : 'For high-adoption organizations with strong change management.',
+      description: isNursing
+        ? 'Full adoption with strong change management.'
+        : isED 
+          ? 'For high-adoption EDs with strong change management.'
+          : isInpatient
+            ? 'For high-adoption programs with strong workflows.'
+            : 'For high-adoption organizations with strong change management.',
     },
   ];
 
@@ -117,11 +139,13 @@ export default function ExploreTimeSavings({
                 Time Savings
               </h1>
               <p className="text-base text-[#888888]">
-                {isED 
-                  ? "How much time could your ED providers get back?"
-                  : isInpatient
-                    ? "How much time could your hospitalists get back?"
-                    : "How much time could your providers get back?"
+                {isNursing
+                  ? "How much documentation time could your nurses get back each shift?"
+                  : isED 
+                    ? "How much time could your ED providers get back?"
+                    : isInpatient
+                      ? "How much time could your hospitalists get back?"
+                      : "How much time could your providers get back?"
                 }
               </p>
             </motion.div>
@@ -138,11 +162,13 @@ export default function ExploreTimeSavings({
               </p>
               <div className="h-px bg-[#D1D5DB] mb-6" />
               <p className="text-sm text-black leading-relaxed">
-                {isED 
-                  ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
-                  : isInpatient
-                    ? "Hospitalists document across the patient stay—H&Ps, progress notes, discharge summaries. Abridge reduces documentation time across all of these. Across inpatient implementations, hospitalists typically save 15-45 minutes per admission on total documentation time."
-                    : "Across implementations, providers typically save 2-6 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
+                {isNursing
+                  ? "Nurses spend 25-35% of their shift on documentation. Ambient documentation can reduce time spent on flowsheets, assessments, and handoff documentation by 15-30 minutes per shift."
+                  : isED 
+                    ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
+                    : isInpatient
+                      ? "Hospitalists document across the patient stay—H&Ps, progress notes, discharge summaries. Abridge reduces documentation time across all of these. Across inpatient implementations, hospitalists typically save 15-45 minutes per admission on total documentation time."
+                      : "Across implementations, providers typically save 2-6 minutes per encounter on documentation. The range depends on specialty, workflow, and how providers use the time."
                 }
               </p>
               <p className="text-xs text-[#888888] mt-2 italic">
@@ -194,7 +220,7 @@ export default function ExploreTimeSavings({
                               {scenario.label}
                             </span>
                             <span className={`text-lg font-bold ${isSelected ? 'text-[#EA2C00]' : 'text-black/70'}`}>
-                              {scenarioMinutes[scenario.key]} min
+                              {scenarioMinutes[scenario.key]} min{isNursing ? '/shift' : ''}
                             </span>
                             {scenario.recommended && (
                               <span className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-wide">
@@ -224,7 +250,7 @@ export default function ExploreTimeSavings({
                     data-testid="input-custom-minutes"
                   />
                 </div>
-                <span className="text-sm text-[#888888]">min/encounter</span>
+                <span className="text-sm text-[#888888]">{isNursing ? 'min/shift' : 'min/encounter'}</span>
               </div>
             </motion.div>
 
@@ -271,7 +297,10 @@ export default function ExploreTimeSavings({
               </div>
 
               <p className="text-xs text-white/40 text-center mb-4">
-                {state.minutesSavedPerEncounter} min × {formatNumber(eligibleEncounters)} encounters
+                {isNursing 
+                  ? `${state.minutesSavedPerEncounter} min × ${formatNumber(nursingEligibleShifts)} shifts`
+                  : `${state.minutesSavedPerEncounter} min × ${formatNumber(eligibleEncounters)} encounters`
+                }
               </p>
 
               <div className="h-px bg-white/10 my-4" />
@@ -284,19 +313,19 @@ export default function ExploreTimeSavings({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/50">Time Saved</span>
-                  <span className="text-white">{state.minutesSavedPerEncounter} min/encounter</span>
+                  <span className="text-white">{state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">Eligible Encounters</span>
-                  <span className="text-white">{formatNumber(eligibleEncounters)}</span>
+                  <span className="text-white/50">{isNursing ? 'Eligible Shifts' : 'Eligible Encounters'}</span>
+                  <span className="text-white">{formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters)}</span>
                 </div>
               </div>
 
               <div className="h-px bg-white/10 my-4" />
 
-              {/* Per Provider */}
+              {/* Per Provider/Nurse */}
               <div className="mb-4">
-                <p className="text-xs text-white/50 mb-2">Per provider:</p>
+                <p className="text-xs text-white/50 mb-2">{isNursing ? 'Per nurse:' : 'Per provider:'}</p>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-white/50">Hours/year</span>

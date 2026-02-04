@@ -1,0 +1,79 @@
+## PAGE 1: YOUR NURSING PROGRAM — GOOD AS-IS
+
+The staffed beds + nurse FTEs + occupancy framing is correct.
+
+**One addition:** Consider adding "Average Patient Days per Year" as a calculated field:
+
+```
+Patient Days/Year = Staffed Beds × 365 × Occupancy Rate
+
+This becomes the denominator for HAC rates and other quality metrics.
+```
+
+**Utilization** still makes sense here — what % of shifts/events will use Abridge.
+
+---
+
+## PAGE 2: TIME SAVINGS — NEEDS COMPLETE REFRAME
+
+**Current problem:** "2-6 minutes per encounter" doesn't make sense for nursing.
+
+### The Reality of Nursing Documentation:
+
+Nurses don't have "encounters." They have:
+1. **Shift-based documentation** — Assessments, vitals documentation, I&O
+2. **Event-based documentation** — Medication administration, interventions
+3. **Handoff documentation** — Shift change reports
+
+### Recommended Framing: TIME SAVED PER SHIFT
+
+```
+TIME SAVINGS
+
+Nursing documentation happens throughout every shift. Abridge can reduce 
+time spent on flowsheets, assessments, and handoff documentation.
+
+WHAT THE DATA SHOWS
+───────────────────────────────────────────────────────────────────────────
+
+Nurses spend 25-35% of their shift on documentation. Across implementations, 
+ambient documentation can reduce this burden by 15-30 minutes per shift.
+
+Source: Nursing workflow studies, Abridge customer data
+
+
+CHOOSE YOUR SCENARIO
+───────────────────────────────────────────────────────────────────────────
+
+○  Conservative     15 min/shift
+   Minimal adoption, limited flowsheet coverage
+
+●  Typical          20 min/shift       RECOMMENDED
+   Standard adoption across key flowsheets
+
+○  Optimistic       30 min/shift
+   Full adoption with strong change management
+
+
+WHAT THIS MEANS
+───────────────────────────────────────────────────────────────────────────
+
+Shifts per year:                    109,500
+(300 nurses × 365 days × coverage factor)
+
+Time saved per year:                36,500 hours
+(20 min × 109,500 shifts ÷ 60)
+
+Per nurse per week:                 2.3 hours returned
+```
+
+### The Math:
+
+```
+Annual Shifts = Nurse FTEs × 365 × Shift Coverage Factor (default 1.0)
+Hours Saved = Time per Shift × Annual Shifts ÷ 60
+
+Or use Eligible Shifts from Page 1:
+Eligible Shifts = Annual Shifts × Utilization Rate
+Hours Saved = Time per Shift × Eligible Shifts ÷ 60
+```
