@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MethodologyHome,
   MethodologyOutpatient,
@@ -20,6 +20,11 @@ export type { LearnScreen };
 
 export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
   const [currentScreen, setCurrentScreen] = useState<LearnScreen>(initialScreen || "home");
+
+  // Scroll to top on every screen change (mobile fix)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentScreen]);
 
   const handleSelectSetting = (setting: CareSettingType) => {
     setCurrentScreen(setting);
