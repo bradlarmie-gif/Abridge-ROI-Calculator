@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Edit, FileText, TrendingUp, Link, BarChart3, Check, AlertTriangle, Sparkles, FileCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -8,6 +8,14 @@ import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceDot } from "recharts";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { generateOutpatientROIPDF } from "@/lib/outpatient-pdf-generator";
+import { generateEDROIPDF } from "@/lib/ed-pdf-generator";
+import { generateInpatientROIPDF } from "@/lib/inpatient-pdf-generator";
+import { generateNursingROIPDF } from "@/lib/nursing-pdf-generator";
+import { transformToOutpatientPDFData } from "@/lib/outpatient-pdf-data-transformer";
+import { transformToEDPDFData } from "@/lib/ed-pdf-data-transformer";
+import { transformToInpatientPDFData } from "@/lib/inpatient-pdf-data-transformer";
+import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
 
 interface ExploreModelProps {
   state: ExploreState;
@@ -250,13 +258,119 @@ export default function ExploreModel({
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Build driver results based on care setting
+      const driverResults: Record<string, { name: string; value: number; inputs?: Record<string, any> }> = {};
+      
+      // Add time/labor drivers
+      if (timeDriverInputs.patientAccessEnabled) {
+        driverResults.patientAccess = { 
+          name: state.careSetting === 'ed' ? 'LWBS Recovery' : 'Patient Access', 
+          value: patientAccessValue 
+        };
+      }
+      if (timeDriverInputs.costReductionEnabled) {
+        driverResults.overtime = { 
+          name: state.careSetting === 'nursing' ? 'OT Reduction' : 'Overtime Reduction', 
+          value: costReductionValue 
+        };
+      }
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        driverResults.workforce = { 
+          name: 'Workforce Retention', 
+          value: ipWellbeingRetentionValue 
+        };
+      }
+      
+      // Add documentation/revenue drivers
+      if (docQualityInputs.wrvuEnabled) {
+        driverResults.wrvu = { 
+          name: state.careSetting === 'ed' ? 'E&M Level Accuracy' : 'wRVU Improvement', 
+          value: wrvuValue 
+        };
+      }
+      if (docQualityInputs.hccEnabled && state.careSetting !== 'ed') {
+        driverResults.hcc = { 
+          name: 'HCC Capture', 
+          value: hccValue 
+        };
+      }
+      if (docQualityInputs.denialsEnabled) {
+        driverResults.denials = { 
+          name: 'Denial Prevention', 
+          value: denialsValue 
+        };
+      }
+      
+      // Common model results
+      const modelResults = {
+        totalBenefit: totalValue,
+        investment: annualInvestment,
+        providers: state.numberOfProviders,
+        encounters: state.annualEncounters,
+        utilizationRate: state.utilizationPercent,
+        costPerMonth: state.costPerProvider,
+        timeSavedPerEncounter: 2.5,
+        driverResults,
+      };
+      
+      // Journey inputs for scaling projection
+      const journeyInputs = {
+        pilotProviders: state.numberOfProviders,
+        pilotEncounters: state.annualEncounters,
+        pilotUtilization: state.utilizationPercent,
+        pilotValue: netAnnualValue,
+        fullScaleProviders: expandedProviders,
+        fullScaleUtilization: expandedUtilization,
+        fullScaleValue: Math.round(netAnnualValue * (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent)),
+        scalingPace: selectedPace,
+        networkEffect: 0,
+      };
+      
+      // Generate PDF based on care setting
+      if (state.careSetting === 'outpatient') {
+        const pdfData = transformToOutpatientPDFData(modelResults, journeyInputs, 'Outpatient', clientName, preparedBy);
+        await generateOutpatientROIPDF(pdfData);
+      } else if (state.careSetting === 'ed') {
+        const pdfData = transformToEDPDFData(modelResults, journeyInputs, undefined, clientName, preparedBy);
+        await generateEDROIPDF(pdfData);
+      } else if (state.careSetting === 'inpatient') {
+        const pdfData = transformToInpatientPDFData(modelResults, journeyInputs, undefined, clientName, preparedBy);
+        await generateInpatientROIPDF(pdfData);
+      } else if (state.careSetting === 'nursing') {
+        // Nursing uses different model structure
+        const nursingModelResults = {
+          totalBenefit: totalValue,
+          investment: annualInvestment,
+          staffedBeds: state.numberOfProviders,
+          nurseFTEs: Math.round(state.numberOfProviders * 1.5),
+          documentationEvents: state.annualEncounters,
+          utilizationRate: state.utilizationPercent,
+          costPerMonth: state.costPerProvider,
+          timeSavedPerEvent: 5,
+          driverResults,
+        };
+        const nursingJourneyInputs = {
+          pilotBeds: state.numberOfProviders,
+          pilotEvents: state.annualEncounters,
+          pilotUtilization: state.utilizationPercent,
+          pilotValue: netAnnualValue,
+          fullScaleBeds: expandedProviders,
+          fullScaleUtilization: expandedUtilization,
+          fullScaleValue: Math.round(netAnnualValue * (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent)),
+          scalingPace: selectedPace,
+          networkEffect: 0,
+        };
+        const pdfData = transformToNursingPDFData(nursingModelResults, nursingJourneyInputs, undefined, clientName, preparedBy);
+        await generateNursingROIPDF(pdfData);
+      }
+      
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
         description: "Your ROI model has been saved.",
       });
     } catch (error) {
+      console.error("PDF generation error:", error);
       toast({
         title: "Export Failed",
         description: "Unable to generate PDF. Please try again.",
