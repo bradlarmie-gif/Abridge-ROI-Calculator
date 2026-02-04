@@ -169,7 +169,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
                   affects DRG assignment.
                 </p>
                 <p>
-                  Time savings per admission are larger (15-45 minutes) because hospitalists 
+                  Time savings per admission are larger (15-40 minutes) because hospitalists 
                   document multiple notes: H&Ps, progress notes, discharge summaries, procedures. 
                   Each represents an opportunity for Abridge to reduce burden.
                 </p>

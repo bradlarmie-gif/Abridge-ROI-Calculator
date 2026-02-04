@@ -609,7 +609,7 @@ export const inpatientMethodologyData: MethodologyPDFData = {
     },
   ],
   assumptions: [
-    { name: "Time saved per admission", range: "15-45 min", defaultValue: "30 min", source: "Inpatient studies" },
+    { name: "Time saved per admission", range: "15-40 min", defaultValue: "30 min", source: "Inpatient studies" },
     { name: "At-risk admissions", range: "20-30%", defaultValue: "25%", source: "CDI benchmarks" },
     { name: "DRG protection rate", range: "15-25%", defaultValue: "20%", source: "Documentation improvement data" },
     { name: "DRG weight increase", range: "0.3-0.5", defaultValue: "0.4", source: "CMS data" },
