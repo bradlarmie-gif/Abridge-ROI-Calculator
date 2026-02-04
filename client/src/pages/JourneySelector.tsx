@@ -3,7 +3,7 @@ import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight, Check } fr
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
-import abridgeABg from "@assets/abridge-a-bg_1769025961657.png";
+import abridgeShape from "@assets/abridge-shape-07_1770229105848.png";
 
 interface JourneySelectorProps {
   onSelectExplore: () => void;
@@ -100,17 +100,25 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
     <div className="min-h-screen bg-white relative overflow-hidden">
       <GlobalHeader pageName="Home" />
       
-      {/* Giant A background on right */}
+      {/* Giant Abridge shape background on right - rotated 90° to look like an A */}
       <div 
-        className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none z-0"
+        className="absolute pointer-events-none z-0"
         style={{
-          backgroundImage: `url(${abridgeABg})`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'left center',
-          backgroundSize: 'cover',
-          opacity: 0.3,
+          right: '-10%',
+          top: '50%',
+          transform: 'translateY(-50%) rotate(90deg)',
+          width: '85vh',
+          height: '85vh',
+          opacity: 0.06,
         }}
-      />
+      >
+        <img 
+          src={abridgeShape} 
+          alt="" 
+          className="w-full h-full object-contain"
+          aria-hidden="true"
+        />
+      </div>
       
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
         <motion.section 
