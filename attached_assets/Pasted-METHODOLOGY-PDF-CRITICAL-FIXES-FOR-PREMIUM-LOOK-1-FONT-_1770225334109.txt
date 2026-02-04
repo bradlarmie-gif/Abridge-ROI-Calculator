@@ -1,0 +1,228 @@
+METHODOLOGY PDF — CRITICAL FIXES FOR PREMIUM LOOK
+
+## 1. FONT — MUST BE MANROPE
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+* {
+  font-family: 'Manrope', sans-serif !important;
+}
+
+If Manrope doesn't load in PDF, use: 
+font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
+
+Body text: 10pt, weight 400
+Headers: 11-12pt, weight 600
+Section titles: 14pt, weight 700
+
+## 2. ELIMINATE BOTTOM WHITE SPACE — PAGE BREAK CONTROL
+
+The issue: Content stops mid-page and leaves white space.
+
+Fix: Set page-break-inside: avoid on cards, but if that causes overflow, 
+instead let content flow naturally and ADD MORE CONTENT to fill pages.
+
+Option A: Add "Connected Value" section to Page 2 instead of Page 4
+Option B: Add "Validation Timelines" table to Page 3 
+Option C: Expand the mechanism descriptions with more detail
+
+DO NOT leave 30-50% of any page blank.
+
+If content doesn't fill 4 pages cleanly, either:
+- Condense to 3 pages (make it denser)
+- Expand to fill 4 pages (add the detailed content from methodology)
+
+## 3. CARD HEIGHTS — EQUAL AND COMPACT
+
+.card-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch; /* Makes cards equal height */
+}
+
+.card {
+  padding: 12px 14px;
+  border: 1px solid #E5E5E5;
+  border-radius: 4px;
+  background: #FAFAFA;
+}
+
+For 3-column layouts:
+grid-template-columns: 1fr 1fr 1fr;
+
+## 4. BADGES — REFINED, SMALLER, SOPHISTICATED
+
+.badge {
+  display: inline-block;
+  font-size: 7pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+
+.badge-direct {
+  background: #E8F5E9;
+  color: #1B5E20;
+  border: 1px solid #C8E6C9;
+}
+
+.badge-indirect {
+  background: #FFF8E1;
+  color: #F57F17;
+  border: 1px solid #FFECB3;
+}
+
+.badge-potential {
+  background: #F5F5F5;
+  color: #616161;
+  border: 1px solid #E0E0E0;
+}
+
+.badge-qualitative {
+  background: #ECEFF1;
+  color: #78909C;
+  border: 1px solid #CFD8DC;
+}
+
+## 5. TABLE STYLING — REFINED
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+
+th {
+  background: #F5F5F5;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid #E0E0E0;
+}
+
+td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #EEEEEE;
+}
+
+tr:nth-child(even) {
+  background: #FAFAFA;
+}
+
+## 6. SPACING — TIGHTER THROUGHOUT
+
+Section margin-bottom: 16px (not 24-32px)
+Card padding: 12px (not 20px)
+Paragraph margin-bottom: 8px (not 16px)
+List item margin-bottom: 4px
+
+## 7. HEADER — CLEANER
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #E0E0E0; /* thinner line */
+  margin-bottom: 16px;
+}
+
+.logo {
+  height: 20px; /* smaller logo */
+}
+
+.header-right {
+  font-size: 9pt;
+  font-weight: 600;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+## 8. CALLOUT BOXES — MORE REFINED
+
+.callout {
+  border-left: 3px solid #EA2C00;
+  background: #FFF8F6;
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 9pt;
+  font-style: italic;
+}
+
+.callout-label {
+  font-weight: 600;
+  font-style: normal;
+  color: #EA2C00;
+}
+
+## 9. FOOTER — SUBTLE
+
+.footer {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8pt;
+  color: #999999;
+  border-top: 1px solid #EEEEEE;
+  padding-top: 8px;
+}
+
+## 10. PAGE CONTENT DISTRIBUTION
+
+PAGE 1 should contain:
+- Header
+- Title + subtitle
+- THE CONTEXT (full paragraph)
+- TWO VALUE CATEGORIES (side-by-side cards)
+- OUR APPROACH callout
+- Start of VALUE MECHANISMS section with first 2 mechanisms
+
+PAGE 2 should contain:
+- Header
+- Remaining 4 value mechanisms (2x2 grid or 3x2)
+- WHY POTENTIAL VALUE callout
+- THE HONEST LIMITS (3-column)
+
+PAGE 3 should contain:
+- Header  
+- KEY ASSUMPTIONS intro
+- Full assumptions table (all rows)
+- WHY WE DEFAULT CONSERVATIVE callout
+- CONNECTED VALUE section
+
+PAGE 4 should contain:
+- Header
+- VALIDATION PATH (2x2 grid)
+- VALIDATION TIMELINES table
+- SUMMARY section
+- Closing quote
+- "That honesty is the methodology"
+
+FILL EVERY PAGE. If there's white space, add content or adjust layout.
+
+THE REAL ISSUE
+You're caught between two problems:
+
+Page breaks — Content that should stay together is breaking awkwardly
+Content volume — Not enough content to fill pages, so you get white space
+
+The solution is not compression—it's proper content distribution.
+Think of it like newspaper layout: You have a fixed amount of space (4 pages) and you need to flow content to fill it, sometimes letting things wrap, sometimes holding them together.
+Specific instruction for Replit:
+CopyFor the methodology PDF, treat it like a magazine layout:
+
+1. Calculate total content height
+2. Distribute across 4 pages evenly
+3. If a section would leave >20% white space at bottom of page, 
+   pull the next section header up to that page
+4. Cards and tables can break across pages if needed—just ensure 
+   the break happens between rows/items, not mid-item
+5. Never leave more than 15% white space at bottom of any page 
+   (except the last page where the closing quote should have breathing room
