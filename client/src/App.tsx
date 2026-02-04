@@ -34,9 +34,9 @@ import InvestmentPage from "@/pages/InvestmentPage";
 import SummaryCommandCenter from "@/pages/SummaryCommandCenter";
 import { ExpandFlow } from "@/pages/expand";
 import { SwitchFlow } from "@/pages/switch";
-import LearnPath from "@/pages/LearnPath";
+import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
-import { ExploreFlow, type ExploreState } from "@/pages/explore";
+import { ExploreFlow, type ExploreState, type ExploreCareSetting, type ExplorePhase } from "@/pages/explore";
 
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
@@ -48,10 +48,77 @@ interface SelectionState {
   selectedLevers: SelectedLever[];
 }
 
+// Parse URL for deep linking (called during initialization)
+type InitialDeepLink = 
+  | { type: 'explore'; careSetting: ExploreCareSetting; phase: ExplorePhase }
+  | { type: 'learn'; screen: LearnScreen }
+  | { type: 'none' };
+
+function getInitialDeepLink(): InitialDeepLink {
+  const params = new URLSearchParams(window.location.search);
+  const exploreSetting = params.get('explore');
+  const pathname = window.location.pathname;
+  
+  // Check for explore query parameter (/?explore=outpatient)
+  if (exploreSetting) {
+    const validSettings: ExploreCareSetting[] = ['outpatient', 'ed', 'inpatient', 'nursing'];
+    if (validSettings.includes(exploreSetting as ExploreCareSetting)) {
+      // Clear URL parameter immediately
+      window.history.replaceState({}, '', pathname);
+      return {
+        type: 'explore',
+        careSetting: exploreSetting as ExploreCareSetting,
+        phase: 'practice'
+      };
+    }
+  }
+  
+  // Check for learn paths (/learn/outpatient, /learn/ed, etc.)
+  if (pathname.startsWith('/learn/')) {
+    const setting = pathname.replace('/learn/', '');
+    const validScreens: LearnScreen[] = ['outpatient', 'ed', 'inpatient', 'nursing', 'home'];
+    if (validScreens.includes(setting as LearnScreen)) {
+      window.history.replaceState({}, '', '/');
+      return {
+        type: 'learn',
+        screen: setting as LearnScreen
+      };
+    }
+  }
+  
+  return { type: 'none' };
+}
+
+// Compute initial deep link once at module load to determine initial view
+const INITIAL_DEEP_LINK = getInitialDeepLink();
+
 export default function App() {
   usePreventNumberInputScroll();
   
-  const [currentView, setCurrentView] = useState<AppView>("splash");
+  // State for deep link settings
+  const [exploreInitialSettings, setExploreInitialSettings] = useState<{
+    careSetting?: ExploreCareSetting;
+    phase?: ExplorePhase;
+  }>(() => {
+    if (INITIAL_DEEP_LINK.type === 'explore') {
+      return { careSetting: INITIAL_DEEP_LINK.careSetting, phase: INITIAL_DEEP_LINK.phase };
+    }
+    return {};
+  });
+  
+  const [learnInitialScreen, setLearnInitialScreen] = useState<LearnScreen | undefined>(() => {
+    if (INITIAL_DEEP_LINK.type === 'learn') {
+      return INITIAL_DEEP_LINK.screen;
+    }
+    return undefined;
+  });
+  
+  // Determine initial view based on deep link
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    if (INITIAL_DEEP_LINK.type === 'explore') return "explore";
+    if (INITIAL_DEEP_LINK.type === 'learn') return "learn";
+    return "splash";
+  });
   
   // Track navigation history for browser back button support
   const [viewHistory, setViewHistory] = useState<AppView[]>(["splash"]);
@@ -397,11 +464,15 @@ export default function App() {
                   setBaselineInfo(null);
                   setValueResults(null);
                   setModelResults(null);
+                  setExploreInitialSettings({}); // Clear any deep link settings
                   navigateTo("explore");
                 }}
                 onSelectExpand={() => navigateTo("measure")}
                 onSelectSwitch={() => navigateTo("switch")}
-                onSelectLearn={() => navigateTo("learn")}
+                onSelectLearn={() => {
+                  setLearnInitialScreen(undefined); // Clear deep link, start at home
+                  navigateTo("learn");
+                }}
               />
             )}
 
@@ -409,6 +480,8 @@ export default function App() {
               <ExploreFlow
                 onBackToJourney={handleBackToJourney}
                 onContinueToInvestment={handleExploreComplete}
+                initialCareSetting={exploreInitialSettings.careSetting}
+                initialPhase={exploreInitialSettings.phase}
               />
             )}
 
@@ -479,6 +552,7 @@ export default function App() {
             {currentView === "learn" && (
               <LearnPath 
                 onBack={handleBackToJourney} 
+                initialScreen={learnInitialScreen}
                 onStartCalculator={(setting) => {
                   setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
                   navigateTo("explore");

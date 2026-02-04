@@ -339,11 +339,16 @@ type ExplorePhase =
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
   onContinueToInvestment?: (state: ExploreState) => void;
+  initialCareSetting?: ExploreCareSetting;
+  initialPhase?: ExplorePhase;
 }
 
-export default function ExploreFlow({ onBackToJourney }: ExploreFlowProps) {
-  const [phase, setPhase] = useState<ExplorePhase>('careSetting');
-  const [state, setState] = useState<ExploreState>(DEFAULT_EXPLORE_STATE);
+export default function ExploreFlow({ onBackToJourney, initialCareSetting, initialPhase }: ExploreFlowProps) {
+  const [phase, setPhase] = useState<ExplorePhase>(initialPhase || 'careSetting');
+  const [state, setState] = useState<ExploreState>(() => ({
+    ...DEFAULT_EXPLORE_STATE,
+    careSetting: initialCareSetting || null,
+  }));
 
   const updateState = useCallback((updates: Partial<ExploreState>) => {
     setState(prev => ({ ...prev, ...updates }));

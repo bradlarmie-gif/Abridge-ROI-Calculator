@@ -10,13 +10,16 @@ import {
 interface LearnPathProps {
   onBack: () => void;
   onStartCalculator?: (setting: CareSettingType) => void;
+  initialScreen?: LearnScreen;
 }
 
 type CareSettingType = "outpatient" | "ed" | "nursing" | "inpatient";
 type LearnScreen = "home" | "outpatient" | "ed" | "inpatient" | "nursing";
 
-export default function LearnPath({ onBack }: LearnPathProps) {
-  const [currentScreen, setCurrentScreen] = useState<LearnScreen>("home");
+export type { LearnScreen };
+
+export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
+  const [currentScreen, setCurrentScreen] = useState<LearnScreen>(initialScreen || "home");
 
   const handleSelectSetting = (setting: CareSettingType) => {
     setCurrentScreen(setting);

@@ -546,7 +546,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
             Use these methodology principles to create a customized ROI model for your hospitalist program.
           </p>
           <a
-            href="/"
+            href="/?explore=inpatient"
             className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
             data-testid="button-build-model"
           >

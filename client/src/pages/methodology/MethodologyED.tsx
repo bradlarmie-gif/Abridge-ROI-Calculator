@@ -532,7 +532,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
             Use these methodology principles to create a customized ROI model for your emergency department.
           </p>
           <a
-            href="/"
+            href="/?explore=ed"
             className="inline-flex items-center gap-2 bg-[#EA2C00] hover:bg-[#D12600] text-white font-medium px-6 py-3 rounded-lg transition-colors"
             data-testid="button-build-model"
           >

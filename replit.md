@@ -43,6 +43,12 @@ The application supports distinct user journeys: an "Explore Path" for new prosp
 ### Learn Methodology Section
 A completely restructured section provides modular methodology pages for each care setting. It features a consistent 5-section structure (Context, Value Mechanisms, Assumptions, Honest Limits, Validation Path) and interactive elements like PDF export and hover tooltips.
 
+### Deep Linking
+The app supports deep linking for direct navigation:
+-   **Methodology pages**: `/learn/outpatient`, `/learn/ed`, `/learn/inpatient`, `/learn/nursing` - Opens the corresponding methodology page directly
+-   **Explore flow**: `/?explore=outpatient`, `/?explore=ed`, `/?explore=inpatient`, `/?explore=nursing` - Starts the Explore wizard with care setting pre-selected at the practice phase
+-   **CTA integration**: "Build a Model" buttons on methodology pages use explore deep links to provide seamless navigation
+
 ## External Dependencies
 
 ### UI/Charting Libraries
