@@ -290,7 +290,7 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   avgMissedHccsPerPatient: 1.5,
   rafImpactPerHcc: 0.4,
   annualPaymentPerRaf: 12000,
-  hccRealization: 60,
+  hccRealization: 50,
   // Denials - unappealable focus (Typical scenario)
   baselineDenialRate: 8,
   unappealableRate: 40,

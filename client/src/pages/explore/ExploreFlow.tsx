@@ -272,7 +272,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     avgHccs: 1.5,
     rafImpact: 0.4,
     annualPayment: 12000,
-    hccRealization: 60,
+    hccRealization: 50,
     denialsEnabled: false,
     denialsScenario: 'typical',
     denialRate: 8,

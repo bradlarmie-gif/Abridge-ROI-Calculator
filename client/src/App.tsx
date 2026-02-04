@@ -256,7 +256,7 @@ export default function App() {
       const avgMissedHccs = 1.5;
       const rafImpact = 0.4;
       const annualPayment = 12000;
-      const realizationRate = 60;
+      const realizationRate = 50;
       const captureRate = state.docDrivers.hcc.value; // User-configurable capture rate
       const panelSize = state.numberOfProviders * 1500;
       const patientsWithGaps = Math.round(panelSize * (maPercentage / 100) * (gapRate / 100));
