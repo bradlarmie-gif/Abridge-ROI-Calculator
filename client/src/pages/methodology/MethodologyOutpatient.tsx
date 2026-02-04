@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Activity, Building2, Heart, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateMethodologyPDF, outpatientMethodologyData } from "@/lib/methodology-pdf-generator";
+import { generateOutpatientMethodologyPDF } from "@/lib/outpatient-methodology-pdf";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyOutpatientProps {
@@ -68,7 +68,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      await generateMethodologyPDF(outpatientMethodologyData);
+      await generateOutpatientMethodologyPDF();
     } catch (error) {
       console.error('PDF export failed:', error);
       alert('PDF export failed. Please try again or check your browser settings.');

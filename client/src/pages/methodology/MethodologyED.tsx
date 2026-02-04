@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Building2, Heart, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateMethodologyPDF, edMethodologyData } from "@/lib/methodology-pdf-generator";
+import { generateEDMethodologyPDF } from "@/lib/ed-methodology-pdf";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyEDProps {
@@ -91,7 +91,7 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      await generateMethodologyPDF(edMethodologyData);
+      await generateEDMethodologyPDF();
     } catch (error) {
       console.error('PDF export failed:', error);
       alert('PDF export failed. Please try again or check your browser settings.');

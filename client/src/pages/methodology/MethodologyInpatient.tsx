@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Activity, Heart, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateMethodologyPDF, inpatientMethodologyData } from "@/lib/methodology-pdf-generator";
+import { generateInpatientMethodologyPDF } from "@/lib/inpatient-methodology-pdf";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyInpatientProps {
@@ -91,7 +91,7 @@ export function MethodologyInpatient({ onBack, onNavigateToSetting }: Methodolog
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      await generateMethodologyPDF(inpatientMethodologyData);
+      await generateInpatientMethodologyPDF();
     } catch (error) {
       console.error('PDF export failed:', error);
       alert('PDF export failed. Please try again or check your browser settings.');
