@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Loader2, Stethoscope, AlertCircle, HeartPulse, Building2, Check } from "lucide-react";
+import { ArrowRight, Loader2, Stethoscope, Zap, HeartPulse, ClipboardList, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -17,29 +17,29 @@ const CARE_SETTINGS: CareSettingOption[] = [
   {
     id: 'outpatient',
     label: 'Outpatient',
-    shortDesc: 'Clinic & Ambulatory',
+    shortDesc: 'Primary care & specialty',
     icon: Stethoscope,
     available: true,
   },
   {
     id: 'ed',
     label: 'Emergency',
-    shortDesc: 'Emergency Department',
-    icon: AlertCircle,
-    available: true,
-  },
-  {
-    id: 'nursing',
-    label: 'Nursing',
-    shortDesc: 'Nursing Documentation',
-    icon: HeartPulse,
+    shortDesc: 'Emergency department',
+    icon: Zap,
     available: true,
   },
   {
     id: 'inpatient',
     label: 'Inpatient',
-    shortDesc: 'Hospital & Acute Care',
-    icon: Building2,
+    shortDesc: 'Hospital medicine',
+    icon: ClipboardList,
+    available: true,
+  },
+  {
+    id: 'nursing',
+    label: 'Nursing',
+    shortDesc: 'Inpatient nursing',
+    icon: HeartPulse,
     available: true,
   },
 ];
@@ -119,11 +119,11 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   onClick={() => handleSelectSetting(setting)}
                   disabled={isDisabled}
                   className={`
-                    relative flex flex-col items-center text-center w-full md:w-[180px] lg:w-[220px] py-6 md:py-8 px-4 md:px-6 rounded-xl md:rounded-2xl transition-all duration-200
+                    relative flex flex-col items-start text-left w-full md:w-[180px] lg:w-[220px] py-5 md:py-6 px-5 md:px-6 rounded-xl md:rounded-2xl transition-all duration-200
                     ${isSelected 
-                      ? 'bg-[#F5F0EB] border-2 border-[#EA2C00] shadow-xl' 
+                      ? 'bg-white border-2 border-[#EA2C00] shadow-xl' 
                       : isDisabled
-                        ? 'bg-slate-50 cursor-not-allowed'
+                        ? 'bg-white border border-slate-200 cursor-not-allowed'
                         : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
                     }
                   `}
@@ -150,22 +150,17 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   )}
 
                   <div className={`
-                    w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-5
-                    ${isSelected 
-                      ? 'bg-white' 
-                      : isDisabled
-                        ? 'bg-slate-100'
-                        : 'bg-[#FFF5F2]'
-                    }
+                    w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center mb-3 md:mb-4
+                    ${isDisabled ? 'bg-slate-100' : 'bg-[#F5F0EB]'}
                   `}>
-                    <Icon className={`w-6 h-6 md:w-8 md:h-8 ${isSelected ? 'text-[#EA2C00]' : isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
+                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isDisabled ? 'text-slate-400' : 'text-[#EA2C00]'}`} />
                   </div>
                   
-                  <h3 className={`text-base md:text-lg font-bold mb-0.5 ${isSelected ? 'text-black' : isDisabled ? 'text-slate-400' : 'text-black'}`}>
+                  <h3 className={`text-base md:text-lg font-bold mb-0.5 ${isDisabled ? 'text-slate-400' : 'text-black'}`}>
                     {setting.label}
                   </h3>
                   
-                  <p className={`text-xs md:text-sm font-medium leading-tight ${isSelected ? 'text-[#666666]' : isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs md:text-sm font-medium leading-tight ${isDisabled ? 'text-slate-400' : 'text-slate-500'}`}>
                     {setting.shortDesc}
                   </p>
                 </motion.button>
