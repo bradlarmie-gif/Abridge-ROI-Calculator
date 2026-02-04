@@ -10,7 +10,6 @@ import {
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import abridgeLogoWhitePath from "@assets/abridge-logo-wordmark-white_1769912213277.png";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -83,1922 +82,1287 @@ export interface NursingPDFData {
 }
 
 // ============================================================================
-// PREMIUM COLOR PALETTE
+// DENSE COLOR PALETTE - Bloomberg/Economist Style
 // ============================================================================
 
 const brand = {
-  // Core colors
-  black: "#1A1A1A",
-  white: "#FFFFFF",
+  black: "#000000",
+  darkGray: "#333333",
+  mediumGray: "#666666",
+  lightGray: "#999999",
+  borderGray: "#E0E0E0",
+  tableHeader: "#F5F5F5",
+  cardBg: "#FFFFFF",
   abridgeRed: "#EA2C00",
-  warmBeige: "#F5F0EB",
-  
-  // Grays
-  lightGray: "#F8F7F6",
-  midGray: "#E5E4E3",
-  borderGray: "#D4D4D4",
-  
-  // Text
-  textPrimary: "#1A1A1A",
-  textSecondary: "#666666",
-  textTertiary: "#9CA3AF",
   
   // Badge colors
-  badgeGreen: "#059669",
-  badgeGreenBg: "#D1FAE5",
-  badgeAmber: "#B45309",
-  badgeAmberBg: "#FEF3C7",
-  badgeGray: "#4B5563",
-  badgeGrayBg: "#F3F4F6",
-  badgeBlue: "#1D4ED8",
-  badgeBlueBg: "#DBEAFE",
+  directMeasurableBg: "#E8F5E9",
+  directMeasurableText: "#2E7D32",
+  indirectBg: "#FFF3E0",
+  indirectText: "#E65100",
+  potentialBg: "#F5F5F5",
+  potentialText: "#666666",
+  qualitativeBg: "#FAFAFA",
+  qualitativeText: "#999999",
 };
 
 // ============================================================================
-// PREMIUM STYLES
+// DENSE TYPOGRAPHY - Bloomberg Style
 // ============================================================================
 
 const styles = StyleSheet.create({
-  // Base page
   page: {
+    padding: 36, // 0.5" margins
     fontFamily: "Helvetica",
-    fontSize: 11,
-    color: brand.textPrimary,
-    backgroundColor: brand.white,
+    fontSize: 9,
+    lineHeight: 1.3,
+    color: brand.darkGray,
+    backgroundColor: "#FFFFFF",
   },
   
-  // =====================
-  // DARK COVER PAGE
-  // =====================
-  darkPage: {
-    backgroundColor: brand.black,
-    padding: 48,
-    height: "100%",
+  // Header
+  header: {
+    flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.borderGray,
   },
-  darkPageTop: {
-    marginBottom: 40,
-  },
-  whiteLogo: {
-    width: 100,
+  logo: {
+    width: 80,
     height: 20,
   },
-  coverCenter: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  headerTitle: {
+    fontSize: 8,
+    fontFamily: "Helvetica",
+    color: brand.mediumGray,
+    letterSpacing: 1,
   },
-  coverTitle: {
-    fontSize: 48,
-    fontWeight: 700,
-    color: brand.white,
-    textAlign: "center",
-    lineHeight: 1.1,
+  
+  // Section headers
+  sectionHeader: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    letterSpacing: 0.5,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingBottom: 4,
+    borderBottomWidth: 2,
+    borderBottomColor: brand.black,
+  },
+  subSectionHeader: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 6,
+  },
+  
+  // Title section
+  mainTitle: {
+    fontSize: 16,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 9,
+    fontFamily: "Helvetica",
+    color: brand.mediumGray,
     marginBottom: 16,
   },
-  coverSetting: {
-    fontSize: 28,
-    color: brand.abridgeRed,
-    textAlign: "center",
-    marginBottom: 40,
+  
+  // Body text
+  bodyText: {
+    fontSize: 9,
+    lineHeight: 1.35,
+    color: brand.darkGray,
+    marginBottom: 8,
   },
-  coverTagline: {
-    fontSize: 13,
-    color: brand.textTertiary,
-    textAlign: "center",
-    lineHeight: 1.6,
-    maxWidth: 360,
+  
+  // Two-column layout
+  twoColumn: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 12,
   },
-  darkPageBottom: {
+  column: {
+    flex: 1,
+  },
+  
+  // Three-column layout
+  threeColumn: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 12,
+  },
+  thirdColumn: {
+    flex: 1,
+  },
+  
+  // Cards - compact
+  card: {
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    borderRadius: 2,
+    padding: 10,
+    backgroundColor: brand.cardBg,
+  },
+  cardTitle: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 2,
+  },
+  cardSubtitle: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 2,
+    alignSelf: "flex-start",
+  },
+  cardLabel: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginTop: 8,
+    marginBottom: 2,
+  },
+  cardText: {
+    fontSize: 8,
+    lineHeight: 1.3,
+    color: brand.darkGray,
+  },
+  
+  // Full-width card
+  fullWidthCard: {
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    borderRadius: 2,
+    padding: 10,
+    backgroundColor: brand.cardBg,
+    marginBottom: 12,
+  },
+  
+  // Callout box
+  callout: {
+    borderLeftWidth: 3,
+    borderLeftColor: brand.abridgeRed,
+    paddingLeft: 10,
+    paddingVertical: 8,
+    backgroundColor: "#FAFAFA",
+    marginBottom: 12,
+  },
+  calloutText: {
+    fontSize: 8,
+    fontStyle: "italic",
+    lineHeight: 1.35,
+    color: brand.darkGray,
+  },
+  
+  // Tables - compact
+  table: {
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    marginBottom: 12,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: brand.tableHeader,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.borderGray,
+  },
+  tableHeaderCell: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: brand.borderGray,
+  },
+  tableRowLast: {
+    borderBottomWidth: 0,
+  },
+  tableCell: {
+    fontSize: 8,
+    color: brand.darkGray,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  
+  // Flow diagram
+  flowDiagram: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+    gap: 6,
+  },
+  flowBox: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    borderRadius: 2,
+  },
+  flowBoxText: {
+    fontSize: 8,
+    color: brand.darkGray,
+    textAlign: "center" as const,
+  },
+  flowArrow: {
+    fontSize: 10,
+    color: brand.lightGray,
+  },
+  flowCaption: {
+    fontSize: 7,
+    color: brand.lightGray,
+    textAlign: "center" as const,
+    marginTop: 2,
+  },
+  
+  // Honest limits columns
+  limitsColumn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    borderRadius: 2,
+    padding: 8,
+    backgroundColor: brand.cardBg,
+  },
+  limitsHeader: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 4,
+  },
+  limitsSubtext: {
+    fontSize: 7,
+    color: brand.mediumGray,
+    marginBottom: 6,
+  },
+  limitsBullet: {
+    fontSize: 8,
+    color: brand.darkGray,
+    marginBottom: 2,
+  },
+  
+  // Summary box
+  summaryBox: {
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    borderRadius: 2,
+    padding: 12,
+    marginBottom: 12,
+  },
+  summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    marginBottom: 8,
   },
-  coverLabel: {
+  summaryColumn: {
+    flex: 1,
+  },
+  summaryLabel: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: brand.black,
+    marginBottom: 4,
+    textDecoration: "underline",
+  },
+  summaryItem: {
+    fontSize: 8,
+    color: brand.darkGray,
+    marginBottom: 2,
+  },
+  
+  // Quote box
+  quoteBox: {
+    borderWidth: 1,
+    borderColor: brand.borderGray,
+    borderRadius: 2,
+    padding: 12,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  quoteText: {
     fontSize: 9,
-    color: brand.textTertiary,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
+    fontStyle: "italic",
+    lineHeight: 1.4,
+    color: brand.darkGray,
+    textAlign: "center" as const,
   },
   
-  // =====================
-  // SECTION DIVIDER (WARM BEIGE)
-  // =====================
-  dividerPage: {
-    backgroundColor: brand.warmBeige,
-    padding: 48,
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  dividerEyebrow: {
-    fontSize: 10,
-    color: brand.textSecondary,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 16,
-  },
-  dividerTitle: {
-    fontSize: 44,
-    fontWeight: 700,
-    color: brand.textPrimary,
-    textAlign: "center",
-    lineHeight: 1.1,
-    marginBottom: 20,
-  },
-  dividerSubtitle: {
-    fontSize: 14,
-    color: brand.textSecondary,
-    textAlign: "center",
-    lineHeight: 1.5,
-    maxWidth: 400,
-  },
-  dividerFooter: {
+  // Footer
+  footer: {
     position: "absolute",
-    bottom: 32,
-    left: 48,
-    right: 48,
+    bottom: 24,
+    left: 36,
+    right: 36,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: brand.borderGray,
+    paddingTop: 8,
   },
+  footerText: {
+    fontSize: 8,
+    color: brand.lightGray,
+  },
+  footerPage: {
+    fontSize: 8,
+    color: brand.lightGray,
+  },
+});
+
+// ============================================================================
+// BADGE COMPONENT
+// ============================================================================
+
+function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitative" | "connected" }) {
+  const config = {
+    direct: { bg: brand.directMeasurableBg, text: brand.directMeasurableText, label: "DIRECTLY MEASURABLE" },
+    indirect: { bg: brand.indirectBg, text: brand.indirectText, label: "INDIRECTLY ATTRIBUTABLE" },
+    potential: { bg: brand.potentialBg, text: brand.potentialText, label: "POTENTIAL VALUE" },
+    qualitative: { bg: brand.qualitativeBg, text: brand.qualitativeText, label: "QUALITATIVE" },
+    connected: { bg: "#E3F2FD", text: "#1565C0", label: "CONNECTED TO RETENTION" },
+  };
+  const c = config[type];
   
-  // =====================
-  // CONTENT PAGES
-  // =====================
-  contentPage: {
-    paddingHorizontal: 48,
-    paddingTop: 40,
-    paddingBottom: 56,
+  return (
+    <Text style={[styles.cardSubtitle, { backgroundColor: c.bg, color: c.text }]}>
+      {c.label}
+    </Text>
+  );
+}
+
+// ============================================================================
+// PAGE HEADER
+// ============================================================================
+
+function PageHeader() {
+  return (
+    <View style={styles.header}>
+      <Image src={abridgeLogoPath} style={styles.logo} />
+      <Text style={styles.headerTitle}>ROI METHODOLOGY</Text>
+    </View>
+  );
+}
+
+// ============================================================================
+// PAGE FOOTER
+// ============================================================================
+
+function PageFooter({ pageNum }: { pageNum: number }) {
+  return (
+    <View style={styles.footer}>
+      <Text style={styles.footerText}>Abridge ROI Methodology · Nursing</Text>
+      <Text style={styles.footerPage}>Page {pageNum}/4</Text>
+    </View>
+  );
+}
+
+// ============================================================================
+// PAGE 1: COVER + CONTEXT + LABOR ECONOMICS
+// ============================================================================
+
+function Page1() {
+  return (
+    <Page size="LETTER" style={styles.page}>
+      <PageHeader />
+      
+      {/* Title Section */}
+      <Text style={styles.mainTitle}>NURSING: HOW WE THINK ABOUT VALUE</Text>
+      <Text style={styles.subtitle}>A framework for understanding where value lives when there's no billing</Text>
+      
+      {/* Context Section */}
+      <Text style={styles.sectionHeader}>THE CONTEXT</Text>
+      <Text style={styles.bodyText}>
+        Nursing is the hardest setting to model ROI—and the most important to get right. In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain.
+      </Text>
+      <Text style={styles.bodyText}>
+        Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive—25-35% of every shift spent on flowsheets, assessments, handoffs, and charting. So where does the value live?
+      </Text>
+      
+      {/* Two Value Buckets */}
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>LABOR ECONOMICS</Text>
+          <Text style={styles.cardText}>
+            Overtime, retention, and agency spend. These are real dollars that show up in the budget. When nurses spend less time documenting, they finish shifts on time, burn out less, and the organization needs fewer expensive travel nurses.
+          </Text>
+          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+            <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Direct, measurable value</Text>
+          </View>
+        </View>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>CARE QUALITY ENABLEMENT</Text>
+          <Text style={styles.cardText}>
+            Falls, pressure injuries, patient satisfaction. These outcomes are influenced by bedside time. More time caring, less time charting, better outcomes. But the causal chain is indirect—documentation supports care, it doesn't replace it.
+          </Text>
+          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+            <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>Potential value (we show separately)</Text>
+          </View>
+        </View>
+      </View>
+      
+      {/* Labor Economics Section */}
+      <Text style={styles.sectionHeader}>VALUE MECHANISMS — LABOR ECONOMICS</Text>
+      
+      <View style={styles.twoColumn}>
+        {/* Overtime Reduction */}
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
+          <Badge type="direct" />
+          
+          <Text style={styles.cardLabel}>THE MECHANISM</Text>
+          <Text style={styles.cardText}>
+            When nurses spend less time documenting, they complete shifts on time. Not all time saved becomes OT reduction—some goes to care—but a portion does.
+          </Text>
+          
+          <Text style={styles.cardLabel}>THE CALCULATION</Text>
+          <Text style={styles.cardText}>
+            Hours saved × Conversion rate (15-40%) × OT rate (1.5× base) = OT Savings
+          </Text>
+          
+          <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
+          <Text style={styles.cardText}>
+            OT hours and doc time are both measurable. The link is logical and validatable post-implementation.
+          </Text>
+        </View>
+        
+        {/* Retention Savings */}
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>RETENTION SAVINGS</Text>
+          <Badge type="indirect" />
+          
+          <Text style={styles.cardLabel}>THE MECHANISM</Text>
+          <Text style={styles.cardText}>
+            Documentation burden is a top driver of nurse burnout. Burnout drives turnover. Reducing burden can help retain nurses who would otherwise leave.
+          </Text>
+          
+          <Text style={styles.cardLabel}>THE CALCULATION</Text>
+          <Text style={styles.cardText}>
+            FTEs × Turnover × Burnout% × Abridge impact (10-25%) × Replacement cost = Retention value
+          </Text>
+          
+          <Text style={styles.cardLabel}>WHY DEFENSIBLE</Text>
+          <Text style={styles.cardText}>
+            Link between doc burden and burnout is well-established in nursing research. Question is magnitude, not direction.
+          </Text>
+        </View>
+      </View>
+      
+      {/* Agency Labor - Full Width */}
+      <View style={styles.fullWidthCard}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <Text style={styles.cardTitle}>AGENCY LABOR REDUCTION</Text>
+          <Badge type="connected" />
+        </View>
+        <Text style={styles.cardText}>
+          When nurses leave, hospitals fill gaps with agency/travel nurses at 2-3× the cost. Improved retention directly reduces this premium labor dependency.
+        </Text>
+        <Text style={[styles.cardText, { marginTop: 6 }]}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>Calculation:</Text> Nurses retained × Weeks of coverage (8-16) × Weekly premium ($2-4K) = Agency savings. This is separate from replacement cost—retention captures replacement, agency captures premium labor during vacancy.
+        </Text>
+      </View>
+      
+      <PageFooter pageNum={1} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// PAGE 2: CARE QUALITY + HONEST LIMITS
+// ============================================================================
+
+function Page2() {
+  return (
+    <Page size="LETTER" style={styles.page}>
+      <PageHeader />
+      
+      <Text style={styles.sectionHeader}>VALUE MECHANISMS — CARE QUALITY ENABLEMENT</Text>
+      
+      {/* Why Potential Value */}
+      <Text style={styles.subSectionHeader}>WHY WE CALL THIS "POTENTIAL" VALUE</Text>
+      <Text style={styles.bodyText}>
+        The link between documentation and care quality is indirect. We don't cause fewer falls—we enable the visibility that helps prevent them.
+      </Text>
+      
+      {/* Flow Diagram */}
+      <View style={styles.flowDiagram}>
+        <View style={styles.flowBox}>
+          <Text style={styles.flowBoxText}>Documentation</Text>
+          <Text style={styles.flowCaption}>We control this</Text>
+        </View>
+        <Text style={styles.flowArrow}>→</Text>
+        <View style={styles.flowBox}>
+          <Text style={styles.flowBoxText}>Visibility</Text>
+          <Text style={styles.flowCaption}>We support this</Text>
+        </View>
+        <Text style={styles.flowArrow}>→</Text>
+        <View style={styles.flowBox}>
+          <Text style={styles.flowBoxText}>Intervention</Text>
+          <Text style={styles.flowCaption}>Clinical team controls</Text>
+        </View>
+        <Text style={styles.flowArrow}>→</Text>
+        <View style={styles.flowBox}>
+          <Text style={styles.flowBoxText}>Outcome</Text>
+          <Text style={styles.flowCaption}>Patient experiences</Text>
+        </View>
+      </View>
+      
+      <Text style={[styles.bodyText, { fontSize: 8 }]}>
+        We show care quality separately because: clinical practice matters more than documentation, many factors influence outcomes, and we want to be honest.
+      </Text>
+      
+      <View style={styles.twoColumn}>
+        {/* HAPI Prevention */}
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>HAPI PREVENTION</Text>
+          <Badge type="potential" />
+          
+          <Text style={styles.cardLabel}>THE MECHANISM</Text>
+          <Text style={styles.cardText}>
+            HAPIs happen when assessments are missed or interventions delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured—enabling earlier intervention.
+          </Text>
+          
+          <Text style={styles.cardLabel}>THE CALCULATION</Text>
+          <Text style={styles.cardText}>
+            Current HAPIs × Documentation-preventable rate (5%) × Cost per HAPI ($10-50K) = Potential value
+          </Text>
+          
+          <Text style={styles.cardLabel}>WHY 5%?</Text>
+          <Text style={styles.cardText}>
+            Not all HAPIs are doc-preventable. 5% represents cases where real-time assessment would have triggered earlier intervention.
+          </Text>
+          
+          <Text style={[styles.cardText, { marginTop: 6, fontStyle: "italic" }]}>
+            HONEST TRUTH: HAPIs are prevented through clinical care—turning, positioning, nutrition. Doc SUPPORTS this, doesn't REPLACE it.
+          </Text>
+        </View>
+        
+        {/* Falls Prevention */}
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>FALLS PREVENTION</Text>
+          <Badge type="potential" />
+          
+          <Text style={styles.cardLabel}>THE MECHANISM</Text>
+          <Text style={styles.cardText}>
+            Falls happen when risk assessments are missed or interventions delayed. Real-time documentation ensures fall risk scores, mobility status, and environmental factors are captured—enabling earlier action.
+          </Text>
+          
+          <Text style={styles.cardLabel}>THE CALCULATION</Text>
+          <Text style={styles.cardText}>
+            Current falls × Documentation-preventable rate (5%) × Cost per fall ($3-30K) = Potential value
+          </Text>
+          
+          <Text style={styles.cardLabel}>WHY 5%?</Text>
+          <Text style={styles.cardText}>
+            Not all falls are doc-preventable. 5% represents cases where real-time risk documentation would have triggered intervention.
+          </Text>
+          
+          <Text style={[styles.cardText, { marginTop: 6, fontStyle: "italic" }]}>
+            CMS does NOT reimburse for hospital-acquired fall injuries. This is pure cost to the hospital.
+          </Text>
+        </View>
+      </View>
+      
+      {/* HCAHPS - Full Width */}
+      <View style={styles.fullWidthCard}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <Text style={styles.cardTitle}>PATIENT EXPERIENCE (HCAHPS)</Text>
+          <Badge type="qualitative" />
+        </View>
+        <Text style={styles.cardText}>
+          When nurses spend less time documenting, they spend more time with patients. Research shows bedside time correlates with satisfaction. But HCAHPS is influenced by dozens of factors—wait times, pain management, communication, environment, staffing. We can't credibly attribute improvement to docs alone.
+        </Text>
+        <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>
+          BUT CONSIDER: Top quartile HCAHPS = ~2% higher reimbursement via VBP. Track as leading indicator post-implementation.
+        </Text>
+      </View>
+      
+      {/* Honest Limits Section */}
+      <Text style={styles.sectionHeader}>THE HONEST LIMITS</Text>
+      
+      <View style={styles.threeColumn}>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>✓ WHAT WE MEASURE</Text>
+          <Text style={styles.limitsSubtext}>Direct attribution</Text>
+          <Text style={styles.limitsBullet}>• OT hours pre/post</Text>
+          <Text style={styles.limitsBullet}>• Doc time per shift</Text>
+          <Text style={styles.limitsBullet}>• Shift completion</Text>
+          <Text style={styles.limitsBullet}>• Chart completion</Text>
+        </View>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>~ WHAT WE INFLUENCE</Text>
+          <Text style={styles.limitsSubtext}>Indirect attribution</Text>
+          <Text style={styles.limitsBullet}>• Turnover rates (one factor of many)</Text>
+          <Text style={styles.limitsBullet}>• Agency utilization (tied to retention)</Text>
+          <Text style={styles.limitsBullet}>• Nurse satisfaction (doc burden is one)</Text>
+        </View>
+        <View style={styles.limitsColumn}>
+          <Text style={styles.limitsHeader}>○ WHAT WE ENABLE</Text>
+          <Text style={styles.limitsSubtext}>Supportive only</Text>
+          <Text style={styles.limitsBullet}>• Falls prevention (clinical practice)</Text>
+          <Text style={styles.limitsBullet}>• HAPI prevention (clinical practice)</Text>
+          <Text style={styles.limitsBullet}>• HCAHPS improvement (many factors)</Text>
+        </View>
+      </View>
+      
+      <PageFooter pageNum={2} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// PAGE 3: ASSUMPTIONS + VALIDATION PATH
+// ============================================================================
+
+function Page3() {
+  return (
+    <Page size="LETTER" style={styles.page}>
+      <PageHeader />
+      
+      <Text style={styles.sectionHeader}>KEY ASSUMPTIONS</Text>
+      <Text style={styles.bodyText}>
+        Every number has a source. We don't hide assumptions—we highlight them.
+      </Text>
+      
+      {/* Time Savings Table */}
+      <Text style={styles.subSectionHeader}>TIME SAVINGS</Text>
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Source</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Time saved per shift</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15-30 min</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>20 min</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Abridge customer data</Text>
+        </View>
+        <View style={[styles.tableRow, styles.tableRowLast]}>
+          <Text style={[styles.tableCell, { flex: 2 }]}>OT conversion rate</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15-40%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>25%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Implementation studies</Text>
+        </View>
+      </View>
+      
+      {/* Retention Table */}
+      <Text style={styles.subSectionHeader}>RETENTION</Text>
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Source</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Nurse turnover rate</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15-25%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>18%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>NSI Nursing Solutions '24</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Burnout-related %</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>30-50%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>40%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>ANA research</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Abridge retention impact</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>10-25%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>15%</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Conservative estimate</Text>
+        </View>
+        <View style={[styles.tableRow, styles.tableRowLast]}>
+          <Text style={[styles.tableCell, { flex: 2 }]}>Replacement cost</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$40-65K</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>$52K</Text>
+          <Text style={[styles.tableCell, { flex: 2 }]}>NSI 2024 Report</Text>
+        </View>
+      </View>
+      
+      {/* Agency & Care Quality Tables - Side by Side */}
+      <View style={styles.twoColumn}>
+        <View style={styles.column}>
+          <Text style={styles.subSectionHeader}>AGENCY</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
+              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
+              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 2 }]}>Weeks of coverage</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>8-16 wks</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>12 wks</Text>
+            </View>
+            <View style={[styles.tableRow, styles.tableRowLast]}>
+              <Text style={[styles.tableCell, { flex: 2 }]}>Weekly agency premium</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>$2-4K</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>$2,500</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.column}>
+          <Text style={styles.subSectionHeader}>CARE QUALITY</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Assumption</Text>
+              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Range</Text>
+              <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Default</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 2 }]}>Doc-preventable rate</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>3-8%</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>5%</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 2 }]}>Cost per HAPI</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>$10-50K</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>$26K</Text>
+            </View>
+            <View style={[styles.tableRow, styles.tableRowLast]}>
+              <Text style={[styles.tableCell, { flex: 2 }]}>Cost per fall</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>$3-30K</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>$6.5K</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      
+      {/* Conservative Callout */}
+      <View style={styles.callout}>
+        <Text style={styles.calloutText}>
+          <Text style={{ fontFamily: "Helvetica-Bold" }}>WHY WE DEFAULT CONSERVATIVE: </Text>
+          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny. If conservative projection shows positive ROI, you can be confident. If experience exceeds it, that's upside.
+        </Text>
+      </View>
+      
+      {/* Validation Path Section */}
+      <Text style={styles.sectionHeader}>VALIDATION PATH</Text>
+      <Text style={styles.bodyText}>
+        Our projections are starting points. The real answers come from your data.
+      </Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>TIME SAVINGS</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>• Survey nurses on doc time/shift</Text>
+          <Text style={styles.cardText}>• Review EHR session data</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>• Repeat measurements</Text>
+          <Text style={styles.cardText}>• Compare with utilization data</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-4 weeks</Text>
+        </View>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>OVERTIME REDUCTION</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>• Baseline OT hours per unit/month</Text>
+          <Text style={styles.cardText}>• Note seasonal patterns</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>• Track OT on Abridge vs. control</Text>
+          <Text style={styles.cardText}>• Control for census/acuity changes</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 2-3 months</Text>
+        </View>
+      </View>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>RETENTION</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>• Baseline turnover by unit</Text>
+          <Text style={styles.cardText}>• Exit interview data on burnout</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>• Track turnover Abridge vs control</Text>
+          <Text style={styles.cardText}>• Survey on burnout/doc satisfaction</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontFamily: "Helvetica-Bold" }]}>Timeline: 12-18 months</Text>
+        </View>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>CARE QUALITY</Text>
+          <Text style={styles.cardLabel}>Before:</Text>
+          <Text style={styles.cardText}>• Baseline HAPI/falls rates by unit</Text>
+          <Text style={styles.cardText}>• Baseline HCAHPS scores</Text>
+          <Text style={styles.cardLabel}>After:</Text>
+          <Text style={styles.cardText}>• Track rates Abridge vs control</Text>
+          <Text style={styles.cardText}>• Be cautious about attribution</Text>
+          <Text style={[styles.cardText, { marginTop: 6, fontStyle: "italic" }]}>Recommendation: Treat quality improvements as bonus, not promise.</Text>
+        </View>
+      </View>
+      
+      <PageFooter pageNum={3} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// PAGE 4: CONNECTED VALUE + SUMMARY
+// ============================================================================
+
+function Page4() {
+  return (
+    <Page size="LETTER" style={styles.page}>
+      <PageHeader />
+      
+      <Text style={styles.sectionHeader}>CONNECTED VALUE</Text>
+      
+      <Text style={styles.subSectionHeader}>NURSING DOCUMENTATION FEEDS THE REVENUE CYCLE</Text>
+      <Text style={styles.bodyText}>
+        When nurses document thoroughly and in real-time, it directly impacts inpatient revenue. Complete nursing documentation creates a clinical picture that supports accurate coding and stronger appeals.
+      </Text>
+      
+      <View style={styles.twoColumn}>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>CC/MCC CAPTURE</Text>
+          <Text style={styles.cardText}>
+            Nursing assessments capture clinical indicators that support accurate DRG assignment. "Patient appears malnourished" or "skin breakdown observed" feeds coding directly.
+          </Text>
+        </View>
+        <View style={[styles.card, styles.column]}>
+          <Text style={styles.cardTitle}>MEDICAL NECESSITY SUPPORT</Text>
+          <Text style={styles.cardText}>
+            Real-time nursing documentation provides contemporaneous evidence of patient acuity and care needs—critical for payer appeals.
+          </Text>
+          <View style={{ marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: brand.borderGray }}>
+            <Text style={[styles.cardText, { fontFamily: "Helvetica-Bold" }]}>CDI EFFICIENCY</Text>
+            <Text style={styles.cardText}>
+              When nursing documentation is complete, CDI teams have better source material for identifying coding opportunities.
+            </Text>
+          </View>
+        </View>
+      </View>
+      
+      <Text style={[styles.bodyText, { marginTop: 4 }]}>
+        These benefits are quantified in the Inpatient Setting methodology. If your organization uses Abridge for both Nursing and Hospitalists, documentation creates a complete clinical picture supporting accurate coding from admission through discharge.
+      </Text>
+      
+      {/* Validation Timelines Table */}
+      <Text style={styles.sectionHeader}>VALIDATION TIMELINES</Text>
+      
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Metric</Text>
+          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Timeline to Meaningful Data</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 1 }]}>Documentation time</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>2-4 weeks</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 1 }]}>Overtime reduction</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>2-3 months</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 1 }]}>Nurse satisfaction</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>3-6 months</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={[styles.tableCell, { flex: 1 }]}>HAC rates</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>6-12 months</Text>
+        </View>
+        <View style={[styles.tableRow, styles.tableRowLast]}>
+          <Text style={[styles.tableCell, { flex: 1 }]}>Retention impact</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>12-18 months</Text>
+        </View>
+      </View>
+      
+      {/* Summary Section */}
+      <Text style={styles.sectionHeader}>SUMMARY</Text>
+      <Text style={styles.bodyText}>
+        Nursing ROI is harder to model than physician ROI because nurses don't bill. But the value is real.
+      </Text>
+      
+      <View style={styles.summaryBox}>
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryColumn}>
+            <Text style={styles.summaryLabel}>TIME VALUE (Direct)</Text>
+            <Text style={styles.summaryItem}>OT reduction</Text>
+            <Text style={styles.summaryItem}>Retention savings</Text>
+            <Text style={styles.summaryItem}>Agency avoidance</Text>
+          </View>
+          <View style={styles.summaryColumn}>
+            <Text style={styles.summaryLabel}>CARE QUALITY (Potential)</Text>
+            <Text style={styles.summaryItem}>Falls prevention</Text>
+            <Text style={styles.summaryItem}>HAPI prevention</Text>
+            <Text style={styles.summaryItem}>Patient experience</Text>
+          </View>
+          <View style={styles.summaryColumn}>
+            <Text style={styles.summaryLabel}>CONNECTED VALUE</Text>
+            <Text style={styles.summaryItem}>Nursing documentation</Text>
+            <Text style={styles.summaryItem}>feeds inpatient</Text>
+            <Text style={styles.summaryItem}>revenue cycle</Text>
+          </View>
+        </View>
+      </View>
+      
+      <Text style={styles.bodyText}>
+        We model all three—but we're honest about which is measurable, which is influenceable, and which is only enabled.
+      </Text>
+      
+      {/* Quote Box */}
+      <View style={styles.quoteBox}>
+        <Text style={styles.quoteText}>
+          "The goal isn't to prove our model right. It's to build your organization's understanding of what ambient documentation actually delivers in your context. Adjust the model based on what you learn."
+        </Text>
+      </View>
+      
+      <Text style={[styles.bodyText, { textAlign: "center" as const, fontFamily: "Helvetica-Bold" }]}>
+        That honesty is the methodology.
+      </Text>
+      
+      <PageFooter pageNum={4} />
+    </Page>
+  );
+}
+
+// ============================================================================
+// METHODOLOGY DOCUMENT
+// ============================================================================
+
+function NursingMethodologyDocument() {
+  return (
+    <Document>
+      <Page1 />
+      <Page2 />
+      <Page3 />
+      <Page4 />
+    </Document>
+  );
+}
+
+// ============================================================================
+// EXPORT FUNCTIONS - METHODOLOGY PDF
+// ============================================================================
+
+export async function generateNursingMethodologyPDF(): Promise<void> {
+  try {
+    const blob = await pdf(<NursingMethodologyDocument />).toBlob();
+    saveAs(blob, "Abridge-Nursing-ROI-Methodology.pdf");
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  }
+}
+
+export async function generateNursingMethodologyPDFBlob(): Promise<Blob> {
+  try {
+    const blob = await pdf(<NursingMethodologyDocument />).toBlob();
+    return blob;
+  } catch (error) {
+    console.error("Error generating PDF blob:", error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// ROI PDF EXPORTS - For Summary/Model pages
+// ============================================================================
+
+const roiStyles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontFamily: "Helvetica",
+    fontSize: 10,
+    color: "#333333",
+    backgroundColor: "#FFFFFF",
   },
-  pageHeader: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 24,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
+    borderBottomColor: "#E0E0E0",
   },
-  headerLogo: {
-    width: 70,
-    height: 14,
+  logo: {
+    width: 100,
+    height: 25,
   },
-  headerSection: {
-    fontSize: 9,
-    color: brand.textSecondary,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
+  title: {
+    fontSize: 18,
+    fontFamily: "Helvetica-Bold",
+    color: "#000000",
+    marginBottom: 8,
   },
-  content: {
-    flex: 1,
+  subtitle: {
+    fontSize: 11,
+    color: "#666666",
+    marginBottom: 24,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    color: "#000000",
+    marginBottom: 12,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  label: {
+    fontSize: 10,
+    color: "#666666",
+  },
+  value: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: "#000000",
+  },
+  valueRed: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
+    color: "#EA2C00",
+  },
+  summaryBox: {
+    backgroundColor: "#F8F8F8",
+    padding: 16,
+    borderRadius: 4,
+    marginTop: 20,
+  },
+  summaryTitle: {
+    fontSize: 14,
+    fontFamily: "Helvetica-Bold",
+    color: "#EA2C00",
+    marginBottom: 8,
+  },
+  summaryValue: {
+    fontSize: 24,
+    fontFamily: "Helvetica-Bold",
+    color: "#000000",
   },
   footer: {
     position: "absolute",
-    bottom: 24,
-    left: 48,
-    right: 48,
+    bottom: 30,
+    left: 40,
+    right: 40,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+    paddingTop: 8,
   },
-  footerPage: {
-    fontSize: 9,
-    color: brand.textTertiary,
-  },
-  
-  // =====================
-  // TYPOGRAPHY
-  // =====================
-  pageTitle: {
-    fontSize: 32,
-    fontWeight: 700,
-    color: brand.textPrimary,
-    lineHeight: 1.2,
-    marginBottom: 8,
-  },
-  pageSubtitle: {
-    fontSize: 12,
-    color: brand.textSecondary,
-    lineHeight: 1.6,
-    marginBottom: 24,
-  },
-  sectionHeading: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: brand.textSecondary,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 12,
-    marginTop: 20,
-  },
-  bodyText: {
-    fontSize: 11,
-    color: brand.textSecondary,
-    lineHeight: 1.7,
-    marginBottom: 16,
-  },
-  
-  // =====================
-  // STAT CALLOUT BOX
-  // =====================
-  statBox: {
-    backgroundColor: brand.lightGray,
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    padding: 24,
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  statValue: {
-    fontSize: 36,
-    fontWeight: 700,
-    color: brand.textPrimary,
-    marginBottom: 8,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: brand.textSecondary,
-    textAlign: "center",
-  },
-  
-  // =====================
-  // TWO COLUMN BOXES
-  // =====================
-  twoColContainer: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 20,
-  },
-  colBox: {
-    flex: 1,
-    backgroundColor: brand.lightGray,
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    padding: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: brand.abridgeRed,
-  },
-  colBoxNumber: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: brand.abridgeRed,
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  colBoxTitle: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: brand.textPrimary,
-    marginBottom: 10,
-  },
-  colBoxText: {
-    fontSize: 10,
-    color: brand.textSecondary,
-    lineHeight: 1.6,
-  },
-  
-  // =====================
-  // DRIVER PAGES
-  // =====================
-  driverTitle: {
-    fontSize: 24,
-    fontWeight: 700,
-    color: brand.textPrimary,
-    marginBottom: 8,
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    alignSelf: "flex-start",
-    marginBottom: 16,
-  },
-  badgeText: {
-    fontSize: 9,
-    fontWeight: 600,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  horizontalRule: {
-    borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
-    marginVertical: 16,
-  },
-  mechanismText: {
-    fontSize: 11,
-    color: brand.textSecondary,
-    lineHeight: 1.7,
-    marginBottom: 12,
-  },
-  
-  // =====================
-  // CALCULATION BOX
-  // =====================
-  calculationBox: {
-    backgroundColor: brand.lightGray,
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    padding: 24,
-    marginVertical: 16,
-    alignItems: "center",
-  },
-  formulaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    marginBottom: 16,
-  },
-  formulaElement: {
-    alignItems: "center",
-  },
-  formulaValue: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: brand.textPrimary,
-    marginBottom: 2,
-  },
-  formulaLabel: {
+  footerText: {
     fontSize: 8,
-    color: brand.textTertiary,
-    textAlign: "center",
-  },
-  formulaOperator: {
-    fontSize: 16,
-    fontWeight: 600,
-    color: brand.textTertiary,
-  },
-  formulaDivider: {
-    borderBottomWidth: 2,
-    borderBottomColor: brand.textPrimary,
-    width: "80%",
-    marginVertical: 12,
-  },
-  formulaResult: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: brand.abridgeRed,
-  },
-  
-  // =====================
-  // CALLOUT BOX (RED BORDER)
-  // =====================
-  calloutBox: {
-    backgroundColor: brand.lightGray,
-    borderLeftWidth: 4,
-    borderLeftColor: brand.abridgeRed,
-    padding: 16,
-    marginTop: 16,
-  },
-  calloutTitle: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: brand.textPrimary,
-    marginBottom: 8,
-  },
-  calloutText: {
-    fontSize: 10,
-    color: brand.textSecondary,
-    lineHeight: 1.6,
-  },
-  
-  // =====================
-  // ASSUMPTIONS TABLE
-  // =====================
-  table: {
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    marginVertical: 16,
+    color: "#999999",
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: brand.lightGray,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    backgroundColor: "#F5F5F5",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
+    borderBottomColor: "#E0E0E0",
   },
   tableHeaderCell: {
     fontSize: 9,
-    fontWeight: 600,
-    color: brand.textSecondary,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+    fontFamily: "Helvetica-Bold",
+    color: "#333333",
   },
   tableRow: {
     flexDirection: "row",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
+    borderBottomColor: "#F0F0F0",
   },
   tableRowLast: {
     borderBottomWidth: 0,
   },
   tableCell: {
-    fontSize: 10,
-    color: brand.textPrimary,
+    fontSize: 9,
+    color: "#333333",
   },
   tableCellMuted: {
-    fontSize: 10,
-    color: brand.textSecondary,
-  },
-  tableGroupLabel: {
     fontSize: 9,
-    fontWeight: 600,
-    color: brand.abridgeRed,
-    letterSpacing: 0.5,
-    backgroundColor: brand.warmBeige,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
-  },
-  
-  // =====================
-  // HONEST LIMITS BOXES
-  // =====================
-  limitsBox: {
-    backgroundColor: brand.lightGray,
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    padding: 16,
-    marginBottom: 12,
-  },
-  limitsTitle: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: brand.textPrimary,
-    marginBottom: 4,
-  },
-  limitsSubtitle: {
-    fontSize: 9,
-    color: brand.textSecondary,
-    marginBottom: 10,
-  },
-  limitsList: {
-    marginTop: 4,
-  },
-  limitsItem: {
-    fontSize: 10,
-    color: brand.textSecondary,
-    marginBottom: 4,
-    paddingLeft: 12,
-  },
-  
-  // =====================
-  // VALIDATION PATH
-  // =====================
-  validationCard: {
-    backgroundColor: brand.lightGray,
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    padding: 16,
-    marginBottom: 12,
-  },
-  validationTitle: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: brand.textPrimary,
-    marginBottom: 10,
-  },
-  validationSection: {
-    marginBottom: 8,
-  },
-  validationLabel: {
-    fontSize: 9,
-    fontWeight: 600,
-    color: brand.textSecondary,
-    marginBottom: 4,
-  },
-  validationText: {
-    fontSize: 10,
-    color: brand.textSecondary,
-    lineHeight: 1.5,
-    marginBottom: 2,
-    paddingLeft: 8,
-  },
-  validationNote: {
-    fontSize: 9,
-    color: brand.abridgeRed,
-    fontStyle: "italic",
-    marginTop: 6,
-  },
-  
-  // =====================
-  // TIMELINE TABLE
-  // =====================
-  timelineTable: {
-    borderWidth: 1,
-    borderColor: brand.midGray,
-    marginTop: 16,
-  },
-  timelineRow: {
-    flexDirection: "row",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: brand.midGray,
-  },
-  
-  // =====================
-  // CLOSING PAGE
-  // =====================
-  closingText: {
-    fontSize: 16,
-    color: brand.white,
-    lineHeight: 1.7,
-    marginBottom: 24,
-    textAlign: "center",
-    maxWidth: 420,
-  },
-  closingHighlight: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: brand.white,
-  },
-  closingSummaryBox: {
-    borderTopWidth: 1,
-    borderTopColor: brand.textTertiary,
-    borderBottomWidth: 1,
-    borderBottomColor: brand.textTertiary,
-    paddingVertical: 24,
-    marginVertical: 24,
-    width: "100%",
-    maxWidth: 380,
-  },
-  closingSummaryRow: {
-    marginBottom: 12,
-  },
-  closingSummaryLabel: {
-    fontSize: 10,
-    color: brand.abridgeRed,
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  closingSummaryText: {
-    fontSize: 11,
-    color: brand.textTertiary,
-  },
-  closingFinal: {
-    fontSize: 14,
-    color: brand.white,
-    lineHeight: 1.7,
-    textAlign: "center",
-    maxWidth: 400,
-    marginTop: 20,
-  },
-  closingAccent: {
-    fontSize: 15,
-    fontWeight: 700,
-    color: brand.abridgeRed,
-    textAlign: "center",
-    marginTop: 8,
+    color: "#666666",
   },
 });
 
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-const formatCurrency = (value: number): string => {
-  if (Math.abs(value) >= 1000000) {
+function formatCurrency(value: number): string {
+  if (value >= 1000000) {
     return `$${(value / 1000000).toFixed(1)}M`;
   }
-  if (Math.abs(value) >= 1000) {
-    return `$${Math.round(value / 1000).toLocaleString()}K`;
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}K`;
   }
-  return `$${value.toLocaleString()}`;
-};
-
-const formatNumber = (value: number): string => value.toLocaleString();
-
-const getCurrentDate = (): string => {
-  return new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-  });
-};
-
-// ============================================================================
-// PAGE 1: DARK COVER
-// ============================================================================
-
-const CoverPage = () => (
-  <Page size="A4" style={[styles.page, styles.darkPage]} wrap={false}>
-    <View style={styles.darkPageTop}>
-      <Image src={abridgeLogoWhitePath} style={styles.whiteLogo} />
-    </View>
-    
-    <View style={styles.coverCenter}>
-      <Text style={styles.coverTitle}>HOW WE THINK{"\n"}ABOUT VALUE</Text>
-      <Text style={styles.coverSetting}>Nursing</Text>
-      <Text style={styles.coverTagline}>
-        A framework for understanding where value lives when there's no billing relationship
-      </Text>
-    </View>
-    
-    <View style={styles.darkPageBottom}>
-      <Text style={styles.coverLabel}>ROI METHODOLOGY</Text>
-      <Text style={styles.coverLabel}>{getCurrentDate()}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 2: THE CONTEXT - WHY NURSING IS DIFFERENT
-// ============================================================================
-
-const ContextPage1 = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>THE CONTEXT</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.pageTitle}>Why Nursing Value{"\n"}Is Different</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.bodyText}>
-        Nursing is the hardest setting to model ROI—and the most important to get right.
-      </Text>
-      
-      <Text style={styles.bodyText}>
-        In outpatient medicine, a physician saves 4 minutes per visit, and you can trace a path to wRVU lift or capacity expansion. The billing relationship creates a clear value chain.
-      </Text>
-      
-      <Text style={styles.bodyText}>
-        Nurses don't bill. They don't generate wRVUs. And yet nursing documentation burden is massive—25-35% of every shift spent on flowsheets, assessments, handoffs, and charting.
-      </Text>
-      
-      <View style={styles.statBox}>
-        <Text style={styles.statValue}>25-35%</Text>
-        <Text style={styles.statLabel}>of every nursing shift{"\n"}spent on documentation</Text>
-      </View>
-      
-      <Text style={[styles.bodyText, { fontWeight: 600, color: brand.textPrimary }]}>
-        So where does the value live?
-      </Text>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 3: THE TWO VALUE PATHS
-// ============================================================================
-
-const ContextPage2 = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>THE CONTEXT</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 22 }]}>It lives in two places.</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <View style={styles.twoColContainer}>
-        <View style={styles.colBox}>
-          <Text style={styles.colBoxNumber}>1. LABOR ECONOMICS</Text>
-          <Text style={styles.colBoxText}>
-            Overtime, retention, and agency spend. These are real dollars that show up in the budget.
-          </Text>
-          <Text style={[styles.colBoxText, { marginTop: 10 }]}>
-            When nurses spend less time documenting, they're more likely to finish shifts on time, less likely to burn out and leave, and the organization is less dependent on expensive travel nurses.
-          </Text>
-        </View>
-        
-        <View style={styles.colBox}>
-          <Text style={styles.colBoxNumber}>2. CARE QUALITY ENABLEMENT</Text>
-          <Text style={styles.colBoxText}>
-            Falls, pressure injuries, patient satisfaction. These outcomes are influenced by how much time nurses spend at bedside.
-          </Text>
-          <Text style={[styles.colBoxText, { marginTop: 10 }]}>
-            More time caring, less time charting, better outcomes. But the causal chain is indirect—documentation supports care, it doesn't replace it.
-          </Text>
-        </View>
-      </View>
-      
-      <Text style={[styles.bodyText, { marginTop: 16, fontWeight: 600, color: brand.textPrimary }]}>
-        We model both—but we're honest about which value is direct and which is potential.
-      </Text>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 4: SECTION DIVIDER - LABOR ECONOMICS
-// ============================================================================
-
-const LaborEconomicsDivider = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.dividerPage]} wrap={false}>
-    <Text style={styles.dividerEyebrow}>VALUE MECHANISM 01</Text>
-    <Text style={styles.dividerTitle}>Labor{"\n"}Economics</Text>
-    <Text style={styles.dividerSubtitle}>
-      Time saved → OT reduced → Nurses retained → Agency spend avoided
-    </Text>
-    <View style={styles.dividerFooter}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 5: OVERTIME REDUCTION
-// ============================================================================
-
-const OvertimePage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>LABOR ECONOMICS</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.driverTitle}>Overtime Reduction</Text>
-      
-      <View style={[styles.badge, { backgroundColor: brand.badgeGreenBg }]}>
-        <Text style={[styles.badgeText, { color: brand.badgeGreen }]}>DIRECTLY MEASURABLE</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE MECHANISM</Text>
-      <Text style={styles.mechanismText}>
-        When nurses spend less time documenting, they're more likely to complete their shift on time. Not all time saved converts to OT reduction—some goes to care time, some to shift efficiency—but a portion does.
-      </Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE CALCULATION</Text>
-      
-      <View style={styles.calculationBox}>
-        <View style={styles.formulaRow}>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Hours saved</Text>
-            <Text style={styles.formulaLabel}>per year</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Conversion rate</Text>
-            <Text style={styles.formulaLabel}>(15-40%)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>OT hourly rate</Text>
-            <Text style={styles.formulaLabel}>(1.5× base)</Text>
-          </View>
-        </View>
-        <View style={styles.formulaDivider} />
-        <Text style={styles.formulaResult}>OT Savings</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE KEY ASSUMPTION</Text>
-      <Text style={styles.mechanismText}>
-        We use a 15-40% conversion rate depending on how documentation-driven your current overtime is. Not all time saved becomes OT reduction—we account for that.
-      </Text>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>WHY THIS IS DEFENSIBLE</Text>
-        <Text style={styles.calloutText}>
-          Overtime is measurable. Documentation time is measurable. The link between them is logical and can be validated post-implementation.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 6: RETENTION SAVINGS
-// ============================================================================
-
-const RetentionPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>LABOR ECONOMICS</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.driverTitle}>Retention Savings</Text>
-      
-      <View style={[styles.badge, { backgroundColor: brand.badgeAmberBg }]}>
-        <Text style={[styles.badgeText, { color: brand.badgeAmber }]}>INDIRECTLY ATTRIBUTABLE</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE MECHANISM</Text>
-      <Text style={styles.mechanismText}>
-        Documentation burden is consistently cited as a top driver of nurse burnout. Burnout is a top driver of turnover. Reducing the burden can help retain nurses who would otherwise leave.
-      </Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE CALCULATION</Text>
-      
-      <View style={styles.calculationBox}>
-        <View style={styles.formulaRow}>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Nurse FTEs</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Turnover rate</Text>
-            <Text style={styles.formulaLabel}>(15-25%)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Burnout %</Text>
-            <Text style={styles.formulaLabel}>(30-50%)</Text>
-          </View>
-        </View>
-        <View style={[styles.formulaRow, { marginTop: 8 }]}>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Abridge impact</Text>
-            <Text style={styles.formulaLabel}>(10-25%)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Replacement cost</Text>
-            <Text style={styles.formulaLabel}>($40-65K)</Text>
-          </View>
-        </View>
-        <View style={styles.formulaDivider} />
-        <Text style={styles.formulaResult}>Retention Value</Text>
-      </View>
-      
-      <Text style={styles.sectionHeading}>WHY WE USE LOWER IMPACT RATES FOR NURSING</Text>
-      <Text style={styles.mechanismText}>
-        We use 10-25% Abridge impact for nursing (vs. higher rates for physicians) because documentation is one of many burnout factors for nurses. Staffing ratios, patient acuity, and emotional toll all matter.
-      </Text>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>WHY THIS IS DEFENSIBLE</Text>
-        <Text style={styles.calloutText}>
-          The link between documentation burden and burnout is well-established in nursing research. The question is magnitude, not direction.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 7: AGENCY LABOR REDUCTION
-// ============================================================================
-
-const AgencyPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>LABOR ECONOMICS</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.driverTitle}>Agency Labor Reduction</Text>
-      
-      <View style={[styles.badge, { backgroundColor: brand.badgeBlueBg }]}>
-        <Text style={[styles.badgeText, { color: brand.badgeBlue }]}>CONNECTED TO RETENTION</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE MECHANISM</Text>
-      <Text style={styles.mechanismText}>
-        When nurses leave, hospitals fill gaps with agency or travel nurses at 2-3× the cost. Improved retention directly reduces this premium labor dependency.
-      </Text>
-      
-      <View style={styles.statBox}>
-        <Text style={styles.statValue}>2-3×</Text>
-        <Text style={styles.statLabel}>the cost of permanent staff{"\n"}for travel/agency nurses</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE CALCULATION</Text>
-      
-      <View style={styles.calculationBox}>
-        <View style={styles.formulaRow}>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Nurses retained</Text>
-            <Text style={styles.formulaLabel}>(from retention)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Weeks of coverage</Text>
-            <Text style={styles.formulaLabel}>(8-16 weeks)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Weekly premium</Text>
-            <Text style={styles.formulaLabel}>($2,000-$4,000)</Text>
-          </View>
-        </View>
-        <View style={styles.formulaDivider} />
-        <Text style={styles.formulaResult}>Agency Savings</Text>
-      </View>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>THE CONNECTION</Text>
-        <Text style={styles.calloutText}>
-          This driver is connected to Retention Savings. If you retain more nurses, you need fewer travelers. We don't double-count—retention captures replacement cost, agency captures the premium labor cost during the vacancy period.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 8: SECTION DIVIDER - CARE QUALITY
-// ============================================================================
-
-const CareQualityDivider = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.dividerPage]} wrap={false}>
-    <Text style={styles.dividerEyebrow}>VALUE MECHANISM 02</Text>
-    <Text style={styles.dividerTitle}>Care Quality{"\n"}Enablement</Text>
-    <Text style={styles.dividerSubtitle}>
-      More time at bedside → Better assessments → Earlier intervention → Better outcomes
-    </Text>
-    <View style={styles.dividerFooter}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 9: WHY WE CALL THIS POTENTIAL VALUE
-// ============================================================================
-
-const PotentialValuePage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>CARE QUALITY ENABLEMENT</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 24 }]}>Why We Call This{"\n"}"Potential" Value</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.bodyText}>
-        The link between documentation and care quality outcomes is INDIRECT—we don't cause fewer falls, we enable the visibility that helps prevent them.
-      </Text>
-      
-      <View style={styles.calculationBox}>
-        <View style={styles.formulaRow}>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Documentation</Text>
-            <Text style={styles.formulaLabel}>We control this</Text>
-          </View>
-          <Text style={styles.formulaOperator}>→</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Visibility</Text>
-            <Text style={styles.formulaLabel}>We support this</Text>
-          </View>
-          <Text style={styles.formulaOperator}>→</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Intervention</Text>
-            <Text style={styles.formulaLabel}>Clinical team controls</Text>
-          </View>
-          <Text style={styles.formulaOperator}>→</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Outcome</Text>
-            <Text style={styles.formulaLabel}>Patient experiences</Text>
-          </View>
-        </View>
-      </View>
-      
-      <Text style={styles.bodyText}>
-        The distance between "documentation" and "outcome" is where traditional ROI models break down. We can prove time savings. We can't prove falls prevention with the same rigor.
-      </Text>
-      
-      <Text style={[styles.bodyText, { fontWeight: 600, color: brand.textPrimary }]}>
-        That's why we show this value separately—with appropriate caveats.
-      </Text>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>THE HONEST TRUTH</Text>
-        <Text style={styles.calloutText}>
-          Falls and pressure injuries are prevented through clinical care—turning, positioning, nutrition, skin care. Documentation SUPPORTS this but doesn't REPLACE it. We show this separately because honesty builds trust.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 10: HAPI PREVENTION
-// ============================================================================
-
-const HAPIPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>CARE QUALITY ENABLEMENT</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.driverTitle}>HAPI Prevention</Text>
-      
-      <View style={[styles.badge, { backgroundColor: brand.badgeGrayBg }]}>
-        <Text style={[styles.badgeText, { color: brand.badgeGray }]}>POTENTIAL VALUE — INDIRECT CAUSAL LINK</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE MECHANISM</Text>
-      <Text style={styles.mechanismText}>
-        Hospital-acquired pressure injuries happen when assessments are missed or interventions are delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured as they're observed—enabling earlier intervention.
-      </Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE CALCULATION</Text>
-      
-      <View style={styles.calculationBox}>
-        <View style={styles.formulaRow}>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Current HAPIs</Text>
-            <Text style={styles.formulaLabel}>per year</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Documentation-preventable</Text>
-            <Text style={styles.formulaLabel}>(3-10%)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Cost per HAPI avoided</Text>
-            <Text style={styles.formulaLabel}>($10K-$50K)</Text>
-          </View>
-        </View>
-        <View style={styles.formulaDivider} />
-        <Text style={styles.formulaResult}>Potential Value</Text>
-      </View>
-      
-      <Text style={styles.sectionHeading}>WHY 5% PREVENTION RATE</Text>
-      <Text style={styles.mechanismText}>
-        Not all HAPIs are documentation-preventable. Our 5% default is conservative—it represents cases where real-time assessment documentation would have triggered earlier intervention.
-      </Text>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>THE HONEST TRUTH</Text>
-        <Text style={styles.calloutText}>
-          HAPIs are prevented through clinical care—turning, positioning, nutrition, skin care. Documentation SUPPORTS this but doesn't REPLACE it. We show this separately because honesty builds trust.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 11: FALLS PREVENTION
-// ============================================================================
-
-const FallsPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>CARE QUALITY ENABLEMENT</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.driverTitle}>Falls Prevention</Text>
-      
-      <View style={[styles.badge, { backgroundColor: brand.badgeGrayBg }]}>
-        <Text style={[styles.badgeText, { color: brand.badgeGray }]}>POTENTIAL VALUE — INDIRECT CAUSAL LINK</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE MECHANISM</Text>
-      <Text style={styles.mechanismText}>
-        Falls happen when risk assessments are missed or interventions are delayed. Real-time documentation ensures fall risk scores, mobility assessments, and environmental factors are captured as they're observed—enabling earlier intervention.
-      </Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE CALCULATION</Text>
-      
-      <View style={styles.calculationBox}>
-        <View style={styles.formulaRow}>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Current falls</Text>
-            <Text style={styles.formulaLabel}>per year</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Documentation-preventable</Text>
-            <Text style={styles.formulaLabel}>(3-10%)</Text>
-          </View>
-          <Text style={styles.formulaOperator}>×</Text>
-          <View style={styles.formulaElement}>
-            <Text style={styles.formulaValue}>Cost per fall avoided</Text>
-            <Text style={styles.formulaLabel}>($3K-$30K)</Text>
-          </View>
-        </View>
-        <View style={styles.formulaDivider} />
-        <Text style={styles.formulaResult}>Potential Value</Text>
-      </View>
-      
-      <Text style={styles.sectionHeading}>BENCHMARK: COST PER FALL</Text>
-      
-      <View style={styles.table}>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>No injury fall</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>$3K - $5K</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Minor injury</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>$5K - $8K</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Major injury (fracture)</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>$15K - $30K</Text>
-        </View>
-      </View>
-      
-      <Text style={[styles.mechanismText, { fontSize: 10, fontStyle: "italic" }]}>
-        CMS does NOT reimburse for hospital-acquired fall injuries. This is pure cost to the hospital.
-      </Text>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 12: PATIENT EXPERIENCE (HCAHPS)
-// ============================================================================
-
-const HCAHPSPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>CARE QUALITY ENABLEMENT</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={styles.driverTitle}>Patient Experience (HCAHPS)</Text>
-      
-      <View style={[styles.badge, { backgroundColor: brand.lightGray, borderWidth: 1, borderColor: brand.midGray }]}>
-        <Text style={[styles.badgeText, { color: brand.textSecondary }]}>QUALITATIVE — WE DON'T CALCULATE A DOLLAR VALUE</Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>THE CONNECTION</Text>
-      <Text style={styles.mechanismText}>
-        When nurses spend less time on documentation, they spend more time with patients. Research consistently shows bedside time correlates with patient satisfaction.
-      </Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>WHY WE DON'T CALCULATE THIS</Text>
-      <Text style={styles.mechanismText}>
-        HCAHPS scores are influenced by dozens of factors:
-      </Text>
-      
-      <View style={{ marginLeft: 12, marginBottom: 16 }}>
-        <Text style={[styles.mechanismText, { marginBottom: 4 }]}>• Wait times</Text>
-        <Text style={[styles.mechanismText, { marginBottom: 4 }]}>• Pain management</Text>
-        <Text style={[styles.mechanismText, { marginBottom: 4 }]}>• Communication quality</Text>
-        <Text style={[styles.mechanismText, { marginBottom: 4 }]}>• Physical environment</Text>
-        <Text style={[styles.mechanismText, { marginBottom: 4 }]}>• Staffing levels</Text>
-        <Text style={[styles.mechanismText, { marginBottom: 4 }]}>• Discharge process</Text>
-      </View>
-      
-      <Text style={[styles.mechanismText, { fontWeight: 600, color: brand.textPrimary }]}>
-        We can't credibly attribute HCAHPS improvement to documentation alone. So we don't try.
-      </Text>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>BUT CONSIDER</Text>
-        <Text style={styles.calloutText}>
-          Hospitals in the top quartile of HCAHPS receive approximately 2% higher reimbursement through Value-Based Purchasing.{"\n\n"}Even small improvements matter.{"\n\n"}Track HCAHPS as a leading indicator after implementation.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 13: SECTION DIVIDER - ASSUMPTIONS
-// ============================================================================
-
-const AssumptionsDivider = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.dividerPage]} wrap={false}>
-    <Text style={styles.dividerEyebrow}>THE ASSUMPTIONS</Text>
-    <Text style={styles.dividerTitle}>Every Number{"\n"}Has a Source</Text>
-    <Text style={styles.dividerSubtitle}>
-      We don't hide assumptions.{"\n"}We highlight them.
-    </Text>
-    <View style={styles.dividerFooter}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 14: KEY ASSUMPTIONS TABLE
-// ============================================================================
-
-const AssumptionsPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>THE ASSUMPTIONS</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 24 }]}>Key Assumptions</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>ASSUMPTION</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>RANGE</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>DEFAULT</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1 }]}>SOURCE</Text>
-        </View>
-        
-        <Text style={styles.tableGroupLabel}>TIME SAVINGS</Text>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Time saved per shift</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>15-30 min</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>20 min</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>Abridge data</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>OT conversion rate</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>15-40%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>25%</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>Studies</Text>
-        </View>
-        
-        <Text style={styles.tableGroupLabel}>RETENTION</Text>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Nurse turnover rate</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>15-25%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>18%</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>NSI 2024</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Burnout-related %</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>30-50%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>40%</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>ANA research</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Abridge retention impact</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>10-25%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>15%</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>Conservative</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Replacement cost</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>$40-65K</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>$52K</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>NSI 2024</Text>
-        </View>
-        
-        <Text style={styles.tableGroupLabel}>AGENCY</Text>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Weeks of coverage</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>8-16 weeks</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>12 weeks</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>HR data</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Weekly premium</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>$2-4K</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>$2,500</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>Market rates</Text>
-        </View>
-        
-        <Text style={styles.tableGroupLabel}>CARE QUALITY</Text>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>HAPI rate</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>1.5-3.5/1K</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>2.5/1K</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>AHRQ</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Falls rate</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>2.5-5/1K</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>3.5/1K</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>AHRQ</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Prevention rate</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>3-10%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>5%</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1 }]}>Conservative</Text>
-        </View>
-      </View>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>WHY WE DEFAULT CONSERVATIVE</Text>
-        <Text style={styles.calloutText}>
-          We'd rather show a smaller number you can defend than a larger number that falls apart under scrutiny.{"\n\n"}If the conservative projection shows positive ROI, you can be confident. If your experience exceeds it, that's upside.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 15: THE HONEST LIMITS
-// ============================================================================
-
-const HonestLimitsPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>THE ASSUMPTIONS</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 24 }]}>The Honest Limits</Text>
-      <Text style={styles.pageSubtitle}>What we can measure vs. what we can influence</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <View style={styles.limitsBox}>
-        <Text style={styles.limitsTitle}>✓ WHAT WE CAN MEASURE</Text>
-        <Text style={styles.limitsSubtitle}>Strong causal chain, direct attribution</Text>
-        <View style={styles.limitsList}>
-          <Text style={styles.limitsItem}>• Overtime hours before/after</Text>
-          <Text style={styles.limitsItem}>• Documentation time per shift</Text>
-          <Text style={styles.limitsItem}>• Shift completion rates</Text>
-          <Text style={styles.limitsItem}>• Chart completion time</Text>
-        </View>
-      </View>
-      
-      <View style={styles.limitsBox}>
-        <Text style={styles.limitsTitle}>~ WHAT WE CAN INFLUENCE</Text>
-        <Text style={styles.limitsSubtitle}>Correlated, but indirect attribution</Text>
-        <View style={styles.limitsList}>
-          <Text style={styles.limitsItem}>• Turnover rates (documentation is one factor among many)</Text>
-          <Text style={styles.limitsItem}>• Agency utilization (connected to retention)</Text>
-          <Text style={styles.limitsItem}>• Nurse satisfaction (documentation burden is significant but not the only driver)</Text>
-        </View>
-      </View>
-      
-      <View style={styles.limitsBox}>
-        <Text style={styles.limitsTitle}>○ WHAT WE CAN ENABLE</Text>
-        <Text style={styles.limitsSubtitle}>Supportive, but not causal</Text>
-        <View style={styles.limitsList}>
-          <Text style={styles.limitsItem}>• Falls prevention (requires clinical practice)</Text>
-          <Text style={styles.limitsItem}>• HAPI prevention (requires clinical practice)</Text>
-          <Text style={styles.limitsItem}>• HCAHPS improvement (requires many factors)</Text>
-        </View>
-        <Text style={[styles.limitsItem, { marginTop: 8, fontStyle: "italic" }]}>
-          Documentation creates visibility. Clinical teams act on it. We provide the foundation—not the outcome.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 16: VALIDATION PATH
-// ============================================================================
-
-const ValidationPage1 = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>VALIDATION PATH</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 24 }]}>How to Prove This{"\n"}With Your Own Data</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.bodyText}>
-        Our projections are starting points. The real answers come from your organization's experience.
-      </Text>
-      
-      <View style={styles.validationCard}>
-        <Text style={styles.validationTitle}>TIME SAVINGS</Text>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>Before:</Text>
-          <Text style={styles.validationText}>• Survey nurses on documentation time per shift</Text>
-          <Text style={styles.validationText}>• Review EHR session data for charting duration</Text>
-        </View>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>After:</Text>
-          <Text style={styles.validationText}>• Repeat the same measurements</Text>
-          <Text style={styles.validationText}>• Compare with utilization data to isolate Abridge impact</Text>
-        </View>
-      </View>
-      
-      <View style={styles.validationCard}>
-        <Text style={styles.validationTitle}>OVERTIME REDUCTION</Text>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>Before:</Text>
-          <Text style={styles.validationText}>• Establish baseline OT hours per unit/month</Text>
-          <Text style={styles.validationText}>• Note any seasonal patterns</Text>
-        </View>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>After:</Text>
-          <Text style={styles.validationText}>• Track OT hours on units using Abridge vs. control units</Text>
-          <Text style={styles.validationText}>• Control for census and acuity changes</Text>
-        </View>
-      </View>
-      
-      <View style={styles.validationCard}>
-        <Text style={styles.validationTitle}>RETENTION</Text>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>Before:</Text>
-          <Text style={styles.validationText}>• Document baseline turnover rate by unit</Text>
-          <Text style={styles.validationText}>• Include exit interview data on burnout/documentation burden</Text>
-        </View>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>After:</Text>
-          <Text style={styles.validationText}>• Track turnover on Abridge units vs. control units</Text>
-          <Text style={styles.validationText}>• Survey nurses on burnout and documentation satisfaction</Text>
-        </View>
-        <Text style={styles.validationNote}>Note: Retention impact takes 12-18 months to measure meaningfully.</Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 17: VALIDATION PATH (CONTINUED)
-// ============================================================================
-
-const ValidationPage2 = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>VALIDATION PATH</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <View style={styles.validationCard}>
-        <Text style={styles.validationTitle}>CARE QUALITY</Text>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>Before:</Text>
-          <Text style={styles.validationText}>• Baseline HAPI and falls rates by unit</Text>
-          <Text style={styles.validationText}>• Baseline HCAHPS scores</Text>
-        </View>
-        <View style={styles.validationSection}>
-          <Text style={styles.validationLabel}>After:</Text>
-          <Text style={styles.validationText}>• Track rates on Abridge units vs. control units</Text>
-          <Text style={styles.validationText}>• Be cautious about attribution—many factors influence these</Text>
-        </View>
-        <Text style={styles.validationNote}>
-          Recommendation: Treat quality improvements as bonus, not expectation. If they show up, celebrate them. Don't promise them upfront.
-        </Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.sectionHeading}>TIMELINES</Text>
-      
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 2 }]}>METRIC</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}>TIMELINE TO MEANINGFUL DATA</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Documentation time</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1.5 }]}>2-4 weeks</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Overtime reduction</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1.5 }]}>2-3 months</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Nurse satisfaction</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1.5 }]}>3-6 months</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>HAC rates</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1.5 }]}>6-12 months</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 2 }]}>Turnover/retention</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1.5 }]}>12-18 months</Text>
-        </View>
-      </View>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>THE VALIDATION MINDSET</Text>
-        <Text style={styles.calloutText}>
-          Start measuring before implementation. The baseline data you collect now is what makes post-implementation claims credible.
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 18: CONNECTED VALUE
-// ============================================================================
-
-const ConnectedValuePage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>CONNECTED VALUE</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 24 }]}>Nursing Documentation{"\n"}Feeds Revenue</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.bodyText}>
-        Nursing value isn't limited to labor economics and care quality. In inpatient settings, nursing documentation directly supports revenue capture.
-      </Text>
-      
-      <View style={styles.colBox}>
-        <Text style={styles.colBoxNumber}>DRG OPTIMIZATION</Text>
-        <Text style={styles.colBoxText}>
-          Nursing notes often contain clinical details that support higher-acuity DRG assignments. When documentation is complete and timely, CDI teams can identify coding opportunities that would otherwise be missed.
-        </Text>
-      </View>
-      
-      <View style={[styles.colBox, { marginTop: 16 }]}>
-        <Text style={styles.colBoxNumber}>DENIAL PREVENTION</Text>
-        <Text style={styles.colBoxText}>
-          Real-time nursing documentation provides contemporaneous evidence of patient acuity and care needs—critical for payer appeals.
-        </Text>
-      </View>
-      
-      <View style={[styles.colBox, { marginTop: 16 }]}>
-        <Text style={styles.colBoxNumber}>CDI EFFICIENCY</Text>
-        <Text style={styles.colBoxText}>
-          When nursing documentation is complete, CDI teams have better source material for identifying coding opportunities.
-        </Text>
-      </View>
-      
-      <View style={styles.horizontalRule} />
-      
-      <Text style={styles.bodyText}>
-        These benefits are quantified in the Inpatient Setting methodology. If your organization uses Abridge for both Nursing and Hospitalists, the documentation creates a complete clinical picture that supports accurate coding from admission through discharge.
-      </Text>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// PAGE 19: DARK CLOSING
-// ============================================================================
-
-const ClosingPage = ({ pageNum }: { pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.darkPage]} wrap={false}>
-    <View style={styles.darkPageTop}>
-      <Image src={abridgeLogoWhitePath} style={styles.whiteLogo} />
-    </View>
-    
-    <View style={styles.coverCenter}>
-      <Text style={styles.closingText}>
-        Nursing ROI is harder to model than physician ROI because nurses don't bill.
-      </Text>
-      <Text style={styles.closingHighlight}>
-        But the value is real.
-      </Text>
-      
-      <View style={styles.closingSummaryBox}>
-        <View style={styles.closingSummaryRow}>
-          <Text style={styles.closingSummaryLabel}>TIME VALUE (direct)</Text>
-          <Text style={styles.closingSummaryText}>OT reduction · Retention savings · Agency avoidance</Text>
-        </View>
-        <View style={styles.closingSummaryRow}>
-          <Text style={styles.closingSummaryLabel}>CARE QUALITY (potential)</Text>
-          <Text style={styles.closingSummaryText}>Falls · HAPIs · Patient experience</Text>
-        </View>
-        <View style={[styles.closingSummaryRow, { marginBottom: 0 }]}>
-          <Text style={styles.closingSummaryLabel}>CONNECTED VALUE</Text>
-          <Text style={styles.closingSummaryText}>Nursing documentation feeds inpatient revenue</Text>
-        </View>
-      </View>
-      
-      <Text style={styles.closingFinal}>
-        We model all three—but we're honest about which is measurable, which is influenceable, and which is only enabled.
-      </Text>
-      <Text style={styles.closingAccent}>
-        That honesty is the methodology.
-      </Text>
-    </View>
-    
-    <View style={styles.darkPageBottom}>
-      <Text style={styles.coverLabel}>Page {pageNum}</Text>
-      <Text style={styles.coverLabel}></Text>
-    </View>
-  </Page>
-);
-
-// ============================================================================
-// MAIN DOCUMENT
-// ============================================================================
-
-const NursingMethodologyDocument = () => (
-  <Document>
-    <CoverPage />
-    <ContextPage1 pageNum={2} />
-    <ContextPage2 pageNum={3} />
-    <LaborEconomicsDivider pageNum={4} />
-    <OvertimePage pageNum={5} />
-    <RetentionPage pageNum={6} />
-    <AgencyPage pageNum={7} />
-    <CareQualityDivider pageNum={8} />
-    <PotentialValuePage pageNum={9} />
-    <HAPIPage pageNum={10} />
-    <FallsPage pageNum={11} />
-    <HCAHPSPage pageNum={12} />
-    <AssumptionsDivider pageNum={13} />
-    <AssumptionsPage pageNum={14} />
-    <HonestLimitsPage pageNum={15} />
-    <ValidationPage1 pageNum={16} />
-    <ValidationPage2 pageNum={17} />
-    <ConnectedValuePage pageNum={18} />
-    <ClosingPage pageNum={19} />
-  </Document>
-);
-
-// ============================================================================
-// EXPORT FUNCTION
-// ============================================================================
-
-export async function generateNursingMethodologyPDF(): Promise<void> {
-  const blob = await pdf(<NursingMethodologyDocument />).toBlob();
-  saveAs(blob, `Abridge-Nursing-ROI-Methodology.pdf`);
+  return `$${value.toFixed(0)}`;
 }
 
-// ============================================================================
-// ROI PDF DOCUMENT (for personalized results from the model)
-// ============================================================================
+function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(0)}%`;
+}
 
-const ROICoverPage = ({ data }: { data: NursingPDFData }) => {
-  const today = getCurrentDate();
-  const displayName = data.clientName || data.organizationName || "Your Organization";
-
+function NursingROIDocument({ data }: { data: NursingPDFData }) {
   return (
-    <Page size="A4" style={[styles.page, styles.darkPage]} wrap={false}>
-      <View style={styles.darkPageTop}>
-        <Image src={abridgeLogoWhitePath} style={styles.whiteLogo} />
-      </View>
-      
-      <View style={styles.coverCenter}>
-        <Text style={[styles.coverTitle, { fontSize: 36 }]}>Nursing ROI{"\n"}Assessment</Text>
-        <Text style={styles.coverSetting}>{displayName}</Text>
-        <Text style={[styles.coverTagline, { marginBottom: 40 }]}>
-          {formatNumber(data.staffedBeds)} staffed beds · {formatNumber(data.nurseFTEs)} nurse FTEs
+    <Document>
+      {/* Page 1: Executive Summary */}
+      <Page size="LETTER" style={roiStyles.page}>
+        <View style={roiStyles.header}>
+          <Image src={abridgeLogoPath} style={roiStyles.logo} />
+          <Text style={{ fontSize: 9, color: "#999999" }}>ROI Analysis</Text>
+        </View>
+        
+        <Text style={roiStyles.title}>Nursing ROI Analysis</Text>
+        <Text style={roiStyles.subtitle}>
+          {data.organizationName || "Healthcare Organization"} · {data.careSetting}
         </Text>
         
-        <Text style={{ fontSize: 56, fontWeight: 700, color: brand.abridgeRed, marginBottom: 8 }}>
-          {formatCurrency(data.netGain)}
-        </Text>
-        <Text style={{ fontSize: 13, color: brand.textTertiary }}>
-          Projected Net Annual Value
-        </Text>
-      </View>
-      
-      <View style={styles.darkPageBottom}>
-        <Text style={styles.coverLabel}>ABRIDGE VALUE ASSESSMENT</Text>
-        <Text style={styles.coverLabel}>{today}</Text>
-      </View>
-    </Page>
-  );
-};
-
-const ROISummaryPage = ({ data, pageNum }: { data: NursingPDFData; pageNum: number }) => {
-  const laborDrivers = data.drivers.filter(d => d.category === "labor");
-  const qualityDrivers = data.drivers.filter(d => d.category === "quality" || d.category === "qualitative");
-  
-  const laborValue = laborDrivers.reduce((sum, d) => sum + d.value, 0);
-  const qualityValue = qualityDrivers.reduce((sum, d) => sum + d.value, 0);
-
-  return (
-    <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-      <View style={styles.pageHeader}>
-        <Image src={abridgeLogoPath} style={styles.headerLogo} />
-        <Text style={styles.headerSection}>VALUE SUMMARY</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={[styles.pageTitle, { fontSize: 24 }]}>Two Sources of Value</Text>
-        
-        <View style={styles.horizontalRule} />
-        
-        <View style={styles.twoColContainer}>
-          <View style={styles.colBox}>
-            <Text style={styles.colBoxNumber}>LABOR ECONOMICS</Text>
-            <Text style={{ fontSize: 28, fontWeight: 700, color: brand.abridgeRed, marginBottom: 8 }}>
-              {formatCurrency(laborValue)}
-            </Text>
-            <Text style={styles.colBoxText}>
-              Overtime reduction, improved retention, reduced agency dependency
-            </Text>
+        <View style={roiStyles.section}>
+          <Text style={roiStyles.sectionTitle}>Practice Overview</Text>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Staffed Beds</Text>
+            <Text style={roiStyles.value}>{data.staffedBeds}</Text>
           </View>
-          
-          <View style={styles.colBox}>
-            <Text style={styles.colBoxNumber}>CARE QUALITY</Text>
-            <Text style={{ fontSize: 28, fontWeight: 700, color: brand.abridgeRed, marginBottom: 8 }}>
-              {formatCurrency(qualityValue)}
-            </Text>
-            <Text style={styles.colBoxText}>
-              Falls prevention, HAPI reduction, patient experience improvement
-            </Text>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Nurse FTEs</Text>
+            <Text style={roiStyles.value}>{data.nurseFTEs}</Text>
+          </View>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Documentation Events/Month</Text>
+            <Text style={roiStyles.value}>{data.documentationEvents.toLocaleString()}</Text>
+          </View>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Time Saved per Event</Text>
+            <Text style={roiStyles.value}>{data.timeSavedPerEvent} min</Text>
           </View>
         </View>
         
-        <View style={styles.horizontalRule} />
-        
-        <Text style={styles.sectionHeading}>VALUE DRIVERS</Text>
-        
-        <View style={styles.table}>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderCell, { flex: 2 }]}>DRIVER</Text>
-            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>CATEGORY</Text>
-            <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: "right" }]}>VALUE</Text>
-          </View>
-          {data.drivers.map((driver, idx) => (
-            <View key={driver.id} style={idx === data.drivers.length - 1 ? [styles.tableRow, styles.tableRowLast] : styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>{driver.name}</Text>
-              <Text style={[styles.tableCellMuted, { flex: 1 }]}>
-                {driver.category === "labor" ? "Labor" : driver.category === "quality" ? "Quality" : "Qualitative"}
-              </Text>
-              <Text style={[styles.tableCell, { flex: 1, textAlign: "right" as const, color: brand.abridgeRed, fontWeight: 600 }]}>
+        <View style={roiStyles.section}>
+          <Text style={roiStyles.sectionTitle}>Value Breakdown</Text>
+          {data.drivers.map((driver) => (
+            <View key={driver.id} style={roiStyles.row}>
+              <Text style={roiStyles.label}>{driver.name}</Text>
+              <Text style={driver.isPotentialValue ? roiStyles.value : roiStyles.valueRed}>
                 {formatCurrency(driver.value)}
               </Text>
             </View>
           ))}
         </View>
-      </View>
+        
+        <View style={roiStyles.summaryBox}>
+          <Text style={roiStyles.summaryTitle}>Total Annual Value</Text>
+          <Text style={roiStyles.summaryValue}>{formatCurrency(data.totalValue)}</Text>
+        </View>
+        
+        <View style={roiStyles.footer}>
+          <Text style={roiStyles.footerText}>Abridge Nursing ROI Analysis</Text>
+          <Text style={roiStyles.footerText}>Page 1/2</Text>
+        </View>
+      </Page>
       
-      <View style={styles.footer}>
-        <Text style={styles.footerPage}>Page {pageNum}</Text>
-      </View>
-    </Page>
+      {/* Page 2: Investment & ROI */}
+      <Page size="LETTER" style={roiStyles.page}>
+        <View style={roiStyles.header}>
+          <Image src={abridgeLogoPath} style={roiStyles.logo} />
+          <Text style={{ fontSize: 9, color: "#999999" }}>Investment Analysis</Text>
+        </View>
+        
+        <View style={roiStyles.section}>
+          <Text style={roiStyles.sectionTitle}>Investment Summary</Text>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Annual Investment</Text>
+            <Text style={roiStyles.value}>{formatCurrency(data.investment)}</Text>
+          </View>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Cost per Bed</Text>
+            <Text style={roiStyles.value}>{formatCurrency(data.costPerBed)}</Text>
+          </View>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>Net Annual Gain</Text>
+            <Text style={roiStyles.valueRed}>{formatCurrency(data.netGain)}</Text>
+          </View>
+          <View style={roiStyles.row}>
+            <Text style={roiStyles.label}>ROI</Text>
+            <Text style={roiStyles.valueRed}>{formatPercent(data.roi)}</Text>
+          </View>
+        </View>
+        
+        <View style={roiStyles.section}>
+          <Text style={roiStyles.sectionTitle}>3-Year Projection</Text>
+          <View style={{ borderWidth: 1, borderColor: "#E0E0E0", borderRadius: 4 }}>
+            <View style={roiStyles.tableHeader}>
+              <Text style={[roiStyles.tableHeaderCell, { flex: 1 }]}>Year</Text>
+              <Text style={[roiStyles.tableHeaderCell, { flex: 1, textAlign: "right" as const }]}>Value</Text>
+              <Text style={[roiStyles.tableHeaderCell, { flex: 1, textAlign: "right" as const }]}>Cost</Text>
+              <Text style={[roiStyles.tableHeaderCell, { flex: 1, textAlign: "right" as const }]}>Net</Text>
+            </View>
+            <View style={roiStyles.tableRow}>
+              <Text style={[roiStyles.tableCell, { flex: 1 }]}>Year 1</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const }]}>{formatCurrency(data.year1Value)}</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const }]}>{formatCurrency(data.year1Cost)}</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const, color: brand.abridgeRed }]}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
+            </View>
+            <View style={roiStyles.tableRow}>
+              <Text style={[roiStyles.tableCell, { flex: 1 }]}>Year 2</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const }]}>{formatCurrency(data.year2Value)}</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const }]}>{formatCurrency(data.year2Cost)}</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const, color: brand.abridgeRed }]}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
+            </View>
+            <View style={[roiStyles.tableRow, roiStyles.tableRowLast]}>
+              <Text style={[roiStyles.tableCell, { flex: 1 }]}>Year 3</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const }]}>{formatCurrency(data.year3Value)}</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const }]}>{formatCurrency(data.year3Cost)}</Text>
+              <Text style={[roiStyles.tableCell, { flex: 1, textAlign: "right" as const, color: brand.abridgeRed }]}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
+            </View>
+          </View>
+        </View>
+        
+        <View style={roiStyles.summaryBox}>
+          <Text style={roiStyles.summaryTitle}>3-Year Net Value</Text>
+          <Text style={roiStyles.summaryValue}>{formatCurrency(data.threeYearNet)}</Text>
+        </View>
+        
+        <View style={roiStyles.footer}>
+          <Text style={roiStyles.footerText}>Abridge Nursing ROI Analysis</Text>
+          <Text style={roiStyles.footerText}>Page 2/2</Text>
+        </View>
+      </Page>
+    </Document>
   );
-};
-
-const ROIInvestmentPage = ({ data, pageNum }: { data: NursingPDFData; pageNum: number }) => (
-  <Page size="A4" style={[styles.page, styles.contentPage]} wrap={false}>
-    <View style={styles.pageHeader}>
-      <Image src={abridgeLogoPath} style={styles.headerLogo} />
-      <Text style={styles.headerSection}>INVESTMENT ANALYSIS</Text>
-    </View>
-    
-    <View style={styles.content}>
-      <Text style={[styles.pageTitle, { fontSize: 24 }]}>Three-Year Projection</Text>
-      
-      <View style={styles.horizontalRule} />
-      
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderCell, { flex: 1.5 }]}></Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: "center" }]}>YEAR 1</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: "center" }]}>YEAR 2</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: "center" }]}>YEAR 3</Text>
-          <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: "center" }]}>TOTAL</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1.5, fontWeight: 600 }]}>Value Generated</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year1Value)}</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year2Value)}</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year3Value)}</Text>
-          <Text style={[styles.tableCell, { flex: 1, textAlign: "center", fontWeight: 600 }]}>{formatCurrency(data.threeYearValue)}</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 1.5, fontWeight: 600 }]}>Investment</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year1Cost)}</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year2Cost)}</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year3Cost)}</Text>
-          <Text style={[styles.tableCell, { flex: 1, textAlign: "center", fontWeight: 600 }]}>{formatCurrency(data.threeYearCost)}</Text>
-        </View>
-        <View style={[styles.tableRow, styles.tableRowLast]}>
-          <Text style={[styles.tableCell, { flex: 1.5, fontWeight: 600 }]}>Net Value</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year1Value - data.year1Cost)}</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year2Value - data.year2Cost)}</Text>
-          <Text style={[styles.tableCellMuted, { flex: 1, textAlign: "center" }]}>{formatCurrency(data.year3Value - data.year3Cost)}</Text>
-          <Text style={[styles.tableCell, { flex: 1, textAlign: "center", fontWeight: 700, color: brand.abridgeRed }]}>{formatCurrency(data.threeYearNet)}</Text>
-        </View>
-      </View>
-      
-      <View style={[styles.statBox, { marginTop: 24 }]}>
-        <Text style={styles.statValue}>{data.roi > 0 ? `${Math.round(data.roi)}%` : "N/A"}</Text>
-        <Text style={styles.statLabel}>Return on Investment</Text>
-      </View>
-      
-      <View style={styles.calloutBox}>
-        <Text style={styles.calloutTitle}>INVESTMENT DETAILS</Text>
-        <Text style={styles.calloutText}>
-          Annual investment of {formatCurrency(data.investment)} ({formatCurrency(data.costPerBed)}/bed/month) for {formatNumber(data.staffedBeds)} staffed beds
-        </Text>
-      </View>
-    </View>
-    
-    <View style={styles.footer}>
-      <Text style={styles.footerPage}>Page {pageNum}</Text>
-    </View>
-  </Page>
-);
-
-const NursingROIDocument = ({ data }: { data: NursingPDFData }) => (
-  <Document>
-    <ROICoverPage data={data} />
-    <ROISummaryPage data={data} pageNum={2} />
-    <ROIInvestmentPage data={data} pageNum={3} />
-  </Document>
-);
-
-// ============================================================================
-// EXPORT FUNCTIONS
-// ============================================================================
+}
 
 export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
-  const clientSlug = data.clientName ? data.clientName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : '';
-  const today = new Date().toISOString().split('T')[0];
-  const fileName = clientSlug 
-    ? `Abridge_Nursing_ROI_${clientSlug}_${today}.pdf`
-    : `Abridge_Nursing_ROI_${today}.pdf`;
-  
-  const blob = await pdf(<NursingROIDocument data={data} />).toBlob();
-  saveAs(blob, fileName);
+  try {
+    const blob = await pdf(<NursingROIDocument data={data} />).toBlob();
+    saveAs(blob, `Abridge-Nursing-ROI-${data.organizationName || "Analysis"}.pdf`);
+  } catch (error) {
+    console.error("Error generating ROI PDF:", error);
+    throw error;
+  }
 }
 
-export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {
-  const clientSlug = data.clientName ? data.clientName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : '';
-  const today = new Date().toISOString().split('T')[0];
-  const filename = clientSlug 
-    ? `Abridge_Nursing_ROI_${clientSlug}_${today}.pdf`
-    : `Abridge_Nursing_ROI_${today}.pdf`;
-  
-  const blob = await pdf(<NursingROIDocument data={data} />).toBlob();
-  return { blob, filename };
-}
-
-// Legacy export for backward compatibility
-export async function generateNursingPDF(data: NursingPDFData): Promise<void> {
-  return generateNursingROIPDF(data);
+export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<Blob> {
+  try {
+    const blob = await pdf(<NursingROIDocument data={data} />).toBlob();
+    return blob;
+  } catch (error) {
+    console.error("Error generating ROI PDF blob:", error);
+    throw error;
+  }
 }

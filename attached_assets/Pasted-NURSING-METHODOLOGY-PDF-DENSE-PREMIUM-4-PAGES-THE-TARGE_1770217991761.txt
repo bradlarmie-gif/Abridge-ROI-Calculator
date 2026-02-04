@@ -1,0 +1,425 @@
+NURSING METHODOLOGY PDF — DENSE, PREMIUM, 4 PAGES
+THE TARGET
+
+4 pages total (not 19, not even 6)
+Dense like Bloomberg/Economist — every inch has purpose
+Small, crisp typography — 9-10pt body, 12-14pt headers
+Two-column layouts where appropriate
+Tight spacing — no wasteful margins or padding
+Real content — the full methodology, not bullet point summaries
+
+
+PAGE 1: COVER + CONTEXT + VALUE MECHANISMS
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ABRIDGE                                               ROI METHODOLOGY          │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  NURSING: HOW WE THINK ABOUT VALUE                                              │
+│  A framework for understanding where value lives when there's no billing        │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  THE CONTEXT                                                                    │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  Nursing is the hardest setting to model ROI—and the most important to get      │
+│  right. In outpatient medicine, a physician saves 4 minutes per visit, and      │
+│  you can trace a path to wRVU lift or capacity expansion. The billing           │
+│  relationship creates a clear value chain.                                      │
+│                                                                                 │
+│  Nurses don't bill. They don't generate wRVUs. And yet nursing documentation    │
+│  burden is massive—25-35% of every shift spent on flowsheets, assessments,      │
+│  handoffs, and charting. So where does the value live?                          │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐ ┌─────────────────────────────────────┐│
+│  │ LABOR ECONOMICS                     │ │ CARE QUALITY ENABLEMENT             ││
+│  │                                     │ │                                     ││
+│  │ Overtime, retention, and agency     │ │ Falls, pressure injuries, patient   ││
+│  │ spend. These are real dollars that  │ │ satisfaction. These outcomes are    ││
+│  │ show up in the budget. When nurses  │ │ influenced by bedside time. More    ││
+│  │ spend less time documenting, they   │ │ time caring, less time charting,    ││
+│  │ finish shifts on time, burn out     │ │ better outcomes. But the causal     ││
+│  │ less, and the organization needs    │ │ chain is indirect—documentation     ││
+│  │ fewer expensive travel nurses.      │ │ supports care, it doesn't replace   ││
+│  │                                     │ │ it.                                 ││
+│  │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │ │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ││
+│  │ Direct, measurable value            │ │ Potential value (we show separately)││
+│  └─────────────────────────────────────┘ └─────────────────────────────────────┘│
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  VALUE MECHANISMS — LABOR ECONOMICS                                             │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐ ┌─────────────────────────────────────┐│
+│  │ OVERTIME REDUCTION                  │ │ RETENTION SAVINGS                   ││
+│  │ Directly Measurable                 │ │ Indirectly Attributable             ││
+│  │─────────────────────────────────────│ │─────────────────────────────────────││
+│  │                                     │ │                                     ││
+│  │ THE MECHANISM                       │ │ THE MECHANISM                       ││
+│  │ When nurses spend less time         │ │ Documentation burden is a top       ││
+│  │ documenting, they complete shifts   │ │ driver of nurse burnout. Burnout    ││
+│  │ on time. Not all time saved becomes │ │ drives turnover. Reducing burden    ││
+│  │ OT reduction—some goes to care—but  │ │ can help retain nurses who would    ││
+│  │ a portion does.                     │ │ otherwise leave.                    ││
+│  │                                     │ │                                     ││
+│  │ THE CALCULATION                     │ │ THE CALCULATION                     ││
+│  │ Hours saved × Conversion rate       │ │ FTEs × Turnover × Burnout% ×        ││
+│  │ (15-40%) × OT rate (1.5× base)      │ │ Abridge impact (10-25%) ×           ││
+│  │ = OT Savings                        │ │ Replacement cost = Retention value  ││
+│  │                                     │ │                                     ││
+│  │ WHY DEFENSIBLE                      │ │ WHY DEFENSIBLE                      ││
+│  │ OT hours and doc time are both      │ │ Link between doc burden and         ││
+│  │ measurable. The link is logical     │ │ burnout is well-established in      ││
+│  │ and validatable post-implementation.│ │ nursing research. Question is       ││
+│  │                                     │ │ magnitude, not direction.           ││
+│  └─────────────────────────────────────┘ └─────────────────────────────────────┘│
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │ AGENCY LABOR REDUCTION · Connected to Retention                             ││
+│  │─────────────────────────────────────────────────────────────────────────────││
+│  │ When nurses leave, hospitals fill gaps with agency/travel nurses at 2-3×    ││
+│  │ the cost. Improved retention directly reduces this premium labor dependency.││
+│  │                                                                              ││
+│  │ Calculation: Nurses retained × Weeks of coverage (8-16) × Weekly premium    ││
+│  │ ($2-4K) = Agency savings. This is separate from replacement cost—retention  ││
+│  │ captures replacement, agency captures premium labor during vacancy.         ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  Abridge ROI Methodology · Nursing                                    Page 1/4  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PAGE 2: CARE QUALITY + HONEST LIMITS
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ABRIDGE                                               ROI METHODOLOGY          │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  VALUE MECHANISMS — CARE QUALITY ENABLEMENT                                     │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  WHY WE CALL THIS "POTENTIAL" VALUE                                             │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  The link between documentation and care quality is indirect. We don't cause    │
+│  fewer falls—we enable the visibility that helps prevent them.                  │
+│                                                                                 │
+│  Documentation → Visibility → Intervention → Outcome                            │
+│  ━━━━━━━━━━━━━   ━━━━━━━━━━   ━━━━━━━━━━━━   ━━━━━━━                            │
+│  We control      We support   Clinical team  Patient                            │
+│  this            this         controls this  experiences                        │
+│                                                                                 │
+│  We show care quality separately because: clinical practice matters more than   │
+│  documentation, many factors influence outcomes, and we want to be honest.      │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐ ┌─────────────────────────────────────┐│
+│  │ HAPI PREVENTION                     │ │ FALLS PREVENTION                    ││
+│  │ Potential Value                     │ │ Potential Value                     ││
+│  │─────────────────────────────────────│ │─────────────────────────────────────││
+│  │                                     │ │                                     ││
+│  │ THE MECHANISM                       │ │ THE MECHANISM                       ││
+│  │ HAPIs happen when assessments are   │ │ Falls happen when risk assessments  ││
+│  │ missed or interventions delayed.    │ │ are missed or interventions delayed.││
+│  │ Real-time documentation ensures     │ │ Real-time documentation ensures     ││
+│  │ skin assessments, turning schedules,│ │ fall risk scores, mobility status,  ││
+│  │ and risk factors are captured—      │ │ and environmental factors are       ││
+│  │ enabling earlier intervention.      │ │ captured—enabling earlier action.   ││
+│  │                                     │ │                                     ││
+│  │ THE CALCULATION                     │ │ THE CALCULATION                     ││
+│  │ Current HAPIs × Documentation-      │ │ Current falls × Documentation-      ││
+│  │ preventable rate (5%) × Cost per    │ │ preventable rate (5%) × Cost per    ││
+│  │ HAPI ($10-50K) = Potential value    │ │ fall ($3-30K) = Potential value     ││
+│  │                                     │ │                                     ││
+│  │ WHY 5%? Not all HAPIs are doc-      │ │ WHY 5%? Not all falls are doc-      ││
+│  │ preventable. 5% represents cases    │ │ preventable. 5% represents cases    ││
+│  │ where real-time assessment would    │ │ where real-time risk documentation  ││
+│  │ have triggered earlier intervention.│ │ would have triggered intervention.  ││
+│  │                                     │ │                                     ││
+│  │ HONEST TRUTH: HAPIs are prevented   │ │ CMS does NOT reimburse for hospital-││
+│  │ through clinical care—turning,      │ │ acquired fall injuries. This is     ││
+│  │ positioning, nutrition. Doc         │ │ pure cost to the hospital.          ││
+│  │ SUPPORTS this, doesn't REPLACE it.  │ │                                     ││
+│  └─────────────────────────────────────┘ └─────────────────────────────────────┘│
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │ PATIENT EXPERIENCE (HCAHPS) · Qualitative—No Dollar Value Calculated        ││
+│  │─────────────────────────────────────────────────────────────────────────────││
+│  │ When nurses spend less time documenting, they spend more time with patients.││
+│  │ Research shows bedside time correlates with satisfaction. But HCAHPS is     ││
+│  │ influenced by dozens of factors—wait times, pain management, communication, ││
+│  │ environment, staffing. We can't credibly attribute improvement to docs alone.││
+│  │                                                                              ││
+│  │ BUT CONSIDER: Top quartile HCAHPS = ~2% higher reimbursement via VBP.       ││
+│  │ Track as leading indicator post-implementation.                              ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  THE HONEST LIMITS                                                              │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌───────────────────────┐ ┌───────────────────────┐ ┌───────────────────────┐  │
+│  │ ✓ WHAT WE MEASURE     │ │ ~ WHAT WE INFLUENCE   │ │ ○ WHAT WE ENABLE      │  │
+│  │   Direct attribution  │ │   Indirect attribution│ │   Supportive only     │  │
+│  │───────────────────────│ │───────────────────────│ │───────────────────────│  │
+│  │ • OT hours pre/post   │ │ • Turnover rates      │ │ • Falls prevention    │  │
+│  │ • Doc time per shift  │ │   (one factor of many)│ │   (clinical practice) │  │
+│  │ • Shift completion    │ │ • Agency utilization  │ │ • HAPI prevention     │  │
+│  │ • Chart completion    │ │   (tied to retention) │ │   (clinical practice) │  │
+│  │                       │ │ • Nurse satisfaction  │ │ • HCAHPS improvement  │  │
+│  │                       │ │   (doc burden is one) │ │   (many factors)      │  │
+│  └───────────────────────┘ └───────────────────────┘ └───────────────────────┘  │
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  Abridge ROI Methodology · Nursing                                    Page 2/4  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PAGE 3: ASSUMPTIONS + VALIDATION PATH
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ABRIDGE                                               ROI METHODOLOGY          │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  KEY ASSUMPTIONS                                                                │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Every number has a source. We don't hide assumptions—we highlight them.        │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  TIME SAVINGS                                                                   │
+│  ┌──────────────────────────┬────────────┬─────────┬───────────────────────────┐│
+│  │ Assumption               │ Range      │ Default │ Source                    ││
+│  ├──────────────────────────┼────────────┼─────────┼───────────────────────────┤│
+│  │ Time saved per shift     │ 15-30 min  │ 20 min  │ Abridge customer data     ││
+│  │ OT conversion rate       │ 15-40%     │ 25%     │ Implementation studies    ││
+│  └──────────────────────────┴────────────┴─────────┴───────────────────────────┘│
+│                                                                                 │
+│  RETENTION                                                                      │
+│  ┌──────────────────────────┬────────────┬─────────┬───────────────────────────┐│
+│  │ Assumption               │ Range      │ Default │ Source                    ││
+│  ├──────────────────────────┼────────────┼─────────┼───────────────────────────┤│
+│  │ Nurse turnover rate      │ 15-25%     │ 18%     │ NSI Nursing Solutions '24 ││
+│  │ Burnout-related %        │ 30-50%     │ 40%     │ ANA research              ││
+│  │ Abridge retention impact │ 10-25%     │ 15%     │ Conservative estimate     ││
+│  │ Replacement cost         │ $40-65K    │ $52K    │ NSI 2024 Report           ││
+│  └──────────────────────────┴────────────┴─────────┴───────────────────────────┘│
+│                                                                                 │
+│  AGENCY                                                                         │
+│  ┌──────────────────────────┬────────────┬─────────┬───────────────────────────┐│
+│  │ Assumption               │ Range      │ Default │ Source                    ││
+│  ├──────────────────────────┼────────────┼─────────┼───────────────────────────┤│
+│  │ Weeks of coverage        │ 8-16 wks   │ 12 wks  │ HR industry data          ││
+│  │ Weekly agency premium    │ $2-4K      │ $2,500  │ Market rates              ││
+│  └──────────────────────────┴────────────┴─────────┴───────────────────────────┘│
+│                                                                                 │
+│  CARE QUALITY                                                                   │
+│  ┌──────────────────────────┬────────────┬─────────┬───────────────────────────┐│
+│  │ Assumption               │ Range      │ Default │ Source                    ││
+│  ├──────────────────────────┼────────────┼─────────┼───────────────────────────┤│
+│  │ HAPI rate                │ 1.5-3.5/1K │ 2.5/1K  │ AHRQ benchmarks           ││
+│  │ Falls rate               │ 2.5-5/1K   │ 3.5/1K  │ AHRQ benchmarks           ││
+│  │ Documentation-prev. rate │ 3-10%      │ 5%      │ Conservative estimate     ││
+│  │ Cost per HAPI            │ $10-50K    │ $20K    │ CMS non-reimbursement     ││
+│  │ Cost per fall            │ $3-30K     │ $6.5K   │ Blended severity avg      ││
+│  └──────────────────────────┴────────────┴─────────┴───────────────────────────┘│
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │ ┃ WHY WE DEFAULT CONSERVATIVE                                               ││
+│  │ ┃ We'd rather show a smaller number you can defend than a larger number     ││
+│  │ ┃ that falls apart under scrutiny. If conservative projection shows         ││
+│  │ ┃ positive ROI, you can be confident. If experience exceeds it, that's      ││
+│  │ ┃ upside.                                                                   ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  VALIDATION PATH                                                                │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Our projections are starting points. The real answers come from your data.     │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐ ┌─────────────────────────────────────┐│
+│  │ TIME SAVINGS                        │ │ OVERTIME REDUCTION                  ││
+│  │─────────────────────────────────────│ │─────────────────────────────────────││
+│  │ Before:                             │ │ Before:                             ││
+│  │ • Survey nurses on doc time/shift   │ │ • Baseline OT hours per unit/month  ││
+│  │ • Review EHR session data           │ │ • Note seasonal patterns            ││
+│  │                                     │ │                                     ││
+│  │ After:                              │ │ After:                              ││
+│  │ • Repeat measurements               │ │ • Track OT on Abridge vs. control   ││
+│  │ • Compare with utilization data     │ │ • Control for census/acuity changes ││
+│  │                                     │ │                                     ││
+│  │ Timeline: 2-4 weeks                 │ │ Timeline: 2-3 months                ││
+│  └─────────────────────────────────────┘ └─────────────────────────────────────┘│
+│                                                                                 │
+│  ┌─────────────────────────────────────┐ ┌─────────────────────────────────────┐│
+│  │ RETENTION                           │ │ CARE QUALITY                        ││
+│  │─────────────────────────────────────│ │─────────────────────────────────────││
+│  │ Before:                             │ │ Before:                             ││
+│  │ • Baseline turnover by unit         │ │ • Baseline HAPI/falls rates by unit ││
+│  │ • Exit interview data on burnout    │ │ • Baseline HCAHPS scores            ││
+│  │                                     │ │                                     ││
+│  │ After:                              │ │ After:                              ││
+│  │ • Track turnover Abridge vs control │ │ • Track rates Abridge vs control    ││
+│  │ • Survey on burnout/doc satisfaction│ │ • Be cautious about attribution     ││
+│  │                                     │ │                                     ││
+│  │ Timeline: 12-18 months              │ │ Recommendation: Treat quality       ││
+│  │                                     │ │ improvements as bonus, not promise. ││
+│  └─────────────────────────────────────┘ └─────────────────────────────────────┘│
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  Abridge ROI Methodology · Nursing                                    Page 3/4  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PAGE 4: CONNECTED VALUE + SUMMARY
+Copy┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ABRIDGE                                               ROI METHODOLOGY          │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  CONNECTED VALUE                                                                │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  NURSING DOCUMENTATION FEEDS THE REVENUE CYCLE                                  │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│                                                                                 │
+│  When nurses document thoroughly and in real-time, it directly impacts          │
+│  inpatient revenue. Complete nursing documentation creates a clinical picture   │
+│  that supports accurate coding and stronger appeals.                            │
+│                                                                                 │
+│  ┌───────────────────────────────┐ ┌───────────────────────────────────────────┐│
+│  │ ┃ CC/MCC CAPTURE              │ │ ┃ MEDICAL NECESSITY SUPPORT              ││
+│  │ ┃                             │ │ ┃                                        ││
+│  │ ┃ Nursing assessments capture │ │ ┃ Real-time nursing documentation        ││
+│  │ ┃ clinical indicators that    │ │ ┃ provides contemporaneous evidence of   ││
+│  │ ┃ support accurate DRG        │ │ ┃ patient acuity and care needs—         ││
+│  │ ┃ assignment. "Patient appears│ │ ┃ critical for payer appeals.            ││
+│  │ ┃ malnourished" or "skin      │ │ ├─────────────────────────────────────────┤│
+│  │ ┃ breakdown observed" feeds   │ │ │ ┃ CDI EFFICIENCY                       ││
+│  │ ┃ coding directly.            │ │ │ ┃                                      ││
+│  │ ┃                             │ │ │ ┃ When nursing documentation is        ││
+│  │                               │ │ │ ┃ complete, CDI teams have better      ││
+│  │                               │ │ │ ┃ source material for identifying      ││
+│  │                               │ │ │ ┃ coding opportunities.                ││
+│  └───────────────────────────────┘ └───────────────────────────────────────────┘│
+│                                                                                 │
+│  These benefits are quantified in the Inpatient Setting methodology. If your    │
+│  organization uses Abridge for both Nursing and Hospitalists, documentation     │
+│  creates a complete clinical picture supporting accurate coding from admission  │
+│  through discharge.                                                             │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  VALIDATION TIMELINES                                                           │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌────────────────────────────────┬───────────────────────────────────────────┐ │
+│  │ Metric                         │ Timeline to Meaningful Data               │ │
+│  ├────────────────────────────────┼───────────────────────────────────────────┤ │
+│  │ Documentation time             │ 2-4 weeks                                 │ │
+│  │ Overtime reduction             │ 2-3 months                                │ │
+│  │ Nurse satisfaction             │ 3-6 months                                │ │
+│  │ HAC rates                      │ 6-12 months                               │ │
+│  │ Retention impact               │ 12-18 months                              │ │
+│  └────────────────────────────────┴───────────────────────────────────────────┘ │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│  SUMMARY                                                                        │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Nursing ROI is harder to model than physician ROI because nurses don't bill.   │
+│  But the value is real.                                                         │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │                                                                             ││
+│  │  TIME VALUE (Direct)              CARE QUALITY (Potential)                  ││
+│  │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━           ││
+│  │  OT reduction                     Falls prevention                          ││
+│  │  Retention savings                HAPI prevention                           ││
+│  │  Agency avoidance                 Patient experience                        ││
+│  │                                                                             ││
+│  │                          CONNECTED VALUE                                    ││
+│  │                          ━━━━━━━━━━━━━━━━━━━━━                              ││
+│  │                          Nursing documentation feeds                        ││
+│  │                          inpatient revenue cycle                            ││
+│  │                                                                             ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│  We model all three—but we're honest about which is measurable, which is        │
+│  influenceable, and which is only enabled.                                      │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │ ┃                                                                           ││
+│  │ ┃ "The goal isn't to prove our model right. It's to build your              ││
+│  │ ┃  organization's understanding of what ambient documentation actually      ││
+│  │ ┃  delivers in your context. Adjust the model based on what you learn."     ││
+│  │ ┃                                                                           ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                 │
+│  That honesty is the methodology.                                               │
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────────  │
+│  Abridge ROI Methodology · Nursing                                    Page 4/4  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+REPLIT PROMPT — DENSE METHODOLOGY PDF
+CopyCOMPLETE OVERHAUL of Methodology PDF export. Make it DENSE like Bloomberg/McKinsey.
+
+## CRITICAL FIXES
+
+1. PAGE COUNT: Exactly 4 pages. No more.
+
+2. TYPOGRAPHY — SMALLER, TIGHTER
+   - Body text: 9pt Manrope Regular, line-height 1.3
+   - Section headers: 11pt Manrope Bold, ALL CAPS
+   - Subsection headers: 10pt Manrope Semibold
+   - Table text: 8pt Manrope Regular
+   - Footer: 8pt Manrope Regular, gray
+
+3. MARGINS — TIGHTER
+   - Page margins: 0.5" all sides (not 0.75" or 1")
+   - Section spacing: 12px (not 24-32px)
+   - Card/box padding: 8-12px (not 24px)
+
+4. LAYOUT — TWO COLUMNS WHERE APPROPRIATE
+   - Value mechanisms: side-by-side cards
+   - Validation path: side-by-side cards  
+   - Tables: full width, compact rows
+
+5. NO BLANK PAGES
+   - Every page must be filled with content
+   - Text wrapping: DO NOT let elements bleed to create new pages
+   - Set white-space: nowrap where needed, overflow: hidden
+
+6. PAGE STRUCTURE
+   Page 1: Cover header + Context + Labor Economics mechanisms (3 cards)
+   Page 2: Care Quality mechanisms (3 cards) + Honest Limits (3-column)
+   Page 3: All assumptions tables + Validation path (4 side-by-side cards)
+   Page 4: Connected Value + Timelines table + Summary
+
+7. VISUAL DENSITY
+   - Cards should be compact, not spacious
+   - Tables should have minimal row height (24-28px)
+   - Use borders/lines to separate, not white space
+   - Header rule: thin line under ABRIDGE logo
+
+8. COLOR
+   - Headers: black
+   - Body: #333333
+   - Accent: #EA2C00 (badges, callout borders only)
+   - Table headers: light gray background #F5F5F5
+   - Cards: white with 1px #E0E0E0 border
+
+9. BADGES — SMALLER
+   - Font: 7pt Manrope Medium, uppercase
+   - Padding: 2px 6px
+   - Colors: 
+     - Directly Measurable: #E8F5E9 bg, #2E7D32 text
+     - Indirectly Attributable: #FFF3E0 bg, #E65100 text
+     - Potential Value: #F5F5F5 bg, #666666 text
+     - Qualitative: #FAFAFA bg, #999999 text
+
+10. CONTENT — USE THE FULL METHODOLOGY
+    Include all the content from our comprehensive methodology write-up:
+    - The context explanation
+    - Each value mechanism with: mechanism, calculation, why defensible
+    - The honest limits (3 categories)
+    - Full assumptions table with ranges, defaults, sources
+    - Validation path for each driver
+    - Connected value section
+    - Summary with the closing quote
