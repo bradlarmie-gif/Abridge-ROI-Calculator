@@ -31,10 +31,12 @@ export default function ExploreValueDrivers({
     patientAccess: boolean;
     costReduction: boolean;
     wellbeing: boolean;
+    rounding: boolean;
   }>({
     patientAccess: true,
     costReduction: true,
     wellbeing: true,
+    rounding: true,
   });
 
   const toggleExpanded = (section: keyof typeof expandedSections) => {
@@ -463,6 +465,19 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {timeDriverInputs.ipRoundingEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('rounding')}
+                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                    data-testid="collapse-rounding"
+                  >
+                    {expandedSections.rounding ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
@@ -479,7 +494,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.ipRoundingEnabled && (
+            {timeDriverInputs.ipRoundingEnabled && expandedSections.rounding && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
