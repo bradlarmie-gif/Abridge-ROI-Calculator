@@ -1,0 +1,224 @@
+Fix the Methodology PDF with these specific changes:
+
+## 1. ELIMINATE BLANK PAGES & PAGE BREAKS
+
+The PDF is showing 7 pages when content only fills 4. Fix this:
+
+- Set page-break-inside: avoid on all containers
+- Set overflow: hidden on all text containers  
+- Remove any margin-bottom or padding-bottom that could push content to new page
+- The content from pages 3-7 needs to consolidate onto pages 2-4
+- NO page should ever be mostly blank
+
+Specifically:
+- Page 3 is blank — delete it, content should flow from page 2 directly
+- Page 5 has one small box then blank — merge with page 4
+- Page 7 has one line then blank — merge with page 6
+
+## 2. HEADER STYLING — ADD BEIGE
+
+Change the header bar to warm beige background:
+
+```css
+.pdf-header {
+  background-color: #F5F0EB;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.pdf-header .logo {
+  height: 20px; /* smaller logo */
+  width: auto;
+}
+
+.pdf-header .title {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #666666;
+}
+3. FONT — USE MANROPE OR FALLBACK
+Check if Manrope is loaded. If not, add it:
+cssCopy@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+body, * {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+Or if using a PDF library that doesn't support Google Fonts, use:
+
+'Inter' (similar geometric sans)
+'Helvetica Neue'
+System fonts as fallback
+
+4. LOGO SIZE — SMALLER
+cssCopy.abridge-logo {
+  height: 18px;
+  width: auto;
+}
+5. PREVENT TEXT WRAPPING TO NEW PAGES
+For every section container:
+cssCopy.section {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  overflow: hidden;
+}
+
+.card {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.table-container {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+6. TIGHTER SPACING
+cssCopy/* Reduce all vertical spacing */
+.section-header {
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.card {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.table {
+  margin-bottom: 12px;
+}
+
+.table td, .table th {
+  padding: 4px 8px;
+  font-size: 8px;
+}
+
+p {
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+7. CONSOLIDATE VALIDATION PATH
+The validation path cards are breaking across pages. Put all 4 in a 2x2 grid that fits on one section:
+cssCopy.validation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  page-break-inside: avoid;
+}
+
+.validation-card {
+  padding: 8px;
+  font-size: 8px;
+  border: 1px solid #E0E0E0;
+}
+8. FINAL PAGE STRUCTURE (4 PAGES ONLY)
+Page 1:
+
+Beige header with small logo + "ROI METHODOLOGY"
+Title: "NURSING: HOW WE THINK ABOUT VALUE"
+THE CONTEXT section
+Two-column: LABOR ECONOMICS | CARE QUALITY ENABLEMENT boxes
+VALUE MECHANISMS — LABOR ECONOMICS
+Two-column: OVERTIME REDUCTION | RETENTION SAVINGS
+AGENCY LABOR REDUCTION (full width)
+Footer
+
+Page 2:
+
+Beige header
+VALUE MECHANISMS — CARE QUALITY ENABLEMENT
+"WHY WE CALL THIS POTENTIAL VALUE" section
+Two-column: HAPI PREVENTION | FALLS PREVENTION
+PATIENT EXPERIENCE (full width)
+THE HONEST LIMITS (3-column)
+Footer
+
+Page 3:
+
+Beige header
+KEY ASSUMPTIONS
+All 4 assumption tables (TIME SAVINGS, RETENTION, AGENCY, CARE QUALITY)
+"WHY WE DEFAULT CONSERVATIVE" callout
+VALIDATION PATH
+2x2 grid of validation cards
+Footer
+
+Page 4:
+
+Beige header
+CONNECTED VALUE section
+VALIDATION TIMELINES table
+SUMMARY section with 3-column value breakdown
+Closing quote
+"That honesty is the methodology."
+Footer
+
+9. SPECIFIC CSS FOR PAGE CONTROL
+cssCopy@media print {
+  .page {
+    page-break-after: always;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .page:last-child {
+    page-break-after: avoid;
+  }
+}
+
+/* Force content to fit */
+.page-content {
+  max-height: calc(100vh - 80px); /* header + footer */
+  overflow: hidden;
+}
+10. COLORS FOR BRAND ALIGNMENT
+cssCopy:root {
+  --abridge-red: #EA2C00;
+  --warm-beige: #F5F0EB;
+  --dark-text: #1A1A1A;
+  --gray-text: #666666;
+  --light-gray: #E0E0E0;
+  --card-bg: #FFFFFF;
+  --table-header-bg: #F8F8F8;
+}
+
+/* Header */
+.pdf-header {
+  background: var(--warm-beige);
+}
+
+/* Callout boxes */
+.callout {
+  border-left: 3px solid var(--abridge-red);
+  background: var(--warm-beige);
+  padding: 8px 12px;
+}
+
+/* Badges */
+.badge-measurable {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.badge-attributable {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.badge-potential {
+  background: #F5F5F5;
+  color: #666666;
+}
+This should produce a clean 4-page PDF with:
+
+Warm beige header on every page
+Smaller Abridge logo
+Manrope font (or good fallback)
+No blank pages
+No content bleeding/wrapping to create extra pages
+Dense, premium feel
+
