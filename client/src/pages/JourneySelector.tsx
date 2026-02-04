@@ -100,16 +100,16 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
     <div className="min-h-screen bg-white relative overflow-hidden">
       <GlobalHeader pageName="Home" />
       
-      {/* Giant Abridge shape background on right - rotated 90° to look like an A */}
+      {/* Giant Abridge shape background on right - rotated -90° to look like an A */}
       <div 
         className="absolute pointer-events-none z-0"
         style={{
           right: '-10%',
           top: '50%',
-          transform: 'translateY(-50%) rotate(90deg)',
+          transform: 'translateY(-50%) rotate(-90deg)',
           width: '85vh',
           height: '85vh',
-          opacity: 0.06,
+          opacity: 0.04,
         }}
       >
         <img 
