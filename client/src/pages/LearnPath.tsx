@@ -23,7 +23,11 @@ export default function LearnPath({ onBack, initialScreen }: LearnPathProps) {
 
   // Scroll to top on every screen change (mobile fix)
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [currentScreen]);
 
   const handleSelectSetting = (setting: CareSettingType) => {

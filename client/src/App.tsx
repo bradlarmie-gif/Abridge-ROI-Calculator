@@ -125,7 +125,11 @@ export default function App() {
 
   // Scroll to top on every view change (global mobile fix)
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [currentView]);
 
   // Handle browser back/forward buttons

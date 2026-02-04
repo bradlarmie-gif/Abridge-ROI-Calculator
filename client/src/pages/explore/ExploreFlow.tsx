@@ -385,7 +385,12 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
 
   // Scroll to top on every phase change (mobile fix)
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Use requestAnimationFrame to ensure DOM has updated before scrolling
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [phase]);
 
   useEffect(() => {

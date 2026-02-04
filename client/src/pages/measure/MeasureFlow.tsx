@@ -25,7 +25,11 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
 
   // Scroll to top on every phase change (mobile fix)
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [phase]);
 
   // Load state from URL on mount

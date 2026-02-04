@@ -167,7 +167,11 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
   
   // Scroll to top on every step change (mobile fix)
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
   }, [currentStep]);
   
   // Deployment configuration - starts BLANK
