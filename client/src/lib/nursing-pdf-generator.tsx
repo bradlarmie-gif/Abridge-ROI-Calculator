@@ -90,21 +90,23 @@ const brand = {
   darkGray: "#333333",
   mediumGray: "#666666",
   lightGray: "#999999",
-  borderGray: "#E0E0E0",
+  borderGray: "#D0D0D0",  // FIX 4: More visible borders
   tableHeader: "#F8F8F8",
-  cardBg: "#FFFFFF",
+  cardBg: "#FAFAFA",  // FIX 4: Subtle card background
   abridgeRed: "#EA2C00",
   warmBeige: "#F5F0EB",  // Abridge brand beige for headers
   
-  // Badge colors
-  directMeasurableBg: "#E8F5E9",
-  directMeasurableText: "#2E7D32",
-  indirectBg: "#FFF3E0",
-  indirectText: "#E65100",
-  potentialBg: "#F5F5F5",
-  potentialText: "#666666",
-  qualitativeBg: "#FAFAFA",
-  qualitativeText: "#999999",
+  // FIX 5: Bolder badge colors
+  directMeasurableBg: "#D4EDDA",
+  directMeasurableText: "#155724",
+  indirectBg: "#FFF3CD",
+  indirectText: "#856404",
+  potentialBg: "#E9ECEF",
+  potentialText: "#495057",
+  qualitativeBg: "#F8F9FA",
+  qualitativeText: "#6C757D",
+  connectedBg: "#D1ECF1",
+  connectedText: "#0C5460",
 };
 
 // ============================================================================
@@ -121,41 +123,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   
-  // Header - Premium beige bar
+  // Header - Premium beige bar (FIX 6: smaller logo, FIX 2: reduced letter-spacing)
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 6,  // FIX 7: reduced from 8
     marginTop: -36,
     marginLeft: -36,
     marginRight: -36,
-    paddingVertical: 8,
+    paddingVertical: 6,  // FIX 7: reduced from 8
     paddingHorizontal: 36,
     backgroundColor: brand.warmBeige,
     borderBottomWidth: 1,
     borderBottomColor: brand.borderGray,
   },
   logo: {
-    width: 72,
-    height: 18,
+    width: 54,  // FIX 6: reduced from 72 (25% smaller)
+    height: 14, // FIX 6: reduced from 18
   },
   headerTitle: {
-    fontSize: 10,
-    fontFamily: "Helvetica",
+    fontSize: 9,  // FIX 2: reduced from 10
+    fontFamily: "Helvetica-Bold",
     color: brand.mediumGray,
-    letterSpacing: 1.5,
+    letterSpacing: 0.5,  // FIX 2: reduced from 1.5 (subtle tracking, not separated)
   },
   
-  // Section headers
+  // Section headers (FIX 7: tighter spacing)
   sectionHeader: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
     letterSpacing: 0.5,
-    marginTop: 12,
-    marginBottom: 6,
-    paddingBottom: 3,
+    marginTop: 10,  // FIX 7: reduced from 12
+    marginBottom: 5,  // FIX 7: reduced from 6
+    paddingBottom: 2,  // FIX 7: reduced from 3
     borderBottomWidth: 2,
     borderBottomColor: brand.black,
   },
@@ -163,57 +165,57 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 4,
+    marginBottom: 3,  // FIX 7: reduced from 4
   },
   
-  // Title section
+  // Title section (FIX 7: tighter spacing)
   mainTitle: {
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,  // FIX 7: reduced from 3
   },
   subtitle: {
     fontSize: 10,
     fontFamily: "Helvetica",
     color: brand.mediumGray,
-    marginBottom: 10,
+    marginBottom: 8,  // FIX 7: reduced from 10
   },
   
-  // Body text - readable
+  // Body text - readable (FIX 7: tighter spacing)
   bodyText: {
     fontSize: 9,
     lineHeight: 1.4,
     color: brand.darkGray,
-    marginBottom: 6,
+    marginBottom: 5,  // FIX 7: reduced from 6
   },
   
-  // Two-column layout
+  // Two-column layout (FIX 7: tighter spacing)
   twoColumn: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 8,
+    gap: 6,  // FIX 7: reduced from 8
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   column: {
     flex: 1,
   },
   
-  // Three-column layout
+  // Three-column layout (FIX 7: tighter spacing)
   threeColumn: {
     flexDirection: "row",
-    gap: 6,
-    marginBottom: 8,
+    gap: 5,  // FIX 7: reduced from 6
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   thirdColumn: {
     flex: 1,
   },
   
-  // Cards - readable
+  // Cards - readable (FIX 7: tighter spacing)
   card: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 8,
+    padding: 6,  // FIX 7: reduced from 8
     backgroundColor: brand.cardBg,
   },
   cardTitle: {
@@ -225,8 +227,8 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     fontSize: 7,
     fontFamily: "Helvetica-Bold",
-    letterSpacing: 0.5,
-    marginBottom: 6,
+    letterSpacing: 0.3,  // Slightly reduced
+    marginBottom: 5,  // FIX 7: reduced from 6
     paddingVertical: 2,
     paddingHorizontal: 5,
     borderRadius: 2,
@@ -236,7 +238,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginTop: 6,
+    marginTop: 5,  // FIX 7: reduced from 6
     marginBottom: 1,
   },
   cardText: {
@@ -245,24 +247,24 @@ const styles = StyleSheet.create({
     color: brand.darkGray,
   },
   
-  // Full-width card
+  // Full-width card (FIX 7: tighter spacing)
   fullWidthCard: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 8,
+    padding: 6,  // FIX 7: reduced from 8
     backgroundColor: brand.cardBg,
-    marginBottom: 8,
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   
-  // Callout box - beige background
+  // Callout box - beige background (FIX 7: tighter spacing)
   callout: {
     borderLeftWidth: 3,
     borderLeftColor: brand.abridgeRed,
-    paddingLeft: 10,
-    paddingVertical: 6,
+    paddingLeft: 8,  // FIX 7: reduced from 10
+    paddingVertical: 5,  // FIX 7: reduced from 6
     backgroundColor: brand.warmBeige,
-    marginBottom: 8,
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   calloutText: {
     fontSize: 8,
@@ -271,11 +273,11 @@ const styles = StyleSheet.create({
     color: brand.darkGray,
   },
   
-  // Tables - readable
+  // Tables - readable (FIX 7: tighter spacing)
   table: {
     borderWidth: 1,
     borderColor: brand.borderGray,
-    marginBottom: 8,
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   tableHeader: {
     flexDirection: "row",
@@ -287,8 +289,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    paddingVertical: 3,
-    paddingHorizontal: 5,
+    paddingVertical: 2,  // FIX 7: reduced from 3
+    paddingHorizontal: 4,  // FIX 7: reduced from 5
   },
   tableRow: {
     flexDirection: "row",
@@ -301,8 +303,8 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 8,
     color: brand.darkGray,
-    paddingVertical: 3,
-    paddingHorizontal: 5,
+    paddingVertical: 2,  // FIX 7: reduced from 3
+    paddingHorizontal: 4,  // FIX 7: reduced from 5
   },
   
   // Flow diagram
@@ -336,13 +338,13 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   
-  // Honest limits columns
+  // Honest limits columns (FIX 7: tighter spacing)
   limitsColumn: {
     flex: 1,
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 6,
+    padding: 5,  // FIX 7: reduced from 6
     backgroundColor: brand.cardBg,
   },
   limitsHeader: {
@@ -354,7 +356,7 @@ const styles = StyleSheet.create({
   limitsSubtext: {
     fontSize: 7,
     color: brand.mediumGray,
-    marginBottom: 4,
+    marginBottom: 3,  // FIX 7: reduced from 4
   },
   limitsBullet: {
     fontSize: 8,
@@ -362,13 +364,13 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   
-  // Summary box
+  // Summary box (FIX 7: tighter spacing)
   summaryBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
-    marginBottom: 8,
+    padding: 8,  // FIX 7: reduced from 10
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   summaryRow: {
     flexDirection: "row",
@@ -381,7 +383,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     color: brand.black,
-    marginBottom: 3,
+    marginBottom: 2,  // FIX 7: reduced from 3
     textDecoration: "underline",
   },
   summaryItem: {
@@ -390,14 +392,14 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   
-  // Quote box
+  // Quote box (FIX 7: tighter spacing)
   quoteBox: {
     borderWidth: 1,
     borderColor: brand.borderGray,
     borderRadius: 3,
-    padding: 10,
-    marginTop: 6,
-    marginBottom: 8,
+    padding: 8,  // FIX 7: reduced from 10
+    marginTop: 5,  // FIX 7: reduced from 6
+    marginBottom: 6,  // FIX 7: reduced from 8
   },
   quoteText: {
     fontSize: 9,
@@ -440,7 +442,7 @@ function Badge({ type }: { type: "direct" | "indirect" | "potential" | "qualitat
     indirect: { bg: brand.indirectBg, text: brand.indirectText, label: "INDIRECTLY ATTRIBUTABLE" },
     potential: { bg: brand.potentialBg, text: brand.potentialText, label: "POTENTIAL VALUE" },
     qualitative: { bg: brand.qualitativeBg, text: brand.qualitativeText, label: "QUALITATIVE" },
-    connected: { bg: "#E3F2FD", text: "#1565C0", label: "CONNECTED TO RETENTION" },
+    connected: { bg: brand.connectedBg, text: brand.connectedText, label: "CONNECTED TO RETENTION" },  // FIX 5: bolder colors
   };
   const c = config[type];
   

@@ -1,0 +1,67 @@
+The Methodology PDF is 80% there but needs these specific fixes:
+
+## FIX 1: REDUCE WHITE SPACE AT BOTTOM OF PAGES
+Pages 1, 2, 3, and 4 all have 30-40% empty space at the bottom before the footer.
+
+Options:
+A) Add more content (expand Connected Value section, add Validation Timelines table)
+B) Reduce spacing throughout to push content down and fill pages more evenly
+C) If keeping white space, add a subtle design element (thin horizontal rule at 2/3 down the page) so it looks intentional
+
+Preferred: Option B — tighten spacing so content fills pages more evenly.
+
+## FIX 2: HEADER "ROI METHODOLOGY" LETTER SPACING
+The text "R O I  M E T H O D O L O G Y" has way too much letter-spacing.
+Current: looks like 8-10px letter-spacing
+Should be: 2-3px letter-spacing maximum
+It should read "ROI METHODOLOGY" with subtle tracking, not look like each letter is a separate word.
+
+## FIX 3: FONT CHECK
+Verify Manrope is actually loading. The headline font looks like a system fallback.
+- Manrope should have slightly rounded terminals
+- The current font looks more like Arial or Helvetica
+If Manrope won't load, use Inter as fallback (similar feel)
+
+## FIX 4: CARD BORDERS MORE VISIBLE
+The value mechanism cards on page 2 have borders that are too faint.
+Current: ~#E5E5E5 (barely visible)
+Change to: #D0D0D0 (visible but not heavy)
+OR add a subtle background: #FAFAFA with #E0E0E0 border
+
+## FIX 5: BADGE COLORS BOLDER
+Current badges are too pale/washed out.
+
+DIRECTLY MEASURABLE:
+- Current: pale green
+- Change to: #D4EDDA background, #155724 text
+
+INDIRECTLY ATTRIBUTABLE:  
+- Current: pale orange
+- Change to: #FFF3CD background, #856404 text
+
+POTENTIAL VALUE:
+- Current: barely visible gray
+- Change to: #E9ECEF background, #495057 text
+
+CONNECTED TO RETENTION:
+- Current: pale blue
+- Change to: #D1ECF1 background, #0C5460 text
+
+QUALITATIVE:
+- Current: very pale
+- Change to: #F8F9FA background, #6C757D text
+
+## FIX 6: ABRIDGE LOGO SIZE
+Reduce logo size by 25% to give more vertical space for content.
+Current: ~40px height
+Change to: ~30px height
+
+## FIX 7: SPACING REDUCTION (if doing Option B)
+Reduce these spacing values by 25%:
+- Section margin-bottom: from 32px to 24px
+- Card padding: from 20px to 16px
+- Card margin-bottom: from 16px to 12px
+- Paragraph margin-bottom: from 16px to 12px
+- Table row height: from 36px to 28px
+
+This should push content down and reduce the empty gaps at bottom of pages.
