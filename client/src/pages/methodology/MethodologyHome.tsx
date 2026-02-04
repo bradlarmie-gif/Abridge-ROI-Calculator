@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Stethoscope, Zap, Building2, HeartPulse, ChevronRight } from "lucide-react";
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyHomeProps {
   onBack: () => void;
@@ -57,7 +58,19 @@ export function MethodologyHome({ onBack, onSelectSetting }: MethodologyHomeProp
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-        <div className="max-w-[1000px] mx-auto px-6 py-4">
+        <div className="max-w-[1000px] mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <a
+              href="/"
+              onClick={(e) => { e.preventDefault(); onBack(); }}
+              className="flex items-center"
+              data-testid="link-home-logo"
+            >
+              <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+            </a>
+            <span className="text-[#E5E5E5]">|</span>
+            <span className="text-xs font-medium text-[#888888] uppercase tracking-wide">Methodology</span>
+          </div>
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors"

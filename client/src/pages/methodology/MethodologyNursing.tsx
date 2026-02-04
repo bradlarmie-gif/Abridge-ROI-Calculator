@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, A
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { generateMethodologyPDF, nursingMethodologyData } from "@/lib/methodology-pdf-generator";
+import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyNursingProps {
   onBack: () => void;
@@ -78,14 +79,25 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
         <div className="max-w-[800px] mx-auto px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-[#666666] hover:text-black transition-colors"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to Methodology</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <a
+              href="/"
+              onClick={(e) => { e.preventDefault(); window.location.href = "/"; }}
+              className="flex items-center"
+              data-testid="link-home-logo"
+            >
+              <img src={abridgeLogo} alt="Abridge" className="h-5 md:h-6" />
+            </a>
+            <span className="text-[#E5E5E5]">|</span>
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 text-[#666666] hover:text-black transition-colors"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span className="text-xs font-medium uppercase tracking-wide">Methodology</span>
+            </button>
+          </div>
           <button
             onClick={handleExportPDF}
             disabled={isExporting}
