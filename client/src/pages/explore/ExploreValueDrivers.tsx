@@ -152,7 +152,7 @@ export default function ExploreValueDrivers({
     if (!timeDriverInputs.nursingRetentionEnabled) return 0;
     const nurses = state.numberOfProviders;
     const leavingPerYear = nurses * (timeDriverInputs.nursingTurnoverRate / 100);
-    const retained = leavingPerYear * 0.15; // Conservative 15% impact
+    const retained = leavingPerYear * 0.10; // Conservative 10% impact
     return Math.round(retained * timeDriverInputs.nursingReplacementCost);
   }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
 
@@ -1074,8 +1074,8 @@ export default function ExploreValueDrivers({
                         <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40).toFixed(1)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× Abridge impact (15%)</span>
-                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * 0.15).toFixed(2)} nurses retained</span>
+                        <span className="text-[#666666]">× Abridge impact (10%)</span>
+                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * 0.10).toFixed(2)} nurses retained</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">

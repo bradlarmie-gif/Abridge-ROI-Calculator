@@ -505,7 +505,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       }
       if (timeDriverInputs.nursingRetentionEnabled) {
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
-        const retained = leavingPerYear * 0.15;
+        const retained = leavingPerYear * 0.10;
         total += retained * timeDriverInputs.nursingReplacementCost;
       }
     } else {
