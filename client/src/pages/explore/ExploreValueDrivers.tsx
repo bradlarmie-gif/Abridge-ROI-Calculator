@@ -237,9 +237,11 @@ export default function ExploreValueDrivers({
     if (!timeDriverInputs.nursingRetentionEnabled) return 0;
     const nurses = state.numberOfProviders;
     const leavingPerYear = nurses * (timeDriverInputs.nursingTurnoverRate / 100);
-    const retained = leavingPerYear * 0.10; // Conservative 10% impact
+    const burnoutRelated = leavingPerYear * 0.40; // 40% burnout-related
+    const abridgeImpact = timeDriverInputs.nursingAbridgeImpactPercent / 100;
+    const retained = burnoutRelated * abridgeImpact;
     return Math.round(retained * timeDriverInputs.nursingReplacementCost);
-  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
+  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost, timeDriverInputs.nursingAbridgeImpactPercent]);
 
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -1193,6 +1195,27 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Abridge Impact</p>
+                  <p className="text-sm text-[#888888] mb-3">What percentage of burnout-related turnover can Abridge address?</p>
+                  <div className="space-y-2.5 mb-6">
+                    <div className="relative">
+                      <FormattedNumberInput
+                        value={timeDriverInputs.nursingAbridgeImpactPercent}
+                        onChange={(v: number) => updateTimeDriverInputs({ nursingAbridgeImpactPercent: Math.min(100, Math.max(0, v)) })}
+                        className="h-12 bg-white pr-8"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
+                    </div>
+                    <p className="text-xs text-[#888888]">
+                      25% is typical — Abridge reduces documentation burden which is a major burnout driver.
+                    </p>
+                    {timeDriverInputs.nursingAbridgeImpactPercent > 40 && (
+                      <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                        <span>⚠️</span> Aggressive assumption — impact rates above 40% are rare.
+                      </p>
+                    )}
+                  </div>
+
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
@@ -1205,8 +1228,8 @@ export default function ExploreValueDrivers({
                         <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40).toFixed(1)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× Abridge impact (10%)</span>
-                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * 0.10).toFixed(2)} nurses retained</span>
+                        <span className="text-[#666666]">× Abridge impact ({timeDriverInputs.nursingAbridgeImpactPercent}%)</span>
+                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * (timeDriverInputs.nursingAbridgeImpactPercent / 100)).toFixed(2)} nurses retained</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">

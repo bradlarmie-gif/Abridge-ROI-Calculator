@@ -96,6 +96,7 @@ export interface TimeDriverInputs {
   nursingRetentionEnabled: boolean;
   nursingTurnoverRate: number;
   nursingReplacementCost: number;
+  nursingAbridgeImpactPercent: number; // % of burnout-related turnover Abridge can address
   nursingCareTimeEnabled: boolean;
   nursingCareConversionRate: number; // % of remaining time (after OT) that converts to care time
 }
@@ -272,6 +273,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingRetentionEnabled: false,
     nursingTurnoverRate: 18, // 18% annual turnover
     nursingReplacementCost: 50000,
+    nursingAbridgeImpactPercent: 25, // % of burnout-related turnover Abridge can address
     nursingCareTimeEnabled: false,
     nursingCareConversionRate: 70, // 70% of remaining time converts to care
   },
@@ -508,7 +510,9 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       }
       if (timeDriverInputs.nursingRetentionEnabled) {
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
-        const retained = leavingPerYear * 0.10;
+        const burnoutRelated = leavingPerYear * 0.40; // 40% burnout-related
+        const abridgeImpact = timeDriverInputs.nursingAbridgeImpactPercent / 100;
+        const retained = burnoutRelated * abridgeImpact;
         total += retained * timeDriverInputs.nursingReplacementCost;
       }
     } else {
