@@ -498,14 +498,13 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     } else if (isNursing) {
       // Nursing: OT Reduction and Retention
       if (timeDriverInputs.nursingOtEnabled) {
-        const weeksPerYear = 52;
-        // CORRECT LOGIC: Use Abridge time saved, not total OT baseline
-        const totalCurrentOt = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
-        const rawOtReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
-        // Cap: Cannot exceed min(time saved, current total OT)
-        const maxOtReduction = Math.min(totalHoursSaved, totalCurrentOt);
-        const otHoursReduced = Math.min(rawOtReduced, maxOtReduction);
-        total += otHoursReduced * timeDriverInputs.nursingOtHourlyRate * 1.5;
+        // OT Reduction: Derived from time saved, capped by baseline OT
+        const baselineOTHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
+        const rawOtReduction = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+        // Cap: Cannot exceed baseline OT (you can't reduce more OT than exists)
+        const otHoursReduced = Math.min(baselineOTHoursPerYear, rawOtReduction);
+        const effectiveOTRate = timeDriverInputs.nursingOtHourlyRate * 1.5;
+        total += otHoursReduced * effectiveOTRate;
       }
       if (timeDriverInputs.nursingRetentionEnabled) {
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
@@ -534,16 +533,15 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     }
     
     const { timeDriverInputs, numberOfProviders } = state;
-    const weeksPerYear = 52;
     
-    // Calculate OT hours reduced
-    const totalCurrentOt = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    // Calculate OT hours reduced using consistent formula
+    const baselineOTHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
     let otHoursReduced = 0;
     
     if (timeDriverInputs.nursingOtEnabled) {
-      const rawOtReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
-      const maxOtReduction = Math.min(totalHoursSaved, totalCurrentOt);
-      otHoursReduced = Math.min(rawOtReduced, maxOtReduction);
+      const rawOtReduction = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+      // Cap: Cannot exceed baseline OT (you can't reduce more OT than exists)
+      otHoursReduced = Math.min(baselineOTHoursPerYear, rawOtReduction);
     }
     
     // Remaining time after OT

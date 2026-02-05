@@ -125,48 +125,77 @@ export default function ExploreValueDrivers({
   // Value comes from Clinician Wellbeing driver only
 
   // Nursing-specific calculations
-  // OT Reduction: Based on Abridge time saved, not total OT baseline
+  // OT Reduction: Explicitly derived from time saved (hours/year), capped by baseline OT
   const nursingOtCalcs = useMemo(() => {
-    const nurses = state.numberOfProviders;
-    const weeksPerYear = 52;
+    // Core variables (matching user's specification)
+    const nurseFTEs = state.numberOfProviders;
+    const currentOTHoursPerNursePerWeek = timeDriverInputs.nursingOtHoursPerNurseWeek;
+    const avgOTHourlyRate = timeDriverInputs.nursingOtHourlyRate;
+    const otPayMultiplier = 1.5; // hardcoded
+    const conversionPctToOT = timeDriverInputs.nursingOtReductionPercent / 100;
     
-    // Current total OT hours (for validation/cap)
-    const totalCurrentOt = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    // Time saved (passed in as totalHoursSaved, but let's be explicit about what it represents)
+    const timeSavedHoursPerYear = totalHoursSaved;
+    
+    // Baseline OT = nurseFTEs × currentOTHoursPerNursePerWeek × 52 weeks
+    const baselineOTHoursPerYear = nurseFTEs * currentOTHoursPerNursePerWeek * 52;
+    
+    // Effective OT rate
+    const effectiveOTRate = avgOTHourlyRate * otPayMultiplier;
     
     if (!timeDriverInputs.nursingOtEnabled) {
       // Even when disabled, calculate remaining time (100% remains)
       return { 
         otHoursReduced: 0, 
         value: 0, 
-        totalCurrentOt, 
+        baselineOTHoursPerYear, 
+        timeSavedHoursPerYear,
+        rawOtReduction: 0,
         capped: false,
-        remainingTime: totalHoursSaved,
-        remainingPercent: 100
+        cappedByBaseline: false,
+        remainingTime: timeSavedHoursPerYear,
+        remainingPercent: 100,
+        effectiveOTRate
       };
     }
     
-    // NEW LOGIC: Start with Abridge time saved, apply conversion rate
-    const rawOtHoursReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+    // Raw OT reduction = timeSavedHoursPerYear × conversionPctToOT
+    const rawOtReduction = timeSavedHoursPerYear * conversionPctToOT;
     
-    // Cap: OT hours reduced cannot exceed min(time saved, current total OT)
-    const maxOtReduction = Math.min(totalHoursSaved, totalCurrentOt);
-    const otHoursReduced = Math.min(rawOtHoursReduced, maxOtReduction);
-    const capped = rawOtHoursReduced > maxOtReduction;
+    // CAP: OT hours reduced cannot exceed baseline OT
+    const otHoursReduced = Math.min(baselineOTHoursPerYear, rawOtReduction);
+    const cappedByBaseline = rawOtReduction > baselineOTHoursPerYear;
     
-    // Calculate value: OT hours reduced × OT rate (base × 1.5)
-    const value = Math.round(otHoursReduced * timeDriverInputs.nursingOtHourlyRate * 1.5);
+    // Annual OT Savings = otHoursReduced × effectiveOTRate
+    const annualOTSavings = Math.round(otHoursReduced * effectiveOTRate);
+    
+    // Console logging for validation (dev-only)
+    if (cappedByBaseline) {
+      console.log('🔒 CAPPED BY BASELINE OT');
+    }
+    console.log('📊 Nursing OT Reduction Debug:', {
+      timeSavedHoursPerYear: Math.round(timeSavedHoursPerYear),
+      baselineOTHoursPerYear: Math.round(baselineOTHoursPerYear),
+      rawOtReduction: Math.round(rawOtReduction),
+      otHoursReduced: Math.round(otHoursReduced),
+      annualOTSavings
+    });
     
     // Remaining time after OT (for Care Time calculation)
-    const remainingTime = totalHoursSaved - otHoursReduced;
+    const remainingTime = timeSavedHoursPerYear - otHoursReduced;
     const remainingPercent = 100 - timeDriverInputs.nursingOtReductionPercent;
     
     return { 
       otHoursReduced: Math.round(otHoursReduced), 
-      value, 
-      totalCurrentOt, 
-      capped,
+      value: annualOTSavings, 
+      baselineOTHoursPerYear: Math.round(baselineOTHoursPerYear), 
+      timeSavedHoursPerYear: Math.round(timeSavedHoursPerYear),
+      rawOtReduction: Math.round(rawOtReduction),
+      capped: cappedByBaseline,
+      cappedByBaseline,
       remainingTime: Math.round(remainingTime),
-      remainingPercent
+      remainingPercent,
+      effectiveOTRate
     };
   }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
 
@@ -741,27 +770,43 @@ export default function ExploreValueDrivers({
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
+                      {/* Step 1: Time saved from Time Savings page */}
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Time saved by Abridge (from Time Savings)</span>
-                        <span className="font-semibold text-black">{formatNumber(totalHoursSaved)} hrs</span>
+                        <span className="text-[#666666]">Time saved by Abridge</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.timeSavedHoursPerYear)} hrs/year</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× Conversion rate</span>
+                        <span className="text-[#666666]">× OT conversion rate</span>
                         <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">= OT hours reduced</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.otHoursReduced)} hrs</span>
+                        <span className="text-[#666666]">= Raw OT reduction</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.rawOtReduction)} hrs</span>
                       </div>
-                      {nursingOtCalcs.capped && (
-                        <div className="text-xs text-amber-600 italic">
-                          (Capped at {formatNumber(Math.min(totalHoursSaved, nursingOtCalcs.totalCurrentOt))} — cannot exceed time saved or current OT)
+                      
+                      {/* Step 2: Cap check against baseline OT */}
+                      <div className="flex justify-between text-xs">
+                        <span className="text-[#888888]">Baseline OT ({state.numberOfProviders} × {timeDriverInputs.nursingOtHoursPerNurseWeek} hrs × 52 wks)</span>
+                        <span className="text-[#888888]">{formatNumber(nursingOtCalcs.baselineOTHoursPerYear)} hrs/year</span>
+                      </div>
+                      
+                      {nursingOtCalcs.cappedByBaseline && (
+                        <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                          <span>⚠️</span> Capped at baseline OT — you can't reduce more OT than exists
                         </div>
                       )}
+                      
+                      <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
-                        <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate * 1.5)}/hr</span>
+                        <span className="text-[#666666]">OT hours reduced</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.otHoursReduced)} hrs</span>
+                      </div>
+                      
+                      {/* Step 3: Calculate savings */}
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">× Effective OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
+                        <span className="font-semibold text-black">{formatCurrency(nursingOtCalcs.effectiveOTRate)}/hr</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
@@ -776,11 +821,6 @@ export default function ExploreValueDrivers({
                       </div>
                       <p className="text-xs text-[#888888] italic">
                         This time is available for care and efficiency gains.
-                      </p>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-[#E5E5E5]">
-                      <p className="text-xs text-[#888888]">
-                        Current total OT: {formatNumber(nursingOtCalcs.totalCurrentOt)} hrs/year ({state.numberOfProviders} nurses × {timeDriverInputs.nursingOtHoursPerNurseWeek} hrs/wk × 52 wks)
                       </p>
                     </div>
                   </div>
