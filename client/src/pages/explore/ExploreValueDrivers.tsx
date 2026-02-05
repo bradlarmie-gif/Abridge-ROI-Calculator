@@ -1484,85 +1484,6 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  {/* BLACK BOX: Time Breakdown */}
-                  {(() => {
-                    const carePct = timeDriverInputs.nursingCareTimePercent / 100;
-                    const otPct = timeDriverInputs.nursingOtEnabled ? (timeDriverInputs.nursingOtReductionPercent / 100) : 0;
-                    const absorbedPct = Math.max(0, 1 - carePct - otPct);
-                    const careHours = Math.round(totalHoursSaved * carePct);
-                    const otHours = Math.round(totalHoursSaved * otPct);
-                    const absorbedHours = Math.round(totalHoursSaved * absorbedPct);
-                    const carePerNurseWeek = state.numberOfProviders > 0 
-                      ? (careHours / state.numberOfProviders / 52).toFixed(1)
-                      : '0';
-                    
-                    return (
-                      <div className="bg-[#1A1A1A] rounded-lg p-5 mb-6">
-                        <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-4">
-                          Time Allocation Breakdown
-                        </p>
-                        
-                        <div className="space-y-3">
-                          {/* Total Hours Saved */}
-                          <div className="flex justify-between items-center pb-3 border-b border-[#333333]">
-                            <span className="text-sm text-[#888888]">Total Hours Saved</span>
-                            <span className="text-lg font-bold text-white">{formatNumber(totalHoursSaved)} hrs/year</span>
-                          </div>
-                          
-                          {/* Time for Direct Care - User-selected */}
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <span className="text-sm text-white font-medium">Time for Direct Care</span>
-                              <p className="text-xs text-[#888888]">Returned to patient bedside</p>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-lg font-bold text-[#EA2C00]">
-                                {formatNumber(careHours)} hrs
-                              </span>
-                              <p className="text-xs text-[#888888]">{timeDriverInputs.nursingCareTimePercent}%</p>
-                            </div>
-                          </div>
-                          
-                          {/* Time in OT */}
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <span className="text-sm text-[#888888]">Time in OT Reduction</span>
-                              <p className="text-xs text-[#666666]">Overtime hours eliminated</p>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-sm font-semibold text-[#EA2C00]">
-                                {formatNumber(otHours)} hrs
-                              </span>
-                              <p className="text-xs text-[#666666]">{timeDriverInputs.nursingOtEnabled ? `${timeDriverInputs.nursingOtReductionPercent}%` : '0%'}</p>
-                            </div>
-                          </div>
-                          
-                          {/* Time Absorbed - Auto-calculated */}
-                          <div className="flex justify-between items-center pt-3 border-t border-[#333333]">
-                            <div>
-                              <span className="text-sm text-[#888888]">Time Absorbed</span>
-                              <p className="text-xs text-[#666666]">Baseline productivity gains</p>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-sm font-semibold text-white">
-                                {formatNumber(absorbedHours)} hrs
-                              </span>
-                              <p className="text-xs text-[#666666]">{Math.round(absorbedPct * 100)}% <span className="italic">(auto)</span></p>
-                            </div>
-                          </div>
-                          
-                          {/* Per Nurse Summary */}
-                          <div className="mt-4 pt-4 border-t border-[#333333]">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-[#888888]">Per nurse per week (care time)</span>
-                              <span className="text-xl font-bold text-[#EA2C00]">{carePerNurseWeek} hrs</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
                   <div className="mt-6">
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Where Does This Time Go?</p>
                     <div className="space-y-2 text-sm text-[#666666]">
@@ -1628,6 +1549,86 @@ export default function ExploreValueDrivers({
             transition={{ delay: 0.2 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
+              {/* Time Allocation Breakdown - Nursing Only */}
+              {isNursing && timeDriverInputs.nursingCareTimeEnabled && (
+                <>
+                  {(() => {
+                    const carePct = timeDriverInputs.nursingCareTimePercent / 100;
+                    const otPct = timeDriverInputs.nursingOtEnabled ? (timeDriverInputs.nursingOtReductionPercent / 100) : 0;
+                    const absorbedPct = Math.max(0, 1 - carePct - otPct);
+                    const careHours = Math.round(totalHoursSaved * carePct);
+                    const otHours = Math.round(totalHoursSaved * otPct);
+                    const absorbedHours = Math.round(totalHoursSaved * absorbedPct);
+                    const carePerNurseWeek = state.numberOfProviders > 0 
+                      ? (careHours / state.numberOfProviders / 52).toFixed(1)
+                      : '0';
+                    
+                    return (
+                      <div className="mb-5">
+                        <div className="mb-3">
+                          <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
+                            Time Allocation
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {/* Total Hours */}
+                          <div className="flex justify-between items-center pb-2 border-b border-[#333333]">
+                            <span className="text-xs text-[#888888]">Total Saved</span>
+                            <span className="text-sm font-semibold text-white">{formatNumber(totalHoursSaved)} hrs</span>
+                          </div>
+                          
+                          {/* Direct Care */}
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#EA2C00]" />
+                              <span className="text-xs text-[#888888]">Direct Care</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-[#EA2C00]">{formatNumber(careHours)} hrs</span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingCareTimePercent}%)</span>
+                            </div>
+                          </div>
+                          
+                          {/* OT Reduction */}
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                              <span className="text-xs text-[#888888]">OT Reduction</span>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-sm font-semibold ${timeDriverInputs.nursingOtEnabled ? 'text-white' : 'text-[#666666]'}`}>
+                                {formatNumber(otHours)} hrs
+                              </span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingOtEnabled ? timeDriverInputs.nursingOtReductionPercent : 0}%)</span>
+                            </div>
+                          </div>
+                          
+                          {/* Absorbed */}
+                          <div className="flex justify-between items-center pt-2 border-t border-[#333333]">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#666666]" />
+                              <span className="text-xs text-[#888888]">Absorbed</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-semibold text-[#888888]">{formatNumber(absorbedHours)} hrs</span>
+                              <span className="text-xs text-[#666666] ml-1 italic">({Math.round(absorbedPct * 100)}% auto)</span>
+                            </div>
+                          </div>
+                          
+                          {/* Per Nurse */}
+                          <div className="flex justify-between items-center pt-2 mt-1 border-t border-[#333333]">
+                            <span className="text-xs text-[#888888]">Per nurse/week</span>
+                            <span className="text-lg font-bold text-[#EA2C00]">{carePerNurseWeek} hrs</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="h-px bg-[#333333] mb-4" />
+                </>
+              )}
+              
               {/* Header */}
               <div className="mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
