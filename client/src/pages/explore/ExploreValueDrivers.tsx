@@ -1172,23 +1172,33 @@ export default function ExploreValueDrivers({
         </div>
         )}
 
-        {/* Cost Reduction Toggle - Available for all care settings */}
+        {/* Optional: Cost Reduction - Available for all care settings */}
         <motion.div
-          className="mb-4"
+          className="mt-8 mb-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
+          {/* Optional Section Header */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px flex-1 bg-[#E5E5E5]" />
+            <span className="text-[10px] font-medium text-[#888888] uppercase tracking-[1.5px]">Optional</span>
+            <div className="h-px flex-1 bg-[#E5E5E5]" />
+          </div>
+          
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 rounded-lg text-left transition-all border border-dashed ${
               timeDriverInputs.costReductionEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? "bg-white border-[#EA2C00]/30" 
+                : "bg-white/70 hover:bg-white border-[#D1D5DB]"
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="font-semibold text-black">Cost Reduction</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-black">Cost Reduction</p>
+                  <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide bg-[#F5F0EB] px-2 py-0.5 rounded">If Applicable</span>
+                </div>
                 <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
               </div>
               <div className="flex items-center gap-3">
