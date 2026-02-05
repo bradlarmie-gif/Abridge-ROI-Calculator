@@ -129,11 +129,15 @@ export default function StepTheMath({
     setAssumptions(prev => ({ ...prev, [key]: value }));
   };
 
-  const eligibleEncounters = Math.round(inputs.annualEncounters * ABRIDGE_BENCHMARKS.utilization / 100);
+  // Use fallback defaults if user hasn't entered values (same as AmbientNarrativeFlow)
+  const effectiveEncounters = inputs.annualEncounters || 150000;
+  const effectiveProviders = inputs.providers || 75;
+  
+  const eligibleEncounters = Math.round(effectiveEncounters * ABRIDGE_BENCHMARKS.utilization / 100);
 
   const recalculatedValues = useMemo(() => {
     const utilizationGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.utilization - inputs.utilization);
-    const additionalEncounters = Math.round(inputs.annualEncounters * utilizationGapPercent / 100);
+    const additionalEncounters = Math.round(effectiveEncounters * utilizationGapPercent / 100);
     const utilizationPotentialTimeSavedHours = (additionalEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
     const utilizationGapValue = Math.round(utilizationPotentialTimeSavedHours * assumptions.hourlyRate * (assumptions.utilizationConversion / 100));
 
