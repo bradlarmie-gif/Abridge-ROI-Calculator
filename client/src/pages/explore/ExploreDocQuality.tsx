@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -36,6 +36,17 @@ export default function ExploreDocQuality({
   onHome,
 }: ExploreDocQualityProps) {
   const { docQualityInputs } = state;
+  
+  // Expanded sections state for collapsible cards
+  const [expandedSections, setExpandedSections] = useState<{
+    hapi: boolean;
+    falls: boolean;
+    hcahps: boolean;
+  }>({ hapi: true, falls: true, hcahps: true });
+
+  const toggleExpanded = (section: 'hapi' | 'falls' | 'hcahps') => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
   
   const updateDocInputs = (updates: Partial<DocQualityInputs>) => {
     updateState({
@@ -356,22 +367,37 @@ export default function ExploreDocQuality({
                   </div>
                   <p className="text-sm text-[#888888]">Real-time documentation enables earlier intervention</p>
                 </div>
-                <button
-                  onClick={() => updateDocInputs({ nursingHapiEnabled: !docQualityInputs.nursingHapiEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    docQualityInputs.nursingHapiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-nursing-hapi"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    docQualityInputs.nursingHapiEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.nursingHapiEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('hapi')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-nursing-hapi"
+                    >
+                      {expandedSections.hapi ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ nursingHapiEnabled: !docQualityInputs.nursingHapiEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.nursingHapiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-nursing-hapi"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.nursingHapiEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <AnimatePresence>
-              {docQualityInputs.nursingHapiEnabled && (
+              {docQualityInputs.nursingHapiEnabled && expandedSections.hapi && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -503,22 +529,37 @@ export default function ExploreDocQuality({
                   </div>
                   <p className="text-sm text-[#888888]">Better visibility enables faster intervention</p>
                 </div>
-                <button
-                  onClick={() => updateDocInputs({ nursingFallsEnabled: !docQualityInputs.nursingFallsEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    docQualityInputs.nursingFallsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-nursing-falls"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    docQualityInputs.nursingFallsEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.nursingFallsEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('falls')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-nursing-falls"
+                    >
+                      {expandedSections.falls ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ nursingFallsEnabled: !docQualityInputs.nursingFallsEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.nursingFallsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-nursing-falls"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.nursingFallsEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <AnimatePresence>
-              {docQualityInputs.nursingFallsEnabled && (
+              {docQualityInputs.nursingFallsEnabled && expandedSections.falls && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -634,22 +675,37 @@ export default function ExploreDocQuality({
                   </div>
                   <p className="text-sm text-[#888888]">More bedside time correlates with better satisfaction</p>
                 </div>
-                <button
-                  onClick={() => updateDocInputs({ nursingHcahpsEnabled: !docQualityInputs.nursingHcahpsEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    docQualityInputs.nursingHcahpsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-nursing-hcahps"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    docQualityInputs.nursingHcahpsEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.nursingHcahpsEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('hcahps')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-nursing-hcahps"
+                    >
+                      {expandedSections.hcahps ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ nursingHcahpsEnabled: !docQualityInputs.nursingHcahpsEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.nursingHcahpsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-nursing-hcahps"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.nursingHcahpsEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <AnimatePresence>
-              {docQualityInputs.nursingHcahpsEnabled && (
+              {docQualityInputs.nursingHcahpsEnabled && expandedSections.hcahps && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
