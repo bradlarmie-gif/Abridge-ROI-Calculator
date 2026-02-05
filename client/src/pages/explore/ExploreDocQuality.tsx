@@ -847,17 +847,19 @@ export default function ExploreDocQuality({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-6 md:p-8">
-                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-6">
                     Documentation gaps cost you twice—first at coding, then at audit. Abridge captures the clinical conversations that close these gaps.
                   </p>
 
+                  {/* Steps Container - Beige wrapper for all calculation steps */}
+                  <div className="bg-[#F5F0EB] rounded-lg p-5 mb-6">
                   {/* STEP 1: YOUR DOCUMENTATION OPPORTUNITY */}
-                  <div className="mb-10">
+                  <div className="mb-8">
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                       Step 1: Your Documentation Opportunity
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">How often does CDI identify documentation opportunities?</p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
                           <label className="text-[13px] text-[#666666] mb-1.5 block">Eligible Admissions</label>
@@ -936,7 +938,7 @@ export default function ExploreDocQuality({
                       Step 3: Revenue Impact
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">When a missed CC/MCC is captured, DRG weight increases.</p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
+                    <div className="bg-white rounded-lg p-5 mb-4 border border-[#E5E5E5]">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
                           <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions Captured</label>
@@ -1020,7 +1022,7 @@ export default function ExploreDocQuality({
                       Step 4: What You Can Count On
                     </p>
                     <p className="text-[13px] text-[#666666] mb-4">Not all captured documentation changes the final code.</p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
                           <label className="text-[13px] text-[#666666] mb-1.5 block">Gross Value</label>
@@ -1052,6 +1054,7 @@ export default function ExploreDocQuality({
                         33% is a conservative realization rate that accounts for audit risk, coder judgment, and cases where documentation doesn't change final DRG.
                       </p>
                     </div>
+                  </div>
                   </div>
 
                   {/* Final Value */}
@@ -1123,16 +1126,18 @@ export default function ExploreDocQuality({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-6 md:p-8">
-                  <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
+                  <p className="text-[13px] text-[#666666] leading-relaxed mb-6">
                     When Abridge captures clinical conversations, many queries become unnecessary—freeing CDI to focus on complex cases.
                   </p>
 
+                  {/* Steps Container - Beige wrapper for all calculation steps */}
+                  <div className="bg-[#F5F0EB] rounded-lg p-5 mb-6">
                   {/* STEP 1: CURRENT QUERY VOLUME */}
-                  <div className="mb-10">
+                  <div className="mb-8">
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 1: Current Query Volume
                     </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
                           <label className="text-[13px] text-[#666666] mb-1.5 block">Admissions</label>
@@ -1190,7 +1195,7 @@ export default function ExploreDocQuality({
                         </button>
                       ))}
                     </div>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4 text-center">
+                    <div className="bg-white rounded-lg p-4 text-center border border-[#E5E5E5]">
                       <span className="text-[13px] text-[#666666]">{formatNumber(Math.round(ipTotalQueries))} × {ipCdiReductionPercent}% = </span>
                       <span className="font-semibold text-black">{formatNumber(Math.round(ipQueriesAvoided))} queries avoided</span>
                     </div>
@@ -1201,7 +1206,7 @@ export default function ExploreDocQuality({
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
                       Step 3: Savings
                     </p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-5">
+                    <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                         <div className="flex-1">
                           <label className="text-[13px] text-[#666666] mb-1.5 block">Queries Avoided</label>
@@ -1231,6 +1236,7 @@ export default function ExploreDocQuality({
                         Fully loaded cost per query: $50-$100. We use $50 conservatively.
                       </p>
                     </div>
+                  </div>
                   </div>
 
                   {/* Final Value */}
