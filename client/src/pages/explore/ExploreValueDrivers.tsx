@@ -418,7 +418,7 @@ export default function ExploreValueDrivers({
                     Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Emergency Department</p>
 
                   <div className="grid grid-cols-2 gap-6 mb-6">
                     <div className="space-y-2.5">
