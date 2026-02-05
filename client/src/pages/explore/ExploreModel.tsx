@@ -48,7 +48,16 @@ export default function ExploreModel({
   const totalValue = timeValue + docValue;
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
-  const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
+  
+  // Care setting flags
+  const isED = state.careSetting === 'ed';
+  const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
+  
+  // For nursing, calculate value per staffed bed; for others, per provider
+  const valuePerUnit = isNursing 
+    ? (state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0)
+    : (state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0);
 
   // Calculate patient access and cost reduction separately
   const { timeDriverInputs, docQualityInputs } = state;
@@ -81,8 +90,6 @@ export default function ExploreModel({
     const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
     return Math.round(grossValue * (timeDriverInputs.edAdmissionRealization / 100));
   }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
-
-  const isED = state.careSetting === 'ed';
 
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
@@ -122,9 +129,6 @@ export default function ExploreModel({
   }, [eligibleEncounters, docQualityInputs]);
 
   // Inpatient-specific calculations
-  const isInpatient = state.careSetting === 'inpatient';
-  const isNursing = state.careSetting === 'nursing';
-
   // Inpatient: Clinician Wellbeing Retention Value
   const ipWellbeingRetentionValue = useMemo(() => {
     if (!isInpatient || !timeDriverInputs.wellbeingEnabled || !timeDriverInputs.calculateRetentionValue) return 0;
@@ -194,14 +198,16 @@ export default function ExploreModel({
   const threeYearTotal = year1Value + year2Value + year3Value;
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)
+  // For nursing, base is staffed beds; for others, it's providers
+  const pilotUnits = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
   const expandedProviders = state.fullScaleProviders;
   const [expandedUtilization, setExpandedUtilization] = useState(80);
-  const expansionMultiplier = (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent);
+  const expansionMultiplier = pilotUnits > 0 ? (expandedProviders / pilotUnits) * (expandedUtilization / state.utilizationPercent) : 1;
   const expandedValue = Math.round(netAnnualValue * expansionMultiplier);
   
-  // Full scale investment scales with provider count (not utilization - you pay per provider)
-  const providerExpansionRatio = expandedProviders / state.numberOfProviders;
-  const expandedInvestment = annualInvestment * providerExpansionRatio;
+  // Full scale investment scales with unit count (staffed beds for nursing, providers for others)
+  const unitExpansionRatio = pilotUnits > 0 ? expandedProviders / pilotUnits : 1;
+  const expandedInvestment = annualInvestment * unitExpansionRatio;
   const expandedRoi = expandedInvestment > 0 ? (totalValue * expansionMultiplier) / expandedInvestment : 0;
 
   // Scaling pace options
@@ -230,7 +236,8 @@ export default function ExploreModel({
 
     const totalMonths = currentPace.months;
     const pilotValue = netAnnualValue;
-    const pilotProviders = state.numberOfProviders;
+    // For nursing, use staffed beds; for others, use providers
+    const pilotProviders = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
     const pilotUtil = state.utilizationPercent;
     const fullScaleProviders = expandedProviders;
     const fullScaleUtil = expandedUtilization;
@@ -270,7 +277,7 @@ export default function ExploreModel({
     });
 
     return points;
-  }, [netAnnualValue, state.numberOfProviders, state.utilizationPercent, expandedProviders, expandedUtilization, currentPace]);
+  }, [netAnnualValue, isNursing, state.nursingStaffedBeds, state.numberOfProviders, state.utilizationPercent, expandedProviders, expandedUtilization, currentPace]);
 
   const formatCurrency = (n: number) => {
     if (n >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
@@ -599,7 +606,7 @@ export default function ExploreModel({
           {/* Context Badge */}
           <div className="inline-block bg-[#2A2A2A] rounded-full px-4 py-1.5 mb-6">
             <span className="text-xs text-[#888888]">
-              {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers
+              {careSettingLabel} · {formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)} {isNursing ? 'staffed beds' : 'providers'}
             </span>
           </div>
 
@@ -626,8 +633,8 @@ export default function ExploreModel({
               <p className="text-xs text-[#888888]">ROI</p>
             </div>
             <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-provider">
-              <p className="text-2xl font-bold text-white">{formatCurrency(valuePerProvider)}</p>
-              <p className="text-xs text-[#888888]">per provider</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(valuePerUnit)}</p>
+              <p className="text-xs text-[#888888]">{isNursing ? 'per staffed bed' : 'per provider'}</p>
             </div>
             <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
               <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
@@ -976,8 +983,8 @@ export default function ExploreModel({
             <div className="flex items-center justify-between mb-6">
               <div className="text-center">
                 <p className="text-sm font-medium text-[#888888] mb-1">TODAY</p>
-                <p className="text-2xl font-bold text-black">{formatNumber(state.numberOfProviders)}</p>
-                <p className="text-sm text-[#888888]">providers</p>
+                <p className="text-2xl font-bold text-black">{formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)}</p>
+                <p className="text-sm text-[#888888]">{isNursing ? 'staffed beds' : 'providers'}</p>
                 <p className="text-sm text-[#888888]">{state.utilizationPercent}% util</p>
               </div>
               
@@ -989,11 +996,11 @@ export default function ExploreModel({
                 <p className="text-sm font-medium text-[#888888] mb-1">FULL SCALE</p>
                 <FormattedNumberInput
                   value={state.fullScaleProviders}
-                  onChange={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
+                  onChange={(v: number) => updateState({ fullScaleProviders: Math.max(v, isNursing ? state.nursingStaffedBeds : state.numberOfProviders) })}
                   className="h-10 w-24 text-center text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
                   data-testid="input-full-scale-providers"
                 />
-                <p className="text-sm text-[#888888]">providers</p>
+                <p className="text-sm text-[#888888]">{isNursing ? 'staffed beds' : 'providers'}</p>
                 <div className="flex items-center justify-center gap-1">
                   <FormattedNumberInput
                     value={expandedUtilization}
@@ -1130,7 +1137,7 @@ export default function ExploreModel({
                       return (
                         <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 shadow-lg">
                           <p className="font-semibold text-black text-base mb-1">{data.milestoneLabel}</p>
-                          <p className="text-sm text-[#888888] mb-3">{data.providers} providers · {data.utilization}% util</p>
+                          <p className="text-sm text-[#888888] mb-3">{data.providers} {isNursing ? 'staffed beds' : 'providers'} · {data.utilization}% util</p>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-6">
                               <span className="text-[#EA2C00]">Projected:</span>
@@ -1244,7 +1251,7 @@ export default function ExploreModel({
             <div>
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-1">Your Analysis</p>
               <p className="text-sm text-[#888888]">
-                {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers · ${formatNumber(state.costPerProvider)}/provider/mo
+                {careSettingLabel} · {formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)} {isNursing ? 'staffed beds' : 'providers'} · ${formatNumber(state.costPerProvider)}/{isNursing ? 'bed' : 'provider'}/mo
               </p>
             </div>
             <div className="flex gap-3">
