@@ -52,7 +52,7 @@ export default function SwitchFullAnalysis({
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
-        description: "Your Ambient Assessment has been saved.",
+        description: "Your Value Realization Assessment has been saved.",
       });
     } catch (error) {
       console.error("PDF generation error:", error);

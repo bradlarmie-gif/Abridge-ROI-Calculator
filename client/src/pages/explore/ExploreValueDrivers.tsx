@@ -32,17 +32,11 @@ export default function ExploreValueDrivers({
     costReduction: boolean;
     wellbeing: boolean;
     rounding: boolean;
-    nursingOt: boolean;
-    nursingRetention: boolean;
-    nursingCareTime: boolean;
   }>({
     patientAccess: true,
     costReduction: true,
     wellbeing: true,
     rounding: true,
-    nursingOt: true,
-    nursingRetention: true,
-    nursingCareTime: true,
   });
 
   const toggleExpanded = (section: keyof typeof expandedSections) => {
@@ -127,121 +121,22 @@ export default function ExploreValueDrivers({
   // Value comes from Clinician Wellbeing driver only
 
   // Nursing-specific calculations
-  // OT Reduction: Explicitly derived from time saved (hours/year), capped by baseline OT
-  const nursingOtCalcs = useMemo(() => {
-    // Core variables (matching user's specification)
-    const nurseFTEs = state.numberOfProviders;
-    const currentOTHoursPerNursePerWeek = timeDriverInputs.nursingOtHoursPerNurseWeek;
-    const avgOTHourlyRate = timeDriverInputs.nursingOtHourlyRate;
-    const otPayMultiplier = 1.5; // hardcoded
-    const conversionPctToOT = timeDriverInputs.nursingOtReductionPercent / 100;
-    
-    // Time saved (passed in as totalHoursSaved, but let's be explicit about what it represents)
-    const timeSavedHoursPerYear = totalHoursSaved;
-    
-    // Baseline OT = nurseFTEs × currentOTHoursPerNursePerWeek × 52 weeks
-    const baselineOTHoursPerYear = nurseFTEs * currentOTHoursPerNursePerWeek * 52;
-    
-    // Effective OT rate
-    const effectiveOTRate = avgOTHourlyRate * otPayMultiplier;
-    
-    if (!timeDriverInputs.nursingOtEnabled) {
-      // Even when disabled, calculate remaining time (100% remains)
-      return { 
-        otHoursReduced: 0, 
-        value: 0, 
-        baselineOTHoursPerYear, 
-        timeSavedHoursPerYear,
-        rawOtReduction: 0,
-        capped: false,
-        cappedByBaseline: false,
-        remainingTime: timeSavedHoursPerYear,
-        remainingPercent: 100,
-        effectiveOTRate
-      };
-    }
-    
-    // Raw OT reduction = timeSavedHoursPerYear × conversionPctToOT
-    const rawOtReduction = timeSavedHoursPerYear * conversionPctToOT;
-    
-    // CAP: OT hours reduced cannot exceed baseline OT
-    const otHoursReduced = Math.min(baselineOTHoursPerYear, rawOtReduction);
-    const cappedByBaseline = rawOtReduction > baselineOTHoursPerYear;
-    
-    // Annual OT Savings = otHoursReduced × effectiveOTRate
-    const annualOTSavings = Math.round(otHoursReduced * effectiveOTRate);
-    
-    // Console logging for validation (dev-only)
-    if (cappedByBaseline) {
-      console.log('🔒 CAPPED BY BASELINE OT');
-    }
-    console.log('📊 Nursing OT Reduction Debug:', {
-      timeSavedHoursPerYear: Math.round(timeSavedHoursPerYear),
-      baselineOTHoursPerYear: Math.round(baselineOTHoursPerYear),
-      rawOtReduction: Math.round(rawOtReduction),
-      otHoursReduced: Math.round(otHoursReduced),
-      annualOTSavings
-    });
-    
-    // Remaining time after OT (for Care Time calculation)
-    const remainingTime = timeSavedHoursPerYear - otHoursReduced;
-    const remainingPercent = 100 - timeDriverInputs.nursingOtReductionPercent;
-    
-    return { 
-      otHoursReduced: Math.round(otHoursReduced), 
-      value: annualOTSavings, 
-      baselineOTHoursPerYear: Math.round(baselineOTHoursPerYear), 
-      timeSavedHoursPerYear: Math.round(timeSavedHoursPerYear),
-      rawOtReduction: Math.round(rawOtReduction),
-      capped: cappedByBaseline,
-      cappedByBaseline,
-      remainingTime: Math.round(remainingTime),
-      remainingPercent,
-      effectiveOTRate
-    };
-  }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
-
-  const nursingOtValue = nursingOtCalcs.value;
-
-  // Care Time calculation - uses REMAINING time after OT reduction
-  const nursingCareTimeCalcs = useMemo(() => {
-    const remainingTime = nursingOtCalcs.remainingTime;
-    const careConversionRate = timeDriverInputs.nursingCareConversionRate / 100;
-    
-    // Care time hours = remaining time × care conversion rate
-    const careTimeHours = Math.round(remainingTime * careConversionRate);
-    
-    // Lost/absorbed time (not monetized)
-    const lostTime = Math.round(remainingTime * (1 - careConversionRate));
-    
-    // Per nurse per week
-    const careTimePerNursePerWeek = state.numberOfProviders > 0 
-      ? (careTimeHours / state.numberOfProviders / 52).toFixed(2)
-      : '0';
-    
-    // Minutes per nurse per week  
-    const careTimeMinutesPerWeek = state.numberOfProviders > 0
-      ? Math.round((careTimeHours / state.numberOfProviders / 52) * 60)
-      : 0;
-    
-    return {
-      remainingTime,
-      careTimeHours,
-      lostTime,
-      careTimePerNursePerWeek,
-      careTimeMinutesPerWeek
-    };
-  }, [nursingOtCalcs.remainingTime, timeDriverInputs.nursingCareConversionRate, state.numberOfProviders]);
+  const nursingOtValue = useMemo(() => {
+    if (!timeDriverInputs.nursingOtEnabled) return 0;
+    const nurses = state.numberOfProviders;
+    const weeksPerYear = 52;
+    const totalOtHoursYear = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
+    return Math.round(reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5); // 1.5x for OT
+  }, [state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
 
   const nursingRetentionValue = useMemo(() => {
     if (!timeDriverInputs.nursingRetentionEnabled) return 0;
     const nurses = state.numberOfProviders;
     const leavingPerYear = nurses * (timeDriverInputs.nursingTurnoverRate / 100);
-    const burnoutRelated = leavingPerYear * 0.40; // 40% burnout-related
-    const abridgeImpact = timeDriverInputs.nursingAbridgeImpactPercent / 100;
-    const retained = burnoutRelated * abridgeImpact;
+    const retained = leavingPerYear * 0.15; // Conservative 15% impact
     return Math.round(retained * timeDriverInputs.nursingReplacementCost);
-  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost, timeDriverInputs.nursingAbridgeImpactPercent]);
+  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
 
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -451,7 +346,7 @@ export default function ExploreValueDrivers({
                     Faster documentation reduces door-to-doc time and overall wait times. When patients wait less, fewer leave without being seen.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Emergency Department</p>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your ED</p>
 
                   <div className="grid grid-cols-2 gap-6 mb-6">
                     <div className="space-y-2.5">
@@ -682,19 +577,6 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
-                {timeDriverInputs.nursingOtEnabled && (
-                  <button
-                    onClick={() => toggleExpanded('nursingOt')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-nursing-ot"
-                  >
-                    {expandedSections.nursingOt ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
-                  </button>
-                )}
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingOtEnabled: !timeDriverInputs.nursingOtEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
@@ -711,7 +593,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingOtEnabled && expandedSections.nursingOt && (
+            {timeDriverInputs.nursingOtEnabled && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -751,81 +633,44 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Time-to-OT Conversion</p>
-                  <p className="text-sm text-[#888888] mb-3">What percentage of Abridge time savings converts to OT reduction?</p>
+                  <p className="text-sm text-[#888888] mb-3">What percentage of time saved could realistically reduce OT?</p>
                   <div className="space-y-2.5 mb-4">
                     <div className="relative">
                       <FormattedNumberInput
                         value={timeDriverInputs.nursingOtReductionPercent}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: Math.min(100, Math.max(0, v)) })}
+                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v })}
                         className="h-12 bg-white pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                     </div>
-                    <p className="text-xs text-[#888888]">
-                      Not all time saved reduces OT. Some goes to patient care, some to breaks, some absorbed by workflow. 40% is typical.
-                    </p>
-                    {timeDriverInputs.nursingOtReductionPercent > 60 && (
-                      <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                        <span>⚠️</span> Aggressive assumption — conversion rates above 60% are rare.
-                      </p>
-                    )}
+                    <p className="text-xs text-[#888888]">Most organizations see 15-30% of documentation time savings convert to OT reduction.</p>
                   </div>
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
-                      {/* Step 1: Time saved from Time Savings page */}
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Time saved by Abridge</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.timeSavedHoursPerYear)} hrs/year</span>
+                        <span className="text-[#666666]">Nurse FTEs × OT hours/week × 52 weeks</span>
+                        <span className="font-semibold text-black">{formatNumber(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52)} hrs/yr</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× OT conversion rate</span>
+                        <span className="text-[#666666]">× OT reduction rate</span>
                         <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">= Raw OT reduction</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.rawOtReduction)} hrs</span>
+                        <span className="text-[#666666]">= Hours reduced</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52 * (timeDriverInputs.nursingOtReductionPercent / 100)))}</span>
                       </div>
-                      
-                      {/* Step 2: Cap check against baseline OT */}
-                      <div className="flex justify-between text-xs">
-                        <span className="text-[#888888]">Baseline OT ({state.numberOfProviders} × {timeDriverInputs.nursingOtHoursPerNurseWeek} hrs × 52 wks)</span>
-                        <span className="text-[#888888]">{formatNumber(nursingOtCalcs.baselineOTHoursPerYear)} hrs/year</span>
-                      </div>
-                      
-                      {nursingOtCalcs.cappedByBaseline && (
-                        <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                          <span>⚠️</span> Capped at baseline OT — you can't reduce more OT than exists
-                        </div>
-                      )}
-                      
-                      <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">OT hours reduced</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.otHoursReduced)} hrs</span>
-                      </div>
-                      
-                      {/* Step 3: Calculate savings */}
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× Effective OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
-                        <span className="font-semibold text-black">{formatCurrency(nursingOtCalcs.effectiveOTRate)}/hr</span>
+                        <span className="text-[#666666]">× OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
+                        <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate * 1.5)}/hr</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
                         <span className="text-[#666666] font-medium">Annual OT Savings</span>
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
                       </div>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-[#E5E5E5]">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-[#888888]">Remaining time ({nursingOtCalcs.remainingPercent}%)</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.remainingTime)} hrs</span>
-                      </div>
-                      <p className="text-xs text-[#888888] italic">
-                        This time is available for care and efficiency gains.
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -1124,19 +969,6 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
-                {timeDriverInputs.nursingRetentionEnabled && (
-                  <button
-                    onClick={() => toggleExpanded('nursingRetention')}
-                    className="p-1.5 hover:bg-[#F5F0EB] rounded-md transition-colors"
-                    data-testid="toggle-nursing-retention-expand"
-                  >
-                    {expandedSections.nursingRetention ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
-                  </button>
-                )}
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingRetentionEnabled: !timeDriverInputs.nursingRetentionEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
@@ -1153,7 +985,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingRetentionEnabled && expandedSections.nursingRetention && (
+            {timeDriverInputs.nursingRetentionEnabled && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1195,27 +1027,6 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Abridge Impact</p>
-                  <p className="text-sm text-[#888888] mb-3">What percentage of burnout-related turnover can Abridge address?</p>
-                  <div className="space-y-2.5 mb-6">
-                    <div className="relative">
-                      <FormattedNumberInput
-                        value={timeDriverInputs.nursingAbridgeImpactPercent}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingAbridgeImpactPercent: Math.min(100, Math.max(0, v)) })}
-                        className="h-12 bg-white pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
-                    </div>
-                    <p className="text-xs text-[#888888]">
-                      25% is typical — Abridge reduces documentation burden which is a major burnout driver.
-                    </p>
-                    {timeDriverInputs.nursingAbridgeImpactPercent > 40 && (
-                      <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                        <span>⚠️</span> Aggressive assumption — impact rates above 40% are rare.
-                      </p>
-                    )}
-                  </div>
-
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
@@ -1228,8 +1039,8 @@ export default function ExploreValueDrivers({
                         <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40).toFixed(1)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× Abridge impact ({timeDriverInputs.nursingAbridgeImpactPercent}%)</span>
-                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * (timeDriverInputs.nursingAbridgeImpactPercent / 100)).toFixed(2)} nurses retained</span>
+                        <span className="text-[#666666]">× Abridge impact (15%)</span>
+                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * 0.15).toFixed(2)} nurses retained</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
@@ -1249,6 +1060,90 @@ export default function ExploreValueDrivers({
           </AnimatePresence>
         </div>
         )}
+
+        {/* Cost Reduction Toggle - Available for all care settings */}
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all ${
+              timeDriverInputs.costReductionEnabled 
+                ? "bg-white" 
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="font-semibold text-black">Cost Reduction</p>
+                <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {timeDriverInputs.costReductionEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('costReduction')}
+                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                    data-testid="collapse-cost-reduction"
+                  >
+                    {expandedSections.costReduction ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.costReductionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-cost-reduction"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.costReductionEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.costReductionEnabled && expandedSections.costReduction && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-b-lg p-5">
+                  <p className="text-sm text-black mb-3">
+                    We can't calculate your cost reduction — every organization is different. 
+                    But if you have an estimate, enter it here.
+                  </p>
+
+                  <div className="space-y-2.5 mb-3">
+                    <label className="text-sm text-[#888888]">Estimated annual cost reduction from reclaimed time:</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                      <FormattedNumberInput
+                        value={timeDriverInputs.estimatedCostReduction}
+                        onChange={(v: number) => updateTimeDriverInputs({ estimatedCostReduction: v })}
+                        className="h-11 bg-white pl-7"
+                        data-testid="input-cost-reduction"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#888888]">
+                    Common sources: Reduced overtime, fewer locums, deferred hiring
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Clinician Wellbeing Toggle - Not shown for Nursing (has own retention driver) */}
         {!isNursing && (
@@ -1498,119 +1393,6 @@ export default function ExploreValueDrivers({
         </motion.div>
         )}
 
-        {/* Optional: Cost Reduction - Available for all care settings EXCEPT Nursing (which has its own section below) */}
-        {!isNursing && (
-        <motion.div
-          className="mt-8 mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          {/* Optional Section Header */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-px flex-1 bg-[#E5E5E5]" />
-            <span className="text-[10px] font-medium text-[#888888] uppercase tracking-[1.5px]">Optional</span>
-            <div className="h-px flex-1 bg-[#E5E5E5]" />
-          </div>
-          
-          <div
-            className={`w-full p-4 rounded-lg text-left transition-all border border-dashed ${
-              timeDriverInputs.costReductionEnabled 
-                ? "bg-white border-[#EA2C00]/30" 
-                : "bg-white/70 hover:bg-white border-[#D1D5DB]"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-black">Cost Reduction</p>
-                  <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide bg-[#F5F0EB] px-2 py-0.5 rounded">If Applicable</span>
-                </div>
-                <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {timeDriverInputs.costReductionEnabled && (
-                  <button
-                    onClick={() => toggleExpanded('costReduction')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-cost-reduction"
-                  >
-                    {expandedSections.costReduction ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.costReductionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-cost-reduction"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    timeDriverInputs.costReductionEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {timeDriverInputs.costReductionEnabled && expandedSections.costReduction && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-black mb-3">
-                    We can't calculate your cost reduction — every organization is different. 
-                    But if you have an estimate, enter it here.
-                  </p>
-
-                  <div className="space-y-2.5 mb-3">
-                    <label className="text-sm text-[#888888]">Estimated annual cost reduction from reclaimed time:</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                      <FormattedNumberInput
-                        value={timeDriverInputs.estimatedCostReduction}
-                        onChange={(v: number) => updateTimeDriverInputs({ estimatedCostReduction: v })}
-                        className="h-11 bg-white pl-7"
-                        data-testid="input-cost-reduction"
-                      />
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-[#888888]">
-                    Common sources: Reduced overtime, fewer locums, deferred hiring
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-        )}
-
-        {/* Nursing Optional Section: Care Time + Cost Reduction */}
-        {isNursing && (
-        <motion.div
-          className="mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          {/* Optional Section Header */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-px flex-1 bg-[#E5E5E5]" />
-            <span className="text-[10px] font-medium text-[#888888] uppercase tracking-[1.5px]">Optional</span>
-            <div className="h-px flex-1 bg-[#E5E5E5]" />
-          </div>
-        </motion.div>
-        )}
-
         {/* Nursing: Care Time - Qualitative Driver */}
         {isNursing && (
         <div className="space-y-0">
@@ -1630,19 +1412,6 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
-                {timeDriverInputs.nursingCareTimeEnabled && (
-                  <button
-                    onClick={() => toggleExpanded('nursingCareTime')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-nursing-care-time"
-                  >
-                    {expandedSections.nursingCareTime ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
-                  </button>
-                )}
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingCareTimeEnabled: !timeDriverInputs.nursingCareTimeEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
@@ -1659,7 +1428,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingCareTimeEnabled && expandedSections.nursingCareTime && (
+            {timeDriverInputs.nursingCareTimeEnabled && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1669,113 +1438,20 @@ export default function ExploreValueDrivers({
                 <div className="bg-white rounded-b-lg p-5">
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Connection</p>
                   <p className="text-sm text-black mb-6">
-                    After accounting for OT reduction, remaining time can be returned to direct patient care. 
-                    Not all remaining time becomes care time — some is absorbed by workflow, breaks, and other tasks.
+                    After accounting for OT reduction, this time is returned to direct patient care. 
+                    More time at the bedside improves patient outcomes and satisfaction.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Time saved by Abridge</span>
-                        <span className="font-semibold text-black">{formatNumber(totalHoursSaved)} hrs</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">− Time to OT reduction ({timeDriverInputs.nursingOtEnabled ? timeDriverInputs.nursingOtReductionPercent : 0}%)</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.otHoursReduced)} hrs</span>
-                      </div>
-                      <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Remaining time</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingCareTimeCalcs.remainingTime)} hrs</span>
-                      </div>
+                  <div className="bg-[#F5F0EB] rounded-lg p-6">
+                    <div className="text-center">
+                      <p className="text-4xl font-bold text-[#EA2C00]">{hoursPerProviderPerWeek}</p>
+                      <p className="text-lg font-medium text-black mt-1">hours per week</p>
+                      <p className="text-sm text-[#666666] mt-1">per nurse returned to direct care</p>
                     </div>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Care Conversion Rate</p>
-                  <p className="text-sm text-[#888888] mb-3">What percentage of remaining time converts to bedside care?</p>
-                  <div className="space-y-2.5 mb-6">
-                    <div className="relative">
-                      <FormattedNumberInput
-                        value={timeDriverInputs.nursingCareConversionRate}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingCareConversionRate: Math.min(100, Math.max(0, v)) })}
-                        className="h-12 bg-white pr-8"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
-                    </div>
-                    <p className="text-xs text-[#888888]">
-                      70% is typical. Not all time becomes direct care — some is absorbed by workflow inefficiency, breaks, and administrative tasks.
-                    </p>
-                    {(timeDriverInputs.nursingOtReductionPercent + timeDriverInputs.nursingCareConversionRate * (nursingOtCalcs.remainingPercent / 100)) > 95 && (
-                      <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                        <span>⚠️</span> This leaves little room for workflow absorption.
-                      </p>
-                    )}
-                    {parseFloat(nursingCareTimeCalcs.careTimePerNursePerWeek) < 0.25 && timeDriverInputs.nursingOtEnabled && (
-                      <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                        <span>⚠️</span> Limited care time impact at this OT conversion rate.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Remaining time</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingCareTimeCalcs.remainingTime)} hrs</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">× Care conversion rate</span>
-                        <span className="font-semibold text-black">{timeDriverInputs.nursingCareConversionRate}%</span>
-                      </div>
-                      <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Hours returned to bedside</span>
-                        <span className="font-semibold text-black">{formatNumber(nursingCareTimeCalcs.careTimeHours)} hrs</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">= Per nurse per week</span>
-                        <span className="font-semibold text-[#EA2C00]">{nursingCareTimeCalcs.careTimePerNursePerWeek} hrs (~{nursingCareTimeCalcs.careTimeMinutesPerWeek} min)</span>
-                      </div>
-                      <div className="h-px bg-[#E5E5E5] my-2" />
-                      <div className="flex justify-between text-xs">
-                        <span className="text-[#888888]">Lost/absorbed (not monetized)</span>
-                        <span className="text-[#888888]">{formatNumber(nursingCareTimeCalcs.lostTime)} hrs</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Visual Flow Diagram */}
-                  <div className="bg-[#1A1A1A] rounded-lg p-4 mb-6">
-                    <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Time Allocation Flow</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-white" />
-                        <span className="text-white/70">Time Saved</span>
-                        <span className="text-white font-semibold ml-auto">{formatNumber(totalHoursSaved)} hrs</span>
-                      </div>
-                      <div className="ml-4 pl-2 border-l-2 border-white/20 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-[#EA2C00]" />
-                          <span className="text-white/70">{timeDriverInputs.nursingOtEnabled ? timeDriverInputs.nursingOtReductionPercent : 0}% → OT Reduction</span>
-                          <span className="text-[#EA2C00] font-semibold ml-auto">{formatCurrency(nursingOtValue)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500" />
-                          <span className="text-white/70">{Math.round(nursingCareTimeCalcs.careTimeHours / totalHoursSaved * 100)}% → Care Time</span>
-                          <span className="text-green-400 font-semibold ml-auto">{formatNumber(nursingCareTimeCalcs.careTimeHours)} hrs</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-white/30" />
-                          <span className="text-white/50">{Math.round(nursingCareTimeCalcs.lostTime / totalHoursSaved * 100)}% → Absorbed</span>
-                          <span className="text-white/50 ml-auto">{formatNumber(nursingCareTimeCalcs.lostTime)} hrs</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Where Does Care Time Go?</p>
+                  <div className="mt-6">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Where Does This Time Go?</p>
                     <div className="space-y-2 text-sm text-[#666666]">
                       <div className="flex items-start gap-2">
                         <span className="text-[#EA2C00]">•</span>
@@ -1802,90 +1478,6 @@ export default function ExploreValueDrivers({
                       But we DO explore the potential quality impact in the next section.
                     </p>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        )}
-
-        {/* Nursing: Cost Reduction - After Care Time */}
-        {isNursing && (
-        <div className="mt-4 space-y-0">
-          <div
-            className={`w-full p-4 rounded-lg text-left transition-all border border-dashed ${
-              timeDriverInputs.costReductionEnabled 
-                ? "bg-white border-[#EA2C00]/30" 
-                : "bg-white/70 hover:bg-white border-[#D1D5DB]"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-black">Cost Reduction</p>
-                  <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide bg-[#F5F0EB] px-2 py-0.5 rounded">If Applicable</span>
-                </div>
-                <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {timeDriverInputs.costReductionEnabled && (
-                  <button
-                    onClick={() => toggleExpanded('costReduction')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-cost-reduction"
-                  >
-                    {expandedSections.costReduction ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    timeDriverInputs.costReductionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-cost-reduction-nursing"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    timeDriverInputs.costReductionEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {timeDriverInputs.costReductionEnabled && expandedSections.costReduction && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-sm text-black mb-3">
-                    We can't calculate your cost reduction — every organization is different. 
-                    But if you have an estimate, enter it here.
-                  </p>
-
-                  <div className="space-y-2.5 mb-3">
-                    <label className="text-sm text-[#888888]">Estimated annual cost reduction from reclaimed time:</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                      <FormattedNumberInput
-                        value={timeDriverInputs.estimatedCostReduction}
-                        onChange={(v: number) => updateTimeDriverInputs({ estimatedCostReduction: v })}
-                        className="h-11 bg-white pl-7"
-                        data-testid="input-cost-reduction-nursing"
-                      />
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-[#888888]">
-                    Common sources: Reduced overtime, fewer locums, deferred hiring
-                  </p>
                 </div>
               </motion.div>
             )}

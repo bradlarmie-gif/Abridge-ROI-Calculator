@@ -60,7 +60,7 @@ export default function StepTheInvitation({
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
-        description: "Your Ambient Assessment has been saved.",
+        description: "Your Value Realization Assessment has been saved.",
       });
     } catch (error) {
       console.error("Error generating PDF:", error);

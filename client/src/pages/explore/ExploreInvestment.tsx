@@ -28,21 +28,13 @@ export default function ExploreInvestment({
   onHome,
 }: ExploreInvestmentProps) {
   const totalValue = timeValue + docValue;
-  const isNursing = state.careSetting === 'nursing';
-  
-  // For nursing, use staffed beds; for others, use providers
-  const pricingUnits = isNursing ? state.nursingStaffedBeds : state.numberOfProviders;
-  const unitLabel = isNursing ? 'staffed bed' : 'provider';
-  const unitLabelPlural = isNursing ? 'staffed beds' : 'providers';
 
   const annualInvestment = useMemo(() => {
     if (state.pricingModel === 'perProvider') {
-      // For nursing, use staffed beds; for others, use providers
-      const units = state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders;
-      return units * state.costPerProvider * 12;
+      return state.numberOfProviders * state.costPerProvider * 12;
     }
     return state.annualLicenseFee;
-  }, [state.pricingModel, state.careSetting, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee]);
+  }, [state.pricingModel, state.numberOfProviders, state.costPerProvider, state.annualLicenseFee]);
 
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
@@ -113,8 +105,8 @@ export default function ExploreInvestment({
                   )}
                 </div>
                 <div>
-                  <p className="font-medium text-black">Per {isNursing ? 'Staffed Bed' : 'Provider'} / Month</p>
-                  <p className="text-sm text-[#888888]">Pay per active {unitLabel}. Scale up or down as needed.</p>
+                  <p className="font-medium text-black">Per Provider / Month</p>
+                  <p className="text-sm text-[#888888]">Pay per active provider. Scale up or down as needed.</p>
                 </div>
               </div>
             </button>
@@ -149,7 +141,7 @@ export default function ExploreInvestment({
           {state.pricingModel === 'perProvider' ? (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-sm text-black">Cost per {unitLabel} per month</label>
+                <label className="text-sm text-black">Cost per provider per month</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                   <FormattedNumberInput
@@ -162,7 +154,7 @@ export default function ExploreInvestment({
                 </div>
               </div>
               <p className="text-sm text-[#888888]">
-                {formatNumber(pricingUnits)} {unitLabelPlural} × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong>
+                {formatNumber(state.numberOfProviders)} providers × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong>
               </p>
             </div>
           ) : (

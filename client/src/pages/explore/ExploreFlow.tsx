@@ -96,9 +96,7 @@ export interface TimeDriverInputs {
   nursingRetentionEnabled: boolean;
   nursingTurnoverRate: number;
   nursingReplacementCost: number;
-  nursingAbridgeImpactPercent: number; // % of burnout-related turnover Abridge can address
   nursingCareTimeEnabled: boolean;
-  nursingCareConversionRate: number; // % of remaining time (after OT) that converts to care time
 }
 
 // Documentation Quality inputs
@@ -154,7 +152,6 @@ export interface DocQualityInputs {
   nursingFallsRate: number; // Falls per 1,000 patient days
   nursingFallsPreventionRate: number; // % prevented with better documentation
   nursingFallsCost: number; // Cost per fall
-  nursingAvgLOS: number; // Average length of stay (days)
   
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
@@ -268,14 +265,12 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtHoursPerNurseWeek: 4,
-    nursingOtReductionPercent: 40,
+    nursingOtReductionPercent: 25,
     nursingOtHourlyRate: 75,
     nursingRetentionEnabled: false,
     nursingTurnoverRate: 18, // 18% annual turnover
     nursingReplacementCost: 50000,
-    nursingAbridgeImpactPercent: 25, // % of burnout-related turnover Abridge can address
     nursingCareTimeEnabled: false,
-    nursingCareConversionRate: 70, // 70% of remaining time converts to care
   },
   // Documentation quality inputs
   docQualityInputs: {
@@ -321,7 +316,6 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingFallsRate: 3.5, // 3.5 per 1,000 patient days
     nursingFallsPreventionRate: 5, // 5% prevention rate (conservative)
     nursingFallsCost: 6500, // $6,500 per fall
-    nursingAvgLOS: 4, // 4 days average length of stay
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
   },
@@ -500,19 +494,14 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     } else if (isNursing) {
       // Nursing: OT Reduction and Retention
       if (timeDriverInputs.nursingOtEnabled) {
-        // OT Reduction: Derived from time saved, capped by baseline OT
-        const baselineOTHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
-        const rawOtReduction = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
-        // Cap: Cannot exceed baseline OT (you can't reduce more OT than exists)
-        const otHoursReduced = Math.min(baselineOTHoursPerYear, rawOtReduction);
-        const effectiveOTRate = timeDriverInputs.nursingOtHourlyRate * 1.5;
-        total += otHoursReduced * effectiveOTRate;
+        const weeksPerYear = 52;
+        const totalOtHoursYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+        const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
+        total += reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5;
       }
       if (timeDriverInputs.nursingRetentionEnabled) {
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
-        const burnoutRelated = leavingPerYear * 0.40; // 40% burnout-related
-        const abridgeImpact = timeDriverInputs.nursingAbridgeImpactPercent / 100;
-        const retained = burnoutRelated * abridgeImpact;
+        const retained = leavingPerYear * 0.15;
         total += retained * timeDriverInputs.nursingReplacementCost;
       }
     } else {
@@ -529,34 +518,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     
     return Math.round(total);
   }, [totalHoursSaved, state.timeDriverInputs, state.careSetting, state.annualEncounters, state.numberOfProviders]);
-
-  // Calculate care time hours (for nursing - passed to DocQuality for validation)
-  const nursingCareTimeData = useMemo(() => {
-    if (state.careSetting !== 'nursing') {
-      return { careTimeHours: 0, remainingTime: 0, otHoursReduced: 0 };
-    }
-    
-    const { timeDriverInputs, numberOfProviders } = state;
-    
-    // Calculate OT hours reduced using consistent formula
-    const baselineOTHoursPerYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52;
-    let otHoursReduced = 0;
-    
-    if (timeDriverInputs.nursingOtEnabled) {
-      const rawOtReduction = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
-      // Cap: Cannot exceed baseline OT (you can't reduce more OT than exists)
-      otHoursReduced = Math.min(baselineOTHoursPerYear, rawOtReduction);
-    }
-    
-    // Remaining time after OT
-    const remainingTime = totalHoursSaved - otHoursReduced;
-    
-    // Care time hours (remaining × care conversion rate)
-    const careConversionRate = timeDriverInputs.nursingCareConversionRate / 100;
-    const careTimeHours = Math.round(remainingTime * careConversionRate);
-    
-    return { careTimeHours, remainingTime: Math.round(remainingTime), otHoursReduced: Math.round(otHoursReduced) };
-  }, [totalHoursSaved, state.careSetting, state.timeDriverInputs, state.numberOfProviders]);
 
   // Calculate doc value using state inputs
   const docValue = useMemo(() => {
@@ -616,24 +577,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery;
     }
 
-    // Nursing: HAPI Prevention
-    if (state.careSetting === 'nursing' && docQualityInputs.nursingHapiEnabled) {
-      const nursingPatientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-      const hapisPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingHapiRate;
-      const hapisPrevented = hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
-      total += hapisPrevented * docQualityInputs.nursingHapiCost;
-    }
-
-    // Nursing: Falls Prevention
-    if (state.careSetting === 'nursing' && docQualityInputs.nursingFallsEnabled) {
-      const nursingPatientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-      const fallsPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingFallsRate;
-      const fallsPrevented = fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
-      total += fallsPrevented * docQualityInputs.nursingFallsCost;
-    }
-
     return Math.round(total);
-  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting, state.nursingStaffedBeds, state.nursingOccupancyRate]);
+  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting]);
 
   // Calculate annual investment
   const annualInvestment = useMemo(() => {
@@ -697,8 +642,6 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           state={state}
           updateState={updateState}
           timeValue={timeValue}
-          totalHoursSaved={totalHoursSaved}
-          nursingCareTimeData={nursingCareTimeData}
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}

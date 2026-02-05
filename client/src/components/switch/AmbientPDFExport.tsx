@@ -561,7 +561,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
         <View style={styles.pageWrapper}>
         <View style={styles.heroSection}>
           <Image src={abridgeLogoPath} style={{ width: 70, marginBottom: 24 }} />
-          <Text style={styles.heroLabel}>Ambient Assessment</Text>
+          <Text style={styles.heroLabel}>Value Realization Assessment</Text>
           <Text style={styles.heroTitle}>Understanding Where You Are</Text>
           <Text style={styles.heroSubtitle}>
             You've invested in ambient AI. This assessment isn't about judging that decision — it's about understanding how much of the possible value you're currently capturing, and what the path forward looks like.
@@ -1166,7 +1166,7 @@ export async function generateAmbientPDF(data: Omit<AmbientPDFData, 'calculation
     // Try Web Share API first (works great on iOS for AirDrop, Messages, etc.)
     if (navigator.share && navigator.canShare) {
       const file = new File([blob], fileName, { type: "application/pdf" });
-      const shareData = { files: [file], title: "Ambient Assessment" };
+      const shareData = { files: [file], title: "Value Realization Assessment" };
       
       if (navigator.canShare(shareData)) {
         try {
