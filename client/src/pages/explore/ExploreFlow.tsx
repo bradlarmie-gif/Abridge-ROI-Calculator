@@ -614,8 +614,24 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       total += queriesAvoided * docQualityInputs.ipCdiCostPerQuery;
     }
 
+    // Nursing: HAPI Prevention
+    if (state.careSetting === 'nursing' && docQualityInputs.nursingHapiEnabled) {
+      const nursingPatientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+      const hapisPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingHapiRate;
+      const hapisPrevented = hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
+      total += hapisPrevented * docQualityInputs.nursingHapiCost;
+    }
+
+    // Nursing: Falls Prevention
+    if (state.careSetting === 'nursing' && docQualityInputs.nursingFallsEnabled) {
+      const nursingPatientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+      const fallsPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingFallsRate;
+      const fallsPrevented = fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
+      total += fallsPrevented * docQualityInputs.nursingFallsCost;
+    }
+
     return Math.round(total);
-  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting]);
+  }, [state.annualEncounters, state.utilizationPercent, state.numberOfProviders, state.docQualityInputs, state.careSetting, state.nursingStaffedBeds, state.nursingOccupancyRate]);
 
   // Calculate annual investment
   const annualInvestment = useMemo(() => {

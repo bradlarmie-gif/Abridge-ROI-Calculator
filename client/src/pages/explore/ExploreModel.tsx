@@ -186,6 +186,24 @@ export default function ExploreModel({
     return Math.round(queriesAvoided * docQualityInputs.ipCdiCostPerQuery);
   }, [isInpatient, eligibleEncounters, docQualityInputs]);
 
+  // Nursing: HAPI Prevention Value
+  const nursingHapiValue = useMemo(() => {
+    if (!isNursing || !docQualityInputs.nursingHapiEnabled) return 0;
+    const nursingPatientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const hapisPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingHapiRate;
+    const hapisPrevented = hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
+    return Math.round(hapisPrevented * docQualityInputs.nursingHapiCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, docQualityInputs]);
+
+  // Nursing: Falls Prevention Value
+  const nursingFallsValue = useMemo(() => {
+    if (!isNursing || !docQualityInputs.nursingFallsEnabled) return 0;
+    const nursingPatientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const fallsPerYear = (nursingPatientDays / 1000) * docQualityInputs.nursingFallsRate;
+    const fallsPrevented = fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
+    return Math.round(fallsPrevented * docQualityInputs.nursingFallsCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, docQualityInputs]);
+
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
     : '0';
@@ -794,7 +812,24 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
-                {isInpatient ? (
+                {isNursing ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver2}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.nursingFallsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.nursingFallsPreventionRate}% prevention rate)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.docDriver3}</span>
+                      <span className="font-semibold text-black">{docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
+                    </div>
+                    {docQualityInputs.nursingHapiEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({docQualityInputs.nursingHapiPreventionRate}% prevention rate)</p>
+                    )}
+                  </>
+                ) : isInpatient ? (
                   <>
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.docDriver1}</span>
