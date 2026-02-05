@@ -1903,7 +1903,7 @@ export default function ExploreDocQuality({
                   {nursingCareQualityPotential > 0 && (
                     <>
                       <div className="h-px bg-[#333333] my-4" />
-                      <div className="text-center mb-4 p-3 border border-dashed border-[#EA2C00]/30 rounded-lg bg-[#EA2C00]/5">
+                      <div className="text-center mb-4 p-3 border border-dashed border-[#888888]/30 rounded-lg bg-white/10">
                         <p className="text-[10px] font-medium text-[#EA2C00]/80 uppercase tracking-[1.5px] mb-1">
                           + Potential Value
                         </p>
