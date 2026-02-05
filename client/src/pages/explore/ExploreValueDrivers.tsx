@@ -565,10 +565,10 @@ export default function ExploreValueDrivers({
         {isNursing && (
         <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-t-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.nursingOtEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white"
+                ? (timeDriverInputs.nursingOtExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white/70 hover:bg-white rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -577,8 +577,18 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {/* Chevron - only show when enabled */}
+                {timeDriverInputs.nursingOtEnabled && (
+                  <button
+                    onClick={() => updateTimeDriverInputs({ nursingOtExpanded: !timeDriverInputs.nursingOtExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-ot-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.nursingOtExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ nursingOtEnabled: !timeDriverInputs.nursingOtEnabled })}
+                  onClick={() => updateTimeDriverInputs({ nursingOtEnabled: !timeDriverInputs.nursingOtEnabled, nursingOtExpanded: !timeDriverInputs.nursingOtEnabled ? true : timeDriverInputs.nursingOtExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -593,7 +603,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingOtEnabled && (
+            {timeDriverInputs.nursingOtEnabled && timeDriverInputs.nursingOtExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -646,53 +656,33 @@ export default function ExploreValueDrivers({
                     <p className="text-xs text-[#888888]">Most organizations see 15-30% of documentation time savings convert to OT reduction.</p>
                   </div>
 
-                  {/* Collapsible Calculation Section */}
-                  <button
-                    onClick={() => updateTimeDriverInputs({ nursingOtMathExpanded: !timeDriverInputs.nursingOtMathExpanded })}
-                    className="flex items-center gap-2 text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3 hover:text-[#666666] transition-colors"
-                    data-testid="button-ot-see-math"
-                  >
-                    <ChevronDown className={`w-4 h-4 transition-transform ${timeDriverInputs.nursingOtMathExpanded ? 'rotate-0' : '-rotate-90'}`} />
-                    See the Math
-                  </button>
-                  
-                  <AnimatePresence>
-                    {timeDriverInputs.nursingOtMathExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="bg-[#F5F0EB] rounded-lg p-4">
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-[#666666]">Nurse FTEs × OT hours/week × 52 weeks</span>
-                              <span className="font-semibold text-black">{formatNumber(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52)} hrs/yr</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[#666666]">× OT reduction rate</span>
-                              <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
-                            </div>
-                            <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
-                              <span className="text-[#666666]">= Hours reduced</span>
-                              <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52 * (timeDriverInputs.nursingOtReductionPercent / 100)))}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[#666666]">× OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
-                              <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate * 1.5)}/hr</span>
-                            </div>
-                            <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between">
-                              <span className="text-[#666666] font-medium">Annual OT Savings</span>
-                              <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Nurse FTEs × OT hours/week × 52 weeks</span>
+                        <span className="font-semibold text-black">{formatNumber(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52)} hrs/yr</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">× OT reduction rate</span>
+                        <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
+                      </div>
+                      <div className="h-px bg-[#E5E5E5] my-2" />
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">= Hours reduced</span>
+                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52 * (timeDriverInputs.nursingOtReductionPercent / 100)))}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">× OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
+                        <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate * 1.5)}/hr</span>
+                      </div>
+                      <div className="h-px bg-[#E5E5E5] my-2" />
+                      <div className="flex justify-between">
+                        <span className="text-[#666666] font-medium">Annual OT Savings</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}

@@ -90,7 +90,7 @@ export interface TimeDriverInputs {
   
   // Nursing-specific inputs
   nursingOtEnabled: boolean;
-  nursingOtMathExpanded: boolean;
+  nursingOtExpanded: boolean;
   nursingOtHoursPerNurseWeek: number;
   nursingOtReductionPercent: number;
   nursingOtHourlyRate: number;
@@ -266,7 +266,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipReplacementCost: 300000, // $300,000 replacement cost
     // Nursing-specific defaults
     nursingOtEnabled: false,
-    nursingOtMathExpanded: false,
+    nursingOtExpanded: true, // Auto-expand when enabled
     nursingOtHoursPerNurseWeek: 4,
     nursingOtReductionPercent: 25,
     nursingOtHourlyRate: 75,
