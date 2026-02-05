@@ -161,7 +161,7 @@ export default function ExploreValueDrivers({
     const agencySavings = agencyHoursAvoided * avgAgencyHourlyRate;
     
     // Dev console logging for validation
-    if (process.env.NODE_ENV === 'development' || true) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[Agency Cost Avoidance Debug]', {
         totalTimeSavedHoursPerYear: totalHoursSaved,
         otHoursReduced,
@@ -2058,6 +2058,24 @@ export default function ExploreValueDrivers({
                       </div>
                       {timeDriverInputs.nursingRetentionEnabled && (
                         <p className="text-xs text-[#666666] ml-4 mt-0.5">(turnover reduction)</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Agency Avoidance</span>
+                        </div>
+                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? formatCurrency(nursingAgencyCalcs.agencySavings) : '—'}
+                        </span>
+                      </div>
+                      {timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.isCapped && (
+                        <p className="text-xs text-[#EA2C00] ml-4 mt-0.5">(capped by spend)</p>
+                      )}
+                      {timeDriverInputs.nursingAgencyEnabled && !nursingAgencyCalcs.isCapped && nursingAgencyCalcs.agencySavings > 0 && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(10% allocation)</p>
                       )}
                     </div>
 
