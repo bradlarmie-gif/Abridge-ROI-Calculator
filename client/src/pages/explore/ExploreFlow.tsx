@@ -153,6 +153,7 @@ export interface DocQualityInputs {
   nursingFallsRate: number; // Falls per 1,000 patient days
   nursingFallsPreventionRate: number; // % prevented with better documentation
   nursingFallsCost: number; // Cost per fall
+  nursingAvgLOS: number; // Average length of stay (days)
   
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
@@ -318,6 +319,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingFallsRate: 3.5, // 3.5 per 1,000 patient days
     nursingFallsPreventionRate: 5, // 5% prevention rate (conservative)
     nursingFallsCost: 6500, // $6,500 per fall
+    nursingAvgLOS: 4, // 4 days average length of stay
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
   },
@@ -525,6 +527,35 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     return Math.round(total);
   }, [totalHoursSaved, state.timeDriverInputs, state.careSetting, state.annualEncounters, state.numberOfProviders]);
 
+  // Calculate care time hours (for nursing - passed to DocQuality for validation)
+  const nursingCareTimeData = useMemo(() => {
+    if (state.careSetting !== 'nursing') {
+      return { careTimeHours: 0, remainingTime: 0, otHoursReduced: 0 };
+    }
+    
+    const { timeDriverInputs, numberOfProviders } = state;
+    const weeksPerYear = 52;
+    
+    // Calculate OT hours reduced
+    const totalCurrentOt = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    let otHoursReduced = 0;
+    
+    if (timeDriverInputs.nursingOtEnabled) {
+      const rawOtReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+      const maxOtReduction = Math.min(totalHoursSaved, totalCurrentOt);
+      otHoursReduced = Math.min(rawOtReduced, maxOtReduction);
+    }
+    
+    // Remaining time after OT
+    const remainingTime = totalHoursSaved - otHoursReduced;
+    
+    // Care time hours (remaining × care conversion rate)
+    const careConversionRate = timeDriverInputs.nursingCareConversionRate / 100;
+    const careTimeHours = Math.round(remainingTime * careConversionRate);
+    
+    return { careTimeHours, remainingTime: Math.round(remainingTime), otHoursReduced: Math.round(otHoursReduced) };
+  }, [totalHoursSaved, state.careSetting, state.timeDriverInputs, state.numberOfProviders]);
+
   // Calculate doc value using state inputs
   const docValue = useMemo(() => {
     const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
@@ -648,6 +679,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           state={state}
           updateState={updateState}
           timeValue={timeValue}
+          totalHoursSaved={totalHoursSaved}
+          nursingCareTimeData={nursingCareTimeData}
           onNext={() => navigate('investment')}
           onBack={() => navigate('valueDrivers')}
           onHome={goHome}

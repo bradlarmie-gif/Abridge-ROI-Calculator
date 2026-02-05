@@ -6,10 +6,18 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type ExploreState, type DocQualityInputs } from "./ExploreFlow";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
+interface NursingCareTimeData {
+  careTimeHours: number;
+  remainingTime: number;
+  otHoursReduced: number;
+}
+
 interface ExploreDocQualityProps {
   state: ExploreState;
   updateState: (updates: Partial<ExploreState>) => void;
   timeValue: number;
+  totalHoursSaved?: number;
+  nursingCareTimeData?: NursingCareTimeData;
   onNext: () => void;
   onBack: () => void;
   onHome: () => void;
@@ -21,6 +29,8 @@ export default function ExploreDocQuality({
   state,
   updateState,
   timeValue,
+  totalHoursSaved = 0,
+  nursingCareTimeData = { careTimeHours: 0, remainingTime: 0, otHoursReduced: 0 },
   onNext,
   onBack,
   onHome,
@@ -115,6 +125,63 @@ export default function ExploreDocQuality({
     return (docQualityInputs.nursingHapiEnabled ? nursingHapiValue : 0) + 
            (docQualityInputs.nursingFallsEnabled ? nursingFallsValue : 0);
   }, [docQualityInputs.nursingHapiEnabled, docQualityInputs.nursingFallsEnabled, nursingHapiValue, nursingFallsValue]);
+
+  // Care Time Validation - connects Value Drivers care time to Falls/HAPI prevention
+  const careTimeValidation = useMemo(() => {
+    const careTimeHours = nursingCareTimeData.careTimeHours;
+    const patientDays = nursingPatientDays;
+    
+    // Care time per patient day (in minutes)
+    const careTimePerPatientDay = patientDays > 0 
+      ? (careTimeHours / patientDays) * 60 
+      : 0;
+    
+    // Avg length of stay
+    const avgLOS = docQualityInputs.nursingAvgLOS || 4;
+    
+    // Care time per patient stay
+    const careTimePerStay = careTimePerPatientDay * avgLOS;
+    
+    // Falls validation
+    const fallsPerYear = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
+    const fallsPrevented = fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
+    const catchesPerPatientDay = patientDays > 0 && fallsPrevented > 0
+      ? Math.round(patientDays / fallsPrevented)
+      : 0;
+    
+    // Falls validation status
+    const fallsValidation = careTimePerPatientDay >= 3 
+      ? 'achievable' 
+      : careTimePerPatientDay >= 1 
+        ? 'stretch' 
+        : 'limited';
+    
+    // HAPI validation (requires more sustained intervention)
+    const hapisPerYear = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
+    const hapisPrevented = hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
+    
+    // HAPIs need more time (turning, repositioning, skin checks)
+    const hapiValidation = careTimePerStay >= 15 
+      ? 'achievable' 
+      : careTimePerStay >= 8 
+        ? 'stretch' 
+        : 'limited';
+    
+    return {
+      careTimeHours,
+      careTimePerPatientDay: careTimePerPatientDay.toFixed(1),
+      careTimePerStay: careTimePerStay.toFixed(0),
+      avgLOS,
+      fallsPrevented: fallsPrevented.toFixed(1),
+      catchesPerPatientDay,
+      fallsValidation,
+      hapisPrevented: hapisPrevented.toFixed(1),
+      hapiValidation,
+      totalHoursSaved,
+      otHoursReduced: nursingCareTimeData.otHoursReduced,
+      remainingTime: nursingCareTimeData.remainingTime,
+    };
+  }, [nursingCareTimeData, nursingPatientDays, docQualityInputs, totalHoursSaved]);
 
   // Calculate total based on care setting
   const totalDocValue = useMemo(() => {
@@ -385,6 +452,64 @@ export default function ExploreDocQuality({
                         5% represents cases where real-time assessment documentation would have triggered earlier intervention.
                       </p>
                     </div>
+
+                    {/* Care Time Validation */}
+                    <div className="mt-4 bg-[#1A1A1A] rounded-lg p-4">
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Care Time Validation</p>
+                      
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Hours returned to bedside</span>
+                          <span className="text-white font-semibold">{formatNumber(careTimeValidation.careTimeHours)} hrs/year</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Additional time per patient day</span>
+                          <span className="text-white font-semibold">{careTimeValidation.careTimePerPatientDay} minutes</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Additional time per patient stay ({careTimeValidation.avgLOS}-day avg)</span>
+                          <span className="text-white font-semibold">{careTimeValidation.careTimePerStay} minutes</span>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-white/20 my-3" />
+
+                      <div className="space-y-2 text-sm">
+                        <p className="text-white/50 text-xs uppercase tracking-wide">Is This Enough?</p>
+                        <p className="text-white/60 text-xs mb-2">
+                          HAPIs require sustained intervention—turning, repositioning, skin checks.
+                        </p>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">HAPIs to prevent</span>
+                          <span className="text-white font-semibold">{careTimeValidation.hapisPrevented}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Care time per stay</span>
+                          <span className="text-white font-semibold">{careTimeValidation.careTimePerStay} min</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        {careTimeValidation.hapiValidation === 'achievable' && (
+                          <div className="flex items-center gap-2 text-green-400">
+                            <span className="w-2 h-2 rounded-full bg-green-400" />
+                            <span className="text-sm">Validated: Care time capacity supports this projection</span>
+                          </div>
+                        )}
+                        {careTimeValidation.hapiValidation === 'stretch' && (
+                          <div className="flex items-center gap-2 text-amber-400">
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                            <span className="text-sm">Stretch: Achievable with strong turning protocols</span>
+                          </div>
+                        )}
+                        {careTimeValidation.hapiValidation === 'limited' && (
+                          <div className="flex items-center gap-2 text-red-400">
+                            <span className="w-2 h-2 rounded-full bg-red-400" />
+                            <span className="text-sm">Limited: Consider more conservative prevention rate</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -513,6 +638,61 @@ export default function ExploreDocQuality({
                             {formatCurrency(Math.round((state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365 / 1000) * docQualityInputs.nursingFallsRate * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost))}
                           </span>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Care Time Validation */}
+                    <div className="mt-4 bg-[#1A1A1A] rounded-lg p-4">
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Care Time Validation</p>
+                      
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Hours returned to bedside</span>
+                          <span className="text-white font-semibold">{formatNumber(careTimeValidation.careTimeHours)} hrs/year</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Additional time per patient day</span>
+                          <span className="text-white font-semibold">{careTimeValidation.careTimePerPatientDay} minutes</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Additional time per patient stay ({careTimeValidation.avgLOS}-day avg)</span>
+                          <span className="text-white font-semibold">{careTimeValidation.careTimePerStay} minutes</span>
+                        </div>
+                      </div>
+
+                      <div className="h-px bg-white/20 my-3" />
+
+                      <div className="space-y-2 text-sm">
+                        <p className="text-white/50 text-xs uppercase tracking-wide">Is This Enough?</p>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Falls to prevent</span>
+                          <span className="text-white font-semibold">{careTimeValidation.fallsPrevented}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Catches required across {formatNumber(Math.round(nursingPatientDays))} patient days</span>
+                          <span className="text-white font-semibold">1 per {formatNumber(careTimeValidation.catchesPerPatientDay)} patient days</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        {careTimeValidation.fallsValidation === 'achievable' && (
+                          <div className="flex items-center gap-2 text-green-400">
+                            <span className="w-2 h-2 rounded-full bg-green-400" />
+                            <span className="text-sm">Validated: Care time capacity supports this projection</span>
+                          </div>
+                        )}
+                        {careTimeValidation.fallsValidation === 'stretch' && (
+                          <div className="flex items-center gap-2 text-amber-400">
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                            <span className="text-sm">Stretch: Achievable with strong protocols</span>
+                          </div>
+                        )}
+                        {careTimeValidation.fallsValidation === 'limited' && (
+                          <div className="flex items-center gap-2 text-red-400">
+                            <span className="w-2 h-2 rounded-full bg-red-400" />
+                            <span className="text-sm">Limited: Care time capacity may not support this rate</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
