@@ -122,6 +122,87 @@ export default function ExploreValueDrivers({
     return Math.round(retained * timeDriverInputs.nursingReplacementCost);
   }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
 
+  // Agency Cost Avoidance calculation (Nursing only)
+  const nursingAgencyCalcs = useMemo(() => {
+    const AGENCY_ALLOCATION_PCT = 0.10; // Conservative 10% default
+    
+    // Calculate OT hours reduced for remaining time calculation
+    const nurses = state.numberOfProviders;
+    const weeksPerYear = 52;
+    const totalOtHoursYear = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    const otHoursReduced = timeDriverInputs.nursingOtEnabled 
+      ? totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100) 
+      : 0;
+    
+    // Remaining saved hours = total time saved - OT hours reduced
+    const remainingSavedHours = Math.max(0, totalHoursSaved - otHoursReduced);
+    
+    // Guardrails
+    const annualAgencySpend = timeDriverInputs.nursingAnnualAgencySpend || 0;
+    const avgAgencyHourlyRate = timeDriverInputs.nursingAvgAgencyHourlyRate || 0;
+    
+    if (!timeDriverInputs.nursingAgencyEnabled || avgAgencyHourlyRate <= 0 || annualAgencySpend <= 0 || remainingSavedHours <= 0) {
+      return {
+        remainingSavedHours,
+        otHoursReduced,
+        baselineAgencyHours: avgAgencyHourlyRate > 0 ? annualAgencySpend / avgAgencyHourlyRate : 0,
+        agencyHoursAvoidedRaw: 0,
+        agencyHoursAvoided: 0,
+        agencySavings: 0,
+        isCapped: false,
+        allocationPct: AGENCY_ALLOCATION_PCT,
+      };
+    }
+    
+    const baselineAgencyHours = annualAgencySpend / avgAgencyHourlyRate;
+    const agencyHoursAvoidedRaw = remainingSavedHours * AGENCY_ALLOCATION_PCT;
+    const agencyHoursAvoided = Math.min(baselineAgencyHours, agencyHoursAvoidedRaw);
+    const isCapped = agencyHoursAvoidedRaw > baselineAgencyHours;
+    const agencySavings = agencyHoursAvoided * avgAgencyHourlyRate;
+    
+    // Dev console logging for validation
+    if (process.env.NODE_ENV === 'development' || true) {
+      console.log('[Agency Cost Avoidance Debug]', {
+        totalTimeSavedHoursPerYear: totalHoursSaved,
+        otHoursReduced,
+        remainingSavedHours,
+        annualAgencySpend,
+        avgAgencyHourlyRate,
+        baselineAgencyHours,
+        agencyAllocationPct: AGENCY_ALLOCATION_PCT,
+        agencyHoursAvoidedRaw,
+        agencyHoursAvoided,
+        agencySavings,
+        isCapped,
+        // Validation assertions
+        assertions: {
+          'agencyHoursAvoided <= baselineAgencyHours': agencyHoursAvoided <= baselineAgencyHours,
+          'agencyHoursAvoided <= remainingSavedHours': agencyHoursAvoided <= remainingSavedHours,
+        }
+      });
+    }
+    
+    return {
+      remainingSavedHours,
+      otHoursReduced,
+      baselineAgencyHours,
+      agencyHoursAvoidedRaw,
+      agencyHoursAvoided,
+      agencySavings: Math.round(agencySavings),
+      isCapped,
+      allocationPct: AGENCY_ALLOCATION_PCT,
+    };
+  }, [
+    state.numberOfProviders, 
+    totalHoursSaved, 
+    timeDriverInputs.nursingOtEnabled,
+    timeDriverInputs.nursingOtHoursPerNurseWeek,
+    timeDriverInputs.nursingOtReductionPercent,
+    timeDriverInputs.nursingAgencyEnabled,
+    timeDriverInputs.nursingAnnualAgencySpend,
+    timeDriverInputs.nursingAvgAgencyHourlyRate
+  ]);
+
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
@@ -197,8 +278,11 @@ export default function ExploreValueDrivers({
         total += retentionCalcs.retentionValue;
       }
     } else if (isNursing) {
-      // Nursing uses OT Reduction, Retention, and Care Time
+      // Nursing uses OT Reduction, Retention, Care Time, and Agency Cost Avoidance
       total += nursingOtValue + nursingRetentionValue;
+      if (timeDriverInputs.nursingAgencyEnabled) {
+        total += nursingAgencyCalcs.agencySavings;
+      }
       if (timeDriverInputs.costReductionEnabled) {
         total += timeDriverInputs.estimatedCostReduction;
       }
@@ -216,7 +300,7 @@ export default function ExploreValueDrivers({
       }
     }
     return total;
-  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edAdmissionCaptureValue, nursingOtValue, nursingRetentionValue]);
+  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edAdmissionCaptureValue, nursingOtValue, nursingRetentionValue, nursingAgencyCalcs.agencySavings]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -1542,12 +1626,162 @@ export default function ExploreValueDrivers({
           </div>
         </motion.div>
 
+        {/* Agency Cost Avoidance - Nursing Only */}
+        {isNursing && (
+        <motion.div
+          className="mt-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 text-left transition-all ${
+                timeDriverInputs.nursingAgencyEnabled 
+                  ? (timeDriverInputs.nursingAgencyExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                  : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-black">Agency Cost Avoidance</p>
+                  <p className="text-sm text-[#888888]">If time savings reduce last-minute agency coverage needs</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {timeDriverInputs.nursingAgencyEnabled && (
+                    <button
+                      onClick={() => updateTimeDriverInputs({ nursingAgencyExpanded: !timeDriverInputs.nursingAgencyExpanded })}
+                      className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                      data-testid="button-agency-expand"
+                    >
+                      <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.nursingAgencyExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateTimeDriverInputs({ nursingAgencyEnabled: !timeDriverInputs.nursingAgencyEnabled, nursingAgencyExpanded: !timeDriverInputs.nursingAgencyEnabled ? true : timeDriverInputs.nursingAgencyExpanded })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      timeDriverInputs.nursingAgencyEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-agency-cost"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      timeDriverInputs.nursingAgencyEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {timeDriverInputs.nursingAgencyEnabled && timeDriverInputs.nursingAgencyExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white rounded-b-lg p-5">
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
+                    <p className="text-sm text-black mb-6">
+                      Abridge doesn't reduce required staffing. Some documentation time savings can prevent last-minute agency coverage. 
+                      This estimate allocates a small portion of remaining saved time to avoided agency hours, capped by current agency spend.
+                    </p>
+
+                    {nursingAgencyCalcs.remainingSavedHours <= 0 ? (
+                      <div className="bg-[#FFF8F6] border border-[#FFDDD6] rounded-lg p-4 mb-4">
+                        <p className="text-sm text-[#EA2C00]">
+                          No remaining saved time available after overtime assumptions. 
+                          Enable or adjust OT Reduction to free up hours for agency avoidance.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
+                        <div className="grid grid-cols-2 gap-6 mb-6">
+                          <div className="space-y-2.5">
+                            <label className="text-sm text-[#888888]">Annual agency spend</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                              <FormattedNumberInput
+                                value={timeDriverInputs.nursingAnnualAgencySpend}
+                                onChange={(v: number) => updateTimeDriverInputs({ nursingAnnualAgencySpend: v })}
+                                className="h-12 bg-white pl-7"
+                                data-testid="input-agency-spend"
+                              />
+                            </div>
+                            <p className="text-xs text-[#888888]">Total agency nursing spend per year</p>
+                          </div>
+                          <div className="space-y-2.5">
+                            <label className="text-sm text-[#888888]">Average agency hourly rate</label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                              <FormattedNumberInput
+                                value={timeDriverInputs.nursingAvgAgencyHourlyRate}
+                                onChange={(v: number) => updateTimeDriverInputs({ nursingAvgAgencyHourlyRate: v })}
+                                className="h-12 bg-white pl-7"
+                                data-testid="input-agency-rate"
+                              />
+                            </div>
+                            <p className="text-xs text-[#888888]">Typical range: $100-200/hr</p>
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation Details</p>
+                        <div className="bg-[#F5F0EB] rounded-lg p-4">
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">Remaining time available</span>
+                              <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.remainingSavedHours))} hrs/yr</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">Allocated to agency avoidance (10%)</span>
+                              <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.agencyHoursAvoidedRaw))} hrs/yr</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">Cap based on current agency spend</span>
+                              <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.baselineAgencyHours))} hrs/yr</span>
+                            </div>
+                            <div className="h-px bg-[#E5E5E5] my-2" />
+                            <div className="flex justify-between items-center">
+                              <span className="text-[#666666]">Agency hours avoided {nursingAgencyCalcs.isCapped ? '(capped)' : ''}</span>
+                              <div className="flex items-center gap-2">
+                                {nursingAgencyCalcs.isCapped && (
+                                  <span className="text-[10px] font-medium text-white bg-[#EA2C00] px-2 py-0.5 rounded uppercase">Capped by Spend</span>
+                                )}
+                                <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.agencyHoursAvoided))} hrs/yr</span>
+                              </div>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">× Hourly rate</span>
+                              <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingAvgAgencyHourlyRate)}/hr</span>
+                            </div>
+                            <div className="h-px bg-[#E5E5E5] my-2" />
+                            <div className="flex justify-between">
+                              <span className="text-[#666666] font-medium">Agency Cost Avoided</span>
+                              <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingAgencyCalcs.agencySavings)}/yr</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-[#888888] mt-3">
+                          Conservative default: 10% of remaining saved time allocated to agency avoidance.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+        )}
+
         {/* Continue Button - Mobile */}
         <motion.div 
           className="flex flex-col items-center gap-2 lg:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.4 }}
         >
           <Button
             onClick={onNext}
