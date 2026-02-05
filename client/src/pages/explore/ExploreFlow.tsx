@@ -97,7 +97,7 @@ export interface TimeDriverInputs {
   nursingTurnoverRate: number;
   nursingReplacementCost: number;
   nursingCareTimeEnabled: boolean;
-  nursingTimeAbsorbedPercent: number; // User-adjustable time absorbed percentage
+  nursingCareTimePercent: number; // User-adjustable percentage going to direct care
 }
 
 // Documentation Quality inputs
@@ -272,7 +272,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingTurnoverRate: 18, // 18% annual turnover
     nursingReplacementCost: 50000,
     nursingCareTimeEnabled: false,
-    nursingTimeAbsorbedPercent: 20, // Default 20% time absorbed
+    nursingCareTimePercent: 45, // Default 45% of saved time goes to direct care
   },
   // Documentation quality inputs
   docQualityInputs: {
