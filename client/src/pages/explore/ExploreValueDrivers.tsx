@@ -1420,7 +1420,8 @@ export default function ExploreValueDrivers({
         </motion.div>
         )}
 
-        {/* Optional: Cost Reduction - Available for all care settings */}
+        {/* Optional: Cost Reduction - Available for all care settings EXCEPT Nursing (which has its own section below) */}
+        {!isNursing && (
         <motion.div
           className="mt-8 mb-4"
           initial={{ opacity: 0, y: 20 }}
@@ -1513,6 +1514,24 @@ export default function ExploreValueDrivers({
             )}
           </AnimatePresence>
         </motion.div>
+        )}
+
+        {/* Nursing Optional Section: Care Time + Cost Reduction */}
+        {isNursing && (
+        <motion.div
+          className="mt-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          {/* Optional Section Header */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px flex-1 bg-[#E5E5E5]" />
+            <span className="text-[10px] font-medium text-[#888888] uppercase tracking-[1.5px]">Optional</span>
+            <div className="h-px flex-1 bg-[#E5E5E5]" />
+          </div>
+        </motion.div>
+        )}
 
         {/* Nursing: Care Time - Qualitative Driver */}
         {isNursing && (
@@ -1705,6 +1724,90 @@ export default function ExploreValueDrivers({
                       But we DO explore the potential quality impact in the next section.
                     </p>
                   </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        )}
+
+        {/* Nursing: Cost Reduction - After Care Time */}
+        {isNursing && (
+        <div className="mt-4 space-y-0">
+          <div
+            className={`w-full p-4 rounded-lg text-left transition-all border border-dashed ${
+              timeDriverInputs.costReductionEnabled 
+                ? "bg-white border-[#EA2C00]/30" 
+                : "bg-white/70 hover:bg-white border-[#D1D5DB]"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-black">Cost Reduction</p>
+                  <span className="text-[10px] font-medium text-[#888888] uppercase tracking-wide bg-[#F5F0EB] px-2 py-0.5 rounded">If Applicable</span>
+                </div>
+                <p className="text-sm text-[#888888]">If time reduces overtime, locums, or other costs</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {timeDriverInputs.costReductionEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('costReduction')}
+                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                    data-testid="collapse-cost-reduction"
+                  >
+                    {expandedSections.costReduction ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    timeDriverInputs.costReductionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-cost-reduction-nursing"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    timeDriverInputs.costReductionEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {timeDriverInputs.costReductionEnabled && expandedSections.costReduction && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white rounded-b-lg p-5">
+                  <p className="text-sm text-black mb-3">
+                    We can't calculate your cost reduction — every organization is different. 
+                    But if you have an estimate, enter it here.
+                  </p>
+
+                  <div className="space-y-2.5 mb-3">
+                    <label className="text-sm text-[#888888]">Estimated annual cost reduction from reclaimed time:</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
+                      <FormattedNumberInput
+                        value={timeDriverInputs.estimatedCostReduction}
+                        onChange={(v: number) => updateTimeDriverInputs({ estimatedCostReduction: v })}
+                        className="h-11 bg-white pl-7"
+                        data-testid="input-cost-reduction-nursing"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#888888]">
+                    Common sources: Reduced overtime, fewer locums, deferred hiring
+                  </p>
                 </div>
               </motion.div>
             )}
