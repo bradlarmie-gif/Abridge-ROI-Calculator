@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
 import abridgeShape from "@assets/abridge-shape-07_1770229105848.png";
+import geometricShape from "@assets/abridge-geometric-shape.png";
 
 interface JourneySelectorProps {
   onSelectExplore: () => void;
@@ -99,6 +100,31 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       <GlobalHeader pageName="Home" />
+      
+      {/* Geometric shape background on left - half shown */}
+      <div 
+        className="absolute pointer-events-none z-0 overflow-hidden"
+        style={{
+          left: 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '42.5vh',
+          height: '85vh',
+          opacity: 0.04,
+        }}
+      >
+        <img 
+          src={geometricShape} 
+          alt="" 
+          className="h-full object-contain"
+          style={{
+            position: 'absolute',
+            left: '-100%',
+            width: '200%',
+          }}
+          aria-hidden="true"
+        />
+      </div>
       
       {/* Giant Abridge shape background on right - rotated -90° to look like an A */}
       <div 
