@@ -42,9 +42,14 @@ export default function ExploreDocQuality({
     hapi: boolean;
     falls: boolean;
     hcahps: boolean;
-  }>({ hapi: true, falls: true, hcahps: true });
+    drg: boolean;
+    cdi: boolean;
+    wrvu: boolean;
+    hcc: boolean;
+    denials: boolean;
+  }>({ hapi: true, falls: true, hcahps: true, drg: true, cdi: true, wrvu: true, hcc: true, denials: true });
 
-  const toggleExpanded = (section: 'hapi' | 'falls' | 'hcahps') => {
+  const toggleExpanded = (section: 'hapi' | 'falls' | 'hcahps' | 'drg' | 'cdi' | 'wrvu' | 'hcc' | 'denials') => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
   
@@ -753,40 +758,88 @@ export default function ExploreDocQuality({
         </>
         )}
 
-        {/* Inpatient: DRG Accuracy */}
+        {/* Inpatient: Documentation Quality Section */}
         {isInpatient && (
+        <>
+        {/* Intro Box - Explaining Revenue Integrity */}
         <motion.div
-          className="mb-4"
+          className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <button
-            onClick={() => updateDocInputs({ ipDrgEnabled: !docQualityInputs.ipDrgEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
-              docQualityInputs.ipDrgEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
-            }`}
-            data-testid="toggle-drg"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-black">{config.driver1Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
-              </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.ipDrgEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            How to Use This Section
+          </p>
+          <p className="text-sm text-black leading-relaxed">
+            Inpatient documentation directly impacts DRG assignment and reimbursement. 
+            When clinical discussions are captured completely, coding reflects true complexity.
+          </p>
+          <p className="text-sm text-[#888888] mt-2">
+            These drivers represent <strong>direct revenue impact</strong> from documentation 
+            improvements—DRG accuracy from better capture and CDI efficiency from fewer queries.
+          </p>
+        </motion.div>
+
+        {/* Value Drivers Container */}
+        <motion.div
+          className="bg-[#F5F0EB] rounded-lg p-6 space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div>
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              Documentation Value Drivers
+            </p>
+            <div className="h-px bg-[#D1D5DB] mb-6" />
+          </div>
+
+          {/* DRG Accuracy Driver */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all ${
+                docQualityInputs.ipDrgEnabled 
+                  ? "bg-white" 
+                  : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-black">{config.driver1Title}</p>
+                  <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.ipDrgEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('drg')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-drg"
+                    >
+                      {expandedSections.drg ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ ipDrgEnabled: !docQualityInputs.ipDrgEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-drg"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.ipDrgEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
-          </button>
 
           <AnimatePresence>
-            {docQualityInputs.ipDrgEnabled && (
+            {docQualityInputs.ipDrgEnabled && expandedSections.drg && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1016,43 +1069,53 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-        )}
+          </div>
 
-        {/* Inpatient: CDI Query Reduction */}
-        {isInpatient && (
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <button
-            onClick={() => updateDocInputs({ ipCdiEnabled: !docQualityInputs.ipCdiEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
-              docQualityInputs.ipCdiEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
-            }`}
-            data-testid="toggle-cdi"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-black">{config.driver2Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
-              </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.ipCdiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.ipCdiEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+          {/* CDI Query Reduction Driver */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all ${
+                docQualityInputs.ipCdiEnabled 
+                  ? "bg-white" 
+                  : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-black">{config.driver2Title}</p>
+                  <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.ipCdiEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('cdi')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-cdi"
+                    >
+                      {expandedSections.cdi ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ ipCdiEnabled: !docQualityInputs.ipCdiEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.ipCdiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-cdi"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.ipCdiEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
-          </button>
 
           <AnimatePresence>
-            {docQualityInputs.ipCdiEnabled && (
+            {docQualityInputs.ipCdiEnabled && expandedSections.cdi && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1181,43 +1244,95 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </motion.div>
+        </>
         )}
 
-        {/* wRVU Improvement - Not for Inpatient or Nursing (Nursing has its own Care Quality section) */}
+        {/* Outpatient/ED Documentation Quality Section */}
         {!isInpatient && !isNursing && (
+        <>
+        {/* Intro Box - Explaining Documentation Value */}
         <motion.div
-          className="mb-4"
+          className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <button
-            onClick={() => updateDocInputs({ wrvuEnabled: !docQualityInputs.wrvuEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
-              docQualityInputs.wrvuEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
-            }`}
-            data-testid="toggle-wrvu"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-black">{config.driver1Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
-              </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.wrvuEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            How to Use This Section
+          </p>
+          <p className="text-sm text-black leading-relaxed">
+            {isED 
+              ? "ED documentation directly impacts E/M coding accuracy and denial rates. When visit complexity is fully captured, reimbursement reflects actual care delivered."
+              : "Better documentation captures the true complexity of patient visits. When clinical conversations are fully documented, coding accuracy improves and denials decrease."
+            }
+          </p>
+          <p className="text-sm text-[#888888] mt-2">
+            These drivers represent <strong>direct revenue impact</strong> from documentation 
+            improvements—select the ones that apply to your organization.
+          </p>
+        </motion.div>
+
+        {/* Value Drivers Container */}
+        <motion.div
+          className="bg-[#F5F0EB] rounded-lg p-6 space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div>
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              Documentation Value Drivers
+            </p>
+            <div className="h-px bg-[#D1D5DB] mb-6" />
+          </div>
+
+          {/* wRVU Improvement Driver */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all ${
+                docQualityInputs.wrvuEnabled 
+                  ? "bg-white" 
+                  : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-black">{config.driver1Title}</p>
+                  <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.wrvuEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('wrvu')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-wrvu"
+                    >
+                      {expandedSections.wrvu ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ wrvuEnabled: !docQualityInputs.wrvuEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-wrvu"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.wrvuEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
-          </button>
 
           <AnimatePresence>
-            {docQualityInputs.wrvuEnabled && (
+            {docQualityInputs.wrvuEnabled && expandedSections.wrvu && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1319,44 +1434,54 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-        )
-        }
+          </div>
 
-        {/* HCC Capture - Only show for Outpatient */}
-        {showHCC && (
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <button
-            onClick={() => updateDocInputs({ hccEnabled: !docQualityInputs.hccEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
-              docQualityInputs.hccEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
-            }`}
-            data-testid="toggle-hcc"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-black">HCC Capture</p>
-                <p className="text-sm text-[#888888]">Recapture missed diagnoses for MA population</p>
-              </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.hccEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+          {/* HCC Capture - Only show for Outpatient */}
+          {showHCC && (
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all ${
+                docQualityInputs.hccEnabled 
+                  ? "bg-white" 
+                  : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-black">HCC Capture</p>
+                  <p className="text-sm text-[#888888]">Recapture missed diagnoses for MA population</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.hccEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('hcc')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-hcc"
+                    >
+                      {expandedSections.hcc ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ hccEnabled: !docQualityInputs.hccEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-hcc"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.hccEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
-          </button>
 
           <AnimatePresence>
-            {docQualityInputs.hccEnabled && (
+            {docQualityInputs.hccEnabled && expandedSections.hcc && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1545,43 +1670,54 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-        )}
+          </div>
+          )}
 
-        {/* Denial Prevention / Care Quality Driver 3 - Not for Inpatient or Nursing (Nursing has its own Care Quality section) */}
-        {!isInpatient && !isNursing && (
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <button
-            onClick={() => updateDocInputs({ denialsEnabled: !docQualityInputs.denialsEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
-              docQualityInputs.denialsEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
-            }`}
-            data-testid="toggle-denials"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-black">{config.driver3Title}</p>
-                <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
-              </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.denialsEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+          {/* Denial Prevention Driver */}
+          <div className="space-y-0">
+            <div
+              className={`w-full p-4 rounded-t-lg text-left transition-all ${
+                docQualityInputs.denialsEnabled 
+                  ? "bg-white" 
+                  : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-black">{config.driver3Title}</p>
+                  <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.denialsEnabled && (
+                    <button
+                      onClick={() => toggleExpanded('denials')}
+                      className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
+                      data-testid="collapse-denials"
+                    >
+                      {expandedSections.denials ? (
+                        <ChevronUp className="w-5 h-5 text-[#888888]" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-[#888888]" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ denialsEnabled: !docQualityInputs.denialsEnabled })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-denials"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.denialsEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
-          </button>
 
           <AnimatePresence>
-            {docQualityInputs.denialsEnabled && (
+            {docQualityInputs.denialsEnabled && expandedSections.denials && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1741,7 +1877,9 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </motion.div>
+        </>
         )}
 
         {/* Continue Button - Mobile */}
