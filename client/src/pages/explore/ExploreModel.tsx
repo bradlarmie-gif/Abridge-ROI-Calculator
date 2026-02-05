@@ -759,7 +759,7 @@ export default function ExploreModel({
                       <span className="font-semibold text-black">{timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '—'}</span>
                     </div>
                     {timeDriverInputs.nursingRetentionEnabled && (
-                      <p className="text-xs text-[#888888] pl-4">(10% retention lift)</p>
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.nursingAbridgeImpactPercent}% retention lift)</p>
                     )}
                     {/* Care Time */}
                     <div className="flex justify-between">
