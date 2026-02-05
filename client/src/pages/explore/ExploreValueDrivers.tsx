@@ -33,6 +33,7 @@ export default function ExploreValueDrivers({
     wellbeing: boolean;
     rounding: boolean;
     nursingOt: boolean;
+    nursingRetention: boolean;
     nursingCareTime: boolean;
   }>({
     patientAccess: true,
@@ -40,6 +41,7 @@ export default function ExploreValueDrivers({
     wellbeing: true,
     rounding: true,
     nursingOt: true,
+    nursingRetention: true,
     nursingCareTime: true,
   });
 
@@ -1120,6 +1122,19 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {timeDriverInputs.nursingRetentionEnabled && (
+                  <button
+                    onClick={() => toggleExpanded('nursingRetention')}
+                    className="p-1.5 hover:bg-[#F5F0EB] rounded-md transition-colors"
+                    data-testid="toggle-nursing-retention-expand"
+                  >
+                    {expandedSections.nursingRetention ? (
+                      <ChevronUp className="w-5 h-5 text-[#888888]" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#888888]" />
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => updateTimeDriverInputs({ nursingRetentionEnabled: !timeDriverInputs.nursingRetentionEnabled })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
@@ -1136,7 +1151,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingRetentionEnabled && (
+            {timeDriverInputs.nursingRetentionEnabled && expandedSections.nursingRetention && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
