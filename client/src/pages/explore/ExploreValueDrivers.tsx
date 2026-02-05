@@ -121,14 +121,32 @@ export default function ExploreValueDrivers({
   // Value comes from Clinician Wellbeing driver only
 
   // Nursing-specific calculations
-  const nursingOtValue = useMemo(() => {
-    if (!timeDriverInputs.nursingOtEnabled) return 0;
+  // OT Reduction: Based on Abridge time saved, not total OT baseline
+  const nursingOtCalcs = useMemo(() => {
+    if (!timeDriverInputs.nursingOtEnabled) {
+      return { otHoursReduced: 0, value: 0, totalCurrentOt: 0, capped: false };
+    }
     const nurses = state.numberOfProviders;
     const weeksPerYear = 52;
-    const totalOtHoursYear = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
-    const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
-    return Math.round(reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5); // 1.5x for OT
-  }, [state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
+    
+    // Current total OT hours (for validation/cap)
+    const totalCurrentOt = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    
+    // NEW LOGIC: Start with Abridge time saved, apply conversion rate
+    const rawOtHoursReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+    
+    // Cap: OT hours reduced cannot exceed min(time saved, current total OT)
+    const maxOtReduction = Math.min(totalHoursSaved, totalCurrentOt);
+    const otHoursReduced = Math.min(rawOtHoursReduced, maxOtReduction);
+    const capped = rawOtHoursReduced > maxOtReduction;
+    
+    // Calculate value: OT hours reduced × OT rate (base × 1.5)
+    const value = Math.round(otHoursReduced * timeDriverInputs.nursingOtHourlyRate * 1.5);
+    
+    return { otHoursReduced: Math.round(otHoursReduced), value, totalCurrentOt, capped };
+  }, [totalHoursSaved, state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
+
+  const nursingOtValue = nursingOtCalcs.value;
 
   const nursingRetentionValue = useMemo(() => {
     if (!timeDriverInputs.nursingRetentionEnabled) return 0;
@@ -633,35 +651,47 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Time-to-OT Conversion</p>
-                  <p className="text-sm text-[#888888] mb-3">What percentage of time saved could realistically reduce OT?</p>
+                  <p className="text-sm text-[#888888] mb-3">What percentage of Abridge time savings converts to OT reduction?</p>
                   <div className="space-y-2.5 mb-4">
                     <div className="relative">
                       <FormattedNumberInput
                         value={timeDriverInputs.nursingOtReductionPercent}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v })}
+                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: Math.min(100, Math.max(0, v)) })}
                         className="h-12 bg-white pr-8"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                     </div>
-                    <p className="text-xs text-[#888888]">Most organizations see 15-30% of documentation time savings convert to OT reduction.</p>
+                    <p className="text-xs text-[#888888]">
+                      Not all time saved reduces OT. Some goes to patient care, some to breaks, some absorbed by workflow. 40% is typical.
+                    </p>
+                    {timeDriverInputs.nursingOtReductionPercent > 60 && (
+                      <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                        <span>⚠️</span> Aggressive assumption — conversion rates above 60% are rare.
+                      </p>
+                    )}
                   </div>
 
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Nurse FTEs × OT hours/week × 52 weeks</span>
-                        <span className="font-semibold text-black">{formatNumber(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52)} hrs/yr</span>
+                        <span className="text-[#666666]">Time saved by Abridge (from Time Savings)</span>
+                        <span className="font-semibold text-black">{formatNumber(totalHoursSaved)} hrs</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× OT reduction rate</span>
+                        <span className="text-[#666666]">× Conversion rate</span>
                         <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">= Hours reduced</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52 * (timeDriverInputs.nursingOtReductionPercent / 100)))}</span>
+                        <span className="text-[#666666]">= OT hours reduced</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtCalcs.otHoursReduced)} hrs</span>
                       </div>
+                      {nursingOtCalcs.capped && (
+                        <div className="text-xs text-amber-600 italic">
+                          (Capped at {formatNumber(Math.min(totalHoursSaved, nursingOtCalcs.totalCurrentOt))} — cannot exceed time saved or current OT)
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span className="text-[#666666]">× OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
                         <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate * 1.5)}/hr</span>
@@ -671,6 +701,11 @@ export default function ExploreValueDrivers({
                         <span className="text-[#666666] font-medium">Annual OT Savings</span>
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
                       </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-[#E5E5E5]">
+                      <p className="text-xs text-[#888888]">
+                        Current total OT: {formatNumber(nursingOtCalcs.totalCurrentOt)} hrs/year ({state.numberOfProviders} nurses × {timeDriverInputs.nursingOtHoursPerNurseWeek} hrs/wk × 52 wks)
+                      </p>
                     </div>
                   </div>
                 </div>

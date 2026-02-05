@@ -265,7 +265,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Nursing-specific defaults
     nursingOtEnabled: false,
     nursingOtHoursPerNurseWeek: 4,
-    nursingOtReductionPercent: 25,
+    nursingOtReductionPercent: 40,
     nursingOtHourlyRate: 75,
     nursingRetentionEnabled: false,
     nursingTurnoverRate: 18, // 18% annual turnover
@@ -495,9 +495,13 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       // Nursing: OT Reduction and Retention
       if (timeDriverInputs.nursingOtEnabled) {
         const weeksPerYear = 52;
-        const totalOtHoursYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
-        const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
-        total += reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5;
+        // CORRECT LOGIC: Use Abridge time saved, not total OT baseline
+        const totalCurrentOt = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+        const rawOtReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+        // Cap: Cannot exceed min(time saved, current total OT)
+        const maxOtReduction = Math.min(totalHoursSaved, totalCurrentOt);
+        const otHoursReduced = Math.min(rawOtReduced, maxOtReduction);
+        total += otHoursReduced * timeDriverInputs.nursingOtHourlyRate * 1.5;
       }
       if (timeDriverInputs.nursingRetentionEnabled) {
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
