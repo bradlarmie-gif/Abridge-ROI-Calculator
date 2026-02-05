@@ -148,7 +148,7 @@ export default function StepWhereYouAre({
       </section>
 
       {/* Performance Metrics */}
-      <section className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+      <section className="bg-[#F5F0EB] rounded-xl p-6">
         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
           Your Current Performance
         </p>
@@ -217,14 +217,14 @@ export default function StepWhereYouAre({
       </section>
 
       {/* After-Hours Section */}
-      <section className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+      <section className="bg-black rounded-xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-[#F5F0EB] flex items-center justify-center">
-            <Moon className="w-5 h-5 text-[#888888]" />
+          <div className="w-10 h-10 rounded-lg bg-[#333333] flex items-center justify-center">
+            <Moon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold text-black text-sm">After-Hours Documentation</p>
-            <p className="text-xs text-[#888888]">Hours per week charting at home</p>
+            <p className="font-semibold text-white text-sm">After-Hours Documentation</p>
+            <p className="text-xs text-[#AAAAAA]">Hours per week charting at home</p>
           </div>
         </div>
         
@@ -236,20 +236,20 @@ export default function StepWhereYouAre({
             step={1}
             value={afterHoursPerWeek}
             onChange={(e) => updateInput('afterHoursPerWeek', parseFloat(e.target.value))}
-            className="flex-1 h-2 bg-[#F5F0EB] rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+            className="flex-1 h-2 bg-[#333333] rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
             data-testid="slider-after-hours"
           />
           <div className="flex items-center gap-1 min-w-[90px] justify-end">
-            <span className={`text-lg font-bold ${afterHoursPerWeek > 0 ? 'text-black' : 'text-[#888888]'}`}>
+            <span className={`text-lg font-bold ${afterHoursPerWeek > 0 ? 'text-white' : 'text-[#888888]'}`}>
               {afterHoursPerWeek > 0 ? afterHoursPerWeek : '--'}
             </span>
-            <span className="text-sm text-[#888888]">hrs/week</span>
+            <span className="text-sm text-[#AAAAAA]">hrs/week</span>
           </div>
         </div>
         
         {afterHoursPerWeek > 0 && inputs.providers > 0 && (
-          <p className="text-sm text-[#6B7280] mt-4">
-            That's <span className="font-semibold text-black">{(Math.round(afterHoursPerWeek * 52) * inputs.providers).toLocaleString()} hours/year</span> across your providers.
+          <p className="text-sm text-[#AAAAAA] mt-4">
+            That's <span className="font-semibold text-white">{(Math.round(afterHoursPerWeek * 52) * inputs.providers).toLocaleString()} hours/year</span> across your providers.
           </p>
         )}
       </section>

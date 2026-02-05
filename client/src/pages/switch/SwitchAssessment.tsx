@@ -252,7 +252,7 @@ export default function SwitchAssessment({
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border border-slate-200 p-5 md:p-8">
+          <section className="bg-[#F5F0EB] rounded-xl p-5 md:p-8">
             <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">What You're Getting</h2>
             <p className="text-[#6B7280] mb-4 text-sm md:text-base">
               Enter your current metrics. We'll show you how much value you're capturing vs. leaving on the table.
@@ -341,42 +341,44 @@ export default function SwitchAssessment({
             </div>
 
             {/* After-Hours Documentation - Core metric, not optional */}
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center">
-                  <Moon className="w-5 h-5 text-indigo-600" />
+            <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+              <div className="bg-black rounded-xl p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-[#333333] flex items-center justify-center">
+                    <Moon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white text-sm">After-Hours Documentation</h3>
+                    <p className="text-xs text-[#AAAAAA]">How much time are providers spending on notes after clinic hours?</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-[#111827] text-sm">After-Hours Documentation</h3>
-                  <p className="text-xs text-[#6B7280]">How much time are providers spending on notes after clinic hours?</p>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min={0}
+                    max={20}
+                    step={1}
+                    value={afterHoursPerWeek}
+                    onChange={(e) => updateInput('afterHoursPerWeek', parseFloat(e.target.value))}
+                    className="flex-1 h-2 bg-[#333333] rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                    data-testid="slider-after-hours"
+                  />
+                  <div className="flex items-center gap-1 min-w-[80px]">
+                    <span className={`text-lg font-semibold ${afterHoursPerWeek > 0 ? 'text-white' : 'text-[#888888]'}`}>
+                      {afterHoursPerWeek > 0 ? afterHoursPerWeek : '--'}
+                    </span>
+                    <span className="text-xs text-[#AAAAAA]">hrs/week</span>
+                  </div>
                 </div>
+                {afterHoursPerWeek > 0 && (
+                  <div className="mt-3 p-3 bg-[#1a1a1a] rounded-lg">
+                    <p className="text-sm text-[#AAAAAA]">
+                      That's <span className="font-semibold text-white">{Math.round(afterHoursPerWeek * 52)} hours/year</span> per provider spent charting instead of with family — 
+                      roughly <span className="font-semibold text-white">{Math.round(afterHoursPerWeek * 52 / 40)} full work weeks</span> of evenings and weekends.
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min={0}
-                  max={20}
-                  step={1}
-                  value={afterHoursPerWeek}
-                  onChange={(e) => updateInput('afterHoursPerWeek', parseFloat(e.target.value))}
-                  className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                  data-testid="slider-after-hours"
-                />
-                <div className="flex items-center gap-1 min-w-[80px]">
-                  <span className={`text-lg font-semibold ${afterHoursPerWeek > 0 ? 'text-indigo-600' : 'text-slate-400'}`}>
-                    {afterHoursPerWeek > 0 ? afterHoursPerWeek : '--'}
-                  </span>
-                  <span className="text-xs text-[#6B7280]">hrs/week</span>
-                </div>
-              </div>
-              {afterHoursPerWeek > 0 && (
-                <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                  <p className="text-sm text-indigo-800">
-                    That's <span className="font-semibold">{Math.round(afterHoursPerWeek * 52)} hours/year</span> per provider spent charting instead of with family — 
-                    roughly <span className="font-semibold">{Math.round(afterHoursPerWeek * 52 / 40)} full work weeks</span> of evenings and weekends.
-                  </p>
-                </div>
-              )}
             </div>
           </section>
 
