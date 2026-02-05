@@ -37,11 +37,10 @@ export default function ExploreTimeSavings({
         ? { conservative: 15, typical: 20, aggressive: 30 }  // Per shift for nursing
         : { conservative: 2, typical: 4, aggressive: 6 };
 
-  // Nursing: Shift-based calculation
+  // Nursing: Shift-based calculation - use nursingShiftsPerNurseYear to match ExploreFlow
   const nursingShiftsPerYear = useMemo(() => {
-    // Nurse FTEs × 365 × coverage factor (assuming 1 shift/day per FTE equivalent)
-    return state.numberOfProviders * 365;
-  }, [state.numberOfProviders]);
+    return state.numberOfProviders * state.nursingShiftsPerNurseYear;
+  }, [state.numberOfProviders, state.nursingShiftsPerNurseYear]);
 
   const nursingEligibleShifts = useMemo(() => {
     return Math.round(nursingShiftsPerYear * (state.utilizationPercent / 100));
@@ -49,11 +48,11 @@ export default function ExploreTimeSavings({
 
   const hoursSaved = useMemo(() => {
     if (isNursing) {
-      // Nursing: time per shift × eligible shifts
-      return Math.round((state.minutesSavedPerEncounter * nursingEligibleShifts) / 60);
+      // Nursing: use nursingMinutesPerShift to match ExploreFlow calculation
+      return Math.round((state.nursingMinutesPerShift * nursingEligibleShifts) / 60);
     }
     return Math.round((state.minutesSavedPerEncounter * eligibleEncounters) / 60);
-  }, [isNursing, state.minutesSavedPerEncounter, eligibleEncounters, nursingEligibleShifts]);
+  }, [isNursing, state.nursingMinutesPerShift, state.minutesSavedPerEncounter, eligibleEncounters, nursingEligibleShifts]);
 
   const hoursPerProvider = useMemo(() => {
     return state.numberOfProviders > 0 ? Math.round(hoursSaved / state.numberOfProviders) : 0;
@@ -64,10 +63,17 @@ export default function ExploreTimeSavings({
   }, [hoursSaved, state.numberOfProviders]);
 
   const handleScenarioSelect = (scenario: 'conservative' | 'typical' | 'aggressive') => {
-    updateState({
-      timePathScenario: scenario,
-      minutesSavedPerEncounter: scenarioMinutes[scenario],
-    });
+    if (isNursing) {
+      updateState({
+        timePathScenario: scenario,
+        nursingMinutesPerShift: scenarioMinutes[scenario],
+      });
+    } else {
+      updateState({
+        timePathScenario: scenario,
+        minutesSavedPerEncounter: scenarioMinutes[scenario],
+      });
+    }
   };
 
   const formatNumber = (n: number) => n.toLocaleString();
@@ -243,8 +249,11 @@ export default function ExploreTimeSavings({
                 <span className="text-sm text-[#888888]">Or enter a custom value:</span>
                 <div className="relative w-24">
                   <FormattedNumberInput
-                    value={state.minutesSavedPerEncounter}
-                    onChange={(v: number) => updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })}
+                    value={isNursing ? state.nursingMinutesPerShift : state.minutesSavedPerEncounter}
+                    onChange={(v: number) => isNursing 
+                      ? updateState({ nursingMinutesPerShift: v, timePathScenario: 'custom' as TimePathScenario })
+                      : updateState({ minutesSavedPerEncounter: v, timePathScenario: 'custom' as TimePathScenario })
+                    }
                     placeholder="e.g., 5"
                     className="h-12 text-center bg-white border-[#E5E5E5]"
                     data-testid="input-custom-minutes"
@@ -298,7 +307,7 @@ export default function ExploreTimeSavings({
 
               <p className="text-xs text-white/40 text-center mb-4">
                 {isNursing 
-                  ? `${state.minutesSavedPerEncounter} min × ${formatNumber(nursingEligibleShifts)} shifts`
+                  ? `${state.nursingMinutesPerShift} min × ${formatNumber(nursingEligibleShifts)} shifts`
                   : `${state.minutesSavedPerEncounter} min × ${formatNumber(eligibleEncounters)} encounters`
                 }
               </p>
@@ -313,7 +322,7 @@ export default function ExploreTimeSavings({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/50">Time Saved</span>
-                  <span className="text-white">{state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
+                  <span className="text-white">{isNursing ? state.nursingMinutesPerShift : state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/50">{isNursing ? 'Eligible Shifts' : 'Eligible Encounters'}</span>
