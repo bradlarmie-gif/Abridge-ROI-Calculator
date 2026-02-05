@@ -1,0 +1,91 @@
+Goal: Add a new opt-in value driver that matches our Abridge brand style + UX pattern (simple, conservative, defensible). Create an “Agency Cost Avoidance” driver under Cost Reduction. This must be funded ONLY by remaining saved hours (no double counting). It should feel parallel to the OT driver in UX (clear inputs, clear caps, plain-English explanation).
+
+UI / Brand style requirements (Abridge):
+- Tone: concrete, explanatory, not salesy. “Here’s what this is and isn’t.”
+- Copy: short sentences. Plain language. Avoid big promises.
+- UX: opt-in toggle/button (not a slider by default). Show calculation details and caps like OT.
+- Visual: if we show a stack/remaining-hours indicator, keep it minimal and consistent with current results page components.
+
+DATA + VARIABLES (use existing where possible):
+- totalTimeSavedHoursPerYear (already computed from minutes saved per shift × eligible shifts / 60)
+- otHoursReduced (already computed)
+- remainingSavedHours = max(0, totalTimeSavedHoursPerYear - otHoursReduced)
+
+New inputs (Cost Reduction > Agency Cost Avoidance):
+1) annualAgencySpend (USD/year) – numeric input
+2) avgAgencyHourlyRate (USD/hr) – numeric input
+   - If user doesn’t know, allow default guidance text but keep the user-entered number as the source of truth.
+3) agencyAllocationPct (hardcoded default) = 0.10 (10%)
+   - Keep this hidden behind the toggle for now OR show as “Conservative default: 10%” in the explanation.
+   - Add a hard max constant = 0.20 (20%) if we later add an “Edit assumption” control.
+
+Core math (must be implemented exactly and shown in the explanation):
+- baselineAgencyHours = annualAgencySpend / avgAgencyHourlyRate
+- agencyHoursAvoidedRaw = remainingSavedHours * agencyAllocationPct
+- agencyHoursAvoided = min(baselineAgencyHours, agencyHoursAvoidedRaw)
+- agencySavings = agencyHoursAvoided * avgAgencyHourlyRate
+
+Guardrails (must be enforced):
+- If avgAgencyHourlyRate <= 0, baselineAgencyHours = 0 and agencySavings = 0 (show validation message).
+- If annualAgencySpend <= 0, baselineAgencyHours = 0 and agencySavings = 0.
+- If remainingSavedHours <= 0, agencyHoursAvoidedRaw = 0 and agencySavings = 0.
+- Add a “CAPPED” indicator when agencyHoursAvoidedRaw > baselineAgencyHours.
+- NEVER allow agencyHoursAvoided to exceed remainingSavedHours (it won’t given the formula, but keep it explicit if needed).
+
+Button behavior:
+- Add a toggle/button: “Agency Cost Avoidance”
+- Default state: OFF
+- When ON: compute and include this driver in totals; when OFF: show $0 and do not allocate any remaining hours to it.
+- If remainingSavedHours is 0, keep toggle clickable but show $0 and a note “No remaining saved time available after overtime assumptions.”
+
+Copy (keep it short + defensive):
+Title: Agency Cost Avoidance
+Helper text (2–3 lines max):
+“Abridge doesn’t reduce required staffing. Some documentation time savings can prevent last-minute agency coverage. This estimate allocates a small portion of remaining saved time to avoided agency hours, capped by current agency spend.”
+
+Calculation details text (mirrors OT style):
+Remaining time available = {remainingSavedHours} hrs/yr
+Allocated to agency avoidance (default 10%) = {agencyHoursAvoidedRaw} hrs/yr
+Cap based on current agency spend = {baselineAgencyHours} hrs/yr
+Agency hours avoided (capped) = {agencyHoursAvoided} hrs/yr
+Agency cost avoided = {agencySavings} / yr
+
+Integration with “hours pool” (critical):
+- Make sure the shared “remainingSavedHours” is computed once and used consistently.
+- Agency uses remainingSavedHours AFTER OT. Do NOT subtract agency from remainingSavedHours unless/until we implement multiple additional opt-in drivers that also consume remaining hours. For now, treat agency as drawing from remaining after OT only.
+- If multiple drivers are enabled later, we will implement a sequential allocation order. For now: OT first, Agency second (if enabled).
+
+Engineering tasks:
+1) Add new state for agency toggle + inputs.
+2) Add calculation functions and guardrails.
+3) Update results totals to include agencySavings when enabled.
+4) Add a dev-console log for validation:
+   - totalTimeSavedHoursPerYear, otHoursReduced, remainingSavedHours, baselineAgencyHours, agencyHoursAvoided, agencySavings
+5) Add unit-test-like checks (even simple assertions in dev):
+   - agencyHoursAvoided <= baselineAgencyHours
+   - agencyHoursAvoided <= remainingSavedHours
+   - if toggle OFF then agencySavings === 0
+
+Acceptance tests (use these exact example numbers):
+Example A (from our current scenario):
+- totalTimeSavedHoursPerYear = 29,808.33
+- otHoursReduced = 7,452.08 (25% conversion example)
+- remainingSavedHours = 22,356.25
+- annualAgencySpend = 2,000,000
+- avgAgencyHourlyRate = 150
+- baselineAgencyHours = 13,333.33
+- agencyAllocationPct = 0.10
+- agencyHoursAvoidedRaw = 2,235.63
+- agencyHoursAvoided = 2,235.63 (not capped)
+- agencySavings = 335,344.50
+
+Example B (cap triggers):
+- remainingSavedHours = 22,356.25
+- annualAgencySpend = 200,000
+- avgAgencyHourlyRate = 150
+- baselineAgencyHours = 1,333.33
+- agencyHoursAvoidedRaw = 2,235.63
+- agencyHoursAvoided = 1,333.33 (CAPPED)
+- agencySavings = 200,000.00
+
+Make sure the UI displays “CAPPED BY AGENCY SPEND” in Example B.

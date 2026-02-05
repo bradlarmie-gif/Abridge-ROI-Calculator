@@ -102,6 +102,12 @@ export interface TimeDriverInputs {
   nursingCareTimeExpanded: boolean;
   nursingCareTimePercent: number; // User-adjustable percentage going to direct care
   
+  // Agency Cost Avoidance (Nursing)
+  nursingAgencyEnabled: boolean;
+  nursingAgencyExpanded: boolean;
+  nursingAnnualAgencySpend: number; // USD/year
+  nursingAvgAgencyHourlyRate: number; // USD/hr
+  
   // Collapsible state for shared/other drivers
   costReductionExpanded: boolean;
   patientAccessExpanded: boolean;
@@ -287,6 +293,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCareTimeEnabled: false,
     nursingCareTimeExpanded: true,
     nursingCareTimePercent: 45,
+    // Agency Cost Avoidance defaults
+    nursingAgencyEnabled: false,
+    nursingAgencyExpanded: true,
+    nursingAnnualAgencySpend: 2000000, // $2M default
+    nursingAvgAgencyHourlyRate: 150, // $150/hr default
     // Collapsible state defaults
     costReductionExpanded: true,
     patientAccessExpanded: true,
