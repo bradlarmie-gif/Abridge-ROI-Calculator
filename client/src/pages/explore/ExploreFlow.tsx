@@ -108,6 +108,17 @@ export interface TimeDriverInputs {
   nursingAnnualAgencySpend: number; // USD/year
   nursingAvgAgencyHourlyRate: number; // USD/hr
   
+  // Care Quality (Nursing) - HAPI & Falls prevention
+  nursingCareQualityEnabled: boolean;
+  nursingCareQualityExpanded: boolean;
+  nursingFallsRate: number; // per 1,000 patient days
+  nursingFallsPreventablePct: number; // % preventable with Abridge
+  nursingCostPerFall: number; // $ per fall
+  nursingHapiRate: number; // per 1,000 patient days
+  nursingHapiPreventablePct: number; // % preventable with Abridge
+  nursingCostPerHapi: number; // $ per HAPI
+  nursingCareQualityRealization: number; // % realization
+  
   // Collapsible state for shared/other drivers
   costReductionExpanded: boolean;
   patientAccessExpanded: boolean;
@@ -298,6 +309,16 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingAgencyExpanded: true,
     nursingAnnualAgencySpend: 2000000, // $2M default
     nursingAvgAgencyHourlyRate: 150, // $150/hr default
+    // Care Quality (HAPI & Falls) defaults
+    nursingCareQualityEnabled: false,
+    nursingCareQualityExpanded: true,
+    nursingFallsRate: 3.5, // per 1,000 patient days
+    nursingFallsPreventablePct: 5, // % preventable with more bedside time
+    nursingCostPerFall: 6500, // $ per fall
+    nursingHapiRate: 2.5, // per 1,000 patient days
+    nursingHapiPreventablePct: 5, // % preventable with timely assessments
+    nursingCostPerHapi: 20000, // $ per HAPI
+    nursingCareQualityRealization: 85, // % realization rate
     // Collapsible state defaults
     costReductionExpanded: true,
     patientAccessExpanded: true,

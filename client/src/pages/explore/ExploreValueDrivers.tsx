@@ -203,6 +203,72 @@ export default function ExploreValueDrivers({
     timeDriverInputs.nursingAvgAgencyHourlyRate
   ]);
 
+  // Nursing Care Quality (HAPI & Falls) calculation
+  const nursingCareQualityCalcs = useMemo(() => {
+    // Only calculate for nursing when care time is enabled
+    if (state.careSetting !== 'nursing' || !timeDriverInputs.nursingCareTimeEnabled) {
+      return {
+        patientDaysPerYear: 0,
+        fallsPerYear: 0,
+        preventableFalls: 0,
+        fallsValue: 0,
+        hapisPerYear: 0,
+        preventableHapis: 0,
+        hapiValue: 0,
+        totalPreventionValue: 0,
+        careTimeHours: 0,
+      };
+    }
+    
+    // Calculate patient days from state
+    const patientDaysPerYear = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    
+    // Care time hours based on allocation percentage
+    const careTimeHours = totalHoursSaved * (timeDriverInputs.nursingCareTimePercent / 100);
+    
+    // Falls prevention calculation (rate is per 1,000 patient days)
+    const fallsPerYear = (patientDaysPerYear / 1000) * timeDriverInputs.nursingFallsRate;
+    const preventableFalls = fallsPerYear * (timeDriverInputs.nursingFallsPreventablePct / 100);
+    const grossFallsValue = preventableFalls * timeDriverInputs.nursingCostPerFall;
+    
+    // HAPI prevention calculation (rate is per 1,000 patient days)
+    const hapisPerYear = (patientDaysPerYear / 1000) * timeDriverInputs.nursingHapiRate;
+    const preventableHapis = hapisPerYear * (timeDriverInputs.nursingHapiPreventablePct / 100);
+    const grossHapiValue = preventableHapis * timeDriverInputs.nursingCostPerHapi;
+    
+    // Apply realization rate
+    const realizationRate = timeDriverInputs.nursingCareQualityRealization / 100;
+    const fallsValue = grossFallsValue * realizationRate;
+    const hapiValue = grossHapiValue * realizationRate;
+    const totalPreventionValue = fallsValue + hapiValue;
+    
+    return {
+      patientDaysPerYear: Math.round(patientDaysPerYear),
+      fallsPerYear: Math.round(fallsPerYear),
+      preventableFalls: Math.round(preventableFalls * 10) / 10, // 1 decimal
+      fallsValue: Math.round(fallsValue),
+      hapisPerYear: Math.round(hapisPerYear),
+      preventableHapis: Math.round(preventableHapis * 10) / 10, // 1 decimal
+      hapiValue: Math.round(hapiValue),
+      totalPreventionValue: Math.round(totalPreventionValue),
+      careTimeHours: Math.round(careTimeHours),
+    };
+  }, [
+    state.careSetting,
+    state.nursingStaffedBeds,
+    state.nursingOccupancyRate,
+    totalHoursSaved,
+    timeDriverInputs.nursingCareTimeEnabled,
+    timeDriverInputs.nursingCareTimePercent,
+    timeDriverInputs.nursingFallsRate,
+    timeDriverInputs.nursingFallsPreventablePct,
+    timeDriverInputs.nursingCostPerFall,
+    timeDriverInputs.nursingHapiRate,
+    timeDriverInputs.nursingHapiPreventablePct,
+    timeDriverInputs.nursingCostPerHapi,
+    timeDriverInputs.nursingCareQualityRealization,
+  ]);
+
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
 
@@ -278,15 +344,18 @@ export default function ExploreValueDrivers({
         total += retentionCalcs.retentionValue;
       }
     } else if (isNursing) {
-      // Nursing uses OT Reduction, Retention, Care Time, and Agency Cost Avoidance
+      // Nursing uses OT Reduction, Retention, Care Quality, and Agency Cost Avoidance
       total += nursingOtValue + nursingRetentionValue;
       if (timeDriverInputs.nursingAgencyEnabled) {
         total += nursingAgencyCalcs.agencySavings;
       }
+      if (timeDriverInputs.nursingCareTimeEnabled) {
+        // Care time includes HAPI and Falls prevention value
+        total += nursingCareQualityCalcs.totalPreventionValue;
+      }
       if (timeDriverInputs.costReductionEnabled) {
         total += timeDriverInputs.estimatedCostReduction;
       }
-      // Care time is qualitative, not added to monetary value
     } else {
       // Outpatient uses Patient Access and Cost Reduction
       if (timeDriverInputs.patientAccessEnabled) {
@@ -300,7 +369,7 @@ export default function ExploreValueDrivers({
       }
     }
     return total;
-  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edAdmissionCaptureValue, nursingOtValue, nursingRetentionValue, nursingAgencyCalcs.agencySavings]);
+  }, [isED, isInpatient, isNursing, potentialRevenue, timeDriverInputs, retentionCalcs.retentionValue, edLwbsValue, edAdmissionCaptureValue, nursingOtValue, nursingRetentionValue, nursingAgencyCalcs.agencySavings, nursingCareQualityCalcs.totalPreventionValue]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -1503,31 +1572,54 @@ export default function ExploreValueDrivers({
                   </div>
 
                   <div className="mt-6">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Where Does This Time Go?</p>
-                    <div className="space-y-2 text-sm text-[#666666]">
-                      <div className="flex items-start gap-2">
-                        <span className="text-[#EA2C00]">•</span>
-                        <span>Reduced falls through increased visibility</span>
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Prevention Value Calculation</p>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4 font-mono text-xs space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-[#666666]">Patient days/year</span>
+                        <span className="text-black font-semibold">{nursingCareQualityCalcs.patientDaysPerYear.toLocaleString()}</span>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-[#EA2C00]">•</span>
-                        <span>Fewer pressure injuries (HAPIs) with timely assessments</span>
+                      
+                      <div className="h-px bg-[#E5E5E5]" />
+                      <div className="text-[#888888] font-semibold">FALLS PREVENTION:</div>
+                      <div className="flex justify-between pl-2">
+                        <span className="text-[#666666]">Falls/year (rate {timeDriverInputs.nursingFallsRate}/1k)</span>
+                        <span className="text-black">{nursingCareQualityCalcs.fallsPerYear}</span>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-[#EA2C00]">•</span>
-                        <span>Higher patient satisfaction (HCAHPS)</span>
+                      <div className="flex justify-between pl-2">
+                        <span className="text-[#666666]">Preventable ({timeDriverInputs.nursingFallsPreventablePct}%)</span>
+                        <span className="text-black">{nursingCareQualityCalcs.preventableFalls}</span>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-[#EA2C00]">•</span>
-                        <span>Better clinical outcomes overall</span>
+                      <div className="flex justify-between pl-2">
+                        <span className="text-[#666666]">× ${timeDriverInputs.nursingCostPerFall.toLocaleString()}/fall × {timeDriverInputs.nursingCareQualityRealization}%</span>
+                        <span className="text-[#EA2C00] font-semibold">{formatCurrency(nursingCareQualityCalcs.fallsValue)}</span>
+                      </div>
+                      
+                      <div className="h-px bg-[#E5E5E5]" />
+                      <div className="text-[#888888] font-semibold">HAPI PREVENTION:</div>
+                      <div className="flex justify-between pl-2">
+                        <span className="text-[#666666]">HAPIs/year (rate {timeDriverInputs.nursingHapiRate}/1k)</span>
+                        <span className="text-black">{nursingCareQualityCalcs.hapisPerYear}</span>
+                      </div>
+                      <div className="flex justify-between pl-2">
+                        <span className="text-[#666666]">Preventable ({timeDriverInputs.nursingHapiPreventablePct}%)</span>
+                        <span className="text-black">{nursingCareQualityCalcs.preventableHapis}</span>
+                      </div>
+                      <div className="flex justify-between pl-2">
+                        <span className="text-[#666666]">× ${timeDriverInputs.nursingCostPerHapi.toLocaleString()}/HAPI × {timeDriverInputs.nursingCareQualityRealization}%</span>
+                        <span className="text-[#EA2C00] font-semibold">{formatCurrency(nursingCareQualityCalcs.hapiValue)}</span>
+                      </div>
+                      
+                      <div className="h-px bg-[#333333]" />
+                      <div className="flex justify-between text-sm">
+                        <span className="font-bold text-black">Total Prevention Value</span>
+                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingCareQualityCalcs.totalPreventionValue)}/yr</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 p-4 bg-[#F9F9F9] rounded-lg border border-[#E5E5E5]">
-                    <p className="text-sm text-[#666666] italic text-center">
-                      We don't calculate a dollar value for care time because the link to outcomes is indirect. 
-                      But we DO explore the potential quality impact in the next section.
+                  <div className="mt-4 p-3 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/20">
+                    <p className="text-xs text-[#EA2C00] text-center">
+                      {timeDriverInputs.nursingCareQualityRealization}% realization rate applied to account for attribution uncertainty
                     </p>
                   </div>
                 </div>
@@ -2097,15 +2189,15 @@ export default function ExploreValueDrivers({
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Care Time</span>
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Care Quality</span>
                         </div>
-                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingCareTimeEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                          —
+                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 ? 'text-white' : 'text-[#666666]'}`}>
+                          {timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 ? formatCurrency(nursingCareQualityCalcs.totalPreventionValue) : '—'}
                         </span>
                       </div>
-                      {timeDriverInputs.nursingCareTimeEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(qualitative)</p>
+                      {timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(HAPI + Falls)</p>
                       )}
                     </div>
                   </>
