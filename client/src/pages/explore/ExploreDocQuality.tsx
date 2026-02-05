@@ -298,6 +298,95 @@ export default function ExploreDocQuality({
           </p>
         </motion.div>
 
+        {/* Care Time Validation - Unified Section */}
+        <motion.div
+          className="bg-[#1A1A1A] rounded-lg p-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
+          <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-4">
+            Care Time Validation
+          </p>
+          
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{formatNumber(careTimeValidation.careTimeHours)}</p>
+              <p className="text-xs text-white/60">hrs/year to bedside</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{careTimeValidation.careTimePerPatientDay}</p>
+              <p className="text-xs text-white/60">min per patient day</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-white">{careTimeValidation.careTimePerStay}</p>
+              <p className="text-xs text-white/60">min per stay ({careTimeValidation.avgLOS}-day avg)</p>
+            </div>
+          </div>
+
+          <div className="h-px bg-white/20 my-4" />
+
+          <div className="grid grid-cols-2 gap-6">
+            {/* HAPI Validation */}
+            <div className="space-y-2">
+              <p className="text-xs text-white/50 uppercase tracking-wide">HAPI Prevention</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/70">HAPIs to prevent</span>
+                <span className="text-white font-semibold">{careTimeValidation.hapisPrevented}</span>
+              </div>
+              <div className="mt-2">
+                {careTimeValidation.hapiValidation === 'achievable' && (
+                  <div className="flex items-center gap-2 text-green-400">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-xs">Validated</span>
+                  </div>
+                )}
+                {careTimeValidation.hapiValidation === 'stretch' && (
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-xs">Stretch goal</span>
+                  </div>
+                )}
+                {careTimeValidation.hapiValidation === 'limited' && (
+                  <div className="flex items-center gap-2 text-red-400">
+                    <span className="w-2 h-2 rounded-full bg-red-400" />
+                    <span className="text-xs">Limited capacity</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Falls Validation */}
+            <div className="space-y-2">
+              <p className="text-xs text-white/50 uppercase tracking-wide">Falls Prevention</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/70">Falls to prevent</span>
+                <span className="text-white font-semibold">{careTimeValidation.fallsPrevented}</span>
+              </div>
+              <div className="mt-2">
+                {careTimeValidation.fallsValidation === 'achievable' && (
+                  <div className="flex items-center gap-2 text-green-400">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-xs">Validated</span>
+                  </div>
+                )}
+                {careTimeValidation.fallsValidation === 'stretch' && (
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-xs">Stretch goal</span>
+                  </div>
+                )}
+                {careTimeValidation.fallsValidation === 'limited' && (
+                  <div className="flex items-center gap-2 text-red-400">
+                    <span className="w-2 h-2 rounded-full bg-red-400" />
+                    <span className="text-xs">Limited capacity</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Potential Value Drivers Container */}
         <motion.div
           className="bg-[#F5F0EB] rounded-lg p-6 space-y-4"
@@ -453,63 +542,6 @@ export default function ExploreDocQuality({
                       </p>
                     </div>
 
-                    {/* Care Time Validation */}
-                    <div className="mt-4 bg-[#1A1A1A] rounded-lg p-4">
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Care Time Validation</p>
-                      
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Hours returned to bedside</span>
-                          <span className="text-white font-semibold">{formatNumber(careTimeValidation.careTimeHours)} hrs/year</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Additional time per patient day</span>
-                          <span className="text-white font-semibold">{careTimeValidation.careTimePerPatientDay} minutes</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Additional time per patient stay ({careTimeValidation.avgLOS}-day avg)</span>
-                          <span className="text-white font-semibold">{careTimeValidation.careTimePerStay} minutes</span>
-                        </div>
-                      </div>
-
-                      <div className="h-px bg-white/20 my-3" />
-
-                      <div className="space-y-2 text-sm">
-                        <p className="text-white/50 text-xs uppercase tracking-wide">Is This Enough?</p>
-                        <p className="text-white/60 text-xs mb-2">
-                          HAPIs require sustained intervention—turning, repositioning, skin checks.
-                        </p>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">HAPIs to prevent</span>
-                          <span className="text-white font-semibold">{careTimeValidation.hapisPrevented}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Care time per stay</span>
-                          <span className="text-white font-semibold">{careTimeValidation.careTimePerStay} min</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-3">
-                        {careTimeValidation.hapiValidation === 'achievable' && (
-                          <div className="flex items-center gap-2 text-green-400">
-                            <span className="w-2 h-2 rounded-full bg-green-400" />
-                            <span className="text-sm">Validated: Care time capacity supports this projection</span>
-                          </div>
-                        )}
-                        {careTimeValidation.hapiValidation === 'stretch' && (
-                          <div className="flex items-center gap-2 text-amber-400">
-                            <span className="w-2 h-2 rounded-full bg-amber-400" />
-                            <span className="text-sm">Stretch: Achievable with strong turning protocols</span>
-                          </div>
-                        )}
-                        {careTimeValidation.hapiValidation === 'limited' && (
-                          <div className="flex items-center gap-2 text-red-400">
-                            <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-sm">Limited: Consider more conservative prevention rate</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 </motion.div>
               )}
@@ -641,60 +673,6 @@ export default function ExploreDocQuality({
                       </div>
                     </div>
 
-                    {/* Care Time Validation */}
-                    <div className="mt-4 bg-[#1A1A1A] rounded-lg p-4">
-                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Care Time Validation</p>
-                      
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Hours returned to bedside</span>
-                          <span className="text-white font-semibold">{formatNumber(careTimeValidation.careTimeHours)} hrs/year</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Additional time per patient day</span>
-                          <span className="text-white font-semibold">{careTimeValidation.careTimePerPatientDay} minutes</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Additional time per patient stay ({careTimeValidation.avgLOS}-day avg)</span>
-                          <span className="text-white font-semibold">{careTimeValidation.careTimePerStay} minutes</span>
-                        </div>
-                      </div>
-
-                      <div className="h-px bg-white/20 my-3" />
-
-                      <div className="space-y-2 text-sm">
-                        <p className="text-white/50 text-xs uppercase tracking-wide">Is This Enough?</p>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Falls to prevent</span>
-                          <span className="text-white font-semibold">{careTimeValidation.fallsPrevented}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/70">Catches required across {formatNumber(Math.round(nursingPatientDays))} patient days</span>
-                          <span className="text-white font-semibold">1 per {formatNumber(careTimeValidation.catchesPerPatientDay)} patient days</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-3">
-                        {careTimeValidation.fallsValidation === 'achievable' && (
-                          <div className="flex items-center gap-2 text-green-400">
-                            <span className="w-2 h-2 rounded-full bg-green-400" />
-                            <span className="text-sm">Validated: Care time capacity supports this projection</span>
-                          </div>
-                        )}
-                        {careTimeValidation.fallsValidation === 'stretch' && (
-                          <div className="flex items-center gap-2 text-amber-400">
-                            <span className="w-2 h-2 rounded-full bg-amber-400" />
-                            <span className="text-sm">Stretch: Achievable with strong protocols</span>
-                          </div>
-                        )}
-                        {careTimeValidation.fallsValidation === 'limited' && (
-                          <div className="flex items-center gap-2 text-red-400">
-                            <span className="w-2 h-2 rounded-full bg-red-400" />
-                            <span className="text-sm">Limited: Care time capacity may not support this rate</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 </motion.div>
               )}
