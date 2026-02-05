@@ -16,22 +16,25 @@ import { calculateMeasureResults, generateTrendData } from "@/lib/measureCalcula
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 
+// Abridge brand palette - warm beige tones matching Explore PDFs
 const colors = {
   primary: "#EA2C00",
-  coral: "#F07B5F",
-  black: "#0f172a",
-  darkGray: "#334155",
-  mediumGray: "#64748b",
-  lightGray: "#94a3b8",
-  borderGray: "#e2e8f0",
-  backgroundGray: "#f8fafc",
+  coral: "#E85A4F",
+  black: "#1A1A1A",
+  darkGray: "#4A4A4A",
+  mediumGray: "#6B7280",
+  lightGray: "#9CA3AF",
+  borderGray: "#E5E4E3",
+  backgroundGray: "#F5F4F3",
+  warmGray: "#F8F7F6",
+  beige: "#F5F0EB",
   white: "#FFFFFF",
   emerald: "#059669",
   emeraldLight: "#d1fae5",
   amber: "#d97706",
   amberLight: "#fef3c7",
-  slate800: "#1e293b",
-  slate900: "#0f172a",
+  slate800: "#1A1A1A",
+  slate900: "#1A1A1A",
 };
 
 const styles = StyleSheet.create({
@@ -261,7 +264,7 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   comparisonCardLight: {
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.beige,
     borderRadius: 8,
   },
   comparisonCardDark: {
@@ -312,7 +315,7 @@ const styles = StyleSheet.create({
   trendContainer: {
     marginBottom: 16,
     padding: 16,
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.beige,
     borderRadius: 8,
   },
   trendTitle: {
@@ -418,12 +421,12 @@ const styles = StyleSheet.create({
     color: colors.mediumGray,
     marginTop: 8,
     padding: 8,
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.beige,
     borderRadius: 4,
   },
 
   docQualitySection: {
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.beige,
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
@@ -497,7 +500,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.borderGray,
   },
   summaryTableRowAlt: {
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.warmGray,
   },
   summaryTableCell: {
     flex: 1,
@@ -534,7 +537,7 @@ const styles = StyleSheet.create({
   },
   projectionCard: {
     flex: 1,
-    backgroundColor: colors.backgroundGray,
+    backgroundColor: colors.beige,
     borderRadius: 8,
     padding: 14,
     marginRight: 8,
