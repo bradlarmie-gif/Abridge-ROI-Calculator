@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ArrowRight, AlertTriangle, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowRight, AlertTriangle, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -26,22 +26,6 @@ export default function ExploreValueDrivers({
   onHome,
 }: ExploreValueDriversProps) {
   const { timeDriverInputs } = state;
-  
-  const [expandedSections, setExpandedSections] = useState<{
-    patientAccess: boolean;
-    costReduction: boolean;
-    wellbeing: boolean;
-    rounding: boolean;
-  }>({
-    patientAccess: true,
-    costReduction: true,
-    wellbeing: true,
-    rounding: true,
-  });
-
-  const toggleExpanded = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
   
   const updateTimeDriverInputs = (updates: Partial<typeof timeDriverInputs>) => {
     updateState({
@@ -306,10 +290,10 @@ export default function ExploreValueDrivers({
         {isED && (
         <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-t-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.edLwbsEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white"
+                ? (timeDriverInputs.edLwbsExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white/70 hover:bg-white rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -318,8 +302,17 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {timeDriverInputs.edLwbsEnabled && (
+                  <button
+                    onClick={() => updateTimeDriverInputs({ edLwbsExpanded: !timeDriverInputs.edLwbsExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-lwbs-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.edLwbsExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ edLwbsEnabled: !timeDriverInputs.edLwbsEnabled })}
+                  onClick={() => updateTimeDriverInputs({ edLwbsEnabled: !timeDriverInputs.edLwbsEnabled, edLwbsExpanded: !timeDriverInputs.edLwbsEnabled ? true : timeDriverInputs.edLwbsExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.edLwbsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -334,7 +327,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.edLwbsEnabled && (
+            {timeDriverInputs.edLwbsEnabled && timeDriverInputs.edLwbsExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -453,10 +446,10 @@ export default function ExploreValueDrivers({
         {isInpatient && (
         <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-t-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.ipRoundingEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white"
+                ? (timeDriverInputs.ipRoundingExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white/70 hover:bg-white rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -467,19 +460,15 @@ export default function ExploreValueDrivers({
               <div className="flex items-center gap-3">
                 {timeDriverInputs.ipRoundingEnabled && (
                   <button
-                    onClick={() => toggleExpanded('rounding')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-rounding"
+                    onClick={() => updateTimeDriverInputs({ ipRoundingExpanded: !timeDriverInputs.ipRoundingExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-rounding-expand"
                   >
-                    {expandedSections.rounding ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.ipRoundingExpanded ? 'rotate-0' : '-rotate-90'}`} />
                   </button>
                 )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled })}
+                  onClick={() => updateTimeDriverInputs({ ipRoundingEnabled: !timeDriverInputs.ipRoundingEnabled, ipRoundingExpanded: !timeDriverInputs.ipRoundingEnabled ? true : timeDriverInputs.ipRoundingExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.ipRoundingEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -494,7 +483,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.ipRoundingEnabled && expandedSections.rounding && (
+            {timeDriverInputs.ipRoundingEnabled && timeDriverInputs.ipRoundingExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -699,10 +688,10 @@ export default function ExploreValueDrivers({
           transition={{ delay: 0.15 }}
         >
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.patientAccessEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? (timeDriverInputs.patientAccessExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -713,19 +702,15 @@ export default function ExploreValueDrivers({
               <div className="flex items-center gap-3">
                 {timeDriverInputs.patientAccessEnabled && (
                   <button
-                    onClick={() => toggleExpanded('patientAccess')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-patient-access"
+                    onClick={() => updateTimeDriverInputs({ patientAccessExpanded: !timeDriverInputs.patientAccessExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-patient-access-expand"
                   >
-                    {expandedSections.patientAccess ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.patientAccessExpanded ? 'rotate-0' : '-rotate-90'}`} />
                   </button>
                 )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ patientAccessEnabled: !timeDriverInputs.patientAccessEnabled })}
+                  onClick={() => updateTimeDriverInputs({ patientAccessEnabled: !timeDriverInputs.patientAccessEnabled, patientAccessExpanded: !timeDriverInputs.patientAccessEnabled ? true : timeDriverInputs.patientAccessExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.patientAccessEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -740,7 +725,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.patientAccessEnabled && expandedSections.patientAccess && (
+            {timeDriverInputs.patientAccessEnabled && timeDriverInputs.patientAccessExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -834,10 +819,10 @@ export default function ExploreValueDrivers({
           transition={{ delay: 0.2 }}
         >
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.edThroughputEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? (timeDriverInputs.edThroughputExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -846,8 +831,17 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {timeDriverInputs.edThroughputEnabled && (
+                  <button
+                    onClick={() => updateTimeDriverInputs({ edThroughputExpanded: !timeDriverInputs.edThroughputExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-throughput-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.edThroughputExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ edThroughputEnabled: !timeDriverInputs.edThroughputEnabled })}
+                  onClick={() => updateTimeDriverInputs({ edThroughputEnabled: !timeDriverInputs.edThroughputEnabled, edThroughputExpanded: !timeDriverInputs.edThroughputEnabled ? true : timeDriverInputs.edThroughputExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.edThroughputEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -862,7 +856,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.edThroughputEnabled && (
+            {timeDriverInputs.edThroughputEnabled && timeDriverInputs.edThroughputExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -967,10 +961,10 @@ export default function ExploreValueDrivers({
         {isNursing && (
         <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-t-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.nursingRetentionEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white"
+                ? (timeDriverInputs.nursingRetentionExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white/70 hover:bg-white rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -979,8 +973,17 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {timeDriverInputs.nursingRetentionEnabled && (
+                  <button
+                    onClick={() => updateTimeDriverInputs({ nursingRetentionExpanded: !timeDriverInputs.nursingRetentionExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-nursing-retention-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.nursingRetentionExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ nursingRetentionEnabled: !timeDriverInputs.nursingRetentionEnabled })}
+                  onClick={() => updateTimeDriverInputs({ nursingRetentionEnabled: !timeDriverInputs.nursingRetentionEnabled, nursingRetentionExpanded: !timeDriverInputs.nursingRetentionEnabled ? true : timeDriverInputs.nursingRetentionExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.nursingRetentionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -995,7 +998,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingRetentionEnabled && (
+            {timeDriverInputs.nursingRetentionEnabled && timeDriverInputs.nursingRetentionExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1079,10 +1082,10 @@ export default function ExploreValueDrivers({
           transition={{ delay: 0.2 }}
         >
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.costReductionEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? (timeDriverInputs.costReductionExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -1093,19 +1096,15 @@ export default function ExploreValueDrivers({
               <div className="flex items-center gap-3">
                 {timeDriverInputs.costReductionEnabled && (
                   <button
-                    onClick={() => toggleExpanded('costReduction')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-cost-reduction"
+                    onClick={() => updateTimeDriverInputs({ costReductionExpanded: !timeDriverInputs.costReductionExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-cost-reduction-expand"
                   >
-                    {expandedSections.costReduction ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.costReductionExpanded ? 'rotate-0' : '-rotate-90'}`} />
                   </button>
                 )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled })}
+                  onClick={() => updateTimeDriverInputs({ costReductionEnabled: !timeDriverInputs.costReductionEnabled, costReductionExpanded: !timeDriverInputs.costReductionEnabled ? true : timeDriverInputs.costReductionExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.costReductionEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -1120,7 +1119,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.costReductionEnabled && expandedSections.costReduction && (
+            {timeDriverInputs.costReductionEnabled && timeDriverInputs.costReductionExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1164,10 +1163,10 @@ export default function ExploreValueDrivers({
           transition={{ delay: 0.25 }}
         >
           <div
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.wellbeingEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? (timeDriverInputs.wellbeingExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -1178,19 +1177,15 @@ export default function ExploreValueDrivers({
               <div className="flex items-center gap-3">
                 {timeDriverInputs.wellbeingEnabled && (
                   <button
-                    onClick={() => toggleExpanded('wellbeing')}
-                    className="p-1.5 rounded-md hover:bg-[#F5F0EB] transition-colors"
-                    data-testid="collapse-wellbeing"
+                    onClick={() => updateTimeDriverInputs({ wellbeingExpanded: !timeDriverInputs.wellbeingExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-wellbeing-expand"
                   >
-                    {expandedSections.wellbeing ? (
-                      <ChevronUp className="w-5 h-5 text-[#888888]" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#888888]" />
-                    )}
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.wellbeingExpanded ? 'rotate-0' : '-rotate-90'}`} />
                   </button>
                 )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ wellbeingEnabled: !timeDriverInputs.wellbeingEnabled })}
+                  onClick={() => updateTimeDriverInputs({ wellbeingEnabled: !timeDriverInputs.wellbeingEnabled, wellbeingExpanded: !timeDriverInputs.wellbeingEnabled ? true : timeDriverInputs.wellbeingExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.wellbeingEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -1205,7 +1200,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.wellbeingEnabled && expandedSections.wellbeing && (
+            {timeDriverInputs.wellbeingEnabled && timeDriverInputs.wellbeingExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1407,10 +1402,10 @@ export default function ExploreValueDrivers({
         {isNursing && (
         <div className="space-y-0">
           <div
-            className={`w-full p-4 rounded-t-lg text-left transition-all ${
+            className={`w-full p-4 text-left transition-all ${
               timeDriverInputs.nursingCareTimeEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white"
+                ? (timeDriverInputs.nursingCareTimeExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white/70 hover:bg-white rounded-lg"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -1422,8 +1417,17 @@ export default function ExploreValueDrivers({
                 <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
               </div>
               <div className="flex items-center gap-3">
+                {timeDriverInputs.nursingCareTimeEnabled && (
+                  <button
+                    onClick={() => updateTimeDriverInputs({ nursingCareTimeExpanded: !timeDriverInputs.nursingCareTimeExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-care-time-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${timeDriverInputs.nursingCareTimeExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
                 <button
-                  onClick={() => updateTimeDriverInputs({ nursingCareTimeEnabled: !timeDriverInputs.nursingCareTimeEnabled })}
+                  onClick={() => updateTimeDriverInputs({ nursingCareTimeEnabled: !timeDriverInputs.nursingCareTimeEnabled, nursingCareTimeExpanded: !timeDriverInputs.nursingCareTimeEnabled ? true : timeDriverInputs.nursingCareTimeExpanded })}
                   className={`w-12 h-6 rounded-full relative transition-all ${
                     timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
                   }`}
@@ -1438,7 +1442,7 @@ export default function ExploreValueDrivers({
           </div>
 
           <AnimatePresence>
-            {timeDriverInputs.nursingCareTimeEnabled && (
+            {timeDriverInputs.nursingCareTimeEnabled && timeDriverInputs.nursingCareTimeExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}

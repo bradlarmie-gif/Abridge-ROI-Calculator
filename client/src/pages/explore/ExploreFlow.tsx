@@ -95,10 +95,20 @@ export interface TimeDriverInputs {
   nursingOtReductionPercent: number;
   nursingOtHourlyRate: number;
   nursingRetentionEnabled: boolean;
+  nursingRetentionExpanded: boolean;
   nursingTurnoverRate: number;
   nursingReplacementCost: number;
   nursingCareTimeEnabled: boolean;
+  nursingCareTimeExpanded: boolean;
   nursingCareTimePercent: number; // User-adjustable percentage going to direct care
+  
+  // Collapsible state for shared/other drivers
+  costReductionExpanded: boolean;
+  patientAccessExpanded: boolean;
+  wellbeingExpanded: boolean;
+  edLwbsExpanded: boolean;
+  edThroughputExpanded: boolean;
+  ipRoundingExpanded: boolean;
 }
 
 // Documentation Quality inputs
@@ -266,15 +276,24 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     ipReplacementCost: 300000, // $300,000 replacement cost
     // Nursing-specific defaults
     nursingOtEnabled: false,
-    nursingOtExpanded: true, // Auto-expand when enabled
+    nursingOtExpanded: true,
     nursingOtHoursPerNurseWeek: 4,
     nursingOtReductionPercent: 25,
     nursingOtHourlyRate: 75,
     nursingRetentionEnabled: false,
-    nursingTurnoverRate: 18, // 18% annual turnover
+    nursingRetentionExpanded: true,
+    nursingTurnoverRate: 18,
     nursingReplacementCost: 50000,
     nursingCareTimeEnabled: false,
-    nursingCareTimePercent: 45, // Default 45% of saved time goes to direct care
+    nursingCareTimeExpanded: true,
+    nursingCareTimePercent: 45,
+    // Collapsible state defaults
+    costReductionExpanded: true,
+    patientAccessExpanded: true,
+    wellbeingExpanded: true,
+    edLwbsExpanded: true,
+    edThroughputExpanded: true,
+    ipRoundingExpanded: true,
   },
   // Documentation quality inputs
   docQualityInputs: {
