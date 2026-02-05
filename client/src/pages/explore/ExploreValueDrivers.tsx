@@ -1442,11 +1442,68 @@ export default function ExploreValueDrivers({
                     More time at the bedside improves patient outcomes and satisfaction.
                   </p>
 
-                  <div className="bg-[#F5F0EB] rounded-lg p-6">
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-[#EA2C00]">{hoursPerProviderPerWeek}</p>
-                      <p className="text-lg font-medium text-black mt-1">hours per week</p>
-                      <p className="text-sm text-[#666666] mt-1">per nurse returned to direct care</p>
+                  {/* BLACK BOX: Time Breakdown */}
+                  <div className="bg-[#1A1A1A] rounded-lg p-5 mb-6">
+                    <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-4">
+                      Time Allocation Breakdown
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {/* Total Hours Saved */}
+                      <div className="flex justify-between items-center pb-3 border-b border-[#333333]">
+                        <span className="text-sm text-[#888888]">Total Hours Saved</span>
+                        <span className="text-lg font-bold text-white">{formatNumber(totalHoursSaved)} hrs/year</span>
+                      </div>
+                      
+                      {/* Time Absorbed (Baseline Productivity) */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-sm text-[#888888]">Time Absorbed</span>
+                          <p className="text-xs text-[#666666]">Baseline productivity gains</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold text-white">
+                            {formatNumber(Math.round(totalHoursSaved * 0.20))} hrs
+                          </span>
+                          <p className="text-xs text-[#666666]">~20%</p>
+                        </div>
+                      </div>
+                      
+                      {/* Time in OT */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-sm text-[#888888]">Time in OT Reduction</span>
+                          <p className="text-xs text-[#666666]">Overtime hours eliminated</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold text-[#EA2C00]">
+                            {formatNumber(Math.round(totalHoursSaved * (timeDriverInputs.nursingOtEnabled ? 0.35 : 0)))} hrs
+                          </span>
+                          <p className="text-xs text-[#666666]">{timeDriverInputs.nursingOtEnabled ? '~35%' : '0%'}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Time for Direct Care */}
+                      <div className="flex justify-between items-center pt-3 border-t border-[#333333]">
+                        <div>
+                          <span className="text-sm text-white font-medium">Time for Direct Care</span>
+                          <p className="text-xs text-[#888888]">Returned to patient bedside</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-[#EA2C00]">
+                            {formatNumber(Math.round(totalHoursSaved * (timeDriverInputs.nursingOtEnabled ? 0.45 : 0.80)))} hrs
+                          </span>
+                          <p className="text-xs text-[#888888]">{timeDriverInputs.nursingOtEnabled ? '~45%' : '~80%'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Per Nurse Summary */}
+                    <div className="mt-4 pt-4 border-t border-[#333333]">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-[#888888]">Per nurse per week</span>
+                        <span className="text-xl font-bold text-[#EA2C00]">{hoursPerProviderPerWeek} hrs</span>
+                      </div>
                     </div>
                   </div>
 
