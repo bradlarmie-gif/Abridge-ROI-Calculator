@@ -97,6 +97,7 @@ export interface TimeDriverInputs {
   nursingTurnoverRate: number;
   nursingReplacementCost: number;
   nursingCareTimeEnabled: boolean;
+  nursingCareConversionRate: number; // % of remaining time (after OT) that converts to care time
 }
 
 // Documentation Quality inputs
@@ -271,6 +272,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingTurnoverRate: 18, // 18% annual turnover
     nursingReplacementCost: 50000,
     nursingCareTimeEnabled: false,
+    nursingCareConversionRate: 70, // 70% of remaining time converts to care
   },
   // Documentation quality inputs
   docQualityInputs: {
