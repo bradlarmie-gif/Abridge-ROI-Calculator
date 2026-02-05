@@ -123,6 +123,7 @@ export default function ExploreModel({
 
   // Inpatient-specific calculations
   const isInpatient = state.careSetting === 'inpatient';
+  const isNursing = state.careSetting === 'nursing';
 
   // Inpatient: Clinician Wellbeing Retention Value
   const ipWellbeingRetentionValue = useMemo(() => {
@@ -135,6 +136,30 @@ export default function ExploreModel({
     const retained = burnoutRelated * (retentionPercent / 100);
     return Math.round(retained * timeDriverInputs.replacementCost);
   }, [isInpatient, state.numberOfProviders, timeDriverInputs]);
+
+  // Nursing: Retention Value (matches ExploreFlow calculation)
+  const nursingRetentionValue = useMemo(() => {
+    // For nursing, only check nursingRetentionEnabled (no calculateRetentionValue required)
+    if (!isNursing || !timeDriverInputs.nursingRetentionEnabled) return 0;
+    // Uses nursing-specific turnover rate and replacement cost
+    const nurseFTEs = state.numberOfProviders;
+    const leavingPerYear = nurseFTEs * (timeDriverInputs.nursingTurnoverRate / 100);
+    const retained = leavingPerYear * 0.10; // Fixed 10% retention rate
+    return Math.round(retained * timeDriverInputs.nursingReplacementCost);
+  }, [isNursing, state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
+
+  // Nursing: OT Reduction Value
+  const nursingOTValue = useMemo(() => {
+    if (!isNursing || !timeDriverInputs.nursingOtEnabled) return 0;
+    const weeksPerYear = 52;
+    const totalCurrentOt = state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
+    const rawOtReduced = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+    const otHoursReduced = Math.min(rawOtReduced, totalCurrentOt);
+    return Math.round(otHoursReduced * timeDriverInputs.nursingOtHourlyRate * 1.5);
+  }, [isNursing, state.numberOfProviders, totalHoursSaved, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
+
+  // Nursing: Care Time Value (qualitative - just track if enabled)
+  const nursingCareTimeEnabled = isNursing && timeDriverInputs.nursingCareTimeEnabled;
 
   // Inpatient: DRG Accuracy Value
   const ipDrgValue = useMemo(() => {
@@ -426,25 +451,23 @@ export default function ExploreModel({
         
       } else if (state.careSetting === 'nursing') {
         // Nursing uses keys: nursingOvertime, nursingAgency, nursingRetention, etc.
-        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
+        if (timeDriverInputs.nursingOtEnabled && nursingOTValue > 0) {
           driverResults.nursingOvertime = { 
             name: 'Overtime Reduction', 
-            value: costReductionValue,
+            value: nursingOTValue,
             inputs: {
-              estimatedSavings: costReductionValue,
+              estimatedSavings: nursingOTValue,
             }
           };
         }
-        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0) {
+        if (timeDriverInputs.nursingRetentionEnabled && nursingRetentionValue > 0) {
           driverResults.nursingRetention = { 
             name: 'Nurse Retention', 
-            value: ipWellbeingRetentionValue,
+            value: nursingRetentionValue,
             inputs: {
-              turnoverRate: timeDriverInputs.annualTurnoverRate,
-              burnoutPct: timeDriverInputs.burnoutRelatedTurnover,
-              retentionLift: timeDriverInputs.retentionImpactScenario === 'conservative' ? 20 : 
-                             timeDriverInputs.retentionImpactScenario === 'typical' ? 30 : 40,
-              replacementCost: timeDriverInputs.replacementCost,
+              turnoverRate: timeDriverInputs.nursingTurnoverRate,
+              retentionLift: 10,
+              replacementCost: timeDriverInputs.nursingReplacementCost,
             }
           };
         }
@@ -692,6 +715,33 @@ export default function ExploreModel({
                       <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.retentionImpactScenario === 'conservative' ? '20' : timeDriverInputs.retentionImpactScenario === 'typical' ? '30' : '40'}% retention lift)</p>
                     )}
                     {timeDriverInputs.wellbeingEnabled && !timeDriverInputs.calculateRetentionValue && (
+                      <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    )}
+                  </>
+                ) : isNursing ? (
+                  <>
+                    {/* OT Reduction */}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver1}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOTValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.nursingOtEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({timeDriverInputs.nursingOtReductionPercent}% OT reduction)</p>
+                    )}
+                    {/* Retention Savings */}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver2}</span>
+                      <span className="font-semibold text-black">{timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '—'}</span>
+                    </div>
+                    {timeDriverInputs.nursingRetentionEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(10% retention lift)</p>
+                    )}
+                    {/* Care Time */}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• {labels.driver3}</span>
+                      <span className="font-semibold text-black">{nursingCareTimeEnabled ? `${hoursPerProviderPerWeek} hrs/wk` : '—'}</span>
+                    </div>
+                    {nursingCareTimeEnabled && (
                       <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
                     )}
                   </>
