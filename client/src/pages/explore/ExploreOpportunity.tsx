@@ -38,9 +38,9 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
 ];
 
 const UTILIZATION_PRESETS = [
-  { label: "Conservative", value: 50 },
-  { label: "Typical", value: 70 },
-  { label: "Optimistic", value: 85 },
+  { label: "Conservative", value: 40 },
+  { label: "Typical", value: 55 },
+  { label: "Optimistic", value: 60 },
 ];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
