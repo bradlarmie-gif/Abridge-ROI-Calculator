@@ -10,7 +10,7 @@ Font.register({
 interface PDFCoverPageProps {
   reportLabel: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   clientName?: string;
   preparedBy?: string;
 }
@@ -22,7 +22,6 @@ const colors = {
   lightGray: "#999999",
   border: "#E0E0E0",
   white: "#FFFFFF",
-  warmBeige: "#F5F0EB",
 };
 
 const styles = StyleSheet.create({
@@ -31,82 +30,82 @@ const styles = StyleSheet.create({
     position: "relative",
     padding: 0,
   },
-
   chartContainer: {
     position: "absolute",
     bottom: 100,
-    right: 40,
-    width: 200,
-    height: 140,
+    right: 50,
+    width: 180,
+    height: 120,
   },
-
   contentContainer: {
     flex: 1,
-    padding: 60,
-    paddingTop: 80,
+    paddingHorizontal: 60,
+    paddingTop: 72,
+    justifyContent: "center",
     position: "relative",
     zIndex: 10,
   },
-
   logo: {
     width: 90,
-    marginBottom: 60,
+    position: "absolute",
+    top: 72,
+    left: 60,
   },
-
   reportLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.gray,
-    letterSpacing: 2,
-    marginBottom: 16,
+    letterSpacing: 3,
+    marginBottom: 14,
     textTransform: "uppercase",
   },
-
   title: {
-    fontSize: 48,
+    fontSize: 42,
     fontFamily: "Abridge",
     fontWeight: "bold",
     color: colors.black,
-    lineHeight: 1.1,
+    lineHeight: 1.2,
     letterSpacing: -1,
-    marginBottom: 40,
+    marginBottom: 36,
   },
-
   divider: {
-    width: 200,
+    width: "40%",
     height: 1,
     backgroundColor: colors.border,
-    marginBottom: 32,
+    marginBottom: 28,
   },
-
   metaLabel: {
-    fontSize: 12,
-    color: colors.gray,
+    fontSize: 10,
+    color: colors.lightGray,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
     marginBottom: 4,
   },
-
-  metaValue: {
-    fontSize: 16,
+  clientName: {
+    fontSize: 18,
     fontWeight: "bold",
     color: colors.black,
     marginBottom: 20,
   },
-
+  preparedByName: {
+    fontSize: 14,
+    color: colors.black,
+    marginBottom: 4,
+  },
   dateText: {
     fontSize: 12,
     color: colors.gray,
     marginTop: 4,
   },
-
   disclaimer: {
     position: "absolute",
     bottom: 40,
     left: 60,
     right: 60,
   },
-
   disclaimerText: {
-    fontSize: 8,
+    fontSize: 9,
     color: colors.lightGray,
+    fontStyle: "italic",
     lineHeight: 1.5,
   },
 });
@@ -114,7 +113,6 @@ const styles = StyleSheet.create({
 export function PDFCoverPage({
   reportLabel,
   title,
-  subtitle,
   clientName,
   preparedBy,
 }: PDFCoverPageProps) {
@@ -127,66 +125,65 @@ export function PDFCoverPage({
   });
 
   return (
-    <Page size="A4" style={styles.page}>
+    <Page size="LETTER" style={styles.page}>
+      <Image src={abridgeLogoRed} style={styles.logo} />
+
       <View style={styles.chartContainer}>
-        <Svg width={200} height={140} viewBox="0 0 200 140">
-          {[0, 1, 2, 3, 4].map((i) => (
+        <Svg width={180} height={120} viewBox="0 0 180 120">
+          {[0, 1, 2, 3].map((i) => (
             <Line
               key={`grid-h-${i}`}
               x1={0}
-              y1={i * 35}
-              x2={200}
-              y2={i * 35}
+              y1={i * 40}
+              x2={180}
+              y2={i * 40}
               stroke={colors.border}
-              strokeWidth={0.5}
-              strokeOpacity={0.5}
+              strokeWidth={0.4}
+              strokeOpacity={0.1}
             />
           ))}
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <Line
               key={`grid-v-${i}`}
-              x1={i * 40}
+              x1={i * 45}
               y1={0}
-              x2={i * 40}
-              y2={140}
+              x2={i * 45}
+              y2={120}
               stroke={colors.border}
-              strokeWidth={0.5}
-              strokeOpacity={0.5}
+              strokeWidth={0.4}
+              strokeOpacity={0.1}
             />
           ))}
           <Path
-            d="M 10 130 Q 80 120 120 80 T 190 10"
+            d="M 8 110 Q 60 100 100 65 T 172 10"
             stroke={colors.primary}
-            strokeWidth={2}
+            strokeWidth={1.5}
             fill="none"
-            strokeOpacity={0.6}
+            strokeOpacity={0.2}
           />
-          <Circle cx={50} cy={122} r={3} fill={colors.primary} fillOpacity={0.5} />
-          <Circle cx={100} cy={95} r={3} fill={colors.primary} fillOpacity={0.5} />
-          <Circle cx={140} cy={60} r={3} fill={colors.primary} fillOpacity={0.5} />
-          <Circle cx={175} cy={25} r={3} fill={colors.primary} fillOpacity={0.5} />
+          <Circle cx={40} cy={100} r={2.5} fill={colors.primary} fillOpacity={0.3} />
+          <Circle cx={80} cy={78} r={2.5} fill={colors.primary} fillOpacity={0.3} />
+          <Circle cx={120} cy={48} r={2.5} fill={colors.primary} fillOpacity={0.3} />
+          <Circle cx={155} cy={20} r={2.5} fill={colors.primary} fillOpacity={0.3} />
         </Svg>
       </View>
 
       <View style={styles.contentContainer}>
-        <Image src={abridgeLogoRed} style={styles.logo} />
-
         <Text style={styles.reportLabel}>{reportLabel}</Text>
         <Text style={styles.title}>{title}</Text>
-
         <View style={styles.divider} />
 
         {displayClientName ? (
           <View>
-            <Text style={styles.metaLabel}>Prepared for</Text>
-            <Text style={styles.metaValue}>{displayClientName}</Text>
+            <Text style={styles.metaLabel}>Prepared For</Text>
+            <Text style={styles.clientName}>{displayClientName}</Text>
           </View>
         ) : null}
 
         {displayPreparedBy ? (
           <View>
-            <Text style={styles.metaLabel}>Prepared by</Text>
-            <Text style={styles.metaValue}>{displayPreparedBy}</Text>
+            <Text style={styles.metaLabel}>Prepared By</Text>
+            <Text style={styles.preparedByName}>{displayPreparedBy}</Text>
           </View>
         ) : null}
 
@@ -195,7 +192,7 @@ export function PDFCoverPage({
 
       <View style={styles.disclaimer}>
         <Text style={styles.disclaimerText}>
-          This assessment is for planning purposes. All calculations are based on inputs provided and Abridge benchmark data.
+          This assessment is for planning purposes. Calculations are based on inputs provided and Abridge benchmark data.
         </Text>
       </View>
     </Page>
