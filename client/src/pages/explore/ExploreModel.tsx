@@ -83,6 +83,7 @@ export default function ExploreModel({
   }, [edRecoveredPatients, timeDriverInputs.edThroughputEnabled, timeDriverInputs.edLwbsEnabled, timeDriverInputs.edAdmissionRate, timeDriverInputs.edAdmissionRevenue, timeDriverInputs.edAdmissionRealization]);
 
   const isED = state.careSetting === 'ed';
+  const isNursing = state.careSetting === 'nursing';
 
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
@@ -159,6 +160,71 @@ export default function ExploreModel({
 
   const hoursPerProviderPerWeek = state.numberOfProviders > 0 
     ? (totalHoursSaved / state.numberOfProviders / 52).toFixed(1)
+    : '0';
+
+  const nursingOtValue = useMemo(() => {
+    if (!isNursing || !state.timeDriverInputs.nursingOtEnabled) return 0;
+    const otHoursEliminated = totalHoursSaved * (state.timeDriverInputs.nursingOtReductionPercent / 100);
+    return Math.round(otHoursEliminated * state.timeDriverInputs.nursingOtHourlyRate);
+  }, [isNursing, totalHoursSaved, state.timeDriverInputs]);
+
+  const nursingRetentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
+
+  const nursingRetainedCount = useMemo(() => {
+    if (!isNursing || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
+    const leavingPerYear = state.numberOfProviders * (state.timeDriverInputs.nursingTurnoverRate / 100);
+    const burnoutDepartures = leavingPerYear * 0.40;
+    const impactRate = (nursingRetentionImpactRates[state.timeDriverInputs.retentionImpactScenario] || 15) / 100;
+    return burnoutDepartures * impactRate;
+  }, [isNursing, state.numberOfProviders, state.timeDriverInputs]);
+
+  const nursingRetentionValue = useMemo(() => {
+    if (!isNursing || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
+    return Math.round(nursingRetainedCount * state.timeDriverInputs.nursingReplacementCost);
+  }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
+
+  const nursingAgencyValue = useMemo(() => {
+    if (!isNursing || !state.timeDriverInputs.nursingAgencyEnabled || !state.timeDriverInputs.nursingRetentionEnabled) return 0;
+    const weeksOfCoverage = state.timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
+    const weeklyPremium = state.timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
+    return Math.round(nursingRetainedCount * weeksOfCoverage * weeklyPremium);
+  }, [isNursing, nursingRetainedCount, state.timeDriverInputs]);
+
+  const nursingCareQualityPotential = useMemo(() => {
+    if (!isNursing) return 0;
+    const { docQualityInputs } = state;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    let total = 0;
+    if (docQualityInputs.nursingHapiEnabled) {
+      const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
+      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+    }
+    if (docQualityInputs.nursingFallsEnabled) {
+      const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
+      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
+    }
+    return Math.round(total);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const valuePerBed = isNursing && state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
+  const netPerBedYear = isNursing && state.nursingStaffedBeds > 0 ? Math.round(netAnnualValue / state.nursingStaffedBeds) : 0;
+
+  const nursingHapiValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingHapiEnabled) return 0;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const hapIs = (patientDays / 1000) * state.docQualityInputs.nursingHapiRate;
+    return Math.round(hapIs * (state.docQualityInputs.nursingHapiPreventionRate / 100) * state.docQualityInputs.nursingHapiCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const nursingFallsValue = useMemo(() => {
+    if (!isNursing || !state.docQualityInputs.nursingFallsEnabled) return 0;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const falls = (patientDays / 1000) * state.docQualityInputs.nursingFallsRate;
+    return Math.round(falls * (state.docQualityInputs.nursingFallsPreventionRate / 100) * state.docQualityInputs.nursingFallsCost);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const nursingCareTimePerWeek = isNursing && state.timeDriverInputs.nursingCareTimeEnabled 
+    ? ((totalHoursSaved / state.numberOfProviders / 52) * (state.timeDriverInputs.nursingCareTimePercent / 100)).toFixed(1) 
     : '0';
 
   // 3-year projection (10% growth per year)
@@ -425,26 +491,46 @@ export default function ExploreModel({
         await generateInpatientROIPDF(pdfData);
         
       } else if (state.careSetting === 'nursing') {
-        // Nursing uses keys: nursingOvertime, nursingAgency, nursingRetention, etc.
-        if (timeDriverInputs.costReductionEnabled && costReductionValue > 0) {
+        if (timeDriverInputs.nursingOtEnabled && nursingOtValue > 0) {
           driverResults.nursingOvertime = { 
-            name: 'Overtime Reduction', 
-            value: costReductionValue,
+            name: 'OT Reduction', 
+            value: nursingOtValue,
             inputs: {
-              estimatedSavings: costReductionValue,
+              reductionPercent: timeDriverInputs.nursingOtReductionPercent,
+              hourlyRate: timeDriverInputs.nursingOtHourlyRate,
             }
           };
         }
-        if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue && ipWellbeingRetentionValue > 0) {
+        if (timeDriverInputs.nursingRetentionEnabled && nursingRetentionValue > 0) {
           driverResults.nursingRetention = { 
-            name: 'Nurse Retention', 
-            value: ipWellbeingRetentionValue,
+            name: 'Retention Savings', 
+            value: nursingRetentionValue,
             inputs: {
-              turnoverRate: timeDriverInputs.annualTurnoverRate,
-              burnoutPct: timeDriverInputs.burnoutRelatedTurnover,
-              retentionLift: timeDriverInputs.retentionImpactScenario === 'conservative' ? 20 : 
-                             timeDriverInputs.retentionImpactScenario === 'typical' ? 30 : 40,
-              replacementCost: timeDriverInputs.replacementCost,
+              turnoverRate: timeDriverInputs.nursingTurnoverRate,
+              burnoutPct: 40,
+              impactScenario: timeDriverInputs.retentionImpactScenario,
+              replacementCost: timeDriverInputs.nursingReplacementCost,
+              retained: nursingRetainedCount,
+            }
+          };
+        }
+        if (timeDriverInputs.nursingAgencyEnabled && nursingAgencyValue > 0) {
+          driverResults.nursingAgency = { 
+            name: 'Agency Reduction', 
+            value: nursingAgencyValue,
+            inputs: {
+              weeksPerVacancy: timeDriverInputs.nursingAgencyWeeksPerVacancy,
+              weeklyPremium: timeDriverInputs.nursingAgencyWeeklyPremium,
+            }
+          };
+        }
+        if (nursingCareQualityPotential > 0) {
+          driverResults.nursingCareQuality = {
+            name: 'Care Quality (Potential)',
+            value: nursingCareQualityPotential,
+            inputs: {
+              hapiValue: nursingHapiValue,
+              fallsValue: nursingFallsValue,
             }
           };
         }
@@ -452,8 +538,8 @@ export default function ExploreModel({
         const nursingModelResults = {
           totalBenefit: totalValue,
           investment: annualInvestment,
-          staffedBeds: state.numberOfProviders,
-          nurseFTEs: Math.round(state.numberOfProviders * 1.5),
+          staffedBeds: state.nursingStaffedBeds,
+          nurseFTEs: state.numberOfProviders,
           documentationEvents: state.annualEncounters,
           utilizationRate: state.utilizationPercent,
           costPerMonth: state.costPerProvider,
@@ -461,13 +547,13 @@ export default function ExploreModel({
           driverResults,
         };
         const nursingJourneyInputs = {
-          pilotBeds: state.numberOfProviders,
+          pilotBeds: state.nursingStaffedBeds,
           pilotEvents: state.annualEncounters,
           pilotUtilization: state.utilizationPercent,
           pilotValue: netAnnualValue,
           fullScaleBeds: expandedProviders,
           fullScaleUtilization: expandedUtilization,
-          fullScaleValue: Math.round(netAnnualValue * (expandedProviders / state.numberOfProviders) * (expandedUtilization / state.utilizationPercent)),
+          fullScaleValue: Math.round(netAnnualValue * (expandedProviders / state.nursingStaffedBeds) * (expandedUtilization / state.utilizationPercent)),
           scalingPace: selectedPace,
           networkEffect: 0,
         };
@@ -539,15 +625,15 @@ export default function ExploreModel({
     },
     nursing: {
       timeCardTitle: 'Staffing Efficiency',
-      timeCardDescription: 'Less time documenting means more time at the bedside and reduced overtime.',
+      timeCardDescription: 'Less time documenting means nurses finish on time and stay longer.',
       driver1: 'OT Reduction',
       driver2: 'Retention Savings',
-      driver3: 'Care Time',
+      driver3: 'Agency Reduction',
       docCardTitle: 'Care Quality',
-      docCardDescription: 'Complete documentation supports better care plans and reduces adverse events.',
-      docDriver1: 'Care Plan Quality',
+      docCardDescription: 'Complete documentation supports better care and fewer adverse events.',
+      docDriver1: 'HAPI Prevention',
       docDriver2: 'Falls Prevention',
-      docDriver3: 'HAPI Prevention',
+      docDriver3: 'HCAHPS',
       showHCC: false,
     },
   };
@@ -575,9 +661,15 @@ export default function ExploreModel({
         <div className="max-w-[900px] mx-auto px-4 sm:px-6 text-center">
           {/* Context Badge */}
           <div className="inline-block bg-[#2A2A2A] rounded-full px-4 py-1.5 mb-6">
-            <span className="text-xs text-[#888888]">
-              {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers
-            </span>
+            {isNursing ? (
+              <span className="text-xs text-[#888888]">
+                {careSettingLabel} · {formatNumber(state.nursingStaffedBeds)} beds · {formatNumber(state.numberOfProviders)} nurse FTEs
+              </span>
+            ) : (
+              <span className="text-xs text-[#888888]">
+                {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers
+              </span>
+            )}
           </div>
 
           {/* Label */}
@@ -597,20 +689,37 @@ export default function ExploreModel({
           </p>
 
           {/* Stat Cards */}
-          <div className="flex justify-center gap-4 flex-wrap">
-            <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-roi">
-              <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
-              <p className="text-xs text-[#888888]">ROI</p>
+          {isNursing ? (
+            <div className="flex justify-center gap-4 flex-wrap">
+              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-roi">
+                <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+                <p className="text-xs text-[#888888]">ROI</p>
+              </div>
+              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-bed">
+                <p className="text-2xl font-bold text-white">{formatCurrency(netPerBedYear)}</p>
+                <p className="text-xs text-[#888888]">per bed/yr</p>
+              </div>
+              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
+                <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+                <p className="text-xs text-[#888888]">hours saved</p>
+              </div>
             </div>
-            <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-provider">
-              <p className="text-2xl font-bold text-white">{formatCurrency(valuePerProvider)}</p>
-              <p className="text-xs text-[#888888]">per provider</p>
+          ) : (
+            <div className="flex justify-center gap-4 flex-wrap">
+              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-roi">
+                <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+                <p className="text-xs text-[#888888]">ROI</p>
+              </div>
+              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-per-provider">
+                <p className="text-2xl font-bold text-white">{formatCurrency(valuePerProvider)}</p>
+                <p className="text-xs text-[#888888]">per provider</p>
+              </div>
+              <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
+                <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+                <p className="text-xs text-[#888888]">hours saved</p>
+              </div>
             </div>
-            <div className="bg-[#2A2A2A] rounded-lg px-6 py-4 min-w-[120px]" data-testid="stat-hours-saved">
-              <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
-              <p className="text-xs text-[#888888]">hours saved</p>
-            </div>
-          </div>
+          )}
 
           {/* Disclaimer */}
           <p className="text-sm text-[#666666] mt-6 italic">
@@ -631,9 +740,15 @@ export default function ExploreModel({
           <p className="text-center text-xl font-bold text-black mb-2">
             Where the Value Comes From
           </p>
-          <p className="text-center text-base text-[#888888] mb-6">
-            Abridge creates value through two mechanisms—each with its own drivers and assumptions.
-          </p>
+          {isNursing ? (
+            <p className="text-center text-base text-[#888888] mb-6">
+              Abridge creates value through staffing efficiency and care quality—each with its own drivers and assumptions.
+            </p>
+          ) : (
+            <p className="text-center text-base text-[#888888] mb-6">
+              Abridge creates value through two mechanisms—each with its own drivers and assumptions.
+            </p>
+          )}
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Time/Efficiency Card */}
@@ -653,7 +768,35 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
-                {isED ? (
+                {isNursing ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• OT Reduction</span>
+                      <span className="font-semibold text-black">{state.timeDriverInputs.nursingOtEnabled ? formatCurrency(nursingOtValue) : '—'}</span>
+                    </div>
+                    {state.timeDriverInputs.nursingOtEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingOtReductionPercent}% conversion)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• Retention Savings</span>
+                      <span className="font-semibold text-black">{state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingRetentionValue) : '—'}</span>
+                    </div>
+                    {state.timeDriverInputs.nursingRetentionEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({nursingRetainedCount.toFixed(1)} nurses retained)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• Agency Reduction</span>
+                      <span className="font-semibold text-black">{state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled ? formatCurrency(nursingAgencyValue) : '—'}</span>
+                    </div>
+                    {state.timeDriverInputs.nursingAgencyEnabled && state.timeDriverInputs.nursingRetentionEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">({state.timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks × ${state.timeDriverInputs.nursingAgencyWeeklyPremium.toLocaleString()})</p>
+                    )}
+                    <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
+                    <p className="text-sm text-[#666666]">
+                      Care time returned: <span className="font-semibold text-black">{nursingCareTimePerWeek} hrs/wk</span> per nurse
+                    </p>
+                  </>
+                ) : isED ? (
                   <>
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.driver1}</span>
@@ -725,7 +868,11 @@ export default function ExploreModel({
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-2">{labels.docCardTitle}</p>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-8 bg-[#EA2C00] rounded-full" />
-                <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(docValue)} / year</p>
+                {isNursing ? (
+                  <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(nursingCareQualityPotential)} / year <span className="text-base font-medium text-[#888888]">(potential)</span></p>
+                ) : (
+                  <p className="text-2xl font-bold text-[#EA2C00]">{formatCurrency(docValue)} / year</p>
+                )}
               </div>
 
               <div className="h-px bg-[#E5E5E5] mb-4" />
@@ -737,7 +884,33 @@ export default function ExploreModel({
               <div className="h-px bg-[#E5E5E5] mb-4" />
 
               <div className="space-y-2 text-sm">
-                {isInpatient ? (
+                {isNursing ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• HAPI Prevention</span>
+                      <span className="font-semibold text-black">{state.docQualityInputs.nursingHapiEnabled ? formatCurrency(nursingHapiValue) : '—'}</span>
+                    </div>
+                    {state.docQualityInputs.nursingHapiEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(potential)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• Falls Prevention</span>
+                      <span className="font-semibold text-black">{state.docQualityInputs.nursingFallsEnabled ? formatCurrency(nursingFallsValue) : '—'}</span>
+                    </div>
+                    {state.docQualityInputs.nursingFallsEnabled && (
+                      <p className="text-xs text-[#888888] pl-4">(potential)</p>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#666666]">• HCAHPS</span>
+                      <span className="font-semibold text-black">—</span>
+                    </div>
+                    <p className="text-xs text-[#888888] pl-4">(qualitative)</p>
+                    <div className="h-px bg-[#E5E5E5] mt-3 mb-2" />
+                    <p className="text-xs text-[#888888] italic">
+                      This is potential value—requires clinical practice, not just docs.
+                    </p>
+                  </>
+                ) : isInpatient ? (
                   <>
                     <div className="flex justify-between">
                       <span className="text-[#666666]">• {labels.docDriver1}</span>
@@ -907,6 +1080,45 @@ export default function ExploreModel({
           </motion.div>
         )}
 
+        {/* Nursing-specific Connected Value section */}
+        {state.careSetting === 'nursing' && (
+          <motion.div className="mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#F5F0EB] flex items-center justify-center">
+                <Link className="w-5 h-5 text-[#EA2C00]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-black uppercase tracking-wide">Connected Value</h3>
+                <p className="text-sm text-[#888888]">Nursing documentation supports the inpatient revenue cycle</p>
+              </div>
+            </div>
+            <div className="bg-[#F5F0EB] rounded-xl p-8">
+              <p className="text-sm text-[#666666] mb-5">
+                When nurses document thoroughly and in real-time, it directly supports inpatient coding and reimbursement.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 mb-5">
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <p className="font-semibold text-black mb-1">CC/MCC Capture</p>
+                  <p className="text-sm text-[#666666]">Nursing assessments capture clinical indicators that support accurate DRG assignment. &quot;Patient appears malnourished&quot; feeds coding directly.</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-[#E5E5E5] border-l-4 border-l-[#EA2C00]">
+                  <p className="font-semibold text-black mb-1">Medical Necessity</p>
+                  <p className="text-sm text-[#666666]">Real-time nursing docs provide evidence of patient acuity—critical for payer appeals.</p>
+                </div>
+              </div>
+              <div className="bg-[#2A2A2A] rounded-xl p-4 text-white">
+                <div className="flex items-start gap-3">
+                  <FileCheck className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">These benefits are quantified in the <span className="font-bold">Inpatient setting</span>.</p>
+                    <p className="text-sm opacity-80 mt-1">If your organization uses Abridge for both Nursing and Hospitalists, the documentation creates a complete clinical picture from admission through discharge.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* THE EXPANSION OPPORTUNITY */}
         <motion.div
           className="mb-12"
@@ -926,9 +1138,9 @@ export default function ExploreModel({
             <div className="flex items-center justify-between mb-6">
               <div className="text-center">
                 <p className="text-sm font-medium text-[#888888] mb-1">TODAY</p>
-                <p className="text-2xl font-bold text-black">{formatNumber(state.numberOfProviders)}</p>
-                <p className="text-sm text-[#888888]">providers</p>
-                <p className="text-sm text-[#888888]">{state.utilizationPercent}% util</p>
+                <p className="text-2xl font-bold text-black">{isNursing ? formatNumber(state.nursingStaffedBeds) : formatNumber(state.numberOfProviders)}</p>
+                <p className="text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
+                <p className="text-sm text-[#888888]">{state.utilizationPercent}% {isNursing ? 'adoption' : 'util'}</p>
               </div>
               
               <div className="flex-1 px-6 flex items-center justify-center">
@@ -943,7 +1155,7 @@ export default function ExploreModel({
                   className="h-10 w-24 text-center text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
                   data-testid="input-full-scale-providers"
                 />
-                <p className="text-sm text-[#888888]">providers</p>
+                <p className="text-sm text-[#888888]">{isNursing ? 'beds' : 'providers'}</p>
                 <div className="flex items-center justify-center gap-1">
                   <FormattedNumberInput
                     value={expandedUtilization}
@@ -951,7 +1163,7 @@ export default function ExploreModel({
                     className="h-6 w-12 text-center text-sm bg-white border border-[#E5E5E5] rounded"
                     data-testid="input-full-scale-utilization"
                   />
-                  <span className="text-sm text-[#888888]">% util</span>
+                  <span className="text-sm text-[#888888]">% {isNursing ? 'adoption' : 'util'}</span>
                 </div>
               </div>
             </div>
@@ -1080,7 +1292,7 @@ export default function ExploreModel({
                       return (
                         <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 shadow-lg">
                           <p className="font-semibold text-black text-base mb-1">{data.milestoneLabel}</p>
-                          <p className="text-sm text-[#888888] mb-3">{data.providers} providers · {data.utilization}% util</p>
+                          <p className="text-sm text-[#888888] mb-3">{data.providers} {isNursing ? 'beds' : 'providers'} · {data.utilization}% {isNursing ? 'adoption' : 'util'}</p>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-6">
                               <span className="text-[#EA2C00]">Projected:</span>
@@ -1193,9 +1405,15 @@ export default function ExploreModel({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <p className="text-sm font-bold text-black uppercase tracking-wide mb-1">Your Analysis</p>
-              <p className="text-sm text-[#888888]">
-                {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers · ${formatNumber(state.costPerProvider)}/provider/mo
-              </p>
+              {isNursing ? (
+                <p className="text-sm text-[#888888]">
+                  {careSettingLabel} · {formatNumber(state.nursingStaffedBeds)} beds · ${formatNumber(state.costPerProvider)}/bed/mo
+                </p>
+              ) : (
+                <p className="text-sm text-[#888888]">
+                  {careSettingLabel} · {formatNumber(state.numberOfProviders)} providers · ${formatNumber(state.costPerProvider)}/provider/mo
+                </p>
+              )}
             </div>
             <div className="flex gap-3">
               <Button

@@ -4,6 +4,7 @@ import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimeSavings from "./ExploreTimeSavings";
 import ExploreValueDrivers from "./ExploreValueDrivers";
 import ExploreDocQuality from "./ExploreDocQuality";
+import ExploreCareQuality from "./ExploreCareQuality";
 import ExploreInvestment from "./ExploreInvestment";
 import ExploreModel from "./ExploreModel";
 
@@ -105,8 +106,10 @@ export interface TimeDriverInputs {
   // Agency Cost Avoidance (Nursing)
   nursingAgencyEnabled: boolean;
   nursingAgencyExpanded: boolean;
-  nursingAnnualAgencySpend: number; // USD/year
-  nursingAvgAgencyHourlyRate: number; // USD/hr
+  nursingAnnualAgencySpend: number; // USD/year (legacy)
+  nursingAvgAgencyHourlyRate: number; // USD/hr (legacy)
+  nursingAgencyWeeksPerVacancy: number; // Weeks of agency coverage per vacancy
+  nursingAgencyWeeklyPremium: number; // Weekly agency premium (above base cost)
   
   // Care Quality (Nursing) - HAPI & Falls prevention
   nursingCareQualityEnabled: boolean;
@@ -307,8 +310,10 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     // Agency Cost Avoidance defaults
     nursingAgencyEnabled: false,
     nursingAgencyExpanded: true,
-    nursingAnnualAgencySpend: 2000000, // $2M default
-    nursingAvgAgencyHourlyRate: 150, // $150/hr default
+    nursingAnnualAgencySpend: 2000000, // $2M default (legacy)
+    nursingAvgAgencyHourlyRate: 150, // $150/hr default (legacy)
+    nursingAgencyWeeksPerVacancy: 12, // 12 weeks average time to fill
+    nursingAgencyWeeklyPremium: 2500, // $2,500 weekly premium above base cost
     // Care Quality (HAPI & Falls) defaults
     nursingCareQualityEnabled: false,
     nursingCareQualityExpanded: true,
@@ -387,6 +392,7 @@ type ExplorePhase =
   | 'practice' 
   | 'timeSavings' 
   | 'valueDrivers' 
+  | 'careQuality'
   | 'docQuality'
   | 'investment'
   | 'model';
@@ -547,17 +553,25 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += retained * timeDriverInputs.replacementCost;
       }
     } else if (isNursing) {
-      // Nursing: OT Reduction and Retention
+      // Nursing: OT Reduction (time-to-OT conversion from total hours saved)
       if (timeDriverInputs.nursingOtEnabled) {
-        const weeksPerYear = 52;
-        const totalOtHoursYear = numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
-        const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
-        total += reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5;
+        const otHoursEliminated = totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100);
+        total += Math.round(otHoursEliminated * timeDriverInputs.nursingOtHourlyRate);
       }
+      // Nursing: Retention (40% burnout-related × impact scenario 10/15/25%)
       if (timeDriverInputs.nursingRetentionEnabled) {
+        const retentionImpactRates: Record<string, number> = { conservative: 10, typical: 15, optimistic: 25 };
         const leavingPerYear = numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100);
-        const retained = leavingPerYear * 0.15;
-        total += retained * timeDriverInputs.nursingReplacementCost;
+        const burnoutDepartures = leavingPerYear * 0.40;
+        const impactRate = (retentionImpactRates[timeDriverInputs.retentionImpactScenario] || 15) / 100;
+        const retained = burnoutDepartures * impactRate;
+        total += Math.round(retained * timeDriverInputs.nursingReplacementCost);
+        // Agency Cost Avoidance (depends on retention being enabled)
+        if (timeDriverInputs.nursingAgencyEnabled) {
+          const weeksOfCoverage = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
+          const weeklyPremium = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
+          total += Math.round(retained * weeksOfCoverage * weeklyPremium);
+        }
       }
     } else {
       // Outpatient: Patient Access and Cost Reduction
@@ -643,6 +657,8 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     return state.annualLicenseFee;
   }, [state.pricingModel, state.numberOfProviders, state.costPerProvider, state.annualLicenseFee]);
 
+  const isNursing = state.careSetting === 'nursing';
+
   switch (phase) {
     case 'careSetting':
       return (
@@ -685,8 +701,23 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           state={state}
           updateState={updateState}
           totalHoursSaved={totalHoursSaved}
-          onNext={() => navigate('docQuality')}
+          onNext={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
           onBack={() => navigate('timeSavings')}
+          onHome={goHome}
+        />
+      );
+    
+    case 'careQuality':
+      return (
+        <ExploreCareQuality
+          state={state}
+          updateState={updateState}
+          timeDriverInputs={state.timeDriverInputs}
+          updateTimeDriverInputs={(updates) => updateState({ timeDriverInputs: { ...state.timeDriverInputs, ...updates } })}
+          totalHoursSaved={totalHoursSaved}
+          timeValue={timeValue}
+          onNext={() => navigate('investment')}
+          onBack={() => navigate('valueDrivers')}
           onHome={goHome}
         />
       );
@@ -712,7 +743,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
           timeValue={timeValue}
           docValue={docValue}
           onNext={() => navigate('model')}
-          onBack={() => navigate('docQuality')}
+          onBack={() => navigate(isNursing ? 'careQuality' : 'docQuality')}
           onHome={goHome}
         />
       );

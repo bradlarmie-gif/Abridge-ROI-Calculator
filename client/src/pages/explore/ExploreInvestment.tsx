@@ -27,18 +27,42 @@ export default function ExploreInvestment({
   onBack,
   onHome,
 }: ExploreInvestmentProps) {
+  const isNursing = state.careSetting === 'nursing';
   const totalValue = timeValue + docValue;
 
   const annualInvestment = useMemo(() => {
+    if (isNursing && state.pricingModel === 'perProvider') {
+      return state.nursingStaffedBeds * state.costPerProvider * 12;
+    }
     if (state.pricingModel === 'perProvider') {
       return state.numberOfProviders * state.costPerProvider * 12;
     }
     return state.annualLicenseFee;
-  }, [state.pricingModel, state.numberOfProviders, state.costPerProvider, state.annualLicenseFee]);
+  }, [isNursing, state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee]);
 
   const netAnnualValue = totalValue - annualInvestment;
   const roi = annualInvestment > 0 ? totalValue / annualInvestment : 0;
   const valuePerProvider = state.numberOfProviders > 0 ? Math.round(netAnnualValue / state.numberOfProviders) : 0;
+
+  const nursingCareQualityPotential = useMemo(() => {
+    if (!isNursing) return 0;
+    const { docQualityInputs } = state;
+    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    let total = 0;
+    if (docQualityInputs.nursingHapiEnabled) {
+      const hapIs = (patientDays / 1000) * docQualityInputs.nursingHapiRate;
+      total += hapIs * (docQualityInputs.nursingHapiPreventionRate / 100) * docQualityInputs.nursingHapiCost;
+    }
+    if (docQualityInputs.nursingFallsEnabled) {
+      const falls = (patientDays / 1000) * docQualityInputs.nursingFallsRate;
+      total += falls * (docQualityInputs.nursingFallsPreventionRate / 100) * docQualityInputs.nursingFallsCost;
+    }
+    return Math.round(total);
+  }, [isNursing, state.nursingStaffedBeds, state.nursingOccupancyRate, state.docQualityInputs]);
+
+  const valuePerBed = state.nursingStaffedBeds > 0 ? Math.round(totalValue / state.nursingStaffedBeds) : 0;
+  const investmentPerBed = state.nursingStaffedBeds > 0 ? Math.round(annualInvestment / state.nursingStaffedBeds) : 0;
+  const netPerBed = valuePerBed - investmentPerBed;
 
   const formatCurrency = (n: number) => '$' + n.toLocaleString();
   const formatNumber = (n: number) => n.toLocaleString();
@@ -86,7 +110,7 @@ export default function ExploreInvestment({
           <div className="h-px bg-[#E5E5E5] mb-4" />
 
           <div className="space-y-3 mb-5">
-            {/* Per Provider */}
+            {/* Per Provider/Bed */}
             <button
               onClick={() => updateState({ pricingModel: 'perProvider' })}
               className={`w-full p-4 rounded-lg text-left transition-all ${
@@ -105,8 +129,8 @@ export default function ExploreInvestment({
                   )}
                 </div>
                 <div>
-                  <p className="font-medium text-black">Per Provider / Month</p>
-                  <p className="text-sm text-[#888888]">Pay per active provider. Scale up or down as needed.</p>
+                  <p className="font-medium text-black">{isNursing ? 'Per Bed / Month' : 'Per Provider / Month'}</p>
+                  <p className="text-sm text-[#888888]">{isNursing ? 'Pay per staffed bed. Scale up or down as needed.' : 'Pay per active provider. Scale up or down as needed.'}</p>
                 </div>
               </div>
             </button>
@@ -141,7 +165,7 @@ export default function ExploreInvestment({
           {state.pricingModel === 'perProvider' ? (
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <label className="text-sm text-black">Cost per provider per month</label>
+                <label className="text-sm text-black">{isNursing ? 'Cost per staffed bed per month' : 'Cost per provider per month'}</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                   <FormattedNumberInput
@@ -154,7 +178,10 @@ export default function ExploreInvestment({
                 </div>
               </div>
               <p className="text-sm text-[#888888]">
-                {formatNumber(state.numberOfProviders)} providers × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong>
+                {isNursing 
+                  ? <>{formatNumber(state.nursingStaffedBeds)} beds × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong></>
+                  : <>{formatNumber(state.numberOfProviders)} providers × ${formatNumber(state.costPerProvider)}/mo × 12 = <strong className="text-black">{formatCurrency(annualInvestment)}/year</strong></>
+                }
               </p>
             </div>
           ) : (
@@ -250,17 +277,27 @@ export default function ExploreInvestment({
               {/* Value Breakdown */}
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#888888]">Time Savings</span>
-                  <span className="text-sm font-semibold text-white">{formatCurrency(timeValue)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#888888]">Doc Quality</span>
-                  <span className="text-sm font-semibold text-white">{formatCurrency(docValue)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-white">Total Value</span>
+                  <span className="text-sm text-[#888888]">{isNursing ? 'Annual Value' : 'Time Savings'}</span>
                   <span className="text-sm font-semibold text-white">{formatCurrency(totalValue)}</span>
                 </div>
+                {!isNursing && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-[#888888]">Doc Quality</span>
+                      <span className="text-sm font-semibold text-white">{formatCurrency(docValue)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-white">Total Value</span>
+                      <span className="text-sm font-semibold text-white">{formatCurrency(totalValue)}</span>
+                    </div>
+                  </>
+                )}
+                {isNursing && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-[#888888]">Time Savings</span>
+                    <span className="text-sm font-semibold text-white">{formatCurrency(timeValue)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="h-px bg-[#333333] my-4" />
@@ -268,7 +305,7 @@ export default function ExploreInvestment({
               {/* Investment */}
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#888888]">Investment</span>
+                  <span className="text-sm text-[#888888]">Your Investment</span>
                   <span className="text-sm font-semibold text-white">-{formatCurrency(annualInvestment)}</span>
                 </div>
               </div>
@@ -276,28 +313,70 @@ export default function ExploreInvestment({
               <div className="h-px bg-[#333333] my-4" />
 
               {/* Net Value Hero */}
-              <div className="text-center mb-4">
+              <div className="bg-[#2A2A2A] rounded-lg p-4 text-center mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Net Annual Value
                 </p>
                 <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">
-                  {formatCurrency(netAnnualValue)}
+                  {netAnnualValue >= 0 ? '+' : ''}{formatCurrency(netAnnualValue)}
                 </p>
               </div>
 
+              <div className="h-px bg-[#333333] my-4" />
+
               {/* ROI Stats */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
-                  <p className="text-xs text-[#888888]">ROI</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
-                  <p className="text-xs text-[#888888]">hours saved</p>
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#888888]">Return on Investment</span>
+                  <span className="text-xl font-bold text-white">{roi.toFixed(1)}×</span>
                 </div>
               </div>
 
               <div className="h-px bg-[#333333] my-4" />
+
+              {/* Per-Bed Metrics (Nursing) or Per-Provider Metrics */}
+              {isNursing ? (
+                <>
+                  <div className="mb-3">
+                    <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">Value Per Bed</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-white">{formatCurrency(valuePerBed)}</p>
+                      <p className="text-xs text-[#888888]">/bed/yr</p>
+                    </div>
+                    <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-white">{formatCurrency(investmentPerBed)}</p>
+                      <p className="text-xs text-[#888888]">/bed/yr</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-[#888888] text-center mb-4">
+                    Net: <span className="text-white font-semibold">{formatCurrency(netPerBed)}</span> per bed per year
+                  </p>
+                  <div className="h-px bg-[#333333] my-4" />
+                  {nursingCareQualityPotential > 0 && (
+                    <>
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-sm text-[#888888]">+ Potential Care Quality</span>
+                        <span className="text-sm font-semibold text-[#EA2C00]">{formatCurrency(nursingCareQualityPotential)}</span>
+                      </div>
+                      <p className="text-xs text-[#666666] mb-4">(shown separately)</p>
+                      <div className="h-px bg-[#333333] my-4" />
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-white">{roi.toFixed(1)}×</p>
+                    <p className="text-xs text-[#888888]">ROI</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-white">{formatNumber(totalHoursSaved)}</p>
+                    <p className="text-xs text-[#888888]">hours saved</p>
+                  </div>
+                </div>
+              )}
 
               {/* Continue Button */}
               <Button

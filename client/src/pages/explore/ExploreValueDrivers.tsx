@@ -140,76 +140,34 @@ export default function ExploreValueDrivers({
   const nursingRetentionValue = nursingRetentionCalcs.value;
 
   // Agency Cost Avoidance calculation (Nursing only)
+  // New approach: nursesRetained × weeksOfCoverage × weeklyAgencyPremium
   const nursingAgencyCalcs = useMemo(() => {
-    const AGENCY_ALLOCATION_PCT = 0.10; // Conservative 10% default
-    
-    // OT hours reduced using Time-to-OT conversion approach
-    const otHoursReduced = nursingOtHoursEliminated;
-    
-    // Remaining saved hours = total time saved - OT hours reduced
-    const remainingSavedHours = Math.max(0, totalHoursSaved - otHoursReduced);
-    
-    // Guardrails
-    const annualAgencySpend = timeDriverInputs.nursingAnnualAgencySpend || 0;
-    const avgAgencyHourlyRate = timeDriverInputs.nursingAvgAgencyHourlyRate || 0;
-    
-    if (!timeDriverInputs.nursingAgencyEnabled || avgAgencyHourlyRate <= 0 || annualAgencySpend <= 0 || remainingSavedHours <= 0) {
+    if (!timeDriverInputs.nursingAgencyEnabled || !timeDriverInputs.nursingRetentionEnabled) {
       return {
-        remainingSavedHours,
-        otHoursReduced,
-        baselineAgencyHours: avgAgencyHourlyRate > 0 ? annualAgencySpend / avgAgencyHourlyRate : 0,
-        agencyHoursAvoidedRaw: 0,
-        agencyHoursAvoided: 0,
+        nursesRetained: 0,
+        weeksOfCoverage: timeDriverInputs.nursingAgencyWeeksPerVacancy || 12,
+        weeklyPremium: timeDriverInputs.nursingAgencyWeeklyPremium || 2500,
         agencySavings: 0,
-        isCapped: false,
-        allocationPct: AGENCY_ALLOCATION_PCT,
       };
     }
     
-    const baselineAgencyHours = annualAgencySpend / avgAgencyHourlyRate;
-    const agencyHoursAvoidedRaw = remainingSavedHours * AGENCY_ALLOCATION_PCT;
-    const agencyHoursAvoided = Math.min(baselineAgencyHours, agencyHoursAvoidedRaw);
-    const isCapped = agencyHoursAvoidedRaw > baselineAgencyHours;
-    const agencySavings = agencyHoursAvoided * avgAgencyHourlyRate;
-    
-    // Dev console logging for validation
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Agency Cost Avoidance Debug]', {
-        totalTimeSavedHoursPerYear: totalHoursSaved,
-        otHoursReduced,
-        remainingSavedHours,
-        annualAgencySpend,
-        avgAgencyHourlyRate,
-        baselineAgencyHours,
-        agencyAllocationPct: AGENCY_ALLOCATION_PCT,
-        agencyHoursAvoidedRaw,
-        agencyHoursAvoided,
-        agencySavings,
-        isCapped,
-        // Validation assertions
-        assertions: {
-          'agencyHoursAvoided <= baselineAgencyHours': agencyHoursAvoided <= baselineAgencyHours,
-          'agencyHoursAvoided <= remainingSavedHours': agencyHoursAvoided <= remainingSavedHours,
-        }
-      });
-    }
+    const nursesRetained = nursingRetentionCalcs.retained;
+    const weeksOfCoverage = timeDriverInputs.nursingAgencyWeeksPerVacancy || 12;
+    const weeklyPremium = timeDriverInputs.nursingAgencyWeeklyPremium || 2500;
+    const agencySavings = Math.round(nursesRetained * weeksOfCoverage * weeklyPremium);
     
     return {
-      remainingSavedHours,
-      otHoursReduced,
-      baselineAgencyHours,
-      agencyHoursAvoidedRaw,
-      agencyHoursAvoided,
-      agencySavings: Math.round(agencySavings),
-      isCapped,
-      allocationPct: AGENCY_ALLOCATION_PCT,
+      nursesRetained,
+      weeksOfCoverage,
+      weeklyPremium,
+      agencySavings,
     };
   }, [
-    totalHoursSaved, 
-    nursingOtHoursEliminated,
     timeDriverInputs.nursingAgencyEnabled,
-    timeDriverInputs.nursingAnnualAgencySpend,
-    timeDriverInputs.nursingAvgAgencyHourlyRate
+    timeDriverInputs.nursingRetentionEnabled,
+    timeDriverInputs.nursingAgencyWeeksPerVacancy,
+    timeDriverInputs.nursingAgencyWeeklyPremium,
+    nursingRetentionCalcs.retained,
   ]);
 
   // Nursing Care Quality (HAPI & Falls) calculation
@@ -319,13 +277,13 @@ export default function ExploreValueDrivers({
     },
     nursing: {
       pageTitle: 'What Could That Time Be Worth?',
-      pageSubtitle: `Your nurses could reclaim ${formatNumber(totalHoursSaved)} hours. More time at the bedside.`,
+      pageSubtitle: `Your nurses could reclaim ${formatNumber(totalHoursSaved)} hours. Here's how that creates value.`,
       driver1Title: 'OT Reduction',
-      driver1Subtitle: 'Less documentation overtime means lower labor costs',
+      driver1Subtitle: 'When nurses finish charting faster, they leave on time',
       driver2Title: 'Retention Savings',
-      driver2Subtitle: 'Reduced burden helps retain experienced nurses',
+      driver2Subtitle: 'Reduced documentation burden helps retain experienced nurses',
       driver3Title: 'Care Time',
-      driver3Subtitle: 'More time for direct patient care activities',
+      driver3Subtitle: 'Time returned to direct patient care',
     },
   };
 
@@ -353,17 +311,11 @@ export default function ExploreValueDrivers({
         total += retentionCalcs.retentionValue;
       }
     } else if (isNursing) {
-      // Nursing uses OT Reduction, Retention, Care Quality, and Agency Cost Avoidance
+      // Nursing: OT Reduction + Retention + Agency Cost Avoidance
+      // Care Quality (HAPI, Falls) is shown separately as "potential" value on Care Quality page
       total += nursingOtValue + nursingRetentionValue;
       if (timeDriverInputs.nursingAgencyEnabled) {
         total += nursingAgencyCalcs.agencySavings;
-      }
-      if (timeDriverInputs.nursingCareTimeEnabled) {
-        // Care time includes HAPI and Falls prevention value
-        total += nursingCareQualityCalcs.totalPreventionValue;
-      }
-      if (timeDriverInputs.costReductionEnabled) {
-        total += timeDriverInputs.estimatedCostReduction;
       }
     } else {
       // Outpatient uses Patient Access and Cost Reduction
@@ -1567,103 +1519,91 @@ export default function ExploreValueDrivers({
                 className="overflow-hidden"
               >
                 <div className="bg-white rounded-b-lg p-5">
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Connection</p>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
                   <p className="text-sm text-black mb-6">
-                    After accounting for OT reduction, this time is returned to direct patient care. 
+                    After accounting for OT reduction, the remaining time is returned to direct patient care. 
                     More time at the bedside improves patient outcomes and satisfaction.
                   </p>
 
-                  {/* Interactive Care Time Selection */}
-                  <div className="bg-[#F5F0EB] rounded-lg p-4 mb-6">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-                      How Much Time Goes to Direct Care?
-                    </p>
-                    <p className="text-sm text-[#666666] mb-4">
-                      Of the time saved, how much do you expect nurses to dedicate to patient care activities? The remainder is absorbed into baseline productivity.
-                    </p>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-sm text-black font-medium">Time to care:</span>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            step="5"
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">HOW MUCH TIME GOES TO DIRECT CARE?</p>
+                  <p className="text-sm text-[#666666] mb-4">
+                    Of the time saved (after OT reduction), how much do you expect nurses to dedicate to patient care activities? The remainder is absorbed into operational efficiency.
+                  </p>
+                  
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-sm text-black font-medium">Time to care:</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-[#888888]">0% = all absorbed</span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="5"
+                          value={timeDriverInputs.nursingCareTimePercent}
+                          onChange={(e) => updateTimeDriverInputs({ nursingCareTimePercent: parseInt(e.target.value) })}
+                          className="w-32 h-2 bg-[#D1D5DB] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
+                          data-testid="slider-care-time"
+                        />
+                        <span className="text-xs text-[#888888]">100% = all to care</span>
+                        <div className="flex items-center gap-1">
+                          <FormattedNumberInput
                             value={timeDriverInputs.nursingCareTimePercent}
-                            onChange={(e) => updateTimeDriverInputs({ nursingCareTimePercent: parseInt(e.target.value) })}
-                            className="w-32 h-2 bg-[#D1D5DB] rounded-lg appearance-none cursor-pointer accent-[#EA2C00]"
-                            data-testid="slider-care-time"
+                            onChange={(v: number) => updateTimeDriverInputs({ nursingCareTimePercent: Math.min(100, Math.max(0, v)) })}
+                            className="h-9 w-16 text-center text-sm bg-white border border-[#E5E5E5] rounded"
+                            data-testid="input-care-time"
                           />
-                          <div className="flex items-center gap-1">
-                            <FormattedNumberInput
-                              value={timeDriverInputs.nursingCareTimePercent}
-                              onChange={(v: number) => updateTimeDriverInputs({ nursingCareTimePercent: Math.min(100, Math.max(0, v)) })}
-                              className="h-9 w-16 text-center text-sm bg-white border border-[#E5E5E5] rounded"
-                              data-testid="input-care-time"
-                            />
-                            <span className="text-sm text-[#888888]">%</span>
-                          </div>
+                          <span className="text-sm text-[#888888]">%</span>
                         </div>
                       </div>
-                      
-                      <div className="flex justify-between text-xs text-[#888888]">
-                        <span>0% = all absorbed</span>
-                        <span>100% = all to care</span>
-                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-6">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Prevention Value Calculation</p>
-                    <div className="bg-[#F5F0EB] rounded-lg p-4 font-mono text-xs space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-[#666666]">Patient days/year</span>
-                        <span className="text-black font-semibold">{nursingCareQualityCalcs.patientDaysPerYear.toLocaleString()}</span>
-                      </div>
-                      
-                      <div className="h-px bg-[#E5E5E5]" />
-                      <div className="text-[#888888] font-semibold">FALLS PREVENTION:</div>
-                      <div className="flex justify-between pl-2">
-                        <span className="text-[#666666]">Falls/year (rate {timeDriverInputs.nursingFallsRate}/1k)</span>
-                        <span className="text-black">{nursingCareQualityCalcs.fallsPerYear}</span>
-                      </div>
-                      <div className="flex justify-between pl-2">
-                        <span className="text-[#666666]">Preventable ({timeDriverInputs.nursingFallsPreventablePct}%)</span>
-                        <span className="text-black">{nursingCareQualityCalcs.preventableFalls}</span>
-                      </div>
-                      <div className="flex justify-between pl-2">
-                        <span className="text-[#666666]">× ${timeDriverInputs.nursingCostPerFall.toLocaleString()}/fall × {timeDriverInputs.nursingCareQualityRealization}%</span>
-                        <span className="text-[#EA2C00] font-semibold">{formatCurrency(nursingCareQualityCalcs.fallsValue)}</span>
-                      </div>
-                      
-                      <div className="h-px bg-[#E5E5E5]" />
-                      <div className="text-[#888888] font-semibold">HAPI PREVENTION:</div>
-                      <div className="flex justify-between pl-2">
-                        <span className="text-[#666666]">HAPIs/year (rate {timeDriverInputs.nursingHapiRate}/1k)</span>
-                        <span className="text-black">{nursingCareQualityCalcs.hapisPerYear}</span>
-                      </div>
-                      <div className="flex justify-between pl-2">
-                        <span className="text-[#666666]">Preventable ({timeDriverInputs.nursingHapiPreventablePct}%)</span>
-                        <span className="text-black">{nursingCareQualityCalcs.preventableHapis}</span>
-                      </div>
-                      <div className="flex justify-between pl-2">
-                        <span className="text-[#666666]">× ${timeDriverInputs.nursingCostPerHapi.toLocaleString()}/HAPI × {timeDriverInputs.nursingCareQualityRealization}%</span>
-                        <span className="text-[#EA2C00] font-semibold">{formatCurrency(nursingCareQualityCalcs.hapiValue)}</span>
-                      </div>
-                      
-                      <div className="h-px bg-[#333333]" />
-                      <div className="flex justify-between text-sm">
-                        <span className="font-bold text-black">Total Prevention Value</span>
-                        <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingCareQualityCalcs.totalPreventionValue)}/yr</span>
-                      </div>
-                    </div>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">TIME ALLOCATION</p>
+                  <div className="bg-[#F5F0EB] rounded-lg p-4">
+                    {(() => {
+                      const timeAfterOT = Math.max(0, totalHoursSaved - nursingOtHoursEliminated);
+                      const careHours = Math.round(timeAfterOT * (timeDriverInputs.nursingCareTimePercent / 100));
+                      const absorbedHours = timeAfterOT - careHours;
+                      return (
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-[#666666]">Time saved after OT</span>
+                            <span className="font-semibold text-black">{formatNumber(timeAfterOT)} hrs</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-[#888888]">({formatNumber(totalHoursSaved)} total - {formatNumber(nursingOtHoursEliminated)} to OT)</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-[#666666]">× Time to care</span>
+                            <span className="font-semibold text-black">{timeDriverInputs.nursingCareTimePercent}%</span>
+                          </div>
+                          <div className="h-px bg-[#E5E5E5] my-2" />
+                          <div className="flex justify-between">
+                            <span className="text-[#666666]">= Time returned to bedside</span>
+                            <span className="font-semibold text-[#EA2C00]">{formatNumber(careHours)} hrs/yr</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-[#666666]">Absorbed into efficiency</span>
+                            <span className="font-semibold text-[#888888]">{formatNumber(absorbedHours)} hrs/yr</span>
+                          </div>
+                          <div className="text-xs text-[#888888] italic">(no dollar value calculated)</div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
-                  <div className="mt-4 p-3 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/20">
-                    <p className="text-xs text-[#EA2C00] text-center">
-                      {timeDriverInputs.nursingCareQualityRealization}% realization rate applied to account for attribution uncertainty
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mt-6 mb-3">WHERE DOES CARE TIME GO?</p>
+                  <ul className="space-y-2 text-sm text-[#333333] list-disc pl-5 mb-6">
+                    <li>Reduced falls through more frequent rounding</li>
+                    <li>Fewer pressure injuries with timely assessments</li>
+                    <li>Higher patient satisfaction (HCAHPS)</li>
+                    <li>Better clinical outcomes overall</li>
+                  </ul>
+
+                  <div className="bg-[#F5F0EB]/60 rounded-lg p-3">
+                    <p className="text-xs text-[#888888]">
+                      We don't calculate a dollar value for care time because the link to outcomes is indirect. But we DO explore the potential quality impact in the next section.
                     </p>
                   </div>
                 </div>
@@ -1780,8 +1720,8 @@ export default function ExploreValueDrivers({
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="font-semibold text-black">Agency Cost Avoidance</p>
-                  <p className="text-sm text-[#888888]">If time savings reduce last-minute agency coverage needs</p>
+                  <p className="font-semibold text-black">Agency Labor Reduction</p>
+                  <p className="text-sm text-[#888888]">If better retention reduces your need for travel nurses</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {timeDriverInputs.nursingAgencyEnabled && (
@@ -1817,91 +1757,76 @@ export default function ExploreValueDrivers({
                   className="overflow-hidden"
                 >
                   <div className="bg-white rounded-b-lg p-5">
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
+                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE LOGIC</p>
                     <p className="text-sm text-black mb-6">
-                      Abridge doesn't reduce required staffing. Some documentation time savings can prevent last-minute agency coverage. 
-                      This estimate allocates a small portion of remaining saved time to avoided agency hours, capped by current agency spend.
+                      When nurses leave, hospitals fill gaps with agency or travel nurses at 2-3x the cost. 
+                      Better retention directly reduces this premium labor spend.
                     </p>
 
-                    {nursingAgencyCalcs.remainingSavedHours <= 0 ? (
+                    {!timeDriverInputs.nursingRetentionEnabled ? (
                       <div className="bg-[#FFF8F6] border border-[#FFDDD6] rounded-lg p-4 mb-4">
                         <p className="text-sm text-[#EA2C00]">
-                          No remaining saved time available after overtime assumptions. 
-                          Enable or adjust OT Reduction to free up hours for agency avoidance.
+                          Enable Retention Savings above to calculate agency cost avoidance. 
+                          Agency savings are derived from the number of nurses retained.
                         </p>
                       </div>
                     ) : (
                       <>
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
+                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
                         <div className="grid grid-cols-2 gap-6 mb-6">
                           <div className="space-y-2.5">
-                            <label className="text-sm text-[#888888]">Annual agency spend</label>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                              <FormattedNumberInput
-                                value={timeDriverInputs.nursingAnnualAgencySpend}
-                                onChange={(v: number) => updateTimeDriverInputs({ nursingAnnualAgencySpend: v })}
-                                className="h-12 bg-white pl-7"
-                                data-testid="input-agency-spend"
-                              />
-                            </div>
-                            <p className="text-xs text-[#888888]">Total agency nursing spend per year</p>
+                            <label className="text-sm text-[#888888]">Weeks of agency coverage per vacancy</label>
+                            <FormattedNumberInput
+                              value={timeDriverInputs.nursingAgencyWeeksPerVacancy}
+                              onChange={(v: number) => updateTimeDriverInputs({ nursingAgencyWeeksPerVacancy: v })}
+                              className="h-12 bg-white"
+                              data-testid="input-agency-weeks"
+                            />
+                            <p className="text-xs text-[#888888]">Average time to fill a nursing vacancy</p>
                           </div>
                           <div className="space-y-2.5">
-                            <label className="text-sm text-[#888888]">Average agency hourly rate</label>
+                            <label className="text-sm text-[#888888]">Weekly agency premium (above base cost)</label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                               <FormattedNumberInput
-                                value={timeDriverInputs.nursingAvgAgencyHourlyRate}
-                                onChange={(v: number) => updateTimeDriverInputs({ nursingAvgAgencyHourlyRate: v })}
+                                value={timeDriverInputs.nursingAgencyWeeklyPremium}
+                                onChange={(v: number) => updateTimeDriverInputs({ nursingAgencyWeeklyPremium: v })}
                                 className="h-12 bg-white pl-7"
-                                data-testid="input-agency-rate"
+                                data-testid="input-agency-premium"
                               />
                             </div>
-                            <p className="text-xs text-[#888888]">Typical range: $100-200/hr</p>
+                            <p className="text-xs text-[#888888]">Additional cost per week for agency vs. permanent staff</p>
                           </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation Details</p>
+                        <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                         <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-[#666666]">Remaining time available</span>
-                              <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.remainingSavedHours))} hrs/yr</span>
+                              <span className="text-[#666666]">Nurses retained (from Retention)</span>
+                              <span className="font-semibold text-black">{nursingRetentionCalcs.retained.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#666666]">Allocated to agency avoidance (10%)</span>
-                              <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.agencyHoursAvoidedRaw))} hrs/yr</span>
+                              <span className="text-[#666666]">× Weeks of agency coverage avoided</span>
+                              <span className="font-semibold text-black">{timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#666666]">Cap based on current agency spend</span>
-                              <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.baselineAgencyHours))} hrs/yr</span>
-                            </div>
-                            <div className="h-px bg-[#E5E5E5] my-2" />
-                            <div className="flex justify-between items-center">
-                              <span className="text-[#666666]">Agency hours avoided {nursingAgencyCalcs.isCapped ? '(capped)' : ''}</span>
-                              <div className="flex items-center gap-2">
-                                {nursingAgencyCalcs.isCapped && (
-                                  <span className="text-[10px] font-medium text-white bg-[#EA2C00] px-2 py-0.5 rounded uppercase">Capped by Spend</span>
-                                )}
-                                <span className="font-semibold text-black">{formatNumber(Math.round(nursingAgencyCalcs.agencyHoursAvoided))} hrs/yr</span>
-                              </div>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[#666666]">× Hourly rate</span>
-                              <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingAvgAgencyHourlyRate)}/hr</span>
+                              <span className="text-[#666666]">× Weekly agency premium</span>
+                              <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingAgencyWeeklyPremium)}</span>
                             </div>
                             <div className="h-px bg-[#E5E5E5] my-2" />
                             <div className="flex justify-between">
-                              <span className="text-[#666666] font-medium">Agency Cost Avoided</span>
-                              <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingAgencyCalcs.agencySavings)}/yr</span>
+                              <span className="text-[#666666] font-medium">Annual Agency Savings</span>
+                              <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingAgencyCalcs.agencySavings)}</span>
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-xs text-[#888888] mt-3">
-                          Conservative default: 10% of remaining saved time allocated to agency avoidance.
-                        </p>
+                        <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
+                          <p className="text-xs text-[#888888]">
+                            This is separate from Retention Value. Retention captures replacement cost. Agency captures the premium labor cost during the vacancy period.
+                          </p>
+                        </div>
                       </>
                     )}
                   </div>
@@ -1971,6 +1896,20 @@ export default function ExploreValueDrivers({
                             <span className="text-sm font-semibold text-white">{formatNumber(totalHoursSaved)} hrs</span>
                           </div>
                           
+                          {/* OT Reduction */}
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
+                              <span className="text-xs text-[#888888]">OT Reduction</span>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-sm font-semibold ${timeDriverInputs.nursingOtEnabled ? 'text-[#EA2C00]' : 'text-[#666666]'}`}>
+                                {formatNumber(otHours)} hrs
+                              </span>
+                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingOtEnabled ? timeDriverInputs.nursingOtReductionPercent : 0}%)</span>
+                            </div>
+                          </div>
+                          
                           {/* Direct Care */}
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
@@ -1980,20 +1919,6 @@ export default function ExploreValueDrivers({
                             <div className="text-right">
                               <span className="text-sm font-semibold text-[#EA2C00]">{formatNumber(careHours)} hrs</span>
                               <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingCareTimePercent}%)</span>
-                            </div>
-                          </div>
-                          
-                          {/* OT Reduction */}
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingOtEnabled ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                              <span className="text-xs text-[#888888]">OT Reduction</span>
-                            </div>
-                            <div className="text-right">
-                              <span className={`text-sm font-semibold ${timeDriverInputs.nursingOtEnabled ? 'text-white' : 'text-[#666666]'}`}>
-                                {formatNumber(otHours)} hrs
-                              </span>
-                              <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingOtEnabled ? timeDriverInputs.nursingOtReductionPercent : 0}%)</span>
                             </div>
                           </div>
                           
@@ -2201,47 +2126,27 @@ export default function ExploreValueDrivers({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Agency Avoidance</span>
+                          <span className="text-sm text-[#888888]">Agency Reduction</span>
                         </div>
                         <span className={`text-sm font-semibold ${timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? 'text-white' : 'text-[#666666]'}`}>
                           {timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 ? formatCurrency(nursingAgencyCalcs.agencySavings) : '—'}
                         </span>
                       </div>
-                      {timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.isCapped && (
-                        <p className="text-xs text-[#EA2C00] ml-4 mt-0.5">(capped by spend)</p>
-                      )}
-                      {timeDriverInputs.nursingAgencyEnabled && !nursingAgencyCalcs.isCapped && nursingAgencyCalcs.agencySavings > 0 && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(10% allocation)</p>
+                      {timeDriverInputs.nursingAgencyEnabled && nursingAgencyCalcs.agencySavings > 0 && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">({timeDriverInputs.nursingAgencyWeeksPerVacancy} weeks × {formatCurrency(timeDriverInputs.nursingAgencyWeeklyPremium)})</p>
                       )}
                     </div>
 
                     <div>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Cost Reduction</span>
+                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingCareTimeEnabled ? 'bg-[#444444]' : 'bg-[#444444]'}`} />
+                          <span className="text-sm text-[#888888]">Care Time</span>
                         </div>
-                        <span className={`text-sm font-semibold ${timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? 'text-white' : 'text-[#666666]'}`}>
-                          {timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0 ? formatCurrency(timeDriverInputs.estimatedCostReduction) : '—'}
-                        </span>
+                        <span className="text-sm font-semibold text-[#666666]">—</span>
                       </div>
-                      {!timeDriverInputs.costReductionEnabled && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(your estimate)</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 ? 'bg-[#EA2C00]' : 'bg-[#444444]'}`} />
-                          <span className="text-sm text-[#888888]">Care Quality</span>
-                        </div>
-                        <span className={`text-sm font-semibold ${timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 ? 'text-white' : 'text-[#666666]'}`}>
-                          {timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 ? formatCurrency(nursingCareQualityCalcs.totalPreventionValue) : '—'}
-                        </span>
-                      </div>
-                      {timeDriverInputs.nursingCareTimeEnabled && nursingCareQualityCalcs.totalPreventionValue > 0 && (
-                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(HAPI + Falls)</p>
+                      {timeDriverInputs.nursingCareTimeEnabled && (
+                        <p className="text-xs text-[#666666] ml-4 mt-0.5">(qualitative)</p>
                       )}
                     </div>
                   </>
