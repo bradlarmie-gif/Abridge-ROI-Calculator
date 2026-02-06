@@ -1,8 +1,7 @@
 import { Page, View, Text, StyleSheet, Svg, Path, Circle, Line, Image, Font } from "@react-pdf/renderer";
-import abridgeLogoWhite from "@assets/abridge-logo-wordmark-white_1769912213277.png";
+import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import abridgeFont from "../../assets/fonts/abridge.otf";
 
-// Register Abridge custom font for PDF
 Font.register({
   family: "Abridge",
   src: abridgeFont,
@@ -18,190 +17,186 @@ interface PDFCoverPageProps {
 
 const colors = {
   primary: "#EA2C00",
-  primaryDark: "#D12600",
+  black: "#1A1A1A",
+  gray: "#666666",
+  lightGray: "#999999",
+  border: "#E0E0E0",
   white: "#FFFFFF",
-  lightOrange: "rgba(255, 255, 255, 0.15)",
-  subtleOrange: "rgba(255, 255, 255, 0.6)",
+  warmBeige: "#F5F0EB",
 };
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.white,
     position: "relative",
+    padding: 0,
   },
-  
-  gridContainer: {
+
+  chartContainer: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    bottom: 100,
+    right: 40,
+    width: 200,
+    height: 140,
   },
-  
+
   contentContainer: {
     flex: 1,
     padding: 60,
-    paddingTop: 120,
+    paddingTop: 80,
     position: "relative",
     zIndex: 10,
   },
-  
+
+  logo: {
+    width: 90,
+    marginBottom: 60,
+  },
+
   reportLabel: {
     fontSize: 11,
-    color: colors.subtleOrange,
+    color: colors.gray,
     letterSpacing: 2,
     marginBottom: 16,
     textTransform: "uppercase",
   },
-  
+
   title: {
-    fontSize: 52,
+    fontSize: 48,
     fontFamily: "Abridge",
     fontWeight: "bold",
-    color: colors.white,
+    color: colors.black,
     lineHeight: 1.1,
     letterSpacing: -1,
     marginBottom: 40,
-    textTransform: "uppercase",
   },
-  
-  subtitleContainer: {
-    position: "absolute",
-    bottom: 180,
-    right: 60,
-    maxWidth: 200,
-    textAlign: "right",
+
+  divider: {
+    width: 200,
+    height: 1,
+    backgroundColor: colors.border,
+    marginBottom: 32,
   },
-  
-  subtitle: {
-    fontSize: 14,
-    color: colors.subtleOrange,
-    lineHeight: 1.5,
-  },
-  
-  clientName: {
+
+  metaLabel: {
     fontSize: 12,
-    color: colors.white,
-    marginTop: 8,
-    fontWeight: "bold",
+    color: colors.gray,
+    marginBottom: 4,
   },
-  
-  footer: {
+
+  metaValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 20,
+  },
+
+  dateText: {
+    fontSize: 12,
+    color: colors.gray,
+    marginTop: 4,
+  },
+
+  disclaimer: {
     position: "absolute",
     bottom: 40,
-    left: 45,
-    right: 45,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
+    left: 60,
+    right: 60,
   },
-  
-  logo: {
-    width: 80,
-    height: 16,
-  },
-  
-  preparedByContainer: {
-    alignItems: "flex-end",
-  },
-  
-  preparedByLabel: {
+
+  disclaimerText: {
     fontSize: 8,
-    color: colors.subtleOrange,
-    marginBottom: 2,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  
-  preparedByName: {
-    fontSize: 10,
-    color: colors.white,
+    color: colors.lightGray,
+    lineHeight: 1.5,
   },
 });
 
-export function PDFCoverPage({ 
-  reportLabel, 
-  title, 
-  subtitle, 
+export function PDFCoverPage({
+  reportLabel,
+  title,
+  subtitle,
   clientName,
-  preparedBy 
+  preparedBy,
 }: PDFCoverPageProps) {
   const displayClientName = clientName || "";
   const displayPreparedBy = preparedBy || "Abridge";
-  
-  // A4 dimensions in points: 595 x 842
-  const pageWidth = 595;
-  const pageHeight = 842;
-  const gridSpacingX = 85; // ~7 columns, more spaced out
-  const gridSpacingY = 105; // ~8 rows, more spaced out
-  
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <Page size="A4" style={styles.page}>
-      {/* Grid Pattern Background */}
-      <View style={styles.gridContainer}>
-        <Svg width={pageWidth} height={pageHeight} viewBox={`0 0 ${pageWidth} ${pageHeight}`}>
-          {/* Vertical grid lines - subtle white */}
-          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+      <View style={styles.chartContainer}>
+        <Svg width={200} height={140} viewBox="0 0 200 140">
+          {[0, 1, 2, 3, 4].map((i) => (
             <Line
-              key={`v-${i}`}
-              x1={gridSpacingX * i}
-              y1={0}
-              x2={gridSpacingX * i}
-              y2={pageHeight}
-              stroke="#FFFFFF"
-              strokeWidth={0.5}
-              strokeOpacity={0.15}
-            />
-          ))}
-          {/* Horizontal grid lines - subtle white */}
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <Line
-              key={`h-${i}`}
+              key={`grid-h-${i}`}
               x1={0}
-              y1={gridSpacingY * i}
-              x2={pageWidth}
-              y2={gridSpacingY * i}
-              stroke="#FFFFFF"
+              y1={i * 35}
+              x2={200}
+              y2={i * 35}
+              stroke={colors.border}
               strokeWidth={0.5}
-              strokeOpacity={0.15}
+              strokeOpacity={0.5}
             />
           ))}
-          
-          {/* Simple exponential growth curve - single quadratic bezier */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Line
+              key={`grid-v-${i}`}
+              x1={i * 40}
+              y1={0}
+              x2={i * 40}
+              y2={140}
+              stroke={colors.border}
+              strokeWidth={0.5}
+              strokeOpacity={0.5}
+            />
+          ))}
           <Path
-            d="M 60 820 Q 400 800 580 0"
-            stroke="#FFFFFF"
-            strokeWidth={1.5}
-            strokeOpacity={0.35}
+            d="M 10 130 Q 80 120 120 80 T 190 10"
+            stroke={colors.primary}
+            strokeWidth={2}
             fill="none"
+            strokeOpacity={0.6}
           />
-          
-          {/* 5 Data points exactly on the quadratic curve (calculated from bezier formula) */}
-          <Circle cx={126} cy={808} r={5} fill="#FFFFFF" fillOpacity={0.6} />
-          <Circle cx={250} cy={738} r={5} fill="#FFFFFF" fillOpacity={0.6} />
-          <Circle cx={360} cy={605} r={5} fill="#FFFFFF" fillOpacity={0.6} />
-          <Circle cx={458} cy={410} r={5} fill="#FFFFFF" fillOpacity={0.6} />
-          <Circle cx={542} cy={152} r={5} fill="#FFFFFF" fillOpacity={0.6} />
+          <Circle cx={50} cy={122} r={3} fill={colors.primary} fillOpacity={0.5} />
+          <Circle cx={100} cy={95} r={3} fill={colors.primary} fillOpacity={0.5} />
+          <Circle cx={140} cy={60} r={3} fill={colors.primary} fillOpacity={0.5} />
+          <Circle cx={175} cy={25} r={3} fill={colors.primary} fillOpacity={0.5} />
         </Svg>
       </View>
-      
-      {/* Main Content */}
+
       <View style={styles.contentContainer}>
+        <Image src={abridgeLogoRed} style={styles.logo} />
+
         <Text style={styles.reportLabel}>{reportLabel}</Text>
         <Text style={styles.title}>{title}</Text>
-      </View>
-      
-      
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Image src={abridgeLogoWhite} style={styles.logo} />
-        
-        {displayPreparedBy && (
-          <View style={styles.preparedByContainer}>
-            <Text style={styles.preparedByLabel}>Prepared By</Text>
-            <Text style={styles.preparedByName}>{displayPreparedBy}</Text>
+
+        <View style={styles.divider} />
+
+        {displayClientName ? (
+          <View>
+            <Text style={styles.metaLabel}>Prepared for</Text>
+            <Text style={styles.metaValue}>{displayClientName}</Text>
           </View>
-        )}
+        ) : null}
+
+        {displayPreparedBy ? (
+          <View>
+            <Text style={styles.metaLabel}>Prepared by</Text>
+            <Text style={styles.metaValue}>{displayPreparedBy}</Text>
+          </View>
+        ) : null}
+
+        <Text style={styles.dateText}>{today}</Text>
+      </View>
+
+      <View style={styles.disclaimer}>
+        <Text style={styles.disclaimerText}>
+          This assessment is for planning purposes. All calculations are based on inputs provided and Abridge benchmark data.
+        </Text>
       </View>
     </Page>
   );

@@ -1,0 +1,791 @@
+THE NARRATIVE ARC
+Every great document tells a story. Here's yours:
+CopyPAGE 1: COVER
+"This is yours. We made this for you."
+
+PAGE 2: WHERE YOU ARE
+"You invested in something important. Here's what you've built so far."
+
+PAGE 3: WHAT GOOD LOOKS LIKE
+"Here's what's possible. Not aspirational—actual."
+
+PAGE 4: THE OPPORTUNITY
+"Here's the distance between where you are and where you could be. 
+In hours. In dollars. In provider experience."
+
+PAGE 5: THE MATH
+"We'll show our work. Every number is yours to adjust."
+
+PAGE 6: WHAT WE'VE LEARNED
+"From hundreds of implementations, these patterns matter most."
+
+PAGE 7: YOUR SUMMARY
+"Everything in one view. Your starting point for the conversation ahead."
+
+THE APPROACH
+Here's what I think you need to do:
+1. Kill the report-card energy
+The current PDF feels like it's grading them. Score: 59%. Dimensions. Benchmarks. Gap.
+Instead, make it feel like a clinical assessment—like a doctor reviewing a patient's chart. Not judgmental. Just clear-eyed and thorough. A doctor doesn't say "your cholesterol is bad." They say "your cholesterol is 240. The target range is 150-200. Here's what that means for you specifically."
+2. Make page 2 about THEM, not about scores
+The first real page should feel personal. Right now it jumps straight to "YOUR VALUE REALIZATION SCORE: 59%." That's cold.
+What if it started with:
+CopyYOUR ORGANIZATION
+
+10 providers · 25,000 annual encounters
+Currently using ambient AI documentation
+
+You've taken the most important step—you've invested in ambient AI 
+for your providers. This assessment looks at how that investment is 
+performing across four dimensions, and where the opportunity lies.
+Then the score. Then the breakdown. The score hits differently when it's contextualized by who they are first.
+3. Make the benchmark page feel like education, not comparison
+Right now page 3 says "66% of benchmark" in red next to each metric. That reads as a grade.
+What if instead, each dimension told a micro-story:
+CopyADOPTION: 50%
+Abridge Benchmark: 76%
+
+Half of your providers are using AI documentation consistently. 
+When adoption is below 60%, it typically reflects workflow friction 
+rather than a technology problem—the tool isn't fitting naturally 
+into how providers work.
+Same data. But now it's explaining, not grading.
+4. Make the opportunity page feel like possibility, not failure
+"The Gap" → "The Opportunity Ahead"
+And instead of just showing $36K, show what that means in human terms:
+Copy$36K in potential additional value per year
+
+What does that look like?
+
+- 475 additional hours of provider time reclaimed
+- 6,500 more encounters with AI documentation support  
+- Meaningful improvement in provider experience
+Numbers become real when they become tangible.
+5. Make the math page feel like transparency, not a spreadsheet
+The math page should feel like you're sitting across from someone and saying "let me show you how we got here." Not like an accountant handing over a tax return.
+The NaN bug aside—the structure is actually close. But the framing copy matters:
+Copy"Every number traces back to your inputs. We've shown our assumptions 
+so you can adjust anything that doesn't match your reality."
+6. Make the patterns page feel like wisdom, not a sales pitch
+This is where you teach. Right now it reads well but the "bottom line" tips into sales territory.
+The soul of this page should be: "We've been in this with a lot of organizations. Here's what we've noticed matters most."
+7. Make the summary page feel like a beginning, not an ending
+Right now it feels like a final exam recap. It should feel like the opening slide of a conversation:
+Copy"This is your starting point. The numbers tell a clear story—there's 
+meaningful opportunity ahead. The next step is understanding which 
+specific factors matter most for your organization."
+
+THE DESIGN APPROACH
+Don't fix it page by page. Rebuild the template.
+Here's what I'd tell Replit:
+CopyI need you to rebuild the PDF export template for the competitive 
+displacement flow. Don't patch the existing template—create a new 
+one from scratch that follows these principles:
+
+DESIGN PRINCIPLES:
+1. White backgrounds everywhere. No dark banners.
+2. Warm beige (#F5F0EB) for cards and callout boxes.
+3. Red-orange (#EA2C00) as the ONLY accent color.
+4. Gray (#E0E0E0) for borders, unfilled bars, secondary elements.
+5. Generous whitespace. Let the content breathe.
+6. Typography-led design. Big numbers, quiet labels.
+7. Every page has ONE clear visual hierarchy: 
+   headline → key insight → supporting detail.
+
+CONTENT PRINCIPLES:
+1. Start with the person, not the score.
+2. Educate, don't grade.
+3. Show the opportunity, not the failure.
+4. Be transparent about the math.
+5. Teach from experience, don't sell.
+6. End with a beginning, not a conclusion.
+
+THE EXACT REPLIT PROMPT
+CopyRebuild the PDF export for the Competitive Displacement (Switch → Competitor) 
+flow from scratch. Create a new PDF template that matches the Abridge brand 
+and tells a cohesive story. Do not patch the existing template—replace it.
+
+═══════════════════════════════════════════════════════════════════════════════════
+GLOBAL PDF TEMPLATE
+═══════════════════════════════════════════════════════════════════════════════════
+
+DOCUMENT SETTINGS:
+- Page size: Letter (8.5 × 11 inches)
+- Margins: 1 inch on all sides
+- Font: Manrope (fallback: system sans-serif)
+- Base font size: 12px
+- Line height: 1.6
+
+COLOR PALETTE (strict — no other colors allowed):
+- Background: #FFFFFF
+- Card/section backgrounds: #F5F0EB
+- Primary accent: #EA2C00
+- Primary text: #1A1A1A
+- Secondary text: #666666
+- Tertiary text: #999999
+- Borders: #E0E0E0
+- Light accent: #FFF5F2 (very subtle red-orange tint for highlight rows)
+
+NO green. NO navy. NO purple. NO orange. NO pink.
+
+TYPOGRAPHY SCALE:
+- Page headline: 28px, bold, #1A1A1A
+- Section label: 10px, ALL CAPS, #EA2C00, letter-spacing 2px
+- Section headline: 20px, bold, #1A1A1A
+- Large number (hero): 56px, bold, #EA2C00
+- Medium number: 32px, bold, #1A1A1A
+- Body: 12px, regular, #333333
+- Caption: 10px, regular, #666666
+- Disclaimer: 9px, italic, #999999
+
+COMPONENTS:
+
+Stat Card:
+- Background: #F5F0EB
+- Padding: 20px
+- Border-radius: 8px
+- Number: 32px bold
+- Label: 10px ALL CAPS #666666
+- Subtext: 10px #666666
+- Optional: 3px left border in #EA2C00 for emphasis
+
+Callout Box:
+- Background: #F5F0EB
+- Left border: 3px solid #EA2C00
+- Padding: 16px 20px
+- Header: 13px, bold, #1A1A1A
+- Body: 12px, #333333
+
+Progress Bar:
+- Height: 8px
+- Border-radius: 4px
+- Filled: #EA2C00
+- Unfilled: #E0E0E0
+
+Benchmark Comparison:
+- "You" value: 20px, bold, #1A1A1A
+- "Benchmark" value: 20px, bold, #EA2C00
+- Bar showing relative position
+- Context text below: 11px, #666666
+
+Page Footer:
+- Thin line: #E0E0E0
+- Left: ABRIDGE logo in #EA2C00
+- Right: "Page X of Y" in 9px #999999
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 1: COVER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Background: #FFFFFF
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Top-left]                                                                     │
+│  ABRIDGE logo (#EA2C00)                                                         │
+│                                                                                 │
+│                                                                                 │
+│  [Vertically centered, left-aligned]                                            │
+│                                                                                 │
+│  AMBIENT ASSESSMENT                                                             │
+│  [10px, ALL CAPS, #666666, letter-spacing 3px]                                  │
+│                                                                                 │
+│                                                                                 │
+│  Performance &                                                                  │
+│  Opportunity                                                                    │
+│  [42px, bold, #1A1A1A, line-height 1.2]                                         │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  ────────────────────────── [40% width line, #E0E0E0]                           │
+│                                                                                 │
+│                                                                                 │
+│  PREPARED FOR                                                                   │
+│  [10px, ALL CAPS, #999999]                                                      │
+│                                                                                 │
+│  [Organization Name]                                                            │
+│  [18px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│                                                                                 │
+│  PREPARED BY                                                                    │
+│  [10px, ALL CAPS, #999999]                                                      │
+│                                                                                 │
+│  [Rep Name]                                                                     │
+│  [14px, regular, #1A1A1A]                                                       │
+│                                                                                 │
+│  [Date]                                                                         │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  [Bottom area — subtle decorative element]                                      │
+│  Small version of compounding effect curve                                      │
+│  Line: #EA2C00 at 20% opacity                                                   │
+│  Grid: #E0E0E0 at 10% opacity                                                   │
+│  Dots: #EA2C00 at 30% opacity                                                   │
+│  Very subtle — barely visible, adds texture                                     │
+│                                                                                 │
+│                                                                                 │
+│  [Very bottom]                                                                  │
+│  This assessment is for planning purposes. Calculations are based on            │
+│  inputs provided and Abridge benchmark data.                                    │
+│  [9px, #999999]                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 2: YOUR PERFORMANCE PROFILE
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR PERFORMANCE PROFILE                                                       │
+│  [10px, ALL CAPS, #EA2C00, letter-spacing 2px]                                  │
+│                                                                                 │
+│  Where You Are Today                                                            │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YOUR ORGANIZATION                                                              │
+│  [10px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  [providers] providers · [encounters] annual encounters                         │
+│  Currently using ambient AI documentation                                       │
+│  [14px, #333333]                                                                │
+│                                                                                 │
+│  You've invested in ambient AI for your providers. This assessment              │
+│  measures how that investment is performing and where the opportunity            │
+│  lies ahead.                                                                    │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  VALUE REALIZATION SCORE                                                        │
+│  [10px, ALL CAPS, #666666, centered]                                            │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [Background: #F5F0EB, centered content]                                │    │
+│  │                                                                         │    │
+│  │                          59%                                            │    │
+│  │                          [56px, bold, #1A1A1A]                          │    │
+│  │                                                                         │    │
+│  │                     Early Progress                                      │    │
+│  │                     [14px, #EA2C00]                                     │    │
+│  │                                                                         │    │
+│  │  ┌──────────────────────────────────────┬───────────────────────────┐   │    │
+│  │  │██████████████████████████████████████│░░░░░░░░░░░░░░░░░░░░░░░░░░│   │    │
+│  │  └──────────────────────────────────────┴───────────────────────────┘   │    │
+│  │  [#EA2C00 filled: 59%]                  [#E0E0E0 unfilled: 41%]        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  This score compares your metrics against what mature Abridge                   │
+│  implementations typically achieve. It's a starting point for                   │
+│  understanding—not a grade.                                                     │
+│  [12px, #666666, centered]                                                      │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YOUR FOUR DIMENSIONS                                                           │
+│  [10px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐    │
+│  │               │  │               │  │               │  │               │    │
+│  │  ADOPTION     │  │  EFFICIENCY   │  │  DOCUMENTATION│  │  PROVIDER     │    │
+│  │               │  │               │  │  QUALITY      │  │  EXPERIENCE   │    │
+│  │               │  │               │  │               │  │               │    │
+│  │  50%          │  │  2.5 min      │  │  +4%          │  │  30%          │    │
+│  │  [24px, bold] │  │  [24px, bold] │  │  [24px, bold] │  │  [24px, bold] │    │
+│  │               │  │               │  │               │  │               │    │
+│  │  of providers │  │  saved per    │  │  wRVU         │  │  would        │    │
+│  │  using AI     │  │  encounter    │  │  improvement  │  │  recommend    │    │
+│  │               │  │               │  │               │  │               │    │
+│  │  vs. 76%      │  │  vs. 4 min    │  │  vs. +5.5%    │  │  vs. 88%      │    │
+│  │  benchmark    │  │  benchmark    │  │  benchmark    │  │  benchmark    │    │
+│  │  [10px,       │  │  [10px,       │  │  [10px,       │  │  [10px,       │    │
+│  │   #EA2C00]    │  │   #EA2C00]    │  │   #EA2C00]    │  │   #EA2C00]    │    │
+│  │               │  │               │  │               │  │               │    │
+│  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘    │
+│  [Cards: #F5F0EB background]                                                    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  You've made real progress. The infrastructure is in place.          │    │
+│  │  ┃  The opportunity ahead is in optimization—understanding which        │    │
+│  │  ┃  specific factors are limiting value and addressing them.            │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Callout: #F5F0EB bg, #EA2C00 left border]                                    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│  ABRIDGE                                                        Page 1 of 6    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 3: WHAT MATURE IMPLEMENTATIONS ACHIEVE
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  BENCHMARKS                                                                     │
+│  [10px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  What Mature Implementations Achieve                                            │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  These benchmarks reflect actual performance from established Abridge           │
+│  implementations. They represent achievable ranges—not aspirational targets.    │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Each card follows this structure:                                              │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Adoption                                                               │    │
+│  │  [18px, bold, #1A1A1A]                                                 │    │
+│  │                                                                         │    │
+│  │  YOU                              ABRIDGE BENCHMARK                     │    │
+│  │  50%                              76%                                   │    │
+│  │  [20px, bold, #1A1A1A]            [20px, bold, #EA2C00]                │    │
+│  │                                                                         │    │
+│  │  ┌────────────────────────────────┬─────────────────────────────────┐   │    │
+│  │  │████████████████████████████████│░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│   │    │
+│  │  └────────────────────────────────┴─────────────────────────────────┘   │    │
+│  │  [#EA2C00: 66%]                   [#E0E0E0: 34%]                       │    │
+│  │                                                                         │    │
+│  │                                                     66% of benchmark    │    │
+│  │                                                     [12px, #EA2C00]    │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Adoption measures how many providers consistently use AI       │   │    │
+│  │  │  documentation. When adoption is below 60%, it typically        │   │    │
+│  │  │  reflects workflow friction—the tool isn't fitting naturally    │   │    │
+│  │  │  into how providers work.                                      │   │    │
+│  │  │                                                                 │   │    │
+│  │  └─────────────────────────────────────────────────────────────────┘   │    │
+│  │  [Context box: #F5F0EB bg, 11px, #666666]                              │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Card: white bg, thin border #E0E0E0, 3px left border #EA2C00]                │
+│                                                                                 │
+│  [Space: 16px]                                                                  │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  Efficiency                                                             │    │
+│  │  YOU: 2.5 min    BENCHMARK: 4 min                  63% of benchmark    │    │
+│  │  [same bar structure]                                                   │    │
+│  │                                                                         │    │
+│  │  Per-encounter documentation time reduction. When providers report     │    │
+│  │  lower savings, it often reflects workflow friction—editing time,       │    │
+│  │  integration gaps, or notes that don't match their clinical style.     │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  Documentation Quality                                                  │    │
+│  │  YOU: +4%    BENCHMARK: +5.5%                      73% of benchmark    │    │
+│  │  [same bar structure]                                                   │    │
+│  │                                                                         │    │
+│  │  Better documentation captures clinical complexity more accurately.     │    │
+│  │  Higher wRVU lift often indicates baseline documentation was            │    │
+│  │  incomplete. Lift within the benchmark range with already-strong        │    │
+│  │  documentation is equally healthy.                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  Provider Experience                                                    │    │
+│  │  YOU: 30%    BENCHMARK: 88%                        34% of benchmark    │    │
+│  │  [same bar structure]                                                   │    │
+│  │                                                                         │    │
+│  │  Provider experience is a leading indicator of sustained adoption.      │    │
+│  │  When experience scores are low, adoption tends to follow—sometimes    │    │
+│  │  months later. Understanding what's driving the experience is           │    │
+│  │  essential to long-term value.                                          │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│  ABRIDGE                                                        Page 2 of 6    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 4: THE OPPORTUNITY AHEAD
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR VALUE OPPORTUNITY                                                         │
+│  [10px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  The Opportunity Ahead                                                          │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  The difference between your current performance and what mature                │
+│  implementations achieve—expressed in hours, encounters, and dollars.           │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ANNUAL VALUE OPPORTUNITY                                                       │
+│  [10px, ALL CAPS, #666666, centered]                                            │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [#F5F0EB background, centered]                                        │    │
+│  │                                                                         │    │
+│  │                          $36K                                           │    │
+│  │                          [56px, bold, #EA2C00]                          │    │
+│  │                                                                         │    │
+│  │  potential additional value per year                                     │    │
+│  │  [14px, #666666]                                                        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  WHAT THIS LOOKS LIKE                                                           │
+│  [10px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  ┌───────────────────────────┐  ┌───────────────────────────┐  ┌──────────────┐│
+│  │                           │  │                           │  │              ││
+│  │  ┃ ADOPTION               │  │  ┃ EFFICIENCY             │  │  ┃ QUALITY   ││
+│  │  ┃                        │  │  ┃                        │  │  ┃           ││
+│  │  ┃ $16K                   │  │  ┃ $12K                   │  │  ┃ $8K       ││
+│  │  ┃ [24px, bold, #EA2C00]  │  │  ┃ [24px, bold, #EA2C00]  │  │  ┃          ││
+│  │                           │  │                           │  │              ││
+│  │  6,500 additional         │  │  475 hours of             │  │  428 wRVUs   ││
+│  │  encounters with          │  │  provider time            │  │  from better ││
+│  │  AI documentation         │  │  reclaimed                │  │  documentation│
+│  │  [10px, #666666]          │  │  [10px, #666666]          │  │  [10px]      ││
+│  │                           │  │                           │  │              ││
+│  └───────────────────────────┘  └───────────────────────────┘  └──────────────┘│
+│  [Cards: #F5F0EB, 3px left border #EA2C00]                                     │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  How to Read This                                                    │    │
+│  │  ┃                                                                      │    │
+│  │  ┃  These aren't guaranteed outcomes. They represent what the math      │    │
+│  │  ┃  suggests based on benchmark performance. The path to capturing      │    │
+│  │  ┃  this value depends on addressing the specific factors in your       │    │
+│  │  ┃  implementation.                                                     │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  THE TIMELINE                                                                   │
+│  [20px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Value grows as implementation matures. Earlier action accelerates              │
+│  value capture.                                                                 │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ┌───────────────────────────┐  ┌───────────────────────────┐  ┌──────────────┐│
+│  │                           │  │                           │  │              ││
+│  │  MONTHLY                  │  │  3-YEAR                   │  │  ROOM TO     ││
+│  │  OPPORTUNITY              │  │  PROJECTION               │  │  GROW        ││
+│  │                           │  │                           │  │              ││
+│  │  $3K                      │  │  $100K                    │  │  41%         ││
+│  │  [24px, bold, #1A1A1A]    │  │  [24px, bold, #1A1A1A]    │  │              ││
+│  │                           │  │                           │  │              ││
+│  │  potential value          │  │  cumulative               │  │  remaining   ││
+│  │  per month                │  │  value                    │  │  potential    ││
+│  │                           │  │                           │  │              ││
+│  └───────────────────────────┘  └───────────────────────────┘  └──────────────┘│
+│  [Cards: #F5F0EB]                                                               │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│  ABRIDGE                                                        Page 3 of 6    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 5: THE MATH
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  TRANSPARENCY                                                                   │
+│  [10px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  The Math                                                                       │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Every number traces back to your inputs and clearly stated assumptions.        │
+│  Adjust any value to match your organization's reality.                         │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  CALCULATION BREAKDOWN                                                          │
+│  [10px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┃ Adoption Opportunity                                     $16K        │    │
+│  │  ┃ [16px, bold]                                     [24px, #EA2C00]    │    │
+│  │                                                                         │    │
+│  │  Your adoption: 50% → Benchmark: 76%                                    │    │
+│  │  Gap: 26 percentage points                                              │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐   │    │
+│  │  │  Additional encounters at benchmark:                            │   │    │
+│  │  │  25,000 encounters × 26% = 6,500 encounters                     │   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Time value of those encounters:                                │   │    │
+│  │  │  6,500 × 4 min saved × ($150/hr) × 25% conversion              │   │    │
+│  │  │                                                                 │   │    │
+│  │  │  = $16,250 / year                                               │   │    │
+│  │  │  [#EA2C00]                                                      │   │    │
+│  │  └─────────────────────────────────────────────────────────────────┘   │    │
+│  │  [Calc box: #F5F0EB bg, 11px monospace-style]                          │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Card: white bg, 3px left border #EA2C00]                                      │
+│                                                                                 │
+│  [Same structure for Efficiency and Quality cards]                               │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┃ Efficiency Opportunity                                   $12K        │    │
+│  │  ┃                                                                      │    │
+│  │                                                                         │    │
+│  │  Your time saved: 2.5 min → Benchmark: 4 min                           │    │
+│  │  Gap: 1.5 min per encounter                                             │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐   │    │
+│  │  │  Encounters at benchmark adoption:                              │   │    │
+│  │  │  25,000 × 76% = 19,000 encounters                               │   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Additional hours saved:                                        │   │    │
+│  │  │  19,000 × 1.5 min = 475 hours / year                            │   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Value: 475 hours × $150/hr × 17% conversion                    │   │    │
+│  │  │  = $12,113 / year                                               │   │    │
+│  │  └─────────────────────────────────────────────────────────────────┘   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┃ Documentation Quality Opportunity                        $8K         │    │
+│  │  ┃                                                                      │    │
+│  │                                                                         │    │
+│  │  Your wRVU lift: +4% → Benchmark: +5.5%                                │    │
+│  │  Gap: 1.5 percentage points                                             │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐   │    │
+│  │  │  Base wRVU volume:                                              │   │    │
+│  │  │  1.5 wRVU/encounter × 19,000 encounters = 28,500 wRVUs          │   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Additional wRVUs: 28,500 × 1.5% = 428 wRVUs                    │   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Value: 428 × $33/wRVU × 60% realization                       │   │    │
+│  │  │  = $8,474 / year                                                │   │    │
+│  │  └─────────────────────────────────────────────────────────────────┘   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  KEY ASSUMPTIONS                                                                │
+│  [10px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │                                 │  │                                     │   │
+│  │  YOUR INPUTS                    │  │  VALUE ASSUMPTIONS                  │   │
+│  │  [10px, ALL CAPS, #999999]      │  │  [10px, ALL CAPS, #999999]          │   │
+│  │                                 │  │                                     │   │
+│  │  • [X] providers                │  │  • Provider cost: $150/hour         │   │
+│  │  • [X] annual encounters        │  │  • wRVU value: $33                  │   │
+│  │  • [X]% adoption rate           │  │  • Time conversion: 25%            │   │
+│  │  • [X] min saved/encounter      │  │  • Efficiency conversion: 17%      │   │
+│  │  • +[X]% wRVU lift              │  │  • wRVU realization: 60%           │   │
+│  │  • [X]% would recommend         │  │                                     │   │
+│  │                                 │  │                                     │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│  [Cards: #F5F0EB, 12px, #333333]                                                │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│  ABRIDGE                                                        Page 4 of 6    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+CRITICAL: Fix NaN% bug — ensure conversion rates (25%, 17%, 60%) are 
+properly passed from the web app calculations to the PDF generator.
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 6: WHAT WE'VE SEEN WORK
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  PATTERNS                                                                       │
+│  [10px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  What We've Seen Work                                                           │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Across hundreds of ambient AI implementations, these patterns                  │
+│  consistently influence outcomes.                                               │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┌──────────┐                                                           │    │
+│  │  │          │                                                           │    │
+│  │  │    01    │  Adoption Is a Human Challenge                            │    │
+│  │  │          │  [16px, bold, #1A1A1A]                                    │    │
+│  │  └──────────┘                                                           │    │
+│  │  [circle: #F5F0EB bg,                                                   │    │
+│  │   #1A1A1A text, 36px]                                                   │    │
+│  │                                                                         │    │
+│  │  Change management isn't a phase—it's ongoing. The most effective       │    │
+│  │  implementations have dedicated resources for provider onboarding,      │    │
+│  │  feedback loops, and continuous improvement.                             │    │
+│  │  [12px, #333333]                                                        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Card: white bg, thin border #E0E0E0]                                          │
+│                                                                                 │
+│  [12px spacing]                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┌──────────┐                                                           │    │
+│  │  │    02    │  Continuous Optimization Matters                           │    │
+│  │  └──────────┘                                                           │    │
+│  │                                                                         │    │
+│  │  Set-it-and-forget-it doesn't work. Mature implementations review       │    │
+│  │  performance regularly, identify friction points, and make              │    │
+│  │  adjustments. The tool improves because someone is paying attention.     │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┌──────────┐                                                           │    │
+│  │  │    03    │  Deep Customization Drives Results                         │    │
+│  │  └──────────┘                                                           │    │
+│  │                                                                         │    │
+│  │  Generic configurations miss the nuances of different specialties       │    │
+│  │  and workflows. Organizations that invest in specialty-specific          │    │
+│  │  workflows see meaningfully higher adoption and provider experience.    │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┌──────────┐                                                           │    │
+│  │  │    04    │  Executive Visibility Sustains Momentum                    │    │
+│  │  └──────────┘                                                           │    │
+│  │                                                                         │    │
+│  │  When leadership tracks ambient AI as a strategic initiative—not just   │    │
+│  │  an IT project—resources and attention follow. Executive sponsorship    │    │
+│  │  correlates strongly with sustained adoption.                           │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  The technology matters. But the approach to implementation,         │    │
+│  │  ┃  adoption, and ongoing optimization matters just as much.            │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Callout: #F5F0EB bg, #EA2C00 left border]                                    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│  ABRIDGE                                                        Page 5 of 6    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 7: YOUR SUMMARY
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  SUMMARY                                                                        │
+│  [10px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  Your Complete Profile                                                          │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  [Organization Name] · [X] providers · [X] annual encounters                    │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Top-level stats:                                                               │
+│                                                                                 │
+│  ┌───────────────────┐  ┌───────────────────┐  ┌──────────────┐  ┌──────────┐  │
+│  │                   │  │                   │  │              │  │          │  │
+│  │  REALIZATION      │  │  ANNUAL           │  │  3-YEAR      │  │ MONTHLY  │  │
+│  │  SCORE            │  │  OPPORTUNITY      │  │  PROJECTION  │  │ OPPORT.  │  │
+│  │                   │  │                   │  │              │  │          │  │
+│  │  59%              │  │  $36K             │  │  $100K       │  │ $3K      │  │
+│  │  [28px, bold]     │  │  [28px, #EA2C00]  │  │  [28px, bold]│  │ [28px,   │  │
+│  │                   │  │                   │  │              │  │  #EA2C00]│  │
+│  │  Early Progress   │  │  potential        │  │  cumulative  │  │ potential│  │
+│  │  [10px, #EA2C00]  │  │  value            │  │  value       │  │ per month│  │
+│  │                   │  │                   │  │              │  │          │  │
+│  └───────────────────┘  └───────────────────┘  └──────────────┘  └──────────┘  │
+│  [Cards: #F5F0EB]                                                               │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Your Dimensions vs. Benchmark                                                  │
+│  [20px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  ┌───────────────────────────────┐  ┌───────────────────────────────────────┐   │
+│  │  ADOPTION — YOU               │  │  ADOPTION — BENCHMARK                 │   │
+│  │  50%     [24px, bold]         │  │  76%     [24px, bold, #EA2C00]        │   │
+│  └───────────────────────────────┘  └───────────────────────────────────────┘   │
+│  [Left: #F5F0EB bg]                 [Right: white bg, 3px left #EA2C00]        │
+│                                                                                 │
+│  ┌───────────────────────────────┐  ┌───────────────────────────────────────┐   │
+│  │  EFFICIENCY — YOU             │  │  EFFICIENCY — BENCHMARK               │   │
+│  │  2.5 min  [24px, bold]        │  │  4 min   [24px, bold, #EA2C00]       │   │
+│  └───────────────────────────────┘  └───────────────────────────────────────┘   │
+│                                                                                 │
+│  ┌───────────────────────────────┐  ┌───────────────────────────────────────┐   │
+│  │  QUALITY — YOU                │  │  QUALITY — BENCHMARK                  │   │
+│  │  +4%      [24px, bold]        │  │  +5.5%   [24px, bold, #EA2C00]       │   │
+│  └───────────────────────────────┘  └───────────────────────────────────────┘   │
+│                                                                                 │
+│  ┌───────────────────────────────┐  ┌───────────────────────────────────────┐   │
+│  │  EXPERIENCE — YOU             │  │  EXPERIENCE — BENCHMARK               │   │
+│  │  30%      [24px, bold]        │  │  88%     [24px, bold, #EA2C00]       │   │
+│  └───────────────────────────────┘  └───────────────────────────────────────┘   │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  This assessment is a starting point. The numbers tell a clear       │    │
+│  │  ┃  story—there's meaningful opportunity ahead. The next step is        │    │
+│  │  ┃  understanding which specific factors matter most for your           │    │
+│  │  ┃  organization and how to address them.                               │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Callout: #F5F0EB bg, #EA2C00 left border]                                    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  This assessment is for planning purposes. All calculations are based on        │
+│  inputs provided and Abridge benchmark data. Actual results depend on           │
+│  implementation approach, organizational readiness, and clinical workflow        │
+│  factors.                                                                       │
+│  [9px, #999999, italic]                                                         │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│  ABRIDGE                                                        Page 6 of 6    │
+│                                                                                 │
