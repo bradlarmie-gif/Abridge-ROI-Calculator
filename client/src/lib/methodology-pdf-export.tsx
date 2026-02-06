@@ -51,10 +51,10 @@ const styles = StyleSheet.create({
   },
   coverCurve: {
     position: "absolute",
-    bottom: 80,
-    right: 0,
-    width: 300,
-    height: 300,
+    bottom: 40,
+    right: -40,
+    width: 380,
+    height: 380,
   },
   coverContent: {
     flex: 1,
@@ -517,14 +517,11 @@ function CoverPage({ setting }: { setting: MethodologyCareSetting }) {
     <Page size="LETTER" style={styles.coverPage}>
       <Image src={abridgeLogoRed} style={styles.coverLogo} />
       <View style={styles.coverCurve}>
-        <Svg width={300} height={300} viewBox="0 0 300 300">
+        <Svg width={380} height={380} viewBox="0 0 380 380">
           <Path
-            d="M 300 0 Q 250 50 200 120 Q 150 190 80 240 Q 40 270 0 300"
-            stroke={colors.primary}
-            strokeWidth={80}
-            fill="none"
-            strokeOpacity={0.08}
-            strokeLinecap="round"
+            d="M 0 0 L 190 160 L 380 0 L 380 60 L 190 220 Q 150 195 120 165 Q 90 135 60 100 L 0 60 Z"
+            fill={colors.primary}
+            fillOpacity={0.08}
           />
         </Svg>
       </View>
