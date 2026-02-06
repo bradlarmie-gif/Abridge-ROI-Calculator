@@ -80,12 +80,12 @@ export const ABRIDGE_BENCHMARKS = {
   utilization: 76,
   utilizationMin: 70,
   utilizationMax: 80,
-  timeSavedMin: 3,
-  timeSavedMax: 5,
-  timeSavedAvg: 4,
+  timeSavedMin: 2,
+  timeSavedMax: 4,
+  timeSavedAvg: 3,
   editTime: 1,
   editTimeMax: 1,
-  netImpact: 3,
+  netImpact: 2,
   wrvuLift: 5.5,
   wrvuLiftMin: 4,
   wrvuLiftMax: 7,
@@ -157,7 +157,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   // 2. Net Efficiency gap: uses NET time impact (time saved - edit time)
   const encountersWithAI = yourEncountersDocumented;
   const currentNetImpact = timeSavedPerEncounter - (editTimePerEncounter || 0);
-  const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime; // 4 - 1 = 3
+  const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime; // 3 - 1 = 2
   const netImpactGap = benchmarkNetImpact - currentNetImpact;
 
   const netEfficiencyGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
