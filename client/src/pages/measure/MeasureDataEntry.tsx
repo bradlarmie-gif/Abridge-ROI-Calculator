@@ -480,6 +480,9 @@ function EditView({
             hasContent={sectionHasContent}
             onToggle={() => onToggleSection(section.key)}
           >
+            {section.description && (
+              <p className="text-[10px] text-[#999999] mb-3">{section.description}</p>
+            )}
             <div className="grid grid-cols-3 gap-4 mb-3">
               <div />
               <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">

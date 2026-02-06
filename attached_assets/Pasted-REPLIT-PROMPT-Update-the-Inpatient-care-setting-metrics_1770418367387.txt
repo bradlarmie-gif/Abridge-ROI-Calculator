@@ -1,0 +1,161 @@
+REPLIT PROMPT:
+
+Update the Inpatient care setting metrics for the Measure 
+path. Replace the current fields with metrics that directly 
+drive value calculations.
+
+═══════════════════════════════════════════════════════════════
+
+INPATIENT METRIC CONFIGURATION:
+
+PARTNER PROFILE (same as other settings):
+- Organization Name
+- Providers on Abridge (hospitalists)
+- Total Providers (total hospitalists)
+- Months on Abridge
+- Total Encounters (discharges)
+- Utilization Rate
+
+═══════════════════════════════════════════════════════════════
+
+SECTION 1: DOCUMENTATION QUALITY
+(This is the PRIMARY value driver for inpatient — put it FIRST)
+
+Label: "DOCUMENTATION & CODING"
+Description under label: "These metrics drive the majority 
+of inpatient value."
+[10px, #999999]
+
+                              BEFORE      WITH ABRIDGE
+
+CMI                           [___]       [___]
+(Case Mix Index)
+
+CC/MCC Capture Rate (%)       [___]       [___]
+(Complication/Comorbidity)
+
+Denials per 100 Claims        [___]       [___]
+(Clinical documentation 
+related)
+
+CDI Queries per 100 Cases     [___]       [___]
+(Query volume — lower 
+indicates better initial 
+documentation)
+
+═══════════════════════════════════════════════════════════════
+
+SECTION 2: TIME & EFFICIENCY
+(Secondary value driver for inpatient)
+
+Label: "TIME & EFFICIENCY"
+
+                              BEFORE      WITH ABRIDGE
+
+Time in Notes (min)           [___]       [___]
+
+Same-Day Completion (%)       [___]       [___]
+(H&P and progress notes 
+completed same day)
+
+After-Hours (hrs/day)         [___]       [___]
+
+═══════════════════════════════════════════════════════════════
+
+SECTION 3: VALUE MODEL
+Label: "VALUE MODEL"
+Description: "Configure once. Applied throughout."
+
+DRG & Coding:
+  Average base DRG payment        [$6,500]
+  Avg CMI point value              [$1,500]
+  Denial cost per case             [$3,200]
+  CDI FTE cost (annual)            [$85,000]
+  Cases per CDI FTE/year           [2,500]
+  Attribution range                [50-75] %
+
+Time:
+  Provider hourly rate             [$175]
+  (hospitalists typically higher than outpatient)
+
+Allocation:
+  Operational Savings              [60] %
+  Provider Wellbeing               [40] %
+  (no "capacity" bucket — hospitalists don't 
+   add visits from time saved)
+
+Must equal 100%: ✓
+
+═══════════════════════════════════════════════════════════════
+
+REMOVE THESE FIELDS:
+- "CDI Query Response Time (hrs)" — this is an operational 
+  metric, not a value driver. Replace with "CDI Queries 
+  per 100 Cases" which directly drives CDI efficiency value.
+
+═══════════════════════════════════════════════════════════════
+
+WHY EACH METRIC EXISTS:
+
+CMI → drives DRG accuracy value
+  "CMI improved from 1.82 to 1.91 = $X per discharge"
+
+CC/MCC Capture Rate → drives coding accuracy value  
+  "CC/MCC rate improved from 62% to 71% = more accurate 
+   severity capture"
+
+Denials per 100 → drives denial prevention value
+  "Denials dropped from 8.2 to 5.1 per 100 = $X saved"
+
+CDI Queries per 100 → drives CDI efficiency value
+  "Queries dropped from 35 to 22 per 100 = CDI team 
+   can cover X more cases or reduce by X FTE"
+
+Time in Notes → drives time value (operational savings)
+Same-Day Completion → proof metric (shows quality)
+After-Hours → proof metric (shows wellbeing impact)
+
+Every field traces to a dollar on the output page.
+If it doesn't drive a calculation, it shouldn't be here.
+
+═══════════════════════════════════════════════════════════════
+
+HOW THIS CHANGES THE VALUE PAGE:
+
+INPATIENT "WHERE THE VALUE LIVES" should show:
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  DOCUMENTATION & CODING VALUE                           │
+│  (Primary value driver)                                 │
+│                                                         │
+│  ┃ DRG Accuracy                              $XXK       │
+│  ┃ CMI: 1.82 → 1.91 (+0.09)                            │
+│  ┃ X discharges × $1,500 per CMI point × attribution¹  │
+│                                                         │
+│  ┃ Denial Prevention                         $XXK       │
+│  ┃ 8.2 → 5.1 per 100 claims (3.1 fewer)                │
+│  ┃ X fewer denials × $3,200 per denial²                │
+│                                                         │
+│  ┃ CDI Efficiency                            $XXK       │
+│  ┃ 35 → 22 queries per 100 (37% reduction)             │
+│  ┃ Equivalent to X FTE capacity reclaimed³              │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  TIME VALUE                                             │
+│  (Secondary value driver)                               │
+│                                                         │
+│  ┃ Operational Savings (60%)                 $XXK       │
+│  ┃ X hours × $175/hr                                   │
+│                                                         │
+│  ┃ Provider Wellbeing (40%)             X hrs/wk back   │
+│  ┃ X hours returned to providers                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+NOTE: No "Patient Capacity" bucket for inpatient. 
+Hospitalists don't add visits from time saved. They 
+either see the same census more efficiently (operational 
+savings) or get time back (wellbeing). The allocation 
+defaults to 60/40 instead of 50/20/30.

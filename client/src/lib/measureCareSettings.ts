@@ -13,6 +13,7 @@ export interface MetricField {
 export interface MetricSection {
   key: string;
   label: string;
+  description?: string;
   metrics: MetricField[];
 }
 
@@ -128,12 +129,13 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     metricSections: [
       {
         key: "docQuality",
-        label: "Documentation Quality",
+        label: "Documentation & Coding",
+        description: "These metrics drive the majority of inpatient value.",
         metrics: [
           { key: "cmi", label: "CMI", hasBeforeAfter: true, step: 0.01 },
           { key: "ccMccCapture", label: "CC/MCC Capture Rate (%)", hasBeforeAfter: true, step: 0.1 },
-          { key: "cdiQueryTime", label: "CDI Query Response Time (hrs)", hasBeforeAfter: true, step: 0.1 },
-          { key: "denialRate", label: "Denial Rate (%)", hasBeforeAfter: true, step: 0.1 },
+          { key: "denialsPer100", label: "Denials per 100 Claims", hasBeforeAfter: true, step: 0.1 },
+          { key: "cdiQueriesPer100", label: "CDI Queries per 100 Cases", hasBeforeAfter: true, step: 1 },
         ],
       },
       {
@@ -141,21 +143,22 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
         label: "Time & Efficiency",
         metrics: [
           { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
-          { key: "sameDayClosure", label: "Same-Day Closure (%)", hasBeforeAfter: true },
+          { key: "sameDayClosure", label: "Same-Day Completion (%)", hasBeforeAfter: true },
           { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
     ],
     valueModel: [
-      { key: "drgWeightIncrease", label: "Avg DRG weight increase", defaultValue: 0.4, prefix: "" },
-      { key: "baseDrgPayment", label: "Base DRG payment", defaultValue: 6500, prefix: "$" },
-      { key: "annualDischarges", label: "Annual discharges", defaultValue: 0 },
-      { key: "denialValuePerClaim", label: "Denial value per claim", defaultValue: 200, prefix: "$" },
+      { key: "baseDrgPayment", label: "Average base DRG payment", defaultValue: 6500, prefix: "$" },
+      { key: "cmiPointValue", label: "Avg CMI point value", defaultValue: 1500, prefix: "$" },
+      { key: "denialCostPerCase", label: "Denial cost per case", defaultValue: 3200, prefix: "$" },
+      { key: "cdiFteCost", label: "CDI FTE cost (annual)", defaultValue: 85000, prefix: "$" },
+      { key: "casesPerCdiFte", label: "Cases per CDI FTE/year", defaultValue: 2500 },
+      { key: "hourlyRate", label: "Provider hourly rate", defaultValue: 175, prefix: "$" },
     ],
     allocationFields: [
-      { key: "allocSavings", label: "Operational savings", defaultValue: 50 },
-      { key: "allocCapacity", label: "Patient capacity", defaultValue: 20 },
-      { key: "allocWellbeing", label: "Provider wellbeing", defaultValue: 30 },
+      { key: "allocSavings", label: "Operational Savings", defaultValue: 60 },
+      { key: "allocWellbeing", label: "Provider Wellbeing", defaultValue: 40 },
     ],
   },
 
@@ -404,15 +407,15 @@ export function syncSettingToState(
           emLevelWith: 0,
         },
         calibration: {
-          otHourlyRate: 150,
+          otHourlyRate: metrics.vm_hourlyRate ?? 175,
           minutesPerVisit: 30,
           revenuePerVisit: 200,
-          conversionFactor: metrics.vm_baseDrgPayment ?? 6500,
+          conversionFactor: metrics.vm_cmiPointValue ?? 1500,
         },
         allocation: {
-          hardSavingsPercent: metrics.allocSavings ?? 50,
-          capacityPercent: metrics.allocCapacity ?? 20,
-          qualityOfLifePercent: metrics.allocWellbeing ?? 30,
+          hardSavingsPercent: metrics.allocSavings ?? 60,
+          capacityPercent: 0,
+          qualityOfLifePercent: metrics.allocWellbeing ?? 40,
         },
       };
 

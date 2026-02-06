@@ -1,0 +1,154 @@
+
+Polish the Switch path selection page. Keep the two-card 
+layout but refine the copy, warmth, and clarity.
+
+═══════════════════════════════════════════════════════════════
+
+COPY UPDATES:
+
+Label above headline:
+- Remove "Value Realization Assessment" with sparkle icon
+- Replace with just the breadcrumb in the nav: "Switch"
+  (which is already there in the nav bar)
+  OR if you want a label, use:
+  "SWITCH PATH" [9px, ALL CAPS, #EA2C00, letter-spacing 2px]
+
+Headline:
+- Current: "WHAT ARE YOU USING TODAY?"
+- Change to: "WHAT ARE YOU WORKING WITH?"
+  [Warmer, less interrogative. "Working with" implies 
+   partnership, "using" implies commodity.]
+
+  OR even better:
+  "LET'S LOOK AT YOUR CURRENT APPROACH"
+  [Collaborative. Not a question — an invitation.]
+
+Subhead:
+- Current: "Tell us your current approach, and we'll 
+  show you what's possible."
+- Change to: "Different starting points need different 
+  analyses. Choose the path that matches your 
+  organization."
+  [More specific, explains WHY there are two options]
+
+═══════════════════════════════════════════════════════════════
+
+CARD UPDATES:
+
+Both cards:
+- Background: #F5F0EB (warm beige, consistent with rest of app)
+- Border: 2px solid transparent (default)
+- Border-radius: 12px
+- Padding: 28px
+- Min-height: 280px
+- Hover: border 2px solid #EA2C00, translateY(-2px), 
+  shadow 0 4px 16px rgba(234,44,0,0.08)
+- Cursor: pointer
+
+Icon circles:
+- Background: white (#FFFFFF)
+- Size: 48px
+- Border-radius: 50%
+- Shadow: 0 2px 8px rgba(0,0,0,0.06)
+
+Arrow indicator (top-right):
+- Make it an #EA2C00 arrow that only appears on hover
+  (opacity 0 → 1 on hover)
+- Currently it's gray and always visible — make it 
+  intentional
+
+═══════════════════════════════════════════════════════════════
+
+CARD 1: AMBIENT AI
+
+Title: "Ambient AI" — keep
+
+Subtitle:
+- Current: "Using DAX, Ambience, Suki, or another AI 
+  documentation tool"
+- Change to: "Currently using an AI documentation solution"
+  [Don't name competitors. It's unnecessary and feels 
+   like we're fishing. They know who they use.]
+
+"WHAT YOU'LL DISCOVER" bullets:
+- Current: "Your value realization score vs. benchmarks"
+  Change to: "How your implementation compares to 
+  benchmark performance"
+  [Less jargon — "value realization score" means nothing 
+   to someone who hasn't seen it yet]
+
+- Current: "Efficiency gaps across your implementation"
+  Change to: "Where the gaps are — and what's driving them"
+  [More specific, implies we'll explain WHY not just WHAT]
+
+- Current: "The annual value you may be leaving behind"
+  Change to: "The annual value opportunity ahead"
+  ["Leaving behind" implies failure. "Ahead" implies 
+   possibility.]
+
+Footer:
+- Current: "6-step guided analysis  ~5 minutes"
+  Keep this. It's good.
+
+═══════════════════════════════════════════════════════════════
+
+CARD 2: HUMAN SCRIBES
+
+Title: "Human Scribes" — keep
+
+Subtitle:
+- Current: "In-person or virtual scribes supporting 
+  your providers"
+- Change to: "In-person or virtual scribe program"
+  [Shorter, cleaner]
+
+"WHAT YOU'LL DISCOVER" bullets:
+- Current: "Your true coverage gap across providers"
+  Change to: "The true cost of your scribe program — 
+  including hidden overhead"
+  [Lead with the thing they don't know. Coverage gap 
+   is obvious to them — hidden costs aren't.]
+
+- Current: "What full coverage would actually cost"
+  Keep this. It's strong.
+
+- Current: "The burden on unsupported providers"
+  Change to: "What 100% coverage would look like — 
+  with and without scribes"
+  [Frames the comparison without being aggressive]
+
+Footer:
+- Current: "2-step program analysis  ~3 minutes"
+  Keep this.
+
+═══════════════════════════════════════════════════════════════
+
+PRIVACY LINE:
+
+- Current: "Your data stays in your browser. Nothing 
+  is stored or shared."
+- Keep this exactly. It's perfect.
+
+═══════════════════════════════════════════════════════════════
+
+LAYOUT REFINEMENT:
+
+The two cards should be equal width with 24px gap between 
+them. On the current page they look slightly different 
+heights because the bullet text wraps differently.
+
+Fix: Set both cards to the same min-height (280px) and 
+let content align to top. The footer ("6-step guided 
+analysis ~5 minutes") should be pinned to the bottom 
+of each card so they always align.
+
+Structure within each card:
+- Icon circle (top)
+- Title (below icon, 20px bold)
+- Subtitle (below title, 13px #666666)
+- "WHAT YOU'LL DISCOVER" label (9px, ALL CAPS, #EA2C00)
+- 3 bullets (12px, #333333, with small colored icons)
+- [spacer/flex grow]
+- Footer line (pinned to bottom, 10px, #999999)
+  Left: "X-step guided analysis"
+  Right: "~X minutes"

@@ -117,6 +117,8 @@ export default function MeasureTransformation({
   onHome,
 }: MeasureTransformationProps) {
   const results = useMemo(() => calculateMeasureResults(state), [state]);
+  const isInpatient = state.careSetting === "inpatient";
+  const inpatientMetrics = state.settingData?.inpatient || {};
 
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
   const pajamaTimeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
@@ -168,7 +170,7 @@ export default function MeasureTransformation({
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Encounters</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : "Encounters"}</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
@@ -199,41 +201,95 @@ export default function MeasureTransformation({
             delay={0.15}
           />
 
-          <ComparisonCard
-            icon={FileText}
-            title="Revenue Capture"
-            beforeValue={state.documentationQuality.wrvuWithout}
-            afterValue={state.documentationQuality.wrvuWith}
-            beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
-            afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
-            deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
-            insight="Capturing clinical complexity"
-            delay={0.25}
-          />
+          {isInpatient ? (
+            <>
+              <ComparisonCard
+                icon={FileText}
+                title="CMI"
+                beforeValue={inpatientMetrics.cmi_before ?? 0}
+                afterValue={inpatientMetrics.cmi_after ?? 0}
+                beforeLabel={(inpatientMetrics.cmi_before ?? 0).toFixed(2)}
+                afterLabel={(inpatientMetrics.cmi_after ?? 0).toFixed(2)}
+                deltaText={`+${((inpatientMetrics.cmi_after ?? 0) - (inpatientMetrics.cmi_before ?? 0)).toFixed(2)} CMI improvement`}
+                insight="Higher acuity capture per discharge"
+                delay={0.25}
+              />
 
-          <ComparisonCard
-            icon={TrendingUp}
-            title="Same-Day Closure"
-            beforeValue={state.timeEfficiency.sameDayClosureWithout}
-            afterValue={state.timeEfficiency.sameDayClosureWith}
-            beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
-            afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
-            deltaText={`+${results.sameDayClosureDelta} percentage points`}
-            insight="Documentation completed during the visit"
-            delay={0.35}
-          />
+              <ComparisonCard
+                icon={TrendingUp}
+                title="Denials per 100 Claims"
+                beforeValue={inpatientMetrics.denialsPer100_before ?? 0}
+                afterValue={inpatientMetrics.denialsPer100_after ?? 0}
+                beforeLabel={`${(inpatientMetrics.denialsPer100_before ?? 0).toFixed(1)}`}
+                afterLabel={`${(inpatientMetrics.denialsPer100_after ?? 0).toFixed(1)}`}
+                deltaText={`${((inpatientMetrics.denialsPer100_before ?? 0) - (inpatientMetrics.denialsPer100_after ?? 0)).toFixed(1)} fewer per 100`}
+                insight="Reduced rework and revenue leakage"
+                delay={0.35}
+              />
 
-          <ComparisonCard
-            icon={Heart}
-            title="Work-Life Balance"
-            beforeValue={state.timeEfficiency.workOutsideWithout}
-            afterValue={state.timeEfficiency.workOutsideWith}
-            beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
-            afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
-            deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
-            insight="Evenings reclaimed"
-            delay={0.45}
-          />
+              <ComparisonCard
+                icon={Info}
+                title="CDI Queries per 100 Cases"
+                beforeValue={inpatientMetrics.cdiQueriesPer100_before ?? 0}
+                afterValue={inpatientMetrics.cdiQueriesPer100_after ?? 0}
+                beforeLabel={`${inpatientMetrics.cdiQueriesPer100_before ?? 0}`}
+                afterLabel={`${inpatientMetrics.cdiQueriesPer100_after ?? 0}`}
+                deltaText={`${((inpatientMetrics.cdiQueriesPer100_before ?? 0) - (inpatientMetrics.cdiQueriesPer100_after ?? 0))} fewer per 100`}
+                insight="Less CDI follow-up needed"
+                delay={0.45}
+              />
+
+              <ComparisonCard
+                icon={TrendingUp}
+                title="Same-Day Completion"
+                beforeValue={state.timeEfficiency.sameDayClosureWithout}
+                afterValue={state.timeEfficiency.sameDayClosureWith}
+                beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+                afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+                deltaText={`+${results.sameDayClosureDelta} percentage points`}
+                insight="Notes completed same day"
+                delay={0.55}
+              />
+            </>
+          ) : (
+            <>
+              <ComparisonCard
+                icon={FileText}
+                title="Revenue Capture"
+                beforeValue={state.documentationQuality.wrvuWithout}
+                afterValue={state.documentationQuality.wrvuWith}
+                beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
+                afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
+                deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
+                insight="Capturing clinical complexity"
+                delay={0.25}
+              />
+
+              <ComparisonCard
+                icon={TrendingUp}
+                title="Same-Day Closure"
+                beforeValue={state.timeEfficiency.sameDayClosureWithout}
+                afterValue={state.timeEfficiency.sameDayClosureWith}
+                beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+                afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+                deltaText={`+${results.sameDayClosureDelta} percentage points`}
+                insight="Documentation completed during the visit"
+                delay={0.35}
+              />
+
+              <ComparisonCard
+                icon={Heart}
+                title="Work-Life Balance"
+                beforeValue={state.timeEfficiency.workOutsideWithout}
+                afterValue={state.timeEfficiency.workOutsideWith}
+                beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
+                afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
+                deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
+                insight="Evenings reclaimed"
+                delay={0.45}
+              />
+            </>
+          )}
         </div>
 
         {state.deployment.utilizationRate < 100 && (
@@ -251,7 +307,7 @@ export default function MeasureTransformation({
                   At {state.deployment.utilizationRate}% Adoption
                 </p>
                 <p className="text-xs text-[#666666] leading-relaxed">
-                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} encounters. The remaining {formatNumber(nonAdoptedEncounters)} encounters are still being documented without Abridge{'\u2014'}representing additional headroom within your current providers.
+                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} {isInpatient ? "discharges" : "encounters"}. The remaining {formatNumber(nonAdoptedEncounters)} {isInpatient ? "discharges are" : "encounters are"} still being documented without Abridge{'\u2014'}representing additional headroom within your current providers.
                 </p>
               </div>
             </div>
