@@ -70,7 +70,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
 
-            {/* CARD 1: EXPLORE — White with red top accent */}
+            {/* CARD 1: EXPLORE */}
             <motion.div 
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -79,11 +79,11 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               role="button"
               tabIndex={0}
               onKeyDown={(e) => handleCardKey(e, onSelectExplore)}
-              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-white border border-[#E0E0E0] border-t-[3px] border-t-[#EA2C00] hover:border-[#EA2C00] hover:shadow-[0_8px_24px_rgba(234,44,0,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
               onClick={onSelectExplore}
               data-testid="card-explore"
             >
-              <div className="w-12 h-12 rounded-full bg-[#FFF5F2] flex items-center justify-center mb-5">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
                 <Compass className="w-6 h-6 text-[#EA2C00]" />
               </div>
               
@@ -152,7 +152,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               </Button>
             </motion.div>
 
-            {/* CARD 3: SWITCH — Dark near-black, bold */}
+            {/* CARD 3: SWITCH */}
             <motion.div 
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -161,46 +161,36 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
               role="button"
               tabIndex={0}
               onKeyDown={(e) => handleCardKey(e, onSelectSwitch)}
-              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#1A1A1A] hover:bg-[#2A2A2A] hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
               onClick={onSelectSwitch}
               data-testid="card-switch"
             >
-              <div 
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
-                  backgroundSize: '24px 24px',
-                }}
-              />
-              
-              <div className="relative z-10 flex flex-col flex-1">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-5">
-                  <ArrowLeftRight className="w-6 h-6 text-[#EA2C00]" />
-                </div>
-                
-                <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-switch-tagline">
-                  Using another solution?
-                </p>
-                <h3 className="text-2xl font-bold text-white mb-2.5" data-testid="text-switch-title">
-                  Switch
-                </h3>
-                <p className="text-sm text-white/70 leading-relaxed flex-1 mb-6" data-testid="text-switch-description">
-                  See how your current AI is performing—and what's possible with the right partnership.
-                </p>
-                
-                <Button
-                  className="w-full bg-white text-[#1A1A1A] border-white"
-                  size="lg"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectSwitch();
-                  }}
-                  data-testid="card-switch-button"
-                >
-                  Run the Assessment
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
+                <ArrowLeftRight className="w-6 h-6 text-[#EA2C00]" />
               </div>
+              
+              <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-switch-tagline">
+                Using another solution?
+              </p>
+              <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-switch-title">
+                Switch
+              </h3>
+              <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-switch-description">
+                See how your current AI is performing—and what's possible with the right partnership.
+              </p>
+              
+              <Button
+                className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                size="lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectSwitch();
+                }}
+                data-testid="card-switch-button"
+              >
+                Run the Assessment
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             </motion.div>
           </div>
         </section>
