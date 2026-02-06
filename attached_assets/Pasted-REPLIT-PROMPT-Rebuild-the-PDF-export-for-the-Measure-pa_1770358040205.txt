@@ -1,0 +1,603 @@
+REPLIT PROMPT:
+
+Rebuild the PDF export for the Measure path (Value Story). 
+Replace the existing template entirely. Follow the same brand 
+system we established for the Ambient Assessment PDF.
+
+═══════════════════════════════════════════════════════════════
+GLOBAL TEMPLATE — SAME AS AMBIENT ASSESSMENT
+═══════════════════════════════════════════════════════════════
+
+Page size: Letter (8.5 × 11)
+Margins: 1 inch all sides
+Font: Manrope (fallback: system sans-serif)
+
+COLOR PALETTE (strict):
+- Background: #FFFFFF
+- Cards: #F5F0EB (warm beige)
+- Primary accent: #EA2C00
+- Primary text: #1A1A1A
+- Secondary text: #666666
+- Tertiary: #999999
+- Borders: #E0E0E0
+- Highlight rows: #FFF5F2
+
+NO navy. NO teal. NO green. NO dark banners.
+
+TYPOGRAPHY:
+- Page headline: 28px, bold, #1A1A1A
+- Section label: 10px, ALL CAPS, #EA2C00, letter-spacing 2px
+- Section headline: 20px, bold, #1A1A1A
+- Hero number: 56px, bold, #EA2C00
+- Medium number: 32px, bold, #1A1A1A
+- Body: 12px, #333333
+- Caption: 10px, #666666
+- Disclaimer: 9px, italic, #999999
+
+COMPONENTS:
+- Stat Card: #F5F0EB bg, 20px padding, 8px radius
+- Callout Box: #F5F0EB bg, 3px left border #EA2C00
+- Progress Bar: 8px height, #EA2C00 filled, #E0E0E0 unfilled
+- Page Footer: thin #E0E0E0 line, ABRIDGE logo left, page number right
+
+═══════════════════════════════════════════════════════════════
+PAGE 1: COVER
+═══════════════════════════════════════════════════════════════
+
+White background. Clean, minimal, confident.
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  ABRIDGE logo (#EA2C00)                                 │
+│  [top-left]                                             │
+│                                                         │
+│                                                         │
+│                                                         │
+│                                                         │
+│  YOUR VALUE STORY                                       │
+│  [10px, ALL CAPS, #666666, letter-spacing 3px]          │
+│                                                         │
+│                                                         │
+│  Documenting                                            │
+│  Success                                                │
+│  [42px, bold, #1A1A1A, line-height 1.2]                 │
+│                                                         │
+│                                                         │
+│  ──────────────────── [40% width, #E0E0E0]              │
+│                                                         │
+│                                                         │
+│  PREPARED FOR                                           │
+│  [10px, ALL CAPS, #999999]                              │
+│                                                         │
+│  [Organization Name]                                    │
+│  [18px, bold, #1A1A1A]                                  │
+│                                                         │
+│  PREPARED BY                                            │
+│  [10px, ALL CAPS, #999999]                              │
+│                                                         │
+│  [Rep Name]                                             │
+│  [14px, #1A1A1A]                                        │
+│                                                         │
+│  [Date]                                                 │
+│  [12px, #666666]                                        │
+│                                                         │
+│                                                         │
+│                                                         │
+│  [Bottom-right: subtle compounding curve]               │
+│  Line: #EA2C00 at 20% opacity                           │
+│  Grid: #E0E0E0 at 10% opacity                           │
+│  Dots: #EA2C00 at 30% opacity                           │
+│                                                         │
+│                                                         │
+│  This report is for planning purposes.                  │
+│  Calculations are based on your organization's          │
+│  data and stated assumptions.                           │
+│  [9px, #999999]                                         │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+PAGE 2: YOUR VALUE STORY (the hero page)
+═══════════════════════════════════════════════════════════════
+
+This is the page that hits. Keep the big number energy 
+from the original but with correct brand.
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  YOUR VALUE STORY                                       │
+│  [10px, ALL CAPS, #EA2C00]                              │
+│                                                         │
+│  Your Partnership at a Glance                           │
+│  [28px, bold, #1A1A1A]                                  │
+│                                                         │
+│  ═══════════════════════════════════════════════════    │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  [#F5F0EB background, centered]                 │   │
+│  │                                                 │   │
+│  │  80 providers. 6 months.                        │   │
+│  │  [16px, #666666]                                │   │
+│  │                                                 │   │
+│  │  6,267                                          │   │
+│  │  [56px, bold, #EA2C00]                          │   │
+│  │                                                 │   │
+│  │  hours reclaimed from documentation             │   │
+│  │  [16px, #666666]                                │   │
+│  │                                                 │   │
+│  │  That's 0.9 hours per week per provider—        │   │
+│  │  time returned to patients, to personal life,   │   │
+│  │  to the work that matters.                      │   │
+│  │  [12px, #999999]                                │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  YOUR DEPLOYMENT                                        │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
+│  │          │  │          │  │          │  │        │ │
+│  │  47,000  │  │  34,000  │  │  72%     │  │  6 mo  │ │
+│  │  [24px]  │  │  [24px]  │  │  [24px]  │  │ [24px] │ │
+│  │          │  │          │  │          │  │        │ │
+│  │  total   │  │  Abridge │  │  adoption│  │  on    │ │
+│  │  encntrs │  │  encntrs │  │  rate    │  │ Abridge│ │
+│  │          │  │          │  │          │  │        │ │
+│  └──────────┘  └──────────┘  └──────────┘  └────────┘ │
+│  [#F5F0EB cards]                                        │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  ESTIMATED ANNUAL VALUE                                 │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │              │  │              │  │              │  │
+│  │  ┃ $703K     │  │  ┃ $112-168K │  │  ┃ $815-871K │  │
+│  │  ┃           │  │  ┃           │  │  ┃           │  │
+│  │  Time        │  │  Documentation│ │  Combined    │  │
+│  │  Value       │  │  Quality     │  │  Annual      │  │
+│  │              │  │              │  │  Value       │  │
+│  │              │  │  50-75%      │  │              │  │
+│  │              │  │  attribution │  │              │  │
+│  │              │  │  [9px, gray] │  │              │  │
+│  │              │  │              │  │              │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+│  [#F5F0EB cards, 3px left border #EA2C00]              │
+│  [Combined card: #EA2C00 number]                        │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│  ABRIDGE                                   Page 1 of 5 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+PAGE 3: TIME EFFICIENCY
+═══════════════════════════════════════════════════════════════
+
+Keep the "providers as their own control group" concept — 
+it's genuinely smart framing. Just rebrand it.
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIME EFFICIENCY                                        │
+│  [10px, ALL CAPS, #EA2C00]                              │
+│                                                         │
+│  Your Providers as Their Own                            │
+│  Control Group                                          │
+│  [28px, bold, #1A1A1A]                                  │
+│                                                         │
+│  Of 47,000 total encounters, 34,000 used Abridge        │
+│  (72% adoption). The remaining 13,000 did not.          │
+│  Same physicians, same patient panels—different         │
+│  documentation experience.                              │
+│  [12px, #666666]                                        │
+│                                                         │
+│  ═══════════════════════════════════════════════════    │
+│                                                         │
+│  PRIMARY METRIC: TIME IN NOTES                          │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌──────────────────────────┐  ┌──────────────────────┐│
+│  │                          │  │                      ││
+│  │  WITHOUT ABRIDGE         │  │  WITH ABRIDGE        ││
+│  │  [10px, ALL CAPS, #999]  │  │  [10px, #EA2C00]     ││
+│  │                          │  │                      ││
+│  │  12                      │  │  4                   ││
+│  │  [40px, bold, #666666]   │  │  [40px, bold, #1A1A] ││
+│  │                          │  │                      ││
+│  │  minutes per encounter   │  │  minutes per encounter│
+│  │                          │  │                      ││
+│  │                          │  │  67% reduction        ││
+│  │                          │  │  [12px, #EA2C00]     ││
+│  │                          │  │                      ││
+│  └──────────────────────────┘  └──────────────────────┘│
+│  [Left card: #F5F0EB bg]                                │
+│  [Right card: white bg, 2px border #EA2C00]             │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  ADDITIONAL EFFICIENCY METRICS                          │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  METRIC              WITHOUT   WITH    CHANGE   │   │
+│  │  ─────────────────────────────────────────────  │   │
+│  │                                                 │   │
+│  │  Same-Day Closure    41%       78%     +37pp    │   │
+│  │                                        [#EA2C00]│   │
+│  │                                                 │   │
+│  │  Days to Close       4.2       1.1     -3.1 d   │   │
+│  │                                        [#EA2C00]│   │
+│  │                                                 │   │
+│  │  After-Hours         2.1 hrs   0.4 hrs -1.7h    │   │
+│  │                                        [#EA2C00]│   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│  [Table: clean, thin #E0E0E0 dividers]                  │
+│  [WITHOUT column: #999999 text]                         │
+│  [WITH column: #1A1A1A bold]                            │
+│  [CHANGE column: #EA2C00]                               │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  [#F5F0EB background]                           │   │
+│  │                                                 │   │
+│  │  TOTAL HOURS RECLAIMED                          │   │
+│  │  [10px, ALL CAPS, #666666]                      │   │
+│  │                                                 │   │
+│  │  6,267                                          │   │
+│  │  [40px, bold, #EA2C00]                          │   │
+│  │                                                 │   │
+│  │  8 min saved × 34,000 encounters ÷ 60           │   │
+│  │  [11px, #999999, right-aligned]                 │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│  ABRIDGE                                   Page 2 of 5 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+PAGE 4: WHERE THE TIME WENT (Value Allocation)
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  VALUE ALLOCATION                                       │
+│  [10px, ALL CAPS, #EA2C00]                              │
+│                                                         │
+│  Where the Time Went                                    │
+│  [28px, bold, #1A1A1A]                                  │
+│                                                         │
+│  Time saved creates value when it goes somewhere.       │
+│  Here's how the 6,267 hours reclaimed are being         │
+│  allocated across your organization.                    │
+│  [12px, #666666]                                        │
+│                                                         │
+│  ═══════════════════════════════════════════════════    │
+│                                                         │
+│  TIME VALUE                                             │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  ┃ Operational Savings               50%        │   │
+│  │  ┃ [16px, bold]                   [#EA2C00]     │   │
+│  │                                                 │   │
+│  │  Hours: 3,134  ×  $150/hr  =  $470K             │   │
+│  │  [12px, #666666]                [16px, #EA2C00] │   │
+│  │                                                 │   │
+│  │  ─────────────────────────────────────────────  │   │
+│  │                                                 │   │
+│  │  ┃ Patient Capacity                  20%        │   │
+│  │  ┃ [16px, bold]                   [#EA2C00]     │   │
+│  │                                                 │   │
+│  │  Hours: 1,253  →  2,507 visits  =  $501K        │   │
+│  │  [12px, #666666]                [16px, #EA2C00] │   │
+│  │                                                 │   │
+│  │  ─────────────────────────────────────────────  │   │
+│  │                                                 │   │
+│  │  ┃ Provider Wellbeing                30%        │   │
+│  │  ┃ [16px, bold]                   [#EA2C00]     │   │
+│  │                                                 │   │
+│  │  Hours: 1,880  →  0.9 hrs/wk per provider       │   │
+│  │  [12px, #666666]                                │   │
+│  │                                                 │   │
+│  │  Note: 1 provider retained ≈ $300-500K          │   │
+│  │  [11px, #999999]                                │   │
+│  │                                                 │   │
+│  │  ─────────────────────────────────────────────  │   │
+│  │                                                 │   │
+│  │  Time Value Subtotal                 $971K      │   │
+│  │  [14px, bold]                   [16px, bold]    │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│  [White bg, thin border #E0E0E0]                        │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  DOCUMENTATION QUALITY                                  │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  wRVU per encounter improved from 2.10 to 2.30  │   │
+│  │  (+0.20 per encounter, 10% improvement)         │   │
+│  │                                                 │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐      │   │
+│  │  │          │  │          │  │          │      │   │
+│  │  │  +0.20   │  │  33,840  │  │  6,768   │      │   │
+│  │  │  wRVU    │  │  encntrs │  │  addtl   │      │   │
+│  │  │  lift    │  │  analyzed│  │  wRVUs   │      │   │
+│  │  │          │  │          │  │          │      │   │
+│  │  └──────────┘  └──────────┘  └──────────┘      │   │
+│  │  [#F5F0EB mini-cards]                           │   │
+│  │                                                 │   │
+│  │  Revenue Potential        $112K – $168K          │   │
+│  │                           [20px, #EA2C00]       │   │
+│  │  at 50-75% attribution                          │   │
+│  │  [10px, #999999]                                │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ═══════════════════════════════════════════════════    │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  [#F5F0EB background]                           │   │
+│  │                                                 │   │
+│  │  ESTIMATED ANNUAL VALUE                         │   │
+│  │  [10px, ALL CAPS, #666666]                      │   │
+│  │                                                 │   │
+│  │  $1.1M                                          │   │
+│  │  [40px, bold, #EA2C00]                          │   │
+│  │                                                 │   │
+│  │  Time value: $971K                              │   │
+│  │  Documentation quality: $112K – $168K           │   │
+│  │  [12px, #666666]                                │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  ┃                                              │   │
+│  │  ┃  These estimates use conservative            │   │
+│  │  ┃  assumptions. Documentation quality value    │   │
+│  │  ┃  uses a 50-75% attribution range to          │   │
+│  │  ┃  acknowledge that wRVU improvement may be    │   │
+│  │  ┃  partially attributable to other factors.    │   │
+│  │  ┃                                              │   │
+│  └─────────────────────────────────────────────────┘   │
+│  [Callout: #F5F0EB bg, #EA2C00 left border]            │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│  ABRIDGE                                   Page 3 of 5 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+PAGE 5: THE PATH AHEAD
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  THE PATH AHEAD                                         │
+│  [10px, ALL CAPS, #EA2C00]                              │
+│                                                         │
+│  What's Possible at Scale                               │
+│  [28px, bold, #1A1A1A]                                  │
+│                                                         │
+│  You've established the model with 80 providers over    │
+│  6 months. Here's what the data suggests if you         │
+│  expanded while maintaining current performance.        │
+│  [12px, #666666]                                        │
+│                                                         │
+│  ═══════════════════════════════════════════════════    │
+│                                                         │
+│  TODAY VS. EXPANSION                                    │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌────────────────────────┐  ┌────────────────────────┐│
+│  │                        │  │                        ││
+│  │  TODAY                 │  │  AT 200 PROVIDERS      ││
+│  │  [10px, ALL CAPS, #999]│  │  [10px, #EA2C00]      ││
+│  │                        │  │                        ││
+│  │  80                    │  │  200                   ││
+│  │  providers             │  │  providers             ││
+│  │  [24px, bold]          │  │  [24px, bold, #EA2C00] ││
+│  │                        │  │                        ││
+│  │  ────────────────────  │  │  ────────────────────  ││
+│  │                        │  │                        ││
+│  │  6,267 hrs saved       │  │  15,668 hrs saved      ││
+│  │  $971K time value      │  │  $2.4M time value      ││
+│  │  $112-168K doc quality │  │  $280-420K doc quality  ││
+│  │                        │  │                        ││
+│  │  ────────────────────  │  │  ────────────────────  ││
+│  │                        │  │                        ││
+│  │  $1.1M                 │  │  $2.7M                 ││
+│  │  estimated annual      │  │  estimated annual      ││
+│  │  value                 │  │  value                 ││
+│  │  [20px, bold]          │  │  [20px, bold, #EA2C00] ││
+│  │                        │  │                        ││
+│  └────────────────────────┘  └────────────────────────┘│
+│  [Left: #F5F0EB bg]         [Right: white, 2px #EA2C00]│
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  ┃                                              │   │
+│  │  ┃  Unlike scribe programs that scale linearly  │   │
+│  │  ┃  with headcount, ambient AI documentation    │   │
+│  │  ┃  scales differently. Per-provider investment  │   │
+│  │  ┃  decreases as adoption grows, while value    │   │
+│  │  ┃  per encounter remains consistent.           │   │
+│  │  ┃                                              │   │
+│  └─────────────────────────────────────────────────┘   │
+│  [Callout: #F5F0EB, #EA2C00 left border]               │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  ASSUMPTIONS                                            │
+│  [10px, ALL CAPS, #999999]                              │
+│                                                         │
+│  This projection assumes adoption rate remains at 72%,  │
+│  time savings remain at 8 min/encounter, wRVU           │
+│  improvement continues at +0.20/encounter, and time     │
+│  allocation patterns remain consistent.                 │
+│  [10px, #999999]                                        │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  ┃                                              │   │
+│  │  ┃  This is your starting point. Your Abridge   │   │
+│  │  ┃  team can help you plan the expansion path   │   │
+│  │  ┃  that makes sense for your organization.     │   │
+│  │  ┃                                              │   │
+│  └─────────────────────────────────────────────────┘   │
+│  [Callout: #F5F0EB, #EA2C00 left border]               │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│  ABRIDGE                                   Page 4 of 5 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+PAGE 6: METHODOLOGY
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  METHODOLOGY                                            │
+│  [10px, ALL CAPS, #EA2C00]                              │
+│                                                         │
+│  How We Calculated This                                 │
+│  [28px, bold, #1A1A1A]                                  │
+│                                                         │
+│  This analysis uses your organization's actual data—    │
+│  not industry benchmarks or theoretical projections.    │
+│  [12px, #666666]                                        │
+│                                                         │
+│  ═══════════════════════════════════════════════════    │
+│                                                         │
+│  ┌──────────────────────┐  ┌──────────────────────────┐│
+│  │                      │  │                          ││
+│  │  YOUR DATA           │  │  EFFICIENCY INPUTS       ││
+│  │  [10px, ALL CAPS,    │  │  [10px, ALL CAPS, #999]  ││
+│  │   #999]              │  │                          ││
+│  │                      │  │  Time in notes:          ││
+│  │  80 providers        │  │  12 min → 4 min          ││
+│  │  6 months            │  │                          ││
+│  │  47,000 encounters   │  │  Same-day closure:       ││
+│  │  34,000 with Abridge │  │  41% → 78%              ││
+│  │  13,000 without      │  │                          ││
+│  │  72% adoption        │  │  Days to close:          ││
+│  │  Outpatient setting  │  │  4.2 → 1.1              ││
+│  │                      │  │                          ││
+│  │                      │  │  After-hours:            ││
+│  │                      │  │  2.1h → 0.4h            ││
+│  │                      │  │                          ││
+│  └──────────────────────┘  └──────────────────────────┘│
+│  [#F5F0EB cards]                                        │
+│                                                         │
+│  ┌──────────────────────┐  ┌──────────────────────────┐│
+│  │                      │  │                          ││
+│  │  QUALITY INPUTS      │  │  VALUE ASSUMPTIONS       ││
+│  │                      │  │                          ││
+│  │  wRVU/encounter:     │  │  Provider rate: $150/hr  ││
+│  │  2.10 → 2.30         │  │  Visit duration: 30 min  ││
+│  │                      │  │  Revenue/visit: $200     ││
+│  │  wRVU conversion:    │  │                          ││
+│  │  $33                 │  │  Allocation:             ││
+│  │                      │  │  50% operational         ││
+│  │  Attribution:        │  │  20% capacity            ││
+│  │  50-75%              │  │  30% wellbeing           ││
+│  │                      │  │                          ││
+│  └──────────────────────┘  └──────────────────────────┘│
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  KEY FORMULAS                                           │
+│  [10px, ALL CAPS, #666666]                              │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │                                                 │   │
+│  │  [#F5F0EB background, 11px monospace-style]     │   │
+│  │                                                 │   │
+│  │  Hours Saved =                                  │   │
+│  │  (Time Without − Time With) × Encounters ÷ 60  │   │
+│  │                                                 │   │
+│  │  Operational Value =                            │   │
+│  │  Hours Saved × 50% × $150/hr                    │   │
+│  │                                                 │   │
+│  │  Capacity Value =                               │   │
+│  │  (Hours Saved × 20%) ÷ 30 min × $200/visit     │   │
+│  │                                                 │   │
+│  │  Documentation Value =                          │   │
+│  │  wRVU Delta × Encounters × $33 × Attribution    │   │
+│  │                                                 │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  This analysis is for planning purposes.                │
+│  Documentation value uses a 50-75% attribution          │
+│  range to acknowledge that wRVU improvement may         │
+│  be partially attributable to other factors.            │
+│  Projections assume current patterns continue at        │
+│  scale. Consult with your finance team before           │
+│  making investment decisions based on these estimates.  │
+│  [9px, #999999, italic]                                 │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│                                                         │
+│  Questions? Reach out to your Abridge                   │
+│  Partner Success team.                                  │
+│  [12px, #666666]                                        │
+│                                                         │
+│  ───────────────────────────────────────────────────    │
+│  ABRIDGE                                   Page 5 of 5 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+KEY CHANGES FROM ORIGINAL
+═══════════════════════════════════════════════════════════════
+
+BRAND:
+□ Remove ALL navy/dark blue banners
+□ Remove ALL teal/green accent colors
+□ White backgrounds everywhere
+□ Warm beige (#F5F0EB) for cards
+□ Red-orange (#EA2C00) as only accent
+□ Gray (#E0E0E0) for borders and dividers
+
+COPY:
+□ "Utilization" → "Adoption" throughout
+□ "Hard Savings" → "Operational Savings"
+□ "Quality of Life" → "Provider Wellbeing"
+□ "TOTAL VALUE CREATED" → "ESTIMATED ANNUAL VALUE"
+□ "TIME REALLOCATION VALUE" → "Time Value"
+□ Add "estimated" before all value claims
+□ "Work Outside Hours" → "After-Hours Documentation"
+
+STRUCTURE:
+□ Cover page matches Ambient Assessment template
+□ Hero page leads with hours, then deployment, then value
+□ Time efficiency keeps control group framing
+□ Value allocation is cleaner with left-border accents
+□ Path ahead uses side-by-side today vs expansion
+□ Methodology uses 4-card grid instead of dense text
+
+FIXES:
+□ Fix "$1.1M – $1.1M" range bug — show single number
+   if range rounds to same value
+□ Ensure all % and conversion values render (no NaN)
+□ Add "estimated" qualifier to all dollar values
