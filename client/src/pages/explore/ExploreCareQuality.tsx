@@ -545,7 +545,7 @@ export default function ExploreCareQuality({
               <Button
                 className="w-full bg-[#EA2C00] hover:bg-[#D02800] text-white"
                 onClick={onNext}
-                data-testid="button-continue-investment"
+                data-testid="button-continue-investment-mobile"
               >
                 Continue to Investment <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
