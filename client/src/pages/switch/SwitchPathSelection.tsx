@@ -53,77 +53,77 @@ export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPath
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid md:grid-cols-2 gap-4 lg:gap-5">
           <button
             onClick={() => onSelectPath("ambient-ai")}
             onMouseEnter={() => setHoveredPath("ambient-ai")}
             onMouseLeave={() => setHoveredPath(null)}
-            className={`group relative bg-white rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+            className={`group relative bg-white rounded-xl border-2 transition-all duration-300 text-left overflow-hidden ${
               hoveredPath === "ambient-ai" 
-                ? "border-[#EA2C00] shadow-xl shadow-[#EA2C00]/10 scale-[1.02]" 
+                ? "border-[#EA2C00] shadow-lg shadow-[#EA2C00]/10 scale-[1.01]" 
                 : "border-slate-200 hover:border-slate-300 shadow-sm"
             }`}
             data-testid="button-path-ambient"
           >
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#EA2C00] to-[#ff6b4a] opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA2C00] to-[#ff6b4a] opacity-0 group-hover:opacity-100 transition-opacity" />
             
-            <div className="p-6 md:p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            <div className="p-4 md:p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
                   hoveredPath === "ambient-ai"
                     ? "bg-[#EA2C00] text-white"
                     : "bg-slate-100 text-slate-600 group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00]"
                 }`}>
-                  <Mic className="w-7 h-7" />
+                  <Mic className="w-5 h-5" />
                 </div>
-                <ChevronRight className={`w-5 h-5 transition-all duration-300 ${
+                <ChevronRight className={`w-4 h-4 transition-all duration-300 ${
                   hoveredPath === "ambient-ai" 
                     ? "text-[#EA2C00] translate-x-1" 
                     : "text-slate-300 group-hover:text-slate-400"
                 }`} />
               </div>
               
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">
+              <h2 className="text-lg font-bold text-slate-900 mb-1">
                 Ambient AI
               </h2>
               
-              <p className="text-slate-500 mb-6 leading-relaxed">
+              <p className="text-sm text-slate-500 mb-4">
                 Using DAX, Ambience, Suki, or another AI documentation tool
               </p>
               
-              <div className="space-y-3 pt-4 border-t border-slate-100">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="space-y-2 pt-3 border-t border-slate-100">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   What you'll discover
                 </p>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-blue-500" />
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-3 h-3 text-blue-500" />
                   </div>
                   <span>Your value realization score vs. benchmarks</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-purple-500" />
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="w-6 h-6 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-3 h-3 text-purple-500" />
                   </div>
                   <span>Efficiency gaps across your implementation</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                    <DollarSign className="w-4 h-4 text-emerald-500" />
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="w-3 h-3 text-emerald-500" />
                   </div>
                   <span>The annual value you may be leaving behind</span>
                 </div>
               </div>
             </div>
             
-            <div className={`px-6 md:px-8 py-4 bg-slate-50 border-t border-slate-100 transition-all duration-300 ${
+            <div className={`px-4 md:px-5 py-3 bg-slate-50 border-t border-slate-100 transition-all duration-300 ${
               hoveredPath === "ambient-ai" ? "bg-[#EA2C00]/5" : ""
             }`}>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-600">
+                <span className="text-xs font-medium text-slate-600">
                   6-step guided analysis
                 </span>
-                <span className={`text-sm font-semibold transition-colors ${
+                <span className={`text-xs font-semibold transition-colors ${
                   hoveredPath === "ambient-ai" ? "text-[#EA2C00]" : "text-slate-400"
                 }`}>
                   ~5 minutes
@@ -136,72 +136,72 @@ export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPath
             onClick={() => onSelectPath("human-scribes")}
             onMouseEnter={() => setHoveredPath("human-scribes")}
             onMouseLeave={() => setHoveredPath(null)}
-            className={`group relative bg-white rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+            className={`group relative bg-white rounded-xl border-2 transition-all duration-300 text-left overflow-hidden ${
               hoveredPath === "human-scribes" 
-                ? "border-slate-800 shadow-xl shadow-slate-800/10 scale-[1.02]" 
+                ? "border-slate-800 shadow-lg shadow-slate-800/10 scale-[1.01]" 
                 : "border-slate-200 hover:border-slate-300 shadow-sm"
             }`}
             data-testid="button-path-scribes"
           >
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-700 to-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-700 to-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             
-            <div className="p-6 md:p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            <div className="p-4 md:p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
                   hoveredPath === "human-scribes"
                     ? "bg-slate-800 text-white"
                     : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
                 }`}>
-                  <Users className="w-7 h-7" />
+                  <Users className="w-5 h-5" />
                 </div>
-                <ChevronRight className={`w-5 h-5 transition-all duration-300 ${
+                <ChevronRight className={`w-4 h-4 transition-all duration-300 ${
                   hoveredPath === "human-scribes" 
                     ? "text-slate-800 translate-x-1" 
                     : "text-slate-300 group-hover:text-slate-400"
                 }`} />
               </div>
               
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">
+              <h2 className="text-lg font-bold text-slate-900 mb-1">
                 Human Scribes
               </h2>
               
-              <p className="text-slate-500 mb-6 leading-relaxed">
+              <p className="text-sm text-slate-500 mb-4">
                 In-person or virtual scribes supporting your providers
               </p>
               
-              <div className="space-y-3 pt-4 border-t border-slate-100">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="space-y-2 pt-3 border-t border-slate-100">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   What you'll discover
                 </p>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-amber-600" />
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-3 h-3 text-amber-600" />
                   </div>
                   <span>Your true coverage gap across providers</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-slate-600" />
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-3 h-3 text-slate-600" />
                   </div>
                   <span>What full coverage would actually cost</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-red-500" />
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <div className="w-6 h-6 rounded-md bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-3 h-3 text-red-500" />
                   </div>
                   <span>The burden on unsupported providers</span>
                 </div>
               </div>
             </div>
             
-            <div className={`px-6 md:px-8 py-4 bg-slate-50 border-t border-slate-100 transition-all duration-300 ${
+            <div className={`px-4 md:px-5 py-3 bg-slate-50 border-t border-slate-100 transition-all duration-300 ${
               hoveredPath === "human-scribes" ? "bg-slate-100" : ""
             }`}>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-600">
+                <span className="text-xs font-medium text-slate-600">
                   2-step program analysis
                 </span>
-                <span className={`text-sm font-semibold transition-colors ${
+                <span className={`text-xs font-semibold transition-colors ${
                   hoveredPath === "human-scribes" ? "text-slate-800" : "text-slate-400"
                 }`}>
                   ~3 minutes
