@@ -208,6 +208,30 @@ export default function ExploreDocQuality({
           </p>
         </motion.div>
 
+        {/* Outpatient/ED: How to Use This */}
+        {!isInpatient && !isNursing && (
+        <motion.div
+          className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            HOW TO USE THIS
+          </p>
+          <div className="h-px bg-[#D1D5DB] mb-6" />
+          <p className="text-sm text-black leading-relaxed">
+            {isED
+              ? "Better documentation captures the clinical complexity you\u2019re already delivering. In high-volume ED settings, notes often understate acuity\u2014especially during surges. Select the drivers that apply to your department and adjust scenarios to match your confidence level."
+              : "Better documentation creates downstream revenue by capturing the complexity you\u2019re already delivering. Select the drivers that apply to your organization, adjust the scenarios to match your confidence level, and edit any assumption directly."
+            }
+          </p>
+          <p className="text-xs text-[#888888] mt-3">
+            All calculations include conservative realization rates. Click into any driver to see and edit the full math.
+          </p>
+        </motion.div>
+        )}
+
         {/* Nursing: Care Quality Potential Section */}
         {isNursing && (
         <>
@@ -1032,20 +1056,29 @@ export default function ExploreDocQuality({
         </motion.div>
         )}
 
-        {/* wRVU Improvement - Not for Inpatient or Nursing (Nursing has its own Care Quality section) */}
+        {/* Revenue Drivers Container - Outpatient/ED */}
         {!isInpatient && !isNursing && (
         <motion.div
-          className="mb-4"
+          className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.15 }}
         >
+          <div>
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              REVENUE DRIVERS
+            </p>
+            <div className="h-px bg-[#D1D5DB]" />
+          </div>
+
+        {/* wRVU Improvement */}
+        <div className="space-y-0">
           <button
             onClick={() => updateDocInputs({ wrvuEnabled: !docQualityInputs.wrvuEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
               docQualityInputs.wrvuEnabled 
                 ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                : "bg-white/70 hover:bg-white border-transparent"
             }`}
             data-testid="toggle-wrvu"
           >
@@ -1167,24 +1200,17 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-        )
-        }
+        </div>
 
         {/* HCC Capture - Only show for Outpatient */}
         {showHCC && (
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
+        <div className="space-y-0">
           <button
             onClick={() => updateDocInputs({ hccEnabled: !docQualityInputs.hccEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
               docQualityInputs.hccEnabled 
                 ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                : "bg-white/70 hover:bg-white border-transparent"
             }`}
             data-testid="toggle-hcc"
           >
@@ -1393,23 +1419,17 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
         )}
 
-        {/* Denial Prevention / Care Quality Driver 3 - Not for Inpatient or Nursing (Nursing has its own Care Quality section) */}
-        {!isInpatient && !isNursing && (
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        {/* Denial Prevention */}
+        <div className="space-y-0">
           <button
             onClick={() => updateDocInputs({ denialsEnabled: !docQualityInputs.denialsEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
               docQualityInputs.denialsEnabled 
                 ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                : "bg-white/70 hover:bg-white border-transparent"
             }`}
             data-testid="toggle-denials"
           >
@@ -1589,6 +1609,8 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
         </motion.div>
         )}
 
