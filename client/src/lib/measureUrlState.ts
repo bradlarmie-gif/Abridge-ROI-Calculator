@@ -28,6 +28,9 @@ export function decodeStateFromUrl(encoded: string): MeasureState | null {
       if (!parsed.emDistribution) {
         parsed.emDistribution = DEFAULT_MEASURE_STATE.emDistribution;
       }
+      if (!parsed.settingData) {
+        parsed.settingData = {};
+      }
       return parsed as MeasureState;
     }
     return null;

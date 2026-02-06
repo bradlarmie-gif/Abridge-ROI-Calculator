@@ -78,6 +78,7 @@ export interface MeasureState {
     without: EMDistribution;
     with: EMDistribution;
   };
+  settingData: Partial<Record<MeasureCareSetting, Record<string, number>>>;
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -144,6 +145,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
       level5: 18,
     },
   },
+  settingData: {},
 };
 
 export interface MeasureResults {

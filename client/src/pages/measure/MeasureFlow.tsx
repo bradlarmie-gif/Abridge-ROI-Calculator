@@ -5,6 +5,7 @@ import {
   DEFAULT_MEASURE_STATE,
 } from "@/lib/measureCalculator";
 import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
+import { getDefaultOutpatientMetrics, getDefaultMetrics } from "@/lib/measureCareSettings";
 import MeasureDataEntry from "./MeasureDataEntry";
 import MeasureTransformation from "./MeasureTransformation";
 import MeasureAllocate from "./MeasureAllocate";
@@ -22,6 +23,12 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const [state, setState] = useState<MeasureState>({
     ...DEFAULT_MEASURE_STATE,
     careSetting: 'outpatient',
+    settingData: {
+      outpatient: getDefaultOutpatientMetrics(),
+      ed: getDefaultMetrics('ed'),
+      inpatient: getDefaultMetrics('inpatient'),
+      nursing: getDefaultMetrics('nursing'),
+    },
   });
 
   useEffect(() => {

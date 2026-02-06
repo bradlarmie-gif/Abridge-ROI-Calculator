@@ -1,10 +1,20 @@
-import { useState } from "react";
-import { ArrowRight, Pencil, X, Users, Info } from "lucide-react";
+import { useState, useCallback } from "react";
+import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { type MeasureState, type MeasureCareSetting, formatNumber } from "@/lib/measureCalculator";
+import {
+  CARE_SETTING_CONFIGS,
+  CARE_SETTING_ORDER,
+  type CareSettingConfig,
+  type SettingMetrics,
+  hasSettingData,
+  isSectionComplete,
+  syncSettingToState,
+  getDefaultMetrics,
+} from "@/lib/measureCareSettings";
 
 interface MeasureDataEntryProps {
   state: MeasureState;
@@ -14,54 +24,100 @@ interface MeasureDataEntryProps {
   onHome: () => void;
 }
 
-const CARE_SETTING_LABELS: Record<MeasureCareSetting, string> = {
-  outpatient: 'Outpatient',
-  ed: 'Emergency Department',
-  inpatient: 'Inpatient',
-  nursing: 'Nursing',
-};
+type ViewMode = "edit" | "preview";
 
-export default function MeasureDataEntry({ 
-  state, 
-  updateState, 
-  onNext, 
+export default function MeasureDataEntry({
+  state,
+  updateState,
+  onNext,
   onBack,
   onHome,
 }: MeasureDataEntryProps) {
-  const [editMode, setEditMode] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>("edit");
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    profile: true,
+    timeEfficiency: true,
+  });
 
-  const updateDeployment = <K extends keyof typeof state.deployment>(key: K, value: typeof state.deployment[K]) => {
+  const activeSetting = (state.careSetting || "outpatient") as MeasureCareSetting;
+  const config = CARE_SETTING_CONFIGS[activeSetting];
+  const metrics = state.settingData?.[activeSetting] || getDefaultMetrics(activeSetting);
+
+  const updateMetric = useCallback(
+    (key: string, value: number) => {
+      const current = state.settingData?.[activeSetting] || getDefaultMetrics(activeSetting);
+      const updated = { ...current, [key]: value };
+      updateState({
+        settingData: {
+          ...state.settingData,
+          [activeSetting]: updated,
+        },
+      });
+    },
+    [activeSetting, state.settingData, updateState],
+  );
+
+  const updateDeployment = <K extends keyof typeof state.deployment>(
+    key: K,
+    value: (typeof state.deployment)[K],
+  ) => {
     updateState({ deployment: { ...state.deployment, [key]: value } });
   };
-  
-  const updateDocQuality = <K extends keyof typeof state.documentationQuality>(key: K, value: number) => {
-    updateState({ documentationQuality: { ...state.documentationQuality, [key]: value } });
-  };
-  
-  const updateTimeEfficiency = <K extends keyof typeof state.timeEfficiency>(key: K, value: number) => {
-    updateState({ timeEfficiency: { ...state.timeEfficiency, [key]: value } });
+
+  const switchTab = (setting: MeasureCareSetting) => {
+    if (setting === activeSetting) return;
+    updateState({ careSetting: setting });
   };
 
-  const updateAllocation = (key: keyof typeof state.allocation, value: number) => {
+  const toggleSection = (sectionKey: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
+  };
+
+  const hasRequiredFields = () => {
+    const hasOrg = state.deployment.organizationName.trim().length > 0;
+    const hasProviders = state.deployment.providers > 0;
+    const hasEncounters = state.deployment.totalEncounters > 0;
+    const hasUtilization = state.deployment.utilizationRate > 0;
+    const hasMetricPair = config.metricSections.some((section) =>
+      section.metrics.some((m) => {
+        if (m.hasBeforeAfter) {
+          const before = metrics[`${m.key}_before`] ?? 0;
+          const after = metrics[`${m.key}_after`] ?? 0;
+          return before !== 0 && after !== 0;
+        }
+        return false;
+      }),
+    );
+    return hasOrg && hasProviders && hasEncounters && hasUtilization && hasMetricPair;
+  };
+
+  const handleSavePreview = () => {
+    const synced = syncSettingToState(activeSetting, metrics);
     updateState({
-      allocation: {
-        ...state.allocation,
-        [key]: Math.max(0, Math.min(100, value)),
-      }
+      ...synced,
     });
+    setViewMode("preview");
   };
 
-  const updateCalibration = <K extends keyof typeof state.calibration>(key: K, value: number) => {
-    updateState({ calibration: { ...state.calibration, [key]: value } });
+  const handleProceed = () => {
+    const synced = syncSettingToState(activeSetting, metrics);
+    updateState({
+      ...synced,
+    });
+    onNext();
   };
 
-  const hasMinimumData = state.deployment.providers > 0 && state.deployment.totalEncounters > 0;
+  const orgName = state.deployment.organizationName || "Your Organization";
+  const dynamicSubhead = `${orgName} \u00B7 ${state.deployment.providers} providers \u00B7 ${state.deployment.monthsOnAbridge} months`;
 
-  const allocationTotal = (state.allocation.hardSavingsPercent ?? 50) + (state.allocation.capacityPercent ?? 20) + (state.allocation.qualityOfLifePercent ?? 30);
+  const allocationKeys = config.allocationFields.map((f) => f.key);
+  const allocationTotal = allocationKeys.reduce((sum, key) => sum + (metrics[key] ?? 0), 0);
   const allocationValid = allocationTotal === 100;
 
-  const orgName = state.deployment.organizationName || 'Your Organization';
-  const dynamicSubhead = `${orgName} \u00B7 ${state.deployment.providers} providers \u00B7 ${state.deployment.monthsOnAbridge} months`;
+  const isValid = hasRequiredFields() && allocationValid;
 
   return (
     <div className="min-h-screen bg-white">
@@ -76,544 +132,686 @@ export default function MeasureDataEntry({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3" data-testid="text-page-title">
+          <h1
+            className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3"
+            data-testid="text-page-title"
+          >
             Your Journey with Abridge
           </h1>
           <p className="text-base text-[#666666]" data-testid="text-dynamic-subhead">
-            {editMode 
-              ? "Enter your partner's deployment data and before/after metrics."
-              : dynamicSubhead
-            }
+            {viewMode === "edit"
+              ? "Enter your partner's deployment data and metrics."
+              : dynamicSubhead}
           </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
-          {!editMode ? (
-            <motion.div
-              key="presentation"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <motion.div
-                className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5" data-testid="text-section-deployment">
-                  Deployment Summary
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div data-testid="stat-providers">
-                    <p className="text-2xl font-bold text-[#1A1A1A]">{state.deployment.providers}</p>
-                    <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">providers on Abridge</p>
-                  </div>
-                  <div data-testid="stat-encounters">
-                    <p className="text-2xl font-bold text-[#1A1A1A]">{formatNumber(state.deployment.totalEncounters)}</p>
-                    <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">encounters analyzed</p>
-                  </div>
-                  <div data-testid="stat-adoption">
-                    <p className="text-2xl font-bold text-[#1A1A1A]">{state.deployment.utilizationRate}%</p>
-                    <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">adoption</p>
-                  </div>
-                  <div data-testid="stat-months">
-                    <p className="text-2xl font-bold text-[#1A1A1A]">{state.deployment.monthsOnAbridge} mo</p>
-                    <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">live</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-              >
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5" data-testid="text-section-measured">
-                  What We Measured
-                </p>
-
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div />
-                  <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1px] text-right">Before</p>
-                  <p className="text-[11px] font-semibold text-[#1A1A1A] uppercase tracking-[1px] text-right">With Abridge</p>
-                </div>
-
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
-                  Time & Efficiency
-                </p>
-
-                <div className="space-y-0">
-                  <div className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]" data-testid="row-time-notes">
-                    <p className="text-sm text-[#1A1A1A]">Time in notes</p>
-                    <p className="text-sm text-[#999999] text-right">{state.timeEfficiency.timeInNotesWithout} min</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{state.timeEfficiency.timeInNotesWith} min</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]" data-testid="row-same-day">
-                    <p className="text-sm text-[#1A1A1A]">Same-day closure</p>
-                    <p className="text-sm text-[#999999] text-right">{state.timeEfficiency.sameDayClosureWithout}%</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{state.timeEfficiency.sameDayClosureWith}%</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]" data-testid="row-days-close">
-                    <p className="text-sm text-[#1A1A1A]">Days to close</p>
-                    <p className="text-sm text-[#999999] text-right">{state.timeEfficiency.timeToCloseWithout}</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{state.timeEfficiency.timeToCloseWith}</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]" data-testid="row-after-hours">
-                    <p className="text-sm text-[#1A1A1A]">After-hours charting</p>
-                    <p className="text-sm text-[#999999] text-right">{state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs/day</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{state.timeEfficiency.workOutsideWith.toFixed(1)} hrs/day</p>
-                  </div>
-                </div>
-
-                <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mt-6 mb-3">
-                  Documentation Quality
-                </p>
-
-                <div className="space-y-0">
-                  <div className="grid grid-cols-3 gap-4 py-2.5" data-testid="row-wrvu">
-                    <p className="text-sm text-[#1A1A1A]">wRVU per encounter</p>
-                    <p className="text-sm text-[#999999] text-right">{state.documentationQuality.wrvuWithout.toFixed(2)}</p>
-                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{state.documentationQuality.wrvuWith.toFixed(2)}</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {state.deployment.totalProviders > state.deployment.providers && (
-                <motion.div
-                  className="bg-[#F5F0EB] rounded-lg p-4 mb-6"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  data-testid="section-expansion-seed"
-                >
-                  <div className="flex items-start gap-3">
-                    <Users className="w-4 h-4 text-[#666666] mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-[#666666] leading-relaxed">
-                      {state.deployment.providers} of your {state.deployment.totalProviders} providers are on Abridge today. This analysis covers their {formatNumber(state.deployment.totalEncounters)} encounters.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              <motion.div
-                className="flex justify-center mb-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.25 }}
-              >
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="inline-flex items-center gap-1.5 text-sm text-[#999999] hover:text-[#666666] transition-colors"
-                  data-testid="button-edit-data"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  Edit data
-                </button>
-              </motion.div>
-            </motion.div>
+          {viewMode === "preview" ? (
+            <PreviewView
+              state={state}
+              config={config}
+              metrics={metrics}
+              onEdit={() => setViewMode("edit")}
+              onNext={handleProceed}
+            />
           ) : (
-            <motion.div
-              key="edit"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-medium text-[#1A1A1A]">Editing Data</p>
-                <button
-                  onClick={() => setEditMode(false)}
-                  className="inline-flex items-center gap-1.5 text-sm text-[#999999] hover:text-[#666666] transition-colors"
-                  data-testid="button-done-editing"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Done
-                </button>
-              </div>
-
-              <div className="bg-[#F5F0EB] rounded-lg p-6 space-y-6 mb-6">
-                <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                    Partner Profile
-                  </p>
-                  <div className="h-px bg-[#E5E5E5] mb-4" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5 col-span-2">
-                      <label className="text-sm font-medium text-black">Organization Name</label>
-                      <input 
-                        type="text"
-                        value={state.deployment.organizationName}
-                        onChange={(e) => updateDeployment('organizationName', e.target.value)}
-                        placeholder="e.g., Valley Health System"
-                        className="w-full h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
-                        data-testid="input-org-name"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">Care Setting</label>
-                      <select
-                        value={state.careSetting || 'outpatient'}
-                        onChange={(e) => updateState({ careSetting: e.target.value as MeasureCareSetting })}
-                        className="w-full h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
-                        data-testid="select-care-setting"
-                      >
-                        {Object.entries(CARE_SETTING_LABELS).map(([key, label]) => (
-                          <option key={key} value={key}>{label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">Providers on Abridge</label>
-                      <FormattedNumberInput 
-                        value={state.deployment.providers} 
-                        onChange={(v) => updateDeployment('providers', v)} 
-                        className="h-10 bg-white border-[#E5E5E5] text-right" 
-                        data-testid="input-providers" 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">Total Providers</label>
-                      <FormattedNumberInput 
-                        value={state.deployment.totalProviders} 
-                        onChange={(v) => updateDeployment('totalProviders', v)} 
-                        className="h-10 bg-white border-[#E5E5E5] text-right" 
-                        data-testid="input-total-providers" 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">Months on Abridge</label>
-                      <FormattedNumberInput 
-                        value={state.deployment.monthsOnAbridge} 
-                        onChange={(v) => updateDeployment('monthsOnAbridge', v)} 
-                        className="h-10 bg-white border-[#E5E5E5] text-right" 
-                        data-testid="input-months" 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">Total Encounters</label>
-                      <FormattedNumberInput 
-                        value={state.deployment.totalEncounters} 
-                        onChange={(v) => updateDeployment('totalEncounters', v)} 
-                        className="h-10 bg-white border-[#E5E5E5] text-right" 
-                        data-testid="input-total-encounters" 
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">Utilization Rate</label>
-                      <div className="relative">
-                        <FormattedNumberInput 
-                          value={state.deployment.utilizationRate} 
-                          onChange={(v) => updateDeployment('utilizationRate', v)} 
-                          className="h-10 bg-white border-[#E5E5E5] text-right pr-8" 
-                          data-testid="input-utilization" 
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                    Time & Efficiency
-                  </p>
-                  <div className="h-px bg-[#E5E5E5] mb-4" />
-                  <div className="grid grid-cols-3 gap-4 mb-3">
-                    <div />
-                    <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">Before</div>
-                    <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">With Abridge</div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 items-center py-2">
-                    <label className="text-sm font-medium text-black">Time in Notes (min)</label>
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.timeInNotesWithout} 
-                      onChange={(v) => updateTimeEfficiency('timeInNotesWithout', v)} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-time-without" 
-                    />
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.timeInNotesWith} 
-                      onChange={(v) => updateTimeEfficiency('timeInNotesWith', v)} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-time-with" 
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 items-center py-2">
-                    <label className="text-sm font-medium text-black">Same-Day Closure (%)</label>
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.sameDayClosureWithout} 
-                      onChange={(v) => updateTimeEfficiency('sameDayClosureWithout', v)} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-closure-without"
-                    />
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.sameDayClosureWith} 
-                      onChange={(v) => updateTimeEfficiency('sameDayClosureWith', v)} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-closure-with"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 items-center py-2">
-                    <label className="text-sm font-medium text-black">Days to Close</label>
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.timeToCloseWithout} 
-                      onChange={(v) => updateTimeEfficiency('timeToCloseWithout', v)} 
-                      step={0.1}
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-close-without"
-                    />
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.timeToCloseWith} 
-                      onChange={(v) => updateTimeEfficiency('timeToCloseWith', v)} 
-                      step={0.1}
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-close-with"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 items-center py-2">
-                    <label className="text-sm font-medium text-black">After-Hours (hrs/day)</label>
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.workOutsideWithout} 
-                      onChange={(v) => updateTimeEfficiency('workOutsideWithout', v)} 
-                      step={0.1}
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-pajama-without"
-                    />
-                    <FormattedNumberInput 
-                      value={state.timeEfficiency.workOutsideWith} 
-                      onChange={(v) => updateTimeEfficiency('workOutsideWith', v)} 
-                      step={0.1}
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-pajama-with"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                    Documentation Quality
-                  </p>
-                  <div className="h-px bg-[#E5E5E5] mb-4" />
-                  <div className="grid grid-cols-3 gap-4 mb-3">
-                    <div />
-                    <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">Before</div>
-                    <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">With Abridge</div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 items-center py-2">
-                    <label className="text-sm font-medium text-black">wRVU per Encounter</label>
-                    <FormattedNumberInput 
-                      value={state.documentationQuality.wrvuWithout} 
-                      onChange={(v) => updateDocQuality('wrvuWithout', v)} 
-                      step={0.01} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-wrvu-without" 
-                    />
-                    <FormattedNumberInput 
-                      value={state.documentationQuality.wrvuWith} 
-                      onChange={(v) => updateDocQuality('wrvuWith', v)} 
-                      step={0.01} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-wrvu-with" 
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 items-center py-2">
-                    <label className="text-sm font-medium text-black">E/M Level (optional)</label>
-                    <FormattedNumberInput 
-                      value={state.documentationQuality.emLevelWithout} 
-                      onChange={(v) => updateDocQuality('emLevelWithout', v)} 
-                      step={0.1} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-em-without" 
-                    />
-                    <FormattedNumberInput 
-                      value={state.documentationQuality.emLevelWith} 
-                      onChange={(v) => updateDocQuality('emLevelWith', v)} 
-                      step={0.1} 
-                      className="h-10 bg-white border-[#E5E5E5] text-right" 
-                      data-testid="input-em-with" 
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg border border-[#E5E5E5] p-6 space-y-5 mb-6">
-                <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-0.5">
-                    Your Value Model
-                  </p>
-                  <p className="text-xs text-[#999999] mb-4">
-                    Configure once. Applied throughout the analysis.
-                  </p>
-                  <div className="h-px bg-[#E5E5E5] mb-4" />
-
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-                    Time Allocation
-                  </p>
-                  <p className="text-xs text-[#999999] mb-4">
-                    How is reclaimed time being used?
-                  </p>
-
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4 items-end">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-black">Operational Savings</label>
-                        <div className="relative">
-                          <FormattedNumberInput
-                            value={state.allocation.hardSavingsPercent ?? 50}
-                            onChange={(v: number) => updateAllocation('hardSavingsPercent', v)}
-                            className="h-10 bg-white text-right pr-8"
-                            data-testid="input-savings-pct"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">%</span>
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-black">Hourly Rate</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">$</span>
-                          <FormattedNumberInput
-                            value={state.calibration.otHourlyRate}
-                            onChange={(v: number) => updateCalibration('otHourlyRate', v)}
-                            className="h-10 bg-white text-right pl-7"
-                            data-testid="input-hourly-rate"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 items-end">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-black">Patient Capacity</label>
-                        <div className="relative">
-                          <FormattedNumberInput
-                            value={state.allocation.capacityPercent ?? 20}
-                            onChange={(v: number) => updateAllocation('capacityPercent', v)}
-                            className="h-10 bg-white text-right pr-8"
-                            data-testid="input-capacity-pct"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">%</span>
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-black">Revenue/Visit</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">$</span>
-                          <FormattedNumberInput
-                            value={state.calibration.revenuePerVisit}
-                            onChange={(v: number) => updateCalibration('revenuePerVisit', v)}
-                            className="h-10 bg-white text-right pl-7"
-                            data-testid="input-revenue-visit"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 items-end">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-black">Provider Wellbeing</label>
-                        <div className="relative">
-                          <FormattedNumberInput
-                            value={state.allocation.qualityOfLifePercent ?? 30}
-                            onChange={(v: number) => updateAllocation('qualityOfLifePercent', v)}
-                            className="h-10 bg-white text-right pr-8"
-                            data-testid="input-wellbeing-pct"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">%</span>
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-black">Visit Duration</label>
-                        <div className="relative">
-                          <FormattedNumberInput
-                            value={state.calibration.minutesPerVisit}
-                            onChange={(v: number) => updateCalibration('minutesPerVisit', v)}
-                            className="h-10 bg-white text-right pr-10"
-                            data-testid="input-visit-duration"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">min</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <p className={`text-xs ${allocationValid ? 'text-green-600' : 'text-red-500'}`} data-testid="text-allocation-check">
-                      Must equal 100%: {allocationValid ? '\u2713' : `${allocationTotal}%`}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-                    Documentation Quality
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">wRVU Attribution</label>
-                      <div className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center px-3 text-sm text-[#666666]">
-                        50 \u2013 75%
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-black">wRVU Value</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">$</span>
-                        <FormattedNumberInput
-                          value={state.calibration.conversionFactor}
-                          onChange={(v: number) => updateCalibration('conversionFactor', v)}
-                          className="h-10 bg-white text-right pl-7"
-                          data-testid="input-wrvu-value"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-[#F5F0EB] rounded-lg p-4">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-3.5 h-3.5 text-[#999999] mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-[#666666] leading-relaxed">
-                      These values are based on your organization's context. Abridge defaults are shown. Adjust to match your finance team's preferences.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <EditView
+              state={state}
+              config={config}
+              metrics={metrics}
+              activeSetting={activeSetting}
+              expandedSections={expandedSections}
+              allocationTotal={allocationTotal}
+              allocationValid={allocationValid}
+              isValid={isValid}
+              onSwitchTab={switchTab}
+              onToggleSection={toggleSection}
+              onUpdateDeployment={updateDeployment}
+              onUpdateMetric={updateMetric}
+              onSavePreview={handleSavePreview}
+            />
           )}
         </AnimatePresence>
-
-        <motion.div 
-          className="max-w-[480px] mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Button
-            onClick={onNext}
-            disabled={!hasMinimumData}
-            className={`
-              w-full h-[52px] font-semibold rounded-lg text-base transition-all duration-200 gap-2
-              ${hasMinimumData 
-                ? 'bg-[#EA2C00] hover:bg-[#D42800] text-white' 
-                : 'bg-[#E0E0E0] text-[#999999] cursor-not-allowed'
-              }
-            `}
-            data-testid="button-see-transformation"
-          >
-            See What Changed
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </motion.div>
       </div>
     </div>
+  );
+}
+
+function CareSettingTabs({
+  active,
+  settingData,
+  onSwitch,
+}: {
+  active: MeasureCareSetting;
+  settingData: MeasureState["settingData"];
+  onSwitch: (s: MeasureCareSetting) => void;
+}) {
+  return (
+    <div className="flex border-b border-[#E5E5E5] mb-6" data-testid="tabs-care-setting">
+      {CARE_SETTING_ORDER.map((setting) => {
+        const config = CARE_SETTING_CONFIGS[setting];
+        const isActive = setting === active;
+        const hasData = hasSettingData(settingData?.[setting]);
+
+        return (
+          <button
+            key={setting}
+            onClick={() => onSwitch(setting)}
+            className={`
+              relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors
+              ${isActive ? "text-[#1A1A1A]" : "text-[#999999] hover:text-[#666666]"}
+            `}
+            data-testid={`tab-${setting}`}
+          >
+            {config.shortLabel}
+            {hasData && (
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-[#EA2C00]" : "bg-[#EA2C00]/60"}`}
+              />
+            )}
+            {isActive && (
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#EA2C00]"
+                layoutId="activeTab"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function CollapsibleSection({
+  sectionKey,
+  label,
+  isExpanded,
+  isComplete,
+  hasContent,
+  subtitle,
+  onToggle,
+  children,
+}: {
+  sectionKey: string;
+  label: string;
+  isExpanded: boolean;
+  isComplete: boolean;
+  hasContent: boolean;
+  subtitle?: string;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white rounded-lg border border-[#E5E5E5] overflow-visible mb-4">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-5 py-4 text-left"
+        data-testid={`section-toggle-${sectionKey}`}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-[11px] font-semibold uppercase tracking-[1.5px] ${hasContent ? "text-[#1A1A1A]" : "text-[#999999]"}`}
+          >
+            {label}
+          </span>
+          {hasContent && !isComplete && (
+            <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isComplete ? (
+            <span className="text-xs font-medium text-[#EA2C00] flex items-center gap-1">
+              <Check className="w-3 h-3" /> Complete
+            </span>
+          ) : subtitle && !isExpanded ? (
+            <span className="text-xs text-[#999999]">{subtitle}</span>
+          ) : null}
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-[#999999]" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-[#999999]" />
+          )}
+        </div>
+      </button>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-5">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+interface EditViewProps {
+  state: MeasureState;
+  config: CareSettingConfig;
+  metrics: SettingMetrics;
+  activeSetting: MeasureCareSetting;
+  expandedSections: Record<string, boolean>;
+  allocationTotal: number;
+  allocationValid: boolean;
+  isValid: boolean;
+  onSwitchTab: (s: MeasureCareSetting) => void;
+  onToggleSection: (s: string) => void;
+  onUpdateDeployment: <K extends keyof MeasureState["deployment"]>(
+    key: K,
+    value: MeasureState["deployment"][K],
+  ) => void;
+  onUpdateMetric: (key: string, value: number) => void;
+  onSavePreview: () => void;
+}
+
+function EditView({
+  state,
+  config,
+  metrics,
+  activeSetting,
+  expandedSections,
+  allocationTotal,
+  allocationValid,
+  isValid,
+  onSwitchTab,
+  onToggleSection,
+  onUpdateDeployment,
+  onUpdateMetric,
+  onSavePreview,
+}: EditViewProps) {
+  const profileComplete =
+    state.deployment.organizationName.trim().length > 0 &&
+    state.deployment.providers > 0 &&
+    state.deployment.totalEncounters > 0;
+
+  return (
+    <motion.div
+      key="edit"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
+    >
+      <CareSettingTabs
+        active={activeSetting}
+        settingData={state.settingData}
+        onSwitch={onSwitchTab}
+      />
+
+      <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
+              Partner Profile
+            </span>
+          </div>
+          {profileComplete && (
+            <span className="text-xs font-medium text-[#EA2C00] flex items-center gap-1">
+              <Check className="w-3 h-3" /> Complete
+            </span>
+          )}
+        </div>
+        <div className="h-px bg-[#E5E5E5] mb-4" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5 col-span-2">
+            <label className="text-sm font-medium text-black">Organization Name</label>
+            <input
+              type="text"
+              value={state.deployment.organizationName}
+              onChange={(e) => onUpdateDeployment("organizationName", e.target.value)}
+              placeholder="e.g., Valley Health System"
+              className="w-full h-10 px-3 bg-white border border-[#E5E5E5] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
+              data-testid="input-org-name"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-black">Providers on Abridge</label>
+            <FormattedNumberInput
+              value={state.deployment.providers}
+              onChange={(v) => onUpdateDeployment("providers", v)}
+              className="h-10 bg-white border-[#E5E5E5] text-right"
+              data-testid="input-providers"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-black">Total Providers</label>
+            <FormattedNumberInput
+              value={state.deployment.totalProviders}
+              onChange={(v) => onUpdateDeployment("totalProviders", v)}
+              className="h-10 bg-white border-[#E5E5E5] text-right"
+              data-testid="input-total-providers"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-black">Months on Abridge</label>
+            <FormattedNumberInput
+              value={state.deployment.monthsOnAbridge}
+              onChange={(v) => onUpdateDeployment("monthsOnAbridge", v)}
+              className="h-10 bg-white border-[#E5E5E5] text-right"
+              data-testid="input-months"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-black">Total Encounters</label>
+            <FormattedNumberInput
+              value={state.deployment.totalEncounters}
+              onChange={(v) => onUpdateDeployment("totalEncounters", v)}
+              className="h-10 bg-white border-[#E5E5E5] text-right"
+              data-testid="input-total-encounters"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-black">Utilization Rate</label>
+            <div className="relative">
+              <FormattedNumberInput
+                value={state.deployment.utilizationRate}
+                onChange={(v) => onUpdateDeployment("utilizationRate", v)}
+                className="h-10 bg-white border-[#E5E5E5] text-right pr-8"
+                data-testid="input-utilization"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                %
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {config.deploymentFields && config.deploymentFields.length > 0 && (
+          <>
+            <div className="h-px bg-[#E5E5E5] my-4" />
+            <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
+              {config.label} Deployment
+            </span>
+            <div className="grid grid-cols-2 gap-4">
+              {config.deploymentFields.map((field) => (
+                <div key={field.key} className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">{field.label}</label>
+                  <div className="relative">
+                    <FormattedNumberInput
+                      value={metrics[`deploy_${field.key}`] ?? 0}
+                      onChange={(v) => onUpdateMetric(`deploy_${field.key}`, v)}
+                      className={`h-10 bg-white border-[#E5E5E5] text-right ${field.suffix ? "pr-8" : ""}`}
+                      data-testid={`input-deploy-${field.key}`}
+                    />
+                    {field.suffix && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                        {field.suffix}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {config.metricSections.map((section) => {
+        const sectionHasContent = section.metrics.some((m) => {
+          if (m.hasBeforeAfter) {
+            return (
+              (metrics[`${m.key}_before`] ?? 0) !== 0 ||
+              (metrics[`${m.key}_after`] ?? 0) !== 0
+            );
+          }
+          return false;
+        });
+        const sectionIsComplete = isSectionComplete(section.key, config, metrics);
+
+        return (
+          <CollapsibleSection
+            key={section.key}
+            sectionKey={section.key}
+            label={section.label}
+            isExpanded={expandedSections[section.key] ?? false}
+            isComplete={sectionIsComplete}
+            hasContent={sectionHasContent}
+            onToggle={() => onToggleSection(section.key)}
+          >
+            <div className="grid grid-cols-3 gap-4 mb-3">
+              <div />
+              <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">
+                Before
+              </div>
+              <div className="text-[11px] font-semibold text-[#888888] text-center uppercase tracking-[1px]">
+                With Abridge
+              </div>
+            </div>
+            {section.metrics.map((metric) => (
+              <div
+                key={metric.key}
+                className="grid grid-cols-3 gap-4 items-center py-2"
+              >
+                <label className="text-sm font-medium text-black">
+                  {metric.label}
+                  {metric.optional && (
+                    <span className="text-[#999999] text-xs ml-1">(optional)</span>
+                  )}
+                </label>
+                {metric.hasBeforeAfter ? (
+                  <>
+                    <FormattedNumberInput
+                      value={metrics[`${metric.key}_before`] ?? 0}
+                      onChange={(v) => onUpdateMetric(`${metric.key}_before`, v)}
+                      step={metric.step}
+                      className="h-10 bg-white border-[#E5E5E5] text-right"
+                      data-testid={`input-${metric.key}-before`}
+                    />
+                    <FormattedNumberInput
+                      value={metrics[`${metric.key}_after`] ?? 0}
+                      onChange={(v) => onUpdateMetric(`${metric.key}_after`, v)}
+                      step={metric.step}
+                      className="h-10 bg-white border-[#E5E5E5] text-right"
+                      data-testid={`input-${metric.key}-after`}
+                    />
+                  </>
+                ) : (
+                  <FormattedNumberInput
+                    value={metrics[metric.key] ?? 0}
+                    onChange={(v) => onUpdateMetric(metric.key, v)}
+                    step={metric.step}
+                    className="h-10 bg-white border-[#E5E5E5] text-right col-span-2"
+                    data-testid={`input-${metric.key}`}
+                  />
+                )}
+              </div>
+            ))}
+          </CollapsibleSection>
+        );
+      })}
+
+      <CollapsibleSection
+        sectionKey="valueModel"
+        label="Value Model"
+        isExpanded={expandedSections.valueModel ?? false}
+        isComplete={allocationValid}
+        hasContent={true}
+        subtitle="Defaults loaded"
+        onToggle={() => onToggleSection("valueModel")}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            {config.valueModel.map((field) => (
+              <div key={field.key} className="space-y-1.5">
+                <label className="text-sm font-medium text-black">{field.label}</label>
+                <div className="relative">
+                  {field.prefix && (
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                      {field.prefix}
+                    </span>
+                  )}
+                  <FormattedNumberInput
+                    value={metrics[`vm_${field.key}`] ?? field.defaultValue}
+                    onChange={(v) => onUpdateMetric(`vm_${field.key}`, v)}
+                    className={`h-10 bg-white border-[#E5E5E5] text-right ${field.prefix ? "pl-7" : ""} ${field.suffix ? "pr-10" : ""}`}
+                    data-testid={`input-vm-${field.key}`}
+                  />
+                  {field.suffix && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                      {field.suffix}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="h-px bg-[#E5E5E5]" />
+
+          <div>
+            <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-1 block">
+              Attribution Range
+            </span>
+            <div className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center px-3 text-sm text-[#666666]">
+              50 – 75%
+            </div>
+          </div>
+
+          <div className="h-px bg-[#E5E5E5]" />
+
+          <div>
+            <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
+              Time Allocation
+            </span>
+            <div className="grid grid-cols-2 gap-4">
+              {config.allocationFields.map((field) => (
+                <div key={field.key} className="space-y-1.5">
+                  <label className="text-sm font-medium text-black">{field.label}</label>
+                  <div className="relative">
+                    <FormattedNumberInput
+                      value={metrics[field.key] ?? field.defaultValue}
+                      onChange={(v) => onUpdateMetric(field.key, Math.max(0, Math.min(100, v)))}
+                      className="h-10 bg-white border-[#E5E5E5] text-right pr-8"
+                      data-testid={`input-alloc-${field.key}`}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                      %
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p
+              className={`text-xs mt-2 ${allocationValid ? "text-green-600" : "text-red-500"}`}
+              data-testid="text-allocation-check"
+            >
+              Must equal 100%: {allocationValid ? "\u2713" : `${allocationTotal}%`}
+            </p>
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      <div className="h-px bg-[#E5E5E5] my-6" />
+
+      <div className="max-w-[480px] mx-auto text-center">
+        <Button
+          onClick={onSavePreview}
+          disabled={!isValid}
+          className={`
+            w-full h-[52px] font-semibold rounded-lg text-base transition-all duration-200 gap-2
+            ${
+              isValid
+                ? "bg-[#EA2C00] hover:bg-[#D42800] text-white"
+                : "bg-[#E0E0E0] text-[#999999] cursor-not-allowed"
+            }
+          `}
+          data-testid="button-save-preview"
+        >
+          {isValid ? (
+            <>
+              Save & Preview
+              <ArrowRight className="w-4 h-4" />
+            </>
+          ) : (
+            "Complete required fields to continue"
+          )}
+        </Button>
+        <p className="text-[10px] text-[#999999] mt-3">
+          You can edit this data anytime from the summary page.
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+interface PreviewViewProps {
+  state: MeasureState;
+  config: CareSettingConfig;
+  metrics: SettingMetrics;
+  onEdit: () => void;
+  onNext: () => void;
+}
+
+function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProps) {
+  return (
+    <motion.div
+      key="preview"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div
+        className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <p
+          className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
+          data-testid="text-section-deployment"
+        >
+          Deployment Summary
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div data-testid="stat-providers">
+            <p className="text-2xl font-bold text-[#1A1A1A]">{state.deployment.providers}</p>
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">
+              providers on Abridge
+            </p>
+          </div>
+          <div data-testid="stat-encounters">
+            <p className="text-2xl font-bold text-[#1A1A1A]">
+              {formatNumber(state.deployment.totalEncounters)}
+            </p>
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">
+              encounters analyzed
+            </p>
+          </div>
+          <div data-testid="stat-adoption">
+            <p className="text-2xl font-bold text-[#1A1A1A]">
+              {state.deployment.utilizationRate}%
+            </p>
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">adoption</p>
+          </div>
+          <div data-testid="stat-months">
+            <p className="text-2xl font-bold text-[#1A1A1A]">
+              {state.deployment.monthsOnAbridge} mo
+            </p>
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">live</p>
+          </div>
+        </div>
+
+        {state.deployment.totalProviders > state.deployment.providers && (
+          <div className="mt-4 flex items-start gap-2" data-testid="section-expansion-seed">
+            <Users className="w-3.5 h-3.5 text-[#999999] mt-0.5 flex-shrink-0" />
+            <p className="text-[10px] text-[#999999]">
+              {state.deployment.providers} of {state.deployment.totalProviders} total providers are
+              on Abridge today.
+            </p>
+          </div>
+        )}
+      </motion.div>
+
+      <motion.div
+        className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <p
+          className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5"
+          data-testid="text-section-measured"
+        >
+          What We Measured
+        </p>
+
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div />
+          <p className="text-[11px] font-semibold text-[#999999] uppercase tracking-[1px] text-right">
+            Before
+          </p>
+          <p className="text-[11px] font-semibold text-[#1A1A1A] uppercase tracking-[1px] text-right">
+            With Abridge
+          </p>
+        </div>
+
+        {config.metricSections.map((section) => {
+          const visibleMetrics = section.metrics.filter((m) => {
+            if (m.hasBeforeAfter) {
+              return (
+                (metrics[`${m.key}_before`] ?? 0) !== 0 ||
+                (metrics[`${m.key}_after`] ?? 0) !== 0
+              );
+            }
+            return (metrics[m.key] ?? 0) !== 0;
+          });
+
+          if (visibleMetrics.length === 0) return null;
+
+          return (
+            <div key={section.key} className="mb-4">
+              <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+                {section.label}
+              </p>
+              <div className="space-y-0">
+                {visibleMetrics.map((metric) => {
+                  const before = metrics[`${metric.key}_before`] ?? 0;
+                  const after = metrics[`${metric.key}_after`] ?? 0;
+                  const step = metric.step ?? 1;
+                  const decimals = step < 1 ? Math.ceil(-Math.log10(step)) : 0;
+                  const formatVal = (v: number) =>
+                    decimals > 0 ? v.toFixed(decimals) : String(v);
+
+                  return (
+                    <div
+                      key={metric.key}
+                      className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]"
+                      data-testid={`row-${metric.key}`}
+                    >
+                      <p className="text-sm text-[#1A1A1A]">
+                        {metric.label.replace(/\s*\(.*?\)\s*/g, "")}
+                      </p>
+                      <p className="text-sm text-[#999999] text-right">{formatVal(before)}</p>
+                      <p className="text-sm font-semibold text-[#1A1A1A] text-right">
+                        {formatVal(after)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      <div className="h-px bg-[#E5E5E5] my-6" />
+
+      <motion.div
+        className="max-w-[480px] mx-auto text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+      >
+        <Button
+          onClick={onNext}
+          className="w-full h-[52px] font-semibold rounded-lg text-base bg-[#EA2C00] hover:bg-[#D42800] text-white transition-all duration-200 gap-2"
+          data-testid="button-see-transformation"
+        >
+          See What Changed
+          <ArrowRight className="w-4 h-4" />
+        </Button>
+        <button
+          onClick={onEdit}
+          className="inline-flex items-center gap-1.5 text-sm text-[#EA2C00] hover:text-[#D42800] transition-colors mt-4"
+          data-testid="button-edit-data"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          Edit data
+        </button>
+      </motion.div>
+    </motion.div>
   );
 }
