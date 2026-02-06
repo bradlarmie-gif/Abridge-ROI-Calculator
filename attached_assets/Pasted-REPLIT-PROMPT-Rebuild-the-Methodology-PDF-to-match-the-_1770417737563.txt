@@ -1,0 +1,439 @@
+REPLIT PROMPT:
+
+Rebuild the Methodology PDF to match the EXACT same format as 
+the Measure, Ambient Assessment, Scribe Analysis, and Explore 
+PDFs. Cover + 3 content pages (methodology is reference material, 
+doesn't need 4). Same margins, typography, components.
+
+This PDF is accessed from "Learn the methodology" link. It's 
+NOT setting-specific — it covers the approach across all settings.
+But start with a Nursing-specific version since that's what exists.
+
+═══════════════════════════════════════════════════════════════════════
+GLOBAL — IDENTICAL TO ALL OTHER PDFS
+═══════════════════════════════════════════════════════════════════════
+
+Pages: Cover + 3 content pages
+Size: Letter (8.5 × 11)
+Margins: 0.75 inch
+Font: Manrope
+Same color palette. Same components. NO green. NO blue. NO orange 
+borders. NO badge pills. NO heavy header bars.
+
+Only colors: #FFFFFF, #F5F0EB, #EA2C00, #1A1A1A, #666666, 
+#999999, #E0E0E0.
+
+FOOTER (every page):
+- Left: ABRIDGE in #EA2C00 (10px)
+- Center: "ROI Methodology · Nursing"
+- Right: "Page X of 3" in 8.5px #999999
+
+═══════════════════════════════════════════════════════════════════════
+COVER PAGE
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ABRIDGE [logo, #EA2C00, top-left]                              │
+│                                                                 │
+│                                                                 │
+│  ROI METHODOLOGY                                                │
+│  [9px, ALL CAPS, #666666, letter-spacing 3px]                   │
+│                                                                 │
+│  Nursing: How We                                                │
+│  Think About Value                                              │
+│  [36px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ──────── [60px rule, #EA2C00, 2px thick]                       │
+│                                                                 │
+│  A transparent framework for understanding where                │
+│  value lives when there's no billing relationship               │
+│  [14px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  [Date]                                                         │
+│  [12px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  [subtle curve graphic]                                         │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  Every assumption is visible. Every calculation is transparent. │
+│  [8.5px, #999999]                                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 1: THE CONTEXT + VALUE FRAMEWORK (combined)
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  THE CONTEXT                                                    │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background]                                   │    │
+│  │                                                         │    │
+│  │  Nursing is the hardest setting to model ROI—and the    │    │
+│  │  most important to get right.                           │    │
+│  │  [14px, bold, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │  In outpatient medicine, a physician saves 4 minutes    │    │
+│  │  per visit, and you can trace a path to wRVU lift or    │    │
+│  │  capacity expansion. Nurses don't bill. They don't      │    │
+│  │  generate wRVUs. And yet nursing documentation burden   │    │
+│  │  is massive—25-35% of every shift spent on flowsheets,  │    │
+│  │  assessments, handoffs, and charting.                    │    │
+│  │  [10.5px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  So where does the value live?                          │    │
+│  │  [12px, bold, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  TWO VALUE CATEGORIES                                           │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  LABOR ECONOMICS         │  │  ┃ CARE QUALITY            │   │
+│  │                          │  │  ┃ ENABLEMENT              │   │
+│  │  Overtime, retention,    │  │  ┃                          │   │
+│  │  and agency spend.       │  │  ┃ Falls, pressure          │   │
+│  │  Real dollars that show  │  │  ┃ injuries, patient        │   │
+│  │  up in the budget. When  │  │  ┃ satisfaction. Influenced │   │
+│  │  nurses spend less time  │  │  ┃ by bedside time. But     │   │
+│  │  documenting, they       │  │  ┃ the causal chain is      │   │
+│  │  finish shifts on time,  │  │  ┃ indirect—documentation   │   │
+│  │  burn out less, and the  │  │  ┃ supports care, it        │   │
+│  │  organization needs      │  │  ┃ doesn't replace it.      │   │
+│  │  fewer travel nurses.    │  │  ┃                          │   │
+│  │                          │  │  ┃                          │   │
+│  │  Direct, measurable      │  │  ┃ Potential value          │   │
+│  │  [10px, bold, #1A1A1A]   │  │  ┃ (shown separately)      │   │
+│  │                          │  │  ┃ [10px, bold, #1A1A1A]   │   │
+│  │  [10px, #666666]         │  │  ┃ [10px, #666666]         │   │
+│  │                          │  │  ┃                          │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [#F5F0EB bg]                  [white bg, #EA2C00 left border]  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ We model both—but we're honest about what's          │    │
+│  │  ┃ directly measurable versus what we only enable.      │    │
+│  │  ┃ Labor economics value is defensible in CFO           │    │
+│  │  ┃ conversations. Care quality potential is real but     │    │
+│  │  ┃ requires clinical practice to realize.               │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 10px]                        │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  THE HONEST LIMITS                                              │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ WHAT WE MEASURE       ┃ WHAT WE INFLUENCE            │    │
+│  │  ┃ Direct attribution    ┃ Indirect attribution          │    │
+│  │  ┃                       ┃                               │    │
+│  │  ┃ · OT hours pre/post   ┃ · Turnover rates             │    │
+│  │  ┃ · Doc time per shift   ┃ · Agency utilization         │    │
+│  │  ┃ · Shift completion     ┃ · Nurse satisfaction         │    │
+│  │  ┃ · Chart timing         ┃ · Burnout indicators         │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ WHAT WE ENABLE                                       │    │
+│  │  ┃ Supportive only                                      │    │
+│  │  ┃                                                      │    │
+│  │  ┃ · Falls prevention  · HAPI prevention                │    │
+│  │  ┃ · HCAHPS improvement  · Clinical outcomes            │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Documentation creates visibility.                    │    │
+│  │  ┃ Clinical teams act on it.                            │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [All borders #EA2C00 left, text 9px, #666666]                  │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  CONNECTED VALUE                                                │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  When nurses document thoroughly and in real-time, it           │
+│  directly impacts inpatient revenue. Nursing assessments        │
+│  capture clinical indicators (CC/MCC) that support DRG          │
+│  accuracy and stronger payer appeals. These benefits are        │
+│  quantified in the Inpatient methodology.                       │
+│  [9px, #999999]                                                 │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    ROI Methodology · Nursing           Page 1 of 3    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 2: VALUE MECHANISMS (all 6 on ONE dense page)
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  VALUE MECHANISMS                                               │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  How Time Saved Becomes Value                                   │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  LABOR ECONOMICS                                                │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ Overtime Reduction                    Measurable      │    │
+│  │  ┃                                       [8.5px, #999]   │    │
+│  │  ┃                                                      │    │
+│  │  ┃ When nurses document faster, they finish on time.    │    │
+│  │  ┃ Not all time saved reduces OT—some goes to care—     │    │
+│  │  ┃ but a measurable portion does.                       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Hours saved × Conversion (15-40%) × OT rate (1.5×)  │    │
+│  │  ┃ [9px, #EA2C00]                                       │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Retention Savings                   Influenceable     │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Documentation burden → burnout → turnover. Reducing  │    │
+│  │  ┃ burden helps retain nurses who would otherwise leave. │    │
+│  │  ┃                                                      │    │
+│  │  ┃ FTEs × Turnover × Burnout% × Impact (10-25%)        │    │
+│  │  ┃ × Replacement cost                                   │    │
+│  │  ┃ [9px, #EA2C00]                                       │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Agency Labor Reduction         Tied to retention      │    │
+│  │  ┃                                                      │    │
+│  │  ┃ When nurses leave, hospitals fill gaps with agency    │    │
+│  │  ┃ nurses at 2-3× the cost. Better retention directly   │    │
+│  │  ┃ reduces agency dependency.                           │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Nurses retained × Coverage weeks (8-16)              │    │
+│  │  ┃ × Weekly premium ($2-4K)                             │    │
+│  │  ┃ [9px, #EA2C00]                                       │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  CARE QUALITY ENABLEMENT                                        │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ HAPI Prevention                      Potential       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Real-time documentation ensures skin assessments     │    │
+│  │  ┃ and risk factors are captured—enabling earlier        │    │
+│  │  ┃ intervention for pressure injuries.                  │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Current HAPIs × Doc-preventable (5%) × Cost/HAPI    │    │
+│  │  ┃ [9px, #EA2C00]                                       │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Falls Prevention                     Potential       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Real-time fall risk scores and mobility status       │    │
+│  │  ┃ enable earlier preventive action. CMS does not       │    │
+│  │  ┃ reimburse for hospital-acquired fall injuries.       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Current falls × Doc-preventable (5%) × Cost/fall    │    │
+│  │  ┃ [9px, #EA2C00]                                       │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Patient Experience (HCAHPS)          Directional     │    │
+│  │  ┃                                                      │    │
+│  │  ┃ More bedside time correlates with higher scores.     │    │
+│  │  ┃ But HCAHPS is influenced by dozens of factors.       │    │
+│  │  ┃ Track as indicator, not outcome.                     │    │
+│  │  ┃                                                      │    │
+│  │  ┃ Top quartile HCAHPS ≈ 2% higher VBP reimbursement   │    │
+│  │  ┃ [9px, #999999]                                       │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ The link between documentation and care quality is   │    │
+│  │  ┃ indirect. We don't cause fewer falls—we enable the   │    │
+│  │  ┃ visibility that helps prevent them. Clinical         │    │
+│  │  ┃ practice matters more than documentation.            │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 10px]                        │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    ROI Methodology · Nursing           Page 2 of 3    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+NOTE: Each mechanism uses the SAME component: #EA2C00 left border,
+bold title + attribution level on same line, 2-line mechanism 
+description, formula in #EA2C00. No badges. No colored borders.
+No green/blue/orange. Just red-orange left borders consistently.
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 3: ASSUMPTIONS + VALIDATION (combined final page)
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  TRANSPARENCY                                                   │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Every Number Has a Source                                       │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  We don't hide assumptions. If your data is different, the      │
+│  model adapts.                                                  │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  KEY ASSUMPTIONS                                                │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ASSUMPTION            RANGE      DEFAULT    SOURCE     │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │  Time saved/shift      15-30 min  20 min    Customer    │    │
+│  │  OT conversion         15-40%     25%       Studies     │    │
+│  │  Nurse turnover        15-25%     18%       NSI 2024    │    │
+│  │  Burnout-related %     30-50%     40%       ANA         │    │
+│  │  Retention impact      10-25%     15%       Conserv.    │    │
+│  │  Replacement cost      $40-65K    $52K      NSI 2024    │    │
+│  │  Agency weeks          8-16 wks   12 wks    Industry    │    │
+│  │  Agency premium        $2-4K/wk   $2,500    Travel      │    │
+│  │  Doc-preventable %     3-8%       5%        Conserv.    │    │
+│  │  Cost per HAPI         $10-50K    $26K      AHRQ        │    │
+│  │  Cost per fall         $3-30K     $6.5K     CMS         │    │
+│  │                                                         │    │
+│  │  [9px text, DEFAULT column in bold, thin row borders]   │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ We'd rather show a smaller number you can defend     │    │
+│  │  ┃ than a larger number that falls apart under          │    │
+│  │  ┃ scrutiny.                                            │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 10px]                        │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  VALIDATION PATH                                                │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Our projections are starting points. The real answers           │
+│  come from your data.                                           │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  TIME SAVINGS            │  │  OVERTIME                  │   │
+│  │  [10px, bold]            │  │  [10px, bold]              │   │
+│  │                          │  │                            │   │
+│  │  Before: Survey nurses   │  │  Before: Baseline OT       │   │
+│  │  on doc time; review     │  │  hours per unit/month;     │   │
+│  │  EHR session data        │  │  note seasonal patterns    │   │
+│  │                          │  │                            │   │
+│  │  After: Repeat; compare  │  │  After: Track Abridge      │   │
+│  │  with utilization data   │  │  vs control units          │   │
+│  │                          │  │                            │   │
+│  │  Timeline: 2-4 weeks     │  │  Timeline: 2-3 months      │   │
+│  │  [9px, #EA2C00]          │  │  [9px, #EA2C00]            │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  RETENTION               │  │  CARE QUALITY              │   │
+│  │  [10px, bold]            │  │  [10px, bold]              │   │
+│  │                          │  │                            │   │
+│  │  Before: Baseline        │  │  Before: Baseline HAPI/    │   │
+│  │  turnover by unit; exit  │  │  falls rates; baseline     │   │
+│  │  interview data          │  │  HCAHPS scores             │   │
+│  │                          │  │                            │   │
+│  │  After: Track Abridge    │  │  After: Track Abridge      │   │
+│  │  vs control; survey on   │  │  vs control; be cautious   │   │
+│  │  satisfaction            │  │  on attribution             │   │
+│  │                          │  │                            │   │
+│  │  Timeline: 12-18 months  │  │  Treat as bonus, not       │   │
+│  │  [9px, #EA2C00]          │  │  promise.                  │   │
+│  │                          │  │  [9px, #EA2C00, italic]    │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [2×2 grid, #F5F0EB bg, 8px gaps]                               │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  This methodology reflects Abridge's approach to modeling       │
+│  nursing ROI. All defaults are conservative and editable.       │
+│  The goal is a defensible framework, not a predetermined        │
+│  answer.                                                        │
+│  [8.5px, #999999, italic]                                       │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    ROI Methodology · Nursing           Page 3 of 3    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+KEY CHANGES
+═══════════════════════════════════════════════════════════════════════
+
+1. Remove ALL colored left borders except #EA2C00
+   - No green borders
+   - No blue borders  
+   - No orange borders
+   - Every left border accent is #EA2C00 only
+
+2. Remove ALL badge pills ("DIRECTLY MEASURABLE", 
+   "POTENTIAL VALUE", etc.)
+   - Replace with simple right-aligned gray text labels
+   - "Measurable" / "Influenceable" / "Potential" / "Directional"
+   - [8.5px, #999999]
+
+3. Remove the heavy header bar at top of each page
+   - No more "ABRIDGE [logo] ——— ROI METHODOLOGY" heavy bar
+   - Use the same subtle footer-only branding as all other PDFs
+
+4. Remove the old 2×2 card grid with colored borders on page 2
+   - Replace with stacked list items using #EA2C00 left borders
+   - Same component as value drivers in other PDFs
+
+5. Same assumption table style as other PDFs
+   - Clean, minimal borders
+   - Bold defaults, gray ranges and sources
+   - No heavy red header row
+
+6. Same validation path cards as other PDFs
+   - 2×2 grid with #F5F0EB backgrounds
+   - Bold titles, body in #666666
+   - Timeline in #EA2C00
+
+7. 3 pages instead of 3 (same content, tighter)
+   - Page 1: Context + Framework + Honest Limits
+   - Page 2: All 6 value mechanisms
+   - Page 3: Assumptions table + Validation path
+
+8. Cover page matches all other PDF covers exactly
