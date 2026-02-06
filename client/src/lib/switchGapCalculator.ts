@@ -1,6 +1,6 @@
 // ============================================================================
 // SWITCH GAP CALCULATOR - VALUE REALIZATION ASSESSMENT
-// Four-dimensional analysis: Utilization, Efficiency, Quality, Satisfaction
+// Five-dimensional analysis: Utilization, Net Efficiency, Quality, Satisfaction, Edit Time
 // Formulas aligned with Abridge benchmark spec
 // ============================================================================
 
@@ -13,6 +13,7 @@ export interface SwitchInputs {
   currentCostPerProvider: number;
   utilization: number;
   timeSavedPerEncounter: number;
+  editTimePerEncounter: number;
   wrvuLift: number;
   satisfaction: number;
   afterHoursPerWeek: number;
@@ -48,8 +49,13 @@ export interface SwitchCalculations {
   monthlyGap: number;
   utilizationGapValue: number;
   efficiencyGapValue: number;
+  netEfficiencyGapValue: number;
   wrvuGapValue: number;
   efficiencyGapHours: number;
+  netEfficiencyGapHours: number;
+  currentNetImpact: number;
+  benchmarkNetImpact: number;
+  netImpactGap: number;
   switchNowValue: number;
   wait6MonthsValue: number;
   wait12MonthsValue: number;
@@ -77,6 +83,9 @@ export const ABRIDGE_BENCHMARKS = {
   timeSavedMin: 3,
   timeSavedMax: 5,
   timeSavedAvg: 4,
+  editTime: 1,
+  editTimeMax: 1,
+  netImpact: 3,
   wrvuLift: 5.5,
   wrvuLiftMin: 4,
   wrvuLiftMax: 7,
@@ -110,6 +119,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     currentCostPerProvider,
     utilization,
     timeSavedPerEncounter,
+    editTimePerEncounter,
     wrvuLift,
     satisfaction,
     afterHoursPerWeek,
@@ -138,25 +148,36 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const abridgeHoursReturned = Math.round((abridgeEncountersDocumented * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60);
   const hoursGap = Math.max(0, abridgeHoursReturned - yourHoursReturned);
 
-  // 1. Utilization gap: encounters NOT getting AI × benchmark time saved
+  // 1. Utilization gap: encounters NOT getting AI x benchmark time saved
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - utilization);
   const encountersWithoutAI = Math.round(annualEncounters * (utilizationGapPP / 100));
   const utilizationTimeSavedHours = (encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
   const utilizationGapValue = Math.round(utilizationTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
 
-  // 2. Efficiency gap: encounters WITH AI (at YOUR utilization) × time gap
+  // 2. Net Efficiency gap: uses NET time impact (time saved - edit time)
   const encountersWithAI = yourEncountersDocumented;
+  const currentNetImpact = timeSavedPerEncounter - (editTimePerEncounter || 0);
+  const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime; // 4 - 1 = 3
+  const netImpactGap = benchmarkNetImpact - currentNetImpact;
+
+  const netEfficiencyGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
+  const netEfficiencyGapValue = Math.round(
+    Math.max(0, netEfficiencyGapHours) * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate
+  );
+
+  // Keep old efficiency gap for backward compatibility
   const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
   const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
   const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
 
-  // 3. wRVU gap: base wRVUs at YOUR utilization × lift gap × realization
+  // 3. wRVU gap: base wRVUs at YOUR utilization x lift gap x realization
   const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
   const baseWRVUs = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * encountersWithAI;
   const missingWRVUs = baseWRVUs * (wrvuGapPercent / 100);
   const wrvuGapValue = Math.round(missingWRVUs * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuRealization);
 
-  const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
+  // Total now uses NET efficiency gap
+  const annualGap = utilizationGapValue + netEfficiencyGapValue + wrvuGapValue;
   const monthlyGap = Math.round(annualGap / 12);
 
   // 3-year projections per spec ramp formulas
@@ -225,8 +246,13 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     monthlyGap,
     utilizationGapValue,
     efficiencyGapValue,
+    netEfficiencyGapValue,
     wrvuGapValue,
     efficiencyGapHours,
+    netEfficiencyGapHours,
+    currentNetImpact,
+    benchmarkNetImpact,
+    netImpactGap,
     optimizedYear1,
     optimizedYear2,
     optimizedYear3,

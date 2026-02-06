@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Users, TrendingUp, Heart, Moon, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Users, TrendingUp, Heart, Moon, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   ABRIDGE_BENCHMARKS,
@@ -31,27 +31,44 @@ export default function StepTheGap({
     
     const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - (inputs.utilization || 0));
     const encountersWithoutAI = Math.round(encounters * (utilizationGapPP / 100));
-    
-    const docBurdenHours = Math.round((encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60);
-    const workWeeksLost = Math.round(docBurdenHours / 40);
+    const encountersWithAI = Math.round(encounters * ((inputs.utilization || 0) / 100));
     
     const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - (inputs.wrvuLift || 0));
     
     const afterHoursAnnual = (inputs.afterHoursPerWeek || 0) * providers * 52;
     const afterHoursBenchmark = ABRIDGE_BENCHMARKS.afterHoursPerWeek * providers * 52;
     const afterHoursGap = Math.max(0, afterHoursAnnual - afterHoursBenchmark);
+
+    const currentNetImpact = (inputs.timeSavedPerEncounter || 0) - (inputs.editTimePerEncounter || 0);
+    const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime;
+    const netImpactGap = benchmarkNetImpact - currentNetImpact;
+    const annualNetImpactGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
+    const annualAddedBurden = currentNetImpact < 0 ? Math.round(Math.abs(currentNetImpact * encountersWithAI / 60)) : 0;
     
     return {
       encountersWithoutAI,
-      docBurdenHours,
-      workWeeksLost,
+      encountersWithAI,
       wrvuGapPercent,
       afterHoursAnnual,
       afterHoursBenchmark,
       afterHoursGap,
       providers,
+      currentNetImpact,
+      benchmarkNetImpact,
+      netImpactGap,
+      annualNetImpactGapHours,
+      annualAddedBurden,
     };
   }, [inputs]);
+
+  const formatNetImpact = (value: number) => {
+    const sign = value > 0 ? "+" : "";
+    return `${sign}${value.toFixed(1)} min`;
+  };
+
+  const extraSecondsPerEncounter = storyMetrics.currentNetImpact < 0 
+    ? Math.round(Math.abs(storyMetrics.currentNetImpact) * 60) 
+    : 0;
 
   return (
     <div className="space-y-8">
@@ -149,33 +166,106 @@ export default function StepTheGap({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:col-span-2" data-testid="card-net-time-impact">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
               <Clock className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
-              <h3 className="font-semibold text-[#1A1A1A] text-sm">Documentation Burden</h3>
-              <p className="text-xs text-[#999999]">The hidden cost of incomplete automation</p>
+              <h3 className="font-semibold text-[#1A1A1A] text-sm">Net Time Impact</h3>
+              <p className="text-xs text-[#999999]">The real math on your AI investment</p>
             </div>
           </div>
           
-          {storyMetrics.docBurdenHours > 0 ? (
-            <>
-              <div className="border-l-4 border-[#EA2C00] pl-4 mb-4">
-                <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{storyMetrics.docBurdenHours.toLocaleString()}</span>
-                <span className="text-sm text-[#999999] ml-2">hours/year</span>
+          <div className="h-px bg-[#E5E7EB] mb-4" />
+
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Your Current Reality</p>
+          <div className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
+            <div className="space-y-2 text-sm text-[#333333]">
+              <div className="flex justify-between">
+                <span>Time saved per encounter</span>
+                <span className="font-medium">{inputs.timeSavedPerEncounter} min</span>
               </div>
-              <p className="text-sm text-[#333333]">
-                That's <span className="font-semibold text-[#1A1A1A]">{storyMetrics.workWeeksLost} full work weeks</span> of provider time spent on documentation that AI should be handling.
+              <div className="flex justify-between">
+                <span>- Edit time per encounter</span>
+                <span className="font-medium">{inputs.editTimePerEncounter || 0} min</span>
+              </div>
+              <div className="h-px bg-[#E0E0E0] my-1" />
+              <div className="flex justify-between">
+                <span className="font-medium">= Net impact per encounter</span>
+                <span className={`font-bold text-lg ${storyMetrics.currentNetImpact < 0 ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
+                  {formatNetImpact(storyMetrics.currentNetImpact)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {storyMetrics.currentNetImpact < 0 && (
+            <div className="bg-[#FFEBE6] rounded-lg p-4 mb-4 flex items-start gap-3" data-testid="net-impact-negative-warning">
+              <AlertTriangle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-[#EA2C00]">YOUR AI IS COSTING YOU TIME</p>
+                <p className="text-sm text-[#EA2C00] mt-1">
+                  Instead of saving time, your providers are spending an extra {extraSecondsPerEncounter >= 60 ? `${(extraSecondsPerEncounter / 60).toFixed(1)} minutes` : `${extraSecondsPerEncounter} seconds`} per encounter on documentation.
+                </p>
+                <p className="text-sm text-[#EA2C00] mt-2">
+                  Across {storyMetrics.encountersWithAI.toLocaleString()} AI-documented encounters:
+                  {" "}That's <span className="font-bold">{storyMetrics.annualAddedBurden.toLocaleString()} hours/year</span> of ADDED burden.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {storyMetrics.currentNetImpact >= 0 && storyMetrics.currentNetImpact < storyMetrics.benchmarkNetImpact && (
+            <p className="text-sm text-[#666666] mb-4">
+              You're saving time, but significant value is being lost to edits.
+            </p>
+          )}
+
+          <div className="h-px bg-[#E5E7EB] mb-4" />
+
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">At Abridge Benchmark</p>
+          <div className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
+            <div className="space-y-2 text-sm text-[#333333]">
+              <div className="flex justify-between">
+                <span>Time saved per encounter</span>
+                <span className="font-medium">{ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
+              </div>
+              <div className="flex justify-between">
+                <span>- Edit time per encounter</span>
+                <span className="font-medium">{ABRIDGE_BENCHMARKS.editTime} min</span>
+              </div>
+              <div className="h-px bg-[#E0E0E0] my-1" />
+              <div className="flex justify-between">
+                <span className="font-medium">= Net impact per encounter</span>
+                <span className="font-bold text-lg text-[#1A1A1A]">{formatNetImpact(storyMetrics.benchmarkNetImpact)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-[#E5E7EB] mb-4" />
+
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">The Gap</p>
+          {storyMetrics.netImpactGap > 0 ? (
+            <>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl md:text-5xl font-bold text-[#EA2C00]" data-testid="text-net-impact-gap">
+                  {storyMetrics.netImpactGap.toFixed(1)} min
+                </span>
+                <span className="text-sm text-[#999999]">per encounter</span>
+              </div>
+              <p className="text-sm text-[#666666]">
+                That's {Math.max(0, storyMetrics.annualNetImpactGapHours).toLocaleString()} hours/year {storyMetrics.currentNetImpact < 0 ? "across your AI-documented encounters" : "you could reclaim"}.
               </p>
-              <div className="h-px bg-[#E5E7EB] my-3" />
-              <p className="text-xs text-[#999999]">At Abridge benchmark: 0 hours (AI handles it all)</p>
             </>
           ) : (
-            <div className="border-l-4 border-[#E8E8E8] pl-4">
-              <span className="text-2xl font-bold text-[#333333]">At benchmark</span>
-              <p className="text-sm text-[#666666] mt-1">Your documentation efficiency is performing well.</p>
+            <div data-testid="text-net-impact-gap">
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl md:text-5xl font-bold text-[#333333]">At benchmark</span>
+              </div>
+              <p className="text-sm text-[#666666]">
+                Your net time impact meets or exceeds the Abridge benchmark. No gap here.
+              </p>
             </div>
           )}
         </div>

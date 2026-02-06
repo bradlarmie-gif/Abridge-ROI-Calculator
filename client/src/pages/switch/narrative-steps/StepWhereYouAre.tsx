@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Clock, TrendingUp, Heart, Moon, Info } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, Clock, TrendingUp, Heart, Moon, Info, Pencil, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
@@ -32,11 +32,12 @@ interface MetricInputProps {
   step: number;
   onChange: (value: number) => void;
   testId: string;
+  benchmarkLabel?: string;
 }
 
 function MetricInput({ 
   icon, title, description, tooltip, value, benchmark, unit, prefix = "", 
-  maxValue, minValue, step, onChange, testId 
+  maxValue, minValue, step, onChange, testId, benchmarkLabel
 }: MetricInputProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -120,7 +121,7 @@ function MetricInput({
       </div>
       
       <div className="text-xs text-[#999999] bg-[#F5F5F5] px-3 py-1.5 rounded-md inline-block">
-        Abridge Benchmark: {prefix}{benchmark}{unit}
+        {benchmarkLabel || `Abridge Benchmark: ${prefix}${benchmark}${unit}`}
       </div>
     </div>
   );
@@ -140,6 +141,8 @@ export default function StepWhereYouAre({
   const benchmarkPajamaTime = ABRIDGE_BENCHMARKS.afterHoursPerWeek * providers * 52;
 
   const afterHoursFillPercent = (afterHoursPerWeek / 15) * 100;
+  const editTime = inputs.editTimePerEncounter || 0;
+  const showEditWarning = editTime > 0 && editTime >= inputs.timeSavedPerEncounter && inputs.timeSavedPerEncounter > 0;
 
   return (
     <div className="space-y-8">
@@ -253,6 +256,34 @@ export default function StepWhereYouAre({
             onChange={(v) => updateInput("satisfaction", v)}
             testId="slider-satisfaction"
           />
+        </div>
+
+        <div className="mt-4">
+          <MetricInput
+            icon={<Pencil className="w-5 h-5 text-[#EA2C00]" />}
+            title="Edit Time"
+            description="Minutes spent correcting AI output per encounter"
+            tooltip="How long do providers spend reviewing and correcting AI-generated documentation before signing? This includes fixing errors, adding missing details, and reformatting. If this exceeds time saved, the AI is a net negative."
+            value={editTime}
+            benchmark={ABRIDGE_BENCHMARKS.editTime}
+            unit=" min"
+            maxValue={10}
+            minValue={0}
+            step={0.5}
+            onChange={(v) => updateInput("editTimePerEncounter", v)}
+            testId="slider-edit-time"
+            benchmarkLabel="Abridge Benchmark: < 1 min"
+          />
+
+          {showEditWarning && (
+            <div className="mt-3 bg-[#FFEBE6] rounded-lg p-4 flex items-start gap-3" data-testid="edit-time-warning">
+              <AlertTriangle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-[#EA2C00]">Your edit time exceeds your time saved.</p>
+                <p className="text-sm text-[#EA2C00]">This means AI may be adding to your documentation burden, not reducing it.</p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

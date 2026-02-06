@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
@@ -133,20 +133,25 @@ export default function StepTheMath({
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - inputs.utilization);
   const encountersWithoutAI = Math.round(effectiveEncounters * utilizationGapPP / 100);
 
+  const currentNetImpact = inputs.timeSavedPerEncounter - (inputs.editTimePerEncounter || 0);
+  const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime;
+  const netImpactGap = benchmarkNetImpact - currentNetImpact;
+
   const recalculatedValues = useMemo(() => {
     const utilizationTimeSavedHours = (encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
     const utilizationGapValue = Math.round(utilizationTimeSavedHours * assumptions.hourlyRate * (assumptions.timeConversion / 100));
 
-    const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter);
-    const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
-    const efficiencyGapValue = Math.round(efficiencyGapHours * assumptions.hourlyRate * (assumptions.timeConversion / 100));
+    const netEfficiencyGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
+    const netEfficiencyGapValue = Math.round(
+      Math.max(0, netEfficiencyGapHours) * assumptions.hourlyRate * (assumptions.timeConversion / 100)
+    );
 
     const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift);
     const baseWRVUs = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * encountersWithAI;
     const missingWRVUs = baseWRVUs * (wrvuGapPercent / 100);
     const wrvuGapValue = Math.round(missingWRVUs * assumptions.wrvuDollarValue * (assumptions.wrvuRealization / 100));
 
-    const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
+    const annualGap = utilizationGapValue + netEfficiencyGapValue + wrvuGapValue;
     
     const optimizedYear1 = Math.round(annualGap * 0.87);
     const optimizedYear2 = Math.round(optimizedYear1 + (annualGap * 1.10));
@@ -161,8 +166,8 @@ export default function StepTheMath({
 
     return {
       utilizationGapValue,
-      efficiencyGapValue,
-      efficiencyGapHours,
+      netEfficiencyGapValue,
+      netEfficiencyGapHours,
       wrvuGapValue,
       baseWRVUs: Math.round(baseWRVUs),
       missingWRVUs: Math.round(missingWRVUs),
@@ -180,7 +185,7 @@ export default function StepTheMath({
       wait12MonthsLoss: switchNowValue - wait12MonthsValue,
       monthlyGap: Math.round(annualGap / 12),
     };
-  }, [inputs, assumptions, encountersWithAI, encountersWithoutAI]);
+  }, [inputs, assumptions, encountersWithAI, encountersWithoutAI, netImpactGap]);
 
   const chartData = [
     { month: 0, current: 0, potential: 0 },
@@ -207,6 +212,11 @@ export default function StepTheMath({
         strokeWidth={2}
       />
     );
+  };
+
+  const formatNetVal = (v: number) => {
+    const sign = v > 0 ? "+" : "";
+    return `${sign}${v.toFixed(1)} min`;
   };
 
   return (
@@ -286,26 +296,67 @@ export default function StepTheMath({
           </GapAccordion>
 
           <GapAccordion
-            id="efficiency"
+            id="net-efficiency"
             icon={Clock}
-            title="Efficiency Gap"
-            subtitle={`${inputs.timeSavedPerEncounter} min → ${ABRIDGE_BENCHMARKS.timeSavedAvg} min saved`}
-            value={recalculatedValues.efficiencyGapValue}
-            isOpen={openAccordion === 'efficiency'}
-            onToggle={() => toggleAccordion('efficiency')}
+            title="Net Efficiency Gap"
+            subtitle={`${inputs.timeSavedPerEncounter} min saved - ${inputs.editTimePerEncounter || 0} min editing → ${ABRIDGE_BENCHMARKS.timeSavedAvg} min saved - ${ABRIDGE_BENCHMARKS.editTime} min editing`}
+            value={recalculatedValues.netEfficiencyGapValue}
+            isOpen={openAccordion === 'net-efficiency'}
+            onToggle={() => toggleAccordion('net-efficiency')}
           >
             <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 bg-white rounded-lg border border-[#E5E7EB]">
+                  <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Your Net Time Impact</p>
+                  <div className="space-y-1.5 text-sm text-[#333333]">
+                    <div className="flex justify-between">
+                      <span>Time Saved</span>
+                      <span>{inputs.timeSavedPerEncounter} min</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>- Edit Time</span>
+                      <span>{inputs.editTimePerEncounter || 0} min</span>
+                    </div>
+                    <div className="h-px bg-[#E5E7EB]" />
+                    <div className="flex justify-between font-medium">
+                      <span>= Net</span>
+                      <span className={currentNetImpact < 0 ? 'text-[#EA2C00] font-bold' : 'text-[#1A1A1A] font-bold'}>
+                        {formatNetVal(currentNetImpact)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-3 bg-[#F5F5F5] rounded-lg">
+                  <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Benchmark Net Time Impact</p>
+                  <div className="space-y-1.5 text-sm text-[#333333]">
+                    <div className="flex justify-between">
+                      <span>Time Saved</span>
+                      <span>{ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>- Edit Time</span>
+                      <span>{ABRIDGE_BENCHMARKS.editTime} min</span>
+                    </div>
+                    <div className="h-px bg-[#E0E0E0]" />
+                    <div className="flex justify-between font-medium">
+                      <span>= Net</span>
+                      <span className="text-[#1A1A1A] font-bold">{formatNetVal(benchmarkNetImpact)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
                 <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
                 <div className="space-y-2 font-mono">
-                  <p>Time gap per encounter:</p>
-                  <p className="pl-3">{ABRIDGE_BENCHMARKS.timeSavedAvg} min (benchmark) - {inputs.timeSavedPerEncounter} min (current) = {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min/encounter</p>
-                  <p className="mt-2">Encounters WITH AI (at your utilization):</p>
+                  <p>Net time gap per encounter:</p>
+                  <p className="pl-3">{formatNetVal(benchmarkNetImpact)} (benchmark) - ({formatNetVal(currentNetImpact)}) (current) = {netImpactGap.toFixed(1)} min/encounter</p>
+                  <p className="mt-2">Encounters with AI (at your utilization):</p>
                   <p className="pl-3">{effectiveEncounters.toLocaleString()} x {inputs.utilization}% = {encountersWithAI.toLocaleString()} encounters</p>
-                  <p className="mt-2">Additional time that could be saved:</p>
-                  <p className="pl-3">{encountersWithAI.toLocaleString()} x {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min = {recalculatedValues.efficiencyGapHours.toLocaleString()} hours/year</p>
+                  <p className="mt-2">Total time gap:</p>
+                  <p className="pl-3">{encountersWithAI.toLocaleString()} x {netImpactGap.toFixed(1)} min = {recalculatedValues.netEfficiencyGapHours.toLocaleString()} hours/year</p>
                   <p className="mt-2 flex items-center flex-wrap gap-1">
-                    Value: {recalculatedValues.efficiencyGapHours.toLocaleString()} hours x
+                    Value: {recalculatedValues.netEfficiencyGapHours.toLocaleString()} hours x
                     <InlineEdit
                       value={assumptions.hourlyRate}
                       onChange={(v) => updateAssumption('hourlyRate', v)}
@@ -324,16 +375,25 @@ export default function StepTheMath({
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-[#EA2C00] pt-2 text-sm">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-2 text-sm">= {formatCurrency(recalculatedValues.netEfficiencyGapValue)}/year</p>
                 </div>
               </div>
-              
+
               <div className="p-3 bg-[#F5F0EB] rounded-lg flex items-start gap-2">
                 <Info className="w-4 h-4 text-[#666666] flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-[#666666]">
-                  This uses YOUR current utilization ({inputs.utilization}%), not the benchmark. It shows the efficiency gap for encounters where AI IS being used — it could be saving more time per encounter.
+                  <span className="font-semibold">Why does edit time matter?</span> Many AI solutions report "time saved" without accounting for the time providers spend correcting errors. We calculate NET impact because that's what actually affects your providers' day.
                 </p>
               </div>
+
+              {currentNetImpact < 0 && (
+                <div className="p-3 bg-[#FFEBE6] rounded-lg flex items-start gap-2" data-testid="math-net-loss-warning">
+                  <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#EA2C00]">
+                    <span className="font-semibold">Your AI is currently a net time LOSS.</span> Every encounter documented with AI is adding {Math.round(Math.abs(currentNetImpact) * 60)} seconds of work, not saving time. This gap alone represents significant value.
+                  </p>
+                </div>
+              )}
             </div>
           </GapAccordion>
 
@@ -402,7 +462,21 @@ export default function StepTheMath({
                 <p className="text-sm text-[#666666]">Unrealized value per year</p>
               </div>
             </div>
-            <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.annualGap)}</span>
+            <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]" data-testid="text-total-annual-gap">{formatCurrency(recalculatedValues.annualGap)}</span>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[#E0E0E0] space-y-1 text-xs text-[#666666]">
+            <div className="flex justify-between">
+              <span>Utilization Gap</span>
+              <span className="font-medium text-[#1A1A1A]">{formatCurrency(recalculatedValues.utilizationGapValue)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Net Efficiency Gap</span>
+              <span className="font-medium text-[#1A1A1A]">{formatCurrency(recalculatedValues.netEfficiencyGapValue)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Quality Gap (wRVU)</span>
+              <span className="font-medium text-[#1A1A1A]">{formatCurrency(recalculatedValues.wrvuGapValue)}</span>
+            </div>
           </div>
         </div>
       </section>

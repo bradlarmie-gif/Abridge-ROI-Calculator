@@ -1,0 +1,538 @@
+ADDITION 1: EDIT TIME METRIC
+Copy═══════════════════════════════════════════════════════════════════════════════════
+ADD TO PAGE 1: "WHERE YOU ARE" — NEW METRIC
+═══════════════════════════════════════════════════════════════════════════════════
+
+Add a fifth metric to the "YOUR CURRENT PERFORMANCE" section, placed after 
+the Satisfaction metric but before the After-Hours Documentation section.
+
+LOCATION: Inside the "YOUR CURRENT PERFORMANCE" card, as a full-width metric 
+(spans both columns) OR as a new row below the 2x2 grid.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+NEW METRIC CARD:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [edit/pencil icon]  Edit Time                                                  │
+│                      Minutes spent correcting AI output per encounter           │
+│                                                                                 │
+│  ○────────────────────────●────────────────────────────────○   ┌─────┐         │
+│  0 min                    3                             10 min │  3  │ min      │
+│                                                                └─────┘         │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ Abridge Benchmark: < 1 min                                              │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [gray background, 12px]                                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+CONDITIONAL WARNING (appears when Edit Time >= Time Saved):
+
+If editTime >= timeSaved, show warning below the slider:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ⚠️ Your edit time exceeds your time saved.                                     │
+│     This means AI may be adding to your documentation burden, not reducing it.  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+[Background: #FFEBE6 (light red-orange), Text: #EA2C00, Icon: warning triangle]
+
+──────────────────────────────────────────────────────────────────────────────────
+
+TOOLTIP (on hover for Edit Time label):
+
+"How long do providers spend reviewing and correcting AI-generated documentation 
+before signing? This includes fixing errors, adding missing details, and 
+reformatting. If this exceeds time saved, the AI is a net negative."
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SLIDER SPECIFICATIONS:
+
+- Range: 0 to 10 minutes
+- Step: 0.5 min
+- Default: Empty (no default — user must input)
+- Benchmark marker: Vertical line at 1 min position
+- Benchmark label: "Abridge Benchmark: < 1 min"
+
+──────────────────────────────────────────────────────────────────────────────────
+
+STYLING:
+
+- Same styling as other metric cards
+- Icon: Pencil/edit icon (consistent with icon set)
+- Full width card OR placed in a new row
+- Warning box only appears conditionally
+
+ADDITION 2: UPDATE PAGE 2 "THE GAP" — NET TIME IMPACT
+Copy═══════════════════════════════════════════════════════════════════════════════════
+UPDATE PAGE 2: "THE GAP" — REPLACE OR ENHANCE DOCUMENTATION BURDEN CARD
+═══════════════════════════════════════════════════════════════════════════════════
+
+Replace the current "Documentation Burden" card with a "Net Time Impact" card
+that incorporates Edit Time. This is the kill shot.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+NEW CARD: NET TIME IMPACT
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [clock icon]  Net Time Impact                                                  │
+│                The real math on your AI investment                              │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YOUR CURRENT REALITY                                                           │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Time saved per encounter              2.5 min                          │    │
+│  │  − Edit time per encounter             3.0 min                          │    │
+│  │  ─────────────────────────────────────────────────────────              │    │
+│  │  = Net impact per encounter           -0.5 min                          │    │
+│  │                                        [red-orange, bold]               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Light gray background for calculation box]                                    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ⚠️ YOUR AI IS COSTING YOU TIME                                         │    │
+│  │                                                                         │    │
+│  │  Instead of saving time, your providers are spending an extra           │    │
+│  │  30 seconds per encounter on documentation.                             │    │
+│  │                                                                         │    │
+│  │  Across 45,000 AI-documented encounters:                                │    │
+│  │  That's 375 hours/year of ADDED burden.                                 │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Background: #FFEBE6, Border-left: 4px solid #EA2C00]                          │
+│  [Only shows if net impact is negative]                                         │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  AT ABRIDGE BENCHMARK                                                           │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Time saved per encounter              4.0 min                          │    │
+│  │  − Edit time per encounter             1.0 min                          │    │
+│  │  ─────────────────────────────────────────────────────────              │    │
+│  │  = Net impact per encounter           +3.0 min                          │    │
+│  │                                        [dark text, bold]                │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE GAP                                                                        │
+│                                                                                 │
+│  ┃ 3.5 min                                                                      │
+│  ┃ [48px, red-orange, bold]                                                     │
+│  ┃ per encounter                                                                │
+│                                                                                 │
+│  That's 2,625 hours/year across your AI-documented encounters.                  │
+│  [14px, gray]                                                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+ALTERNATIVE VERSION (when net impact is positive but below benchmark):
+
+If net impact is positive but below benchmark, show this version instead:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [clock icon]  Net Time Impact                                                  │
+│                The real math on your AI investment                              │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YOUR CURRENT REALITY                                                           │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Time saved per encounter              2.5 min                          │    │
+│  │  − Edit time per encounter             1.5 min                          │    │
+│  │  ─────────────────────────────────────────────────────────              │    │
+│  │  = Net impact per encounter           +1.0 min                          │    │
+│  │                                        [black, bold]                    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  You're saving time, but significant value is being lost to edits.              │
+│  [14px, gray]                                                                   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  AT ABRIDGE BENCHMARK                                                           │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Time saved per encounter              4.0 min                          │    │
+│  │  − Edit time per encounter             1.0 min                          │    │
+│  │  ─────────────────────────────────────────────────────────              │    │
+│  │  = Net impact per encounter           +3.0 min                          │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE GAP                                                                        │
+│                                                                                 │
+│  ┃ 2.0 min                                                                      │
+│  ┃ [48px, red-orange, bold]                                                     │
+│  ┃ per encounter                                                                │
+│                                                                                 │
+│  That's 1,500 hours/year you could reclaim.                                     │
+│  [14px, gray]                                                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+CALCULATIONS:
+
+// Net Time Impact
+currentNetImpact = currentTimeSaved - currentEditTime
+benchmarkNetImpact = benchmarkTimeSaved - benchmarkEditTime // 4 - 1 = 3
+
+// Gap
+netImpactGap = benchmarkNetImpact - currentNetImpact
+
+// Annual Hours (using current utilization encounters)
+encountersWithAI = annualEncounters * (currentUtilization / 100)
+annualNetImpactGapHours = (netImpactGap * encountersWithAI) / 60
+
+// Conditional logic
+if (currentNetImpact < 0) {
+    showNegativeWarning = true
+    annualAddedBurden = Math.abs(currentNetImpact * encountersWithAI / 60)
+} else {
+    showNegativeWarning = false
+}
+
+ADDITION 3: UPDATE PAGE 4 "THE MATH" — ADD NET TIME GAP
+Copy═══════════════════════════════════════════════════════════════════════════════════
+UPDATE PAGE 4: "THE MATH" — ADD/MODIFY EFFICIENCY GAP CALCULATION
+═══════════════════════════════════════════════════════════════════════════════════
+
+Update the "Efficiency Gap" section to incorporate Edit Time into the calculation.
+This replaces the simple "time saved gap" with "net time impact gap."
+
+──────────────────────────────────────────────────────────────────────────────────
+
+UPDATED EFFICIENCY GAP SECTION:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [clock icon]  Net Efficiency Gap                                  $98K   ∧    │
+│                2.5 min saved − 3 min editing → 4 min saved − 1 min editing      │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌────────────────────────────┐  ┌────────────────────────────────────────┐     │
+│  │ Your Net Time Impact       │  │ Benchmark Net Time Impact              │     │
+│  │                            │  │                                        │     │
+│  │ Time Saved    2.5 min      │  │ Time Saved    4.0 min                  │     │
+│  │ − Edit Time   3.0 min      │  │ − Edit Time   1.0 min                  │     │
+│  │ ────────────────────       │  │ ────────────────────                   │     │
+│  │ = Net       -0.5 min       │  │ = Net        +3.0 min                  │     │
+│  │             [red-orange]   │  │              [black]                   │     │
+│  │                            │  │                                        │     │
+│  └────────────────────────────┘  └────────────────────────────────────────┘     │
+│  [Your values: editable]         [Benchmark: fixed, gray background]            │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  HOW WE CALCULATE THIS:                                                         │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Net time gap per encounter:                                            │    │
+│  │  +3.0 min (benchmark) − (−0.5 min) (current) = 3.5 min/encounter        │    │
+│  │                                                                         │    │
+│  │  Encounters with AI (at your utilization):                              │    │
+│  │  100,000 × 45% = 45,000 encounters                                      │    │
+│  │                                                                         │    │
+│  │  Total time gap:                                                        │    │
+│  │  45,000 × 3.5 min = 2,625 hours/year                                    │    │
+│  │                                                                         │    │
+│  │  Value:                                                                 │    │
+│  │  2,625 hours × $ [150] /hr × [25] % conversion                          │    │
+│  │                [editable]    [editable]                                 │    │
+│  │                                                                         │    │
+│  │  = $98,438/year                                                         │    │
+│  │  [red-orange, bold]                                                     │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [calculation box: light gray background #F5F5F5]                               │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ ℹ️ Why does edit time matter?                                           │    │
+│  │                                                                         │    │
+│  │ Many AI solutions report "time saved" without accounting for the time   │    │
+│  │ providers spend correcting errors. We calculate NET impact because      │    │
+│  │ that's what actually affects your providers' day.                       │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [info box: warm beige background]                                              │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ ⚠️ Your AI is currently a net time LOSS.                                │    │
+│  │                                                                         │    │
+│  │ Every encounter documented with AI is adding 30 seconds of work,        │    │
+│  │ not saving time. This gap alone represents significant value.           │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [warning box: only shows if currentNetImpact < 0]                              │
+│  [Background: #FFEBE6, Border-left: 4px solid #EA2C00]                          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+UPDATED TOTAL ANNUAL GAP:
+
+The total should now reflect the new Net Efficiency Gap calculation:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [trending icon]  TOTAL ANNUAL GAP                                              │
+│                   Unrealized value per year                                     │
+│                                                                                 │
+│  Utilization Gap                                              $78K              │
+│  Net Efficiency Gap                                           $98K              │
+│  Quality Gap (wRVU)                                           $28K              │
+│  ─────────────────────────────────────────────────────────────────────          │
+│                                                                                 │
+│                                                              $204K              │
+│                                                    [48px, red-orange, bold]     │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+CALCULATIONS:
+
+// Net Efficiency Gap (replaces simple Efficiency Gap)
+currentNetImpact = currentTimeSaved - currentEditTime
+benchmarkNetImpact = 4 - 1 // 3 min
+
+netImpactGap = benchmarkNetImpact - currentNetImpact
+// Example: 3 - (-0.5) = 3.5 min per encounter
+
+encountersWithAI = annualEncounters * (currentUtilization / 100)
+netEfficiencyGapHours = (netImpactGap * encountersWithAI) / 60
+netEfficiencyGapValue = netEfficiencyGapHours * hourlyRate * timeConversion
+
+// Total Annual Gap (updated)
+totalAnnualGap = utilizationGapValue + netEfficiencyGapValue + qualityGapValue
+
+ADDITION 4: SWITCHING OBJECTION HANDLER
+Copy═══════════════════════════════════════════════════════════════════════════════════
+ADD TO PAGE 5: "WHAT IT TAKES" — NEW SECTION BEFORE THE 4 PATTERNS
+═══════════════════════════════════════════════════════════════════════════════════
+
+Add a new section at the TOP of Page 5, before the Abridge stats and 4 patterns.
+This addresses the switching objection head-on.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+NEW SECTION: THE SWITCHING QUESTION
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  THE SWITCHING QUESTION                                                         │
+│                                                                                 │
+│  "We already have a solution. Isn't switching too disruptive?"                  │
+│  [20px, bold, black]                                                            │
+│                                                                                 │
+│  Here's what we've learned from organizations that made the switch:             │
+│  [14px, gray]                                                                   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│  │                                   │  │                                   │   │
+│  │  "We just implemented"            │  │  "Change fatigue is real"         │   │
+│  │  [14px, bold]                     │  │  [14px, bold]                     │   │
+│  │                                   │  │                                   │   │
+│  │  The longer you wait, the more    │  │  Providers who've used AI         │   │
+│  │  value you leave on the table.    │  │  before actually adopt 40%        │   │
+│  │  Sunk cost ≠ future value.        │  │  faster. They know what to        │   │
+│  │                                   │  │  expect—and what "good"           │   │
+│  │  Your ROI gap: $204K/year.        │  │  looks like.                      │   │
+│  │  Every month of delay: $17K.      │  │                                   │   │
+│  │  [red-orange text for numbers]    │  │                                   │   │
+│  │                                   │  │                                   │   │
+│  └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│  [White background cards with subtle border]                                    │
+│                                                                                 │
+│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│  │                                   │  │                                   │   │
+│  │  "Contract lock-in"               │  │  "IT bandwidth concerns"          │   │
+│  │  [14px, bold]                     │  │  [14px, bold]                     │   │
+│  │                                   │  │                                   │   │
+│  │  Most contracts have exit         │  │  Our implementation team          │   │
+│  │  clauses. And the ROI gap often   │  │  handles 80% of the technical     │   │
+│  │  exceeds early termination fees   │  │  lift. Average IT burden:         │   │
+│  │  within 6 months.                 │  │                                   │   │
+│  │                                   │  │  40 hours total.                  │   │
+│  │  We can help you navigate         │  │  [red-orange, bold]               │   │
+│  │  the transition.                  │  │                                   │   │
+│  │                                   │  │  That's one person for one        │   │
+│  │                                   │  │  week—not a multi-month           │   │
+│  │                                   │  │  project.                         │   │
+│  │                                   │  │                                   │   │
+│  └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Average time from decision to go-live:  45 days                        │    │
+│  │                                          [24px, red-orange, bold]       │    │
+│  │                                                                         │    │
+│  │  This includes full data migration, EHR integration, provider           │    │
+│  │  training, and go-live support.                                         │    │
+│  │  [12px, gray]                                                           │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Warm beige background, centered]                                              │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+DYNAMIC VALUES:
+
+The "ROI gap" and "monthly delay" numbers should pull from the calculations:
+
+- "Your ROI gap: $XXX/year" → totalAnnualGap
+- "Every month of delay: $XXK" → totalAnnualGap / 12
+
+──────────────────────────────────────────────────────────────────────────────────
+
+STYLING:
+
+- Section background: White or very light gray
+- Cards: White with subtle border (#E0E0E0)
+- Concern headlines: Bold, black, 14px
+- Response text: Regular, #333333, 14px
+- Highlighted numbers: #EA2C00 (red-orange)
+- 45-days callout: Centered, warm beige background (#F5F0EB)
+
+ADDITION 5: UPDATE PAGE 5 STRUCTURE
+Copy═══════════════════════════════════════════════════════════════════════════════════
+UPDATED PAGE 5 STRUCTURE: "WHAT IT TAKES"
+═══════════════════════════════════════════════════════════════════════════════════
+
+The page should now flow:
+
+1. Headline & Subhead (existing)
+2. THE SWITCHING QUESTION (new section)
+3. Divider
+4. Abridge Stats banner (existing)
+5. 4 Patterns (existing)
+6. Bottom Line (existing)
+7. Footer (existing)
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FULL PAGE STRUCTURE:
+
+HEADLINE:
+What It Takes
+
+SUBHEAD:
+Here's what we've learned from organizations that made the switch.
+Tap each pattern to see what makes the difference.
+
+[THE SWITCHING QUESTION SECTION - NEW]
+... (as detailed above)
+
+───────────────────────────────────────── [Divider line]
+
+[ABRIDGE STATS BANNER - EXISTING]
+150+ Health Systems | 95% Retention | 4 Key Patterns | 90-Day Onboarding
+
+[4 PATTERNS - EXISTING]
+Pattern 01: The Adoption Challenge
+Pattern 02: The Set-It-and-Forget-It Trap
+Pattern 03: The One-Size-Fits-All Problem
+Pattern 04: The Missing Executive Sponsor
+
+[BOTTOM LINE - EXISTING]
+The bottom line: capturing the value you saw in The Math requires more than 
+good technology. It requires the right partnership.
+
+[FOOTER]
+← Back                                            Your Next Steps →
+
+IMPLEMENTATION CHECKLIST
+CopyIMPLEMENTATION CHECKLIST:
+
+═══════════════════════════════════════════════════════════════════════════════════
+EDIT TIME METRIC
+═══════════════════════════════════════════════════════════════════════════════════
+
+PAGE 1:
+□ Add Edit Time slider to "Your Current Performance" section
+□ Range: 0-10 min, step 0.5 min
+□ Add benchmark marker at 1 min
+□ Add conditional warning when edit time >= time saved
+□ Add tooltip explaining what edit time means
+
+PAGE 2:
+□ Replace/enhance "Documentation Burden" with "Net Time Impact" card
+□ Show side-by-side comparison (your net vs benchmark net)
+□ Calculate and display net impact gap
+□ Show conditional warning if net impact is negative
+□ Display annual hours impact
+
+PAGE 4:
+□ Update "Efficiency Gap" to "Net Efficiency Gap"
+□ Include edit time in the calculation display
+□ Show both time saved and edit time in the breakdown
+□ Add info box explaining why edit time matters
+□ Update total annual gap calculation
+
+═══════════════════════════════════════════════════════════════════════════════════
+SWITCHING OBJECTION HANDLER
+═══════════════════════════════════════════════════════════════════════════════════
+
+PAGE 5:
+□ Add "The Switching Question" section at top of page
+□ Create 4 objection/response cards in 2x2 grid
+□ Pull dynamic values (ROI gap, monthly cost) from calculations
+□ Add "45 days" callout with warm beige background
+□ Update page structure to include new section before stats banner
+
+═══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS TO ADD/UPDATE
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ currentNetImpact = currentTimeSaved - currentEditTime
+□ benchmarkNetImpact = 4 - 1 = 3 (fixed)
+□ netImpactGap = benchmarkNetImpact - currentNetImpact
+□ netEfficiencyGapHours = (netImpactGap * encountersWithAI) / 60
+□ netEfficiencyGapValue = netEfficiencyGapHours * hourlyRate * timeConversion
+□ Update totalAnnualGap to use netEfficiencyGapValue
+□ Update monthly cost of waiting = totalAnnualGap / 12
+
+═══════════════════════════════════════════════════════════════════════════════════
+BENCHMARK VALUES
+═══════════════════════════════════════════════════════════════════════════════════
+
+| Metric              | Benchmark |
+|---------------------|-----------|
+| Time Saved          | 4 min     |
+| Edit Time           | < 1 min   |
+| Net Impact          | +3 min    |

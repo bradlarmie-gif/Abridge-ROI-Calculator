@@ -1,0 +1,213 @@
+═══════════════════════════════════════════════════════════════════════════════════
+COPY REVISIONS — COMPETITIVE DISPLACEMENT FLOW
+═══════════════════════════════════════════════════════════════════════════════════
+
+Apply the following copy changes across the competitive displacement flow.
+These maintain the same structure but adjust tone to be more Abridge-appropriate:
+confident but not aggressive, helpful but not pushy, honest but not alarming.
+
+──────────────────────────────────────────────────────────────────────────────────
+PAGE 1: WHERE YOU ARE
+──────────────────────────────────────────────────────────────────────────────────
+
+HEADLINE: (keep)
+Where You Are
+
+SUBHEAD:
+OLD: "You invested in ambient AI. Let's measure what you're getting back."
+NEW: "Tell us about your current ambient AI experience."
+
+AFTER-HOURS DOCUMENTATION:
+OLD: "That's 14,560 hours/year across your providers."
+NEW: "That's 14,560 hours/year your team is spending outside the clinic."
+
+EDIT TIME WARNING (conditional):
+OLD: "⚠️ Your edit time exceeds your time saved. This means AI may be adding 
+     to your documentation burden, not reducing it."
+NEW: "When edit time exceeds time saved, the net efficiency benefit becomes 
+     harder to realize. This is worth understanding."
+
+──────────────────────────────────────────────────────────────────────────────────
+PAGE 2: THE GAP
+──────────────────────────────────────────────────────────────────────────────────
+
+HEADLINE: (keep)
+The Gap
+
+SUBHEAD:
+OLD: "This gap is common at your stage. Understanding what's driving it is 
+     the first step to closing it."
+NEW: "Gaps like this are common—and usually addressable. Here's what the 
+     data suggests."
+
+VALUE REALIZATION CARD:
+Keep: "66% of what top-performing organizations achieve"
+Keep: "34% opportunity remaining"
+
+NET TIME IMPACT WARNING (if negative):
+OLD: "⚠️ YOUR AI IS COSTING YOU TIME"
+NEW: "Your current net time impact is negative. This is worth discussing—
+     whether with your current vendor or in exploring alternatives."
+
+(Keep the math display the same, just change the warning tone)
+
+DOCUMENTATION BURDEN CARD:
+OLD: "That's 52 full work weeks of provider time spent on documentation 
+     that AI should be handling."
+NEW: "That's 52 full work weeks of provider time—time that better tooling 
+     could potentially address."
+
+UTILIZATION GAP CARD:
+KEEP: "Low utilization rarely means the tool doesn't work—it usually means 
+      workflow friction."
+(This is good—generous to the competitor)
+
+BURNOUT SIGNAL CARD:
+OLD: "Satisfaction below 65% correlates with higher turnover intent."
+NEW: "Satisfaction below 65-70% often correlates with declining engagement 
+     over time."
+
+PAJAMA TIME:
+OLD: "14,560 hours/year spent charting at home"
+NEW: "14,560 hours/year spent charting at home—time away from family, rest, 
+     and life outside work."
+
+BOTTOM LINE:
+OLD: "These patterns don't happen by accident. Understanding the drivers is 
+     the first step to closing the gap."
+NEW: "These patterns are common. Understanding what's behind them helps 
+     clarify your options."
+
+──────────────────────────────────────────────────────────────────────────────────
+PAGE 3: WHAT GOOD LOOKS LIKE
+──────────────────────────────────────────────────────────────────────────────────
+
+HEADLINE: (keep)
+What Good Looks Like
+
+SUBHEAD:
+OLD: "These aren't aspirational targets. They're achievable ranges based on 
+     mature Abridge implementations."
+NEW: "These benchmarks come from mature implementations. They're achievable 
+     with the right approach and support."
+
+WHAT MAKES THE DIFFERENCE:
+OLD: "Top-performing organizations share something in common—technology built 
+     specifically for clinical workflows, backed by dedicated implementation 
+     support."
+NEW: "The difference usually isn't just the AI—it's how it's implemented, 
+     supported, and optimized over time."
+
+──────────────────────────────────────────────────────────────────────────────────
+PAGE 4: THE MATH
+──────────────────────────────────────────────────────────────────────────────────
+
+HEADLINE: (keep)
+The Math
+
+SUBHEAD: (keep)
+"Every number is transparent. Every assumption is yours to challenge."
+
+NET EFFICIENCY GAP INFO BOX:
+OLD: "Many AI solutions report 'time saved' without accounting for the time 
+     providers spend correcting errors."
+NEW: "Net time impact includes both time saved and time spent editing—a more 
+     complete picture of actual efficiency."
+
+COMPOUNDING EFFECT:
+OLD: "The shaded area is value left on the table. Every month of delay 
+     shrinks what you capture."
+NEW: "The shaded area represents potential value over time. Earlier action 
+     captures more of it."
+
+COST OF WAITING:
+OLD: "Every month you wait: $12K in unrealized value"
+NEW: "Monthly opportunity: ~$12K in potential value"
+
+──────────────────────────────────────────────────────────────────────────────────
+PAGE 5: WHAT IT TAKES
+──────────────────────────────────────────────────────────────────────────────────
+
+HEADLINE: (keep)
+What It Takes
+
+SUBHEAD:
+OLD: "Here's what we've learned from hundreds of implementations. Tap each 
+     pattern to see what makes the difference."
+NEW: "Patterns we've observed across hundreds of implementations. Tap to 
+     explore each one."
+
+THE SWITCHING QUESTION INTRO:
+OLD: "Here's what we've learned from organizations that made the switch:"
+NEW: "These are concerns we hear often—along with what we've observed:"
+
+"WE JUST IMPLEMENTED" RESPONSE:
+OLD: "The longer you wait, the more value you leave on the table. Sunk cost 
+     ≠ future value. Your ROI gap: $204K/year. Every month of delay: $17K."
+NEW: "It's natural to want to give a new investment time. At the same time, 
+     if the gap is significant, the math may favor acting sooner rather than 
+     later. Your current gap: ~$204K/year."
+
+"CHANGE FATIGUE" RESPONSE:
+OLD: "Providers who've used AI before actually adopt 40% faster. They know 
+     what to expect—and what 'good' looks like."
+NEW: "Interestingly, providers with prior AI experience often adopt faster. 
+     They know what to look for and what's possible."
+
+"CONTRACT LOCK-IN" RESPONSE:
+OLD: "Most contracts have exit clauses. And the ROI gap often exceeds early 
+     termination fees within 6 months. We can help you navigate."
+NEW: "Many contracts have flexibility. It's worth reviewing your terms 
+     alongside the potential value of a change."
+
+"IT BANDWIDTH" RESPONSE:
+OLD: "Our implementation team handles 80% of the technical lift. Average IT 
+     burden: 40 hours total."
+NEW: "Our team is built to minimize IT burden. Most implementations require 
+     about 40 hours of IT time total."
+
+45-DAY CALLOUT:
+OLD: "Average time from decision to go-live: 45 days"
+NEW: "Typical timeline from decision to go-live: 45 days"
+
+BOTTOM LINE:
+OLD: "The bottom line: capturing the value you saw in The Math requires more 
+     than good technology. It requires the right partnership."
+NEW: "Technology matters, but so does implementation, support, and ongoing 
+     optimization. They're equally important."
+
+──────────────────────────────────────────────────────────────────────────────────
+PAGE 6: THE OPPORTUNITY
+──────────────────────────────────────────────────────────────────────────────────
+
+HEADLINE: (keep)
+The Opportunity
+
+SUBHEAD:
+OLD: "Here's where you stand—and what's possible with the right partnership."
+NEW: "A summary of what we found—and what the benchmarks suggest is possible."
+
+WHAT COMES NEXT:
+OLD: "Let's explore this opportunity together."
+NEW: "If this raises questions, we're here to help."
+
+OLD: "This analysis is just the starting point. Our team can help you build 
+     a personalized implementation roadmap."
+NEW: "This captures what you entered. If you'd like to discuss further, 
+     our team is available."
+
+DOWNLOAD BUTTON: (keep)
+"Download Report"
+
+──────────────────────────────────────────────────────────────────────────────────
+GLOBAL TONE PRINCIPLES
+──────────────────────────────────────────────────────────────────────────────────
+
+1. Replace "value left on the table" with "potential value" or "opportunity"
+2. Replace "every month you wait" with "monthly opportunity" 
+3. Replace "the right partnership" with specific benefits or softer language
+4. Replace alarming warnings (⚠️ ALL CAPS) with observational language
+5. Add phrases like "worth understanding," "worth discussing," "if significant"
+6. Acknowledge their current decision was reasonable, the gap is common
+7. Position Abridge as helpful resource, not aggressive competitor
+8. Let the math speak—don't add emotional pressure on top of it

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, CheckCircle, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, CheckCircle, ChevronRight, Clock, Shield, RefreshCw, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
+  formatCurrency,
   type SwitchInputs,
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
@@ -87,6 +88,13 @@ const INSIGHT_CARDS: InsightCardData[] = [
     }
   }
 ];
+
+interface ObjectionCardData {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  content: React.ReactNode;
+}
 
 function InsightCard({ 
   card, 
@@ -187,6 +195,65 @@ export default function StepWhyThisHappens({
   const expandedCount = expandedCards.size;
   const allExpanded = expandedCount === INSIGHT_CARDS.length;
 
+  const roiGap = formatCurrency(calculations.annualGap);
+  const monthlyDelay = formatCurrency(Math.round(calculations.annualGap / 12));
+
+  const objectionCards: ObjectionCardData[] = [
+    {
+      id: "just-implemented",
+      icon: Clock,
+      title: '"We just implemented"',
+      content: (
+        <>
+          <p className="text-sm text-[#333333]">
+            The longer you wait, the more value you leave on the table. Sunk cost ≠ future value.
+          </p>
+          <p className="text-sm text-[#333333] mt-3">
+            Your ROI gap: <span className="font-bold text-[#EA2C00]" data-testid="text-objection-roi-gap">{roiGap}/year</span>.
+            <br />
+            Every month of delay: <span className="font-bold text-[#EA2C00]" data-testid="text-objection-monthly-delay">{monthlyDelay}</span>.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: "change-fatigue",
+      icon: RefreshCw,
+      title: '"Change fatigue is real"',
+      content: (
+        <p className="text-sm text-[#333333]">
+          Providers who've used AI before actually adopt <span className="font-bold">40% faster</span>. They know what to expect — and what "good" looks like.
+        </p>
+      ),
+    },
+    {
+      id: "contract-lock-in",
+      icon: Shield,
+      title: '"Contract lock-in"',
+      content: (
+        <p className="text-sm text-[#333333]">
+          Most contracts have exit clauses. And the ROI gap often exceeds early termination fees within 6 months. We can help you navigate the transition.
+        </p>
+      ),
+    },
+    {
+      id: "it-bandwidth",
+      icon: Monitor,
+      title: '"IT bandwidth concerns"',
+      content: (
+        <>
+          <p className="text-sm text-[#333333]">
+            Our implementation team handles 80% of the technical lift. Average IT burden:
+          </p>
+          <p className="text-xl font-bold text-[#EA2C00] mt-2">40 hours total.</p>
+          <p className="text-sm text-[#333333] mt-2">
+            That's one person for one week — not a multi-month project.
+          </p>
+        </>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <div className="text-left">
@@ -194,10 +261,53 @@ export default function StepWhyThisHappens({
           What It Takes
         </h1>
         <p className="text-base text-[#666666]">
-          Here's what we've learned from hundreds of implementations.
+          Here's what we've learned from organizations that made the switch.
           <span className="block mt-1">Tap each pattern to see what makes the difference.</span>
         </p>
       </div>
+
+      <section className="space-y-6" data-testid="switching-question-section">
+        <div>
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">The Switching Question</p>
+          <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
+            "We already have a solution. Isn't switching too disruptive?"
+          </h2>
+          <p className="text-sm text-[#666666]">
+            Here's what we've learned from organizations that made the switch:
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {objectionCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div 
+                key={card.id} 
+                className="bg-white rounded-xl border border-[#E0E0E0] p-5"
+                data-testid={`objection-card-${card.id}`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <h3 className="font-bold text-[#1A1A1A] text-sm">{card.title}</h3>
+                </div>
+                {card.content}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="bg-[#F5F0EB] rounded-xl p-5 text-center">
+          <p className="text-sm text-[#666666] mb-1">Average time from decision to go-live:</p>
+          <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-45-days">45 days</p>
+          <p className="text-xs text-[#666666] mt-2">
+            This includes full data migration, EHR integration, provider training, and go-live support.
+          </p>
+        </div>
+      </section>
+
+      <div className="h-px bg-[#E5E7EB]" />
 
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

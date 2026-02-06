@@ -36,6 +36,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     currentCostPerProvider: 200,
     utilization: 0,
     timeSavedPerEncounter: 0,
+    editTimePerEncounter: 0,
     wrvuLift: 0,
     satisfaction: 0,
     afterHoursPerWeek: 0,
