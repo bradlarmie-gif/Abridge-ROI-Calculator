@@ -1,15 +1,21 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
-  calculateMeasureResults, 
   formatCurrency, 
   formatNumber,
 } from "@/lib/measureCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+
+function formatSmartRange(low: number, high: number): string {
+  const lowFmt = formatCurrency(low);
+  const highFmt = formatCurrency(high);
+  if (lowFmt === highFmt) return lowFmt;
+  return `${lowFmt} \u2013 ${highFmt}`;
+}
 
 interface MeasureAllocateProps {
   state: MeasureState;
@@ -28,64 +34,57 @@ export default function MeasureAllocate({
 }: MeasureAllocateProps) {
   const [showAssumptions, setShowAssumptions] = useState(false);
 
-  // Get allocation with defaults (use nullish coalescing to allow 0% values)
   const capacityPercent = state.allocation.capacityPercent ?? 20;
   const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
   const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
 
-  // Calculate results using the new formula from spec
   const results = useMemo(() => {
     const deployment = state.deployment;
     const timeEfficiency = state.timeEfficiency;
     const calibration = state.calibration;
     const docQuality = state.documentationQuality;
 
-    // Hours Saved = (Before time - After time) × Total Encounters ÷ 60
     const timeSavedPerNote = timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith;
     const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
 
-    // Capacity Value: Hours × capacity% × (60 ÷ visitDuration) × revenuePerVisit
     const capacityHours = totalHoursSaved * (capacityPercent / 100);
     const additionalVisits = capacityHours * (60 / calibration.minutesPerVisit);
     const capacityValue = additionalVisits * calibration.revenuePerVisit;
 
-    // Savings Value: Hours × savings% × OT rate
     const savingsHours = totalHoursSaved * (savingsPercent / 100);
     const savingsValue = savingsHours * calibration.otHourlyRate;
 
-    // Wellbeing: Hours × wellbeing% ÷ Providers ÷ (Months × 4.33 weeks)
     const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
     const hoursPerProviderPerWeek = deployment.providers > 0 
       ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33)
       : 0;
 
-    // Time Value subtotal
     const timeValueSubtotal = capacityValue + savingsValue;
 
-    // Documentation Value: wRVU Lift × Encounters × Utilization × $33 × Attribution%
     const wrvuLift = docQuality.wrvuWith - docQuality.wrvuWithout;
     const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
     const additionalWRVUs = wrvuLift * documentedEncounters;
-    const docValueConservative = additionalWRVUs * calibration.conversionFactor * 0.5;
-    const docValueOptimistic = additionalWRVUs * calibration.conversionFactor * 0.75;
+    const docValueLow = additionalWRVUs * calibration.conversionFactor * 0.5;
+    const docValueHigh = additionalWRVUs * calibration.conversionFactor * 0.75;
 
-    // Total
-    const totalValueLow = timeValueSubtotal + docValueConservative;
-    const totalValueHigh = timeValueSubtotal + docValueOptimistic;
+    const totalValueLow = timeValueSubtotal + docValueLow;
+    const totalValueHigh = timeValueSubtotal + docValueHigh;
 
     return {
       totalHoursSaved,
       additionalVisits,
       capacityValue,
+      capacityHours,
       savingsHours,
       savingsValue,
       hoursPerProviderPerWeek,
+      wellbeingHours,
       timeValueSubtotal,
       wrvuLift,
       documentedEncounters,
       additionalWRVUs,
-      docValueConservative,
-      docValueOptimistic,
+      docValueLow,
+      docValueHigh,
       totalValueLow,
       totalValueHigh,
     };
@@ -104,6 +103,8 @@ export default function MeasureAllocate({
     });
   };
 
+  const heroValue = formatSmartRange(results.totalValueLow, results.totalValueHigh);
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
@@ -117,170 +118,185 @@ export default function MeasureAllocate({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        {/* Header */}
         <motion.div 
           className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
-            The Value
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3" data-testid="text-page-title">
+            The Value You've Built
           </h1>
-          <p className="text-base text-[#888888]">
-            Your providers reclaimed <span className="font-semibold text-black">{formatNumber(Math.round(results.totalHoursSaved))} hours</span>. Here's what that's worth.
+          <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
+            {formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed. Here's what that translates to.
           </p>
         </motion.div>
 
-        {/* Hero Stat - Hours Reclaimed */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-6"
+          className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          data-testid="section-hero-value"
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-            Hours Reclaimed
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+            Estimated Annual Value
           </p>
-          <p className="text-5xl md:text-6xl font-bold text-black mb-2">
-            {formatNumber(Math.round(results.totalHoursSaved))}
+          <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
+            {heroValue}
           </p>
-          <p className="text-sm text-[#666666]">
-            Based on {formatNumber(state.deployment.totalEncounters)} encounters
+          <p className="text-xs text-[#666666] mb-6">
+            Based on {state.deployment.providers} providers across {formatNumber(state.deployment.totalEncounters)} encounters
           </p>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(results.timeValueSubtotal)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+            </div>
+            <div className="bg-white rounded-lg p-4" data-testid="stat-doc-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Documentation Quality</p>
+            </div>
+            <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.totalHoursSaved))}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Time Value Section */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-6 mb-4"
+          className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
+          data-testid="section-time-waterfall"
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-            Time Value
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
+            How Time Becomes Value
           </p>
           <p className="text-sm text-[#666666] mb-5">
-            How your providers used the time they got back
+            Your providers reclaimed {formatNumber(Math.round(results.totalHoursSaved))} hours. Here's where that time goes.
           </p>
 
-          <div className="space-y-4">
-            {/* Capacity */}
-            <div className="border-l-4 border-[#EA2C00] pl-4 py-2">
-              <div className="flex items-start justify-between">
+          <div className="space-y-0">
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-black">Capacity</p>
-                  <p className="text-sm text-[#666666]">
-                    {formatNumber(Math.round(results.additionalVisits))} additional visits possible
-                  </p>
-                  <p className="text-xs text-[#888888] mt-0.5">{capacityPercent}% of time saved</p>
-                </div>
-                <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.capacityValue)}</p>
-              </div>
-            </div>
-
-            <div className="h-px bg-[#E5E5E5]" />
-
-            {/* Savings */}
-            <div className="border-l-4 border-[#EA2C00] pl-4 py-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-semibold text-black">Savings</p>
-                  <p className="text-sm text-[#666666]">
-                    {formatNumber(Math.round(results.savingsHours))} overtime hours avoided
-                  </p>
-                  <p className="text-xs text-[#888888] mt-0.5">{savingsPercent}% of time saved</p>
-                </div>
-                <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.savingsValue)}</p>
-              </div>
-            </div>
-
-            <div className="h-px bg-[#E5E5E5]" />
-
-            {/* Wellbeing */}
-            <div className="border-l-4 border-[#EA2C00] pl-4 py-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-semibold text-black">Wellbeing</p>
-                  <p className="text-sm text-[#666666]">
-                    {results.hoursPerProviderPerWeek.toFixed(1)} hrs/week back per provider
-                  </p>
-                  <p className="text-xs text-[#888888] mt-0.5">{wellbeingPercent}% of time saved</p>
-                  <p className="text-xs text-[#888888] italic mt-2">
-                    Note: 1 provider retained = $300-500K saved
+                  <p className="font-semibold text-[#1A1A1A]">Patient Capacity</p>
+                  <p className="text-xs text-[#666666] mt-1">
+                    {capacityPercent}% of time saved &rarr; {formatNumber(Math.round(results.additionalVisits))} additional visits possible
                   </p>
                 </div>
-                <p className="text-sm font-medium text-[#666666]">Retention Value</p>
               </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.capacityValue)}</p>
             </div>
 
-            <div className="h-px bg-[#E5E5E5]" />
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Operational Savings</p>
+                  <p className="text-xs text-[#666666] mt-1">
+                    {savingsPercent}% of time saved &rarr; {formatNumber(Math.round(results.savingsHours))} overtime hours avoided
+                  </p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.savingsValue)}</p>
+            </div>
 
-            {/* Subtotal */}
-            <div className="flex items-center justify-between pt-2">
-              <p className="font-semibold text-black">Time Value Subtotal</p>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Provider Wellbeing</p>
+                  <p className="text-xs text-[#666666] mt-1">
+                    {wellbeingPercent}% of time saved &rarr; reclaimed personal time
+                  </p>
+                  <p className="text-xs text-[#999999] italic mt-1">
+                    Retention value: ~1 provider retained = $300-500K
+                  </p>
+                </div>
+              </div>
+              <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">{results.hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</p>
+            </div>
+
+            <div className="flex items-center justify-between pt-4">
+              <p className="font-semibold text-[#1A1A1A]">Time Value Subtotal</p>
               <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.timeValueSubtotal)}</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Documentation Value Section */}
         <motion.div
-          className="bg-white rounded-lg border border-[#E5E5E5] p-6 mb-4"
+          className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          data-testid="section-doc-quality"
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-            Documentation Value
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
+            Documentation Quality
           </p>
           <p className="text-sm text-[#666666] mb-5">
-            Revenue from improved capture
+            Revenue from more complete documentation
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-5">
             <div>
-              <p className="text-sm text-[#888888]">wRVU Lift</p>
-              <p className="text-lg font-semibold text-black">+{results.wrvuLift.toFixed(2)} per encounter</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">+{results.wrvuLift.toFixed(2)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">wRVU lift per visit</p>
             </div>
             <div>
-              <p className="text-sm text-[#888888]">Encounters Analyzed</p>
-              <p className="text-lg font-semibold text-black">{formatNumber(Math.round(results.documentedEncounters))}</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.documentedEncounters))}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">encounters analyzed</p>
             </div>
             <div>
-              <p className="text-sm text-[#888888]">Additional wRVUs</p>
-              <p className="text-lg font-semibold text-black">{formatNumber(Math.round(results.additionalWRVUs))}</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.additionalWRVUs))}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">additional wRVUs</p>
             </div>
           </div>
 
-          <div className="bg-[#F5F0EB] rounded-lg p-4">
-            <p className="text-sm text-[#888888] mb-1">Revenue Potential</p>
-            <p className="text-xl font-bold text-black">
-              {formatCurrency(results.docValueConservative)} – {formatCurrency(results.docValueOptimistic)}
-            </p>
-            <p className="text-xs text-[#888888]">at 50-75% attribution</p>
+          <div className="flex items-start justify-between py-3">
+            <div className="flex items-start gap-3">
+              <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-[#1A1A1A]">Revenue Potential (estimated)</p>
+                <p className="text-xs text-[#666666] mt-1">at 50-75% attribution</p>
+              </div>
+            </div>
+            <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
           </div>
         </motion.div>
 
-        {/* Total Annual Value */}
         <motion.div
-          className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
+          className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
+          data-testid="section-total"
         >
-          <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-            Total Annual Value
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
+            Estimated Annual Value
           </p>
-          <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3">
-            {formatCurrency(results.totalValueLow)} – {formatCurrency(results.totalValueHigh)}
+          <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">
+            {heroValue}
           </p>
-          <div className="text-sm text-[#666666] space-y-1">
+          <div className="text-sm text-[#666666] space-y-1 mb-5">
             <p>Time value: {formatCurrency(results.timeValueSubtotal)}</p>
-            <p>Documentation value: {formatCurrency(results.docValueConservative)} – {formatCurrency(results.docValueOptimistic)}</p>
+            <p>Documentation quality: {formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
+          </div>
+
+          <div className="border-t border-[#E5E5E5] pt-4">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-[#999999] mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-[#999999] leading-relaxed">
+                These estimates use conservative assumptions. The range reflects different attribution models for wRVU improvement. Time value is calculated from your actual before/after data.
+              </p>
+            </div>
           </div>
         </motion.div>
 
-        {/* Adjust Assumptions Toggle */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -289,7 +305,7 @@ export default function MeasureAllocate({
         >
           <button
             onClick={() => setShowAssumptions(!showAssumptions)}
-            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#D1D5DB] transition-colors text-sm text-[#888888]"
+            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#D1D5DB] transition-colors text-sm text-[#999999]"
             data-testid="button-toggle-assumptions"
           >
             <span>Adjust assumptions</span>
@@ -305,7 +321,6 @@ export default function MeasureAllocate({
                 className="overflow-hidden"
               >
                 <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 space-y-5">
-                  {/* Time Allocation */}
                   <div>
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
                       Time Allocation
@@ -338,7 +353,6 @@ export default function MeasureAllocate({
                     </div>
                   </div>
 
-                  {/* Value Assumptions */}
                   <div>
                     <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
                       Value Assumptions
@@ -370,13 +384,11 @@ export default function MeasureAllocate({
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-sm text-[#666666]">$/wRVU</label>
-                        <div className="relative">
-                          <FormattedNumberInput
-                            value={state.calibration.conversionFactor}
-                            onChange={(v: number) => updateCalibration('conversionFactor', v)}
-                            className="h-10"
-                          />
-                        </div>
+                        <FormattedNumberInput
+                          value={state.calibration.conversionFactor}
+                          onChange={(v: number) => updateCalibration('conversionFactor', v)}
+                          className="h-10"
+                        />
                         <p className="text-[10px] text-[#888888]">Medicare conversion factor</p>
                       </div>
                     </div>
@@ -387,16 +399,15 @@ export default function MeasureAllocate({
           </AnimatePresence>
         </motion.div>
 
-        {/* Navigation */}
         <motion.div 
-          className="flex justify-center"
+          className="max-w-[480px] mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}
         >
           <Button
             onClick={onNext}
-            className="h-11 px-8 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
+            className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2"
             data-testid="button-see-story"
           >
             See Your Story

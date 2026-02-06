@@ -185,7 +185,7 @@ export default function MeasureTransformation({
             beforeLabel={`${state.timeEfficiency.timeInNotesWithout} min`}
             afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
             deltaText={`${timeReclaimed} min saved per note`}
-            insight="Less time charting, more time caring"
+            insight="Time returned to patient care"
             delay={0.15}
           />
 
@@ -197,7 +197,7 @@ export default function MeasureTransformation({
             beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
             afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
             deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
-            insight="Complexity captured, not missed"
+            insight="Capturing the work being done"
             delay={0.25}
           />
 
@@ -209,7 +209,7 @@ export default function MeasureTransformation({
             beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
             afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
             deltaText={`+${results.sameDayClosureDelta} percentage points`}
-            insight="Notes closed before going home"
+            insight="Documentation completed during the visit"
             delay={0.35}
           />
 
@@ -234,7 +234,7 @@ export default function MeasureTransformation({
           transition={{ delay: 0.6 }}
         >
           <p className="text-base text-[#666666] italic">
-            Now let's see what that's worth.
+            Here's what this means for your organization.
           </p>
         </motion.div>
 

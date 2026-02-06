@@ -1,0 +1,471 @@
+REPLIT PROMPT:
+
+Restructure and polish the Measure path flow. The goal is to 
+tell a value story to existing Abridge partners during EBRs. 
+Partner Success enters the data beforehand. The partner sees 
+the story.
+
+═══════════════════════════════════════════════════════════════
+
+RESTRUCTURED FLOW (4 pages):
+
+Page 1: YOUR JOURNEY (was "Your Data" — but redesigned)
+Page 2: WHAT CHANGED (keep — it's good, minor polish)  
+Page 3: THE VALUE (redesigned — simpler, more premium)
+Page 4: YOUR STORY (redesigned — the money page)
+
+═══════════════════════════════════════════════════════════════
+PAGE 1: YOUR JOURNEY (replaces "Your Data")
+═══════════════════════════════════════════════════════════════
+
+The problem with the current page: it looks like a data entry 
+form. Even though Partner Success fills this in beforehand, 
+the PARTNER still sees it. It should feel like a personalized 
+profile, not a spreadsheet.
+
+REDESIGN:
+
+HEADLINE:
+"Your Journey with Abridge"
+
+SUBHEAD:
+"80 providers. 47,000 encounters. 6 months of partnership."
+[This is generated from the data — dynamic]
+
+─────────────────────────────────────────────────────────────
+
+SECTION 1: YOUR DEPLOYMENT
+Card (warm beige #F5F0EB):
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  YOUR DEPLOYMENT                                         │
+│                                                          │
+│  ┌────────────┐ ┌────────────┐ ┌──────────┐ ┌─────────┐ │
+│  │            │ │            │ │          │ │         │ │
+│  │  80        │ │  47,000    │ │  72%     │ │  6 mo   │ │
+│  │  providers │ │  encounters│ │  adoption│ │  live   │ │
+│  │            │ │            │ │          │ │         │ │
+│  └────────────┘ └────────────┘ └──────────┘ └─────────┘ │
+│  [24px bold]    [24px bold]    [24px bold]  [24px bold]  │
+│  [10px gray]    [10px gray]    [10px gray]  [10px gray]  │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+SECTION 2: BEFORE & AFTER
+Label: "WHAT WE MEASURED"
+
+Instead of a form layout, show the data as a clean 
+comparison table:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  WHAT WE MEASURED                                        │
+│                                                          │
+│                          BEFORE        WITH ABRIDGE      │
+│                          [#999]        [#1A1A1A, bold]   │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  TIME & EFFICIENCY                                       │
+│                                                          │
+│  Time in notes           12 min            4 min         │
+│  Same-day closure        41%               78%           │
+│  After-hours charting    2.1 hrs/day       0.4 hrs/day   │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  DOCUMENTATION QUALITY                                   │
+│                                                          │
+│  wRVU per encounter      2.10              2.30          │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+The "BEFORE" column values in lighter gray (#999999)
+The "WITH ABRIDGE" column values in bold black
+
+This is the same data but it READS like a comparison, 
+not like a form someone forgot to finish.
+
+─────────────────────────────────────────────────────────────
+
+SECTION 3: EDIT MODE (for Partner Success)
+
+At the bottom, small text link:
+"✏️ Edit data" — clicking this opens the current form 
+view as a modal or expands into edit mode.
+
+This way the PARTNER sees the clean comparison. 
+Partner Success can still edit behind the scenes.
+
+─────────────────────────────────────────────────────────────
+
+BUTTON:
+"See What Changed →" [#EA2C00, full width max 480px]
+
+═══════════════════════════════════════════════════════════════
+PAGE 2: WHAT CHANGED (polish existing)
+═══════════════════════════════════════════════════════════════
+
+This page is already good. Minor polish:
+
+A) The stat banner at top:
+   Keep: "80 PROVIDERS | 47,000 ENCOUNTERS | 72% ADOPTION | 6mo"
+   Good as-is.
+
+B) The before/after bars:
+   These are working well. Keep the structure.
+
+C) Copy refinements:
+
+   Documentation Time:
+   - Keep: "8 min saved per note"
+   - Change right-side: "Less time charting, more time caring"
+   → "Time returned to patient care"
+
+   Revenue Capture:
+   - Keep: "+10% per encounter"  
+   - Change: "Complexity captured, not missed"
+   → "Capturing the work being done"
+
+   Same-Day Closure:
+   - Keep: "+37 percentage points"
+   - Change: "Notes closed before going home"
+   → "Documentation completed during the visit"
+
+   Work-Life Balance:
+   - Keep: "1.7 hours back per day"
+   - Change: "Evenings reclaimed"
+   → Keep "Evenings reclaimed" — this one is perfect
+
+D) Transition to next page:
+   Current: "Now let's see what that's worth."
+   Better: "Here's what this means for your organization."
+   [less salesy, more clinical]
+
+   Button: "See the Value →"
+
+═══════════════════════════════════════════════════════════════
+PAGE 3: THE VALUE (major redesign)
+═══════════════════════════════════════════════════════════════
+
+Current problems:
+1. Too many numbers competing for attention
+2. The Capacity/Savings/Wellbeing breakdown is confusing
+3. The range "$1.1M – $1.1M" looks like a bug
+4. "Adjust assumptions" at the bottom signals uncertainty
+5. No clear visual hierarchy — where should the eye go?
+
+REDESIGN:
+
+HEADLINE:
+"The Value You've Built"
+
+SUBHEAD:
+"6,267 hours reclaimed. Here's what that translates to."
+
+─────────────────────────────────────────────────────────────
+
+SECTION 1: THE HEADLINE NUMBER
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  [#F5F0EB background, centered]                          │
+│                                                          │
+│  ESTIMATED ANNUAL VALUE                                  │
+│  [10px, ALL CAPS, #666666]                               │
+│                                                          │
+│  $1.1M                                                   │
+│  [56px, bold, #EA2C00]                                   │
+│                                                          │
+│  Based on 80 providers across 47,000 encounters          │
+│  [12px, #666666]                                         │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │              │  │              │  │              │   │
+│  │  $971K       │  │  $140K       │  │  6,267       │   │
+│  │  Time Value  │  │  Documentation│ │  Hours       │   │
+│  │              │  │  Quality     │  │  Reclaimed   │   │
+│  │              │  │              │  │              │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘   │
+│  [Stat cards within the hero]                            │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+SECTION 2: HOW TIME BECOMES VALUE
+Label: "HOW TIME BECOMES VALUE"
+
+Instead of Capacity/Savings/Wellbeing as separate line 
+items, show them as a simple waterfall:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  HOW TIME BECOMES VALUE                                  │
+│  Your providers reclaimed 6,267 hours. Here's where      │
+│  that time goes.                                         │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ┃ Patient Capacity                          $501K       │
+│  ┃ 20% of time saved → 2,507 additional visits possible  │
+│  [12px, #666666]                                         │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ┃ Operational Savings                       $470K       │
+│  ┃ 50% of time saved → 3,133 overtime hours avoided      │
+│  [12px, #666666]                                         │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ┃ Provider Wellbeing                    0.9 hrs/wk back │
+│  ┃ 30% of time saved → reclaimed personal time           │
+│  ┃ Retention value: ~1 provider retained = $300-500K     │
+│  [12px, #666666]                                         │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  Time Value Subtotal                         $971K       │
+│  [16px, bold, right-aligned]                             │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+SECTION 3: DOCUMENTATION QUALITY VALUE
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  DOCUMENTATION QUALITY                                   │
+│  Revenue from more complete documentation                │
+│                                                          │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐         │
+│  │            │  │            │  │            │         │
+│  │  +0.20     │  │  33,840    │  │  6,768     │         │
+│  │  wRVU lift │  │  encounters│  │  additional│         │
+│  │  per visit │  │  analyzed  │  │  wRVUs     │         │
+│  │            │  │            │  │            │         │
+│  └────────────┘  └────────────┘  └────────────┘         │
+│                                                          │
+│  ┃ Revenue Potential                $112K – $168K        │
+│  ┃ at 50-75% attribution                                │
+│  ┃ [12px, #666666]                                      │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+SECTION 4: TOTAL
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  ESTIMATED TOTAL ANNUAL VALUE                            │
+│                                                          │
+│  $1.1M – $1.1M                                           │
+│  [32px, bold, #EA2C00]                                   │
+│                                                          │
+│  Time value: $971K                                       │
+│  Documentation quality: $112K – $168K                    │
+│  [12px, #666666]                                         │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ⓘ How to read these numbers                             │
+│                                                          │
+│  These estimates use conservative assumptions.            │
+│  The range reflects different attribution models for     │
+│  wRVU improvement. Time value is calculated from your    │
+│  actual before/after data.                               │
+│  [11px, #999999]                                         │
+│                                                          │
+│  [Adjust assumptions ▾]                                  │
+│  [small, collapsible — not prominent]                    │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+BUTTON:
+"See Your Story →" [#EA2C00]
+
+NOTE: The range "$1.1M – $1.1M" appears to be a bug. 
+If the range is that tight, just show "$1.1M" as a 
+single number. Only show a range if the spread is 
+meaningful (e.g., "$1.0M – $1.2M").
+
+Fix the range calculation so it actually produces 
+different low/high values. Use:
+- Low: 50% wRVU attribution
+- High: 75% wRVU attribution
+This should produce a real range.
+
+═══════════════════════════════════════════════════════════════
+PAGE 4: YOUR STORY (the money page — polish)
+═══════════════════════════════════════════════════════════════
+
+This page already has the right energy. Let's make it 
+the best page in the entire app.
+
+HEADLINE SECTION:
+
+Current:
+"80 providers. 6 months. 6,267 hours back."
+
+This is great. But make it bigger. This should be 
+the most dramatic moment in the entire flow.
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  [Full width, centered, generous padding]                │
+│                                                          │
+│           80 providers.                                  │
+│           [28px, #1A1A1A]                                │
+│                                                          │
+│           6 months.                                      │
+│           [28px, #1A1A1A]                                │
+│                                                          │
+│           6,267 hours back.                              │
+│           [36px, bold, #EA2C00]                           │
+│                                                          │
+│           That's 0.9 hours per week per provider—        │
+│           time that used to disappear into                │
+│           documentation.                                 │
+│           [14px, #666666]                                │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+THE REAL STORY SECTION:
+
+Current callout is good but could be more powerful:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  ┃ THE STORY                                             │
+│  ┃ [10px, ALL CAPS, #EA2C00]                             │
+│  ┃                                                       │
+│  ┃ You gave 80 people their evenings back—               │
+│  ┃ and the notes got better, not worse.                  │
+│  ┃ [20px, bold, #1A1A1A]                                 │
+│  ┃                                                       │
+│  ┃ That's the counterintuitive truth about ambient       │
+│  ┃ documentation: better notes come from less time       │
+│  ┃ documenting.                                          │
+│  ┃ [14px, #666666]                                       │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+[#F5F0EB background, #EA2C00 left border, generous padding]
+
+─────────────────────────────────────────────────────────────
+
+YOUR RESULTS SECTION:
+
+Simplify the current table. Make it feel like a 
+confident summary, not a detailed spreadsheet:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  YOUR RESULTS                                            │
+│                                                          │
+│  Hours Reclaimed                         6,267 hours     │
+│  ──────────────────────────────────────────────────────  │
+│  Time Value                                              │
+│    Patient Capacity (20%)                $501K           │
+│    Operational Savings (50%)             $470K           │
+│    Provider Wellbeing (30%)         0.9 hrs/wk back     │
+│  ──────────────────────────────────────────────────────  │
+│  Documentation Value                 $112K – $168K       │
+│    wRVU lift: +0.20/encounter                            │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ESTIMATED ANNUAL VALUE              $1.1M – $1.1M       │
+│                                      [#EA2C00, bold]     │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+[Clean table, thin dividers, right-aligned values]
+
+─────────────────────────────────────────────────────────────
+
+EXPANSION SECTION:
+
+Current: "What if you expanded? See projected value at scale"
+
+This is the right hook for an EBR. Redesign:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  ┃ WHAT'S NEXT                                           │
+│  ┃                                                       │
+│  ┃ Today: 80 providers, $1.1M estimated annual value     │
+│  ┃                                                       │
+│  ┃ If you expanded to 200 providers:                     │
+│  ┃                                                       │
+│  ┃ $2.8M estimated annual value                          │
+│  ┃ [24px, bold, #EA2C00]                                 │
+│  ┃                                                       │
+│  ┃ [ Explore expansion → ]                               │
+│  ┃ [text link, #EA2C00]                                  │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+SHARE SECTION:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  Share Your Story                                        │
+│  Export a polished PDF for leadership                    │
+│                                                          │
+│                              [ Export PDF ↓ ]            │
+│                              [#EA2C00 button]            │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────
+
+METHODOLOGY:
+Keep "Methodology & Assumptions" as collapsible at bottom.
+This is correct — available but not prominent.
+
+═══════════════════════════════════════════════════════════════
+COPY CONSISTENCY CHECK
+═══════════════════════════════════════════════════════════════
+
+Replace throughout:
+- "THE VALUE" → "The Value You've Built"
+- "YOUR DATA" → "Your Journey with Abridge"
+- "What Changed" → keep (it's good)
+- "Your Story" → keep (it's good)
+- "TOTAL ANNUAL VALUE" → "ESTIMATED ANNUAL VALUE"
+  (always say "estimated" — legal protection)
+- "Revenue Potential" → "Revenue Potential (estimated)"
+- "Now let's see what that's worth" → 
+  "Here's what this means for your organization."
+- All section labels: 10px, ALL CAPS, #EA2C00
+
+═══════════════════════════════════════════════════════════════
+FIX THE RANGE BUG
+═══════════════════════════════════════════════════════════════
+
+The "$1.1M – $1.1M" range is clearly a bug. Fix the 
+calculation:
+
+lowEstimate = timeValue + (docQualityValue * 0.50)
+highEstimate = timeValue + (docQualityValue * 0.75)
+
+If lowEstimate and highEstimate round to the same 
+abbreviated value (e.g., both round to $1.1M), then 
+just show the single number: "$1.1M"
+
+Only show a range if the display values are different:
+e.g., "$1.0M – $1.2M"
