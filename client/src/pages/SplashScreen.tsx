@@ -21,7 +21,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternV} 
           alt="" 
-          className="absolute w-20 md:w-28 opacity-50"
+          className="absolute w-[120px] md:w-[168px] opacity-50"
           style={{ 
             top: '8%', 
             left: '5%',
@@ -32,7 +32,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-24 md:w-36 opacity-40"
+          className="absolute w-[144px] md:w-[216px] opacity-40"
           style={{ 
             top: '5%', 
             right: '8%',
@@ -43,7 +43,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-28 md:w-44 opacity-45"
+          className="absolute w-[168px] md:w-[264px] opacity-45"
           style={{ 
             bottom: '8%', 
             left: '8%',
@@ -52,20 +52,9 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternSemicircle} 
-          alt="" 
-          className="absolute w-24 md:w-36 opacity-40"
-          style={{ 
-            bottom: '12%', 
-            right: '12%',
-            filter: greyFilter,
-            animation: 'splashFloat4 15s ease-in-out infinite'
-          }}
-        />
-        <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-36 md:w-52 opacity-35"
+          className="absolute w-[216px] md:w-[312px] opacity-35"
           style={{ 
             top: '35%', 
             left: '3%',
@@ -76,7 +65,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternBridge} 
           alt="" 
-          className="absolute w-36 md:w-52 opacity-35"
+          className="absolute w-[216px] md:w-[312px] opacity-35"
           style={{ 
             top: '35%', 
             right: '3%',
@@ -85,20 +74,9 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternV} 
-          alt="" 
-          className="absolute w-14 md:w-24 opacity-30"
-          style={{ 
-            top: '60%', 
-            left: '25%',
-            filter: greyFilter,
-            animation: 'splashFloat7 14s ease-in-out infinite'
-          }}
-        />
-        <img 
           src={patternCorner} 
           alt="" 
-          className="absolute w-20 md:w-28 opacity-30"
+          className="absolute w-[120px] md:w-[168px] opacity-30"
           style={{ 
             top: '70%', 
             right: '20%',
@@ -107,20 +85,9 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternSemicircle} 
-          alt="" 
-          className="absolute w-16 md:w-24 opacity-25"
-          style={{ 
-            top: '20%', 
-            left: '40%',
-            filter: greyFilter,
-            animation: 'splashFloat9 20s ease-in-out infinite'
-          }}
-        />
-        <img 
           src={patternQuarter} 
           alt="" 
-          className="absolute w-20 md:w-32 opacity-30"
+          className="absolute w-[120px] md:w-[192px] opacity-30"
           style={{ 
             top: '15%', 
             right: '30%',
@@ -131,7 +98,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <img 
           src={patternA} 
           alt="" 
-          className="absolute w-16 md:w-24 opacity-35"
+          className="absolute w-[96px] md:w-[144px] opacity-35"
           style={{ 
             top: '45%', 
             right: '25%',
@@ -140,20 +107,9 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternCorner} 
-          alt="" 
-          className="absolute w-14 md:w-20 opacity-25"
-          style={{ 
-            bottom: '30%', 
-            left: '18%',
-            filter: greyFilter,
-            animation: 'splashFloat12 13s ease-in-out infinite'
-          }}
-        />
-        <img 
           src={patternSemicircle} 
           alt="" 
-          className="absolute w-18 md:w-28 opacity-30"
+          className="absolute w-[108px] md:w-[168px] opacity-30"
           style={{ 
             top: '75%', 
             left: '45%',
@@ -220,13 +176,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           72% { transform: translate(-100px, -40px) rotate(4deg); }
           100% { transform: translate(0, 0) rotate(0deg); }
         }
-        @keyframes splashFloat4 {
-          0% { transform: translate(0, 0); }
-          25% { transform: translate(-100px, 70px); }
-          50% { transform: translate(-60px, -80px); }
-          75% { transform: translate(50px, -40px); }
-          100% { transform: translate(0, 0); }
-        }
         @keyframes splashFloat5 {
           0% { transform: translate(0, 0); }
           20% { transform: translate(80px, -60px); }
@@ -241,29 +190,12 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           60% { transform: translate(-50px, 60px) scaleX(-1); }
           100% { transform: translate(0, 0) scaleX(-1); }
         }
-        @keyframes splashFloat7 {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          22% { transform: translate(-70px, 80px) rotate(15deg); }
-          44% { transform: translate(40px, 120px) rotate(-10deg); }
-          66% { transform: translate(100px, 50px) rotate(20deg); }
-          88% { transform: translate(60px, -30px) rotate(-5deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
         @keyframes splashFloat8 {
           0% { transform: translate(0, 0) rotate(0deg); }
           25% { transform: translate(70px, -100px) rotate(-12deg); }
           50% { transform: translate(-40px, -140px) rotate(8deg); }
           75% { transform: translate(-90px, -60px) rotate(-6deg); }
           100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat9 {
-          0% { transform: translate(0, 0); }
-          17% { transform: translate(-60px, -50px); }
-          34% { transform: translate(30px, -110px); }
-          51% { transform: translate(100px, -70px); }
-          68% { transform: translate(80px, 20px); }
-          85% { transform: translate(20px, 40px); }
-          100% { transform: translate(0, 0); }
         }
         @keyframes splashFloat10 {
           0% { transform: translate(0, 0) rotate(0deg); }
@@ -279,13 +211,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           56% { transform: translate(20px, -130px) rotate(10deg); }
           84% { transform: translate(70px, -50px) rotate(-8deg); }
           100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat12 {
-          0% { transform: translate(0, 0) rotate(90deg); }
-          25% { transform: translate(80px, 60px) rotate(105deg); }
-          50% { transform: translate(50px, -70px) rotate(75deg); }
-          75% { transform: translate(-40px, -40px) rotate(100deg); }
-          100% { transform: translate(0, 0) rotate(90deg); }
         }
         @keyframes splashFloat13 {
           0% { transform: translate(0, 0); }
