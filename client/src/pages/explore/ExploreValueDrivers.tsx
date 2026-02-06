@@ -1903,7 +1903,7 @@ export default function ExploreValueDrivers({
                               <span className="text-xs text-[#888888]">OT Reduction</span>
                             </div>
                             <div className="text-right">
-                              <span className={`text-sm font-semibold ${timeDriverInputs.nursingOtEnabled ? 'text-[#EA2C00]' : 'text-[#666666]'}`}>
+                              <span className={`text-sm font-semibold ${timeDriverInputs.nursingOtEnabled ? 'text-white' : 'text-[#666666]'}`}>
                                 {formatNumber(otHours)} hrs
                               </span>
                               <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingOtEnabled ? timeDriverInputs.nursingOtReductionPercent : 0}%)</span>
@@ -1917,7 +1917,7 @@ export default function ExploreValueDrivers({
                               <span className="text-xs text-[#888888]">Direct Care</span>
                             </div>
                             <div className="text-right">
-                              <span className="text-sm font-semibold text-[#EA2C00]">{formatNumber(careHours)} hrs</span>
+                              <span className="text-sm font-semibold text-white">{formatNumber(careHours)} hrs</span>
                               <span className="text-xs text-[#666666] ml-1">({timeDriverInputs.nursingCareTimePercent}%)</span>
                             </div>
                           </div>
@@ -1937,7 +1937,7 @@ export default function ExploreValueDrivers({
                           {/* Per Nurse */}
                           <div className="flex justify-between items-center pt-2 mt-1 border-t border-[#333333]">
                             <span className="text-xs text-[#888888]">Per nurse/week</span>
-                            <span className="text-lg font-bold text-[#EA2C00]">{carePerNurseWeek} hrs</span>
+                            <span className="text-lg font-bold text-white">{carePerNurseWeek} hrs</span>
                           </div>
                         </div>
                       </div>
