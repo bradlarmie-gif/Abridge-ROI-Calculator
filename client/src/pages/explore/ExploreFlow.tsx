@@ -652,10 +652,11 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
   // Calculate annual investment
   const annualInvestment = useMemo(() => {
     if (state.pricingModel === 'perProvider') {
-      return state.numberOfProviders * state.costPerProvider * 12;
+      const units = state.careSetting === 'nursing' ? state.nursingStaffedBeds : state.numberOfProviders;
+      return units * state.costPerProvider * 12;
     }
     return state.annualLicenseFee;
-  }, [state.pricingModel, state.numberOfProviders, state.costPerProvider, state.annualLicenseFee]);
+  }, [state.pricingModel, state.numberOfProviders, state.nursingStaffedBeds, state.costPerProvider, state.annualLicenseFee, state.careSetting]);
 
   const isNursing = state.careSetting === 'nursing';
 
