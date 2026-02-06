@@ -206,12 +206,10 @@ export default function StepWhyThisHappens({
       content: (
         <>
           <p className="text-sm text-[#333333]">
-            The longer you wait, the more value you leave on the table. Sunk cost ≠ future value.
+            It's natural to want to give a new investment time. At the same time, if the gap is significant, the math may favor acting sooner rather than later.
           </p>
           <p className="text-sm text-[#333333] mt-3">
-            Your ROI gap: <span className="font-bold text-[#EA2C00]" data-testid="text-objection-roi-gap">{roiGap}/year</span>.
-            <br />
-            Every month of delay: <span className="font-bold text-[#EA2C00]" data-testid="text-objection-monthly-delay">{monthlyDelay}</span>.
+            Your current gap: <span className="font-bold text-[#EA2C00]" data-testid="text-objection-roi-gap">~{roiGap}/year</span>.
           </p>
         </>
       ),
@@ -222,7 +220,7 @@ export default function StepWhyThisHappens({
       title: '"Change fatigue is real"',
       content: (
         <p className="text-sm text-[#333333]">
-          Providers who've used AI before actually adopt <span className="font-bold">40% faster</span>. They know what to expect — and what "good" looks like.
+          Interestingly, providers with prior AI experience often adopt faster. They know what to look for and what's possible.
         </p>
       ),
     },
@@ -232,7 +230,7 @@ export default function StepWhyThisHappens({
       title: '"Contract lock-in"',
       content: (
         <p className="text-sm text-[#333333]">
-          Most contracts have exit clauses. And the ROI gap often exceeds early termination fees within 6 months. We can help you navigate the transition.
+          Many contracts have flexibility. It's worth reviewing your terms alongside the potential value of a change.
         </p>
       ),
     },
@@ -243,9 +241,9 @@ export default function StepWhyThisHappens({
       content: (
         <>
           <p className="text-sm text-[#333333]">
-            Our implementation team handles 80% of the technical lift. Average IT burden:
+            Our team is built to minimize IT burden. Most implementations require about:
           </p>
-          <p className="text-xl font-bold text-[#EA2C00] mt-2">40 hours total.</p>
+          <p className="text-xl font-bold text-[#EA2C00] mt-2">40 hours of IT time total.</p>
           <p className="text-sm text-[#333333] mt-2">
             That's one person for one week — not a multi-month project.
           </p>
@@ -261,8 +259,8 @@ export default function StepWhyThisHappens({
           What It Takes
         </h1>
         <p className="text-base text-[#666666]">
-          Here's what we've learned from organizations that made the switch.
-          <span className="block mt-1">Tap each pattern to see what makes the difference.</span>
+          Patterns we've observed across hundreds of implementations.
+          <span className="block mt-1">Tap to explore each one.</span>
         </p>
       </div>
 
@@ -273,7 +271,7 @@ export default function StepWhyThisHappens({
             "We already have a solution. Isn't switching too disruptive?"
           </h2>
           <p className="text-sm text-[#666666]">
-            Here's what we've learned from organizations that made the switch:
+            These are concerns we hear often — along with what we've observed:
           </p>
         </div>
 
@@ -299,7 +297,7 @@ export default function StepWhyThisHappens({
         </div>
 
         <div className="bg-[#F5F0EB] rounded-xl p-5 text-center">
-          <p className="text-sm text-[#666666] mb-1">Average time from decision to go-live:</p>
+          <p className="text-sm text-[#666666] mb-1">Typical timeline from decision to go-live:</p>
           <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-45-days">45 days</p>
           <p className="text-xs text-[#666666] mt-2">
             This includes full data migration, EHR integration, provider training, and go-live support.
@@ -373,8 +371,7 @@ export default function StepWhyThisHappens({
       {!allExpanded && (
         <section className="bg-[#F5F0EB] rounded-xl p-5">
           <p className="text-sm text-[#666666]">
-            <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> Capturing the value you saw in The Math 
-            requires more than good technology. It requires the right partnership.
+            <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> Technology matters, but so does implementation, support, and ongoing optimization. They're equally important.
           </p>
         </section>
       )}

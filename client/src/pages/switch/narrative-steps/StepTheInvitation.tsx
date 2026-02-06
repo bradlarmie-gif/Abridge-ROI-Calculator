@@ -84,7 +84,7 @@ export default function StepTheInvitation({
           The Opportunity
         </h1>
         <p className="text-base text-[#666666]">
-          Here's where you stand — and what's possible with the right partnership.
+          A summary of what we found — and what the benchmarks suggest is possible.
         </p>
       </div>
 
@@ -115,9 +115,9 @@ export default function StepTheInvitation({
             <p className="text-xs text-[#999999] mt-1">Compounding value</p>
           </div>
           <div className="p-5 text-center">
-            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Monthly Cost of Waiting</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(calculations.monthlyGap)}</p>
-            <p className="text-xs text-[#999999] mt-1">Value left on table</p>
+            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Monthly Opportunity</p>
+            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">~{formatCurrency(calculations.monthlyGap)}</p>
+            <p className="text-xs text-[#999999] mt-1">Potential value</p>
           </div>
         </div>
       </section>
@@ -189,10 +189,10 @@ export default function StepTheInvitation({
           <div className="flex-1 text-center md:text-left">
             <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">What Comes Next</p>
             <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
-              Let's explore this opportunity together.
+              If this raises questions, we're here to help.
             </h2>
             <p className="text-sm text-[#666666]">
-              This analysis is just the starting point. Our team can help you build a personalized implementation roadmap.
+              This captures what you entered. If you'd like to discuss further, our team is available.
             </p>
           </div>
           

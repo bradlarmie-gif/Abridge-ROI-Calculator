@@ -382,7 +382,7 @@ export default function StepTheMath({
               <div className="p-3 bg-[#F5F0EB] rounded-lg flex items-start gap-2">
                 <Info className="w-4 h-4 text-[#666666] flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-[#666666]">
-                  <span className="font-semibold">Why does edit time matter?</span> Many AI solutions report "time saved" without accounting for the time providers spend correcting errors. We calculate NET impact because that's what actually affects your providers' day.
+                  <span className="font-semibold">Why does edit time matter?</span> Net time impact includes both time saved and time spent editing — a more complete picture of actual efficiency.
                 </p>
               </div>
 
@@ -390,7 +390,7 @@ export default function StepTheMath({
                 <div className="p-3 bg-[#FFEBE6] rounded-lg flex items-start gap-2" data-testid="math-net-loss-warning">
                   <AlertTriangle className="w-4 h-4 text-[#EA2C00] flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-[#EA2C00]">
-                    <span className="font-semibold">Your AI is currently a net time LOSS.</span> Every encounter documented with AI is adding {Math.round(Math.abs(currentNetImpact) * 60)} seconds of work, not saving time. This gap alone represents significant value.
+                    <span className="font-semibold">Your current net time impact is negative.</span> Each AI-documented encounter adds approximately {Math.round(Math.abs(currentNetImpact) * 60)} seconds of work. This is worth understanding as part of the overall picture.
                   </p>
                 </div>
               )}
@@ -485,7 +485,7 @@ export default function StepTheMath({
         <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">3-Year Projection</p>
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">The Compounding Effect</h2>
         <p className="text-sm text-[#666666] mb-6">
-          The shaded area is value left on the table. Every month of delay shrinks what you capture.
+          The shaded area represents potential value over time. Earlier action captures more of it.
         </p>
         
         <div className="h-64 md:h-72">
@@ -606,7 +606,7 @@ export default function StepTheMath({
         
         <div className="mt-4 border-t border-[#E5E7EB] pt-4 text-center">
           <p className="text-sm text-[#EA2C00] font-semibold">
-            Every month you wait: {formatCurrency(recalculatedValues.monthlyGap)} in unrealized value
+            Monthly opportunity: ~{formatCurrency(recalculatedValues.monthlyGap)} in potential value
           </p>
         </div>
       </section>

@@ -166,7 +166,7 @@ export default function StepWhatGoodLooksLike({
           What Good Looks Like
         </h1>
         <p className="text-base text-[#666666]">
-          These aren't aspirational targets. They're achievable ranges based on mature Abridge implementations.
+          These benchmarks come from mature implementations. They're achievable with the right approach and support.
         </p>
       </div>
 

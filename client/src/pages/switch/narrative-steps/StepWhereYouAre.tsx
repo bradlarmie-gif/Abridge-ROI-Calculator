@@ -151,7 +151,7 @@ export default function StepWhereYouAre({
           Where You Are
         </h1>
         <p className="text-base text-[#666666]">
-          You invested in ambient AI. Let's measure what you're getting back.
+          Tell us about your current ambient AI experience.
         </p>
       </div>
 
@@ -279,8 +279,8 @@ export default function StepWhereYouAre({
             <div className="mt-3 bg-[#FFEBE6] rounded-lg p-4 flex items-start gap-3" data-testid="edit-time-warning">
               <AlertTriangle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-[#EA2C00]">Your edit time exceeds your time saved.</p>
-                <p className="text-sm text-[#EA2C00]">This means AI may be adding to your documentation burden, not reducing it.</p>
+                <p className="text-sm font-semibold text-[#EA2C00]">Edit time exceeds time saved.</p>
+                <p className="text-sm text-[#EA2C00]">When edit time exceeds time saved, the net efficiency benefit becomes harder to realize. This is worth understanding.</p>
               </div>
             </div>
           )}
@@ -331,7 +331,7 @@ export default function StepWhereYouAre({
           <div className="mt-4 space-y-2">
             <div className="h-px bg-[#333333]" />
             <p className="text-sm text-[#999999] mt-3">
-              That's <span className="font-semibold text-white">{annualPajamaTime.toLocaleString()} hours/year</span> across your providers.
+              That's <span className="font-semibold text-white">{annualPajamaTime.toLocaleString()} hours/year</span> your team is spending outside the clinic.
             </p>
             <p className="text-xs text-[#666666]">
               Abridge average: {ABRIDGE_BENCHMARKS.afterHoursPerWeek} hrs/week ({benchmarkPajamaTime.toLocaleString()} hours/year for your team)

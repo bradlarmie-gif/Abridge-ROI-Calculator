@@ -77,7 +77,7 @@ export default function StepTheGap({
           The Gap
         </h1>
         <p className="text-base text-[#666666]">
-          This gap is common at your stage. Understanding what's driving it is the first step to closing it.
+          Gaps like this are common — and usually addressable. Here's what the data suggests.
         </p>
       </div>
 
@@ -204,13 +204,13 @@ export default function StepTheGap({
             <div className="bg-[#FFEBE6] rounded-lg p-4 mb-4 flex items-start gap-3" data-testid="net-impact-negative-warning">
               <AlertTriangle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-bold text-[#EA2C00]">YOUR AI IS COSTING YOU TIME</p>
+                <p className="text-sm font-semibold text-[#EA2C00]">Your current net time impact is negative.</p>
                 <p className="text-sm text-[#EA2C00] mt-1">
-                  Instead of saving time, your providers are spending an extra {extraSecondsPerEncounter >= 60 ? `${(extraSecondsPerEncounter / 60).toFixed(1)} minutes` : `${extraSecondsPerEncounter} seconds`} per encounter on documentation.
+                  This is worth discussing — whether with your current vendor or in exploring alternatives. Providers are spending an extra {extraSecondsPerEncounter >= 60 ? `${(extraSecondsPerEncounter / 60).toFixed(1)} minutes` : `${extraSecondsPerEncounter} seconds`} per encounter on documentation.
                 </p>
                 <p className="text-sm text-[#EA2C00] mt-2">
                   Across {storyMetrics.encountersWithAI.toLocaleString()} AI-documented encounters:
-                  {" "}That's <span className="font-bold">{storyMetrics.annualAddedBurden.toLocaleString()} hours/year</span> of ADDED burden.
+                  {" "}That's <span className="font-bold">{storyMetrics.annualAddedBurden.toLocaleString()} hours/year</span> of added time.
                 </p>
               </div>
             </div>
@@ -357,8 +357,8 @@ export default function StepTheGap({
               <div className="h-px bg-[#E5E7EB] my-3" />
               <p className="text-xs text-[#666666]">
                 {(inputs.satisfaction || 0) < 65 
-                  ? "Satisfaction below 65% correlates with higher turnover intent."
-                  : "This is a leading indicator — address it before it becomes a lagging one."
+                  ? "Satisfaction below 65-70% often correlates with declining engagement over time."
+                  : "Satisfaction below 65-70% often correlates with declining engagement over time."
                 }
               </p>
             </>
@@ -382,7 +382,7 @@ export default function StepTheGap({
             </p>
           </div>
           <p className="text-xl font-bold text-[#EA2C00] mb-1">
-            {storyMetrics.afterHoursAnnual.toLocaleString()} hours/year spent charting at home
+            {storyMetrics.afterHoursAnnual.toLocaleString()} hours/year spent charting at home — time away from family, rest, and life outside work
           </p>
           <p className="text-xs text-[#999999] mb-4">
             {inputs.afterHoursPerWeek} hours/week x {storyMetrics.providers} providers x 52 weeks
@@ -401,7 +401,7 @@ export default function StepTheGap({
 
       <section className="bg-[#F5F0EB] rounded-xl p-5">
         <p className="text-sm text-[#666666]">
-          <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> These patterns don't happen by accident. Understanding what's driving them is the first step to closing the gap.
+          <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> These patterns are common. Understanding what's behind them helps clarify your options.
         </p>
       </section>
 
