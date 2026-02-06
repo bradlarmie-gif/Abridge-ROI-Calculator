@@ -43,6 +43,12 @@ const UTILIZATION_PRESETS = [
   { label: "Optimistic", value: 85 },
 ];
 
+const NURSING_UTILIZATION_PRESETS = [
+  { label: "Conservative", value: 40 },
+  { label: "Typical", value: 50 },
+  { label: "Optimistic", value: 60 },
+];
+
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
   const isED = state.careSetting === 'ed';
   const isInpatient = state.careSetting === 'inpatient';
@@ -359,7 +365,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                   <div className="space-y-2.5">
                     <label className="text-sm font-medium text-black">{isNursing ? "Adoption Rate" : "Utilization Rate"}</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {UTILIZATION_PRESETS.map((preset) => (
+                      {(isNursing ? NURSING_UTILIZATION_PRESETS : UTILIZATION_PRESETS).map((preset) => (
                         <button
                           key={preset.value}
                           onClick={() => handleUtilizationChange(preset.value)}
@@ -399,7 +405,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
 
                 <p className="text-xs text-[#888888]">
                   {isNursing
-                    ? "Adoption reflects the percentage of nurses consistently using Abridge for supported documentation. Most implementations reach 60-75% within 6 months."
+                    ? "Adoption reflects the percentage of nurses consistently using Abridge for supported documentation. Most implementations reach 40-60% within 6 months."
                     : "Utilization typically starts at 50-60% and grows to 75-85%."
                   }
                 </p>
