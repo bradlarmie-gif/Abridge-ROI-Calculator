@@ -627,7 +627,7 @@ export default function SwitchAssessment({
               {hasMinimumData ? (
                 <div className="text-5xl font-bold text-[#111827]" data-testid="text-annual-gap">
                   {formatCurrency(calculations.annualGap)}
-                  <span className="text-xl text-[#6B7280] font-normal">/year left on the table</span>
+                  <span className="text-xl text-[#6B7280] font-normal">/year potential opportunity</span>
                 </div>
               ) : (
                 <div className="py-4" data-testid="text-annual-gap">

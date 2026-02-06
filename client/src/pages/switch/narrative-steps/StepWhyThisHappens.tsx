@@ -41,7 +41,7 @@ const INSIGHT_CARDS: InsightCardData[] = [
       description: "Without intentional change management, providers revert to old habits within weeks. Technology alone doesn't change behavior."
     },
     solution: {
-      title: "How Abridge Solves It",
+      title: "What We've Seen Work",
       traits: ["Dedicated success partners", "Provider champions program", "Behavioral design expertise"]
     }
   },
@@ -55,7 +55,7 @@ const INSIGHT_CARDS: InsightCardData[] = [
       description: "AI implementations that aren't actively managed see declining utilization over 6-12 months. Initial enthusiasm fades."
     },
     solution: {
-      title: "How Abridge Solves It",
+      title: "What We've Seen Work",
       traits: ["Continuous optimization cycles", "Quarterly business reviews", "Real-time utilization alerts"]
     }
   },
@@ -69,7 +69,7 @@ const INSIGHT_CARDS: InsightCardData[] = [
       description: "Primary care, cardiology, and surgery have completely different documentation needs. Generic AI misses nuances."
     },
     solution: {
-      title: "How Abridge Solves It",
+      title: "What We've Seen Work",
       traits: ["Specialty-specific templates", "Workflow customization", "EHR-specific integrations"]
     }
   },
@@ -83,7 +83,7 @@ const INSIGHT_CARDS: InsightCardData[] = [
       description: "Without visible leadership support, AI initiatives become \"another IT project\" and lose organizational priority."
     },
     solution: {
-      title: "How Abridge Solves It",
+      title: "What We've Seen Work",
       traits: ["Executive alignment playbook", "ROI dashboards for leadership", "Peer network connections"]
     }
   }

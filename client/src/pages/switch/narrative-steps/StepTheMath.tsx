@@ -583,10 +583,10 @@ export default function StepTheMath({
       </section>
 
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
-        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">Cost of Waiting</p>
+        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">Timing Comparison</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-[#F5F0EB] rounded-lg p-4">
-            <p className="text-xs text-[#666666] mb-1">Act now</p>
+            <p className="text-xs text-[#666666] mb-1">Start now</p>
             <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.switchNowValue)}</p>
             <p className="text-xs text-[#999999]">3-year value</p>
           </div>

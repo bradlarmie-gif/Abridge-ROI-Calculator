@@ -127,13 +127,13 @@ export default function SwitchFullAnalysis({
             
             <div className="relative">
               <div className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">
-                Value Left on the Table
+                Potential Annual Opportunity
               </div>
               <div className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 tracking-tight">
                 {formatCurrency(calculations.annualGap)}
               </div>
               <div className="text-sm md:text-base text-slate-400">
-                per year — that you're already paying for
+                per year — based on your current inputs
               </div>
               
               {/* Monthly breakdown */}
@@ -404,8 +404,8 @@ export default function SwitchFullAnalysis({
         </section>
 
         <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 lg:p-8 mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">The Cost of Waiting</h2>
-          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">Every month at the current trajectory is a month of value left unclaimed</p>
+          <h2 className="text-lg md:text-xl font-bold text-[#111827] mb-2">Timing Comparison</h2>
+          <p className="text-sm md:text-base text-[#6B7280] mb-4 md:mb-6">How timing affects the total opportunity over three years</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
             <div className="border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-4 md:p-6 text-center relative">

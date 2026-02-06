@@ -31,11 +31,11 @@ function getScoreContext(score: number): { status: string; message: string } {
   };
   if (score >= 50) return { 
     status: "Developing", 
-    message: "Significant opportunity to accelerate your value capture." 
+    message: "There's meaningful room to improve based on what the benchmarks suggest." 
   };
   return { 
     status: "Early Stage", 
-    message: "Major opportunity exists. Let's explore the possibilities together." 
+    message: "There may be a significant opportunity here. We're happy to discuss it whenever you're ready." 
   };
 }
 
