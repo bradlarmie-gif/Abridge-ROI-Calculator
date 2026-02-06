@@ -1,0 +1,543 @@
+REPLIT PROMPT:
+
+Rebuild the Human Scribe Analysis (Switch → Human Scribes) PDF 
+export to match the EXACT same format, density, typography, and 
+style as the Measure path PDF. Cover + 4 content pages. Same 
+fonts, margins, components. Reuse every visual pattern.
+
+═══════════════════════════════════════════════════════════════════════
+GLOBAL — IDENTICAL TO MEASURE PDF
+═══════════════════════════════════════════════════════════════════════
+
+Pages: Cover + 4 content pages
+Size: Letter (8.5 × 11)
+Margins: 0.75 inch
+Font: Manrope
+Same color palette, typography scale, components, footer pattern.
+
+FOOTER (every page):
+- Thin rule: #E0E0E0
+- Left: ABRIDGE in #EA2C00 (10px)
+- Center: "[Organization Name] · Scribe Program Analysis"
+- Right: "Page X of 4" in 8.5px #999999
+
+═══════════════════════════════════════════════════════════════════════
+COVER PAGE
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ABRIDGE [logo, #EA2C00, top-left]                              │
+│                                                                 │
+│                                                                 │
+│  SCRIBE PROGRAM ANALYSIS                                        │
+│  [9px, ALL CAPS, #666666, letter-spacing 3px]                   │
+│                                                                 │
+│  [Organization Name]                                            │
+│  [36px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ──────── [60px rule, #EA2C00, 2px thick]                       │
+│                                                                 │
+│  150 providers · 10 scribes · Outpatient                        │
+│  [14px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  PREPARED BY                                                    │
+│  [9px, ALL CAPS, #999999]                                       │
+│  [Name] · [Date]                                                │
+│  [12px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  [Bottom-right: subtle curve graphic, #EA2C00 at 8% opacity]    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  This assessment is for planning purposes.                      │
+│  Calculations are based on inputs provided                      │
+│  and industry benchmarks.                                       │
+│  [8.5px, #999999]                                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 1: YOUR PROGRAM (Current State + Hidden Costs on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines old pages 1+2. The full picture of their scribe 
+investment on a single dense page.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR PROGRAM                                                   │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background, full width]                       │    │
+│  │                                                         │    │
+│  │  150 providers. 10 scribes. 33% coverage.               │    │
+│  │  [14px, #666666]                                        │    │
+│  │                                                         │    │
+│  │  True Annual Cost: $319K                                │    │
+│  │  [36px, bold, #EA2C00]                                  │    │
+│  │                                                         │    │
+│  │  You see $260K on the budget. The real number is 23%    │    │
+│  │  higher when you account for turnover and overhead.     │    │
+│  │  [10.5px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      │    │
+│  │  │  $260K  │ │  33%    │ │  $6K    │ │  5:1    │      │    │
+│  │  │ direct  │ │coverage │ │ per     │ │provider │      │    │
+│  │  │ invest. │ │ 50/150  │ │provider¹│ │ ratio   │      │    │
+│  │  │         │ │         │ │[#EA2C00]│ │         │      │    │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘      │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  THE TRUE COST                                                  │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Every scribe program carries costs that don't appear on a      │
+│  budget line. Understanding them is essential.                   │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ Direct Salary                                $260K   │    │
+│  │  ┃ 10 scribes × $20/hr × 26 hrs/wk × 50 wks           │    │
+│  │  ┃ [10px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Turnover & Training                          $20K    │    │
+│  │  ┃ ~40% annual turnover → ~4 replacements/year          │    │
+│  │  ┃ 4 scribes × $5K training cost²                       │    │
+│  │  ┃ [10px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Management Overhead                          $39K    │    │
+│  │  ┃ Scheduling, supervision, QA, admin support           │    │
+│  │  ┃ $260K × 15%³                                         │    │
+│  │  ┃ [10px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ═════════════════════════════════════════════════════  │    │
+│  │                                                         │    │
+│  │  True Annual Investment                         $319K   │    │
+│  │  [bold, 14px]                            [bold, #EA2C00]│    │
+│  │                                                         │    │
+│  │  Hidden costs add 23% to your direct investment         │    │
+│  │  [10px, #999999]                                        │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  COVERAGE GAP                                                   │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background]                                   │    │
+│  │                                                         │    │
+│  │  ┌──────────────┬───────────────────────────────────┐   │    │
+│  │  │██████████████│░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│   │    │
+│  │  └──────────────┴───────────────────────────────────┘   │    │
+│  │  [#EA2C00: 33%]  [#E0E0E0: 67%]                        │    │
+│  │                                                         │    │
+│  │  100 providers (67%) document without any support.      │    │
+│  │  That's ~2,222 hours of unsupported documentation/year. │    │
+│  │  [10px, #666666]                                        │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ Scribes bring real value—relationships, institutional│    │
+│  │  ┃ knowledge, provider trust. This isn't about          │    │
+│  │  ┃ replacing what works. It's about understanding the   │    │
+│  │  ┃ full investment and where the opportunity lies.      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 10px]                        │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│  ¹ True cost per supported provider: $319K ÷ 50 = $6,380       │
+│  ² Industry average scribe turnover: 35-45%                     │
+│  ³ Industry benchmark for scribe program overhead               │
+│  [8.5px, #999999]                                               │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Scribe Program Analysis Page 1 of 4   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 2: THE SCALING PROBLEM (Economics + Comparison on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines old pages 3+part of 4. Shows the scaling math AND 
+introduces the alternative path.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  THE SCALING QUESTION                                           │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  What Full Coverage Actually Costs                              │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  Scribes scale linearly—no economies of scale. Here's what      │
+│  closing your coverage gap would require.                       │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  THE MATH                                                       │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ Full Scribe Coverage                     $780K/yr    │    │
+│  │  ┃ 150 providers ÷ 5:1 ratio = 30 scribes              │    │
+│  │  ┃ 30 × $26K/yr = $780K direct                         │    │
+│  │  ┃ + hidden costs (~23%) = $960K true cost              │    │
+│  │  ┃ [10px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Additional Investment Required           +$520K/yr   │    │
+│  │  ┃ Full coverage: $780K − Current: $260K                │    │
+│  │  ┃ Plus 20 additional scribes to hire and manage        │    │
+│  │  ┃ [10px, #666666]                                      │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background]                                   │    │
+│  │                                                         │    │
+│  │  COVERAGE COMPARISON                                    │    │
+│  │                                                         │    │
+│  │  Today (33%)                                    $260K   │    │
+│  │  ┌──────────────┬──────────────────────────────────┐    │    │
+│  │  │██████████████│                                  │    │    │
+│  │  └──────────────┴──────────────────────────────────┘    │    │
+│  │                                                         │    │
+│  │  Full Coverage (100%)                           $780K   │    │
+│  │  ┌────────────────────────────────────────────────┐     │    │
+│  │  │████████████████████████████████████████████████│     │    │
+│  │  └────────────────────────────────────────────────┘     │    │
+│  │  [#EA2C00 bars, proportional width]                     │    │
+│  │                                                         │    │
+│  │  3× your current investment for full coverage           │    │
+│  │  [12px, bold, #EA2C00, centered]                        │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  A DIFFERENT APPROACH                                           │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  The Per-Provider Comparison                                    │
+│  [14px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  SCRIBES                 │  │  ┃ AMBIENT AI              │   │
+│  │                          │  │  ┃                          │   │
+│  │  $6K                     │  │  ┃ ~$2.5K                   │   │
+│  │  [24px, bold, #1A1A1A]   │  │  ┃ [24px, bold, #EA2C00]  │   │
+│  │  per provider/year       │  │  ┃ per provider/year       │   │
+│  │                          │  │  ┃                          │   │
+│  │  33% coverage            │  │  ┃ 100% coverage           │   │
+│  │  Linear scaling          │  │  ┃ Flat per-provider cost  │   │
+│  │  40% annual turnover     │  │  ┃ No turnover impact      │   │
+│  │  Training ramp: 3-6 mo   │  │  ┃ Available day one       │   │
+│  │                          │  │  ┃                          │   │
+│  │  [10px, #666666]         │  │  ┃ [10px, #666666]         │   │
+│  │                          │  │  ┃                          │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [#F5F0EB bg]                  [white bg, #EA2C00 left border]  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ This isn't scribes vs. AI. Many organizations find   │    │
+│  │  ┃ that a thoughtful blend—retaining scribes where      │    │
+│  │  ┃ they add unique value, using AI for broader          │    │
+│  │  ┃ coverage—delivers the best outcomes.                 │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 10px]                        │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Scribe Program Analysis Page 2 of 4   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 3: WHAT WE'VE SEEN (Patterns + Transition on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+Compressed patterns plus transition guidance.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  WHAT WE'VE SEEN                                                │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Why Organizations Are Evolving                                 │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  Scribes deliver genuine value. But the model has structural    │
+│  limitations that become visible as organizations grow.         │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  FOUR PATTERNS                                                  │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ 1. Coverage Gaps Are Universal                       │    │
+│  │  ┃    No scribe program covers 100% of providers.       │    │
+│  │  ┃    This creates a two-tier experience—some get       │    │
+│  │  ┃    support, others don't.                            │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ 2. Turnover Erodes Quality                           │    │
+│  │  ┃    Each new scribe takes months to learn a           │    │
+│  │  ┃    provider's preferences and specialty nuances.     │    │
+│  │  ┃    That learning period = lost productivity.         │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ 3. Linear Costs Limit Growth                         │    │
+│  │  ┃    Doubling coverage means doubling costs—plus       │    │
+│  │  ┃    management overhead. No economies of scale.       │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ 4. Right Tool, Right Problem                         │    │
+│  │  ┃    Matching documentation approach to clinical       │    │
+│  │  ┃    setting. A thoughtful blend often delivers the    │    │
+│  │  ┃    best outcomes.                                    │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [Each: #EA2C00 left border, 10px body, bold title, compact]    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  THE TRANSITION QUESTION                                        │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  What Organizations That Transitioned Tell Us                   │
+│  [14px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  "Our scribes are great" │  │  "Providers won't accept   │   │
+│  │  [10px, bold]            │  │   AI notes"                │   │
+│  │                          │  │  [10px, bold]              │   │
+│  │  Many organizations      │  │                            │   │
+│  │  retain scribes in       │  │  Providers who've had      │   │
+│  │  high-complexity         │  │  good scribes are often    │   │
+│  │  settings while using    │  │  the most surprised by     │   │
+│  │  AI for broader          │  │  AI quality. The bar is    │   │
+│  │  coverage.               │  │  high—and being met.       │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  "We can't disrupt       │  │  "What about the scribes   │   │
+│  │   workflows"             │  │   themselves?"              │   │
+│  │  [10px, bold]            │  │  [10px, bold]              │   │
+│  │                          │  │                            │   │
+│  │  90-day guided           │  │  Many organizations        │   │
+│  │  onboarding is designed  │  │  transition scribes into   │   │
+│  │  for organizations       │  │  clinical support, MA, or  │   │
+│  │  with existing programs. │  │  documentation quality     │   │
+│  │  Phased rollout, not     │  │  roles. The skills         │   │
+│  │  a switch overnight.     │  │  transfer.                 │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [2×2 grid, #F5F0EB bg cards, 8px gaps]                         │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background, centered]                         │    │
+│  │                                                         │    │
+│  │  Average time from decision to full deployment: 90 days │    │
+│  │  [14px, bold, #EA2C00]                                  │    │
+│  │                                                         │    │
+│  │  Including phased rollout alongside existing scribe     │    │
+│  │  program.                                               │    │
+│  │  [9px, #666666]                                         │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Scribe Program Analysis Page 3 of 4   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 4: YOUR SUMMARY + METHODOLOGY (combined final page)
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR ANALYSIS                                                  │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background, generous padding]                 │    │
+│  │                                                         │    │
+│  │        150 providers.                                   │    │
+│  │        [18px, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │        10 scribes.                                      │    │
+│  │        [18px, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │        33% coverage.                                    │    │
+│  │        [24px, bold, #EA2C00]                             │    │
+│  │                                                         │    │
+│  │        100 providers document alone. Closing that gap    │    │
+│  │        with scribes would cost $520K more per year.     │    │
+│  │        [11px, #666666]                                  │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                      │    │
+│  │  ┃ Your scribe program has delivered real value. The    │    │
+│  │  ┃ question isn't whether scribes work—it's whether     │    │
+│  │  ┃ there's a more sustainable path to give every        │    │
+│  │  ┃ provider the documentation support they need.        │    │
+│  │  ┃                                                      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 11px]                        │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  AT A GLANCE                                                    │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌──────────────────────────────┬───────────────────────────┐   │
+│  │                              │                           │   │
+│  │ COST ANALYSIS                │ COVERAGE ANALYSIS         │   │
+│  │ ──────────────────────────── │ ─────────────────────── │   │
+│  │ Direct Salary       $260K    │ Current Coverage    33%   │   │
+│  │ Turnover & Training  $20K    │ Unsupported Providers 100 │   │
+│  │ Management Overhead  $39K    │ Unsupported Hours  2,222  │   │
+│  │ ──────────────────────────── │ ─────────────────────── │   │
+│  │ True Annual Cost    $319K    │ Cost to Reach 100% $780K │   │
+│  │ Per Provider         $6K     │ Additional Needed  +$520K │   │
+│  │                              │                           │   │
+│  │                              │ COMPARISON                │   │
+│  │                              │ Scribes: $6K/provider     │   │
+│  │                              │ Ambient AI: ~$2.5K/prov   │   │
+│  │                              │                           │   │
+│  └──────────────────────────────┴───────────────────────────┘   │
+│  [10px text, compact table, thin borders]                        │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  METHODOLOGY                                                    │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  YOUR INPUTS             │  │  ASSUMPTIONS               │   │
+│  │  [8.5px, ALL CAPS, #999] │  │  [8.5px, ALL CAPS, #999]  │   │
+│  │                          │  │                            │   │
+│  │  150 total providers     │  │  Turnover rate: 40%        │   │
+│  │  50 with scribe support  │  │  Training cost: $5K/scribe │   │
+│  │  10 scribes              │  │  Mgmt overhead: 15%        │   │
+│  │  $20/hr, 26 hrs/week    │  │  Doc time: 20 min/enc      │   │
+│  │  10,000 annual encounters│  │  Working weeks: 50/year    │   │
+│  │  5:1 provider ratio      │  │                            │   │
+│  │                          │  │                            │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [Side by side, #F5F0EB bg]                                     │
+│                                                                 │
+│  FORMULAS                                                       │
+│  [8.5px, ALL CAPS, #999]                                        │
+│                                                                 │
+│  Direct Cost = Scribes × Hourly × Weekly Hrs × 50 weeks         │
+│  Turnover Cost = Scribes × Turnover% × Training$/scribe         │
+│  Overhead = Direct Cost × 15%                                   │
+│  True Cost = Direct + Turnover + Overhead                       │
+│  Coverage = Supported Providers ÷ Total Providers               │
+│  Full Scale = Total Providers ÷ Ratio × Cost/Scribe             │
+│  [8.5px, monospace-style, #666666]                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  This analysis is for planning purposes. Hidden cost            │
+│  estimates use industry benchmarks. Results should be           │
+│  validated with your organization's specific data and           │
+│  operational context.                                           │
+│  [8.5px, #999999, italic]                                       │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Scribe Program Analysis Page 4 of 4   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+KEY CHANGES FROM CURRENT PDF
+═══════════════════════════════════════════════════════════════════════
+
+1. 5 content pages → 4 content pages
+2. Page 1 combines program overview + hidden costs (was 2 pages)
+3. Page 2 combines scaling math + per-provider comparison (was 1 
+   page of just scaling — now adds the AI comparison which is NEW)
+4. Page 3 combines patterns + transition objection handler (was 
+   1 page — now adds the 2×2 objection grid which is NEW)
+5. Page 4 combines story + dual summary table + methodology 
+   (was 2 pages)
+6. Per-provider comparison (Scribes $6K vs AI ~$2.5K) is NEW
+7. Transition objection handler (4 cards) is NEW to the PDF
+8. "90 days to full deployment" stat is NEW
+9. Dual summary table (Cost Analysis + Coverage Analysis) is NEW
+10. Same visual system as Measure + Ambient Assessment PDFs
+11. Respectful tone maintained — "not about replacing what works"
+12. True cost with hidden overhead emphasized throughout
+
+═══════════════════════════════════════════════════════════════════════
+TONE NOTES
+═══════════════════════════════════════════════════════════════════════
+
+This PDF must maintain respect for scribes throughout:
+- Never say scribes are bad or outdated
+- Frame as "understanding the full picture"
+- Position AI as complementary, not replacement
+- Use "evolving" not "replacing"
+- Acknowledge the human value scribes bring
+- The comparison should feel like math, not judgment
+
+═══════════════════════════════════════════════════════════════════════
+DYNAMIC FIELDS
+═══════════════════════════════════════════════════════════════════════
+
+- [Organization Name]
+- [Prepared By]  
+- [Date]
+- [Total Providers]
+- [Providers with Scribe Support]
+- [Number of Scribes]
+- [Scribe Hourly Rate]
+- [Scribe Weekly Hours]
+- [Annual Encounters]
+- [Provider to Scribe Ratio]
+- All calculated costs (direct, turnover, overhead, true total)
+- Coverage percentage
+- Full coverage cost
+- Per-provider economics
+- Coverage gap stats
