@@ -1,0 +1,548 @@
+REPLIT PROMPT:
+
+Rebuild the Ambient Assessment (Switch → Competitor) PDF export 
+to match the EXACT same format, density, typography, and style 
+as the Measure path PDF. Cover + 4 content pages. Same fonts, 
+same margins, same component styles.
+
+═══════════════════════════════════════════════════════════════════════
+GLOBAL — SAME AS MEASURE PDF
+═══════════════════════════════════════════════════════════════════════
+
+Pages: Cover + 4 content pages
+Size: Letter (8.5 × 11)
+Margins: 0.75 inch
+Font: Manrope
+
+Same color palette, same typography scale, same component styles 
+(stat cards, callout boxes, progress bars, footnotes, footer) 
+as the Measure PDF. Do not create new components — reuse the 
+exact same ones.
+
+FOOTER (every page):
+- Thin rule: #E0E0E0
+- Left: ABRIDGE in #EA2C00 (small, 10px)
+- Center: "[Organization Name] · Ambient Assessment"
+- Right: "Page X of 4" in 8.5px #999999
+
+═══════════════════════════════════════════════════════════════════════
+COVER PAGE — SAME STRUCTURE AS MEASURE
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ABRIDGE [logo, #EA2C00, top-left]                              │
+│                                                                 │
+│                                                                 │
+│  AMBIENT ASSESSMENT                                             │
+│  [9px, ALL CAPS, #666666, letter-spacing 3px]                   │
+│                                                                 │
+│  [Organization Name]                                            │
+│  [36px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ──────── [60px rule, #EA2C00, 2px thick]                       │
+│                                                                 │
+│  50 providers · 80,000 annual encounters · Outpatient           │
+│  [14px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  PREPARED BY                                                    │
+│  [9px, ALL CAPS, #999999]                                       │
+│  [Name] · [Date]                                                │
+│  [12px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  [Bottom-right: subtle curve graphic, #EA2C00 at 8% opacity]    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  This assessment is for planning purposes.                      │
+│  Calculations are based on inputs provided                      │
+│  and Abridge benchmark data.                                    │
+│  [8.5px, #999999]                                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 1: YOUR POSITION (Profile + Benchmarks on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines old pages 1+2. The score AND the benchmark detail 
+on a single dense page.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR POSITION                                                  │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background, full width]                       │    │
+│  │                                                         │    │
+│  │  50 providers. 80,000 annual encounters.                │    │
+│  │  [14px, #666666]                                        │    │
+│  │                                                         │    │
+│  │  Value Realization: 62%                                 │    │
+│  │  [36px, bold, #EA2C00]                                  │    │
+│  │                                                         │    │
+│  │  ┌────────────────────────────────┬─────────────────┐   │    │
+│  │  │████████████████████████████████│░░░░░░░░░░░░░░░░░│   │    │
+│  │  └────────────────────────────────┴─────────────────┘   │    │
+│  │  [#EA2C00: 62%]                   [#E0E0E0: 38%]       │    │
+│  │                                                         │    │
+│  │  You've invested in ambient AI. This assessment         │    │
+│  │  measures how that investment is performing against      │    │
+│  │  what mature implementations typically achieve.         │    │
+│  │  [10.5px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      │    │
+│  │  │  $88K   │ │  $7K    │ │  $246K  │ │  38%    │      │    │
+│  │  │ annual  │ │ monthly │ │ 3-year  │ │ room to │      │    │
+│  │  │ opport. │ │ opport. │ │ project.│ │ grow    │      │    │
+│  │  │[#EA2C00]│ │         │ │         │ │[#EA2C00]│      │    │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘      │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  YOUR FOUR DIMENSIONS                                           │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  How you compare to mature Abridge implementations.             │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Adoption                                59% of bench.  │    │
+│  │                                                         │    │
+│  │  ┌──────────────────────┐  ┌────────────────────────┐   │    │
+│  │  │  YOU                 │  │  ┃ ABRIDGE BENCHMARK    │   │    │
+│  │  │  45%                 │  │  ┃ 76%                  │   │    │
+│  │  │  [20px, bold]        │  │  ┃ [20px, bold, #EA2C00]│   │    │
+│  │  └──────────────────────┘  └────────────────────────┘   │    │
+│  │  [#F5F0EB bg]               [white, #EA2C00 left bdr]  │    │
+│  │                                                         │    │
+│  │  When adoption is below 60%, it typically reflects      │    │
+│  │  workflow friction—the tool isn't fitting naturally      │    │
+│  │  into how providers work.                               │    │
+│  │  [9px, #999999]                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Efficiency                              67% of bench.  │    │
+│  │                                                         │    │
+│  │  ┌──────────────────────┐  ┌────────────────────────┐   │    │
+│  │  │  YOU                 │  │  ┃ ABRIDGE BENCHMARK    │   │    │
+│  │  │  2 min               │  │  ┃ 3 min               │   │    │
+│  │  │  [20px, bold]        │  │  ┃ [20px, bold, #EA2C00]│   │    │
+│  │  └──────────────────────┘  └────────────────────────┘   │    │
+│  │                                                         │    │
+│  │  Lower savings often reflect editing time, integration  │    │
+│  │  gaps, or notes that don't match clinical style.        │    │
+│  │  [9px, #999999]                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Documentation Quality                   64% of bench.  │    │
+│  │                                                         │    │
+│  │  ┌──────────────────────┐  ┌────────────────────────┐   │    │
+│  │  │  YOU                 │  │  ┃ ABRIDGE BENCHMARK    │   │    │
+│  │  │  +3.5%              │  │  ┃ +5.5%               │   │    │
+│  │  │  [20px, bold]        │  │  ┃ [20px, bold, #EA2C00]│   │    │
+│  │  └──────────────────────┘  └────────────────────────┘   │    │
+│  │                                                         │    │
+│  │  Higher lift often indicates baseline documentation was │    │
+│  │  incomplete. In-range lift with strong docs is healthy. │    │
+│  │  [9px, #999999]                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  Provider Experience                     57% of bench.  │    │
+│  │                                                         │    │
+│  │  ┌──────────────────────┐  ┌────────────────────────┐   │    │
+│  │  │  YOU                 │  │  ┃ ABRIDGE BENCHMARK    │   │    │
+│  │  │  50%                 │  │  ┃ 88%                  │   │    │
+│  │  │  [20px, bold]        │  │  ┃ [20px, bold, #EA2C00]│   │    │
+│  │  └──────────────────────┘  └────────────────────────┘   │    │
+│  │                                                         │    │
+│  │  Experience is a leading indicator. Low scores predict   │    │
+│  │  declining adoption months before it shows in data.     │    │
+│  │  [9px, #999999]                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Ambient Assessment     Page 1 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+NOTE ON DENSITY: This page is intentionally packed. The four 
+benchmark cards use the SAME side-by-side component as the 
+Measure PDF's "Without/With Abridge" cards — just with 
+"YOU / ABRIDGE BENCHMARK" labels instead. Each card is compact: 
+~120px tall including the insight text. They stack vertically 
+with 8px gaps.
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 2: THE GAP (Opportunity + Math on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines old pages 3+4. The value story AND the transparent 
+math on one dense page.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR VALUE GAP                                                 │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  The Opportunity in Numbers                                     │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  The difference between your current performance and what       │
+│  mature implementations achieve—in encounters, hours, and       │
+│  dollars.                                                       │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background, centered]                         │    │
+│  │                                                         │    │
+│  │  ANNUAL VALUE OPPORTUNITY                               │    │
+│  │                                                         │    │
+│  │  $88K                     Per provider: ~$1.8K/year     │    │
+│  │  [36px, #EA2C00]          Per month: $7K                │    │
+│  │                           [10px, #666666]               │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  THE MATH                                                       │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Every number is transparent. Every assumption is stated.       │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ Adoption Gap                                 $47K    │    │
+│  │  ┃ 45% → 76% = 31 point gap                            │    │
+│  │  ┃                                                      │    │
+│  │  ┃ 80,000 × 31% = 24,800 encounters without AI         │    │
+│  │  ┃ 24,800 × 3 min × ($150/hr) × 25% conversion¹       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ = $46,500/year                                       │    │
+│  │  ┃ [10px, #EA2C00]                                      │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Efficiency Gap                               $23K    │    │
+│  │  ┃ 2 min → 3 min = 1.0 min gap                         │    │
+│  │  ┃                                                      │    │
+│  │  ┃ 60,800 encounters (at 76%) × 1 min = 1,013 hrs      │    │
+│  │  ┃ 1,013 × $150/hr × 25% conversion¹                   │    │
+│  │  ┃                                                      │    │
+│  │  ┃ = $22,793/year                                       │    │
+│  │  ┃ [10px, #EA2C00]                                      │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ Documentation Quality Gap                    $30K    │    │
+│  │  ┃ +3.5% → +5.5% = 2.0% gap                           │    │
+│  │  ┃                                                      │    │
+│  │  ┃ 1.5 wRVU × 60,800 encounters × 2.0% lift            │    │
+│  │  ┃ × $33/wRVU × 85% realization²                       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ = $30,297/year                                       │    │
+│  │  ┃ [10px, #EA2C00]                                      │    │
+│  │                                                         │    │
+│  │  ═════════════════════════════════════════════════════  │    │
+│  │                                                         │    │
+│  │  Total Annual Gap                               $88K    │    │
+│  │  [bold, 14px]                            [bold, #EA2C00]│    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  YOUR INPUTS             │  │  VALUE ASSUMPTIONS         │   │
+│  │  [8.5px, ALL CAPS, #999] │  │  [8.5px, ALL CAPS, #999]  │   │
+│  │                          │  │                            │   │
+│  │  50 providers            │  │  ¹ Provider cost: $150/hr  │   │
+│  │  80,000 encounters       │  │  ¹ Time conversion: 25%   │   │
+│  │  45% adoption            │  │  ² wRVU value: $33        │   │
+│  │  2 min saved             │  │  ² wRVU realization: 85%  │   │
+│  │  +3.5% wRVU lift         │  │                            │   │
+│  │  50% satisfaction        │  │  Benchmarks from 150+      │   │
+│  │                          │  │  Abridge health systems    │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [Side by side cards, #F5F0EB bg]                               │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Ambient Assessment     Page 2 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 3: WHAT DRIVES PERFORMANCE (Patterns + Switching on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines old pages 5+6. The patterns are compressed to a tight 
+format, and the switching objection handler is added.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  WHAT DRIVES PERFORMANCE                                        │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  What We've Seen Work                                           │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  Across hundreds of implementations, these patterns             │
+│  consistently separate high performers from the rest.           │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  FOUR PATTERNS                                                  │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ 1. Adoption Is a Human Challenge                     │    │
+│  │  ┃    Change management isn't a phase—it's ongoing.     │    │
+│  │  ┃    Dedicated onboarding, feedback loops, and         │    │
+│  │  ┃    continuous improvement resources matter.          │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ 2. Continuous Optimization                           │    │
+│  │  ┃    Set-it-and-forget-it doesn't work. Mature         │    │
+│  │  ┃    implementations review performance regularly      │    │
+│  │  ┃    and adjust.                                       │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ 3. Deep Customization                                │    │
+│  │  ┃    Generic configurations miss specialty nuances.    │    │
+│  │  ┃    Specialty-specific workflows drive meaningfully   │    │
+│  │  ┃    higher adoption and satisfaction.                 │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ 4. Executive Visibility                              │    │
+│  │  ┃    When leadership tracks ambient AI as strategic—   │    │
+│  │  ┃    not just an IT project—resources follow.          │    │
+│  │  ┃    Sponsorship correlates with sustained adoption.   │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [Each pattern: #EA2C00 left border, 10px body text,            │
+│   bold title, 2-line description. Compact.]                     │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  THE SWITCHING QUESTION                                         │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  What Organizations That Switched Tell Us                       │
+│  [14px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  "We just implemented"   │  │  "Change fatigue"          │   │
+│  │  [10px, bold]            │  │  [10px, bold]              │   │
+│  │                          │  │                            │   │
+│  │  The ROI gap often       │  │  Providers who've used     │   │
+│  │  exceeds switching       │  │  AI before adopt 40%       │   │
+│  │  costs within 6 months.  │  │  faster. They know what    │   │
+│  │  Sunk cost ≠ future      │  │  "good" looks like.        │   │
+│  │  value.                  │  │                            │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  "Contract lock-in"      │  │  "IT bandwidth"            │   │
+│  │  [10px, bold]            │  │  [10px, bold]              │   │
+│  │                          │  │                            │   │
+│  │  Most contracts have     │  │  Our team handles 80%      │   │
+│  │  exit clauses. We can    │  │  of technical lift.        │   │
+│  │  help navigate the       │  │  Avg IT burden: 40 hours   │   │
+│  │  transition.             │  │  total.                    │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [2×2 grid, #F5F0EB bg cards, tight 8px gaps]                   │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background, centered]                         │    │
+│  │                                                         │    │
+│  │  Average time from decision to go-live: 45 days         │    │
+│  │  [14px, bold, #EA2C00]                                  │    │
+│  │                                                         │    │
+│  │  Including data migration, EHR integration, provider    │    │
+│  │  training, and go-live support.                         │    │
+│  │  [9px, #666666]                                         │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Ambient Assessment     Page 3 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 4: YOUR SUMMARY + METHODOLOGY (combined final page)
+═══════════════════════════════════════════════════════════════════════
+
+Same structure as Measure PDF page 4. Story close + methodology.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR ASSESSMENT                                                │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background, generous padding]                 │    │
+│  │                                                         │    │
+│  │        50 providers.                                    │    │
+│  │        [18px, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │        80,000 encounters.                               │    │
+│  │        [18px, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │        62% of potential realized.                       │    │
+│  │        [24px, bold, #EA2C00]                             │    │
+│  │                                                         │    │
+│  │        $88K in annual value ahead—$7K for every          │    │
+│  │        month you wait.                                  │    │
+│  │        [11px, #666666]                                  │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                      │    │
+│  │  ┃ The gap isn't about technology failing—it's about    │    │
+│  │  ┃ technology not being fully supported. The patterns   │    │
+│  │  ┃ that close this gap are specific and addressable.    │    │
+│  │  ┃ The question is whether the right partnership is     │    │
+│  │  ┃ in place to make it happen.                          │    │
+│  │  ┃                                                      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 11px]                        │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  AT A GLANCE                                                    │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌──────────────────────────────┬───────────────────────────┐   │
+│  │ DIMENSION        YOU  BENCH. │ GAP                       │   │
+│  │ ─────────────────────────── │ ─────────────────────────  │   │
+│  │ Adoption         45%   76%  │ $47K  (24,800 encounters) │   │
+│  │ Efficiency       2 min 3 min│ $23K  (1,013 hours)       │   │
+│  │ Quality          +3.5% +5.5%│ $30K  (wRVU capture)      │   │
+│  │ Experience       50%   88%  │ Leading indicator          │   │
+│  │ ─────────────────────────── │ ─────────────────────────  │   │
+│  │ Total                       │ $88K / year               │   │
+│  │                             │ [#EA2C00, bold]            │   │
+│  └──────────────────────────────┴───────────────────────────┘   │
+│  [10px text, compact table, thin borders]                        │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  METHODOLOGY                                                    │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  YOUR INPUTS             │  │  VALUE MODEL               │   │
+│  │  [8.5px, ALL CAPS, #999] │  │  [8.5px, ALL CAPS, #999]  │   │
+│  │                          │  │                            │   │
+│  │  50 providers            │  │  Provider rate: $150/hr    │   │
+│  │  80,000 encounters       │  │  wRVU value: $33           │   │
+│  │  45% adoption            │  │  Time conversion: 25%      │   │
+│  │  2 min saved/encounter   │  │  wRVU realization: 85%     │   │
+│  │  +3.5% wRVU lift         │  │                            │   │
+│  │  50% satisfaction        │  │  Benchmarks: 150+ health   │   │
+│  │  7 hrs/wk after-hours    │  │  systems on Abridge        │   │
+│  │                          │  │                            │   │
+│  │  [9px, #666666]          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [Side by side, #F5F0EB bg]                                     │
+│                                                                 │
+│  FORMULAS                                                       │
+│  [8.5px, ALL CAPS, #999]                                        │
+│                                                                 │
+│  Adoption Gap = Encounters × (Bench% − Your%) × BenchTime      │
+│                 × $/hr × Conversion                             │
+│  Efficiency Gap = EncountersAtBench × TimeGap × $/hr × Conv    │
+│  Quality Gap = BaseWRVU × EncAtBench × LiftGap × $wRVU × Real  │
+│  Score = avg(Your/Bench) across 4 dimensions                    │
+│  [8.5px, monospace-style, #666666]                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  This assessment is for planning purposes. Benchmarks reflect   │
+│  Abridge customer data. Individual results vary based on        │
+│  implementation quality, specialty mix, and organizational      │
+│  factors.                                                       │
+│  [8.5px, #999999, italic]                                       │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org Name] · Ambient Assessment     Page 4 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+KEY CHANGES FROM CURRENT PDF
+═══════════════════════════════════════════════════════════════════════
+
+1. 6 content pages → 4 content pages
+2. Page 1 combines profile + all 4 benchmarks (was 2 pages)
+3. Page 2 combines opportunity + full math (was 2 pages)  
+4. Page 3 combines patterns + switching handler (was 1 page
+   of patterns — now denser + adds switching content)
+5. Page 4 combines story close + summary table + methodology 
+   (was 2 pages)
+6. Per-provider economics added ($1.8K/provider/year)
+7. Switching objection handler is NEW to the PDF
+8. "45 days to go-live" is NEW to the PDF
+9. Summary table shows dimensions + gaps + dollar values 
+   in one compact view
+10. Same visual system as Measure PDF — reuse all components
+11. Fix cover page typos: "Perormance" → "Performance"
+    and "Opporunity" → "Opportunity"
+
+═══════════════════════════════════════════════════════════════════════
+DYNAMIC FIELDS
+═══════════════════════════════════════════════════════════════════════
+
+- [Organization Name]
+- [Prepared By]
+- [Date]
+- [Providers]
+- [Annual Encounters]
+- [Care Setting]
+- [Adoption %] and benchmark
+- [Time Saved] and benchmark  
+- [wRVU Lift %] and benchmark
+- [Satisfaction %] and benchmark
+- [After-Hours hrs/wk]
+- [Edit Time] (if entered)
+- All calculated gaps and totals
+- Value Realization Score
+- Score label (Early Progress / Developing / etc.)
+- Per-provider economics
+- Monthly opportunity cost
+- 3-year projection
