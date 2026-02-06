@@ -681,7 +681,7 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
 
           <View style={styles.divider} />
 
-          <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5, fontStyle: "italic" }}>
+          <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
             This analysis is for planning purposes. Hidden cost estimates use industry benchmarks. Results should be validated with your organization's specific data and operational context.
           </Text>
 

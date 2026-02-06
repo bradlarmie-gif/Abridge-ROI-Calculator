@@ -532,11 +532,11 @@ export default function ExploreModel({
         title: "PDF Downloaded",
         description: "Your ROI model has been saved.",
       });
-    } catch (error) {
-      console.error("PDF generation error:", error);
+    } catch (error: any) {
+      console.error("PDF generation error:", error?.message || error?.toString?.() || JSON.stringify(error), error);
       toast({
         title: "Export Failed",
-        description: "Unable to generate PDF. Please try again.",
+        description: error?.message || "Unable to generate PDF. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -714,7 +714,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
           </View>
 
           <View style={[styles.calloutBox, { marginBottom: 10 }]}>
-            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6, fontStyle: "italic" }}>
+            <Text style={{ fontSize: 10, color: colors.secondary, lineHeight: 1.6 }}>
               {config.closingInsight}
             </Text>
           </View>
@@ -843,7 +843,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
 
           <View style={styles.divider} />
 
-          <Text style={{ fontSize: 8.5, color: colors.tertiary, fontStyle: "italic", lineHeight: 1.5 }}>
+          <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
             This assessment is for planning purposes. Realization rates are conservative and based on observed implementations. The goal is a framework for decisions, not a prediction. Validate with your organization{"\u2019"}s data post-implementation.
           </Text>
 
