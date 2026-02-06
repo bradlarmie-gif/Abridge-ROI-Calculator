@@ -1,0 +1,518 @@
+REPLIT PROMPT:
+
+Redesign the data entry page for the Measure path to handle 
+multiple care settings and make the edit/done flow clearer.
+
+═══════════════════════════════════════════════════════════════
+PROBLEM 1: CARE SETTING SELECTOR NEEDS TO BE PROMINENT
+═══════════════════════════════════════════════════════════════
+
+The care setting dropdown buried in the form is wrong. When 
+someone switches from Outpatient to Nursing, the ENTIRE set 
+of metrics changes. This needs to be a first-class choice 
+that happens BEFORE the form, not inside it.
+
+SOLUTION: Care setting tabs at the top of the form area.
+
+STRUCTURE:
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  Your Journey with Abridge                                  │
+│  Enter your partner's deployment data and metrics.          │
+│                                                             │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐   │
+│  │Outpatient │ │ Emergency │ │ Inpatient │ │  Nursing  │   │
+│  │  ●        │ │           │ │           │ │           │   │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────┘   │
+│  [tab bar — selected tab has red-orange bottom border       │
+│   and red dot, unselected tabs are gray text]               │
+│                                                             │
+│  ── form content changes based on selected tab ──           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+TAB STYLING:
+- Unselected: #999999 text, no border
+- Selected: #1A1A1A text, 3px bottom border #EA2C00
+- Hover: #666666 text
+- Each tab shows a small dot if data has been entered
+  (red-orange dot = has data, no dot = empty)
+- Tabs sit flush with the form card below
+
+WHEN A TAB IS SELECTED:
+- The Partner Profile section stays the same 
+  (org name, providers, months, etc.)
+- The metrics sections below change completely 
+  based on the care setting
+- Form state is preserved per tab (switching between 
+  tabs doesn't lose data)
+
+═══════════════════════════════════════════════════════════════
+PROBLEM 2: METRICS NEED TO BE SETTING-SPECIFIC
+═══════════════════════════════════════════════════════════════
+
+Each care setting needs its own set of before/after metrics.
+Define them as configurations:
+
+OUTPATIENT METRICS:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIME & EFFICIENCY              BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  Time in Notes (min)            [___]     [___]         │
+│  Same-Day Closure (%)           [___]     [___]         │
+│  Days to Close                  [___]     [___]         │
+│  After-Hours (hrs/day)          [___]     [___]         │
+│                                                         │
+│  DOCUMENTATION QUALITY          BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  wRVU per Encounter             [___]     [___]         │
+│  E/M Level (optional)           [___]     [___]         │
+│                                                         │
+│  VALUE MODEL                                            │
+│  Provider hourly rate           [$150]                   │
+│  Visit duration (min)           [30]                     │
+│  Revenue per visit              [$200]                   │
+│  wRVU value                     [$33]                    │
+│  Attribution range              [50-75] %                │
+│  Allocation: Savings [50] Capacity [20] Wellbeing [30]  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+EMERGENCY METRICS:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIME & EFFICIENCY              BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  Time in Notes (min)            [___]     [___]         │
+│  Door-to-Doc (min)              [___]     [___]         │
+│  LWBS Rate (%)                  [___]     [___]         │
+│  After-Hours (hrs/day)          [___]     [___]         │
+│                                                         │
+│  DOCUMENTATION QUALITY          BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  E/M Level                      [___]     [___]         │
+│  Admission Capture (%)          [___]     [___]         │
+│                                                         │
+│  VALUE MODEL                                            │
+│  Provider hourly rate           [$175]                   │
+│  Avg ED visit revenue           [$450]                   │
+│  LWBS revenue recovery          [$350]                   │
+│  Attribution range              [50-75] %                │
+│  Allocation: Savings [40] Throughput [40] Wellbeing [20] │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+INPATIENT METRICS:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  DOCUMENTATION QUALITY          BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  CMI                            [___]     [___]         │
+│  CC/MCC Capture Rate (%)        [___]     [___]         │
+│  CDI Query Response Time (hrs)  [___]     [___]         │
+│  Denial Rate (%)                [___]     [___]         │
+│                                                         │
+│  TIME & EFFICIENCY              BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  Time in Notes (min)            [___]     [___]         │
+│  Same-Day Closure (%)           [___]     [___]         │
+│  After-Hours (hrs/day)          [___]     [___]         │
+│                                                         │
+│  VALUE MODEL                                            │
+│  Avg DRG weight increase        [0.4]                    │
+│  Base DRG payment               [$6,500]                 │
+│  Annual discharges              [___]                    │
+│  Denial value per claim         [$200]                   │
+│  Attribution range              [50-75] %                │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+NURSING METRICS:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  DEPLOYMENT (different from others)                      │
+│                                                         │
+│  Staffed Beds                   [___]                    │
+│  Nurse FTEs                     [___]                    │
+│  Bed Occupancy (%)              [___]                    │
+│                                                         │
+│  TIME & EFFICIENCY              BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  Time in Charting (min/shift)   [___]     [___]         │
+│  Overtime Hours/Week            [___]     [___]         │
+│  After-Shift Charting (min)     [___]     [___]         │
+│                                                         │
+│  QUALITY & RETENTION                                    │
+│                                                         │
+│  Turnover Rate (%)              [___]     [___]         │
+│  Falls Rate (per 1,000)         [___]     [___]         │
+│  HAPI Rate (per 1,000)          [___]     [___]         │
+│  Nurse Satisfaction (%)         [___]     [___]         │
+│                                                         │
+│  VALUE MODEL                                            │
+│  OT hourly rate                 [$75]                    │
+│  OT conversion rate             [25] %                   │
+│  Replacement cost per nurse     [$52,000]                │
+│  Retention impact               [15] %                   │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+Each care setting config should be its own data structure 
+in the code so adding new metrics later is easy.
+
+═══════════════════════════════════════════════════════════════
+PROBLEM 3: EDIT/DONE FLOW IS UNCLEAR
+═══════════════════════════════════════════════════════════════
+
+Current: "Editing Data" on the left, "× Done" on the right 
+in small gray text. This is easy to miss and the states 
+aren't clear.
+
+SOLUTION: Replace with a clear two-state design.
+
+STATE 1: EDITING (when entering data)
+
+The form is open and active. At the bottom of the form, 
+a prominent button:
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  [all form fields active and editable]                  │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  REQUIRED FIELDS:                                       │
+│  ● Organization Name                                    │
+│  ● Providers on Abridge                                 │
+│  ● Total Encounters                                     │
+│  ● Utilization Rate                                     │
+│  ● At least ONE before/after metric pair                │
+│                                                         │
+│  VALIDATION:                                            │
+│  If required fields missing, button stays disabled:     │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  Complete required fields to continue            │    │
+│  │  [gray background, #999 text, disabled]          │    │
+│  └─────────────────────────────────────────────────┘    │
+│                                                         │
+│  When all required fields filled:                       │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  Save & Preview  →                               │    │
+│  │  [#EA2C00 background, white text]                │    │
+│  └─────────────────────────────────────────────────┘    │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  Below the button, small text:                          │
+│  "You can edit this data anytime from the summary page" │
+│  [10px, #999999]                                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+STATE 2: PREVIEW (after clicking Save & Preview)
+
+The form collapses into the clean presentation view 
+(the one the partner sees):
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Your Journey with Abridge                              │
+│                                                         │
+│  [Org Name] · 80 providers · 6 months                   │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  [clean deployment stats]                         │  │
+│  │  [clean before/after table]                       │  │
+│  │  [the presentation view from before]              │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  See What Changed  →                             │    │
+│  │  [#EA2C00 background, white text]                │    │
+│  └─────────────────────────────────────────────────┘    │
+│                                                         │
+│  [small text link below button:]                        │
+│  "✏️ Edit data"                                         │
+│  [12px, #EA2C00, clicking returns to edit state]        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+KEY: "See What Changed" button ONLY appears in preview 
+state. You CANNOT proceed without saving first.
+
+═══════════════════════════════════════════════════════════════
+PROBLEM 4: FORM SECTIONS SHOULD BE COLLAPSIBLE
+═══════════════════════════════════════════════════════════════
+
+When the form is long (especially Nursing with extra fields), 
+use collapsible sections so it doesn't feel overwhelming.
+
+STRUCTURE:
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  PARTNER PROFILE                           ✓ Complete   │
+│  [always expanded, can't collapse]                      │
+│                                                         │
+│  [org name, care setting tabs, providers, etc.]         │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  TIME & EFFICIENCY                          ∨ Expand    │
+│  [collapsed by default after Profile is filled]         │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  DOCUMENTATION QUALITY                      ∨ Expand    │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  VALUE MODEL                                ∨ Expand    │
+│  Pre-filled with defaults                               │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+SECTION STATES:
+
+Empty: 
+- Header: "#999999 text"
+- Right side: "∨ Expand" in gray
+- No indicator
+
+In Progress:
+- Header: "#1A1A1A text"  
+- Right side: "∧ Collapse"
+- Small orange dot
+
+Complete:
+- Header: "#1A1A1A text"
+- Right side: "✓ Complete" in #EA2C00
+- Can still expand to edit
+
+EXPAND/COLLAPSE:
+- Click anywhere on the section header to toggle
+- Smooth animation (200ms ease)
+- Only one section open at a time (accordion style)
+  OR all can be open (your preference — I'd do accordion 
+  for mobile, all-open for desktop)
+
+═══════════════════════════════════════════════════════════════
+IMPLEMENTATION APPROACH
+═══════════════════════════════════════════════════════════════
+
+CODE STRUCTURE:
+
+Create a care setting configuration object:
+
+const CARE_SETTINGS = {
+  outpatient: {
+    label: "Outpatient",
+    deploymentFields: [
+      { key: "providers", label: "Providers on Abridge", required: true },
+      { key: "totalProviders", label: "Total Providers" },
+      { key: "months", label: "Months on Abridge", required: true },
+      { key: "encounters", label: "Total Encounters", required: true },
+      { key: "utilization", label: "Utilization Rate", suffix: "%", required: true }
+    ],
+    metricSections: [
+      {
+        key: "timeEfficiency",
+        label: "Time & Efficiency",
+        metrics: [
+          { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
+          { key: "sameDayClosure", label: "Same-Day Closure (%)", hasBeforeAfter: true },
+          { key: "daysToClose", label: "Days to Close", hasBeforeAfter: true },
+          { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true }
+        ]
+      },
+      {
+        key: "docQuality",
+        label: "Documentation Quality",
+        metrics: [
+          { key: "wrvuPerEncounter", label: "wRVU per Encounter", hasBeforeAfter: true },
+          { key: "emLevel", label: "E/M Level", hasBeforeAfter: true, optional: true }
+        ]
+      }
+    ],
+    valueModel: [
+      { key: "hourlyRate", label: "Provider hourly rate", default: 150, prefix: "$" },
+      { key: "visitDuration", label: "Visit duration (min)", default: 30 },
+      { key: "revenuePerVisit", label: "Revenue per visit", default: 200, prefix: "$" },
+      { key: "wrvuValue", label: "wRVU value", default: 33, prefix: "$" },
+      { key: "attributionLow", label: "Attribution low", default: 50, suffix: "%" },
+      { key: "attributionHigh", label: "Attribution high", default: 75, suffix: "%" },
+      { key: "allocSavings", label: "Operational savings", default: 50, suffix: "%" },
+      { key: "allocCapacity", label: "Patient capacity", default: 20, suffix: "%" },
+      { key: "allocWellbeing", label: "Provider wellbeing", default: 30, suffix: "%" }
+    ]
+  },
+  
+  emergency: {
+    label: "Emergency",
+    deploymentFields: [...],
+    metricSections: [...],
+    valueModel: [...]
+  },
+  
+  inpatient: {
+    label: "Inpatient",
+    deploymentFields: [...],
+    metricSections: [...],
+    valueModel: [...]
+  },
+  
+  nursing: {
+    label: "Nursing",
+    deploymentFields: [
+      // Different from others — beds instead of providers
+      { key: "staffedBeds", label: "Staffed Beds", required: true },
+      { key: "nurseFTEs", label: "Nurse FTEs", required: true },
+      { key: "occupancy", label: "Bed Occupancy", suffix: "%", required: true },
+      { key: "months", label: "Months on Abridge", required: true }
+    ],
+    metricSections: [...],
+    valueModel: [...]
+  }
+}
+
+This way:
+- Adding a new care setting = adding a new config object
+- Changing metrics = updating the config
+- The form component reads the config and renders dynamically
+- No hardcoded field layouts
+
+═══════════════════════════════════════════════════════════════
+FULL PAGE LAYOUT
+═══════════════════════════════════════════════════════════════
+
+EDIT STATE:
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  ABRIDGE    ← Back     Measure · Your Data     ● ○ ○ ○ ○   │
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  Your Journey with Abridge                                  │
+│  [24px, bold]                                               │
+│                                                             │
+│  Enter your partner's deployment data and metrics.          │
+│  [14px, #666666]                                            │
+│                                                             │
+│  ┌───────────┬───────────┬───────────┬───────────┐          │
+│  │Outpatient │ Emergency │ Inpatient │  Nursing  │          │
+│  │ ━━━━━━━━━ │           │           │           │          │
+│  └───────────┴───────────┴───────────┴───────────┘          │
+│  [red-orange underline on selected tab]                     │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                                                     │    │
+│  │  PARTNER PROFILE                        ✓ Complete  │    │
+│  │  ─────────────────────────────────────────────────  │    │
+│  │                                                     │    │
+│  │  Organization Name  [Valley Health System        ]  │    │
+│  │                                                     │    │
+│  │  Providers on Abridge  [80]    Total Providers [250]│    │
+│  │  Months on Abridge     [6]     Total Encounters [47k]│   │
+│  │  Utilization Rate      [72] %                       │    │
+│  │                                                     │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                                                     │    │
+│  │  TIME & EFFICIENCY                      ● In Progress│   │
+│  │  ─────────────────────────────────────────────────  │    │
+│  │                                                     │    │
+│  │               BEFORE        WITH ABRIDGE            │    │
+│  │                                                     │    │
+│  │  Time in Notes  [12] min     [4] min                │    │
+│  │  Same-Day       [41] %       [78] %                 │    │
+│  │  Days to Close  [4.2]        [1.1]                  │    │
+│  │  After-Hours    [2.1] hrs    [0.4] hrs              │    │
+│  │                                                     │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  DOCUMENTATION QUALITY                  ∨ Expand    │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  VALUE MODEL                            ∨ Expand    │    │
+│  │  Defaults loaded · Edit to customize                │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  Save & Preview  →                                   │    │
+│  │  [#EA2C00, white text, full width max 480px]         │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  You can edit this data anytime from the summary page.      │
+│  [10px, #999999, centered]                                  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+
+PREVIEW STATE (after Save & Preview):
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  ABRIDGE    ← Back     Measure · Your Data     ● ○ ○ ○ ○   │
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  Your Journey with Abridge                                  │
+│  [24px, bold]                                               │
+│                                                             │
+│  Valley Health System · 80 providers · 6 months             │
+│  [14px, #666666]                                            │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background]                               │    │
+│  │                                                     │    │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │    │
+│  │  │  80     │ │  47,000 │ │  72%    │ │  6 mo   │  │    │
+│  │  │providers│ │encounters│ │adoption │ │  live   │  │    │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘  │    │
+│  │                                                     │    │
+│  │  80 of 250 total providers are on Abridge today.    │    │
+│  │  [10px, #999999]                                    │    │
+│  │                                                     │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                                                     │    │
+│  │  WHAT WE MEASURED                                   │    │
+│  │                                                     │    │
+│  │                       BEFORE     WITH ABRIDGE       │    │
+│  │  ─────────────────────────────────────────────────  │    │
+│  │  TIME & EFFICIENCY                                  │    │
+│  │  Time in notes        12 min     4 min              │    │
+│  │  Same-day closure     41%        78%                │    │
+│  │  Days to close        4.2        1.1                │    │
+│  │  After-hours          2.1 hrs    0.4 hrs            │    │
+│  │  ─────────────────────────────────────────────────  │    │
+│  │  DOCUMENTATION QUALITY                              │    │
+│  │  wRVU per encounter   2.10       2.30               │    │
+│  │                                                     │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  See What Changed  →                                 │    │
+│  │  [#EA2C00, white text]                               │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  ✏️ Edit data                                               │
+│  [12px, #EA2C00, centered, clickable]                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
