@@ -1,0 +1,1343 @@
+═══════════════════════════════════════════════════════════════════════════════════
+COLOR PALETTE (Brand-Aligned)
+═══════════════════════════════════════════════════════════════════════════════════
+
+PRIMARY:
+- Background: #FFFFFF (white)
+- Card backgrounds: #F5F0EB (warm beige)
+- Dark sections: #1A1A1A (near black)
+
+ACCENT:
+- Primary accent: #EA2C00 (Abridge red-orange)
+- Accent light: #FFEBE6 (light red-orange for gap backgrounds)
+
+STATUS COLORS (replacing green):
+- In Range: #E8E8E8 (light gray background) with #333333 text
+- Gap/Opportunity: #FFEBE6 (light red-orange) with #EA2C00 text
+- Benchmark range: #E0E0E0 (gray band on sliders)
+- Your position dot: #EA2C00 (red-orange)
+
+TEXT:
+- Primary: #1A1A1A
+- Secondary: #666666
+- Tertiary: #999999
+
+═══════════════════════════════════════════════════════════════════════════════════
+TYPOGRAPHY
+═══════════════════════════════════════════════════════════════════════════════════
+
+- Font: Manrope
+- Page headlines: 32px, bold, #1A1A1A
+- Section labels: 11px, ALL CAPS, #666666, letter-spacing 1.5px
+- Card headlines: 16px, semibold, #1A1A1A
+- Body text: 14px, regular, #333333
+- Helper text: 12px, regular, #666666
+- Large numbers: 48-72px, bold
+- Metric values: 24-32px, bold
+
+═══════════════════════════════════════════════════════════════════════════════════
+BENCHMARK VALUES (Abridge Data)
+═══════════════════════════════════════════════════════════════════════════════════
+
+| Metric              | Range      | Target | Unit           |
+|---------------------|------------|--------|----------------|
+| Utilization         | 70-80%     | 76%    | % of encounters|
+| Time Saved          | 3-5 min    | 4 min  | per encounter  |
+| wRVU Lift           | 4-7%       | 5.5%   | % improvement  |
+| Provider Satisfaction| 80-95%    | 88%    | would recommend|
+| After-Hours Charting| 1-3 hrs    | 2 hrs  | per week       |
+
+═══════════════════════════════════════════════════════════════════════════════════
+NAVIGATION
+═══════════════════════════════════════════════════════════════════════════════════
+
+Flow: Switch · [Page Name]
+Progress: 6 dots (● filled, ○ empty)
+
+Pages:
+1. Where You Are
+2. The Gap
+3. What Good Looks Like
+4. The Math
+5. What It Takes
+6. The Opportunity
+
+PAGE 1: WHERE YOU ARE
+CopyPAGE 1: WHERE YOU ARE
+
+═══════════════════════════════════════════════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Switch · Where You Are
+Progress: ● ○ ○ ○ ○ ○
+
+═══════════════════════════════════════════════════════════════════════════════════
+CONTENT
+═══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+Where You Are
+
+SUBHEAD:
+You invested in ambient AI. Let's measure what you're getting back.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: YOUR ORGANIZATION
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR ORGANIZATION                                                              │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │ Providers using ambient AI      │  │ Annual encounters                   │   │
+│  │                                 │  │                                     │   │
+│  │ ┌─────────────────────────────┐ │  │ ┌─────────────────────────────────┐ │   │
+│  │ │                          40 │ │  │ │                         100,000 │ │   │
+│  │ └─────────────────────────────┘ │  │ └─────────────────────────────────┘ │   │
+│  │                                 │  │                                     │   │
+│  │ Physicians, APPs, or other      │  │ Total visits where AI could be      │   │
+│  │ clinicians with AI access       │  │ used for documentation              │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: YOUR CURRENT PERFORMANCE
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR CURRENT PERFORMANCE                                                       │
+│  The more accurate you are, the clearer the picture.                            │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐  ┌─────────────────────────────────┐   │
+│  │                                     │  │                                 │   │
+│  │  [icon] Utilization                 │  │  [icon] Time Saved              │   │
+│  │         % of encounters documented  │  │         Minutes saved/encounter │   │
+│  │                                     │  │                                 │   │
+│  │  ○────────────●─────────────────○   │  │  ○────●───────────────────────○ │   │
+│  │  0%          45%              100%  │  │  0    2.5                    6  │   │
+│  │              ┌────┐                 │  │       ┌─────┐                   │   │
+│  │              │ 45 │ %               │  │       │ 2.5 │ min               │   │
+│  │              └────┘                 │  │       └─────┘                   │   │
+│  │                                     │  │                                 │   │
+│  │  ┌─────────────────────────────┐    │  │  ┌─────────────────────────┐    │   │
+│  │  │ Abridge Benchmark: 76%      │    │  │  │ Abridge Benchmark: 4 min│    │   │
+│  │  └─────────────────────────────┘    │  │  └─────────────────────────┘    │   │
+│  │  [gray background, 12px]            │  │  [gray background, 12px]        │   │
+│  │                                     │  │                                 │   │
+│  └─────────────────────────────────────┘  └─────────────────────────────────┘   │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐  ┌─────────────────────────────────┐   │
+│  │                                     │  │                                 │   │
+│  │  [icon] Documentation Quality       │  │  [icon] Provider Satisfaction   │   │
+│  │         wRVU lift from AI           │  │         Would recommend AI?     │   │
+│  │                                     │  │                                 │   │
+│  │  ○──────────●───────────────────○   │  │  ○────────●─────────────────○   │   │
+│  │  0%         +4%               +12%  │  │  0%      60%             100%   │   │
+│  │         ┌───────┐                   │  │          ┌────┐                 │   │
+│  │       + │   4   │ %                 │  │          │ 60 │ %               │   │
+│  │         └───────┘                   │  │          └────┘                 │   │
+│  │                                     │  │                                 │   │
+│  │  ┌─────────────────────────────┐    │  │  ┌─────────────────────────┐    │   │
+│  │  │ Abridge Benchmark: +5.5%    │    │  │  │ Abridge Benchmark: 88%  │    │   │
+│  │  └─────────────────────────────┘    │  │  └─────────────────────────┘    │   │
+│  │                                     │  │                                 │   │
+│  └─────────────────────────────────────┘  └─────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: AFTER-HOURS DOCUMENTATION
+Card (DARK background #1A1A1A):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [moon icon]  After-Hours Documentation                                         │
+│               Hours per week charting at home                                   │
+│                                                                                 │
+│  ○─────────────────────●────────────────────────────────────○   ┌─────┐        │
+│  0                     7                                   15   │  7  │ hrs/wk  │
+│                                                                 └─────┘        │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  That's 14,560 hours/year across your providers.                                │
+│  [calculated: 7 hrs × 40 providers × 52 weeks]                                  │
+│                                                                                 │
+│  Abridge average: 2 hrs/week (4,160 hours/year for your team)                   │
+│  [12px, gray]                                                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+TOOLTIP CONTENT (on hover for each metric):
+
+UTILIZATION:
+"What percentage of eligible encounters are being documented with AI?
+Low utilization usually means workflow friction, not technology failure."
+
+TIME SAVED:
+"How many minutes of documentation time does AI save per encounter?
+This should be measured against pre-AI baseline, not against competitors."
+
+DOCUMENTATION QUALITY:
+"What wRVU lift are you seeing from improved documentation?
+Better notes capture complexity more accurately, leading to appropriate coding."
+
+PROVIDER SATISFACTION:
+"Would your providers recommend this AI to a colleague?
+Satisfaction below 70% correlates strongly with turnover intent."
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FOOTER:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back                                              See the Gap →              │
+│                                                      [red-orange button]        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+SLIDER STYLING
+═══════════════════════════════════════════════════════════════════════════════════
+
+- Track: #E0E0E0 (gray)
+- Filled portion: #EA2C00 (red-orange) from 0 to current value
+- Thumb: #EA2C00 circle with white border
+- Benchmark indicator: Small vertical line on track at benchmark value
+- Benchmark label: Appears below slider in gray box
+
+═══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS
+═══════════════════════════════════════════════════════════════════════════════════
+
+// After-Hours Documentation
+annualPajamaTime = afterHoursPerWeek * providers * 52
+abridgeBenchmarkPajamaTime = 2 * providers * 52 // 2 hrs/week benchmark
+pajamaTimeGap = annualPajamaTime - abridgeBenchmarkPajamaTime
+
+PAGE 2: THE GAP
+CopyPAGE 2: THE GAP
+
+═══════════════════════════════════════════════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Switch · The Gap
+Progress: ● ● ○ ○ ○ ○
+
+═══════════════════════════════════════════════════════════════════════════════════
+CONTENT
+═══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+The Gap
+
+SUBHEAD:
+This gap is common at your stage. Understanding what's driving it is the first 
+step to closing it.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: VALUE REALIZATION HERO
+Card (warm beige background, prominent):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  VALUE REALIZATION                                                              │
+│                                                                                 │
+│          66%                              ┌─────────────────────────────────┐   │
+│          [72px, black, bold]              │    Untapped Potential           │   │
+│                                           │                                 │   │
+│          of what top-performing           │    34% opportunity              │   │
+│          organizations achieve            │    remaining                    │   │
+│                                           │    [red-orange text]            │   │
+│                                           └─────────────────────────────────┘   │
+│                                                                                 │
+│  ┌──────────────────────────────────────────┬───────────────────────────────┐   │
+│  │██████████████████████████████████████████│░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│   │
+│  └──────────────────────────────────────────┴───────────────────────────────┘   │
+│  [red-orange filled: 66%]                   [gray unfilled: 34%]                │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  [expand icon] How we calculate this                                            │
+│                                                                                 │
+│  [When expanded:]                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  We compare your metrics against Abridge benchmarks:                    │    │
+│  │                                                                         │    │
+│  │  Utilization      45% ÷ 76%    = 59%                                    │    │
+│  │  Time Saved       2.5 ÷ 4 min  = 63%                                    │    │
+│  │  wRVU Lift        4% ÷ 5.5%    = 73%                                    │    │
+│  │  Satisfaction     60% ÷ 88%    = 68%                                    │    │
+│  │  ─────────────────────────────────────────                              │    │
+│  │  Value Realization Score       = 66%                                    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: PERFORMANCE BREAKDOWN
+Label: PERFORMANCE BREAKDOWN
+
+Headline:
+What this opportunity looks like in practice
+
+Subhead:
+These aren't abstract numbers—they translate directly to hours, encounters, 
+and revenue.
+
+Four cards in 2x2 grid:
+
+ROW 1:
+┌─────────────────────────────────────────┐  ┌─────────────────────────────────┐
+│                                         │  │                                 │
+│  [clock icon] Documentation Burden      │  │  [users icon] Utilization Gap   │
+│               The hidden cost of        │  │               Where AI isn't    │
+│               incomplete automation     │  │               being used        │
+│                                         │  │                                 │
+│  ┃ 2,067                                │  │  ┃ 31,000                       │
+│  ┃ [48px, red-orange]                   │  │  ┃ [48px, red-orange]           │
+│  ┃ hours/year                           │  │  ┃ encounters/year              │
+│                                         │  │                                 │
+│  That's 52 full work weeks of           │  │  ┌─────────────────────────────┐│
+│  provider time spent on documentation   │  │  │ 45% current │ vs. │ 76%    ││
+│  that AI should be handling.            │  │  │ [red-orange]│     │benchmark││
+│                                         │  │  └─────────────────────────────┘│
+│  ─────────────────────────────────────  │  │                                 │
+│                                         │  │  Low utilization rarely means   │
+│  At Abridge benchmark: 0 hours          │  │  the tool doesn't work—it       │
+│  (AI handles it all)                    │  │  usually means workflow         │
+│                                         │  │  friction.                      │
+│                                         │  │                                 │
+└─────────────────────────────────────────┘  └─────────────────────────────────┘
+
+ROW 2:
+┌─────────────────────────────────────────┐  ┌─────────────────────────────────┐
+│                                         │  │                                 │
+│  [trending icon] Coding Leakage         │  │  [heart icon] Burnout Signal    │
+│                  Work done but not      │  │               A leading         │
+│                  captured               │  │               indicator worth   │
+│                                         │  │               watching          │
+│                                         │  │                                 │
+│  ┃ +4%                                  │  │  ┃ 60%                          │
+│  ┃ [48px, red-orange]                   │  │  ┃ [48px, red-orange]           │
+│  ┃ wRVU lift                            │  │  ┃ satisfaction                 │
+│                                         │  │                                 │
+│  vs. +5.5% for top performers           │  │  vs. 88% at top performers      │
+│  [12px, gray]                           │  │  [12px, gray]                   │
+│                                         │  │                                 │
+│  ─────────────────────────────────────  │  │  ─────────────────────────────  │
+│                                         │  │                                 │
+│  Every 1% wRVU gap means you're         │  │  Satisfaction below 65%         │
+│  providing care that isn't being        │  │  correlates with higher         │
+│  credited.                              │  │  turnover intent.               │
+│                                         │  │                                 │
+│  Gap value: ~$28K/year                  │  │  This is a leading indicator—   │
+│  [12px, red-orange]                     │  │  address it before it becomes   │
+│                                         │  │  a lagging one.                 │
+│                                         │  │                                 │
+└─────────────────────────────────────────┘  └─────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: PAJAMA TIME
+Card (dark background #1A1A1A):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [moon icon]  PAJAMA TIME                                                       │
+│                                                                                 │
+│  14,560 hours/year spent charting at home                                       │
+│  [red-orange, 24px]                                                             │
+│                                                                                 │
+│  7 hours/week × 40 providers × 52 weeks                                         │
+│  [12px, gray]                                                                   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  At Abridge benchmark (2 hrs/week): 4,160 hours/year                            │
+│  Your gap: 10,400 hours of provider life reclaimed                              │
+│  [12px, gray]                                                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 4: THE BOTTOM LINE
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  The bottom line: These patterns don't happen by accident. Understanding        │
+│  what's driving them is the first step to closing the gap.                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FOOTER:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back                                        See the Benchmarks →             │
+│                                                [red-orange button]              │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS
+═══════════════════════════════════════════════════════════════════════════════════
+
+// Value Realization Score
+utilizationScore = (currentUtilization / 76) * 100
+timeScore = (currentTimeSaved / 4) * 100
+wrvuScore = (currentWRVULift / 5.5) * 100
+satisfactionScore = (currentSatisfaction / 88) * 100
+valueRealizationScore = (utilizationScore + timeScore + wrvuScore + satisfactionScore) / 4
+
+// Documentation Burden
+utilizationGap = 76 - currentUtilization // percentage points
+encountersWithoutAI = annualEncounters * (utilizationGap / 100)
+documentationBurdenHours = (encountersWithoutAI * benchmarkTimeSaved) / 60
+workWeeksEquivalent = documentationBurdenHours / 40
+
+// Utilization Gap
+encountersNotUsingAI = annualEncounters * ((76 - currentUtilization) / 100)
+
+// Pajama Time
+annualPajamaTime = afterHoursPerWeek * providers * 52
+benchmarkPajamaTime = 2 * providers * 52
+pajamaTimeGap = annualPajamaTime - benchmarkPajamaTime
+
+PAGE 3: WHAT GOOD LOOKS LIKE
+CopyPAGE 3: WHAT GOOD LOOKS LIKE
+
+═══════════════════════════════════════════════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Switch · What Good Looks Like
+Progress: ● ● ● ○ ○ ○
+
+═══════════════════════════════════════════════════════════════════════════════════
+CONTENT
+═══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+What Good Looks Like
+
+SUBHEAD:
+These aren't aspirational targets. They're achievable ranges based on mature 
+Abridge implementations.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: YOUR POSITION SUMMARY
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [target icon]  YOUR POSITION                          ┌───────┐  ┌───────┐    │
+│                 See where you stand against            │   1   │  │   3   │    │
+│                 top performers                         │In Range│  │Opport.│    │
+│                                                        └───────┘  └───────┘    │
+│                                                        [gray bg]  [red-org bg] │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: BENCHMARK COMPARISON CARDS
+Four cards in 2x2 grid:
+
+CARD STRUCTURE (each card):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [icon]  Utilization                                    45%  CURRENT            │
+│                                                         [24px, bold]            │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  0%        ●                           ░░░░░░░░░░░░░░░░            100% │    │
+│  │            45%                         [benchmark range]                │    │
+│  │                                        70-80%                           │    │
+│  │                                                                         │    │
+│  │            ▲                           ├────────────────┤               │    │
+│  │            │                           Abridge Range                    │    │
+│  │        Your position                                                    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  25% gap to reach benchmark range                                       │    │
+│  │  [red-orange text on light red-orange background #FFEBE6]               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+IN-RANGE CARD STRUCTURE (when metric is within benchmark):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [icon]  wRVU Lift                                      +4%  CURRENT            │
+│                                                         [24px, bold]            │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  0%                    ░░░░░░●░░░░░░░░░                            +12% │    │
+│  │                        [benchmark range with dot inside]                │    │
+│  │                        +3.5% - +7.5%                                    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ✓ In benchmark range                                                   │    │
+│  │  [dark text on gray background #E8E8E8]                                 │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+FOUR CARDS:
+
+1. UTILIZATION
+   - Current: 45%
+   - Benchmark range: 70-80% (target: 76%)
+   - Gap: 25% to reach range
+
+2. TIME SAVED
+   - Current: 2.5 min
+   - Benchmark range: 3-5 min (target: 4 min)
+   - Gap: 0.5 min to reach range
+
+3. wRVU LIFT
+   - Current: +4%
+   - Benchmark range: +3.5% - +7.5% (target: +5.5%)
+   - Status: ✓ In benchmark range
+
+4. PROVIDER SATISFACTION
+   - Current: 60%
+   - Benchmark range: 80-95% (target: 88%)
+   - Gap: 20% to reach range
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: WHAT MAKES THE DIFFERENCE
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  WHAT MAKES THE DIFFERENCE                                                      │
+│                                                                                 │
+│  Top-performing organizations share something in common—technology built        │
+│  specifically for clinical workflows, backed by dedicated implementation        │
+│  support.                                                                       │
+│                                                                                 │
+│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│  │                                   │  │                                   │   │
+│  │  ✓ 90-day guided onboarding       │  │  ✓ Specialty customization        │   │
+│  │                                   │  │                                   │   │
+│  └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│                                                                                 │
+│  ┌───────────────────────────────────┐  ┌───────────────────────────────────┐   │
+│  │                                   │  │                                   │   │
+│  │  ✓ Ongoing optimization           │  │  ✓ Real-time analytics            │   │
+│  │                                   │  │                                   │   │
+│  └───────────────────────────────────┘  └───────────────────────────────────┘   │
+│  [Gray background cards with checkmarks]                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FOOTER:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back                                              See the Math →             │
+│                                                      [red-orange button]        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+BENCHMARK VISUALIZATION STYLING
+═══════════════════════════════════════════════════════════════════════════════════
+
+TRACK:
+- Full track: #E0E0E0 (light gray)
+- Benchmark range: #D0D0D0 (slightly darker gray band)
+- Range should be clearly visible but not overwhelming
+
+POSITION INDICATOR:
+- Dot: #EA2C00 (red-orange), 12px diameter
+- If in range: dot appears within the gray band
+- If out of range: dot appears outside the gray band
+
+LABELS:
+- "Abridge Range: X-Y" appears below the benchmark band
+- Current value appears top-right of card
+- "CURRENT" label in gray, 10px, ALL CAPS
+
+STATUS PILLS:
+- In Range: Background #E8E8E8, Text #333333, Checkmark icon
+- Gap: Background #FFEBE6, Text #EA2C00, No icon
+
+PAGE 4: THE MATH
+CopyPAGE 4: THE MATH
+
+═══════════════════════════════════════════════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Switch · The Math
+Progress: ● ● ● ● ○ ○
+
+═══════════════════════════════════════════════════════════════════════════════════
+CONTENT
+═══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+The Math
+
+SUBHEAD:
+Every number is transparent. Every assumption is yours to challenge.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: VALUE BREAKDOWN
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [calculator icon]  VALUE BREAKDOWN                                             │
+│                     Your Annual Value Gap                    Click to expand    │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [chart icon]  Utilization Gap                              $78K   ∨   │    │
+│  │                45% → 76%                                                │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  [EXPANDED STATE:]                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [chart icon]  Utilization Gap                              $78K   ∧   │    │
+│  │                45% → 76%                                                │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  ┌────────────────────────────┐  ┌────────────────────────────────┐     │    │
+│  │  │ Your Current Utilization   │  │ Benchmark Target               │     │    │
+│  │  │                            │  │                                │     │    │
+│  │  │ ┌────────────────────────┐ │  │ ┌────────────────────────────┐ │     │    │
+│  │  │ │ 45                  %  │ │  │ │ 76%                        │ │     │    │
+│  │  │ └────────────────────────┘ │  │ └────────────────────────────┘ │     │    │
+│  │  │ [editable]                 │  │ [fixed, gray background]       │     │    │
+│  │  └────────────────────────────┘  └────────────────────────────────┘     │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  HOW WE CALCULATE THIS (click values to edit):                          │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Encounters not getting AI benefit:                             │    │    │
+│  │  │  100,000 encounters × (76% - 45%) = 31,000 encounters           │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Time cost of manual documentation:                             │    │    │
+│  │  │  31,000 encounters × 4 min = 2,067 hours/year                   │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Value:                                                         │    │    │
+│  │  │  2,067 hours × $ [150] /hr × [25] % conversion                  │    │    │
+│  │  │              [editable]     [editable]                          │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  = $77,513/year                                                 │    │    │
+│  │  │  [red-orange, bold]                                             │    │    │
+│  │  │                                                                 │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │  [calculation box: light gray background #F5F5F5]                       │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ℹ️ Why 25% conversion?                                          │    │    │
+│  │  │                                                                 │    │    │
+│  │  │ Not all time saved becomes dollars. Some is absorbed into       │    │    │
+│  │  │ workflow, some goes to work-life balance. We use a conservative │    │    │
+│  │  │ conversion rate. Adjust based on your capacity situation.       │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │  [info box: warm beige background]                                      │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [clock icon]  Efficiency Gap                               $42K   ∨   │    │
+│  │                2.5 min → 4 min saved                                    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  [EXPANDED STATE:]                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [clock icon]  Efficiency Gap                               $42K   ∧   │    │
+│  │                2.5 min → 4 min saved                                    │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  HOW WE CALCULATE THIS:                                                 │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Time gap per encounter:                                        │    │    │
+│  │  │  4 min (benchmark) - 2.5 min (current) = 1.5 min/encounter      │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Encounters WITH AI (at your utilization):                      │    │    │
+│  │  │  100,000 × 45% = 45,000 encounters                              │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Additional time that could be saved:                           │    │    │
+│  │  │  45,000 × 1.5 min = 1,125 hours/year                            │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Value:                                                         │    │    │
+│  │  │  1,125 hours × $ [150] /hr × [25] % conversion                  │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  = $42,188/year                                                 │    │    │
+│  │  │  [red-orange, bold]                                             │    │    │
+│  │  │                                                                 │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ℹ️ Note: This uses YOUR current utilization (45%), not the      │    │    │
+│  │  │ benchmark. It shows efficiency gap for encounters where AI IS   │    │    │
+│  │  │ being used—it could be saving more time per encounter.          │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [$ icon]  Quality Gap (wRVU)                               $28K   ∨   │    │
+│  │            +4% → +5.5% lift                                             │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  [EXPANDED STATE:]                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [$ icon]  Quality Gap (wRVU)                               $28K   ∧   │    │
+│  │            +4% → +5.5% lift                                             │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  HOW WE CALCULATE THIS:                                                 │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │                                                                 │    │    │
+│  │  │  wRVU lift gap:                                                 │    │    │
+│  │  │  5.5% (benchmark) - 4% (current) = 1.5%                         │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Base wRVU volume:                                              │    │    │
+│  │  │  1.5 wRVU/encounter × 45,000 encounters = 67,500 base wRVUs     │    │    │
+│  │  │  (using your current utilization)                               │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Missing wRVU lift:                                             │    │    │
+│  │  │  67,500 wRVUs × 1.5% additional lift = 1,013 wRVUs              │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  Value:                                                         │    │    │
+│  │  │  1,013 wRVUs × $ [33] /wRVU × [85] % realization                │    │    │
+│  │  │                                                                 │    │    │
+│  │  │  = $28,414/year                                                 │    │    │
+│  │  │  [red-orange, bold]                                             │    │    │
+│  │  │                                                                 │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐    │    │
+│  │  │ ℹ️ Why 85% realization?                                         │    │    │
+│  │  │                                                                 │    │    │
+│  │  │ Not every wRVU uplift translates to payment. We apply 85%       │    │    │
+│  │  │ realization to account for payer mix, denials, and other        │    │    │
+│  │  │ factors.                                                        │    │    │
+│  │  └─────────────────────────────────────────────────────────────────┘    │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [trending icon]  TOTAL ANNUAL GAP                                      │    │
+│  │                   Unrealized value per year                             │    │
+│  │                                                                         │    │
+│  │                                                       $148K             │    │
+│  │                                                       [48px, red-orange]│    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Summary row: slightly darker background]                                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: THE COMPOUNDING EFFECT
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  3-YEAR PROJECTION                                                              │
+│  The Compounding Effect                                                         │
+│                                                                                 │
+│  The shaded area is value left on the table. Every month of delay shrinks       │
+│  what you capture.                                                              │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│                          CHART                                                  │
+│                                                                                 │
+│  $600K ┤                                                                        │
+│        │                                                    ●                   │
+│  $450K ┤                                              ╱╱╱╱╱╱                    │
+│        │                                        ╱╱╱╱╱╱                          │
+│  $300K ┤                                  ╱╱╱╱╱╱    ●                           │
+│        │                            ╱╱╱╱╱╱                                      │
+│  $150K ┤                      ╱╱╱╱╱╱        ●                                   │
+│        │                ●╱╱╱╱╱                                                  │
+│    $0K ┼────●─────┬─────────┬─────────┬─────────┐                               │
+│        │  Year 0  │  Year 1 │  Year 2 │  Year 3 │                               │
+│        └──────────┴─────────┴─────────┴─────────┘                               │
+│                                                                                 │
+│        ─── Optimized (with Abridge)                                             │
+│        ---- Current (staying course)                                            │
+│        ░░░ Value gap                                                            │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YEAR-BY-YEAR:                                                                  │
+│                                                                                 │
+│  Year 1:  $129K optimized  vs  $15K current   (gap: $114K)                      │
+│  Year 2:  $291K cumulative vs  $31K current   (gap: $260K)                      │
+│  Year 3:  $469K cumulative vs  $47K current   (gap: $422K)                      │
+│  [12px, gray]                                                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: COST OF WAITING
+Card (white background, bordered):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  COST OF WAITING                                                                │
+│                                                                                 │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐      │
+│  │                     │  │                     │  │                     │      │
+│  │  Act now            │  │  Wait 6 months      │  │  Wait 12 months     │      │
+│  │                     │  │                     │  │                     │      │
+│  │  $469K              │  │  $395K              │  │  $321K              │      │
+│  │  [24px, bold]       │  │  [24px, bold]       │  │  [24px, bold]       │      │
+│  │                     │  │                     │  │                     │      │
+│  │  3-year value       │  │  3-year value       │  │  3-year value       │      │
+│  │                     │  │                     │  │                     │      │
+│  │                     │  │  -$74K              │  │  -$148K             │      │
+│  │                     │  │  [red-orange]       │  │  [red-orange]       │      │
+│  │                     │  │  opportunity cost   │  │  opportunity cost   │      │
+│  │                     │  │                     │  │                     │      │
+│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘      │
+│  [first card: darker bg]  [other cards: light bg with red-orange accent]        │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Every month you wait:  $12K in unrealized value                                │
+│                         [red-orange, centered, 16px]                            │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FOOTER:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back                                             What It Takes →             │
+│                                                     [red-orange button]         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+CHART SPECIFICATIONS
+═══════════════════════════════════════════════════════════════════════════════════
+
+OPTIMIZED LINE:
+- Color: #EA2C00 (red-orange)
+- Style: Solid, 2px
+- Points: Circles at each year, 8px diameter, filled
+
+CURRENT LINE:
+- Color: #999999 (gray)
+- Style: Dashed, 2px
+- Points: Circles at each year, 6px diameter, filled
+
+SHADED AREA (Value Gap):
+- Color: #EA2C00 at 15% opacity
+- Fills space between the two lines
+
+AXES:
+- Y-axis: Dollar values ($0K to $600K)
+- X-axis: Year 0, Year 1, Year 2, Year 3
+- Grid lines: Light gray, dashed
+
+═══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS
+═══════════════════════════════════════════════════════════════════════════════════
+
+// Total Annual Gap
+utilizationGapValue = (encountersWithoutAI * benchmarkTimeSaved / 60) * hourlyRate * timeConversion
+efficiencyGapValue = (encountersWithAI * timeGapPerEncounter / 60) * hourlyRate * timeConversion
+qualityGapValue = (baseWRVUs * wrvuLiftGap) * wrvuRate * wrvuRealization
+totalAnnualGap = utilizationGapValue + efficiencyGapValue + qualityGapValue
+
+// Compounding Effect
+// Assumes: Optimized path has 10% year-over-year improvement
+// Assumes: Current path has 10% natural improvement rate
+// Year 0 starts at 0 (implementation begins)
+
+optimizedYear1 = totalAnnualGap * 0.87 // 87% capture in year 1 (ramp-up)
+optimizedYear2 = optimizedYear1 + (totalAnnualGap * 1.10) // 110% in year 2
+optimizedYear3 = optimizedYear2 + (totalAnnualGap * 1.15) // 115% in year 3
+
+currentYear1 = totalAnnualGap * 0.10 // 10% natural improvement
+currentYear2 = currentYear1 + (totalAnnualGap * 0.11) // continuing slow improvement
+currentYear3 = currentYear2 + (totalAnnualGap * 0.12)
+
+// Cost of Waiting
+wait6Months = optimizedYear3 - (totalAnnualGap * 0.5) // lose 6 months of year 1
+wait12Months = optimizedYear3 - totalAnnualGap // lose full year 1
+
+monthlyOpportunityCost = totalAnnualGap / 12
+
+PAGE 5: WHAT IT TAKES
+CopyPAGE 5: WHAT IT TAKES
+
+═══════════════════════════════════════════════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Switch · What It Takes
+Progress: ● ● ● ● ● ○
+
+═══════════════════════════════════════════════════════════════════════════════════
+CONTENT
+═══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+What It Takes
+
+SUBHEAD:
+Here's what we've learned from hundreds of implementations.
+Tap each pattern to see what makes the difference.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: ABRIDGE STATS
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ┌─────────────┬─────────────┬─────────────┬─────────────┐                      │
+│  │             │             │             │             │                      │
+│  │  ┃ 150+     │  ┃ 95%      │  ┃ 4        │  ┃ 90       │                      │
+│  │  ┃          │  ┃          │  ┃          │  ┃          │                      │
+│  │  HEALTH     │  RETENTION  │  KEY        │  DAY        │                      │
+│  │  SYSTEMS    │  RATE       │  PATTERNS   │  ONBOARDING │                      │
+│  │             │             │             │             │                      │
+│  └─────────────┴─────────────┴─────────────┴─────────────┘                      │
+│  [Numbers: 32px, bold | Labels: 10px, ALL CAPS, gray]                           │
+│  [Red-orange left border on each stat]                                          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: THE 4 PATTERNS
+Intro text:
+The implementations that succeed share four patterns. The ones that struggle 
+are missing at least one.
+
+Four expandable cards:
+
+PATTERN 01:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [users icon]  PATTERN 01                                                 ∨     │
+│                The Adoption Challenge                                           │
+│                Why technology alone fails                                       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+EXPANDED:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [users icon]  PATTERN 01                                                 ∧     │
+│                The Adoption Challenge                                           │
+│                Why technology alone fails                                       │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │                                 │  │                                     │   │
+│  │  THE CHALLENGE                  │  │  HOW ABRIDGE SOLVES IT              │   │
+│  │                                 │  │  [red-orange header]                │   │
+│  │  Without intentional change     │  │                                     │   │
+│  │  management, providers revert   │  │  ✓ Dedicated success partners       │   │
+│  │  to old habits within weeks.    │  │                                     │   │
+│  │  Technology alone doesn't       │  │  ✓ Provider champions program       │   │
+│  │  change behavior.               │  │                                     │   │
+│  │                                 │  │  ✓ Behavioral design expertise      │   │
+│  │                                 │  │                                     │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│  [gray background]                    [light red-orange background #FFEBE6]     │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PATTERN 02:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [gear icon]  PATTERN 02                                                  ∨     │
+│               The Set-It-and-Forget-It Trap                                     │
+│               Why value erodes over time                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+EXPANDED:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [gear icon]  PATTERN 02                                                  ∧     │
+│               The Set-It-and-Forget-It Trap                                     │
+│               Why value erodes over time                                        │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │                                 │  │                                     │   │
+│  │  THE CHALLENGE                  │  │  HOW ABRIDGE SOLVES IT              │   │
+│  │                                 │  │                                     │   │
+│  │  AI implementations that aren't │  │  ✓ Continuous optimization cycles   │   │
+│  │  actively managed see declining │  │                                     │   │
+│  │  utilization over 6-12 months.  │  │  ✓ Quarterly business reviews       │   │
+│  │  Initial enthusiasm fades.      │  │                                     │   │
+│  │                                 │  │  ✓ Real-time utilization alerts     │   │
+│  │                                 │  │                                     │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PATTERN 03:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [lightning icon]  PATTERN 03                                             ∨     │
+│                    The One-Size-Fits-All Problem                                │
+│                    Why generic solutions fail                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+EXPANDED:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [lightning icon]  PATTERN 03                                             ∧     │
+│                    The One-Size-Fits-All Problem                                │
+│                    Why generic solutions fail                                   │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │                                 │  │                                     │   │
+│  │  THE CHALLENGE                  │  │  HOW ABRIDGE SOLVES IT              │   │
+│  │                                 │  │                                     │   │
+│  │  Primary care, cardiology, and  │  │  ✓ Specialty-specific templates     │   │
+│  │  surgery have completely        │  │                                     │   │
+│  │  different documentation needs. │  │  ✓ Workflow customization           │   │
+│  │  Generic AI misses nuances.     │  │                                     │   │
+│  │                                 │  │  ✓ EHR-specific integrations        │   │
+│  │                                 │  │                                     │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PATTERN 04:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [trending icon]  PATTERN 04                                              ∨     │
+│                   The Missing Executive Sponsor                                 │
+│                   Why initiatives lose momentum                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+EXPANDED:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [trending icon]  PATTERN 04                                              ∧     │
+│                   The Missing Executive Sponsor                                 │
+│                   Why initiatives lose momentum                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │                                 │  │                                     │   │
+│  │  THE CHALLENGE                  │  │  HOW ABRIDGE SOLVES IT              │   │
+│  │                                 │  │                                     │   │
+│  │  Without visible leadership     │  │  ✓ Executive alignment playbook     │   │
+│  │  support, AI initiatives become │  │                                     │   │
+│  │  "another IT project" and lose  │  │  ✓ ROI dashboards for leadership    │   │
+│  │  organizational priority.       │  │                                     │   │
+│  │                                 │  │  ✓ Peer network connections         │   │
+│  │                                 │  │                                     │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+Progress indicator:
+[X] of 4 patterns explored
+[Only shows after at least one is expanded]
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: THE BOTTOM LINE
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  The bottom line: capturing the value you saw in The Math requires more than    │
+│  good technology. It requires the right partnership.                            │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FOOTER:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back                                            Your Next Steps →            │
+│                                                    [red-orange button]          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+PAGE 6: THE OPPORTUNITY
+CopyPAGE 6: THE OPPORTUNITY
+
+═══════════════════════════════════════════════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Switch · The Opportunity
+Progress: ● ● ● ● ● ●
+
+═══════════════════════════════════════════════════════════════════════════════════
+CONTENT
+═══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+The Opportunity
+
+SUBHEAD:
+Here's where you stand—and what's possible with the right partnership.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: ANNUAL VALUE HERO
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ANNUAL VALUE TO UNLOCK                                                         │
+│                                                                                 │
+│  ┃ $148K                                                                        │
+│  ┃ [72px, red-orange, bold]                                                     │
+│                                                                                 │
+│  Based on your 40 providers across 100,000 annual encounters                    │
+│  [14px, gray]                                                                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: IMPACT TIMELINE
+Three stat cards:
+┌───────────────────────────┐  ┌───────────────────────────┐  ┌───────────────────┐
+│                           │  │                           │  │                   │
+│  YEAR 1 IMPACT            │  │  3-YEAR IMPACT            │  │  MONTHLY COST     │
+│                           │  │                           │  │  OF WAITING       │
+│  $129K                    │  │  $469K                    │  │                   │
+│  [32px, bold]             │  │  [32px, bold]             │  │  $12K             │
+│                           │  │                           │  │  [32px, red-org]  │
+│  Accounting for           │  │  Compounding              │  │                   │
+│  ramp-up                  │  │  value                    │  │  Value left       │
+│                           │  │                           │  │  on table         │
+│                           │  │                           │  │                   │
+└───────────────────────────┘  └───────────────────────────┘  └───────────────────┘
+[white background]             [white background]             [light red-orange bg]
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: VALUE REALIZATION SCORE
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  VALUE REALIZATION SCORE                                                        │
+│                                                                                 │
+│  66%           Developing                    ┃ ROOM TO GROW                     │
+│  [48px, bold]  [16px, gray]                  ┃                                  │
+│                                              ┃ 34%                              │
+│  ┌────────────────────────────────────────┬──┃─────────────────────────────┐    │
+│  │████████████████████████████████████████│░░┃░░░░░░░░░░░░░░░░░░░░░░░░░░░░│    │
+│  └────────────────────────────────────────┴──┃─────────────────────────────┘    │
+│  [66% filled red-orange]                     ┃[34% gray]                        │
+│                                              ┃                                  │
+│  Significant opportunity to accelerate       ┃ [red-orange text, right-aligned] │
+│  your value capture.                         ┃                                  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 4: YOUR METRICS SUMMARY
+Four stat cards in a row:
+┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
+│                   │  │                   │  │                   │  │                   │
+│  [users icon]     │  │  [clock icon]     │  │  [$ icon]         │  │  [heart icon]     │
+│                   │  │                   │  │                   │  │                   │
+│  45%              │  │  2.5 min          │  │  +4%              │  │  60%              │
+│  [24px, bold]     │  │  [24px, bold]     │  │  [24px, bold]     │  │  [24px, bold]     │
+│                   │  │                   │  │                   │  │                   │
+│  Utilization      │  │  Time Saved       │  │  wRVU Lift        │  │  Satisfaction     │
+│                   │  │                   │  │                   │  │                   │
+│  vs. 76%          │  │  vs. 4 min        │  │  vs. +5.5%        │  │  vs. 88%          │
+│  [12px, red-org]  │  │  [12px, red-org]  │  │  [12px, gray ✓]   │  │  [12px, red-org]  │
+│                   │  │                   │  │                   │  │                   │
+└───────────────────┘  └───────────────────┘  └───────────────────┘  └───────────────────┘
+[Gap metrics in red-orange, in-range metrics in gray with checkmark]
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 5: WHAT COMES NEXT
+Card (dark background #1A1A1A):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  WHAT COMES NEXT                                                                │
+│                                                                                 │
+│  Let's explore this opportunity together.                                       │
+│  [20px, white, bold]                                                            │
+│                                                                                 │
+│  This analysis is just the starting point. Our team can help you build a        │
+│  personalized implementation roadmap.                                           │
+│  [14px, gray]                                                                   │
+│                                                                                 │
+│                                              ┌─────────────────────────────┐    │
+│                                              │     Download Report ↓       │    │
+│                                              └─────────────────────────────┘    │
+│                                              [red-orange button]                │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 6: DISCLAIMER
+Card (white background, subtle):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ✓ All calculations are based on your inputs and Abridge benchmarks.            │
+│    Actual results depend on implementation quality, organizational readiness,   │
+│    and partnership approach.                                                    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+[12px, gray text, checkmark icon in green or gray]
+
+──────────────────────────────────────────────────────────────────────────────────
+
+FOOTER:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ← Back                                                                         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+FINAL IMPLEMENTATION CHECKLIST
+CopyIMPLEMENTATION CHECKLIST:
+
+═══════════════════════════════════════════════════════════════════════════════════
+GLOBAL
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Remove all green colors — replace with gray (#E8E8E8) or muted teal
+□ Use #EA2C00 (red-orange) for accents, gaps, and CTAs
+□ Use #FFEBE6 (light red-orange) for gap/opportunity backgrounds
+□ Ensure Manrope font throughout
+□ All benchmark references say "Abridge Benchmark" not just "Benchmark"
+□ Add tooltips explaining each metric on hover
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 1: WHERE YOU ARE
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Update slider styling with benchmark marker
+□ Add tooltip for each metric explaining what it measures
+□ Add Abridge benchmark comparison to After-Hours section
+□ Calculate and display annual pajama time gap
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 2: THE GAP
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Add expandable "How we calculate this" to Value Realization card
+□ Update Documentation Burden card with work-weeks equivalent
+□ Update Utilization Gap card with clearer explanation
+□ Add gap value to Coding Leakage card
+□ Update Pajama Time section with benchmark comparison
+□ Fix math: Documentation Burden should show hours from utilization gap
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 3: WHAT GOOD LOOKS LIKE
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Replace green benchmark ranges with gray
+□ Update "In Range" pill to gray background with checkmark
+□ Update "Gap" pill to light red-orange background
+□ Show benchmark RANGES (e.g., 70-80%) not just targets
+□ Add "X opportunities" count based on metrics outside range
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 4: THE MATH
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Fix Utilization Gap calculation to use correct math
+□ Add editable fields for $/hr and conversion rates
+□ Add info tooltips explaining each assumption
+□ Clarify which utilization (current vs benchmark) is used in each calc
+□ Update chart with year-by-year values
+□ Add legend for chart lines
+□ Calculate and display monthly opportunity cost
+□ Fix Cost of Waiting cards with correct math
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 5: WHAT IT TAKES
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Verify Abridge stats are current (150+, 95%, etc.)
+□ Add progress indicator for patterns explored
+□ Style expanded patterns with Challenge/Solution layout
+□ Add red-orange background to "How Abridge Solves It" section
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 6: THE OPPORTUNITY
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Add score labels (Struggling/Developing/Performing/Optimized)
+□ Color-code metric cards based on gap status
+□ Add Download Report button functionality
+□ Add disclaimer with legal-safe language
+□ Ensure all numbers flow correctly from previous pages
+
+═══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS TO VERIFY
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Value Realization Score = average of (current/benchmark) for all 4 metrics
+□ Utilization Gap Value = encounters × gap% × time × hourly × conversion
+□ Efficiency Gap Value = encounters × time gap × hourly × conversion
+□ Quality Gap Value = base wRVU × lift gap × rate × realization
+□ Total Annual Gap = sum of three gaps
+□ Year 1 Impact = Annual Gap × 0.87 (ramp-up)
+□ 3-Year Impact = cumulative with compounding
+□ Monthly Cost of Waiting = Annual Gap ÷ 12

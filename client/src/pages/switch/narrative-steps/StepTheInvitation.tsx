@@ -76,65 +76,59 @@ export default function StepTheInvitation({
 
   const scoreContext = getScoreContext(calculations.realizationScore);
   const gapPercentage = 100 - calculations.realizationScore;
-  
-  const yearOneValue = Math.round(calculations.annualGap * 0.875);
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2" data-testid="text-page-title">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2" data-testid="text-page-title">
           The Opportunity
         </h1>
-        <p className="text-base text-[#6B7280]">
+        <p className="text-base text-[#666666]">
           Here's where you stand — and what's possible with the right partnership.
         </p>
       </div>
 
-      {/* Hero Value Section */}
       <section className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
-        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-          ANNUAL VALUE TO UNLOCK
+        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">
+          Annual Value to Unlock
         </p>
         <div className="border-l-4 border-[#EA2C00] pl-5">
           <p className="text-5xl md:text-6xl font-bold text-[#EA2C00]">
             {formatCurrency(calculations.annualGap)}
           </p>
-          <p className="text-sm text-[#6B7280] mt-2">
+          <p className="text-sm text-[#666666] mt-2">
             Based on your {inputs.providers} providers across {inputs.annualEncounters.toLocaleString()} annual encounters
           </p>
         </div>
       </section>
 
-      {/* Impact Timeline */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
           <div className="p-5 text-center">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">Year 1 Impact</p>
-            <p className="text-2xl md:text-3xl font-bold text-black">{formatCurrency(yearOneValue)}</p>
-            <p className="text-xs text-[#6B7280] mt-1">Accounting for ramp-up</p>
+            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">Year 1 Impact</p>
+            <p className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.optimizedYear1)}</p>
+            <p className="text-xs text-[#999999] mt-1">Accounting for ramp-up</p>
           </div>
           <div className="p-5 text-center">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">3-Year Impact</p>
-            <p className="text-2xl md:text-3xl font-bold text-black">{formatCurrency(calculations.threeYearGap)}</p>
-            <p className="text-xs text-[#6B7280] mt-1">Compounding value</p>
+            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">3-Year Impact</p>
+            <p className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.threeYearGap)}</p>
+            <p className="text-xs text-[#999999] mt-1">Compounding value</p>
           </div>
-          <div className="p-5 text-center border-l-4 border-[#EA2C00] md:border-l-0">
+          <div className="p-5 text-center">
             <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Monthly Cost of Waiting</p>
             <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(calculations.monthlyGap)}</p>
-            <p className="text-xs text-[#6B7280] mt-1">Value left on table</p>
+            <p className="text-xs text-[#999999] mt-1">Value left on table</p>
           </div>
         </div>
       </section>
 
-      {/* Realization Score */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
           <div>
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">VALUE REALIZATION SCORE</p>
+            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">Value Realization Score</p>
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl md:text-5xl font-bold text-black">{calculations.realizationScore}%</span>
-              <span className="text-base font-medium text-[#6B7280]">{scoreContext.status}</span>
+              <span className="text-4xl md:text-5xl font-bold text-[#1A1A1A]">{calculations.realizationScore}%</span>
+              <span className="text-base font-medium text-[#666666]">{scoreContext.status}</span>
             </div>
           </div>
           <div className="text-right border-l-4 border-[#EA2C00] pl-3">
@@ -143,63 +137,61 @@ export default function StepTheInvitation({
           </div>
         </div>
         
-        <div className="relative h-2 bg-[#F5F0EB] rounded-full overflow-hidden mb-3">
+        <div className="relative h-3 bg-[#E0E0E0] rounded-full overflow-hidden mb-3">
           <div 
-            className="absolute inset-y-0 left-0 bg-black rounded-full transition-all duration-1000"
+            className="absolute inset-y-0 left-0 bg-[#1A1A1A] rounded-full transition-all duration-1000"
             style={{ width: `${calculations.realizationScore}%` }}
           />
         </div>
         
-        <p className="text-sm text-[#6B7280]">{scoreContext.message}</p>
+        <p className="text-sm text-[#666666]">{scoreContext.message}</p>
       </section>
 
-      {/* Performance Summary */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
         <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
               <Users className="w-5 h-5 text-[#EA2C00]" />
             </div>
-            <p className="text-xl font-bold text-black">{inputs.utilization}%</p>
-            <p className="text-xs text-[#888888]">Utilization</p>
-            <p className="text-[10px] text-[#888888] mt-0.5">vs. {ABRIDGE_BENCHMARKS.utilization}%</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">{inputs.utilization}%</p>
+            <p className="text-xs text-[#999999]">Utilization</p>
+            <p className="text-[10px] text-[#999999] mt-0.5">vs. {ABRIDGE_BENCHMARKS.utilization}%</p>
           </div>
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
               <Clock className="w-5 h-5 text-[#EA2C00]" />
             </div>
-            <p className="text-xl font-bold text-black">{inputs.timeSavedPerEncounter} min</p>
-            <p className="text-xs text-[#888888]">Time Saved</p>
-            <p className="text-[10px] text-[#888888] mt-0.5">vs. {ABRIDGE_BENCHMARKS.timeSavedAvg} min</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">{inputs.timeSavedPerEncounter} min</p>
+            <p className="text-xs text-[#999999]">Time Saved</p>
+            <p className="text-[10px] text-[#999999] mt-0.5">vs. {ABRIDGE_BENCHMARKS.timeSavedAvg} min</p>
           </div>
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
               <DollarSign className="w-5 h-5 text-[#EA2C00]" />
             </div>
-            <p className="text-xl font-bold text-black">+{inputs.wrvuLift}%</p>
-            <p className="text-xs text-[#888888]">wRVU Lift</p>
-            <p className="text-[10px] text-[#888888] mt-0.5">vs. +{ABRIDGE_BENCHMARKS.wrvuLift}%</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">+{inputs.wrvuLift}%</p>
+            <p className="text-xs text-[#999999]">wRVU Lift</p>
+            <p className="text-[10px] text-[#999999] mt-0.5">vs. +{ABRIDGE_BENCHMARKS.wrvuLift}%</p>
           </div>
           <div className="p-4 text-center">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
               <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
             </div>
-            <p className="text-xl font-bold text-black">{inputs.satisfaction}%</p>
-            <p className="text-xs text-[#888888]">Satisfaction</p>
-            <p className="text-[10px] text-[#888888] mt-0.5">vs. {ABRIDGE_BENCHMARKS.satisfaction}%</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">{inputs.satisfaction}%</p>
+            <p className="text-xs text-[#999999]">Satisfaction</p>
+            <p className="text-[10px] text-[#999999] mt-0.5">vs. {ABRIDGE_BENCHMARKS.satisfaction}%</p>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="flex-1 text-center md:text-left">
-            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">WHAT COMES NEXT</p>
-            <h2 className="text-xl font-bold text-black mb-2">
+            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">What Comes Next</p>
+            <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
               Let's explore this opportunity together.
             </h2>
-            <p className="text-sm text-[#6B7280]">
+            <p className="text-sm text-[#666666]">
               This analysis is just the starting point. Our team can help you build a personalized implementation roadmap.
             </p>
           </div>
@@ -221,18 +213,16 @@ export default function StepTheInvitation({
         </div>
       </section>
 
-      {/* Disclaimer */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5">
         <div className="flex items-start gap-3">
           <CheckCircle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#6B7280]">
-            <span className="font-semibold text-black">All calculations are based on your inputs and industry benchmarks.</span>
+          <p className="text-sm text-[#666666]">
+            <span className="font-semibold text-[#1A1A1A]">All calculations are based on your inputs and industry benchmarks.</span>
             {' '}Actual results depend on implementation quality, organizational readiness, and partnership approach.
           </p>
         </div>
       </section>
 
-      {/* Navigation */}
       <div className="flex justify-start pt-4">
         <Button 
           variant="ghost" 

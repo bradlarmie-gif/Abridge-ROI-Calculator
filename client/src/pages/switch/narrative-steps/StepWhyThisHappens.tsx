@@ -40,7 +40,7 @@ const INSIGHT_CARDS: InsightCardData[] = [
       description: "Without intentional change management, providers revert to old habits within weeks. Technology alone doesn't change behavior."
     },
     solution: {
-      title: "Strategic Change Partners",
+      title: "How Abridge Solves It",
       traits: ["Dedicated success partners", "Provider champions program", "Behavioral design expertise"]
     }
   },
@@ -51,11 +51,11 @@ const INSIGHT_CARDS: InsightCardData[] = [
     challenge: {
       title: "The Set-It-and-Forget-It Trap",
       subtitle: "Why value erodes over time",
-      description: "Most implementations peak at launch and plateau. Without continuous optimization, value erodes over time."
+      description: "AI implementations that aren't actively managed see declining utilization over 6-12 months. Initial enthusiasm fades."
     },
     solution: {
-      title: "Continuous Optimization",
-      traits: ["Quarterly business reviews", "Real-time analytics", "Proactive performance monitoring"]
+      title: "How Abridge Solves It",
+      traits: ["Continuous optimization cycles", "Quarterly business reviews", "Real-time utilization alerts"]
     }
   },
   {
@@ -65,11 +65,11 @@ const INSIGHT_CARDS: InsightCardData[] = [
     challenge: {
       title: "The One-Size-Fits-All Problem",
       subtitle: "Why generic solutions fail",
-      description: "Generic solutions miss the nuances of different specialties, workflows, and organizational cultures."
+      description: "Primary care, cardiology, and surgery have completely different documentation needs. Generic AI misses nuances."
     },
     solution: {
-      title: "Deep Customization",
-      traits: ["Specialty-specific templates", "Workflow integration", "EHR-native experience"]
+      title: "How Abridge Solves It",
+      traits: ["Specialty-specific templates", "Workflow customization", "EHR-specific integrations"]
     }
   },
   {
@@ -79,11 +79,11 @@ const INSIGHT_CARDS: InsightCardData[] = [
     challenge: {
       title: "The Missing Executive Sponsor",
       subtitle: "Why initiatives lose momentum",
-      description: "Without visible leadership support, initiatives lose momentum. Providers sense when something isn't a priority."
+      description: "Without visible leadership support, AI initiatives become \"another IT project\" and lose organizational priority."
     },
     solution: {
-      title: "Strategic Partnership",
-      traits: ["Executive briefings", "ROI dashboards", "Stakeholder alignment"]
+      title: "How Abridge Solves It",
+      traits: ["Executive alignment playbook", "ROI dashboards for leadership", "Peer network connections"]
     }
   }
 ];
@@ -102,7 +102,7 @@ function InsightCard({
   return (
     <div 
       className={`bg-white rounded-xl border overflow-hidden transition-all cursor-pointer ${
-        isExpanded ? 'border-[#EA2C00]/30' : 'border-[#E5E7EB] hover:border-[#E5E7EB]/80'
+        isExpanded ? 'border-[#EA2C00]/30' : 'border-[#E5E7EB]'
       }`}
       onClick={onToggle}
       data-testid={`insight-card-${card.id}`}
@@ -118,13 +118,13 @@ function InsightCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
+                <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">
                   Pattern {card.number}
                 </p>
-                <h3 className="font-semibold text-black">{card.challenge.title}</h3>
-                <p className="text-xs text-[#888888] mt-1">{card.challenge.subtitle}</p>
+                <h3 className="font-semibold text-[#1A1A1A]">{card.challenge.title}</h3>
+                <p className="text-xs text-[#999999] mt-1">{card.challenge.subtitle}</p>
               </div>
-              <ChevronRight className={`w-5 h-5 text-[#888888] transition-transform flex-shrink-0 ${
+              <ChevronRight className={`w-5 h-5 text-[#999999] transition-transform flex-shrink-0 ${
                 isExpanded ? 'rotate-90' : ''
               }`} />
             </div>
@@ -135,16 +135,16 @@ function InsightCard({
           isExpanded ? 'max-h-[400px] opacity-100 mt-5' : 'max-h-0 opacity-0'
         }`}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-[#F5F0EB] rounded-lg">
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+            <div className="p-4 bg-[#F5F5F5] rounded-lg">
+              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">
                 The Challenge
               </p>
-              <p className="text-sm text-[#6B7280] leading-relaxed">
+              <p className="text-sm text-[#666666] leading-relaxed">
                 {card.challenge.description}
               </p>
             </div>
             
-            <div className="p-4 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
+            <div className="p-4 bg-[#FFEBE6] rounded-lg">
               <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">
                 {card.solution.title}
               </p>
@@ -152,7 +152,7 @@ function InsightCard({
                 {card.solution.traits.map((trait, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
-                    <span className="text-sm text-[#6B7280]">{trait}</span>
+                    <span className="text-sm text-[#333333]">{trait}</span>
                   </div>
                 ))}
               </div>
@@ -189,61 +189,61 @@ export default function StepWhyThisHappens({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2" data-testid="text-page-title">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2" data-testid="text-page-title">
           What It Takes
         </h1>
-        <p className="text-base text-[#6B7280]">
-          Here's what we've learned from hundreds of implementations. 
+        <p className="text-base text-[#666666]">
+          Here's what we've learned from hundreds of implementations.
           <span className="block mt-1">Tap each pattern to see what makes the difference.</span>
         </p>
       </div>
 
-      {/* Credibility Stats */}
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
-            <p className="text-3xl md:text-4xl font-bold text-black">150+</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Health systems</p>
+          <div className="border-l-4 border-[#EA2C00] pl-3">
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">150+</p>
+            <p className="text-[10px] text-[#666666] uppercase tracking-[1.5px] mt-1">Health Systems</p>
           </div>
-          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
-            <p className="text-3xl md:text-4xl font-bold text-black">95%</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Retention rate</p>
+          <div className="border-l-4 border-[#EA2C00] pl-3">
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">95%</p>
+            <p className="text-[10px] text-[#666666] uppercase tracking-[1.5px] mt-1">Retention Rate</p>
           </div>
-          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
+          <div className="border-l-4 border-[#EA2C00] pl-3">
             <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">4</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Key patterns</p>
+            <p className="text-[10px] text-[#666666] uppercase tracking-[1.5px] mt-1">Key Patterns</p>
           </div>
-          <div className="text-center border-l-4 border-[#EA2C00] pl-3 text-left">
-            <p className="text-3xl md:text-4xl font-bold text-black">90</p>
-            <p className="text-xs text-[#888888] uppercase tracking-[1.5px] mt-1">Day onboarding</p>
+          <div className="border-l-4 border-[#EA2C00] pl-3">
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">90</p>
+            <p className="text-[10px] text-[#666666] uppercase tracking-[1.5px] mt-1">Day Onboarding</p>
           </div>
         </div>
       </section>
 
-      {/* Insight Cards */}
-      <div className="space-y-3">
-        {INSIGHT_CARDS.map((card) => (
-          <InsightCard
-            key={card.id}
-            card={card}
-            isExpanded={expandedCards.has(card.id)}
-            onToggle={() => toggleCard(card.id)}
-          />
-        ))}
+      <div>
+        <p className="text-sm text-[#666666] mb-4">
+          The implementations that succeed share four patterns. The ones that struggle are missing at least one.
+        </p>
+        <div className="space-y-3">
+          {INSIGHT_CARDS.map((card) => (
+            <InsightCard
+              key={card.id}
+              card={card}
+              isExpanded={expandedCards.has(card.id)}
+              onToggle={() => toggleCard(card.id)}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Progress indicator */}
       {expandedCount > 0 && !allExpanded && (
         <div className="text-center">
-          <p className="text-sm text-[#888888]">
+          <p className="text-sm text-[#999999]">
             {expandedCount} of {INSIGHT_CARDS.length} patterns explored
           </p>
         </div>
       )}
 
-      {/* All explored message */}
       {allExpanded && (
         <section className="bg-[#F5F0EB] rounded-xl p-5">
           <div className="flex items-center gap-4">
@@ -251,8 +251,8 @@ export default function StepWhyThisHappens({
               <CheckCircle className="w-6 h-6 text-[#EA2C00]" />
             </div>
             <div>
-              <p className="font-semibold text-black">All patterns explored</p>
-              <p className="text-sm text-[#6B7280]">
+              <p className="font-semibold text-[#1A1A1A]">All patterns explored</p>
+              <p className="text-sm text-[#666666]">
                 Implementation matters more than the tool itself. Partnership quality determines ROI.
               </p>
             </div>
@@ -260,17 +260,15 @@ export default function StepWhyThisHappens({
         </section>
       )}
 
-      {/* Bottom line */}
       {!allExpanded && (
-        <section className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-          <p className="text-sm text-[#6B7280]">
-            <span className="font-semibold text-black">The bottom line:</span> capturing the value you saw in The Math 
+        <section className="bg-[#F5F0EB] rounded-xl p-5">
+          <p className="text-sm text-[#666666]">
+            <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> Capturing the value you saw in The Math 
             requires more than good technology. It requires the right partnership.
           </p>
         </section>
       )}
 
-      {/* Navigation */}
       <div className="flex justify-between items-center pt-4">
         <Button 
           variant="ghost" 
@@ -287,7 +285,7 @@ export default function StepWhyThisHappens({
           className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
-          Your Next Steps
+          The Opportunity
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>

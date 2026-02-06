@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Settings2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
   formatCurrency,
   ABRIDGE_BENCHMARKS,
@@ -9,7 +8,7 @@ import {
   type SwitchInputs,
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface StepTheMathProps {
   inputs: SwitchInputs;
@@ -21,10 +20,9 @@ interface StepTheMathProps {
 
 interface EditableAssumptions {
   hourlyRate: number;
-  utilizationConversion: number;
-  efficiencyConversion: number;
+  timeConversion: number;
   wrvuDollarValue: number;
-  wrvuAttribution: number;
+  wrvuRealization: number;
 }
 
 interface GapAccordionProps {
@@ -60,16 +58,16 @@ function GapAccordion({
             <Icon className="w-5 h-5 text-[#EA2C00]" />
           </div>
           <div className="text-left">
-            <h3 className="font-semibold text-black text-sm">{title}</h3>
-            <p className="text-xs text-[#888888]">{subtitle}</p>
+            <h3 className="font-semibold text-[#1A1A1A] text-sm">{title}</h3>
+            <p className="text-xs text-[#999999]">{subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xl font-bold text-[#EA2C00]">{formatCurrency(value)}</span>
           {isOpen ? (
-            <ChevronUp className="w-5 h-5 text-[#888888]" />
+            <ChevronUp className="w-5 h-5 text-[#999999]" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-[#888888]" />
+            <ChevronDown className="w-5 h-5 text-[#999999]" />
           )}
         </div>
       </button>
@@ -119,97 +117,109 @@ export default function StepTheMath({
   
   const [assumptions, setAssumptions] = useState<EditableAssumptions>({
     hourlyRate: VALUE_ASSUMPTIONS.hourlyRate,
-    utilizationConversion: VALUE_ASSUMPTIONS.utilizationTimeConversionRate * 100,
-    efficiencyConversion: VALUE_ASSUMPTIONS.efficiencyTimeConversionRate * 100,
+    timeConversion: VALUE_ASSUMPTIONS.timeConversionRate * 100,
     wrvuDollarValue: VALUE_ASSUMPTIONS.wrvuDollarValue,
-    wrvuAttribution: VALUE_ASSUMPTIONS.wrvuAttribution * 100,
+    wrvuRealization: VALUE_ASSUMPTIONS.wrvuRealization * 100,
   });
 
   const updateAssumption = <K extends keyof EditableAssumptions>(key: K, value: number) => {
     setAssumptions(prev => ({ ...prev, [key]: value }));
   };
 
-  // Use fallback defaults if user hasn't entered values (same as AmbientNarrativeFlow)
   const effectiveEncounters = inputs.annualEncounters || 150000;
   const effectiveProviders = inputs.providers || 75;
   
-  const eligibleEncounters = Math.round(effectiveEncounters * ABRIDGE_BENCHMARKS.utilization / 100);
+  const encountersWithAI = Math.round(effectiveEncounters * inputs.utilization / 100);
+  const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - inputs.utilization);
+  const encountersWithoutAI = Math.round(effectiveEncounters * utilizationGapPP / 100);
 
   const recalculatedValues = useMemo(() => {
-    const utilizationGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.utilization - inputs.utilization);
-    const additionalEncounters = Math.round(effectiveEncounters * utilizationGapPercent / 100);
-    const utilizationPotentialTimeSavedHours = (additionalEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
-    const utilizationGapValue = Math.round(utilizationPotentialTimeSavedHours * assumptions.hourlyRate * (assumptions.utilizationConversion / 100));
+    const utilizationTimeSavedHours = (encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
+    const utilizationGapValue = Math.round(utilizationTimeSavedHours * assumptions.hourlyRate * (assumptions.timeConversion / 100));
 
     const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter);
-    const efficiencyGapHours = Math.round((eligibleEncounters * efficiencyGapMin) / 60);
-    const efficiencyGapValue = Math.round(efficiencyGapHours * assumptions.hourlyRate * (assumptions.efficiencyConversion / 100));
+    const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
+    const efficiencyGapValue = Math.round(efficiencyGapHours * assumptions.hourlyRate * (assumptions.timeConversion / 100));
 
     const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift);
-    const wrvuGapPerEncounter = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100);
-    const wrvuGapValue = Math.round(wrvuGapPerEncounter * eligibleEncounters * assumptions.wrvuDollarValue * (assumptions.wrvuAttribution / 100));
+    const baseWRVUs = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * encountersWithAI;
+    const missingWRVUs = baseWRVUs * (wrvuGapPercent / 100);
+    const wrvuGapValue = Math.round(missingWRVUs * assumptions.wrvuDollarValue * (assumptions.wrvuRealization / 100));
 
     const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
-    const switchNowValue = annualGap * 3;
-    const wait6MonthsValue = annualGap * 2.5;
-    const wait12MonthsValue = annualGap * 2;
+    
+    const optimizedYear1 = Math.round(annualGap * 0.87);
+    const optimizedYear2 = Math.round(optimizedYear1 + (annualGap * 1.10));
+    const optimizedYear3 = Math.round(optimizedYear2 + (annualGap * 1.15));
+    const currentYear1 = Math.round(annualGap * 0.10);
+    const currentYear2 = Math.round(currentYear1 + (annualGap * 0.11));
+    const currentYear3 = Math.round(currentYear2 + (annualGap * 0.12));
+
+    const switchNowValue = optimizedYear3;
+    const wait6MonthsValue = Math.round(optimizedYear3 - (annualGap * 0.5));
+    const wait12MonthsValue = Math.round(optimizedYear3 - annualGap);
 
     return {
       utilizationGapValue,
       efficiencyGapValue,
+      efficiencyGapHours,
       wrvuGapValue,
+      baseWRVUs: Math.round(baseWRVUs),
+      missingWRVUs: Math.round(missingWRVUs),
       annualGap,
+      optimizedYear1,
+      optimizedYear2,
+      optimizedYear3,
+      currentYear1,
+      currentYear2,
+      currentYear3,
       switchNowValue,
       wait6MonthsValue,
       wait12MonthsValue,
       wait6MonthsLoss: switchNowValue - wait6MonthsValue,
       wait12MonthsLoss: switchNowValue - wait12MonthsValue,
+      monthlyGap: Math.round(annualGap / 12),
     };
-  }, [inputs, assumptions, eligibleEncounters]);
+  }, [inputs, assumptions, encountersWithAI, encountersWithoutAI]);
 
-  const chartData = calculations.currentTrajectory.map((point, i) => ({
-    month: point.month,
-    current: point.value,
-    potential: calculations.abridgeTrajectory[i]?.value || 0,
-    gap: [point.value, calculations.abridgeTrajectory[i]?.value || 0],
-  }));
+  const chartData = [
+    { month: 0, current: 0, potential: 0 },
+    { month: 12, current: recalculatedValues.currentYear1, potential: recalculatedValues.optimizedYear1 },
+    { month: 24, current: recalculatedValues.currentYear2, potential: recalculatedValues.optimizedYear2 },
+    { month: 36, current: recalculatedValues.currentYear3, potential: recalculatedValues.optimizedYear3 },
+  ];
 
   const toggleAccordion = (id: string) => {
     setOpenAccordion(openAccordion === id ? null : id);
   };
 
   const CustomDot = (props: any) => {
-    const { cx, cy, payload, dataKey } = props;
-    if (payload.month % 12 === 0) {
-      const isTop = dataKey === 'potential';
-      return (
-        <circle 
-          key={`${dataKey}-${payload.month}`}
-          cx={cx} 
-          cy={cy} 
-          r={isTop ? 6 : 5} 
-          fill={isTop ? "#EA2C00" : "#888888"}
-          stroke="white" 
-          strokeWidth={2}
-        />
-      );
-    }
-    return null;
+    const { cx, cy, dataKey } = props;
+    if (cx === undefined || cy === undefined) return null;
+    const isOptimized = dataKey === 'potential';
+    return (
+      <circle 
+        cx={cx} 
+        cy={cy} 
+        r={isOptimized ? 6 : 5} 
+        fill={isOptimized ? "#EA2C00" : "#999999"}
+        stroke="white" 
+        strokeWidth={2}
+      />
+    );
   };
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2" data-testid="text-page-title">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2" data-testid="text-page-title">
           The Math
         </h1>
-        <p className="text-base text-[#6B7280]">
+        <p className="text-base text-[#666666]">
           Every number is transparent. Every assumption is yours to challenge.
         </p>
       </div>
 
-      {/* Annual Value Gap Section */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
@@ -217,11 +227,11 @@ export default function StepTheMath({
               <Calculator className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">VALUE BREAKDOWN</p>
-              <h2 className="text-lg font-bold text-black">Your Annual Value Gap</h2>
+              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px]">Value Breakdown</p>
+              <h2 className="text-lg font-bold text-[#1A1A1A]">Your Annual Value Gap</h2>
             </div>
           </div>
-          <p className="text-xs text-[#888888]">Click to expand</p>
+          <p className="text-xs text-[#999999]">Click to expand</p>
         </div>
 
         <div className="space-y-3">
@@ -235,38 +245,15 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('utilization')}
           >
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="text-xs text-[#888888] mb-1 block">Your Current Utilization</label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={inputs.utilization}
-                      onChange={(e) => updateInput('utilization', parseFloat(e.target.value) || 0)}
-                      className="h-9"
-                      data-testid="input-utilization"
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-[#888888] mb-1 block">Benchmark Target</label>
-                  <div className="h-9 flex items-center px-3 bg-[#F5F0EB] rounded-md border text-sm text-black font-medium">
-                    {ABRIDGE_BENCHMARKS.utilization}%
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-3 bg-[#F5F0EB] rounded-lg text-xs text-[#6B7280]">
-                <p className="font-medium text-black mb-2 flex items-center gap-1.5">
-                  <Settings2 className="w-3.5 h-3.5" />
-                  How we calculate this (click values to edit):
-                </p>
-                <div className="space-y-1.5 font-mono">
-                  <p>Gap: ({ABRIDGE_BENCHMARKS.utilization}% - {inputs.utilization}%) = {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}%</p>
-                  <p>Additional encounters: {inputs.annualEncounters.toLocaleString()} × {ABRIDGE_BENCHMARKS.utilization - inputs.utilization}% = {Math.round(inputs.annualEncounters * (ABRIDGE_BENCHMARKS.utilization - inputs.utilization) / 100).toLocaleString()}</p>
-                  <p className="flex items-center flex-wrap gap-1">
-                    Time value: × {ABRIDGE_BENCHMARKS.timeSavedAvg} min × 
+              <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
+                <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
+                <div className="space-y-2 font-mono">
+                  <p>Encounters not getting AI benefit:</p>
+                  <p className="pl-3">{effectiveEncounters.toLocaleString()} encounters x ({ABRIDGE_BENCHMARKS.utilization}% - {inputs.utilization}%) = {encountersWithoutAI.toLocaleString()} encounters</p>
+                  <p className="mt-2">Time cost of manual documentation:</p>
+                  <p className="pl-3">{encountersWithoutAI.toLocaleString()} encounters x {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {Math.round((encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60).toLocaleString()} hours/year</p>
+                  <p className="mt-2 flex items-center flex-wrap gap-1">
+                    Value: {Math.round((encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60).toLocaleString()} hours x
                     <InlineEdit
                       value={assumptions.hourlyRate}
                       onChange={(v) => updateAssumption('hourlyRate', v)}
@@ -275,18 +262,25 @@ export default function StepTheMath({
                       width="w-12"
                       testId="edit-hourly-rate-util"
                     />
-                    ×
+                    x
                     <InlineEdit
-                      value={assumptions.utilizationConversion}
-                      onChange={(v) => updateAssumption('utilizationConversion', v)}
+                      value={assumptions.timeConversion}
+                      onChange={(v) => updateAssumption('timeConversion', v)}
                       suffix="%"
                       width="w-10"
-                      testId="edit-util-conversion"
+                      testId="edit-conversion-util"
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-2 text-sm">= {formatCurrency(recalculatedValues.utilizationGapValue)}/year</p>
                 </div>
+              </div>
+              
+              <div className="p-3 bg-[#F5F0EB] rounded-lg flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#666666] flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-[#666666]">
+                  <span className="font-semibold">Why {assumptions.timeConversion}% conversion?</span> Not all time saved becomes dollars. Some is absorbed into workflow, some goes to work-life balance. We use a conservative conversion rate. Adjust based on your capacity situation.
+                </p>
               </div>
             </div>
           </GapAccordion>
@@ -301,40 +295,17 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('efficiency')}
           >
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="text-xs text-[#888888] mb-1 block">Current Time Saved/Encounter</label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={inputs.timeSavedPerEncounter}
-                      onChange={(e) => updateInput('timeSavedPerEncounter', parseFloat(e.target.value) || 0)}
-                      className="h-9"
-                      data-testid="input-time-saved"
-                    />
-                    <span className="text-sm text-[#888888]">min</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-[#888888] mb-1 block">Benchmark Target</label>
-                  <div className="h-9 flex items-center px-3 bg-[#F5F0EB] rounded-md border text-sm text-black font-medium">
-                    {ABRIDGE_BENCHMARKS.timeSavedAvg} min
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-3 bg-[#F5F0EB] rounded-lg text-xs text-[#6B7280]">
-                <p className="font-medium text-black mb-2 flex items-center gap-1.5">
-                  <Settings2 className="w-3.5 h-3.5" />
-                  How we calculate this (click values to edit):
-                </p>
-                <div className="space-y-1.5 font-mono">
-                  <p>Time gap: ({ABRIDGE_BENCHMARKS.timeSavedAvg} - {inputs.timeSavedPerEncounter}) = {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min/encounter</p>
-                  <p>Eligible encounters: {eligibleEncounters.toLocaleString()} (at {ABRIDGE_BENCHMARKS.utilization}% utilization)</p>
-                  <p>Hours saved: {((ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter) * eligibleEncounters / 60).toFixed(0)} hours/year</p>
-                  <p className="flex items-center flex-wrap gap-1">
-                    Value: ×
+              <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
+                <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
+                <div className="space-y-2 font-mono">
+                  <p>Time gap per encounter:</p>
+                  <p className="pl-3">{ABRIDGE_BENCHMARKS.timeSavedAvg} min (benchmark) - {inputs.timeSavedPerEncounter} min (current) = {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min/encounter</p>
+                  <p className="mt-2">Encounters WITH AI (at your utilization):</p>
+                  <p className="pl-3">{effectiveEncounters.toLocaleString()} x {inputs.utilization}% = {encountersWithAI.toLocaleString()} encounters</p>
+                  <p className="mt-2">Additional time that could be saved:</p>
+                  <p className="pl-3">{encountersWithAI.toLocaleString()} x {(ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter).toFixed(1)} min = {recalculatedValues.efficiencyGapHours.toLocaleString()} hours/year</p>
+                  <p className="mt-2 flex items-center flex-wrap gap-1">
+                    Value: {recalculatedValues.efficiencyGapHours.toLocaleString()} hours x
                     <InlineEdit
                       value={assumptions.hourlyRate}
                       onChange={(v) => updateAssumption('hourlyRate', v)}
@@ -343,18 +314,25 @@ export default function StepTheMath({
                       width="w-12"
                       testId="edit-hourly-rate-eff"
                     />
-                    ×
+                    x
                     <InlineEdit
-                      value={assumptions.efficiencyConversion}
-                      onChange={(v) => updateAssumption('efficiencyConversion', v)}
+                      value={assumptions.timeConversion}
+                      onChange={(v) => updateAssumption('timeConversion', v)}
                       suffix="%"
                       width="w-10"
-                      testId="edit-eff-conversion"
+                      testId="edit-conversion-eff"
                     />
                     conversion
                   </p>
-                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-2 text-sm">= {formatCurrency(recalculatedValues.efficiencyGapValue)}/year</p>
                 </div>
+              </div>
+              
+              <div className="p-3 bg-[#F5F0EB] rounded-lg flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#666666] flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-[#666666]">
+                  This uses YOUR current utilization ({inputs.utilization}%), not the benchmark. It shows the efficiency gap for encounters where AI IS being used — it could be saving more time per encounter.
+                </p>
               </div>
             </div>
           </GapAccordion>
@@ -369,39 +347,18 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('quality')}
           >
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="text-xs text-[#888888] mb-1 block">Current wRVU Lift</label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={inputs.wrvuLift}
-                      onChange={(e) => updateInput('wrvuLift', parseFloat(e.target.value) || 0)}
-                      className="h-9"
-                      data-testid="input-wrvu-lift"
-                    />
-                    <span className="text-sm text-[#888888]">%</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-[#888888] mb-1 block">Benchmark Target</label>
-                  <div className="h-9 flex items-center px-3 bg-[#F5F0EB] rounded-md border text-sm text-black font-medium">
-                    +{ABRIDGE_BENCHMARKS.wrvuLift}%
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-3 bg-[#F5F0EB] rounded-lg text-xs text-[#6B7280]">
-                <p className="font-medium text-black mb-2 flex items-center gap-1.5">
-                  <Settings2 className="w-3.5 h-3.5" />
-                  How we calculate this (click values to edit):
-                </p>
-                <div className="space-y-1.5 font-mono">
-                  <p>wRVU gap: ({ABRIDGE_BENCHMARKS.wrvuLift}% - {inputs.wrvuLift}%) = {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}%</p>
-                  <p>Base wRVU: {VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU/encounter × {eligibleEncounters.toLocaleString()} encounters</p>
-                  <p className="flex items-center flex-wrap gap-1">
-                    Value: ×
+              <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
+                <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
+                <div className="space-y-2 font-mono">
+                  <p>wRVU lift gap:</p>
+                  <p className="pl-3">{ABRIDGE_BENCHMARKS.wrvuLift}% (benchmark) - {inputs.wrvuLift}% (current) = {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}%</p>
+                  <p className="mt-2">Base wRVU volume:</p>
+                  <p className="pl-3">{VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU/encounter x {encountersWithAI.toLocaleString()} encounters = {recalculatedValues.baseWRVUs.toLocaleString()} base wRVUs</p>
+                  <p className="pl-3 text-[#999999]">(using your current utilization)</p>
+                  <p className="mt-2">Missing wRVU lift:</p>
+                  <p className="pl-3">{recalculatedValues.baseWRVUs.toLocaleString()} wRVUs x {(ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift).toFixed(1)}% = {recalculatedValues.missingWRVUs.toLocaleString()} wRVUs</p>
+                  <p className="mt-2 flex items-center flex-wrap gap-1">
+                    Value: {recalculatedValues.missingWRVUs.toLocaleString()} wRVUs x
                     <InlineEdit
                       value={assumptions.wrvuDollarValue}
                       onChange={(v) => updateAssumption('wrvuDollarValue', v)}
@@ -410,24 +367,30 @@ export default function StepTheMath({
                       width="w-10"
                       testId="edit-wrvu-value"
                     />
-                    ×
+                    x
                     <InlineEdit
-                      value={assumptions.wrvuAttribution}
-                      onChange={(v) => updateAssumption('wrvuAttribution', v)}
+                      value={assumptions.wrvuRealization}
+                      onChange={(v) => updateAssumption('wrvuRealization', v)}
                       suffix="%"
                       width="w-10"
-                      testId="edit-wrvu-attribution"
+                      testId="edit-wrvu-realization"
                     />
-                    attribution
+                    realization
                   </p>
-                  <p className="font-bold text-[#EA2C00] pt-1">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
+                  <p className="font-bold text-[#EA2C00] pt-2 text-sm">= {formatCurrency(recalculatedValues.wrvuGapValue)}/year</p>
                 </div>
+              </div>
+              
+              <div className="p-3 bg-[#F5F0EB] rounded-lg flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#666666] flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-[#666666]">
+                  <span className="font-semibold">Why {assumptions.wrvuRealization}% realization?</span> Not every wRVU uplift translates to payment. We apply {assumptions.wrvuRealization}% realization to account for payer mix, denials, and other factors.
+                </p>
               </div>
             </div>
           </GapAccordion>
         </div>
 
-        {/* Total Annual Gap */}
         <div className="mt-5 bg-[#F5F0EB] rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -435,20 +398,19 @@ export default function StepTheMath({
                 <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
               </div>
               <div>
-                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">TOTAL ANNUAL GAP</p>
-                <p className="text-sm text-[#6B7280]">Unrealized value per year</p>
+                <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px]">Total Annual Gap</p>
+                <p className="text-sm text-[#666666]">Unrealized value per year</p>
               </div>
             </div>
-            <span className="text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.annualGap)}</span>
+            <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.annualGap)}</span>
           </div>
         </div>
       </section>
 
-      {/* 3-Year Projection */}
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
-        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">3-YEAR PROJECTION</p>
-        <h2 className="text-xl font-bold text-black mb-2">The Compounding Effect</h2>
-        <p className="text-sm text-[#6B7280] mb-6">
+        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">3-Year Projection</p>
+        <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">The Compounding Effect</h2>
+        <p className="text-sm text-[#666666] mb-6">
           The shaded area is value left on the table. Every month of delay shrinks what you capture.
         </p>
         
@@ -463,68 +425,46 @@ export default function StepTheMath({
               </defs>
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 12, fill: '#888888' }}
-                tickFormatter={(value) => value % 12 === 0 ? `Year ${value / 12}` : ''}
+                tick={{ fontSize: 12, fill: '#999999' }}
+                tickFormatter={(value) => `Year ${value / 12}`}
                 ticks={[0, 12, 24, 36]}
                 axisLine={{ stroke: '#E5E7EB' }}
                 tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12, fill: '#888888' }}
+                tick={{ fontSize: 12, fill: '#999999' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 axisLine={false}
                 tickLine={false}
                 width={55}
               />
               <Tooltip 
-                formatter={(value: number | number[], name: string) => {
-                  if (name === 'gap') return [null, null];
-                  const displayValue = Array.isArray(value) ? value[0] : value;
+                formatter={(value: number, name: string) => {
                   return [
-                    formatCurrency(displayValue),
-                    name === 'current' ? 'Continue as-is' : 'Optimized'
+                    formatCurrency(value),
+                    name === 'current' ? 'Current (staying course)' : 'Optimized (with Abridge)'
                   ];
                 }}
-                filterNull={true}
-                labelFormatter={(label) => label % 12 === 0 ? `Year ${label / 12}` : `Month ${label}`}
+                labelFormatter={(label) => `Year ${label / 12}`}
                 contentStyle={{ 
                   borderRadius: '8px', 
                   border: '1px solid #E5E7EB',
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                 }}
               />
-              <ReferenceLine 
-                x={6} 
-                stroke="#888888" 
-                strokeDasharray="4 4" 
-                strokeWidth={1}
-              />
-              <ReferenceLine 
-                x={12} 
-                stroke="#888888" 
-                strokeDasharray="4 4" 
-                strokeWidth={1}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="gap" 
-                stroke="none"
-                fill="url(#gapGradient)"
-                name="gap"
-              />
               <Area 
                 type="monotone" 
                 dataKey="potential" 
                 stroke="#EA2C00" 
                 strokeWidth={2}
-                fill="none"
+                fill="url(#gapGradient)"
                 name="potential"
                 dot={<CustomDot dataKey="potential" />}
               />
               <Area 
                 type="monotone" 
                 dataKey="current" 
-                stroke="#888888" 
+                stroke="#999999" 
                 strokeWidth={2}
                 fill="none"
                 name="current"
@@ -535,42 +475,68 @@ export default function StepTheMath({
           </ResponsiveContainer>
         </div>
         
-        {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#EA2C00]" />
-            <span className="text-[#6B7280]">Optimized</span>
+            <span className="text-[#666666]">Optimized (with Abridge)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-[#888888]" style={{ borderTop: '2px dashed #888888' }} />
-            <span className="text-[#6B7280]">Current</span>
+            <div className="w-4 border-t-2 border-dashed border-[#999999]" />
+            <span className="text-[#666666]">Current (staying course)</span>
+          </div>
+        </div>
+
+        <div className="mt-6 border-t border-[#E5E7EB] pt-4">
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Year-by-Year:</p>
+          <div className="space-y-1.5 text-xs text-[#666666]">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-[#1A1A1A] w-14">Year 1:</span>
+              <span>{formatCurrency(recalculatedValues.optimizedYear1)} optimized vs {formatCurrency(recalculatedValues.currentYear1)} current</span>
+              <span className="text-[#EA2C00] font-medium">(gap: {formatCurrency(recalculatedValues.optimizedYear1 - recalculatedValues.currentYear1)})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-[#1A1A1A] w-14">Year 2:</span>
+              <span>{formatCurrency(recalculatedValues.optimizedYear2)} cumulative vs {formatCurrency(recalculatedValues.currentYear2)} current</span>
+              <span className="text-[#EA2C00] font-medium">(gap: {formatCurrency(recalculatedValues.optimizedYear2 - recalculatedValues.currentYear2)})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-[#1A1A1A] w-14">Year 3:</span>
+              <span>{formatCurrency(recalculatedValues.optimizedYear3)} cumulative vs {formatCurrency(recalculatedValues.currentYear3)} current</span>
+              <span className="text-[#EA2C00] font-medium">(gap: {formatCurrency(recalculatedValues.optimizedYear3 - recalculatedValues.currentYear3)})</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Cost of Waiting */}
-      <section className="bg-[#F5F0EB] rounded-xl p-5">
-        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">COST OF WAITING</p>
+      <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
+        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">Cost of Waiting</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <p className="text-xs text-[#888888] mb-1">Act now</p>
-            <p className="text-xl font-bold text-black">{formatCurrency(recalculatedValues.switchNowValue)}</p>
-            <p className="text-xs text-[#6B7280]">3-year value</p>
+          <div className="bg-[#F5F0EB] rounded-lg p-4">
+            <p className="text-xs text-[#666666] mb-1">Act now</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.switchNowValue)}</p>
+            <p className="text-xs text-[#999999]">3-year value</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <p className="text-xs text-[#888888] mb-1">Wait 6 months</p>
-            <p className="text-xl font-bold text-black">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
-            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait6MonthsLoss)}</p>
+            <p className="text-xs text-[#666666] mb-1">Wait 6 months</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
+            <p className="text-xs text-[#999999] mb-1">3-year value</p>
+            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait6MonthsLoss)} opportunity cost</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <p className="text-xs text-[#888888] mb-1">Wait 12 months</p>
-            <p className="text-xl font-bold text-black">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
-            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait12MonthsLoss)}</p>
+            <p className="text-xs text-[#666666] mb-1">Wait 12 months</p>
+            <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
+            <p className="text-xs text-[#999999] mb-1">3-year value</p>
+            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait12MonthsLoss)} opportunity cost</p>
           </div>
+        </div>
+        
+        <div className="mt-4 border-t border-[#E5E7EB] pt-4 text-center">
+          <p className="text-sm text-[#EA2C00] font-semibold">
+            Every month you wait: {formatCurrency(recalculatedValues.monthlyGap)} in unrealized value
+          </p>
         </div>
       </section>
 
-      {/* Navigation */}
       <div className="flex justify-between items-center pt-4">
         <Button 
           variant="ghost" 

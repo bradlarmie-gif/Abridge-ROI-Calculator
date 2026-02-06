@@ -1,6 +1,7 @@
 // ============================================================================
 // SWITCH GAP CALCULATOR - VALUE REALIZATION ASSESSMENT
 // Four-dimensional analysis: Utilization, Efficiency, Quality, Satisfaction
+// Formulas aligned with Abridge benchmark spec
 // ============================================================================
 
 export type SolutionType = "ambient-ai" | "human-scribes";
@@ -14,7 +15,7 @@ export interface SwitchInputs {
   timeSavedPerEncounter: number;
   wrvuLift: number;
   satisfaction: number;
-  afterHoursPerWeek: number; // Hours/week providers spend documenting after clinic hours
+  afterHoursPerWeek: number;
 }
 
 export interface GapItem {
@@ -28,82 +29,78 @@ export interface GapItem {
 }
 
 export interface SwitchCalculations {
-  // Individual dimension scores (as % of benchmark)
   utilizationScore: number;
   efficiencyScore: number;
   qualityScore: number;
   satisfactionScore: number;
-  
-  // The realization score (multiplicative)
   realizationScore: number;
   maturityLevel: string;
-  
-  // Your current state
   yourEncountersDocumented: number;
   yourHoursReturned: number;
   yourAnnualValue: number;
-  
-  // Abridge potential
   abridgeEncountersDocumented: number;
   abridgeHoursReturned: number;
   abridgeAnnualValue: number;
-  
-  // The gaps
   encounterGap: number;
   hoursGap: number;
   annualGap: number;
   threeYearGap: number;
   monthlyGap: number;
-  
-  // Individual gap values
   utilizationGapValue: number;
   efficiencyGapValue: number;
   wrvuGapValue: number;
   efficiencyGapHours: number;
-  
-  // Cost of waiting
   switchNowValue: number;
   wait6MonthsValue: number;
   wait12MonthsValue: number;
   wait6MonthsLoss: number;
   wait12MonthsLoss: number;
-  
-  // 3-year trajectories for graph
+  optimizedYear1: number;
+  optimizedYear2: number;
+  optimizedYear3: number;
+  currentYear1: number;
+  currentYear2: number;
+  currentYear3: number;
   currentTrajectory: { month: number; value: number }[];
   abridgeTrajectory: { month: number; value: number }[];
-  
-  // Current investment
   currentAnnualInvestment: number;
   abridgeAnnualInvestment: number;
+  afterHoursAnnual: number;
+  afterHoursBenchmarkAnnual: number;
+  afterHoursGap: number;
 }
 
-// Abridge benchmarks (based on aggregate data)
 export const ABRIDGE_BENCHMARKS = {
-  utilization: 76, // 76% average utilization (mature implementation)
-  timeSavedMin: 3, // 3 min minimum
-  timeSavedMax: 5, // 5 min maximum
-  timeSavedAvg: 4, // 4 min average time saved per encounter
-  wrvuLift: 5.5, // 5.5% wRVU lift average
-  satisfaction: 88, // 88% provider satisfaction/recommendation
-  afterHoursReduction: 3, // 3 hours/week after-hours documentation reduction
-  costPerProviderMonth: 250, // Abridge cost estimate
+  utilization: 76,
+  utilizationMin: 70,
+  utilizationMax: 80,
+  timeSavedMin: 3,
+  timeSavedMax: 5,
+  timeSavedAvg: 4,
+  wrvuLift: 5.5,
+  wrvuLiftMin: 4,
+  wrvuLiftMax: 7,
+  satisfaction: 88,
+  satisfactionMin: 80,
+  satisfactionMax: 95,
+  afterHoursPerWeek: 2,
+  afterHoursMin: 1,
+  afterHoursMax: 3,
+  costPerProviderMonth: 250,
 };
 
-// Value assumptions (conservative)
 export const VALUE_ASSUMPTIONS = {
-  hourlyRate: 150, // $150/hr provider time
-  utilizationTimeConversionRate: 0.15, // 15% of saved time converts to value for utilization gap (conservative)
-  efficiencyTimeConversionRate: 0.20, // 20% of saved time converts to value for efficiency gap (conservative)
-  wrvuDollarValue: 33, // $33 per wRVU
-  wrvuAttribution: 0.5, // 50% attribution
-  avgWRVUPerEncounter: 1.5, // Assume 1.5 wRVU/encounter baseline
+  hourlyRate: 150,
+  timeConversionRate: 0.25,
+  wrvuDollarValue: 33,
+  wrvuRealization: 0.85,
+  avgWRVUPerEncounter: 1.5,
 };
 
-// Implementation timeline
 export const IMPLEMENTATION_TIMELINE = {
-  implementationWeeks: 5, // 4-6 weeks, avg 5
-  rampMonths: 3, // 2-3 months to full utilization
-  fullValueMonth: 4, // Month 4+ at full value
+  implementationWeeks: 5,
+  rampMonths: 3,
+  fullValueMonth: 4,
 };
 
 export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
@@ -115,113 +112,98 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     timeSavedPerEncounter,
     wrvuLift,
     satisfaction,
+    afterHoursPerWeek,
   } = inputs;
 
-  // === DIMENSION SCORES (as % of benchmark) ===
   const utilizationScore = Math.min(100, Math.round((utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
   const efficiencyScore = Math.min(100, Math.round((timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
   const qualityScore = Math.min(100, Math.round((wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100));
   const satisfactionScore = Math.min(100, Math.round((satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100));
 
-  // === REALIZATION SCORE (simple average of all dimensions) ===
   const realizationScore = Math.round(
     (utilizationScore + efficiencyScore + qualityScore + satisfactionScore) / 4
   );
 
-  // Maturity level based on realization score (adjusted thresholds)
   let maturityLevel: string;
   if (realizationScore < 40) maturityLevel = 'Early Stage';
   else if (realizationScore < 60) maturityLevel = 'Developing';
   else if (realizationScore < 80) maturityLevel = 'Optimized';
   else maturityLevel = 'Transformed';
 
-  // Encounters documented
   const yourEncountersDocumented = Math.round(annualEncounters * (utilization / 100));
   const abridgeEncountersDocumented = Math.round(annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
   const encounterGap = Math.max(0, abridgeEncountersDocumented - yourEncountersDocumented);
 
-  // Hours returned
   const yourHoursReturned = Math.round((yourEncountersDocumented * timeSavedPerEncounter) / 60);
   const abridgeHoursReturned = Math.round((abridgeEncountersDocumented * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60);
   const hoursGap = Math.max(0, abridgeHoursReturned - yourHoursReturned);
 
-  // === GAP CALCULATIONS ===
-  
-  // 1. Utilization gap (now vs 75%) - tied to time savings logic
-  // If those encounters got documented at Abridge efficiency (4 min saved):
+  // 1. Utilization gap: encounters NOT getting AI × benchmark time saved
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - utilization);
-  const utilizationGapEncounters = Math.round(annualEncounters * (utilizationGapPP / 100));
-  const utilizationPotentialTimeSavedMinutes = utilizationGapEncounters * ABRIDGE_BENCHMARKS.timeSavedAvg;
-  const utilizationPotentialTimeSavedHours = utilizationPotentialTimeSavedMinutes / 60;
-  const utilizationGapValue = Math.round(utilizationPotentialTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.utilizationTimeConversionRate);
+  const encountersWithoutAI = Math.round(annualEncounters * (utilizationGapPP / 100));
+  const utilizationTimeSavedHours = (encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
+  const utilizationGapValue = Math.round(utilizationTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
 
-  // 2. Efficiency gap
+  // 2. Efficiency gap: encounters WITH AI (at YOUR utilization) × time gap
+  const encountersWithAI = yourEncountersDocumented;
   const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
-  const encountersAtBenchmark = Math.round(annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
-  const efficiencyGapHours = Math.round((encountersAtBenchmark * efficiencyGapMin) / 60);
-  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate);
+  const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
+  const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
 
-  // 3. wRVU gap (Quality)
+  // 3. wRVU gap: base wRVUs at YOUR utilization × lift gap × realization
   const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
-  const wrvuGapPerEncounter = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100);
-  const wrvuGapValue = Math.round(wrvuGapPerEncounter * encountersAtBenchmark * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuAttribution);
+  const baseWRVUs = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * encountersWithAI;
+  const missingWRVUs = baseWRVUs * (wrvuGapPercent / 100);
+  const wrvuGapValue = Math.round(missingWRVUs * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuRealization);
 
-  // Total annual values
   const annualGap = utilizationGapValue + efficiencyGapValue + wrvuGapValue;
-  const threeYearGap = annualGap * 3;
   const monthlyGap = Math.round(annualGap / 12);
 
-  // Calculate your annual value based on time savings
-  const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
-  const yourTimeSavedHours = yourTimeSavedMinutes / 60;
-  const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.efficiencyTimeConversionRate;
-  const abridgeAnnualValue = yourAnnualValue + annualGap;
+  // 3-year projections per spec ramp formulas
+  const optimizedYear1 = Math.round(annualGap * 0.87);
+  const optimizedYear2 = Math.round(optimizedYear1 + (annualGap * 1.10));
+  const optimizedYear3 = Math.round(optimizedYear2 + (annualGap * 1.15));
 
-  // Cost of waiting calculations
-  const switchNowValue = annualGap * 3; // Full 3 years
-  const wait6MonthsValue = annualGap * 2.5; // Lose 6 months
-  const wait12MonthsValue = annualGap * 2; // Lose 12 months
+  const currentYear1 = Math.round(annualGap * 0.10);
+  const currentYear2 = Math.round(currentYear1 + (annualGap * 0.11));
+  const currentYear3 = Math.round(currentYear2 + (annualGap * 0.12));
+
+  const threeYearGap = optimizedYear3 - currentYear3;
+
+  // Cost of waiting per spec
+  const switchNowValue = optimizedYear3;
+  const wait6MonthsValue = Math.round(optimizedYear3 - (annualGap * 0.5));
+  const wait12MonthsValue = Math.round(optimizedYear3 - annualGap);
   const wait6MonthsLoss = switchNowValue - wait6MonthsValue;
   const wait12MonthsLoss = switchNowValue - wait12MonthsValue;
 
-  // Investment calculations
+  const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
+  const yourTimeSavedHours = yourTimeSavedMinutes / 60;
+  const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
+  const abridgeAnnualValue = yourAnnualValue + annualGap;
+
   const currentAnnualInvestment = currentCostPerProvider * providers * 12;
   const abridgeAnnualInvestment = ABRIDGE_BENCHMARKS.costPerProviderMonth * providers * 12;
 
-  // 3-year trajectories
-  const currentTrajectory: { month: number; value: number }[] = [];
-  const abridgeTrajectory: { month: number; value: number }[] = [];
-  
-  const currentMonthlyValue = yourAnnualValue / 12;
-  const abridgeMonthlyValue = abridgeAnnualValue / 12;
-  
-  for (let month = 0; month <= 36; month++) {
-    // Current trajectory: simple linear accumulation
-    currentTrajectory.push({
-      month,
-      value: Math.round(month * currentMonthlyValue),
-    });
-    
-    // Abridge trajectory: linear accumulation at optimized rate
-    // (with slight ramp-up adjustment for first 3 months)
-    let abridgeValue = 0;
-    if (month === 0) {
-      abridgeValue = 0;
-    } else if (month <= IMPLEMENTATION_TIMELINE.rampMonths) {
-      // During ramp: partial value capture (average 50% efficiency during ramp)
-      abridgeValue = month * abridgeMonthlyValue * 0.5;
-    } else {
-      // After ramp: full value from ramp period + full months after
-      const rampValue = IMPLEMENTATION_TIMELINE.rampMonths * abridgeMonthlyValue * 0.5;
-      const fullMonths = month - IMPLEMENTATION_TIMELINE.rampMonths;
-      abridgeValue = rampValue + (fullMonths * abridgeMonthlyValue);
-    }
-    
-    abridgeTrajectory.push({
-      month,
-      value: Math.round(abridgeValue),
-    });
-  }
+  // After-hours calculations
+  const afterHoursAnnual = Math.round((afterHoursPerWeek || 0) * providers * 52);
+  const afterHoursBenchmarkAnnual = Math.round(ABRIDGE_BENCHMARKS.afterHoursPerWeek * providers * 52);
+  const afterHoursGap = Math.max(0, afterHoursAnnual - afterHoursBenchmarkAnnual);
+
+  // Build trajectory arrays for chart (yearly data points)
+  const currentTrajectory: { month: number; value: number }[] = [
+    { month: 0, value: 0 },
+    { month: 12, value: currentYear1 },
+    { month: 24, value: currentYear2 },
+    { month: 36, value: currentYear3 },
+  ];
+
+  const abridgeTrajectory: { month: number; value: number }[] = [
+    { month: 0, value: 0 },
+    { month: 12, value: optimizedYear1 },
+    { month: 24, value: optimizedYear2 },
+    { month: 36, value: optimizedYear3 },
+  ];
 
   return {
     utilizationScore,
@@ -245,6 +227,12 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     efficiencyGapValue,
     wrvuGapValue,
     efficiencyGapHours,
+    optimizedYear1,
+    optimizedYear2,
+    optimizedYear3,
+    currentYear1,
+    currentYear2,
+    currentYear3,
     switchNowValue,
     wait6MonthsValue,
     wait12MonthsValue,
@@ -254,6 +242,9 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     abridgeTrajectory,
     currentAnnualInvestment,
     abridgeAnnualInvestment,
+    afterHoursAnnual,
+    afterHoursBenchmarkAnnual,
+    afterHoursGap,
   };
 }
 

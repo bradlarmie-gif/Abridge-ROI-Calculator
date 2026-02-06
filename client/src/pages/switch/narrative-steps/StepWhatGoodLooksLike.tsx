@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowLeft, Target, CheckCircle, BarChart3, Clock, DollarSign, Heart } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, BarChart3, Clock, DollarSign, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type SwitchInputs, type SwitchCalculations, ABRIDGE_BENCHMARKS } from "@/lib/switchGapCalculator";
 
@@ -35,70 +35,77 @@ function BenchmarkCard({
   const benchmarkMinPercent = (benchmarkMin / maxScale) * 100;
   const benchmarkMaxPercent = Math.min(100, (benchmarkMax / maxScale) * 100);
   
-  const isInRange = currentValue >= benchmarkMin;
   const isBelowRange = currentValue < benchmarkMin;
+  const gapToRange = Math.max(0, benchmarkMin - currentValue);
   
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
             {icon}
           </div>
-          <h3 className="font-semibold text-black text-sm">{label}</h3>
+          <h3 className="font-semibold text-[#1A1A1A] text-sm">{label}</h3>
         </div>
         
-        <div className={`text-right border-l-4 pl-3 ${isBelowRange ? 'border-[#EA2C00]' : 'border-green-500'}`}>
-          <span className={`text-2xl font-bold ${isBelowRange ? 'text-[#EA2C00]' : 'text-green-600'}`}>
+        <div className="text-right">
+          <span className="text-2xl font-bold text-[#1A1A1A]">
             {prefix}{currentValue}{unit}
           </span>
-          <p className="text-xs text-[#888888] uppercase tracking-wider">Current</p>
+          <p className="text-[10px] text-[#999999] uppercase tracking-wider">Current</p>
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="relative mb-3">
-        <div className="h-2 bg-[#F5F0EB] rounded-full overflow-hidden">
-          {/* Benchmark zone */}
+      <div className="relative mb-4">
+        <div className="h-2 bg-[#F5F5F5] rounded-full relative">
           <div 
-            className="absolute h-full bg-green-200 rounded-full"
+            className="absolute h-full bg-[#E0E0E0] rounded-full"
             style={{ 
               left: `${benchmarkMinPercent}%`, 
               width: `${benchmarkMaxPercent - benchmarkMinPercent}%` 
             }}
           />
           
-          {/* Current position marker */}
           <div 
-            className="absolute top-1/2 w-3 h-3 rounded-full border-2 border-white shadow-md transition-all z-10 bg-black"
+            className="absolute top-1/2 w-3.5 h-3.5 rounded-full border-2 border-white shadow-md transition-all z-10 bg-[#EA2C00]"
             style={{ left: `${currentPercent}%`, transform: 'translate(-50%, -50%)' }}
           />
         </div>
-      </div>
-      
-      <div className="flex justify-between items-center text-xs text-[#888888]">
-        <span>0{unit}</span>
-        <span className="px-2 py-1 bg-[#F5F0EB] text-[#6B7280] font-medium rounded">
-          Benchmark: {prefix}{benchmarkMin}–{benchmarkMax}{unit}
-        </span>
-        <span>{maxScale}{unit}</span>
+        
+        <div className="flex justify-between items-center text-[10px] text-[#999999] mt-1.5">
+          <span>0{unit}</span>
+          <span>{maxScale}{unit}</span>
+        </div>
+        
+        <div 
+          className="absolute text-[10px] text-[#666666]"
+          style={{ 
+            left: `${(benchmarkMinPercent + benchmarkMaxPercent) / 2}%`, 
+            transform: 'translateX(-50%)',
+            top: '18px'
+          }}
+        >
+          <span className="bg-[#E8E8E8] px-2 py-0.5 rounded text-[#333333] font-medium whitespace-nowrap">
+            Abridge Range: {prefix}{benchmarkMin}–{benchmarkMax}{unit}
+          </span>
+        </div>
       </div>
 
-      {isBelowRange && (
-        <div className="mt-3 p-3 bg-[#FFF5F2] rounded-lg border border-[#EA2C00]/10">
-          <p className="text-xs text-[#6B7280]">
-            <span className="font-semibold text-[#EA2C00]">{Math.round(benchmarkMin - currentValue)}{unit} gap</span> to reach benchmark range
-          </p>
-        </div>
-      )}
-      
-      {isInRange && (
-        <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-100">
-          <p className="text-xs text-green-700 font-medium">
-            In benchmark range
-          </p>
-        </div>
-      )}
+      <div className="mt-8">
+        {isBelowRange ? (
+          <div className="p-3 bg-[#FFEBE6] rounded-lg">
+            <p className="text-xs text-[#EA2C00] font-semibold">
+              {Math.round(gapToRange)}{unit} gap to reach benchmark range
+            </p>
+          </div>
+        ) : (
+          <div className="p-3 bg-[#E8E8E8] rounded-lg">
+            <p className="text-xs text-[#333333] font-medium">
+              In Range
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -114,8 +121,8 @@ export default function StepWhatGoodLooksLike({
       icon: <BarChart3 className="w-5 h-5 text-[#EA2C00]" />,
       label: "Utilization",
       currentValue: inputs.utilization || 0,
-      benchmarkMin: ABRIDGE_BENCHMARKS.utilization - 10,
-      benchmarkMax: ABRIDGE_BENCHMARKS.utilization,
+      benchmarkMin: ABRIDGE_BENCHMARKS.utilizationMin,
+      benchmarkMax: ABRIDGE_BENCHMARKS.utilizationMax,
       unit: "%",
       maxScale: 100,
     },
@@ -123,8 +130,8 @@ export default function StepWhatGoodLooksLike({
       icon: <Clock className="w-5 h-5 text-[#EA2C00]" />,
       label: "Time Saved",
       currentValue: inputs.timeSavedPerEncounter || 0,
-      benchmarkMin: ABRIDGE_BENCHMARKS.timeSavedAvg - 1,
-      benchmarkMax: ABRIDGE_BENCHMARKS.timeSavedAvg + 1,
+      benchmarkMin: ABRIDGE_BENCHMARKS.timeSavedMin,
+      benchmarkMax: ABRIDGE_BENCHMARKS.timeSavedMax,
       unit: " min",
       maxScale: 6,
     },
@@ -132,8 +139,8 @@ export default function StepWhatGoodLooksLike({
       icon: <DollarSign className="w-5 h-5 text-[#EA2C00]" />,
       label: "wRVU Lift",
       currentValue: inputs.wrvuLift || 0,
-      benchmarkMin: ABRIDGE_BENCHMARKS.wrvuLift - 2,
-      benchmarkMax: ABRIDGE_BENCHMARKS.wrvuLift + 2,
+      benchmarkMin: ABRIDGE_BENCHMARKS.wrvuLiftMin,
+      benchmarkMax: ABRIDGE_BENCHMARKS.wrvuLiftMax,
       unit: "%",
       prefix: "+",
       maxScale: 12,
@@ -142,8 +149,8 @@ export default function StepWhatGoodLooksLike({
       icon: <Heart className="w-5 h-5 text-[#EA2C00]" />,
       label: "Provider Satisfaction",
       currentValue: inputs.satisfaction || 0,
-      benchmarkMin: ABRIDGE_BENCHMARKS.satisfaction - 10,
-      benchmarkMax: ABRIDGE_BENCHMARKS.satisfaction,
+      benchmarkMin: ABRIDGE_BENCHMARKS.satisfactionMin,
+      benchmarkMax: ABRIDGE_BENCHMARKS.satisfactionMax,
       unit: "%",
       maxScale: 100,
     },
@@ -154,17 +161,15 @@ export default function StepWhatGoodLooksLike({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2" data-testid="text-page-title">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2" data-testid="text-page-title">
           What Good Looks Like
         </h1>
-        <p className="text-base text-[#6B7280]">
-          These aren't aspirational targets. They're achievable ranges based on mature implementations.
+        <p className="text-base text-[#666666]">
+          These aren't aspirational targets. They're achievable ranges based on mature Abridge implementations.
         </p>
       </div>
 
-      {/* Summary Section */}
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -172,29 +177,30 @@ export default function StepWhatGoodLooksLike({
               <Target className="w-6 h-6 text-[#EA2C00]" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
-                YOUR POSITION
+              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">
+                Your Position
               </p>
-              <p className="text-sm text-[#6B7280]">
+              <p className="text-sm text-[#666666]">
                 See where you stand against top performers
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="text-center px-4 py-2 bg-white rounded-lg border border-[#E5E7EB]">
-              <span className="text-2xl font-bold text-green-600">{inRangeCount}</span>
-              <p className="text-xs text-[#888888]">In Range</p>
+          <div className="flex items-center gap-3">
+            <div className="text-center px-4 py-2 bg-[#E8E8E8] rounded-lg">
+              <span className="text-2xl font-bold text-[#333333]">{inRangeCount}</span>
+              <p className="text-[10px] text-[#666666] uppercase tracking-wider">In Range</p>
             </div>
-            <div className={`text-center px-4 py-2 rounded-lg border ${belowRangeCount > 0 ? 'bg-[#FFF5F2] border-[#EA2C00]/20' : 'bg-white border-[#E5E7EB]'}`}>
-              <span className={`text-2xl font-bold ${belowRangeCount > 0 ? 'text-[#EA2C00]' : 'text-black'}`}>{belowRangeCount}</span>
-              <p className="text-xs text-[#888888]">Opportunities</p>
-            </div>
+            {belowRangeCount > 0 && (
+              <div className="text-center px-4 py-2 bg-[#FFEBE6] rounded-lg">
+                <span className="text-2xl font-bold text-[#EA2C00]">{belowRangeCount}</span>
+                <p className="text-[10px] text-[#EA2C00] uppercase tracking-wider">Opportunities</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Benchmark Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {dimensions.map((dimension) => (
           <BenchmarkCard
@@ -204,35 +210,6 @@ export default function StepWhatGoodLooksLike({
         ))}
       </div>
 
-      {/* What Makes the Difference */}
-      <section className="bg-white rounded-xl border border-[#E5E7EB] p-6">
-        <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-          WHAT MAKES THE DIFFERENCE
-        </p>
-        <p className="text-sm text-[#6B7280] mb-5">
-          Top-performing organizations share something in common — technology built specifically for clinical 
-          workflows, backed by dedicated implementation support.
-        </p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            "90-day guided onboarding",
-            "Specialty customization",
-            "Ongoing optimization",
-            "Real-time analytics"
-          ].map((trait) => (
-            <div 
-              key={trait}
-              className="flex items-center gap-3 p-3 rounded-lg bg-[#F5F0EB]"
-            >
-              <CheckCircle className="w-4 h-4 text-[#EA2C00] flex-shrink-0" />
-              <span className="text-sm text-black font-medium">{trait}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Navigation */}
       <div className="flex justify-between items-center pt-4">
         <Button 
           variant="ghost" 
