@@ -1,0 +1,1398 @@
+GLOBAL TERMINOLOGY FIXES:
+
+1. Replace all instances of "provider" with "nurse" or "nurse FTE" in nursing context
+2. Replace "per provider" with "per bed" (since pricing is per staffed bed)
+3. Replace "50 providers" with "200 beds · 50 nurse FTEs" in summary displays
+4. Replace "$225/provider/mo" with "$X/bed/mo" in pricing displays
+
+GLOBAL STYLING:
+- Ensure Manrope font throughout
+- Section labels: 11px, ALL CAPS, #666666, letter-spacing 1.5px
+- Body text: 14px, #333333
+- Helper text: 12px, #666666
+- Calculation rows: 13px, monospace-style alignment
+- Red-orange accent: #EA2C00 for key values and CTAs
+
+PAGE 1: YOUR NURSING PROGRAM
+CopyPAGE 1 STRUCTURE:
+
+══════════════════════════════════════════════════════════════════════════════════
+HEADER
+══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Explore · Opportunity Size
+Progress dots: ● ○ ○ ○ ○ ○ (first dot filled red)
+
+══════════════════════════════════════════════════════════════════════════════════
+MAIN CONTENT
+══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+YOUR NURSING PROGRAM
+
+SUBHEAD:
+Tell us about your deployment and expected adoption.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: DEPLOYMENT SIZE
+Label: DEPLOYMENT SIZE
+
+Two input fields side by side:
+
+┌─────────────────────────────────┐  ┌─────────────────────────────────┐
+│ Staffed Beds                    │  │ Nurse FTEs                      │
+│                                 │  │                                 │
+│ ┌─────────────────────────────┐ │  │ ┌─────────────────────────────┐ │
+│ │ e.g., 200                   │ │  │ │ e.g., 300                   │ │
+│ └─────────────────────────────┘ │  │ └─────────────────────────────┘ │
+│                                 │  │                                 │
+│ Licensed beds with active       │  │ Full-time equivalent nurses     │
+│ nursing staff                   │  │ in scope for Abridge            │
+└─────────────────────────────────┘  └─────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: BED OCCUPANCY
+Label: BED OCCUPANCY
+
+Slider component:
+○──────────────────────────────●──────────────────○
+50%                            85%               100%
+
+Display: 85% (in box, right side)
+
+Helper text:
+Most hospitals run 75-90% occupancy.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 3: PATIENT DAYS PER YEAR
+Label: PATIENT DAYS PER YEAR
+
+Calculation card (warm beige background #F5F0EB):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  62,050                                              patient days/year          │
+│  [large, red-orange, 32px]                           [gray, 14px, right]        │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Staffed Beds                                                      200          │
+│  × Days per Year                                                   365          │
+│  × Occupancy Rate                                                  85%          │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  This becomes the denominator for HAC rates and quality metrics.                │
+│  [12px, gray, italic]                                                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 4: EXPECTED ADOPTION (renamed from "Expected Utilization")
+Label: EXPECTED ADOPTION
+
+Subhead (14px, gray):
+What percentage of nurses will actively use Abridge?
+
+Scenario buttons (three options):
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│  Conservative   │  │    Typical      │  │   Optimistic    │
+│      50%        │  │      70%        │  │      85%        │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+
+OR custom input:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ OR enter custom                    │                              │             │
+│                                    │  [input field]               │     %       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Helper text:
+Adoption reflects the percentage of nurses consistently using Abridge for 
+supported documentation. Most implementations reach 60-75% within 6 months.
+
+══════════════════════════════════════════════════════════════════════════════════
+RIGHT PANEL (Dark background #1A1A1A, sticky)
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────┐
+│                                         │
+│  [icon] Your Baseline                   │
+│         Deployment summary              │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Staffed Beds              200          │
+│  Nurse FTEs                300          │
+│  Occupancy Rate            85%          │
+│  Patient Days/Year         62,050       │
+│  Adoption                  70%          │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ABRIDGE-ENABLED SHIFTS                 │
+│                                         │
+│  54,600                                 │
+│  [large, red-orange, 32px]              │
+│                                         │
+│  shifts / year                          │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  THE MATH                               │
+│  300 nurse FTEs                         │
+│  × 260 shifts/year                      │
+│  × 70% adoption                         │
+│  = 54,600 shifts                        │
+│  [12px, gray]                           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │      Continue →                 │    │
+│  └─────────────────────────────────┘    │
+│                                         │
+└─────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS (JavaScript logic)
+══════════════════════════════════════════════════════════════════════════════════
+
+// Patient Days
+patientDaysPerYear = staffedBeds * 365 * (occupancyRate / 100)
+
+// Abridge-Enabled Shifts
+// Each nurse works approximately 260 shifts per year (5 days × 52 weeks)
+shiftsPerNursePerYear = 260
+totalAnnualShifts = nurseFTEs * shiftsPerNursePerYear
+abridgeEnabledShifts = totalAnnualShifts * (adoptionRate / 100)
+
+══════════════════════════════════════════════════════════════════════════════════
+DEFAULTS
+══════════════════════════════════════════════════════════════════════════════════
+
+| Input              | Default                    |
+|--------------------|----------------------------|
+| Staffed Beds       | (no default - required)    |
+| Nurse FTEs         | (no default - required)    |
+| Occupancy Rate     | 85%                        |
+| Adoption Rate      | No default until selected  |
+| Conservative       | 50%                        |
+| Typical            | 70%                        |
+| Optimistic         | 85%                        |
+
+PAGE 2: TIME SAVINGS
+CopyPAGE 2 STRUCTURE:
+
+══════════════════════════════════════════════════════════════════════════════════
+HEADER
+══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Explore · Time Savings
+Progress dots: ● ● ○ ○ ○ ○ (two dots filled)
+
+══════════════════════════════════════════════════════════════════════════════════
+MAIN CONTENT
+══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+TIME SAVINGS
+
+SUBHEAD:
+How much documentation time could your nurses get back each shift?
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: WHAT THE DATA SHOWS
+Label: WHAT THE DATA SHOWS
+
+Info card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Nurses spend 2-3 hours per shift on documentation—flowsheets, assessments,     │
+│  care plans, and handoffs. For the documentation types Abridge supports,        │
+│  we typically see 15-30 minutes saved per shift.                                │
+│                                                                                 │
+│  Source: Abridge customer data, 2024-2025                                       │
+│  [12px, gray, italic]                                                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: CHOOSE YOUR SCENARIO
+Label: CHOOSE YOUR SCENARIO
+
+Radio button options (vertical stack, card-style):
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ○  Conservative    15 min/shift                                                │
+│     Early adoption phase, nurses still learning workflows                       │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  ┃                                                                              │
+│  ┃  ●  Typical    20 min/shift                         RECOMMENDED              │
+│  ┃     Standard adoption with key flowsheets covered                            │
+│  ┃                                                                              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+[Selected state: red-orange left border, light beige background]
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ○  Optimistic    30 min/shift                                                  │
+│     High adoption with optimized workflows                                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Custom input:
+Or enter a custom value:  ┌──────────┐  min/shift
+                          │    20    │
+                          └──────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+RIGHT PANEL
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────┐
+│                                         │
+│  PROJECTED TIME SAVINGS                 │
+│  Based on your scenario                 │
+│                                         │
+│           18,200                        │
+│           [huge, red-orange, 48px]      │
+│                                         │
+│           hours / year                  │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  THE MATH                               │
+│  20 min × 54,600 shifts ÷ 60            │
+│  [12px, gray]                           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Scenario               Typical         │
+│  Time Saved             20 min/shift    │
+│  Abridge-Enabled Shifts 54,600          │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  PER NURSE                              │
+│                                         │
+│  Hours/year             61              │
+│  Hours/week             1.2             │
+│                         [red-orange]    │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │   Continue to Value Drivers →   │    │
+│  └─────────────────────────────────┘    │
+│                                         │
+└─────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS
+══════════════════════════════════════════════════════════════════════════════════
+
+// Hours Saved
+hoursSavedPerYear = (timePerShift * abridgeEnabledShifts) / 60
+
+// Per Nurse
+hoursPerNursePerYear = hoursSavedPerYear / nurseFTEs
+hoursPerNursePerWeek = hoursPerNursePerYear / 52
+
+══════════════════════════════════════════════════════════════════════════════════
+DEFAULTS
+══════════════════════════════════════════════════════════════════════════════════
+
+| Scenario     | Time per Shift |
+|--------------|----------------|
+| Conservative | 15 min         |
+| Typical      | 20 min         |
+| Optimistic   | 30 min         |
+
+PAGE 3: VALUE DRIVERS (Time Value)
+CopyPAGE 3 STRUCTURE:
+
+══════════════════════════════════════════════════════════════════════════════════
+HEADER
+══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Explore · Value Drivers
+Progress dots: ● ● ● ○ ○ ○
+
+══════════════════════════════════════════════════════════════════════════════════
+MAIN CONTENT
+══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+WHAT COULD THAT TIME BE WORTH?
+
+SUBHEAD (dynamic):
+Your nurses could reclaim [18,200] hours. Here's how that creates value.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: HOW TO USE THIS SECTION
+Info card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  HOW TO USE THIS SECTION                                                        │
+│                                                                                 │
+│  Time saved doesn't automatically become dollars. It flows into different       │
+│  buckets based on your organization's reality.                                  │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │           TIME SAVED                                                    │    │
+│  │           18,200 hours                                                  │    │
+│  │                 │                                                       │    │
+│  │     ┌───────────┼───────────┬───────────────┐                           │    │
+│  │     ▼           ▼           ▼               │                           │    │
+│  │  ┌──────┐  ┌──────┐   ┌──────────┐          │                           │    │
+│  │  │  OT  │  │RETAIN│   │   CARE   │          │                           │    │
+│  │  │SAVED │  │NURSES│   │   TIME   │          │                           │    │
+│  │  └──────┘  └──────┘   └──────────┘          │                           │    │
+│  │     $         $        (qualitative)        │                           │    │
+│  │                                             │                           │    │
+│  │  + Absorbed (operational efficiency)        │                           │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  Toggle on the drivers relevant to your organization. Skip what doesn't apply. │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: VALUE DRIVERS
+Label: VALUE DRIVERS
+
+══════════════════════════════════════════════════════════════════════════════════
+DRIVER 1: OT REDUCTION
+══════════════════════════════════════════════════════════════════════════════════
+
+Collapsed state:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  OT Reduction                                              [expand] [toggle ON] │
+│  When nurses finish charting faster, they leave on time                         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Expanded state (when toggled ON):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  OT Reduction                                              [collapse] [ON]      │
+│  When nurses finish charting faster, they leave on time                         │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE LOGIC                                                                      │
+│                                                                                 │
+│  When nurses spend less time documenting, they're more likely to finish their   │
+│  shift on time. Not all time saved converts to OT reduction—some goes to        │
+│  care, some to efficiency—but a portion does.                                   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  TIME-TO-OT CONVERSION                                                          │
+│                                                                                 │
+│  What percentage of time saved could realistically reduce overtime?             │
+│                                                                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                              │
+│  │Conservative │  │   Typical   │  │ Aggressive  │                              │
+│  │    15%      │  │    25%      │  │    40%      │                              │
+│  └─────────────┘  └─────────────┘  └─────────────┘                              │
+│                                                                                 │
+│  Most organizations see 15-30% of documentation time savings convert to         │
+│  OT reduction. The rest goes to care time or operational efficiency.            │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YOUR ORGANIZATION                                                              │
+│                                                                                 │
+│  Average OT hourly rate                                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │ $  75                                                                   │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  1.5x base rate is typical. Adjust based on your blended OT rate.               │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  CALCULATION                                         Click values to edit       │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Time saved (from previous step)                      18,200 hrs/yr     │    │
+│  │  × Time-to-OT conversion                              25%               │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │  = OT hours eliminated                                4,550 hrs/yr      │    │
+│  │                                                                         │    │
+│  │  × OT hourly rate                                     $75               │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Annual OT Savings                                    $341,250          │    │
+│  │                                        [bold, red-orange]               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  💡 VALIDATION TIP                                                      │    │
+│  │                                                                         │    │
+│  │  Check this against your current OT spend. If this exceeds your total   │    │
+│  │  nursing OT budget, lower the conversion rate.                          │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+DRIVER 2: RETENTION SAVINGS
+══════════════════════════════════════════════════════════════════════════════════
+
+Collapsed state:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Retention Savings                                         [expand] [toggle ON] │
+│  Reduced documentation burden helps retain experienced nurses                   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Expanded state:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Retention Savings                                         [collapse] [ON]      │
+│  Reduced documentation burden helps retain experienced nurses                   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE LOGIC                                                                      │
+│                                                                                 │
+│  Documentation burden is a leading contributor to nurse burnout and turnover.   │
+│  When you reduce charting time, nurses are more likely to stay.                 │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  TIME RETURNED TO EACH NURSE                                                    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │                    1.2 hours per week                                   │    │
+│  │                    returned to each nurse                               │    │
+│  │                    [large, red-orange, centered]                        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  YOUR ORGANIZATION                                                              │
+│                                                                                 │
+│  ┌────────────────────────────┐  ┌────────────────────────────────────────┐     │
+│  │ Annual turnover rate       │  │ Replacement cost per nurse             │     │
+│  │                            │  │                                        │     │
+│  │ ┌────────────────────────┐ │  │ ┌────────────────────────────────────┐ │     │
+│  │ │ 18                  %  │ │  │ │ $ 52,000                           │ │     │
+│  │ └────────────────────────┘ │  │ └────────────────────────────────────┘ │     │
+│  │                            │  │                                        │     │
+│  │ National average: 18-22%   │  │ Includes recruiting, training,         │     │
+│  │                            │  │ onboarding, lost productivity          │     │
+│  └────────────────────────────┘  └────────────────────────────────────────┘     │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ABRIDGE RETENTION IMPACT                                                       │
+│                                                                                 │
+│  What percentage of burnout-related turnover could Abridge help prevent?        │
+│                                                                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                              │
+│  │Conservative │  │   Typical   │  │ Optimistic  │                              │
+│  │    10%      │  │    15%      │  │    25%      │                              │
+│  └─────────────┘  └─────────────┘  └─────────────┘                              │
+│                                                                                 │
+│  We use conservative rates because documentation is one of many burnout         │
+│  factors. Staffing ratios, patient acuity, and emotional toll all matter.       │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  CALCULATION                                                                    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Nurse FTEs                                           300               │    │
+│  │  × Annual turnover rate                               18%               │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │  = Nurses leaving per year                            54                │    │
+│  │                                                                         │    │
+│  │  × Burnout-related (industry avg)                     40%               │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │  = Burnout-related departures                         21.6              │    │
+│  │                                                                         │    │
+│  │  × Abridge retention impact                           15%               │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │  = Nurses retained                                    3.24              │    │
+│  │                                                                         │    │
+│  │  × Replacement cost                                   $52,000           │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Annual Retention Savings                             $168,480          │    │
+│  │                                        [bold, red-orange]               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+DRIVER 3: CARE TIME (Qualitative)
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Care Time    QUALITATIVE                                  [expand] [toggle ON] │
+│  Time returned to direct patient care                                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Expanded state:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Care Time    QUALITATIVE                                  [collapse] [ON]      │
+│  Time returned to direct patient care                                           │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE CONNECTION                                                                 │
+│                                                                                 │
+│  After accounting for OT reduction, the remaining time is returned to direct    │
+│  patient care. More time at the bedside improves patient outcomes and           │
+│  satisfaction.                                                                  │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  HOW MUCH TIME GOES TO DIRECT CARE?                                             │
+│                                                                                 │
+│  Of the time saved (after OT reduction), how much do you expect nurses          │
+│  to dedicate to patient care activities? The remainder is absorbed into         │
+│  operational efficiency.                                                        │
+│                                                                                 │
+│  Time to care:                                                                  │
+│  0% = all absorbed    ○────────────●────────────────○    100% = all to care     │
+│                                   45%                                           │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  TIME ALLOCATION                                                                │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Time saved after OT                           13,650 hrs               │    │
+│  │  (18,200 total - 4,550 to OT)                                           │    │
+│  │                                                                         │    │
+│  │  × Time to care                                45%                      │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │  = Time returned to bedside                    6,143 hrs/yr             │    │
+│  │                                                                         │    │
+│  │  Absorbed into efficiency                      7,507 hrs/yr             │    │
+│  │  (no dollar value calculated)                                           │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  WHERE DOES CARE TIME GO?                                                       │
+│                                                                                 │
+│  • Reduced falls through more frequent rounding                                 │
+│  • Fewer pressure injuries with timely assessments                              │
+│  • Higher patient satisfaction (HCAHPS)                                         │
+│  • Better clinical outcomes overall                                             │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  We don't calculate a dollar value for care time because the link to    │    │
+│  │  outcomes is indirect. But we DO explore the potential quality impact   │    │
+│  │  in the next section.                                                   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+OPTIONAL SECTION (below divider line)
+══════════════════════════════════════════════════════════════════════════════════
+
+─────────────────────── OPTIONAL ───────────────────────
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Agency Labor Reduction                                   [expand] [toggle OFF] │
+│  If better retention reduces your need for travel nurses                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+[Expanded state - only if Retention is ON:]
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Agency Labor Reduction                                    [collapse] [ON]      │
+│  If better retention reduces your need for travel nurses                        │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE LOGIC                                                                      │
+│                                                                                 │
+│  When nurses leave, hospitals fill gaps with agency or travel nurses at         │
+│  2-3× the cost. Better retention directly reduces this premium labor spend.     │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ☑ We currently use agency/travel nurses                                        │
+│                                                                                 │
+│  [When checked, show inputs:]                                                   │
+│                                                                                 │
+│  YOUR ORGANIZATION                                                              │
+│                                                                                 │
+│  ┌────────────────────────────┐  ┌────────────────────────────────────────┐     │
+│  │ Weeks of agency coverage   │  │ Weekly agency premium                  │     │
+│  │ per vacancy                │  │ (above base cost)                      │     │
+│  │                            │  │                                        │     │
+│  │ ┌────────────────────────┐ │  │ ┌────────────────────────────────────┐ │     │
+│  │ │ 12               weeks │ │  │ │ $ 2,500                            │ │     │
+│  │ └────────────────────────┘ │  │ └────────────────────────────────────┘ │     │
+│  │                            │  │                                        │     │
+│  │ Average time to fill       │  │ Additional cost per week for agency    │     │
+│  │                            │  │ vs. permanent staff                    │     │
+│  └────────────────────────────┘  └────────────────────────────────────────┘     │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  CALCULATION                                                                    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Nurses retained (from Retention)                     3.24              │    │
+│  │  × Weeks of agency coverage avoided                   12 weeks          │    │
+│  │  × Weekly agency premium                              $2,500            │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Annual Agency Savings                                $97,200           │    │
+│  │                                        [bold, red-orange]               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ⚠️ This is separate from Retention Value. Retention captures           │    │
+│  │  replacement cost. Agency captures the premium labor cost during        │    │
+│  │  the vacancy period.                                                    │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+RIGHT PANEL
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────┐
+│                                         │
+│  TIME ALLOCATION                        │
+│                                         │
+│  Total Saved            18,200 hrs      │
+│                                         │
+│  ● OT Reduction         4,550 hrs (25%) │
+│                         [red-orange]    │
+│  ● Direct Care          6,143 hrs (45%) │
+│                         [red-orange]    │
+│  ○ Absorbed             7,507 hrs (30%) │
+│                         [gray]          │
+│                                         │
+│  Per nurse/week         1.2 hrs         │
+│                         [red-orange]    │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  TIME VALUE                             │
+│  Value summary                          │
+│                                         │
+│           $606,930                      │
+│           [huge, red-orange, 40px]      │
+│                                         │
+│           From 18,200 hours saved       │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ● OT Reduction         $341,250        │
+│    (25% conversion)                     │
+│                                         │
+│  ● Retention Savings    $168,480        │
+│    (turnover reduction)                 │
+│                                         │
+│  ● Agency Reduction     $97,200         │
+│    (12 weeks × $2,500)                  │
+│                                         │
+│  ○ Care Time            —               │
+│    (qualitative)                        │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │   Continue to Care Quality →    │    │
+│  └─────────────────────────────────┘    │
+│  [Red-orange button]                    │
+│                                         │
+└─────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+CALCULATIONS
+══════════════════════════════════════════════════════════════════════════════════
+
+// OT Reduction (flows from time saved)
+otHoursEliminated = hoursSavedPerYear * (timeToOTConversion / 100)
+otSavings = otHoursEliminated * otHourlyRate
+
+// Validation: Cap OT savings at actual OT spend
+maxOTHours = nurseFTEs * currentOTHoursPerWeek * 52
+otHoursEliminated = Math.min(otHoursEliminated, maxOTHours)
+
+// Retention
+nursesLeavingPerYear = nurseFTEs * (turnoverRate / 100)
+burnoutDepartures = nursesLeavingPerYear * (burnoutRelated / 100) // default 40%
+nursesRetained = burnoutDepartures * (abridgeImpact / 100)
+retentionSavings = nursesRetained * replacementCost
+
+// Agency (only if enabled and retention is enabled)
+agencySavings = nursesRetained * weeksOfCoverage * weeklyAgencyPremium
+
+// Care Time
+timeAfterOT = hoursSavedPerYear - otHoursEliminated
+careTimeHours = timeAfterOT * (timeToCare / 100)
+absorbedHours = timeAfterOT - careTimeHours
+
+// Total Time Value
+totalTimeValue = otSavings + retentionSavings + agencySavings
+
+══════════════════════════════════════════════════════════════════════════════════
+DEFAULTS
+══════════════════════════════════════════════════════════════════════════════════
+
+| Input                    | Default      |
+|--------------------------|--------------|
+| Time-to-OT Conversion    | 25%          |
+| OT Hourly Rate           | $75          |
+| Annual Turnover Rate     | 18%          |
+| Burnout-Related %        | 40% (fixed)  |
+| Abridge Retention Impact | 15%          |
+| Replacement Cost         | $52,000      |
+| Time to Care %           | 45%          |
+| Weeks of Agency Coverage | 12           |
+| Weekly Agency Premium    | $2,500       |
+
+PAGE 4: CARE QUALITY
+CopyPAGE 4 STRUCTURE:
+
+══════════════════════════════════════════════════════════════════════════════════
+HEADER
+══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Explore · Care Quality
+Progress dots: ● ● ● ● ○ ○
+
+══════════════════════════════════════════════════════════════════════════════════
+MAIN CONTENT
+══════════════════════════════════════════════════════════════════════════════════
+
+HEADLINE:
+CARE QUALITY
+
+SUBHEAD:
+Complete nursing documentation supports better outcomes and reduces adverse events.
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 1: HOW TO USE THIS SECTION
+Info card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  HOW TO USE THIS SECTION                                                        │
+│                                                                                 │
+│  The link between documentation and outcomes is indirect—we don't cause         │
+│  fewer falls, we enable the visibility that helps prevent them.                 │
+│                                                                                 │
+│  We show these as potential value because clinical practice matters more        │
+│  than documentation alone. This value is real, just harder to attribute         │
+│  directly to Abridge.                                                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────────────────────────
+
+SECTION 2: CARE QUALITY POTENTIAL
+Label: CARE QUALITY POTENTIAL
+
+══════════════════════════════════════════════════════════════════════════════════
+DRIVER 1: HAPI PREVENTION
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  HAPI Prevention    POTENTIAL                              [expand] [toggle ON] │
+│  Real-time documentation enables earlier intervention                           │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Expanded state:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  HAPI Prevention    POTENTIAL                              [collapse] [ON]      │
+│  Real-time documentation enables earlier intervention                           │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE THEORY                                                                     │
+│                                                                                 │
+│  HAPIs happen when assessments are missed or interventions are delayed.         │
+│  Real-time documentation ensures skin assessments, turning schedules, and       │
+│  risk factors are captured as they're observed—enabling earlier intervention.   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  STEP 1: CURRENT HAPI VOLUME                                                    │
+│                                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐                  │
+│  │ Patient Days    │  │ HAPI Rate       │  │ HAPIs/Year      │                  │
+│  │ /Year           │  │ (per 1,000)     │  │                 │                  │
+│  │                 │  │                 │  │                 │                  │
+│  │ 62,050          │  │ 2.5             │  │ 155             │                  │
+│  │ [disabled]      │  │ [editable]      │  │ [calculated]    │                  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘                  │
+│                                                                                 │
+│                       National: 2-5%                                            │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  STEP 2: DOCUMENTATION-PREVENTABLE                                              │
+│                                                                                 │
+│  ┌─────────────────────────────┐  ┌─────────────────────────────────────────┐   │
+│  │ Prevention Rate             │  │ Cost per HAPI                           │   │
+│  │                             │  │                                         │   │
+│  │ ┌─────────────────────────┐ │  │ ┌─────────────────────────────────────┐ │   │
+│  │ │ 5                    %  │ │  │ │ $ 25,000                            │ │   │
+│  │ └─────────────────────────┘ │  │ └─────────────────────────────────────┘ │   │
+│  │                             │  │                                         │   │
+│  │ 5% is conservative—         │  │ CMS: $20k-$70k depending on stage.      │   │
+│  │ represents cases where      │  │ We use $25K as a conservative           │   │
+│  │ real-time documentation     │  │ blended average.                        │   │
+│  │ would have triggered        │  │                                         │   │
+│  │ earlier intervention.       │  │                                         │   │
+│  └─────────────────────────────┘  └─────────────────────────────────────────┘   │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  STEP 3: POTENTIAL VALUE                                                        │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  HAPIs/year                                           155               │    │
+│  │  × Prevention rate                                    5%                │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │  = HAPIs prevented                                    7.8               │    │
+│  │                                                                         │    │
+│  │  × Cost per HAPI                                      $25,000           │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  Potential HAPI Value                                 $193,750          │    │
+│  │                                        [bold, red-orange]               │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  This is potential value. Not all HAPIs are documentation-preventable.  │    │
+│  │  5% represents cases where real-time assessment documentation would     │    │
+│  │  have triggered earlier intervention.                                   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+DRIVER 2: FALLS PREVENTION
+══════════════════════════════════════════════════════════════════════════════════
+
+[Same structure as HAPI Prevention with these defaults:]
+
+| Input                    | Default      |
+|--------------------------|--------------|
+| Falls Rate (per 1,000)   | 3.5          |
+| Prevention Rate          | 5%           |
+| Cost per Fall            | $6,500       |
+
+Helper text for Cost per Fall:
+"Blended average across severity. No injury: $3-5K, Minor: $5-8K, Major: $15-30K"
+
+══════════════════════════════════════════════════════════════════════════════════
+DRIVER 3: PATIENT EXPERIENCE (HCAHPS) — QUALITATIVE
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Patient Experience (HCAHPS)    QUALITATIVE                [expand] [toggle ON] │
+│  More bedside time correlates with better satisfaction                          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Expanded state:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  Patient Experience (HCAHPS)    QUALITATIVE                [collapse] [ON]      │
+│  More bedside time correlates with better satisfaction                          │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  THE CONNECTION                                                                 │
+│                                                                                 │
+│  When nurses spend less time on documentation, they spend more time with        │
+│  patients. Research consistently shows bedside time correlates with patient     │
+│  satisfaction.                                                                  │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │                    1.2                                                  │    │
+│  │                    hours at bedside                                     │    │
+│  │                    per nurse per week                                   │    │
+│  │                    [large, red-orange, centered]                        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  WE DON'T CALCULATE THIS                                                        │
+│                                                                                 │
+│  HCAHPS scores are influenced by dozens of factors—wait times, pain             │
+│  management, communication, environment, and more. We can't credibly            │
+│  attribute HCAHPS improvement to documentation alone.                           │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  But consider: Hospitals in the top quartile of HCAHPS receive ~2%      │    │
+│  │  higher reimbursement through Value-Based Purchasing. Even small        │    │
+│  │  improvements matter.                                                   │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  Track HCAHPS as a leading indicator after implementation.                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+RIGHT PANEL
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────┐
+│                                         │
+│  YOUR MODEL SO FAR                      │
+│                                         │
+│  Time Savings Value       $606,930      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  CARE QUALITY POTENTIAL                 │
+│                                         │
+│  ○ HAPI Prevention        $193,750      │
+│    (potential)            [red-orange]  │
+│                                         │
+│  ○ Falls Prevention       $70,582       │
+│    (potential)            [red-orange]  │
+│                                         │
+│  ○ HCAHPS                 —             │
+│    (qualitative)                        │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  TIME SAVINGS VALUE                     │
+│                                         │
+│           $606,930                      │
+│           [large, red-orange]           │
+│                                         │
+│           Hard value from               │
+│           efficiency gains              │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │     + POTENTIAL VALUE           │    │
+│  │                                 │    │
+│  │       $264,332                  │    │
+│  │       [red-orange]              │    │
+│  │                                 │    │
+│  │       Harder to attribute       │    │
+│  │       to documentation          │    │
+│  └─────────────────────────────────┘    │
+│  [Different background - slightly       │
+│   darker to show separation]            │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Time savings are conservative.         │
+│  Potential value requires clinical      │
+│  practice changes.                      │
+│  [12px, gray]                           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │   Continue to Investment →      │    │
+│  └─────────────────────────────────┘    │
+│  [Red-orange button]                    │
+│                                         │
+└─────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+DEFAULTS
+══════════════════════════════════════════════════════════════════════════════════
+
+| Input                    | Default      |
+|--------------------------|--------------|
+| HAPI Rate (per 1,000)    | 2.5          |
+| HAPI Prevention Rate     | 5%           |
+| Cost per HAPI            | $25,000      |
+| Falls Rate (per 1,000)   | 3.5          |
+| Falls Prevention Rate    | 5%           |
+| Cost per Fall            | $6,500       |
+
+PAGE 5: INVESTMENT
+CopyPAGE 5 STRUCTURE:
+
+══════════════════════════════════════════════════════════════════════════════════
+HEADER
+══════════════════════════════════════════════════════════════════════════════════
+
+Navigation: Explore · Investment
+Progress dots: ● ● ● ● ● ○
+
+══════════════════════════════════════════════════════════════════════════════════
+MAIN CONTENT
+══════════════════════════════════════════════════════════════════════════════════
+
+[Same structure as other settings, but with nursing-specific pricing:]
+
+PRICING MODEL OPTIONS:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  ● Per Bed / Month                                                              │
+│    Pay per staffed bed. Scale up or down as needed.                             │
+│                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ○ Annual License                                                               │
+│    Fixed annual fee for your deployment.                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+COST INPUT:
+
+Cost per staffed bed per month
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ $  [input]                                                           /month     │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Calculation display:
+200 beds × $X/mo × 12 = $Y/year
+
+══════════════════════════════════════════════════════════════════════════════════
+RIGHT PANEL
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────┐
+│                                         │
+│  YOUR ROI                               │
+│  Live calculation                       │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Annual Value             $606,930      │
+│                                         │
+│  Time Savings             $606,930      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Your Investment         -$144,000      │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │                                 │    │
+│  │  NET ANNUAL VALUE               │    │
+│  │                                 │    │
+│  │       +$462,930                 │    │
+│  │       [large, red-orange]       │    │
+│  │                                 │    │
+│  └─────────────────────────────────┘    │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Return on Investment                   │
+│  4.2×                                   │
+│  [large, bold]                          │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  VALUE PER BED                          │
+│                                         │
+│  ┌─────────────┐  ┌─────────────┐       │
+│  │  Value      │  │ Investment  │       │
+│  │  $3,035     │  │ $720        │       │
+│  │  /bed/yr    │  │ /bed/yr     │       │
+│  └─────────────┘  └─────────────┘       │
+│                                         │
+│  Net: $2,315 per bed per year           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  + Potential Care Quality: $264,332     │
+│    (shown separately)                   │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │   View Full Summary →           │    │
+│  └─────────────────────────────────┘    │
+│  [Red-orange button]                    │
+│                                         │
+└─────────────────────────────────────────┘
+
+PAGE 6: YOUR MODEL (Summary)
+CopyPAGE 6 STRUCTURE:
+
+══════════════════════════════════════════════════════════════════════════════════
+HERO SECTION (Dark background #1A1A1A)
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  [Dark background - full width]                                                 │
+│                                                                                 │
+│                    ┌─────────────────────────────────────────┐                  │
+│                    │  Nursing · 200 beds · 300 nurse FTEs   │                  │
+│                    └─────────────────────────────────────────┘                  │
+│                    [pill badge, gray background]                                │
+│                                                                                 │
+│                         PROJECTED NET VALUE                                     │
+│                         [12px, gray, ALL CAPS]                                  │
+│                                                                                 │
+│                              $463K                                              │
+│                              [72px, red-orange, bold]                           │
+│                                                                                 │
+│                              / year                                             │
+│                              [24px, gray]                                       │
+│                                                                                 │
+│                    $607K value – $144K investment                               │
+│                    [16px, gray]                                                 │
+│                                                                                 │
+│     ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
+│     │                 │  │                 │  │                 │              │
+│     │      4.2×       │  │     $2,315      │  │    18,200       │              │
+│     │      ROI        │  │   per bed/yr    │  │  hours saved    │              │
+│     │                 │  │                 │  │                 │              │
+│     └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+│     [dark gray card]     [dark gray card]     [dark gray card]                 │
+│                                                                                 │
+│     These projections reflect conservative assumptions.                         │
+│     See Methodology for details.                                                │
+│     [14px, gray, italic]                                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+WHERE THE VALUE COMES FROM
+══════════════════════════════════════════════════════════════════════════════════
+
+Section header:
+Where the Value Comes From
+
+Subhead:
+Abridge creates value through staffing efficiency and care quality—each with 
+its own drivers and assumptions.
+
+Two-column card layout:
+
+┌───────────────────────────────────────┐  ┌───────────────────────────────────────┐
+│                                       │  │                                       │
+│  STAFFING EFFICIENCY                  │  │  CARE QUALITY                         │
+│                                       │  │                                       │
+│  ┃ $607K / year                       │  │  ┃ $264K / year                       │
+│  [red-orange, 24px, left border]      │  │  [red-orange, 24px, left border]      │
+│                                       │  │    (potential)                        │
+│  ─────────────────────────────────    │  │                                       │
+│                                       │  │  ─────────────────────────────────    │
+│  Less time documenting means nurses   │  │                                       │
+│  finish on time and stay longer.      │  │  Complete documentation supports      │
+│                                       │  │  better care and fewer adverse        │
+│  ─────────────────────────────────    │  │  events.                              │
+│                                       │  │                                       │
+│  • OT Reduction         $341,250      │  │  ─────────────────────────────────    │
+│    (25% conversion)                   │  │                                       │
+│                                       │  │  • HAPI Prevention     $193,750       │
+│  • Retention Savings    $168,480      │  │    (potential)                        │
+│    (3.2 nurses retained)              │  │                                       │
+│                                       │  │  • Falls Prevention    $70,582        │
+│  • Agency Reduction     $97,200       │  │    (potential)                        │
+│    (12 weeks × $2,500)                │  │                                       │
+│                                       │  │  • HCAHPS              —              │
+│  ─────────────────────────────────    │  │    (qualitative)                      │
+│                                       │  │                                       │
+│  Care time returned:                  │  │  ─────────────────────────────────    │
+│  1.2 hrs/wk per nurse                 │  │                                       │
+│                                       │  │  This is potential value—requires     │
+│                                       │  │  clinical practice, not just docs.    │
+│                                       │  │                                       │
+└───────────────────────────────────────┘  └───────────────────────────────────────┘
+[Warm beige background #F5F0EB]            [Warm beige background #F5F0EB]
+
+══════════════════════════════════════════════════════════════════════════════════
+CONNECTED VALUE (New Section)
+══════════════════════════════════════════════════════════════════════════════════
+
+Section header with icon:
+🔗 Connected Value
+
+Subhead:
+Nursing documentation supports the inpatient revenue cycle
+
+Card (warm beige background):
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  When nurses document thoroughly and in real-time, it directly supports         │
+│  inpatient coding and reimbursement.                                            │
+│                                                                                 │
+│  ┌─────────────────────────────────────┐  ┌─────────────────────────────────┐   │
+│  │                                     │  │                                 │   │
+│  │  ┃ CC/MCC CAPTURE                   │  │  ┃ MEDICAL NECESSITY            │   │
+│  │  ┃                                  │  │  ┃                              │   │
+│  │  ┃ Nursing assessments capture      │  │  ┃ Real-time nursing docs       │   │
+│  │  ┃ clinical indicators that         │  │  ┃ provide evidence of patient  │   │
+│  │  ┃ support accurate DRG assignment. │  │  ┃ acuity—critical for payer    │   │
+│  │  ┃ "Patient appears malnourished"   │  │  ┃ appeals.                     │   │
+│  │  ┃ feeds coding directly.           │  │  ┃                              │   │
+│  │                                     │  │                                 │   │
+│  └─────────────────────────────────────┘  └─────────────────────────────────┘   │
+│  [White card, red-orange left border]     [White card, red-orange left border]  │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                           │  │
+│  │  These benefits are quantified in the Inpatient setting. If your          │  │
+│  │  organization uses Abridge for both Nursing and Hospitalists, the         │  │
+│  │  documentation creates a complete clinical picture from admission         │  │
+│  │  through discharge.                                                       │  │
+│  │                                                                           │  │
+│  │  [ Explore Inpatient ROI → ]                                              │  │
+│  │  [text link, red-orange]                                                  │  │
+│  │                                                                           │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+THE EXPANSION OPPORTUNITY
+══════════════════════════════════════════════════════════════════════════════════
+
+[Same structure as other settings]
+
+Section header:
+The Expansion Opportunity
+
+Subhead:
+A successful pilot proves value. Strategic expansion multiplies it.
+
+Expansion comparison:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  TODAY                                                      FULL SCALE          │
+│                                                                                 │
+│  200                        expansion →                         1,000           │
+│  beds                                                           beds            │
+│  70% adoption                                                   85% adoption    │
+│                                                                                 │
+│  ┌─────────────────────────────────┐    ┌─────────────────────────────────────┐ │
+│  │                                 │    │                                     │ │
+│  │  TODAY'S VALUE                  │    │  FULL SCALE VALUE                   │ │
+│  │                                 │    │  [red-orange background]            │ │
+│  │  $463K                          │    │                                     │ │
+│  │  / year                         │    │  $2.8M                              │ │
+│  │                                 │    │  / year                             │ │
+│  │  4.2× ROI                       │    │                                     │ │
+│  │                                 │    │  5.1× ROI                           │ │
+│  │                                 │    │                                     │ │
+│  └─────────────────────────────────┘    └─────────────────────────────────────┘ │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════════════════
+GROWTH TRAJECTORY
+══════════════════════════════════════════════════════════════════════════════════
+
+[Same structure as other settings - large chart]
+
+══════════════════════════════════════════════════════════════════════════════════
+3-YEAR PROJECTION
+══════════════════════════════════════════════════════════════════════════════════
+
+[Same structure as other settings]
+
+══════════════════════════════════════════════════════════════════════════════════
+YOUR ANALYSIS (Footer)
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR ANALYSIS                              ┌───────────┐  ┌─────────────────┐  │
+│  Nursing · 200 beds · $60/bed/mo            │ Edit Model│  │ Download PDF ↓  │  │
+│                                             └───────────┘  └─────────────────┘  │
+│                                             [outline btn]  [red-orange btn]     │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+[Warm beige background]
+
+══════════════════════════════════════════════════════════════════════════════════
+METHODOLOGY (Expandable)
+══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  📄 Methodology & Assumptions — understand how we calculated these          ▼   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+FINAL CHECKLIST
+CopyIMPLEMENTATION CHECKLIST:
+
+□ Page 1: Rename "Expected Utilization" to "Expected Adoption"
+□ Page 1: Rename "Eligible Shifts" to "Abridge-Enabled Shifts"
+□ Page 1: Add math breakdown in right panel
+□ Page 2: Update scenario descriptions
+□ Page 2: Add math breakdown in right panel
+□ Page 3: Fix OT calculation to flow from TIME SAVED
+□ Page 3: Add Time Allocation visual in right panel
+□ Page 3: Add Agency Labor Reduction as optional driver
+□ Page 3: Change button to "Continue to Care Quality"
+□ Page 4: Rename header to "Care Quality"
+□ Page 4: Change HAPI cost default to $25,000
+□ Page 4: Add disclaimer about 5% prevention rate
+□ Page 5: Change pricing to "per bed" language
+□ Page 5: Add "Value per Bed" calculations
+□ Page 6: Add per-bed stat card in hero section
+□ Page 6: Add CONNECTED VALUE section
+□ Page 6: Change "50 providers" to "200 beds · 300 nurse FTEs"
+□ Page 6: Add "Explore Inpatient ROI" link
+□ Global: Replace "provider" with "nurse" or "nurse FTE"
+□ Global: Ensure Manrope font throughout
+□ Global: Check all calculation flows are correct

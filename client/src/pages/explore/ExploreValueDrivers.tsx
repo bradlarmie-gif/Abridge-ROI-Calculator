@@ -105,34 +105,46 @@ export default function ExploreValueDrivers({
   // Value comes from Clinician Wellbeing driver only
 
   // Nursing-specific calculations
+  // OT Reduction: Time-to-OT conversion approach
+  const nursingOtHoursEliminated = useMemo(() => {
+    if (!timeDriverInputs.nursingOtEnabled) return 0;
+    return Math.round(totalHoursSaved * (timeDriverInputs.nursingOtReductionPercent / 100));
+  }, [totalHoursSaved, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtReductionPercent]);
+
   const nursingOtValue = useMemo(() => {
     if (!timeDriverInputs.nursingOtEnabled) return 0;
-    const nurses = state.numberOfProviders;
-    const weeksPerYear = 52;
-    const totalOtHoursYear = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
-    const reducedOtHours = totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100);
-    return Math.round(reducedOtHours * timeDriverInputs.nursingOtHourlyRate * 1.5); // 1.5x for OT
-  }, [state.numberOfProviders, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHoursPerNurseWeek, timeDriverInputs.nursingOtReductionPercent, timeDriverInputs.nursingOtHourlyRate]);
+    return Math.round(nursingOtHoursEliminated * timeDriverInputs.nursingOtHourlyRate);
+  }, [nursingOtHoursEliminated, timeDriverInputs.nursingOtEnabled, timeDriverInputs.nursingOtHourlyRate]);
 
-  const nursingRetentionValue = useMemo(() => {
-    if (!timeDriverInputs.nursingRetentionEnabled) return 0;
+  const nursingRetentionImpactRates: Record<RetentionScenario, number> = {
+    conservative: 10,
+    typical: 15,
+    optimistic: 25,
+  };
+
+  const nursingRetentionCalcs = useMemo(() => {
     const nurses = state.numberOfProviders;
     const leavingPerYear = nurses * (timeDriverInputs.nursingTurnoverRate / 100);
-    const retained = leavingPerYear * 0.15; // Conservative 15% impact
-    return Math.round(retained * timeDriverInputs.nursingReplacementCost);
-  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost]);
+    const burnoutDepartures = leavingPerYear * 0.40; // 40% burnout-related
+    const impactRate = nursingRetentionImpactRates[timeDriverInputs.retentionImpactScenario] / 100;
+    const retained = burnoutDepartures * impactRate;
+    const value = Math.round(retained * timeDriverInputs.nursingReplacementCost);
+    return {
+      leavingPerYear,
+      burnoutDepartures,
+      retained,
+      value: timeDriverInputs.nursingRetentionEnabled ? value : 0,
+    };
+  }, [state.numberOfProviders, timeDriverInputs.nursingRetentionEnabled, timeDriverInputs.nursingTurnoverRate, timeDriverInputs.nursingReplacementCost, timeDriverInputs.retentionImpactScenario]);
+
+  const nursingRetentionValue = nursingRetentionCalcs.value;
 
   // Agency Cost Avoidance calculation (Nursing only)
   const nursingAgencyCalcs = useMemo(() => {
     const AGENCY_ALLOCATION_PCT = 0.10; // Conservative 10% default
     
-    // Calculate OT hours reduced for remaining time calculation
-    const nurses = state.numberOfProviders;
-    const weeksPerYear = 52;
-    const totalOtHoursYear = nurses * timeDriverInputs.nursingOtHoursPerNurseWeek * weeksPerYear;
-    const otHoursReduced = timeDriverInputs.nursingOtEnabled 
-      ? totalOtHoursYear * (timeDriverInputs.nursingOtReductionPercent / 100) 
-      : 0;
+    // OT hours reduced using Time-to-OT conversion approach
+    const otHoursReduced = nursingOtHoursEliminated;
     
     // Remaining saved hours = total time saved - OT hours reduced
     const remainingSavedHours = Math.max(0, totalHoursSaved - otHoursReduced);
@@ -193,11 +205,8 @@ export default function ExploreValueDrivers({
       allocationPct: AGENCY_ALLOCATION_PCT,
     };
   }, [
-    state.numberOfProviders, 
     totalHoursSaved, 
-    timeDriverInputs.nursingOtEnabled,
-    timeDriverInputs.nursingOtHoursPerNurseWeek,
-    timeDriverInputs.nursingOtReductionPercent,
+    nursingOtHoursEliminated,
     timeDriverInputs.nursingAgencyEnabled,
     timeDriverInputs.nursingAnnualAgencySpend,
     timeDriverInputs.nursingAvgAgencyHourlyRate
@@ -759,64 +768,66 @@ export default function ExploreValueDrivers({
                     Not all time saved converts to OT reduction—some goes to care, some to efficiency—but a portion does.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
-                  <div className="grid grid-cols-2 gap-6 mb-6">
-                    <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">Current OT hours/nurse/week</label>
-                      <FormattedNumberInput
-                        value={timeDriverInputs.nursingOtHoursPerNurseWeek}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })}
-                        className="h-12 bg-white"
-                      />
-                      <p className="text-xs text-[#888888]">Industry average: 3-6 hrs/week</p>
-                    </div>
-                    <div className="space-y-2.5">
-                      <label className="text-sm text-[#888888]">Average OT hourly rate</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
-                        <FormattedNumberInput
-                          value={timeDriverInputs.nursingOtHourlyRate}
-                          onChange={(v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v })}
-                          className="h-12 bg-white pl-7"
-                        />
-                      </div>
-                      <p className="text-xs text-[#888888]">1.5x base rate applied automatically</p>
-                    </div>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">TIME-TO-OT CONVERSION</p>
+                  <p className="text-sm text-[#888888] mb-3">What percentage of time saved could realistically reduce overtime?</p>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {[
+                      { label: 'Conservative', value: 15 },
+                      { label: 'Typical', value: 25 },
+                      { label: 'Aggressive', value: 40 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.value}
+                        onClick={() => updateTimeDriverInputs({ nursingOtReductionPercent: preset.value })}
+                        className={`py-3 px-2 rounded-lg border-2 text-center transition-all ${
+                          timeDriverInputs.nursingOtReductionPercent === preset.value
+                            ? 'border-[#EA2C00] bg-[#F5F0EB]'
+                            : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+                        }`}
+                        data-testid={`preset-ot-${preset.label.toLowerCase()}`}
+                      >
+                        <span className="block text-xs font-semibold text-black">{preset.label}</span>
+                        <span className="block text-xs text-[#888888]">{preset.value}%</span>
+                      </button>
+                    ))}
                   </div>
+                  <p className="text-xs text-[#888888] mb-6">
+                    Most organizations see 15-30% of documentation time savings convert to OT reduction. The rest goes to care time or operational efficiency.
+                  </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Time-to-OT Conversion</p>
-                  <p className="text-sm text-[#888888] mb-3">What percentage of time saved could realistically reduce OT?</p>
-                  <div className="space-y-2.5 mb-4">
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
+                  <div className="space-y-2.5 mb-6">
+                    <label className="text-sm text-[#888888]">Average OT hourly rate</label>
                     <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">$</span>
                       <FormattedNumberInput
-                        value={timeDriverInputs.nursingOtReductionPercent}
-                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v })}
-                        className="h-12 bg-white pr-8"
+                        value={timeDriverInputs.nursingOtHourlyRate}
+                        onChange={(v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v })}
+                        className="h-12 bg-white pl-7"
                       />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
                     </div>
-                    <p className="text-xs text-[#888888]">Most organizations see 15-30% of documentation time savings convert to OT reduction.</p>
+                    <p className="text-xs text-[#888888]">1.5x base rate is typical. Adjust based on your blended OT rate.</p>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Nurse FTEs × OT hours/week × 52 weeks</span>
-                        <span className="font-semibold text-black">{formatNumber(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52)} hrs/yr</span>
+                        <span className="text-[#666666]">Time saved (from previous step)</span>
+                        <span className="font-semibold text-black">{formatNumber(totalHoursSaved)} hrs/yr</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× OT reduction rate</span>
+                        <span className="text-[#666666]">× Time-to-OT conversion</span>
                         <span className="font-semibold text-black">{timeDriverInputs.nursingOtReductionPercent}%</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">= Hours reduced</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * timeDriverInputs.nursingOtHoursPerNurseWeek * 52 * (timeDriverInputs.nursingOtReductionPercent / 100)))}</span>
+                        <span className="text-[#666666]">= OT hours eliminated</span>
+                        <span className="font-semibold text-black">{formatNumber(nursingOtHoursEliminated)} hrs/yr</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× OT rate (${timeDriverInputs.nursingOtHourlyRate} × 1.5)</span>
-                        <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate * 1.5)}/hr</span>
+                        <span className="text-[#666666]">× OT hourly rate</span>
+                        <span className="font-semibold text-black">{formatCurrency(timeDriverInputs.nursingOtHourlyRate)}</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">
@@ -824,6 +835,12 @@ export default function ExploreValueDrivers({
                         <span className="font-bold text-[#EA2C00]">{formatCurrency(nursingOtValue)}</span>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
+                    <p className="text-xs text-[#888888]">
+                      <span className="font-medium">Validation tip:</span> Check this against your current OT spend. If this exceeds your total nursing OT budget, lower the conversion rate.
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -1162,10 +1179,10 @@ export default function ExploreValueDrivers({
                   <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
                   <p className="text-sm text-black mb-6">
                     Documentation burden is a leading contributor to nurse burnout and turnover. 
-                    When you reduce charting time, nurses are more likely to stay.
+                    Of nurses who leave, roughly 40% cite burnout-related reasons. Reducing charting time directly addresses this driver.
                   </p>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">YOUR ORGANIZATION</p>
                   <div className="grid grid-cols-2 gap-6 mb-6">
                     <div className="space-y-2.5">
                       <label className="text-sm text-[#888888]">Annual turnover rate</label>
@@ -1193,20 +1210,47 @@ export default function ExploreValueDrivers({
                     </div>
                   </div>
 
-                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Calculation</p>
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">ABRIDGE IMPACT ON RETENTION</p>
+                  <p className="text-sm text-[#888888] mb-3">How much could reducing documentation burden impact burnout-driven departures?</p>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {[
+                      { label: 'Conservative', value: 'conservative' as RetentionScenario, pct: 10 },
+                      { label: 'Typical', value: 'typical' as RetentionScenario, pct: 15 },
+                      { label: 'Optimistic', value: 'optimistic' as RetentionScenario, pct: 25 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.value}
+                        onClick={() => updateTimeDriverInputs({ retentionImpactScenario: preset.value })}
+                        className={`py-3 px-2 rounded-lg border-2 text-center transition-all ${
+                          timeDriverInputs.retentionImpactScenario === preset.value
+                            ? 'border-[#EA2C00] bg-[#F5F0EB]'
+                            : 'border-transparent bg-[#F5F0EB] hover:border-[#D1D5DB]'
+                        }`}
+                        data-testid={`preset-retention-${preset.label.toLowerCase()}`}
+                      >
+                        <span className="block text-xs font-semibold text-black">{preset.label}</span>
+                        <span className="block text-xs text-[#888888]">{preset.pct}% impact</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#888888] mb-6">
+                    Applied to the 40% of departures that are burnout-related.
+                  </p>
+
+                  <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">CALCULATION</p>
                   <div className="bg-[#F5F0EB] rounded-lg p-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">Nurse FTEs × Turnover rate</span>
-                        <span className="font-semibold text-black">{formatNumber(Math.round(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100)))} leaving/year</span>
+                        <span className="text-[#666666]">{state.numberOfProviders} nurses × {timeDriverInputs.nursingTurnoverRate}% turnover</span>
+                        <span className="font-semibold text-black">{nursingRetentionCalcs.leavingPerYear.toFixed(1)} leaving/year</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× Burnout-related (40%)</span>
-                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40).toFixed(1)}</span>
+                        <span className="text-[#666666]">× 40% burnout-related</span>
+                        <span className="font-semibold text-black">{nursingRetentionCalcs.burnoutDepartures.toFixed(1)} burnout departures</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#666666]">× Abridge impact (15%)</span>
-                        <span className="font-semibold text-black">{(state.numberOfProviders * (timeDriverInputs.nursingTurnoverRate / 100) * 0.40 * 0.15).toFixed(2)} nurses retained</span>
+                        <span className="text-[#666666]">× {nursingRetentionImpactRates[timeDriverInputs.retentionImpactScenario]}% Abridge impact</span>
+                        <span className="font-semibold text-black">{nursingRetentionCalcs.retained.toFixed(2)} nurses retained</span>
                       </div>
                       <div className="h-px bg-[#E5E5E5] my-2" />
                       <div className="flex justify-between">

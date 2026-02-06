@@ -238,7 +238,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   utilizationPercent: 0,
   nursingStaffedBeds: 0,
   nursingOccupancyRate: 85,
-  nursingShiftsPerNurseYear: 156,
+  nursingShiftsPerNurseYear: 260,
   nursingMinutesPerShift: 30,
   timePathScenario: null,
   minutesSavedPerEncounter: 4,
@@ -317,7 +317,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingCostPerFall: 6500, // $ per fall
     nursingHapiRate: 2.5, // per 1,000 patient days
     nursingHapiPreventablePct: 5, // % preventable with timely assessments
-    nursingCostPerHapi: 20000, // $ per HAPI
+    nursingCostPerHapi: 25000, // $ per HAPI
     nursingCareQualityRealization: 85, // % realization rate
     // Collapsible state defaults
     costReductionExpanded: true,
@@ -365,7 +365,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingHapiEnabled: false,
     nursingHapiRate: 2.5, // 2.5 per 1,000 patient days
     nursingHapiPreventionRate: 5, // 5% prevention rate (conservative)
-    nursingHapiCost: 40000, // $40,000 per HAPI
+    nursingHapiCost: 25000, // $25,000 per HAPI
     // Nursing: Falls Prevention defaults
     nursingFallsEnabled: false,
     nursingFallsRate: 3.5, // 3.5 per 1,000 patient days

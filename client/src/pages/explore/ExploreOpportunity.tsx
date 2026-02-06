@@ -38,9 +38,9 @@ const INPATIENT_BUSYNESS_PRESETS: BusynessPreset[] = [
 ];
 
 const UTILIZATION_PRESETS = [
-  { label: "Conservative", value: 40 },
-  { label: "Typical", value: 55 },
-  { label: "Optimistic", value: 60 },
+  { label: "Conservative", value: 50 },
+  { label: "Typical", value: 70 },
+  { label: "Optimistic", value: 85 },
 ];
 
 export default function ExploreOpportunity({ state, updateState, onNext, onBack, onHome }: ExploreOpportunityProps) {
@@ -165,7 +165,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 {pageTitle}
               </h1>
               <p className="text-base text-[#888888]">
-                Tell us about your starting point.
+                {isNursing ? "Tell us about your deployment and expected adoption." : "Tell us about your starting point."}
               </p>
             </motion.div>
 
@@ -194,6 +194,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                         className="h-12 bg-white border-[#E5E5E5]" 
                         data-testid="input-beds" 
                       />
+                      <p className="text-xs text-[#888888]">Licensed beds with active nursing staff</p>
                     </div>
                   )}
                   <div className="space-y-2.5">
@@ -201,10 +202,13 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     <FormattedNumberInput 
                       value={state.numberOfProviders} 
                       onChange={handleProvidersChange} 
-                      placeholder="e.g., 50"
+                      placeholder={isNursing ? "e.g., 300" : "e.g., 50"}
                       className="h-12 bg-white border-[#E5E5E5]" 
                       data-testid="input-providers" 
                     />
+                    {isNursing && (
+                      <p className="text-xs text-[#888888]">Full-time equivalent nurses in scope for Abridge</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -337,17 +341,23 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
               )}
 
-              {/* Section 3: Expected Utilization */}
+              {/* Section 3: Expected Utilization / Adoption */}
               <div>
                 <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-                  EXPECTED UTILIZATION
+                  {isNursing ? "EXPECTED ADOPTION" : "EXPECTED UTILIZATION"}
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
+
+                {isNursing && (
+                  <p className="text-sm text-[#888888] mb-4">
+                    What percentage of nurses will actively use Abridge?
+                  </p>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   {/* Segmented Control for Utilization */}
                   <div className="space-y-2.5">
-                    <label className="text-sm font-medium text-black">Utilization Rate</label>
+                    <label className="text-sm font-medium text-black">{isNursing ? "Adoption Rate" : "Utilization Rate"}</label>
                     <div className="grid grid-cols-3 gap-2">
                       {UTILIZATION_PRESETS.map((preset) => (
                         <button
@@ -388,7 +398,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                 </div>
 
                 <p className="text-xs text-[#888888]">
-                  Utilization typically starts at 50-60% and grows to 75-85%.
+                  {isNursing
+                    ? "Adoption reflects the percentage of nurses consistently using Abridge for supported documentation. Most implementations reach 60-75% within 6 months."
+                    : "Utilization typically starts at 50-60% and grows to 75-85%."
+                  }
                 </p>
               </div>
             </motion.div>
@@ -433,7 +446,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                     </div>
                     <div>
                       <h3 className="text-base font-semibold text-white">Your Baseline</h3>
-                      <p className="text-xs text-white/50">Practice summary</p>
+                      <p className="text-xs text-white/50">{isNursing ? "Deployment summary" : "Practice summary"}</p>
                     </div>
                   </div>
                 </div>
@@ -464,6 +477,10 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                           {state.nursingStaffedBeds > 0 ? formatNumber(Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365)) : '—'}
                         </span>
                       </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-white/50">Adoption</span>
+                        <span className="text-base font-semibold text-white">{state.utilizationPercent > 0 ? `${state.utilizationPercent}%` : '—'}</span>
+                      </div>
                     </>
                   ) : (
                     <>
@@ -485,28 +502,53 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
                       </div>
                     </>
                   )}
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-white/50">Utilization</span>
-                    <span className="text-base font-semibold text-white">{state.utilizationPercent}%</span>
-                  </div>
+                  {!isNursing && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-white/50">Utilization</span>
+                      <span className="text-base font-semibold text-white">{state.utilizationPercent}%</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Eligible Encounters - Highlighted */}
+                {/* Abridge-Enabled Shifts (Nursing) / Eligible Encounters */}
                 <div className="px-6 py-5 border-t border-white/10">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-white/70">
-                      {isNursing ? 'Eligible Shifts' : `Eligible ${encounterLabel}`}
-                    </span>
-                    <span className="text-2xl font-bold text-[#EA2C00]">
-                      {isNursing 
-                        ? (state.numberOfProviders > 0 ? formatNumber(nursingEligibleShifts) : '—')
-                        : (state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—')
-                      }
-                    </span>
-                  </div>
-                  <p className="text-xs text-white/30">
-                    This is your value multiplier
-                  </p>
+                  {isNursing ? (
+                    <>
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+                        ABRIDGE-ENABLED SHIFTS
+                      </p>
+                      <div className="text-center mb-3">
+                        <span className="text-3xl font-bold text-[#EA2C00]" data-testid="text-enabled-shifts">
+                          {state.numberOfProviders > 0 && state.utilizationPercent > 0 ? formatNumber(nursingEligibleShifts) : '—'}
+                        </span>
+                        <p className="text-sm text-white/50 mt-1">shifts / year</p>
+                      </div>
+                      <div className="h-px bg-white/10 my-3" />
+                      <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+                        THE MATH
+                      </p>
+                      <div className="text-xs text-white/40 space-y-1">
+                        <p>{state.numberOfProviders > 0 ? formatNumber(state.numberOfProviders) : '—'} nurse FTEs</p>
+                        <p>× {state.nursingShiftsPerNurseYear} shifts/year</p>
+                        <p>× {state.utilizationPercent}% adoption</p>
+                        <p className="text-white/60 font-medium">= {state.numberOfProviders > 0 && state.utilizationPercent > 0 ? formatNumber(nursingEligibleShifts) : '—'} shifts</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-white/70">
+                          {`Eligible ${encounterLabel}`}
+                        </span>
+                        <span className="text-2xl font-bold text-[#EA2C00]">
+                          {state.numberOfProviders > 0 ? formatNumber(eligibleEncounters) : '—'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/30">
+                        This is your value multiplier
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {/* Continue Button */}

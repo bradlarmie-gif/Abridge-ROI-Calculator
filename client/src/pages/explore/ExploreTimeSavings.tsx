@@ -37,11 +37,10 @@ export default function ExploreTimeSavings({
         ? { conservative: 15, typical: 20, aggressive: 30 }  // Per shift for nursing
         : { conservative: 2, typical: 4, aggressive: 6 };
 
-  // Nursing: Shift-based calculation
+  // Nursing: Shift-based calculation (260 shifts/year per nurse FTE)
   const nursingShiftsPerYear = useMemo(() => {
-    // Nurse FTEs × 365 × coverage factor (assuming 1 shift/day per FTE equivalent)
-    return state.numberOfProviders * 365;
-  }, [state.numberOfProviders]);
+    return state.numberOfProviders * state.nursingShiftsPerNurseYear;
+  }, [state.numberOfProviders, state.nursingShiftsPerNurseYear]);
 
   const nursingEligibleShifts = useMemo(() => {
     return Math.round(nursingShiftsPerYear * (state.utilizationPercent / 100));
@@ -83,7 +82,7 @@ export default function ExploreTimeSavings({
       key: 'conservative',
       label: 'Conservative',
       description: isNursing
-        ? 'Minimal adoption, limited flowsheet coverage.'
+        ? 'Early adoption phase, nurses still learning workflows'
         : isInpatient
           ? 'Per admission (combined across all notes). For skeptical stakeholders.'
           : 'For skeptical stakeholders. Under-promise to over-deliver.',
@@ -92,7 +91,7 @@ export default function ExploreTimeSavings({
       key: 'typical',
       label: 'Typical',
       description: isNursing
-        ? 'Standard adoption across key flowsheets.'
+        ? 'Standard adoption with key flowsheets covered'
         : isED 
           ? 'Based on average outcomes across similar ED implementations.'
           : isInpatient
@@ -104,7 +103,7 @@ export default function ExploreTimeSavings({
       key: 'aggressive',
       label: 'Optimistic',
       description: isNursing
-        ? 'Full adoption with strong change management.'
+        ? 'High adoption with optimized workflows'
         : isED 
           ? 'For high-adoption EDs with strong change management.'
           : isInpatient
@@ -163,7 +162,7 @@ export default function ExploreTimeSavings({
               <div className="h-px bg-[#D1D5DB] mb-6" />
               <p className="text-sm text-black leading-relaxed">
                 {isNursing
-                  ? "Nurses spend 25-35% of their shift on documentation. Ambient documentation can reduce time spent on flowsheets, assessments, and handoff documentation by 15-30 minutes per shift."
+                  ? "Nurses spend 2-3 hours per shift on documentation\u2014flowsheets, assessments, care plans, and handoffs. For the documentation types Abridge supports, we typically see 15-30 minutes saved per shift."
                   : isED 
                     ? "ED documentation is faster-paced than outpatient, with more templated workflows. Across ED implementations, providers typically save 1-3 minutes per encounter. The range depends on acuity mix, EHR configuration, and workflow adoption."
                     : isInpatient
@@ -296,10 +295,16 @@ export default function ExploreTimeSavings({
                 <p className="text-sm text-white/50 mt-1">hours / year</p>
               </div>
 
-              <p className="text-xs text-white/40 text-center mb-4">
+              <div className="h-px bg-white/10 my-4" />
+
+              {/* THE MATH */}
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+                THE MATH
+              </p>
+              <p className="text-xs text-white/40 mb-4">
                 {isNursing 
-                  ? `${state.minutesSavedPerEncounter} min × ${formatNumber(nursingEligibleShifts)} shifts`
-                  : `${state.minutesSavedPerEncounter} min × ${formatNumber(eligibleEncounters)} encounters`
+                  ? `${state.minutesSavedPerEncounter} min × ${formatNumber(nursingEligibleShifts)} shifts ÷ 60`
+                  : `${state.minutesSavedPerEncounter} min × ${formatNumber(eligibleEncounters)} encounters ÷ 60`
                 }
               </p>
 
@@ -316,25 +321,25 @@ export default function ExploreTimeSavings({
                   <span className="text-white">{state.minutesSavedPerEncounter} {isNursing ? 'min/shift' : 'min/encounter'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">{isNursing ? 'Eligible Shifts' : 'Eligible Encounters'}</span>
+                  <span className="text-white/50">{isNursing ? 'Abridge-Enabled Shifts' : 'Eligible Encounters'}</span>
                   <span className="text-white">{formatNumber(isNursing ? nursingEligibleShifts : eligibleEncounters)}</span>
                 </div>
               </div>
 
               <div className="h-px bg-white/10 my-4" />
 
-              {/* Per Provider/Nurse */}
-              <div className="mb-4">
-                <p className="text-xs text-white/50 mb-2">{isNursing ? 'Per nurse:' : 'Per provider:'}</p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Hours/year</span>
-                    <span className="text-white font-semibold">{formatNumber(hoursPerProvider)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Hours/week</span>
-                    <span className="text-[#EA2C00] font-semibold">{hoursPerWeek}</span>
-                  </div>
+              {/* Per Nurse / Per Provider */}
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-2">
+                {isNursing ? 'PER NURSE' : 'PER PROVIDER'}
+              </p>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-white/50">Hours/year</span>
+                  <span className="text-white font-semibold">{formatNumber(hoursPerProvider)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/50">Hours/week</span>
+                  <span className="text-[#EA2C00] font-semibold">{hoursPerWeek}</span>
                 </div>
               </div>
 
