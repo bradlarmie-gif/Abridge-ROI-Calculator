@@ -1,0 +1,246 @@
+Update the Competitive Displacement (Switch → Competitor) flow with these fixes:
+
+═══════════════════════════════════════════════════════════════════════════════════
+1. PAGE 1: "Where You Are" — TERMINOLOGY & BENCHMARK FIXES
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Change all "Benchmark: X%" to "Abridge Benchmark: X%"
+   This positions Abridge as the standard, not generic "top performers"
+
+B) Update benchmark values to show RANGES where appropriate:
+   - Utilization: "Abridge Benchmark: 70-80%" (show 76% as target)
+   - Time Saved: "Abridge Benchmark: 3-5 min" (show 4 min as target)
+   - wRVU Lift: "Abridge Benchmark: +4-7%" (show 5.5% as target)
+   - Satisfaction: "Abridge Benchmark: 80-95%" (show 88% as target)
+
+C) Add helper text to each metric explaining what it means:
+   - Utilization: "% of eligible encounters documented with AI"
+   - Time Saved: "Documentation time reduced per encounter"
+   - Quality: "wRVU lift from better documentation"
+   - Satisfaction: "% of providers who would recommend"
+
+D) After-Hours Documentation section:
+   - Change "7 hrs/week" display to also show "vs. Abridge avg: 2 hrs/week"
+   - Add benchmark comparison
+
+═══════════════════════════════════════════════════════════════════════════════════
+2. PAGE 2: "The Gap" — MATH FIXES
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Value Realization card:
+   Add "How we calculate this" expandable section:
+   
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │ ⓘ How we calculate Value Realization                                        │
+   │                                                                             │
+   │ We compare your metrics against Abridge benchmarks:                         │
+   │                                                                             │
+   │ Utilization: 45% ÷ 76% = 59%                                                │
+   │ Time Saved: 2.5 ÷ 4 = 63%                                                   │
+   │ wRVU Lift: 4% ÷ 5.5% = 73%                                                  │
+   │ Satisfaction: 60% ÷ 88% = 68%                                               │
+   │                                                                             │
+   │ Average: 66%                                                                │
+   │                                                                             │
+   └─────────────────────────────────────────────────────────────────────────────┘
+
+B) Documentation Burden card:
+   - Current: "2,500 hours/year"
+   - Add: "That's 63 full work weeks of provider time"
+   - Add: "At Abridge benchmark, this would be [X] hours/year"
+   - Show the GAP, not just the absolute number
+
+C) Utilization Gap card:
+   - Add clearer explanation: "31,000 encounters/year documented WITHOUT AI"
+   - Show: "These encounters take an extra 4 min each = 2,067 hours"
+
+D) Coding Leakage card:
+   - Change "+4% wRVU lift" to "+4% vs +5.5% benchmark"
+   - Add: "1.5% gap = approximately $28K/year in missed revenue"
+
+E) Burnout Signal card:
+   - Good as-is, but add: "Providers below 70% satisfaction are 2x more likely to leave"
+   - Source this claim or remove it
+
+═══════════════════════════════════════════════════════════════════════════════════
+3. PAGE 3: "What Good Looks Like" — COLOR & UX FIXES
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Remove green color from benchmark ranges:
+   - Change green (#4CAF50) to light gray (#E0E0E0) for benchmark bands
+   - Or use a muted teal if you want some color: #80CBC4 at 30% opacity
+
+B) For "In benchmark range" status:
+   - Change green pill to gray with checkmark: "✓ In Range"
+   - Use gray background, not green
+
+C) For "X% gap to reach benchmark" status:
+   - Keep using red-orange (#EA2C00) but lighter: #FFEBE6 background
+   - Text in full red-orange
+
+D) The benchmark range visualization:
+   - Current dot position indicator is good
+   - Make the benchmark range MORE visible (slightly darker gray band)
+   - Add tick marks at range boundaries
+
+═══════════════════════════════════════════════════════════════════════════════════
+4. PAGE 4: "The Math" — CALCULATION TRANSPARENCY
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Utilization Gap expanded section:
+   Update calculation display:
+   
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │ HOW WE CALCULATE THIS                                                       │
+   │                                                                             │
+   │ Encounters NOT getting AI benefit:                                          │
+   │ 100,000 annual encounters × (76% - 45%) = 31,000 encounters                 │
+   │                                                                             │
+   │ Time cost of these encounters:                                              │
+   │ 31,000 × 4 min (benchmark time saved) = 2,067 hours                         │
+   │                                                                             │
+   │ Value:                                                                      │
+   │ 2,067 hours × $150/hr × 25% conversion = $77,500/year                       │
+   │                                                                             │
+   │ [Click to adjust: $/hr [$150] | Conversion [25%]]                           │
+   └─────────────────────────────────────────────────────────────────────────────┘
+
+B) Efficiency Gap expanded section:
+   Clarify which utilization is being used:
+   
+   "Calculating at YOUR current utilization (45%):"
+   OR
+   "Calculating at BENCHMARK utilization (76%) to show full potential:"
+   
+   Make this explicit—don't leave users guessing.
+
+C) Quality Gap (wRVU) expanded section:
+   Explain "50% attribution":
+   
+   "We attribute 50% of wRVU improvement to documentation. 
+   The rest comes from clinical complexity and coding practices."
+
+D) Add "Sensitivity Analysis" or "Adjust Assumptions" section:
+   Let users change key assumptions to stress-test the numbers.
+
+═══════════════════════════════════════════════════════════════════════════════════
+5. PAGE 4 (continued): COMPOUNDING EFFECT CHART — MATH FIX
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Clarify what each line represents:
+   
+   ─── Optimized (with Abridge): Cumulative value captured over time
+   ---- Current: Cumulative value at your current performance
+   
+   [Shaded area] = Value left on table
+
+B) Add year-by-year values ON the chart:
+   - Year 1: "$115K optimized vs $4K current"
+   - Year 2: "$260K optimized vs $8K current"
+   - Year 3: "$395K optimized vs $12K current"
+
+C) Fix the "Current" line logic:
+   Either:
+   - Keep it flat ($0 growth if they stay with competitor)
+   - OR show slight natural improvement (3% per year)
+   
+   Be explicit about which assumption you're using.
+
+D) Add tooltip explaining the chart:
+   "The optimized path assumes switching to Abridge and achieving 
+   benchmark performance within 6-12 months. The current path assumes 
+   staying with your current solution with minimal improvement."
+
+═══════════════════════════════════════════════════════════════════════════════════
+6. PAGE 4 (continued): COST OF WAITING
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Current display is good, but add the math:
+
+   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+   │ Act Now     │  │ Wait 6 mo   │  │ Wait 12 mo  │
+   │             │  │             │  │             │
+   │ $395K       │  │ $329K       │  │ $263K       │
+   │ 3-year value│  │ 3-year value│  │ 3-year value│
+   │             │  │             │  │             │
+   │             │  │ -$66K       │  │ -$132K      │
+   │             │  │ opportunity │  │ opportunity │
+   │             │  │ cost        │  │ cost        │
+   └─────────────┘  └─────────────┘  └─────────────┘
+
+B) Add monthly cost of inaction prominently:
+   
+   "Every month you wait costs: $11K in unrealized value"
+
+═══════════════════════════════════════════════════════════════════════════════════
+7. PAGE 5: "What It Takes" — MINOR POLISH
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) The 4 patterns are great. Keep them.
+
+B) Update Abridge stats if needed:
+   - 150+ health systems → verify current number
+   - 95% retention rate → verify this is accurate
+   - 4 key patterns → good
+   - 90-day onboarding → good
+
+C) Add a "Why these patterns matter" intro:
+   "We've seen hundreds of ambient AI implementations. 
+   The ones that succeed share four patterns. The ones that fail 
+   are missing at least one."
+
+═══════════════════════════════════════════════════════════════════════════════════
+8. PAGE 6: "The Opportunity" — FINAL POLISH
+═══════════════════════════════════════════════════════════════════════════════════
+
+A) Hero section:
+   - "ANNUAL VALUE TO UNLOCK" is good
+   - Add: "This is what benchmark performance would deliver"
+
+B) Value Realization Score:
+   - Add labels for score ranges:
+     - 0-50%: "Struggling"
+     - 50-70%: "Developing"
+     - 70-85%: "Performing"
+     - 85-100%: "Optimized"
+   
+   Show which bucket they're in.
+
+C) The four metric comparison cards:
+   - Add visual indicator (red/green/gray) based on gap
+   - Current: just shows "vs. 76%"
+   - Better: show colored indicator + gap size
+
+D) "What Comes Next" CTA:
+   - Good as-is
+   - Consider adding: "Schedule a benchmark review" as secondary CTA
+
+═══════════════════════════════════════════════════════════════════════════════════
+9. GLOBAL: COLOR PALETTE UPDATE
+═══════════════════════════════════════════════════════════════════════════════════
+
+Replace off-brand greens with Abridge palette:
+
+CURRENT:
+- Green (#4CAF50) for "in range"
+- Bright red (#FF0000) for "gap"
+
+UPDATED:
+- Benchmark range: Light gray (#E5E5E5) or muted teal (#B2DFDB)
+- In range: Gray background, dark text, checkmark icon
+- Gap/opportunity: Light red-orange (#FFEBE6) background, #EA2C00 text
+- Positive trend: Use Abridge red-orange (#EA2C00), not green
+
+═══════════════════════════════════════════════════════════════════════════════════
+10. LEGAL PROTECTION
+═══════════════════════════════════════════════════════════════════════════════════
+
+Add disclaimers:
+
+Footer of each page:
+"Benchmarks based on Abridge customer data. Individual results vary 
+based on implementation quality, specialty mix, and organizational factors."
+
+On the final page:
+"This assessment is for planning purposes. Actual value realization 
+depends on adoption, workflow optimization, and ongoing partnership."
