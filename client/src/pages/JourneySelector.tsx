@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight, Check } from "lucide-react";
+import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
@@ -12,95 +11,18 @@ interface JourneySelectorProps {
   onSelectLearn: () => void;
 }
 
-interface PathCardProps {
-  icon: typeof Compass;
-  title: string;
-  subtitle: string;
-  description: string;
-  buttonText: string;
-  onClick: () => void;
-  onSelect: () => void;
-  isSelected: boolean;
-  testId: string;
-  delay: number;
-}
-
-function PathCard({ icon: Icon, title, subtitle, description, buttonText, onClick, onSelect, isSelected, testId, delay }: PathCardProps) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.5, 
-        delay: delay,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }}
-      whileHover={{ y: -4 }}
-      className={`
-        group relative rounded-2xl p-6 md:p-7 flex flex-col cursor-pointer transition-all duration-300 ease-out
-        ${isSelected 
-          ? 'bg-white border-l-4 border-l-[#EA2C00] border-t border-r border-b border-[#E5E7EB] shadow-lg' 
-          : 'bg-white border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300'
-        }
-      `}
-      onClick={onSelect}
-      data-testid={testId}
-    >
-      {/* Selection indicator */}
-      {isSelected && (
-        <motion.div 
-          className="absolute top-4 right-4 w-6 h-6 bg-[#EA2C00] rounded-full flex items-center justify-center"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        >
-          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-        </motion.div>
-      )}
-      
-      {/* Icon */}
-      <div 
-        className={`
-          relative w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-5 md:mb-6 transition-all duration-300 ease-out
-          ${isSelected ? 'bg-[#FFF5F2]' : 'bg-[#FFF5F2]'}
-        `}
-      >
-        <Icon className={`w-6 h-6 md:w-7 md:h-7 transition-transform duration-300 ${isSelected ? 'text-[#EA2C00]' : 'text-[#EA2C00]'}`} />
-      </div>
-      
-      <h3 className="text-lg md:text-xl font-semibold mb-1 text-black">
-        {title}
-      </h3>
-      <p className="text-xs md:text-sm font-medium mb-2 md:mb-3 text-[#888888]">
-        {subtitle}
-      </p>
-      <p className="text-xs md:text-sm leading-relaxed flex-1 mb-5 md:mb-6 text-[#6B7280]">
-        {description}
-      </p>
-      
-      <Button
-        className="w-full font-medium transition-all duration-200 rounded-full bg-[#EA2C00] text-white hover:bg-[#EA2C00]/90"
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick();
-        }}
-        data-testid={`${testId}-button`}
-      >
-        {buttonText}
-        <ChevronRight className="w-4 h-4 ml-1" />
-      </Button>
-    </motion.div>
-  );
-}
-
 export default function JourneySelector({ onSelectExplore, onSelectExpand, onSelectSwitch, onSelectLearn }: JourneySelectorProps) {
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const handleCardKey = (e: React.KeyboardEvent, handler: () => void) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handler();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       <GlobalHeader pageName="Home" />
       
-      {/* Giant Abridge shape background on right - rotated -90° to look like an A */}
       <div 
         className="absolute pointer-events-none z-0"
         style={{
@@ -125,17 +47,14 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-10 md:mb-14"
+          className="text-center mb-12 md:mb-16"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-3 tracking-tight px-2 font-abridge uppercase">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black tracking-tight px-2 font-abridge uppercase">
             The value of
-            <span className="block mt-3 md:mt-4 tracking-normal" style={{ color: '#EA2C00' }}>
+            <span className="block mt-3 md:mt-4 tracking-normal text-[#EA2C00]">
               Abridge
             </span>
           </h1>
-          <p className="text-base md:text-lg text-[#6B7280]">
-            See what's possible for your organization.
-          </p>
         </motion.section>
 
         <section className="mb-8 md:mb-12">
@@ -143,50 +62,146 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-xs md:text-sm text-[#888888] uppercase tracking-widest font-semibold text-center mb-6 md:mb-8"
+            className="text-center mb-8 md:mb-10 text-[11px] uppercase text-[#999999] font-medium"
+            style={{ letterSpacing: '3px' }}
           >
             What brings you here today?
           </motion.p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
-            <PathCard
-              icon={Compass}
-              title="Explore"
-              subtitle="New to Abridge?"
-              description="Discover what ambient documentation could unlock for your organization—in real numbers"
-              buttonText="Start Exploring"
+
+            {/* CARD 1: EXPLORE — White with red top accent */}
+            <motion.div 
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+              whileHover={{ y: -4 }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => handleCardKey(e, onSelectExplore)}
+              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-white border border-[#E0E0E0] border-t-[3px] border-t-[#EA2C00] hover:border-[#EA2C00] hover:shadow-[0_8px_24px_rgba(234,44,0,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
               onClick={onSelectExplore}
-              onSelect={() => setSelectedPath('explore')}
-              isSelected={selectedPath === 'explore'}
-              testId="card-explore"
-              delay={0.15}
-            />
-            
-            <PathCard
-              icon={TrendingUp}
-              title="Measure"
-              subtitle="Already using Abridge?"
-              description="Measure your impact and frame your value story"
-              buttonText="Start Your Story"
+              data-testid="card-explore"
+            >
+              <div className="w-12 h-12 rounded-full bg-[#FFF5F2] flex items-center justify-center mb-5">
+                <Compass className="w-6 h-6 text-[#EA2C00]" />
+              </div>
+              
+              <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-explore-tagline">
+                New to Abridge?
+              </p>
+              <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-explore-title">
+                Explore
+              </h3>
+              <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-explore-description">
+                Discover what ambient documentation could unlock for your organization—in real numbers.
+              </p>
+              
+              <Button
+                className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                size="lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectExplore();
+                }}
+                data-testid="card-explore-button"
+              >
+                Start Exploring
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </motion.div>
+
+            {/* CARD 2: MEASURE — Warm beige background */}
+            <motion.div 
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+              whileHover={{ y: -4 }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => handleCardKey(e, onSelectExpand)}
+              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
               onClick={onSelectExpand}
-              onSelect={() => setSelectedPath('measure')}
-              isSelected={selectedPath === 'measure'}
-              testId="card-measure"
-              delay={0.25}
-            />
-            
-            <PathCard
-              icon={ArrowLeftRight}
-              title="Switch"
-              subtitle="Using another solution?"
-              description="See how Abridge compares—and what you'd gain by switching"
-              buttonText="Run the Comparison"
+              data-testid="card-measure"
+            >
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-5">
+                <TrendingUp className="w-6 h-6 text-[#EA2C00]" />
+              </div>
+              
+              <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-measure-tagline">
+                Already using Abridge?
+              </p>
+              <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2.5" data-testid="text-measure-title">
+                Measure
+              </h3>
+              <p className="text-sm text-[#666666] leading-relaxed flex-1 mb-6" data-testid="text-measure-description">
+                Capture what you've built and frame your value story with data.
+              </p>
+              
+              <Button
+                className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
+                size="lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectExpand();
+                }}
+                data-testid="card-measure-button"
+              >
+                Start Your Story
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </motion.div>
+
+            {/* CARD 3: SWITCH — Dark near-black, bold */}
+            <motion.div 
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              whileHover={{ y: -4 }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => handleCardKey(e, onSelectSwitch)}
+              className="group relative flex flex-col cursor-pointer transition-all duration-300 ease-out rounded-xl p-8 min-h-[320px] bg-[#1A1A1A] hover:bg-[#2A2A2A] hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
               onClick={onSelectSwitch}
-              onSelect={() => setSelectedPath('switch')}
-              isSelected={selectedPath === 'switch'}
-              testId="card-switch"
-              delay={0.35}
-            />
+              data-testid="card-switch"
+            >
+              <div 
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+                  backgroundSize: '24px 24px',
+                }}
+              />
+              
+              <div className="relative z-10 flex flex-col flex-1">
+                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-5">
+                  <ArrowLeftRight className="w-6 h-6 text-[#EA2C00]" />
+                </div>
+                
+                <p className="text-[13px] text-[#EA2C00] font-medium mb-1.5" data-testid="text-switch-tagline">
+                  Using another solution?
+                </p>
+                <h3 className="text-2xl font-bold text-white mb-2.5" data-testid="text-switch-title">
+                  Switch
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed flex-1 mb-6" data-testid="text-switch-description">
+                  See how your current AI is performing—and what's possible with the right partnership.
+                </p>
+                
+                <Button
+                  className="w-full bg-white text-[#1A1A1A] border-white"
+                  size="lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectSwitch();
+                  }}
+                  data-testid="card-switch-button"
+                >
+                  Run the Assessment
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </motion.div>
           </div>
         </section>
 
@@ -194,18 +209,18 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="text-center pt-4 md:pt-6 space-y-3"
+          className="text-center pt-4 md:pt-6 space-y-4"
         >
-          <p className="text-xs text-[#888888]">
+          <p className="text-[10px] text-[#999999]">
             Estimates are for planning purposes. Results should be validated with your organization's data.
           </p>
           <button
             onClick={onSelectLearn}
-            className="inline-flex items-center gap-1.5 text-xs text-[#888888] hover:text-[#EA2C00] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[#EA2C00] bg-transparent border-none cursor-pointer transition-colors hover:text-[#C42400] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 rounded"
             data-testid="link-learn"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Learn the methodology</span>
+            <span>How we calculate this</span>
             <ChevronRight className="w-3 h-3" />
           </button>
         </motion.footer>
