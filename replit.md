@@ -7,7 +7,17 @@ Abridge ROI Studio is a client-side single-page web application designed to calc
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
-The application supports distinct user journeys: an "Explore Path" for new prospects, a "Switch Path" for those migrating from other solutions (ambient AI or human scribes), and an "Expand Path" for existing Abridge customers to document their value story.
+The application supports distinct user journeys: an "Explore Path" for new prospects, a "Switch Path" for those migrating from other solutions (ambient AI or human scribes), an "Expand Path" for existing Abridge customers, and a "Measure Path" for partners to build a value story from deployment data.
+
+### Measure Path (5-Page Partner Report)
+The Measure path follows a 5-page narrative flow:
+1. **Your Data** (MeasureDataEntry): Edit/Presentation modes. Edit mode has Partner Profile (org name, care setting, providers on Abridge, total providers), before/after metrics (time, closure, after-hours, wRVU), and Value Model configuration (time allocation percentages, financial rates). Presentation mode shows a clean summary.
+2. **What Changed** (MeasureTransformation): Before/after comparison cards with animated bars, per-provider stats, utilization headroom expansion seed.
+3. **The Value** (MeasureAllocate): Hero value display, time waterfall with footnotes (operational savings, patient capacity, provider wellbeing), documentation quality section, per-provider/per-encounter metrics.
+4. **The Opportunity Ahead** (MeasureOpportunity): Two-layer expansion model - Deepen (current adoption to 85%) + Expand (current providers to total providers). Combined opportunity view with per-provider economics.
+5. **Your Story** (MeasureStory): Per-provider hero section, narrative callout, detailed results table, Deepen/Expand "What's Next" cards, PDF export, methodology accordion.
+
+Key calculation: `calculateExpansionResults()` in measureCalculator.ts computes Deepen (85% adoption target), Expand (scale to totalProviders), and combined opportunity values with per-provider economics.
 
 ### Technical Implementations
 -   **Comprehensive Care Setting Support**: Tailored drivers, defaults, and terminology for Outpatient, Emergency Department, Inpatient, and Nursing settings, including specific time allocation categories and documentation drivers. ROI calculations incorporate conservative realization rates.

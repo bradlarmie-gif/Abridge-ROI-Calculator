@@ -9,6 +9,7 @@ import {
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import type { MeasureState } from "@/lib/measureCalculator";
+import { calculateExpansionResults } from "@/lib/measureCalculator";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 
@@ -196,14 +197,8 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
   const timeToCloseDelta = state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith;
   const workOutsideDelta = state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith;
 
-  const projectionMultiplier = 2.5;
-  const projectedProviders = Math.round(state.deployment.providers * projectionMultiplier);
-  const projectedHours = Math.round(totalHoursSaved * projectionMultiplier);
-  const projectedTimeValue = timeValueSubtotal * projectionMultiplier;
-  const projectedDocLow = docValueLow * projectionMultiplier;
-  const projectedDocHigh = docValueHigh * projectionMultiplier;
-  const projectedValueLow = totalValueLow * projectionMultiplier;
-  const projectedValueHigh = totalValueHigh * projectionMultiplier;
+  const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+  const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
 
   const totalPages = 5;
 
@@ -241,7 +236,7 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               hours reclaimed from documentation
             </Text>
             <Text style={{ fontSize: 12, color: colors.tertiary, textAlign: "center", maxWidth: 400 }}>
-              That's {hoursPerProviderPerWeek.toFixed(1)} hours per week per provider{"\u2014"}time returned to patients, to personal life, to the work that matters.
+              That's {hoursPerProvider} hours per provider over {state.deployment.monthsOnAbridge} months{"\u2014"}time returned to patients, to personal life, to the work that matters.
             </Text>
           </View>
 
@@ -554,108 +549,86 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
         </View>
       </Page>
 
-      {/* PAGE 5: THE PATH AHEAD */}
+      {/* PAGE 5: THE OPPORTUNITY AHEAD */}
       <Page size="LETTER" style={styles.page} wrap={false}>
         <View style={styles.pageWrapper}>
-          <Text style={styles.sectionLabel}>THE PATH AHEAD</Text>
-          <Text style={styles.pageHeadline}>What's Possible at Scale</Text>
+          <Text style={styles.sectionLabel}>THE OPPORTUNITY AHEAD</Text>
+          <Text style={styles.pageHeadline}>Deepen + Expand</Text>
           <Text style={styles.body}>
-            You've established the model with {state.deployment.providers} providers over {state.deployment.monthsOnAbridge} months. Here's what the data suggests if you expanded while maintaining current performance.
+            You've proven the model with {state.deployment.providers} providers. Here's what the data suggests about scaling within your organization.
           </Text>
 
           <View style={styles.thickDivider} />
 
-          {/* Today vs Expansion */}
-          <Text style={styles.sectionLabelGray}>TODAY VS. EXPANSION</Text>
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
-            {/* Today */}
+          {/* Layer 1: Deepen */}
+          <Text style={styles.sectionLabelGray}>LAYER 1: DEEPEN</Text>
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
             <View style={[styles.statCard, { flex: 1 }]}>
-              <Text style={{ fontSize: 10, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
-                TODAY
-              </Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>
-                {state.deployment.providers}
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 12 }}>providers</Text>
-
-              <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 12 }} />
-
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 4 }}>
-                {formatNumber(Math.round(totalHoursSaved))} hrs saved
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 4 }}>
-                {formatCurrency(timeValueSubtotal)} time value
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 12 }}>
-                {formatSmartRange(docValueLow, docValueHigh)} doc quality
-              </Text>
-
-              <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 12 }} />
-
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginBottom: 2 }}>
-                {formatSmartRange(totalValueLow, totalValueHigh)}
-              </Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>estimated annual value</Text>
+              <Text style={{ fontSize: 10, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>TODAY</Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>{state.deployment.utilizationRate}% adoption</Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>{formatNumber(expansion.currentAdoptedEncounters)} encounters</Text>
             </View>
-
-            {/* Expansion */}
-            <View style={{
-              flex: 1,
-              padding: 20,
-              borderRadius: 8,
-              backgroundColor: colors.background,
-              borderWidth: 2,
-              borderColor: colors.primary,
-            }}>
-              <Text style={{ fontSize: 10, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8, fontWeight: "bold" }}>
-                AT {projectedProviders} PROVIDERS
-              </Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>
-                {projectedProviders}
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 12 }}>providers</Text>
-
-              <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 12 }} />
-
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 4 }}>
-                {formatNumber(projectedHours)} hrs saved
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 4 }}>
-                {formatCurrency(projectedTimeValue)} time value
-              </Text>
-              <Text style={{ fontSize: 11, color: colors.secondary, marginBottom: 12 }}>
-                {formatSmartRange(projectedDocLow, projectedDocHigh)} doc quality
-              </Text>
-
-              <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 12 }} />
-
-              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary, marginBottom: 2 }}>
-                {formatSmartRange(projectedValueLow, projectedValueHigh)}
-              </Text>
-              <Text style={{ fontSize: 10, color: colors.secondary }}>estimated annual value</Text>
+            <View style={{ flex: 1, padding: 16, borderRadius: 8, borderWidth: 2, borderColor: colors.primary }}>
+              <Text style={{ fontSize: 10, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>AT 85% ADOPTION</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{formatNumber(expansion.deepenEncounters)} encounters</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary, marginTop: 6 }}>+{formatCurrency(expansion.deepenAdditionalValue)}/year</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary, marginTop: 2 }}>No additional investment required</Text>
             </View>
           </View>
 
           <View style={styles.divider} />
 
-          <View style={styles.calloutBox}>
-            <Text style={styles.calloutText}>
-              Unlike scribe programs that scale linearly with headcount, ambient AI documentation scales differently. Per-provider investment decreases as adoption grows, while value per encounter remains consistent.
-            </Text>
+          {/* Layer 2: Expand */}
+          <Text style={styles.sectionLabelGray}>LAYER 2: EXPAND</Text>
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
+            <View style={[styles.statCard, { flex: 1 }]}>
+              <Text style={{ fontSize: 10, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>TODAY</Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>{state.deployment.providers} providers</Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>{formatSmartRange(totalValueLow, totalValueHigh)}/yr</Text>
+            </View>
+            <View style={{ flex: 1, padding: 16, borderRadius: 8, borderWidth: 2, borderColor: colors.primary }}>
+              <Text style={{ fontSize: 10, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>AT {expansion.expandProviders} PROVIDERS</Text>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: colors.primaryText }}>{expansion.expandProviders} providers</Text>
+              <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary, marginTop: 6 }}>{formatSmartRange(expansion.expandValueLow, expansion.expandValueHigh)}/yr</Text>
+            </View>
+          </View>
+
+          {/* Per-provider economics */}
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+            <View style={[styles.statCard, { flex: 1, alignItems: "center", borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{formatCurrency(expansion.perProviderValue)}</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>per provider/year</Text>
+            </View>
+            <View style={[styles.statCard, { flex: 1, alignItems: "center", borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{hoursPerProvider} hrs</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>saved per provider</Text>
+            </View>
+            <View style={[styles.statCard, { flex: 1, alignItems: "center", borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText }}>{expansion.remainingProviders}</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginTop: 4 }}>not yet on Abridge</Text>
+            </View>
           </View>
 
           <View style={styles.divider} />
 
-          <Text style={{ fontSize: 10, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
-            ASSUMPTIONS
-          </Text>
-          <Text style={{ fontSize: 10, color: colors.tertiary, lineHeight: 1.6, marginBottom: 16 }}>
-            This projection assumes adoption rate remains at {Math.round(state.deployment.utilizationRate)}%, time savings remain at {timeSavedPerNote} min/encounter, wRVU improvement continues at +{wrvuDelta.toFixed(2)}/encounter, and time allocation patterns remain consistent.
-          </Text>
+          {/* Combined Opportunity */}
+          <Text style={styles.sectionLabelGray}>COMBINED OPPORTUNITY</Text>
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
+            <View style={[styles.statCard, { flex: 1, alignItems: "center" }]}>
+              <Text style={{ fontSize: 10, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>TODAY</Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>{state.deployment.providers} providers, {state.deployment.utilizationRate}%</Text>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText, marginTop: 4 }}>{formatSmartRange(totalValueLow, totalValueHigh)}</Text>
+            </View>
+            <View style={{ flex: 1, padding: 16, borderRadius: 8, alignItems: "center", borderWidth: 2, borderColor: colors.primary }}>
+              <Text style={{ fontSize: 10, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>DEEPER + WIDER</Text>
+              <Text style={{ fontSize: 11, color: colors.secondary }}>{expansion.combinedProviders} providers, 85%</Text>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary, marginTop: 4 }}>{formatSmartRange(expansion.combinedValueLow, expansion.combinedValueHigh)}</Text>
+            </View>
+          </View>
 
           <View style={styles.calloutBox}>
             <Text style={styles.calloutText}>
-              This is your starting point. Your Abridge team can help you plan the expansion path that makes sense for your organization.
+              Unlike programs that scale linearly with headcount, AI documentation cost per provider decreases as adoption grows, while value per encounter remains consistent.
             </Text>
           </View>
 

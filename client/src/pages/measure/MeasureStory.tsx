@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Download, ChevronDown, ChevronUp, FileText, ArrowRight } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -7,6 +7,7 @@ import {
   type MeasureState, 
   formatCurrency, 
   formatNumber,
+  calculateExpansionResults,
 } from "@/lib/measureCalculator";
 import { generateMeasurePDF } from "@/components/measure/MeasurePDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
@@ -66,6 +67,8 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
     const totalValueLow = timeValueSubtotal + docValueLow;
     const totalValueHigh = timeValueSubtotal + docValueHigh;
 
+    const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+
     return {
       totalHoursSaved,
       capacityValue,
@@ -77,13 +80,11 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       docValueHigh,
       totalValueLow,
       totalValueHigh,
+      expansion,
     };
   }, [state, capacityPercent, savingsPercent, wellbeingPercent]);
 
-  const expandedProviders = state.deployment.providers * 2.5;
-  const scaleFactor = expandedProviders / state.deployment.providers;
-  const projectedValueLow = results.totalValueLow * scaleFactor;
-  const projectedValueHigh = results.totalValueHigh * scaleFactor;
+  const hoursPerProvider = Math.round(results.expansion.hoursPerProvider);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsExporting(true);
@@ -135,7 +136,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           </p>
 
           <p className="text-sm text-[#666666] max-w-lg mx-auto" data-testid="text-hero-context">
-            That's {results.hoursPerProviderPerWeek.toFixed(1)} hours per week per provider{'\u2014'}time that used to disappear into documentation.
+            That's {hoursPerProvider} hours per provider over {state.deployment.monthsOnAbridge} months{'\u2014'}time that used to disappear into documentation.
           </p>
         </motion.div>
 
@@ -153,7 +154,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             You gave {state.deployment.providers} people their evenings back{'\u2014'}and the notes got better, not worse.
           </p>
           <p className="text-sm text-[#666666] leading-relaxed">
-            That's the counterintuitive truth about ambient documentation: better notes come from less time documenting.
+            Better documentation comes from less time documenting. That's not a paradox{'\u2014'}it's what happens when the technology works.
           </p>
         </motion.div>
 
@@ -172,6 +173,10 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             <span className="text-sm text-[#1A1A1A]">Hours Reclaimed</span>
             <span className="text-sm font-semibold text-[#1A1A1A]">{formatNumber(Math.round(results.totalHoursSaved))} hours</span>
           </div>
+          <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
+            <span className="text-sm text-[#1A1A1A]">Per Provider</span>
+            <span className="text-sm font-semibold text-[#1A1A1A]">{hoursPerProvider} hours</span>
+          </div>
 
           <div className="py-3 border-b border-[#F0F0F0]">
             <div className="flex items-center justify-between mb-2">
@@ -180,12 +185,12 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             </div>
             <div className="pl-4 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#666666]">Patient Capacity ({capacityPercent}%)</span>
-                <span className="text-xs text-[#666666]">{formatCurrency(results.capacityValue)}</span>
-              </div>
-              <div className="flex items-center justify-between">
                 <span className="text-xs text-[#666666]">Operational Savings ({savingsPercent}%)</span>
                 <span className="text-xs text-[#666666]">{formatCurrency(results.savingsValue)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#666666]">Patient Capacity ({capacityPercent}%)</span>
+                <span className="text-xs text-[#666666]">{formatCurrency(results.capacityValue)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-[#666666]">Provider Wellbeing ({wellbeingPercent}%)</span>
@@ -195,22 +200,20 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           </div>
 
           <div className="py-3 border-b border-[#F0F0F0]">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between">
               <span className="text-sm text-[#1A1A1A]">Documentation Value</span>
               <span className="text-sm font-semibold text-[#1A1A1A]">{formatSmartRange(results.docValueLow, results.docValueHigh)}</span>
-            </div>
-            <div className="pl-4">
-              <span className="text-xs text-[#666666]">wRVU lift: +{results.wrvuLift.toFixed(2)}/encounter</span>
             </div>
           </div>
 
           <div className="pt-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wide">Estimated Annual Value</span>
               <span className="text-xl font-bold text-[#EA2C00]" data-testid="text-total-value">
                 {formatSmartRange(results.totalValueLow, results.totalValueHigh)}
               </span>
             </div>
+            <p className="text-xs text-[#666666]">Per provider: ~{formatCurrency(results.expansion.perProviderValue)}/year</p>
           </div>
         </motion.div>
 
@@ -225,23 +228,23 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
             What's Next
           </p>
 
-          <p className="text-sm text-[#666666] mb-1">
-            Today: {state.deployment.providers} providers, {formatSmartRange(results.totalValueLow, results.totalValueHigh)} estimated annual value
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-4">
+              <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] mb-2">Deepen</p>
+              <p className="text-sm text-[#666666] mb-1">{state.deployment.utilizationRate}% {'\u2192'} 85% adoption</p>
+              <p className="text-lg font-bold text-[#EA2C00]">+{formatCurrency(results.expansion.deepenAdditionalValue)} / year</p>
+              <p className="text-[10px] text-[#999999] mt-1">No additional cost</p>
+            </div>
+            <div className="bg-white rounded-lg p-4">
+              <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1px] mb-2">Expand</p>
+              <p className="text-sm text-[#666666] mb-1">{state.deployment.providers} {'\u2192'} {results.expansion.expandProviders} providers</p>
+              <p className="text-lg font-bold text-[#EA2C00]">+{formatSmartRange(results.expansion.expandValueLow - results.totalValueLow, results.expansion.expandValueHigh - results.totalValueHigh)} / year</p>
+            </div>
+          </div>
+
+          <p className="text-xs text-[#666666]">
+            Your {state.deployment.providers}-provider pilot has proven the model.
           </p>
-          <p className="text-sm text-[#666666] mb-3">
-            If you expanded to {Math.round(expandedProviders)} providers:
-          </p>
-          <p className="text-2xl font-bold text-[#EA2C00] mb-4" data-testid="text-expansion-value">
-            {formatSmartRange(projectedValueLow, projectedValueHigh)} estimated annual value
-          </p>
-          <button
-            onClick={onHome}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#EA2C00] hover:underline transition-colors"
-            data-testid="link-explore-expansion"
-          >
-            Explore expansion
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
         </motion.div>
 
         <motion.div
@@ -308,13 +311,13 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
                     <strong className="text-[#1A1A1A]">Time savings:</strong> Based on {state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith} min saved per encounter x {formatNumber(state.deployment.totalEncounters)} total encounters.
                   </p>
                   <p>
-                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {capacityPercent}% capacity, {savingsPercent}% savings, {wellbeingPercent}% wellbeing.
+                    <strong className="text-[#1A1A1A]">Time allocation:</strong> {savingsPercent}% operational savings at ${state.calibration.otHourlyRate}/hr, {capacityPercent}% capacity at ${state.calibration.revenuePerVisit}/visit ({state.calibration.minutesPerVisit}-min visits), {wellbeingPercent}% wellbeing.
                   </p>
                   <p>
                     <strong className="text-[#1A1A1A]">Documentation value:</strong> +{results.wrvuLift.toFixed(2)} wRVU/encounter x ${state.calibration.conversionFactor} conversion factor. Range reflects 50-75% attribution.
                   </p>
                   <p>
-                    <strong className="text-[#1A1A1A]">Projections:</strong> Linear scaling assumption. Actual results may vary by specialty and adoption patterns.
+                    <strong className="text-[#1A1A1A]">Expansion:</strong> Deepen assumes 85% utilization. Expand based on per-provider economics applied to {results.expansion.expandProviders} providers.
                   </p>
                 </div>
               </motion.div>

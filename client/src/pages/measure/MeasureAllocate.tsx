@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
-import { ArrowRight, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { 
   type MeasureState, 
   formatCurrency, 
   formatNumber,
+  calculateExpansionResults,
 } from "@/lib/measureCalculator";
-import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 
 function formatSmartRange(low: number, high: number): string {
   const lowFmt = formatCurrency(low);
@@ -27,13 +27,10 @@ interface MeasureAllocateProps {
 
 export default function MeasureAllocate({ 
   state, 
-  updateState,
   onNext,
   onHome, 
   onBack,
 }: MeasureAllocateProps) {
-  const [showAssumptions, setShowAssumptions] = useState(false);
-
   const capacityPercent = state.allocation.capacityPercent ?? 20;
   const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
   const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
@@ -70,6 +67,8 @@ export default function MeasureAllocate({
     const totalValueLow = timeValueSubtotal + docValueLow;
     const totalValueHigh = timeValueSubtotal + docValueHigh;
 
+    const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+
     return {
       totalHoursSaved,
       additionalVisits,
@@ -87,21 +86,9 @@ export default function MeasureAllocate({
       docValueHigh,
       totalValueLow,
       totalValueHigh,
+      expansion,
     };
   }, [state, capacityPercent, savingsPercent, wellbeingPercent]);
-
-  const updateCalibration = <K extends keyof typeof state.calibration>(key: K, value: number) => {
-    updateState({ calibration: { ...state.calibration, [key]: value } });
-  };
-
-  const updateAllocation = (key: keyof typeof state.allocation, value: number) => {
-    updateState({
-      allocation: {
-        ...state.allocation,
-        [key]: Math.max(0, Math.min(100, value)),
-      }
-    });
-  };
 
   const heroValue = formatSmartRange(results.totalValueLow, results.totalValueHigh);
 
@@ -109,7 +96,7 @@ export default function MeasureAllocate({
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={4}
+        currentStep={3}
         totalSteps={5}
         stepName="The Value"
         onBack={onBack}
@@ -127,7 +114,7 @@ export default function MeasureAllocate({
             The Value You've Built
           </h1>
           <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
-            {formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed. Here's what that translates to.
+            {formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed across {state.deployment.providers} providers. Here's what that translates to for your organization.
           </p>
         </motion.div>
 
@@ -144,24 +131,25 @@ export default function MeasureAllocate({
           <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">
             {heroValue}
           </p>
-          <p className="text-xs text-[#666666] mb-6">
-            Based on {state.deployment.providers} providers across {formatNumber(state.deployment.totalEncounters)} encounters
-          </p>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(results.timeValueSubtotal)}</p>
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-doc-value">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Documentation Quality</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Doc Quality</p>
             </div>
             <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
               <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.totalHoursSaved))}</p>
               <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
             </div>
           </div>
+
+          <p className="text-sm text-[#666666]">
+            That's approximately {formatCurrency(results.expansion.perProviderValue)} per provider per year.
+          </p>
         </motion.div>
 
         <motion.div
@@ -172,10 +160,10 @@ export default function MeasureAllocate({
           data-testid="section-time-waterfall"
         >
           <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">
-            How Time Becomes Value
+            How Time Creates Value
           </p>
           <p className="text-sm text-[#666666] mb-5">
-            Your providers reclaimed {formatNumber(Math.round(results.totalHoursSaved))} hours. Here's where that time goes.
+            {formatNumber(Math.round(results.totalHoursSaved))} hours reclaimed. Here's where they go.
           </p>
 
           <div className="space-y-0">
@@ -183,23 +171,11 @@ export default function MeasureAllocate({
               <div className="flex items-start gap-3">
                 <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-[#1A1A1A]">Patient Capacity</p>
-                  <p className="text-xs text-[#666666] mt-1">
-                    {capacityPercent}% of time saved &rarr; {formatNumber(Math.round(results.additionalVisits))} additional visits possible
-                  </p>
-                </div>
-              </div>
-              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.capacityValue)}</p>
-            </div>
-
-            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
-              <div className="flex items-start gap-3">
-                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
-                <div>
                   <p className="font-semibold text-[#1A1A1A]">Operational Savings</p>
                   <p className="text-xs text-[#666666] mt-1">
-                    {savingsPercent}% of time saved &rarr; {formatNumber(Math.round(results.savingsHours))} overtime hours avoided
+                    {formatNumber(Math.round(results.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr<sup>1</sup>
                   </p>
+                  <p className="text-[10px] text-[#999999] mt-0.5">[{savingsPercent}% of time saved]</p>
                 </div>
               </div>
               <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.savingsValue)}</p>
@@ -209,13 +185,30 @@ export default function MeasureAllocate({
               <div className="flex items-start gap-3">
                 <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
                 <div>
+                  <p className="font-semibold text-[#1A1A1A]">Patient Capacity</p>
+                  <p className="text-xs text-[#666666] mt-1">
+                    {formatNumber(Math.round(results.capacityHours))} hours {'\u2192'} {formatNumber(Math.round(results.additionalVisits))} additional visits possible<sup>2</sup>
+                  </p>
+                  <p className="text-[10px] text-[#999999] mt-0.5">[{capacityPercent}% of time saved]</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(results.capacityValue)}</p>
+            </div>
+
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
                   <p className="font-semibold text-[#1A1A1A]">Provider Wellbeing</p>
                   <p className="text-xs text-[#666666] mt-1">
-                    {wellbeingPercent}% of time saved &rarr; reclaimed personal time
+                    {formatNumber(Math.round(results.wellbeingHours))} hours returned to providers
                   </p>
-                  <p className="text-xs text-[#999999] italic mt-1">
-                    Retention value: ~1 provider retained = $300-500K
-                  </p>
+                  <p className="text-[10px] text-[#999999] mt-0.5">[{wellbeingPercent}% of time saved]</p>
+                  <div className="bg-[#F5F0EB] rounded-md p-3 mt-3">
+                    <p className="text-xs text-[#666666] italic leading-relaxed">
+                      Retention signal: At industry average turnover, retaining 1 provider = $300-500K in avoided replacement costs.
+                    </p>
+                  </div>
                 </div>
               </div>
               <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">{results.hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</p>
@@ -225,6 +218,11 @@ export default function MeasureAllocate({
               <p className="font-semibold text-[#1A1A1A]">Time Value Subtotal</p>
               <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(results.timeValueSubtotal)}</p>
             </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-[#F0F0F0] space-y-1">
+            <p className="text-[10px] text-[#999999]"><sup>1</sup> Based on your value model: ${state.calibration.otHourlyRate}/hr provider cost</p>
+            <p className="text-[10px] text-[#999999]"><sup>2</sup> {state.calibration.minutesPerVisit}-min visits at ${state.calibration.revenuePerVisit}/visit</p>
           </div>
         </motion.div>
 
@@ -239,13 +237,13 @@ export default function MeasureAllocate({
             Documentation Quality
           </p>
           <p className="text-sm text-[#666666] mb-5">
-            Revenue from more complete documentation
+            Better notes capture clinical complexity more accurately
           </p>
 
           <div className="grid grid-cols-3 gap-4 mb-5">
             <div>
               <p className="text-lg font-bold text-[#1A1A1A]">+{results.wrvuLift.toFixed(2)}</p>
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">wRVU lift per visit</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px]">wRVU lift</p>
             </div>
             <div>
               <p className="text-lg font-bold text-[#1A1A1A]">{formatNumber(Math.round(results.documentedEncounters))}</p>
@@ -261,16 +259,20 @@ export default function MeasureAllocate({
             <div className="flex items-start gap-3">
               <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-[#1A1A1A]">Revenue Potential (estimated)</p>
-                <p className="text-xs text-[#666666] mt-1">at 50-75% attribution</p>
+                <p className="font-semibold text-[#1A1A1A]">Revenue Potential</p>
+                <p className="text-xs text-[#666666] mt-1">at 50-75% attribution<sup>3</sup></p>
               </div>
             </div>
-            <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
+            <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-[#F0F0F0]">
+            <p className="text-[10px] text-[#999999]"><sup>3</sup> Attribution range accounts for factors beyond documentation that influence wRVU.</p>
           </div>
         </motion.div>
 
         <motion.div
-          className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
+          className="bg-[#F5F0EB] rounded-xl p-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
@@ -282,135 +284,28 @@ export default function MeasureAllocate({
           <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">
             {heroValue}
           </p>
-          <div className="text-sm text-[#666666] space-y-1 mb-5">
+          <div className="text-sm text-[#666666] space-y-1 mb-4">
             <p>Time value: {formatCurrency(results.timeValueSubtotal)}</p>
             <p>Documentation quality: {formatSmartRange(results.docValueLow, results.docValueHigh)}</p>
           </div>
-
           <div className="border-t border-[#E5E5E5] pt-4">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-[#999999] mt-0.5 flex-shrink-0" />
-              <p className="text-[11px] text-[#999999] leading-relaxed">
-                These estimates use conservative assumptions. The range reflects different attribution models for wRVU improvement. Time value is calculated from your actual before/after data.
-              </p>
-            </div>
+            <p className="text-sm text-[#666666]">Per provider: ~{formatCurrency(results.expansion.perProviderValue)}/year</p>
+            <p className="text-sm text-[#666666]">Per encounter: ~{formatSmartRange(results.expansion.perEncounterValueLow, results.expansion.perEncounterValueHigh)}</p>
           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
-          <button
-            onClick={() => setShowAssumptions(!showAssumptions)}
-            className="w-full flex items-center justify-between p-4 bg-white border border-[#E5E5E5] rounded-lg hover:border-[#D1D5DB] transition-colors text-sm text-[#999999]"
-            data-testid="button-toggle-assumptions"
-          >
-            <span>Adjust assumptions</span>
-            {showAssumptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          <AnimatePresence>
-            {showAssumptions && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="bg-white border border-t-0 border-[#E5E5E5] rounded-b-lg p-5 space-y-5">
-                  <div>
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-                      Time Allocation
-                    </p>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">Capacity %</label>
-                        <FormattedNumberInput
-                          value={capacityPercent}
-                          onChange={(v: number) => updateAllocation('capacityPercent', v)}
-                          className="h-10 text-center"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">Savings %</label>
-                        <FormattedNumberInput
-                          value={savingsPercent}
-                          onChange={(v: number) => updateAllocation('hardSavingsPercent', v)}
-                          className="h-10 text-center"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">Wellbeing %</label>
-                        <FormattedNumberInput
-                          value={wellbeingPercent}
-                          onChange={(v: number) => updateAllocation('qualityOfLifePercent', v)}
-                          className="h-10 text-center"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">
-                      Value Assumptions
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">OT Rate ($/hr)</label>
-                        <FormattedNumberInput
-                          value={state.calibration.otHourlyRate}
-                          onChange={(v: number) => updateCalibration('otHourlyRate', v)}
-                          className="h-10"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">Revenue per Visit ($)</label>
-                        <FormattedNumberInput
-                          value={state.calibration.revenuePerVisit}
-                          onChange={(v: number) => updateCalibration('revenuePerVisit', v)}
-                          className="h-10"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">Visit Duration (min)</label>
-                        <FormattedNumberInput
-                          value={state.calibration.minutesPerVisit}
-                          onChange={(v: number) => updateCalibration('minutesPerVisit', v)}
-                          className="h-10"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-[#666666]">$/wRVU</label>
-                        <FormattedNumberInput
-                          value={state.calibration.conversionFactor}
-                          onChange={(v: number) => updateCalibration('conversionFactor', v)}
-                          className="h-10"
-                        />
-                        <p className="text-[10px] text-[#888888]">Medicare conversion factor</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
 
         <motion.div 
           className="max-w-[480px] mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
+          transition={{ delay: 0.3 }}
         >
           <Button
             onClick={onNext}
             className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2"
-            data-testid="button-see-story"
+            data-testid="button-whats-ahead"
           >
-            See Your Story
+            See What's Ahead
             <ArrowRight className="w-4 h-4" />
           </Button>
         </motion.div>

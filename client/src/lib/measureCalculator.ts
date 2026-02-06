@@ -4,7 +4,9 @@
 export type MeasureCareSetting = 'outpatient' | 'ed' | 'nursing' | 'inpatient';
 
 export interface MeasureDeployment {
+  organizationName: string;
   providers: number;
+  totalProviders: number;
   totalEncounters: number;
   abridgeEncounters: number;
   nonAbridgeEncounters: number;
@@ -81,7 +83,9 @@ export interface MeasureState {
 export const DEFAULT_MEASURE_STATE: MeasureState = {
   careSetting: null,
   deployment: {
+    organizationName: '',
     providers: 80,
+    totalProviders: 250,
     totalEncounters: 47000,
     abridgeEncounters: 34000,
     nonAbridgeEncounters: 13000,
@@ -339,4 +343,85 @@ export function generateTrendData(
   }
   
   return data;
+}
+
+export interface ExpansionResults {
+  currentAdoptedEncounters: number;
+  currentNonAdoptedEncounters: number;
+  deepenAdoptionRate: number;
+  deepenEncounters: number;
+  deepenHoursSaved: number;
+  deepenAdditionalValue: number;
+  expandProviders: number;
+  expandValueLow: number;
+  expandValueHigh: number;
+  combinedProviders: number;
+  combinedAdoptionRate: number;
+  combinedValueLow: number;
+  combinedValueHigh: number;
+  perProviderValue: number;
+  perEncounterValueLow: number;
+  perEncounterValueHigh: number;
+  hoursPerProvider: number;
+  remainingProviders: number;
+}
+
+export function calculateExpansionResults(
+  state: MeasureState,
+  totalValueLow: number,
+  totalValueHigh: number,
+  totalHoursSaved: number,
+): ExpansionResults {
+  const { deployment } = state;
+  const currentRate = Math.max(deployment.utilizationRate, 1) / 100;
+  const deepenRate = 0.85;
+
+  const currentAdoptedEncounters = Math.round(deployment.totalEncounters * currentRate);
+  const currentNonAdoptedEncounters = deployment.totalEncounters - currentAdoptedEncounters;
+
+  const deepenEncounters = Math.round(deployment.totalEncounters * deepenRate);
+  const deepenScale = currentRate > 0 ? deepenRate / currentRate : 1;
+  const deepenHoursSaved = totalHoursSaved * deepenScale;
+  const deepenAdditionalValueLow = totalValueLow * (deepenScale - 1);
+  const deepenAdditionalValueHigh = totalValueHigh * (deepenScale - 1);
+  const deepenAdditionalValue = (deepenAdditionalValueLow + deepenAdditionalValueHigh) / 2;
+
+  const expandTarget = Math.max(deployment.totalProviders, deployment.providers);
+  const expandScale = deployment.providers > 0 ? expandTarget / deployment.providers : 1;
+  const expandValueLow = totalValueLow * expandScale;
+  const expandValueHigh = totalValueHigh * expandScale;
+
+  const combinedProviders = expandTarget;
+  const combinedAdoptionRate = deepenRate * 100;
+  const combinedScale = expandScale * deepenScale;
+  const combinedValueLow = totalValueLow * combinedScale;
+  const combinedValueHigh = totalValueHigh * combinedScale;
+
+  const avgValue = (totalValueLow + totalValueHigh) / 2;
+  const perProviderValue = deployment.providers > 0 ? avgValue / deployment.providers : 0;
+  const perEncounterValueLow = deployment.totalEncounters > 0 ? totalValueLow / deployment.totalEncounters : 0;
+  const perEncounterValueHigh = deployment.totalEncounters > 0 ? totalValueHigh / deployment.totalEncounters : 0;
+  const hoursPerProvider = deployment.providers > 0 ? totalHoursSaved / deployment.providers : 0;
+  const remainingProviders = Math.max(0, deployment.totalProviders - deployment.providers);
+
+  return {
+    currentAdoptedEncounters,
+    currentNonAdoptedEncounters,
+    deepenAdoptionRate: deepenRate * 100,
+    deepenEncounters,
+    deepenHoursSaved,
+    deepenAdditionalValue,
+    expandProviders: expandTarget,
+    expandValueLow,
+    expandValueHigh,
+    combinedProviders,
+    combinedAdoptionRate,
+    combinedValueLow,
+    combinedValueHigh,
+    perProviderValue,
+    perEncounterValueLow,
+    perEncounterValueHigh,
+    hoursPerProvider,
+    remainingProviders,
+  };
 }

@@ -5,25 +5,25 @@ import {
   DEFAULT_MEASURE_STATE,
 } from "@/lib/measureCalculator";
 import { getStateFromCurrentUrl, clearUrlState } from "@/lib/measureUrlState";
-import MeasureWelcome from "./MeasureWelcome";
 import MeasureDataEntry from "./MeasureDataEntry";
 import MeasureTransformation from "./MeasureTransformation";
 import MeasureAllocate from "./MeasureAllocate";
+import MeasureOpportunity from "./MeasureOpportunity";
 import MeasureStory from "./MeasureStory";
-import MeasureTrends from "./MeasureTrends";
 
-type MeasurePhase = 'welcome' | 'dataEntry' | 'transformation' | 'allocate' | 'story' | 'trends';
+type MeasurePhase = 'data' | 'change' | 'value' | 'opportunity' | 'story';
 
 interface MeasureFlowProps {
   onBackToJourney?: () => void;
 }
 
 export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
-  const [phase, setPhase] = useState<MeasurePhase>('welcome');
-  const [state, setState] = useState<MeasureState>(DEFAULT_MEASURE_STATE);
-  const [isLoadedFromUrl, setIsLoadedFromUrl] = useState(false);
+  const [phase, setPhase] = useState<MeasurePhase>('data');
+  const [state, setState] = useState<MeasureState>({
+    ...DEFAULT_MEASURE_STATE,
+    careSetting: 'outpatient',
+  });
 
-  // Scroll to top on every phase change (mobile fix)
   useEffect(() => {
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
@@ -32,15 +32,11 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
     });
   }, [phase]);
 
-  // Load state from URL on mount
   useEffect(() => {
     const urlState = getStateFromCurrentUrl();
     if (urlState) {
       setState(urlState);
-      setIsLoadedFromUrl(true);
-      // Skip to transformation page since data is pre-loaded
-      setPhase('transformation');
-      // Clean the URL
+      setPhase('change');
       clearUrlState();
     }
   }, []);
@@ -48,10 +44,6 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   const updateState = useCallback((updates: Partial<MeasureState>) => {
     setState(prev => ({ ...prev, ...updates }));
   }, []);
-
-  const handleSelectCareSetting = useCallback((setting: MeasureCareSetting) => {
-    updateState({ careSetting: setting });
-  }, [updateState]);
 
   const goHome = useCallback(() => {
     if (onBackToJourney) {
@@ -67,45 +59,44 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   }, []);
 
   switch (phase) {
-    case 'welcome':
+    case 'data':
       return (
-        <MeasureWelcome
-          selectedSetting={state.careSetting}
-          onSelectSetting={handleSelectCareSetting}
-          onNext={() => navigate('dataEntry')}
+        <MeasureDataEntry
+          state={state}
+          updateState={updateState}
+          onNext={() => navigate('change')}
           onBack={goHome}
           onHome={goHome}
         />
       );
     
-    case 'dataEntry':
-      return (
-        <MeasureDataEntry
-          state={state}
-          updateState={updateState}
-          onNext={() => navigate('transformation')}
-          onBack={() => navigate('welcome')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'transformation':
+    case 'change':
       return (
         <MeasureTransformation
           state={state}
-          onNext={() => navigate('allocate')}
-          onBack={() => navigate('dataEntry')}
+          onNext={() => navigate('value')}
+          onBack={() => navigate('data')}
           onHome={goHome}
         />
       );
     
-    case 'allocate':
+    case 'value':
       return (
         <MeasureAllocate
           state={state}
           updateState={updateState}
+          onNext={() => navigate('opportunity')}
+          onBack={() => navigate('change')}
+          onHome={goHome}
+        />
+      );
+    
+    case 'opportunity':
+      return (
+        <MeasureOpportunity
+          state={state}
           onNext={() => navigate('story')}
-          onBack={() => navigate('transformation')}
+          onBack={() => navigate('value')}
           onHome={goHome}
         />
       );
@@ -114,16 +105,7 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
       return (
         <MeasureStory
           state={state}
-          onBack={() => navigate('allocate')}
-          onHome={goHome}
-        />
-      );
-    
-    case 'trends':
-      return (
-        <MeasureTrends
-          state={state}
-          onBack={() => navigate('transformation')}
+          onBack={() => navigate('opportunity')}
           onHome={goHome}
         />
       );

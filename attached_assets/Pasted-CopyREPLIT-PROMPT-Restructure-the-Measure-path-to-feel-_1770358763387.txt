@@ -1,0 +1,660 @@
+CopyREPLIT PROMPT:
+
+Restructure the Measure path to feel like a custom-built 
+partner report, plant natural expansion signals, and eliminate
+the awkward "adjust assumptions" pattern.
+
+═══════════════════════════════════════════════════════════════
+RESTRUCTURED FLOW (5 pages):
+═══════════════════════════════════════════════════════════════
+
+Page 1: YOUR DATA (Partner Success entry — redesigned)
+Page 2: WHAT CHANGED (before/after proof — polished)
+Page 3: THE VALUE (clean value story — redesigned)
+Page 4: THE OPPORTUNITY AHEAD (expansion — NEW)
+Page 5: YOUR STORY (the summary/export page)
+
+═══════════════════════════════════════════════════════════════
+PAGE 1: YOUR DATA (Partner Success entry page)
+═══════════════════════════════════════════════════════════════
+
+This page has TWO modes:
+
+MODE 1: EDIT MODE (what Partner Success sees when entering data)
+MODE 2: PRESENTATION MODE (what the partner sees in the EBR)
+
+They toggle between them with a small lock/edit icon in the 
+top-right corner.
+
+──────────────────────────────────────────────────────────────
+EDIT MODE LAYOUT:
+──────────────────────────────────────────────────────────────
+
+HEADLINE:
+"Your Journey with Abridge"
+
+SUBHEAD:
+"Enter your partner's deployment data and before/after metrics."
+
+SECTION 1: PARTNER PROFILE
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  PARTNER PROFILE                                         │
+│                                                          │
+│  Organization Name    [__________________]               │
+│  Care Setting         [Outpatient ▾]                     │
+│  Providers on Abridge [____]                             │
+│  Total Providers      [____]  ← NEW FIELD                │
+│  Months on Abridge    [____]                             │
+│  Total Encounters     [____]                             │
+│  Utilization Rate     [____] %                           │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+NOTE: "Total Providers" is new. This is how we calculate 
+the expansion opportunity. It's the total number of 
+providers in the organization who COULD use Abridge, 
+not just the ones currently using it.
+
+SECTION 2: BEFORE & AFTER METRICS
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  TIME & EFFICIENCY          BEFORE        WITH ABRIDGE   │
+│                                                          │
+│  Time in Notes (min)        [____]        [____]         │
+│  Same-Day Closure (%)       [____]        [____]         │
+│  Days to Close              [____]        [____]         │
+│  After-Hours (hrs/day)      [____]        [____]         │
+│                                                          │
+│  DOCUMENTATION QUALITY      BEFORE        WITH ABRIDGE   │
+│                                                          │
+│  wRVU per Encounter         [____]        [____]         │
+│  E/M Level (optional)       [____]        [____]         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+SECTION 3: YOUR VALUE MODEL (replaces "Adjust Assumptions")
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  YOUR VALUE MODEL                                        │
+│  Configure once. Applied throughout the analysis.        │
+│                                                          │
+│  TIME ALLOCATION                                         │
+│  How is reclaimed time being used?                       │
+│                                                          │
+│  Operational Savings  [50] %   Hourly Rate [$150]        │
+│  Patient Capacity     [20] %   Revenue/Visit [$200]      │
+│  Provider Wellbeing   [30] %   Visit Duration [30] min   │
+│                                                          │
+│  Must equal 100%: ✓                                      │
+│                                                          │
+│  DOCUMENTATION QUALITY                                   │
+│  wRVU Attribution     [50-75] %                          │
+│  wRVU Value           [$33]                              │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │ These values are based on your organization's      │  │
+│  │ context. Abridge defaults are shown. Adjust to     │  │
+│  │ match your finance team's preferences.             │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+PRESENTATION MODE LAYOUT (what partner sees):
+──────────────────────────────────────────────────────────────
+
+HEADLINE:
+"Your Journey with Abridge"
+
+SUBHEAD (dynamic):
+"[Organization Name] · [X] providers · [X] months"
+
+SECTION 1: DEPLOYMENT SUMMARY
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
+│  │  80      │ │  47,000  │ │  72%     │ │  6 mo    │    │
+│  │providers │ │encounters│ │ adoption │ │  live    │    │
+│  │ on       │ │ analyzed │ │          │ │          │    │
+│  │ Abridge  │ │          │ │          │ │          │    │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+SECTION 2: WHAT WE MEASURED (clean comparison table)
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  WHAT WE MEASURED                                        │
+│                                                          │
+│                         BEFORE       WITH ABRIDGE        │
+│                         [#999]       [bold, #1A1A1A]     │
+│  ─────────────────────────────────────────────────────   │
+│  TIME & EFFICIENCY                                       │
+│  Time in notes          12 min       4 min               │
+│  Same-day closure       41%          78%                 │
+│  Days to close          4.2          1.1                 │
+│  After-hours charting   2.1 hrs/day  0.4 hrs/day         │
+│  ─────────────────────────────────────────────────────   │
+│  DOCUMENTATION QUALITY                                   │
+│  wRVU per encounter     2.10         2.30                │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+── EXPANSION SEED #1 (subtle) ──────────────────────────────
+
+Below the comparison table, add:
+
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background, small text]                        │
+│                                                          │
+│  [icon] 80 of your 250 providers are on Abridge today.   │
+│         This analysis covers their 47,000 encounters.    │
+│  [12px, #666666]                                         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+This is NOT a CTA. It's just a fact. But it plants the 
+seed: "80 of 250... huh."
+
+──────────────────────────────────────────────────────────────
+
+BUTTON:
+"See What Changed →"
+
+Small edit link (bottom-right, for Partner Success):
+"✏️ Edit data" [12px, #999999, opens edit mode]
+
+═══════════════════════════════════════════════════════════════
+PAGE 2: WHAT CHANGED (polish existing)
+═══════════════════════════════════════════════════════════════
+
+This page is already good. Keep the before/after bars.
+
+COPY UPDATES:
+
+Headline: Keep "WHAT CHANGED"
+Subhead: "Same providers. Same patients. Different 
+documentation experience."
+
+── EXPANSION SEED #2 (per-provider math) ───────────────────
+
+In the stat banner, ADD a per-provider metric:
+
+┌──────────────────────────────────────────────────────────┐
+│  80         47,000      72%        6 mo      57 hrs      │
+│  PROVIDERS  ENCOUNTERS  ADOPTION   ON        SAVED PER   │
+│                                    ABRIDGE   PROVIDER    │
+└──────────────────────────────────────────────────────────┘
+
+"57 hrs saved per provider" is the magic number. 
+It makes the expansion math trivially easy in their head.
+
+──────────────────────────────────────────────────────────────
+
+COPY UPDATES for bars:
+
+Documentation Time:
+- Micro-insight right: "Time returned to patient care"
+- ADD below the bar: "Per provider: 57 hours saved over 6 months"
+  [12px, #999999]
+
+Revenue Capture:
+- Keep: "+10% per encounter"
+- Right: "Capturing clinical complexity"
+
+Same-Day Closure:
+- Keep: "+37 percentage points"
+- Right: "Documentation completed during the visit"
+
+Work-Life Balance:
+- Keep: "1.7 hours back per day"
+- Right: "Evenings reclaimed"
+
+── EXPANSION SEED #3 (utilization as headroom) ─────────────
+
+After the bars, before the CTA, add a small insight:
+
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  ┃ AT 72% ADOPTION                                       │
+│  ┃                                                       │
+│  ┃ These results are based on 34,000 of your 47,000      │
+│  ┃ encounters. The remaining 13,000 encounters are still │
+│  ┃ being documented without Abridge—representing         │
+│  ┃ additional headroom within your current providers.     │
+│  ┃                                                       │
+│  ┃ [12px, #666666]                                       │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+Not a CTA. Not pressure. Just a fact that makes them 
+think "we should get that number up."
+
+──────────────────────────────────────────────────────────────
+
+Transition text:
+"Here's what this means for your organization."
+
+Button: "See the Value →"
+
+═══════════════════════════════════════════════════════════════
+PAGE 3: THE VALUE (major redesign)
+═══════════════════════════════════════════════════════════════
+
+HEADLINE:
+"The Value You've Built"
+
+SUBHEAD:
+"4,533 hours reclaimed across 80 providers. Here's what 
+that translates to for your organization."
+
+──────────────────────────────────────────────────────────────
+
+SECTION 1: THE HEADLINE NUMBER
+
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background, centered]                          │
+│                                                          │
+│  ESTIMATED ANNUAL VALUE                                  │
+│                                                          │
+│  $815K – $871K                                           │
+│  [48px, bold, #EA2C00]                                   │
+│                                                          │
+│  ┌────────────┐  ┌────────────┐  ┌──────────────────┐   │
+│  │  $703K     │  │ $112-168K  │  │  4,533 hrs       │   │
+│  │  Time      │  │ Doc Quality│  │  Reclaimed       │   │
+│  │  Value     │  │            │  │                  │   │
+│  └────────────┘  └────────────┘  └──────────────────┘   │
+│                                                          │
+│  ── EXPANSION SEED #4 (per-provider) ──                  │
+│                                                          │
+│  That's approximately $10K per provider per year.        │
+│  [14px, #666666, centered]                               │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+"$10K per provider per year" is the line that makes 
+expansion conversations happen naturally.
+
+──────────────────────────────────────────────────────────────
+
+SECTION 2: HOW TIME CREATES VALUE
+
+NO "adjust assumptions" section. The value model was 
+configured on page 1. Values just flow through with 
+small footnotes.
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  HOW TIME CREATES VALUE                                  │
+│  4,533 hours reclaimed. Here's where they go.            │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ┃ Operational Savings                       $340K       │
+│  ┃ 2,267 hours at $150/hr¹                               │
+│  ┃ [50% of time saved]                                   │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ┃ Patient Capacity                          $363K       │
+│  ┃ 907 hours → 1,813 additional visits possible²         │
+│  ┃ [20% of time saved]                                   │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ┃ Provider Wellbeing                   0.9 hrs/wk back  │
+│  ┃ 1,360 hours returned to providers                     │
+│  ┃ [30% of time saved]                                   │
+│  ┃                                                       │
+│  ┃ ┌────────────────────────────────────────────────┐   │
+│  ┃ │ Retention signal: At industry average turnover, │   │
+│  ┃ │ retaining 1 provider = $300-500K in avoided     │   │
+│  ┃ │ replacement costs.                              │   │
+│  ┃ └────────────────────────────────────────────────┘   │
+│                                                          │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  Time Value Subtotal                         $703K       │
+│  [16px, bold]                                            │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+FOOTNOTES (bottom of section, very small):
+¹ Based on your value model: $150/hr provider cost
+² 30-min visits at $200/visit
+
+This replaces "adjust assumptions." The footnotes show 
+what was used. If the partner says "our hourly rate is 
+different," Partner Success edits it on page 1.
+
+──────────────────────────────────────────────────────────────
+
+SECTION 3: DOCUMENTATION QUALITY
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  DOCUMENTATION QUALITY                                   │
+│  Better notes capture clinical complexity more accurately │
+│                                                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│  │  +0.20   │  │  34,000  │  │  6,800   │               │
+│  │  wRVU    │  │encounters│  │additional│               │
+│  │  lift    │  │ analyzed │  │  wRVUs   │               │
+│  └──────────┘  └──────────┘  └──────────┘               │
+│                                                          │
+│  Revenue Potential         $112K – $168K                  │
+│  at 50-75% attribution³                                  │
+│  [#EA2C00, bold]                                         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+³ Attribution range accounts for factors beyond 
+  documentation that influence wRVU.
+
+──────────────────────────────────────────────────────────────
+
+SECTION 4: TOTAL
+
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  ESTIMATED ANNUAL VALUE                                  │
+│                                                          │
+│  $815K – $871K                                           │
+│  [32px, bold, #EA2C00]                                   │
+│                                                          │
+│  Time value: $703K                                       │
+│  Documentation quality: $112K – $168K                    │
+│                                                          │
+│  ── EXPANSION SEED #5 ──                                 │
+│                                                          │
+│  Per provider: ~$10K/year                                │
+│  Per encounter: ~$18-19                                  │
+│  [14px, #666666]                                         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+Button: "See What's Ahead →"
+
+═══════════════════════════════════════════════════════════════
+PAGE 4: THE OPPORTUNITY AHEAD (NEW PAGE)
+═══════════════════════════════════════════════════════════════
+
+This is the expansion page. But it doesn't FEEL like a 
+sales pitch. It feels like a natural "what if" that the 
+data is already suggesting.
+
+──────────────────────────────────────────────────────────────
+
+HEADLINE:
+"The Opportunity Ahead"
+
+SUBHEAD:
+"You've proven the model with 80 providers. Here's what 
+the data suggests about what's next."
+
+──────────────────────────────────────────────────────────────
+
+SECTION 1: TWO LAYERS OF OPPORTUNITY
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  LAYER 1: DEEPEN                                         │
+│  Increase adoption within your current 80 providers      │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │                                                    │  │
+│  │  TODAY              →           AT 85% ADOPTION     │  │
+│  │                                                    │  │
+│  │  72% adoption                   85% adoption       │  │
+│  │  34,000 encounters              39,950 encounters  │  │
+│  │  4,533 hours saved              5,327 hours saved  │  │
+│  │                                                    │  │
+│  │  ──────────────────────────────────────────────    │  │
+│  │                                                    │  │
+│  │  Additional value from adoption alone: +$93K/year  │  │
+│  │  [#EA2C00, bold]                                   │  │
+│  │                                                    │  │
+│  │  No additional investment required.                │  │
+│  │  [12px, #666666]                                   │  │
+│  │                                                    │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  This is your immediate opportunity. Moving from 72%     │
+│  to 85% adoption captures more value from providers      │
+│  who already have access to Abridge.                     │
+│  [12px, #666666]                                         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  LAYER 2: EXPAND                                         │
+│  Bring Abridge to more of your organization              │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │                                                    │  │
+│  │  TODAY              →           AT 160 PROVIDERS    │  │
+│  │                                                    │  │
+│  │  80 providers                   160 providers      │  │
+│  │  $815-871K/year                 $1.6-1.7M/year     │  │
+│  │                                                    │  │
+│  │  At $10K per provider, each additional provider    │  │
+│  │  added represents meaningful incremental value.    │  │
+│  │                                                    │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  ── THE PER-PROVIDER STORY ──                            │
+│                                                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐   │
+│  │          │  │          │  │                      │   │
+│  │  $10K    │  │  57 hrs  │  │  170 providers      │   │
+│  │  value   │  │  saved   │  │  not yet on         │   │
+│  │  per     │  │  per     │  │  Abridge            │   │
+│  │  provider│  │  provider│  │                      │   │
+│  │  /year   │  │  /6 mo   │  │  of 250 total       │   │
+│  │          │  │          │  │                      │   │
+│  └──────────┘  └──────────┘  └──────────────────────┘   │
+│  [Cards: #F5F0EB, 3px left border #EA2C00]               │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+SECTION 2: COMBINED OPPORTUNITY
+
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  YOUR COMBINED OPPORTUNITY                               │
+│                                                          │
+│  ┌──────────────────┐  ┌──────────────────────────────┐  │
+│  │                  │  │                              │  │
+│  │  TODAY           │  │  WITH DEEPER + WIDER         │  │
+│  │                  │  │  ADOPTION                    │  │
+│  │  80 providers    │  │                              │  │
+│  │  72% adoption    │  │  160 providers               │  │
+│  │                  │  │  85% adoption                │  │
+│  │  $815-871K       │  │                              │  │
+│  │  [24px, bold]    │  │  $1.9M – $2.0M              │  │
+│  │                  │  │  [24px, bold, #EA2C00]       │  │
+│  │                  │  │                              │  │
+│  └──────────────────┘  └──────────────────────────────┘  │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+SECTION 3: CALLOUT
+
+┌──────────────────────────────────────────────────────────┐
+│  ┃                                                       │
+│  ┃  Unlike programs that scale linearly with headcount,  │
+│  ┃  AI documentation cost per provider decreases as      │
+│  ┃  adoption grows, while value per encounter remains    │
+│  ┃  consistent.                                          │
+│  ┃                                                       │
+└──────────────────────────────────────────────────────────┘
+[#F5F0EB bg, #EA2C00 left border]
+
+──────────────────────────────────────────────────────────────
+
+ASSUMPTIONS NOTE (small, at bottom):
+
+"Projections assume current time savings (8 min/encounter),
+adoption rates, and wRVU improvements continue. Deeper 
+adoption assumes 85% utilization. Expansion assumes same 
+per-provider economics."
+[10px, #999999]
+
+──────────────────────────────────────────────────────────────
+
+Button: "See Your Story →"
+
+═══════════════════════════════════════════════════════════════
+PAGE 5: YOUR STORY (the summary page)
+═══════════════════════════════════════════════════════════════
+
+This is the money page. The one they screenshot. The one 
+that goes in the board deck.
+
+──────────────────────────────────────────────────────────────
+
+HERO:
+
+┌──────────────────────────────────────────────────────────┐
+│  [centered, generous whitespace]                         │
+│                                                          │
+│          80 providers.                                   │
+│          [24px, #1A1A1A]                                 │
+│                                                          │
+│          6 months.                                       │
+│          [24px, #1A1A1A]                                 │
+│                                                          │
+│          4,533 hours back.                               │
+│          [32px, bold, #EA2C00]                            │
+│                                                          │
+│          That's 57 hours per provider—time that           │
+│          used to disappear into documentation.           │
+│          [14px, #666666]                                 │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+THE STORY:
+
+┌──────────────────────────────────────────────────────────┐
+│  ┃ THE STORY                                             │
+│  ┃                                                       │
+│  ┃ You gave 80 people their evenings back—               │
+│  ┃ and the notes got better, not worse.                  │
+│  ┃                                                       │
+│  ┃ Better documentation comes from less time             │
+│  ┃ documenting. That's not a paradox—it's                │
+│  ┃ what happens when the technology works.               │
+│  ┃                                                       │
+└──────────────────────────────────────────────────────────┘
+[#F5F0EB bg, #EA2C00 left border]
+
+──────────────────────────────────────────────────────────────
+
+YOUR RESULTS:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  YOUR RESULTS                                            │
+│                                                          │
+│  Hours Reclaimed                     4,533 hours         │
+│  Per Provider                        57 hours            │
+│  ──────────────────────────────────────────────────────  │
+│  Time Value                                              │
+│    Operational Savings (50%)         $340K               │
+│    Patient Capacity (20%)            $363K               │
+│    Provider Wellbeing (30%)     0.9 hrs/wk back         │
+│  ──────────────────────────────────────────────────────  │
+│  Documentation Value             $112K – $168K           │
+│  ──────────────────────────────────────────────────────  │
+│                                                          │
+│  ESTIMATED ANNUAL VALUE          $815K – $871K           │
+│                                  [#EA2C00, bold]         │
+│                                                          │
+│  Per provider: ~$10K/year                                │
+│  [12px, #666666]                                         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+── EXPANSION SEED #6 (the closer) ──────────────────────────
+
+┌──────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                    │
+│                                                          │
+│  WHAT'S NEXT                                             │
+│                                                          │
+│  ┌────────────────────────┐  ┌────────────────────────┐  │
+│  │                        │  │                        │  │
+│  │  DEEPEN                │  │  EXPAND                │  │
+│  │                        │  │                        │  │
+│  │  72% → 85% adoption    │  │  80 → 160 providers    │  │
+│  │  +$93K / year          │  │  +$815K / year         │  │
+│  │  No additional cost    │  │                        │  │
+│  │                        │  │                        │  │
+│  └────────────────────────┘  └────────────────────────┘  │
+│                                                          │
+│  Your 80-provider pilot has proven the model.            │
+│  [12px, #666666]                                         │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+SHARE:
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  Share Your Story                                        │
+│  Export a polished PDF for leadership                    │
+│                                                          │
+│                          [ Export PDF ↓ ]                │
+│                          [#EA2C00 button]                │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+──────────────────────────────────────────────────────────────
+
+METHODOLOGY (collapsible):
+"Methodology & Assumptions ▾"
+[Contains all the value model details, formulas, footnotes]
+
+═══════════════════════════════════════════════════════════════
+PDF EXPORT UPDATES
+═══════════════════════════════════════════════════════════════
+
+Update the PDF to match the new flow:
+
+Page 1 (Cover): Keep — it's good
+Page 2 (Summary): Update with per-provider metrics
+Page 3 (Time Efficiency): Keep — it's good  
+Page 4 (Value Allocation): Update footnote style
+Page 5 (Expansion): ADD the Deepen + Expand framing
+Page 6 (Methodology): Update to show "value model" 
+  instead of "assumptions"
+
+ADD to PDF Page 2 (Summary):
+- "Per provider: ~$10K/year"
+- "80 of 250 total providers"
+
+ADD to PDF Page 5 (Expansion):
+- Layer 1: Deepen (72% → 85%)
+- Layer 2: Expand (80 → 160)
+- Combined opportunity

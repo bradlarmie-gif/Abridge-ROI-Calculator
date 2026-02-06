@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight, ArrowUpRight, Clock, FileText, TrendingUp, Heart } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Clock, FileText, TrendingUp, Heart, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -26,6 +26,7 @@ function ComparisonCard({
   afterLabel,
   deltaText,
   insight,
+  perProviderNote,
   delay = 0,
 }: {
   icon: typeof Clock;
@@ -36,6 +37,7 @@ function ComparisonCard({
   afterLabel: string;
   deltaText: string;
   insight: string;
+  perProviderNote?: string;
   delay?: number;
 }) {
   const maxVal = Math.max(beforeValue, afterValue, 0.1);
@@ -49,7 +51,6 @@ function ComparisonCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
     >
-      {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-9 h-9 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
           <Icon className="w-4 h-4 text-[#EA2C00]" />
@@ -57,9 +58,7 @@ function ComparisonCard({
         <h3 className="text-base font-semibold text-black">{title}</h3>
       </div>
 
-      {/* Before/After Bars */}
       <div className="space-y-2 mb-4">
-        {/* Before Bar */}
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">Before</span>
           <div className="flex-1 h-8 bg-[#F5F5F5] rounded overflow-hidden relative">
@@ -75,7 +74,6 @@ function ComparisonCard({
           </div>
         </div>
 
-        {/* After Bar */}
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-semibold text-[#888888] w-14 uppercase tracking-[1px]">After</span>
           <div className="flex-1 h-8 bg-[#FFF5F2] rounded overflow-hidden relative">
@@ -92,8 +90,7 @@ function ComparisonCard({
         </div>
       </div>
 
-      {/* Delta and Insight */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <motion.div 
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E5E5E5] rounded"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -105,6 +102,10 @@ function ComparisonCard({
         </motion.div>
         <p className="text-sm text-[#666666] italic">{insight}</p>
       </div>
+
+      {perProviderNote && (
+        <p className="text-xs text-[#999999] mt-3">{perProviderNote}</p>
+      )}
     </motion.div>
   );
 }
@@ -120,11 +121,17 @@ export default function MeasureTransformation({
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
   const pajamaTimeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
 
+  const totalHoursSaved = (timeReclaimed * state.deployment.totalEncounters) / 60;
+  const hoursPerProvider = state.deployment.providers > 0 ? Math.round(totalHoursSaved / state.deployment.providers) : 0;
+
+  const adoptedEncounters = Math.round(state.deployment.totalEncounters * (state.deployment.utilizationRate / 100));
+  const nonAdoptedEncounters = state.deployment.totalEncounters - adoptedEncounters;
+
   return (
     <div className="min-h-screen bg-white">
       <UnifiedHeader
         pathType="measure"
-        currentStep={3}
+        currentStep={2}
         totalSteps={5}
         stepName="What Changed"
         onBack={onBack}
@@ -133,29 +140,28 @@ export default function MeasureTransformation({
       <UnifiedHeaderSpacer />
 
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
-        {/* Header */}
         <motion.div 
           className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight" data-testid="text-page-title">
             What Changed
           </h1>
-          <p className="text-base text-[#888888]">
-            Same providers. Same patients. Different outcomes.
+          <p className="text-base text-[#888888]" data-testid="text-page-subtitle">
+            Same providers. Same patients. Different documentation experience.
           </p>
         </motion.div>
 
-        {/* Context Stats Bar */}
         <motion.div
           className="bg-[#F5F0EB] rounded-lg p-5 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
+          data-testid="section-stats-banner"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.providers}</p>
               <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Providers</p>
@@ -166,17 +172,20 @@ export default function MeasureTransformation({
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Utilization</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Adoption</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.monthsOnAbridge}mo</p>
               <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">On Abridge</p>
             </div>
+            <div className="border-l-4 border-[#EA2C00] pl-3">
+              <p className="text-2xl md:text-3xl font-bold text-black">{hoursPerProvider} hrs</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">Saved Per Provider</p>
+            </div>
           </div>
         </motion.div>
 
-        {/* Comparison Cards */}
-        <div className="space-y-4 mb-8">
+        <div className="space-y-4 mb-6">
           <ComparisonCard
             icon={Clock}
             title="Documentation Time"
@@ -186,6 +195,7 @@ export default function MeasureTransformation({
             afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
             deltaText={`${timeReclaimed} min saved per note`}
             insight="Time returned to patient care"
+            perProviderNote={`Per provider: ${hoursPerProvider} hours saved over ${state.deployment.monthsOnAbridge} months`}
             delay={0.15}
           />
 
@@ -197,7 +207,7 @@ export default function MeasureTransformation({
             beforeLabel={state.documentationQuality.wrvuWithout.toFixed(2)}
             afterLabel={state.documentationQuality.wrvuWith.toFixed(2)}
             deltaText={`${formatPercent(results.wrvuDeltaPercent, true)} per encounter`}
-            insight="Capturing the work being done"
+            insight="Capturing clinical complexity"
             delay={0.25}
           />
 
@@ -226,7 +236,28 @@ export default function MeasureTransformation({
           />
         </div>
 
-        {/* Transition Text */}
+        {state.deployment.utilizationRate < 100 && (
+          <motion.div
+            className="bg-[#F5F0EB] rounded-lg p-5 mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            data-testid="section-headroom"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-1 bg-[#EA2C00] rounded-full self-stretch flex-shrink-0" />
+              <div>
+                <p className="text-xs font-semibold text-[#1A1A1A] uppercase tracking-[1.5px] mb-2">
+                  At {state.deployment.utilizationRate}% Adoption
+                </p>
+                <p className="text-xs text-[#666666] leading-relaxed">
+                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} encounters. The remaining {formatNumber(nonAdoptedEncounters)} encounters are still being documented without Abridge{'\u2014'}representing additional headroom within your current providers.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0 }}
@@ -238,7 +269,6 @@ export default function MeasureTransformation({
           </p>
         </motion.div>
 
-        {/* Navigation */}
         <motion.div 
           className="flex justify-center"
           initial={{ opacity: 0 }}
