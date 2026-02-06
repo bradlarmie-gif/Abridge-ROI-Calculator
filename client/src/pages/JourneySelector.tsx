@@ -49,9 +49,9 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="text-center mb-12 md:mb-16"
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black px-2 font-abridge uppercase" style={{ letterSpacing: '0.05em' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black px-2 font-abridge uppercase" style={{ letterSpacing: '0.025em' }}>
             The value of
-            <span className="block mt-3 md:mt-4 text-[#EA2C00]" style={{ letterSpacing: '0.05em' }}>
+            <span className="block mt-3 md:mt-4 text-[#EA2C00]" style={{ letterSpacing: '0.025em' }}>
               Abridge
             </span>
           </h1>
