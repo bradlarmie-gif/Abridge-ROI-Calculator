@@ -1,0 +1,555 @@
+REPLIT PROMPT:
+
+Create an Explore path PDF template that works across all 4 care 
+settings (Outpatient, ED, Inpatient, Nursing). Cover + 4 content 
+pages. EXACT same format, margins, typography, components as the 
+Measure, Ambient Assessment, and Scribe Analysis PDFs.
+
+The content changes per care setting. The structure doesn't.
+
+═══════════════════════════════════════════════════════════════════════
+GLOBAL — IDENTICAL TO ALL OTHER PDFS
+═══════════════════════════════════════════════════════════════════════
+
+Pages: Cover + 4 content pages
+Size: Letter (8.5 × 11)
+Margins: 0.75 inch
+Font: Manrope
+Same color palette, typography scale, components, footer.
+
+FOOTER (every page):
+- Left: ABRIDGE in #EA2C00 (10px)
+- Center: "[Organization Name] · [Care Setting] Value Assessment"
+- Right: "Page X of 4" in 8.5px #999999
+
+═══════════════════════════════════════════════════════════════════════
+THE UNIVERSAL NARRATIVE (all 4 settings follow this)
+═══════════════════════════════════════════════════════════════════════
+
+Cover:  "Here's what we modeled for you"
+Page 1: "The thesis — two sources of value" + your organization
+Page 2: "The value drivers — how each one works"
+Page 3: "The investment case — what this looks like over time"
+Page 4: "Your summary + methodology"
+
+This mirrors the Measure flow:
+  Measure Page 1 = Partnership + Efficiency (who you are + proof)
+  Measure Page 2 = Value Allocation (where value lives)
+  Measure Page 3 = Path Ahead (what's next)
+  Measure Page 4 = Story + Methodology
+
+Explore Page 1 = Thesis + Organization (who you are + framework)
+Explore Page 2 = Value Drivers (where value lives)
+Explore Page 3 = Investment Case (what it looks like over time)
+Explore Page 4 = Summary + Methodology
+
+═══════════════════════════════════════════════════════════════════════
+COVER PAGE — SAME STRUCTURE, SETTING-SPECIFIC
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ABRIDGE [logo, #EA2C00, top-left]                              │
+│                                                                 │
+│                                                                 │
+│  [CARE SETTING] VALUE ASSESSMENT                                │
+│  [9px, ALL CAPS, #666666, letter-spacing 3px]                   │
+│                                                                 │
+│  [Organization Name]                                            │
+│  [36px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ──────── [60px rule, #EA2C00, 2px thick]                       │
+│                                                                 │
+│  [providers] [provider type] · [encounters] encounters          │
+│  · [Care Setting]                                               │
+│  [14px, #666666]                                                │
+│                                                                 │
+│  Projected Net Annual Value                                     │
+│  [10px, ALL CAPS, #999999]                                      │
+│                                                                 │
+│  $1.1M                                                          │
+│  [36px, bold, #EA2C00]                                          │
+│                                                                 │
+│                                                                 │
+│  PREPARED BY                                                    │
+│  [Name] · [Date]                                                │
+│                                                                 │
+│  [subtle curve graphic]                                         │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  This assessment is for planning purposes.                      │
+│  [8.5px, #999999]                                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+SETTING-SPECIFIC LABELS:
+- Outpatient: "OUTPATIENT VALUE ASSESSMENT"
+  "[X] providers · [X] encounters · Outpatient"
+- Emergency: "EMERGENCY DEPARTMENT VALUE ASSESSMENT"
+  "[X] ED physicians · [X] encounters · Emergency"
+- Inpatient: "INPATIENT VALUE ASSESSMENT"
+  "[X] hospitalists · [X] encounters · Inpatient"
+- Nursing: "NURSING VALUE ASSESSMENT"
+  "[X] beds · [X] nurse FTEs · Inpatient Nursing"
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 1: THE THESIS (Framework + Organization on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+This is the "Two Sources of Value" page compressed with the 
+org profile. Dense, educational, sets the frame.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  THE THESIS                                                     │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background, full width]                       │    │
+│  │                                                         │    │
+│  │  [Dynamic org summary line]                             │    │
+│  │  [14px, #666666]                                        │    │
+│  │                                                         │    │
+│  │  Projected Net Annual Value: $[X]                       │    │
+│  │  [36px, bold, #EA2C00]                                  │    │
+│  │                                                         │    │
+│  │  [Dynamic thesis question — setting-specific]           │    │
+│  │  [10.5px, #666666]                                      │    │
+│  │                                                         │    │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      │    │
+│  │  │  [stat] │ │  [stat] │ │  [stat] │ │  [stat] │      │    │
+│  │  │  [label]│ │  [label]│ │  [label]│ │  [label]│      │    │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘      │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  TWO SOURCES OF VALUE                                           │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  [Setting-specific thesis paragraph]                            │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  [SOURCE 1 LABEL]        │  │  ┃ [SOURCE 2 LABEL]       │   │
+│  │                          │  │  ┃                          │   │
+│  │  $[X]                    │  │  ┃ $[X]                     │   │
+│  │  [24px, bold, #1A1A1A]   │  │  ┃ [24px, bold, #EA2C00]  │   │
+│  │                          │  │  ┃                          │   │
+│  │  [2-line description]    │  │  ┃ [2-line description]     │   │
+│  │                          │  │  ┃                          │   │
+│  │  [Bold tagline]          │  │  ┃ [Bold tagline]           │   │
+│  │                          │  │  ┃                          │   │
+│  │  [10px, #666666]         │  │  ┃ [10px, #666666]         │   │
+│  │                          │  │  ┃                          │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [#F5F0EB bg]                  [white bg, #EA2C00 left border]  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ STRATEGIC OBSERVATION                                │    │
+│  │  ┃                                                      │    │
+│  │  ┃ [Setting-specific strategic insight based on their   │    │
+│  │  ┃  allocation choices]                                 │    │
+│  │  ┃                                                      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 10px]                        │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org] · [Setting] Value Assessment  Page 1 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+SETTING-SPECIFIC CONTENT FOR PAGE 1:
+═══════════════════════════════════════════════════════════════════════
+
+OUTPATIENT:
+- Stat bar: [X] providers, [X] encounters, [X]% utilization, $[X] investment
+- Thesis: "If we give providers time back, what happens to your practice?"
+- Source 1: "TIME RECAPTURED" — Hours returned to patient care, capacity
+- Source 2: "REVENUE OPTIMIZED" — wRVU capture, documentation quality
+- Taglines: "The constraint is time." / "The notes drive the revenue."
+
+EMERGENCY:
+- Stat bar: [X] physicians, [X] encounters, [X] avg daily volume, $[X] investment
+- Thesis: "In the ED, every minute matters. What happens when you give them back?"
+- Source 1: "THROUGHPUT UNLOCKED" — LWBS reduction, door-to-doc, capacity
+- Source 2: "REVENUE CAPTURED" — E&M accuracy, admission capture, denials
+- Taglines: "Speed saves lives—and revenue." / "Capture every encounter completely."
+
+INPATIENT:
+- Stat bar: [X] hospitalists, [X] encounters, [X]% utilization, $[X] investment
+- Thesis: "If we give hospitalists time back, what happens to your hospital?"
+- Source 1: "CAPACITY UNLOCKED" — Rounding time, throughput, retention
+- Source 2: "REVENUE OPTIMIZED" — CMI, DRG accuracy, denial prevention
+- Taglines: "The constraint is time. Remove it." / "The notes drive the revenue."
+
+NURSING:
+- Stat bar: [X] beds, [X] FTEs, [X]% occupancy, $[X] investment
+- Thesis: "Nurses don't bill. So where does the value live?"
+- Source 1: "LABOR ECONOMICS" — Overtime, retention, agency spend
+- Source 2: "CARE QUALITY" — Falls, HAPIs, patient experience
+- Taglines: "The budget impact is real." / "Better care starts with better information."
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 2: VALUE DRIVERS (All drivers on ONE dense page)
+═══════════════════════════════════════════════════════════════════════
+
+This is where the step-by-step logic chains live. Each value 
+driver gets a compact card with the calculation visible.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR VALUE DRIVERS                                             │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  How Time Becomes Value                                         │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  [Hours reclaimed] hours returned to your [provider type].      │
+│  Here's how each driver works.                                  │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  [SOURCE 1 LABEL]                                               │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ [Driver 1 Name]                          $[X]        │    │
+│  │  ┃ [Driver 1 Subtitle]                                  │    │
+│  │  ┃                                                      │    │
+│  │  ┃ [Step-by-step calculation, 2-3 lines]               │    │
+│  │  ┃ [Final line in #EA2C00]                              │    │
+│  │  ┃                                                      │    │
+│  │  ┃ [Calibration note in 8.5px #999999]                 │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ [Driver 2 Name]                          $[X]        │    │
+│  │  ┃ [Same structure]                                     │    │
+│  │                                                         │    │
+│  │  ═════════════════════════════════════════════════════  │    │
+│  │  [Source 1] Subtotal                        $[X]        │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  [SOURCE 2 LABEL]                                               │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ [Driver 3 Name]                          $[X]        │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ [Driver 4 Name]                          $[X]        │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  │  ═════════════════════════════════════════════════════  │    │
+│  │  [Source 2] Subtotal                        $[X]        │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background]                                   │    │
+│  │                                                         │    │
+│  │  PROJECTED ANNUAL VALUE                                 │    │
+│  │                                                         │    │
+│  │  $[X]               Per [provider type]: ~$[X]/year     │    │
+│  │  [28px, #EA2C00]    [10px, #666666]                     │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org] · [Setting] Value Assessment  Page 2 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+SETTING-SPECIFIC VALUE DRIVERS FOR PAGE 2:
+═══════════════════════════════════════════════════════════════════════
+
+OUTPATIENT:
+Source 1: TIME RECAPTURED
+  - Operational Savings (X% allocation × hours × $/hr)
+  - Patient Capacity (X% allocation → additional visits × $/visit)
+  - Provider Wellbeing (X% allocation → hrs/wk back, retention signal)
+  Subtotal: $[X]
+Source 2: REVENUE OPTIMIZED
+  - Documentation Quality / wRVU Lift (+X wRVU × encounters × $33 × attribution)
+  Subtotal: $[X]
+
+EMERGENCY:
+Source 1: THROUGHPUT UNLOCKED
+  - LWBS Reduction (X% reduction × Y patients × $/visit)
+  - Throughput / Door-to-Doc (time saved → additional patients seen)
+  Subtotal: $[X]
+Source 2: REVENUE CAPTURED
+  - E&M Accuracy (level uplift × encounters × $/level)
+  - Admission Capture (X% improvement × admissions × $/admission)
+  - Denial Prevention (X% reduction × denied claims × $/claim)
+  Subtotal: $[X]
+
+INPATIENT:
+Source 1: CAPACITY UNLOCKED
+  - Hospitalist Retention (turnover reduction × replacement cost)
+    [Include the impact threshold model — compact version]
+  Subtotal: $[X]
+Source 2: REVENUE OPTIMIZED
+  - DRG Accuracy (at-risk encounters × protection rate × DRG weight × base payment)
+  - CDI Efficiency (query reduction × time saved × cost)
+  - Denial Prevention (denial rate reduction × claims × avg denial value)
+  Subtotal: $[X]
+
+NURSING:
+Source 1: LABOR ECONOMICS
+  - Overtime Reduction (hours saved × OT conversion × OT rate)
+  - Retention Savings (turnover × burnout% × impact% × replacement cost)
+  - Agency Avoidance (nurses retained × weeks coverage × weekly premium)
+  Subtotal: $[X]
+Source 2: CARE QUALITY
+  - HAPI Prevention (events × doc-preventable% × cost/event)
+  - Falls Prevention (events × doc-preventable% × cost/event)
+  - Note: HCAHPS mentioned but not dollarized (honest limits)
+  Subtotal: $[X]
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 3: THE INVESTMENT CASE (ROI + Scale on ONE page)
+═══════════════════════════════════════════════════════════════════════
+
+3-year projection, current vs scale, infrastructure framing.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  THE INVESTMENT CASE                                            │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Infrastructure, Not Expense                                    │
+│  [18px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  Investment stays flat while value grows. This is the           │
+│  signature of infrastructure—fixed cost, scaling returns.       │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  3-YEAR PROJECTION                                              │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  PERIOD    VALUE    INVESTMENT   NET VALUE   CUMULATIVE  │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │  Year 1    $[X]     $[X]        $[X]        $[X]       │    │
+│  │  Year 2    $[X]     $[X]        $[X]        $[X]       │    │
+│  │  Year 3    $[X]     $[X]        $[X]        $[X]       │    │
+│  │                                                         │    │
+│  │  [10px, NET VALUE and CUMULATIVE in #EA2C00]            │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ By Year 3, you're generating $[X] for every $1      │    │
+│  │  ┃ invested. That's not a line item to cut in a         │    │
+│  │  ┃ downturn—it's infrastructure to protect.             │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border]                              │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  AT SCALE                                                       │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Per-[provider type] economics remain consistent at scale.      │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  CURRENT MODEL           │  │  ┃ AT FULL SCALE           │   │
+│  │                          │  │  ┃                          │   │
+│  │  $[X]/yr                 │  │  ┃ $[X]/yr                  │   │
+│  │  [24px, bold]            │  │  ┃ [24px, bold, #EA2C00]   │   │
+│  │                          │  │  ┃                          │   │
+│  │  [X] [providers]         │  │  ┃ [X] [providers]          │   │
+│  │  [X]% utilization        │  │  ┃ [X]% utilization         │   │
+│  │                          │  │  ┃                          │   │
+│  │  Per [type]: ~$[X]/yr    │  │  ┃ Per [type]: ~$[X]/yr     │   │
+│  │  [10px, #666666]         │  │  ┃ [10px, #666666]         │   │
+│  │                          │  │  ┃                          │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [#F5F0EB bg]                  [white bg, #EA2C00 left border]  │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  KEY METRICS TO TRACK                                           │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  1. Documentation time per encounter (target: -50%)     │    │
+│  │  2. [Setting-specific satisfaction] (target: +15 pts)   │    │
+│  │  3. [Setting-specific operational metric]               │    │
+│  │                                                         │    │
+│  │  [10px, #666666]                                        │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org] · [Setting] Value Assessment  Page 3 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 4: YOUR SUMMARY + METHODOLOGY (combined final page)
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  YOUR ASSESSMENT                                                │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  [#F5F0EB background]                                   │    │
+│  │                                                         │    │
+│  │        [X] [provider type].                             │    │
+│  │        [18px, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │        [X] encounters.                                  │    │
+│  │        [18px, #1A1A1A]                                  │    │
+│  │                                                         │    │
+│  │        $[X] projected net value.                        │    │
+│  │        [24px, bold, #EA2C00]                             │    │
+│  │                                                         │    │
+│  │        $[X] per [provider type] per year.               │    │
+│  │        [11px, #666666]                                  │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ [Setting-specific closing insight — the "soul"]      │    │
+│  │  ┃                                                      │    │
+│  │  ┃ [2-3 sentences that frame the value in human terms]  │    │
+│  │  ┃                                                      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border]                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  AT A GLANCE                                                    │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌──────────────────────────────┬───────────────────────────┐   │
+│  │                              │                           │   │
+│  │ VALUE SUMMARY                │ INVESTMENT SUMMARY        │   │
+│  │ ──────────────────────────── │ ─────────────────────── │   │
+│  │ [Source 1] Subtotal   $[X]   │ Annual Investment  $[X]   │   │
+│  │   [Driver 1]          $[X]   │ Per [type]         $[X]   │   │
+│  │   [Driver 2]          $[X]   │ Year 1 ROI         [X]:1 │   │
+│  │   [Driver 3]          $[X]   │ Year 3 Cumulative  $[X]  │   │
+│  │ [Source 2] Subtotal   $[X]   │                           │   │
+│  │   [Driver 4]          $[X]   │ UTILIZATION               │   │
+│  │   [Driver 5]          $[X]   │ Projected         [X]%   │   │
+│  │ ──────────────────────────── │ Hours Returned     [X]   │   │
+│  │ Net Annual Value      $[X]   │ Per [type]/week    [X]   │   │
+│  │              [#EA2C00, bold]  │                           │   │
+│  │                              │                           │   │
+│  └──────────────────────────────┴───────────────────────────┘   │
+│  [10px, compact table]                                           │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  METHODOLOGY                                                    │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  YOUR INPUTS             │  │  REALIZATION RATES         │   │
+│  │  [8.5px, ALL CAPS, #999] │  │  [8.5px, ALL CAPS, #999]  │   │
+│  │                          │  │                            │   │
+│  │  [X] [provider type]     │  │  [Rate 1]: [X]%           │   │
+│  │  [X] encounters          │  │  [Rate 2]: [X]%           │   │
+│  │  [X]% utilization        │  │  [Rate 3]: [X]%           │   │
+│  │  [X] min saved           │  │  [Rate 4]: [X]%           │   │
+│  │  $[X] investment         │  │                            │   │
+│  │  [X] hrs returned        │  │  Conservative by design.  │   │
+│  │                          │  │  Based on observed         │   │
+│  │  [9px, #666666]          │  │  implementations.         │   │
+│  │                          │  │  [9px, #666666]            │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [Side by side, #F5F0EB bg]                                     │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  This assessment is for planning purposes. Realization rates    │
+│  are conservative and based on observed implementations.        │
+│  The goal is a framework for decisions, not a prediction.       │
+│  Validate with your organization's data post-implementation.    │
+│  [8.5px, #999999, italic]                                       │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE    [Org] · [Setting] Value Assessment  Page 4 of 4    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+SETTING-SPECIFIC CLOSING INSIGHTS (Page 4 callout):
+═══════════════════════════════════════════════════════════════════════
+
+OUTPATIENT:
+"Give providers their time back—and the documentation gets 
+better, not worse. That's the counterintuitive truth about 
+ambient documentation. Better notes come from less time 
+documenting."
+
+EMERGENCY:
+"In emergency medicine, every minute spent documenting is a 
+minute not spent with the next patient. Ambient documentation 
+doesn't just save time—it removes the trade-off between 
+thorough documentation and throughput."
+
+INPATIENT:
+"Hospitalist documentation drives everything downstream—
+coding accuracy, denial prevention, care transitions. When 
+the notes are complete in real-time, the entire revenue 
+cycle benefits."
+
+NURSING:
+"Nurses don't bill. But their documentation drives care 
+quality, and their time drives labor economics. Ambient 
+documentation creates value in the two places it matters 
+most for nursing—the budget and the bedside."
+
+═══════════════════════════════════════════════════════════════════════
+KEY CHANGES FROM CURRENT EXPLORE PDFs
+═══════════════════════════════════════════════════════════════════════
+
+1. 7 pages → 4 pages (massive compression)
+2. Consistent 4-page structure across ALL care settings
+3. Same visual system as Measure, Ambient Assessment, Scribe PDFs
+4. No dark backgrounds (current has dark cover and dark blocks)
+5. No generic "Next Steps" page — replaced with compact 
+   "Key Metrics to Track" on page 3
+6. No placeholder text (current DRG page had generic steps)
+7. Value drivers compressed from full pages each to compact 
+   cards with visible calculations
+8. 3-year projection table is clean and compact
+9. Current vs Scale comparison uses same side-by-side component
+10. Per-provider economics on every relevant page
+11. Setting-specific closing insights add soul
+12. Methodology compressed to half-page with realization rates
+13. Footnotes replace "adjust assumptions" throughout
+14. Template approach means one codebase, four outputs
