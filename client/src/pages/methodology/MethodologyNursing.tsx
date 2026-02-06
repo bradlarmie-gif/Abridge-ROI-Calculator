@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, ChevronUp, Download, ArrowRight, Stethoscope, Activity, Building2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateNursingMethodologyPDF } from "@/lib/nursing-pdf-generator";
+import { generateMethodologyPDF } from "@/lib/methodology-pdf-export";
 import abridgeLogo from '@assets/abridge-logo-wordmark-red_1769020684647.png';
 
 interface MethodologyNursingProps {
@@ -91,7 +91,7 @@ export function MethodologyNursing({ onBack, onNavigateToSetting }: MethodologyN
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      await generateNursingMethodologyPDF();
+      await generateMethodologyPDF("nursing");
     } catch (error) {
       console.error('PDF export failed:', error);
       alert('PDF export failed. Please try again or check your browser settings.');

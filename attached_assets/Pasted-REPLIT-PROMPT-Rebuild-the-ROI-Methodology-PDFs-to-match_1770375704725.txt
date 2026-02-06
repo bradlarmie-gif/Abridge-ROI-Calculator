@@ -1,0 +1,514 @@
+REPLIT PROMPT:
+
+Rebuild the ROI Methodology PDFs to match the EXACT same format,
+margins, typography, and components as all other PDFs (Measure,
+Ambient Assessment, Scribe Analysis, Explore). 
+
+These are reference documents — they should be Cover + 2 pages.
+Dense, rich, credible. One template, four care settings.
+
+═══════════════════════════════════════════════════════════════════════
+GLOBAL — IDENTICAL TO ALL OTHER PDFS
+═══════════════════════════════════════════════════════════════════════
+
+Pages: Cover + 2 content pages
+Size: Letter (8.5 × 11)
+Margins: 0.75 inch
+Font: Manrope
+Same color palette, typography scale, components, footer.
+
+FOOTER (every page):
+- Left: ABRIDGE in #EA2C00 (10px)
+- Center: "ROI Methodology · [Care Setting]"
+- Right: "Page X of 2" in 8.5px #999999
+
+═══════════════════════════════════════════════════════════════════════
+COVER PAGE
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ABRIDGE [logo, #EA2C00, top-left]                              │
+│                                                                 │
+│                                                                 │
+│  ROI METHODOLOGY                                                │
+│  [9px, ALL CAPS, #666666, letter-spacing 3px]                   │
+│                                                                 │
+│  [Care Setting]:                                                │
+│  How We Think                                                   │
+│  About Value                                                    │
+│  [36px, bold, #1A1A1A]                                          │
+│                                                                 │
+│  ──────── [60px rule, #EA2C00, 2px thick]                       │
+│                                                                 │
+│  A transparent methodology for understanding                    │
+│  where value lives in [care setting] documentation              │
+│  [14px, #666666]                                                │
+│                                                                 │
+│                                                                 │
+│  [subtle curve graphic]                                         │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  Every assumption is visible. Every calculation is               │
+│  transparent. If you disagree with an input, change it.         │
+│  [8.5px, #999999]                                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+SETTING-SPECIFIC:
+- Outpatient: "Outpatient: How We Think About Value"
+- Emergency: "Emergency: How We Think About Value"
+- Inpatient: "Inpatient: How We Think About Value"
+- Nursing: "Nursing: How We Think About Value"
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 1: CONTEXT + VALUE MECHANISMS (on ONE dense page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines the old Page 1 (context, two value categories, honest 
+limits) and Page 2 (value mechanisms) into one page.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  THE CONTEXT                                                    │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  [Setting-specific context paragraph — 3-4 lines max]           │
+│  [10.5px, #333333]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  TWO VALUE CATEGORIES                                           │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  [CATEGORY 1 LABEL]      │  │  ┃ [CATEGORY 2 LABEL]     │   │
+│  │                          │  │  ┃                          │   │
+│  │  [2-line description]    │  │  ┃ [2-line description]     │   │
+│  │                          │  │  ┃                          │   │
+│  │  Direct, measurable      │  │  ┃ Potential value          │   │
+│  │  [9px, bold, #1A1A1A]    │  │  ┃ (shown separately)      │   │
+│  │                          │  │  ┃ [9px, bold, #1A1A1A]    │   │
+│  │                          │  │  ┃                          │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [#F5F0EB bg]                  [white bg, #EA2C00 left border]  │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  VALUE MECHANISMS                                               │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  How each driver works and how we calculate it.                 │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  [CATEGORY 1 LABEL]                                             │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ [Mechanism 1 Name]              [DIRECTLY MEASURABLE]│    │
+│  │  ┃ [10px bold]                     [8px badge, #F5F0EB  │    │
+│  │  ┃                                  bg, #666 text]      │    │
+│  │  ┃                                                      │    │
+│  │  ┃ [1-2 line mechanism description]                     │    │
+│  │  ┃ [9px, #666666]                                       │    │
+│  │  ┃                                                      │    │
+│  │  ┃ [Formula in 9px, #999999]                            │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ [Mechanism 2 Name]              [INDIRECT]           │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ [Mechanism 3 Name]              [CONNECTED]          │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  [CATEGORY 2 LABEL]                                             │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ┃ [Mechanism 4 Name]              [POTENTIAL VALUE]     │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ [Mechanism 5 Name]              [POTENTIAL VALUE]     │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │                                                         │    │
+│  │  ┃ [Mechanism 6 Name]              [QUALITATIVE]        │    │
+│  │  ┃ [Same compact structure]                             │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  THE HONEST LIMITS                                              │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  ┌──────────────────┐ ┌──────────────────┐ ┌─────────────────┐  │
+│  │                  │ │                  │ │                 │  │
+│  │  ✓ WE MEASURE   │ │  ~ WE INFLUENCE  │ │  ○ WE ENABLE   │  │
+│  │  [8.5px, bold]   │ │  [8.5px, bold]   │ │  [8.5px, bold] │  │
+│  │  Direct          │ │  Indirect        │ │  Supportive    │  │
+│  │                  │ │                  │ │                 │  │
+│  │  • [metric 1]   │ │  • [metric 1]    │ │  • [metric 1]  │  │
+│  │  • [metric 2]   │ │  • [metric 2]    │ │  • [metric 2]  │  │
+│  │  • [metric 3]   │ │  • [metric 3]    │ │  • [metric 3]  │  │
+│  │  • [metric 4]   │ │  • [metric 4]    │ │  • [metric 4]  │  │
+│  │                  │ │                  │ │                 │  │
+│  │  [8.5px, #666]  │ │  [8.5px, #666]   │ │  [8.5px, #666] │  │
+│  │                  │ │                  │ │                 │  │
+│  └──────────────────┘ └──────────────────┘ └─────────────────┘  │
+│  [3-column grid, #F5F0EB bg, 8px gaps]                          │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE          ROI Methodology · [Setting]   Page 1 of 2    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+SETTING-SPECIFIC CONTENT FOR PAGE 1:
+═══════════════════════════════════════════════════════════════════════
+
+NURSING:
+Context: "Nursing is the hardest setting to model ROI—and the most 
+important to get right. Nurses don't bill. They don't generate wRVUs. 
+Yet 25-35% of every shift is spent documenting. The value lives in 
+two places: labor economics and care quality."
+
+Categories: LABOR ECONOMICS / CARE QUALITY ENABLEMENT
+Mechanisms:
+  Cat 1: Overtime Reduction [DIRECT], Retention Savings [INDIRECT], 
+         Agency Reduction [CONNECTED]
+  Cat 2: HAPI Prevention [POTENTIAL], Falls Prevention [POTENTIAL],
+         Patient Experience [QUALITATIVE]
+
+Honest Limits:
+  Measure: OT hours, doc time/shift, shift completion, chart timing
+  Influence: Turnover, agency, satisfaction, burnout
+  Enable: Falls, HAPIs, HCAHPS, clinical outcomes
+
+───────────────────────────────────────────────────────────────
+
+OUTPATIENT:
+Context: "Outpatient value has a clear billing relationship—wRVUs, 
+capacity, documentation quality. Time saved traces to revenue. The 
+question is how much converts and at what rate."
+
+Categories: TIME RECAPTURED / REVENUE OPTIMIZED
+Mechanisms:
+  Cat 1: Operational Savings [DIRECT], Patient Capacity [DIRECT],
+         Provider Wellbeing [INDIRECT]
+  Cat 2: wRVU Capture [DIRECT], HCC Accuracy [POTENTIAL],
+         Denial Prevention [POTENTIAL]
+
+Honest Limits:
+  Measure: Time/encounter, wRVU lift, same-day closure, after-hours
+  Influence: Capacity (depends on demand), retention, satisfaction
+  Enable: HCC accuracy, denial rates, patient experience
+
+───────────────────────────────────────────────────────────────
+
+EMERGENCY:
+Context: "In the ED, time is the constraint on everything—throughput,
+LWBS, admission capture. Value shows up in patients seen, patients 
+kept, and encounters documented completely."
+
+Categories: THROUGHPUT UNLOCKED / REVENUE CAPTURED
+Mechanisms:
+  Cat 1: LWBS Reduction [DIRECT], Throughput/Capacity [DIRECT],
+         Provider Wellbeing [INDIRECT]
+  Cat 2: E&M Accuracy [DIRECT], Admission Capture [POTENTIAL],
+         Denial Prevention [POTENTIAL]
+
+Honest Limits:
+  Measure: LWBS rate, door-to-doc, time/encounter, E&M levels
+  Influence: Throughput (operational), retention, satisfaction
+  Enable: Admission capture, downstream inpatient, quality metrics
+
+───────────────────────────────────────────────────────────────
+
+INPATIENT:
+Context: "Inpatient value is driven by DRG-based reimbursement.
+Documentation accuracy directly impacts coding, CMI, and denials.
+Time saved creates capacity for rounding, throughput, and retention."
+
+Categories: CAPACITY UNLOCKED / REVENUE OPTIMIZED
+Mechanisms:
+  Cat 1: Hospitalist Retention [INDIRECT], Throughput/LOS [POTENTIAL]
+  Cat 2: DRG Accuracy [DIRECT], CDI Efficiency [DIRECT],
+         Denial Prevention [DIRECT]
+
+Honest Limits:
+  Measure: CMI, query response, denial rates, doc time
+  Influence: Retention, throughput, LOS
+  Enable: Readmission reduction, care transitions, quality metrics
+
+═══════════════════════════════════════════════════════════════════════
+PAGE 2: ASSUMPTIONS + VALIDATION (on ONE dense page)
+═══════════════════════════════════════════════════════════════════════
+
+Combines assumptions table and validation path.
+
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  KEY ASSUMPTIONS                                                │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Every number has a source. We default conservative.            │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                                                         │    │
+│  │  ASSUMPTION              RANGE       DEFAULT   SOURCE   │    │
+│  │  ─────────────────────────────────────────────────────  │    │
+│  │  [Row 1]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 2]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 3]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 4]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 5]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 6]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 7]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 8]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 9]                 [X-Y]       [X]       [source] │    │
+│  │  [Row 10]                [X-Y]       [X]       [source] │    │
+│  │  [Row 11]                [X-Y]       [X]       [source] │    │
+│  │                                                         │    │
+│  │  [9px, alternating white/#F5F0EB rows, header bold]     │    │
+│  │  [DEFAULT column in #EA2C00]                            │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  ┃ We'd rather show a smaller number you can defend     │    │
+│  │  ┃ than a larger number that falls apart under scrutiny.│    │
+│  └─────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB bg, #EA2C00 left border, 9px italic]                  │
+│                                                                 │
+│  ═══════════════════════════════════════════════════════════    │
+│                                                                 │
+│  VALIDATION PATH                                                │
+│  [9px, ALL CAPS, #EA2C00]                                       │
+│                                                                 │
+│  Our projections are starting points. The real answers           │
+│  come from your data.                                           │
+│  [10.5px, #666666]                                              │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  [METRIC 1 NAME]         │  │  [METRIC 2 NAME]           │   │
+│  │  [9px, bold]             │  │  [9px, bold]               │   │
+│  │                          │  │                            │   │
+│  │  Before:                 │  │  Before:                   │   │
+│  │  • [measure 1]           │  │  • [measure 1]             │   │
+│  │  • [measure 2]           │  │  • [measure 2]             │   │
+│  │                          │  │                            │   │
+│  │  After:                  │  │  After:                    │   │
+│  │  • [measure 1]           │  │  • [measure 1]             │   │
+│  │  • [measure 2]           │  │  • [measure 2]             │   │
+│  │                          │  │                            │   │
+│  │  Timeline: [X]           │  │  Timeline: [X]             │   │
+│  │  [9px, #EA2C00]          │  │  [9px, #EA2C00]            │   │
+│  │                          │  │                            │   │
+│  │  [8.5px, #666666]        │  │  [8.5px, #666666]          │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [#F5F0EB bg, 8px gap]                                          │
+│                                                                 │
+│  ┌──────────────────────────┐  ┌────────────────────────────┐   │
+│  │                          │  │                            │   │
+│  │  [METRIC 3 NAME]         │  │  [METRIC 4 NAME]           │   │
+│  │  [Same structure]        │  │  [Same structure]          │   │
+│  │                          │  │                            │   │
+│  └──────────────────────────┘  └────────────────────────────┘   │
+│  [2×2 grid of validation cards]                                  │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  [#F5F0EB background]                                   │    │
+│  │                                                         │    │
+│  │  CONNECTED VALUE                                        │    │
+│  │  [9px, ALL CAPS, #EA2C00]                               │    │
+│  │                                                         │    │
+│  │  [Setting-specific paragraph about how this setting's   │    │
+│  │   documentation connects to value in other settings.    │    │
+│  │   2-3 lines max.]                                       │    │
+│  │  [9px, #666666]                                         │    │
+│  │                                                         │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                 │
+│  ─────────────────────────────────────────────────────────────  │
+│                                                                 │
+│  OUR PRINCIPLES                                                 │
+│  [9px, ALL CAPS, #666666]                                       │
+│                                                                 │
+│  Show our work · Conservative by default · Honest about         │
+│  limits · Validate with your data                               │
+│  [9px, #999999]                                                 │
+│                                                                 │
+│  ───────────────────────────────────────────────────────────    │
+│  ABRIDGE          ROI Methodology · [Setting]   Page 2 of 2    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+SETTING-SPECIFIC ASSUMPTIONS TABLES:
+═══════════════════════════════════════════════════════════════════════
+
+NURSING:
+| Assumption               | Range      | Default | Source              |
+| Time saved/shift         | 15-30 min  | 20 min  | Abridge data        |
+| OT conversion rate       | 15-40%     | 25%     | Implementation data |
+| Nurse turnover rate      | 15-25%     | 18%     | NSI 2024            |
+| Burnout-related turnover | 30-50%     | 40%     | ANA research        |
+| Abridge retention impact | 10-25%     | 15%     | Conservative est.   |
+| Replacement cost         | $40-65K    | $52K    | NSI 2024            |
+| Agency coverage weeks    | 8-16 wks   | 12 wks  | Industry avg        |
+| Weekly agency premium    | $2-4K      | $2,500  | Travel nurse rates  |
+| Doc-preventable HAC rate | 3-8%       | 5%      | Conservative est.   |
+| Cost per HAPI            | $10-50K    | $26K    | AHRQ data           |
+| Cost per fall w/ injury  | $3-30K     | $6.5K   | CMS data            |
+
+Validation: Time Savings (2-4 wks), OT Reduction (2-3 mo),
+            Retention (12-18 mo), Care Quality (treat as bonus)
+
+Connected: "Nursing documentation feeds inpatient revenue. Complete 
+assessments capture CC/MCC indicators that support DRG accuracy 
+and strengthen payer appeals."
+
+───────────────────────────────────────────────────────────────
+
+OUTPATIENT:
+| Assumption               | Range      | Default | Source              |
+| Time saved/encounter     | 2-6 min    | 4 min   | Abridge data        |
+| Time conversion rate     | 15-30%     | 25%     | Implementation data |
+| Provider hourly rate     | $100-250   | $150    | MGMA data           |
+| Visit duration           | 15-30 min  | 20 min  | Specialty avg       |
+| Revenue per visit        | $150-350   | $200    | Practice data       |
+| wRVU value               | $30-40     | $33     | CMS conversion      |
+| wRVU lift                | 2-7%       | 5.5%    | Abridge data        |
+| wRVU attribution         | 50-85%     | 60%     | Conservative est.   |
+| Turnover rate            | 4-8%       | 6%      | AAMC data           |
+| Replacement cost         | $250-500K  | $400K   | Merritt Hawkins     |
+
+Validation: Time Savings (2-4 wks), wRVU (3-6 mo),
+            Capacity (3-6 mo), Retention (12-18 mo)
+
+Connected: "Outpatient documentation quality impacts downstream 
+referrals, HCC accuracy for value-based contracts, and pre-auth 
+efficiency."
+
+───────────────────────────────────────────────────────────────
+
+EMERGENCY:
+| Assumption               | Range      | Default | Source              |
+| Time saved/encounter     | 1-3 min    | 2 min   | Abridge data        |
+| LWBS rate                | 2-5%       | 3%      | ED benchmark data   |
+| LWBS reduction           | 10-30%     | 15%     | Conservative est.   |
+| Avg ED visit revenue     | $350-600   | $450    | CMS data            |
+| E&M level uplift         | 0.2-0.5    | 0.3     | Abridge data        |
+| Revenue per E&M level    | $30-80     | $50     | CMS fee schedule    |
+| Admission capture rate   | 1-5%       | 2%      | Conservative est.   |
+| Avg admission value      | $8-15K     | $10K    | DRG avg             |
+| Denial reduction         | 5-15%      | 8%      | Conservative est.   |
+| Avg denial value         | $150-300   | $200    | Industry data       |
+
+Validation: LWBS (1-2 mo), Throughput (2-3 mo),
+            E&M Accuracy (3-6 mo), Denials (6-12 mo)
+
+Connected: "ED documentation drives downstream inpatient revenue.
+When ED admits are documented completely, the inpatient stay 
+starts with a stronger clinical picture."
+
+───────────────────────────────────────────────────────────────
+
+INPATIENT:
+| Assumption               | Range      | Default | Source              |
+| Time saved/encounter     | 1.5-4 min  | 2.5 min | Abridge data        |
+| At-risk DRG encounters   | 20-35%     | 25%     | CDI benchmark data  |
+| DRG protection rate      | 15-30%     | 20%     | Conservative est.   |
+| Avg DRG weight increase  | 0.3-0.6    | 0.4     | CMS data            |
+| Base DRG payment         | $5-8K      | $6,500  | Medicare avg        |
+| CDI query reduction      | 20-40%     | 25%     | Implementation data |
+| Denial rate reduction    | 10-25%     | 15%     | Conservative est.   |
+| Hospitalist turnover     | 5-8%       | 6%      | SHM data            |
+| Burnout-related turnover | 30-50%     | 40%     | Research data       |
+| Replacement cost         | $300-500K  | $400K   | Merritt Hawkins     |
+| Retention impact         | 3-15%      | 4%      | Conservative est.   |
+
+Validation: DRG/CMI (3-6 mo), CDI Efficiency (2-3 mo),
+            Denials (6-12 mo), Retention (12-18 mo)
+
+Connected: "Inpatient documentation is strengthened by nursing 
+documentation. When both are on Abridge, the combined clinical 
+picture drives higher coding accuracy and stronger appeals."
+
+═══════════════════════════════════════════════════════════════════════
+KEY CHANGES FROM CURRENT METHODOLOGY PDFs
+═══════════════════════════════════════════════════════════════════════
+
+1. 3 pages → 2 pages (tighter, denser)
+2. Same visual system as all other PDFs
+3. No different header style (current has ABRIDGE + "ROI 
+   METHODOLOGY" in different layout from other PDFs)
+4. Value mechanisms compressed: each mechanism gets 3 lines 
+   (name + badge, 1-line mechanism, 1-line formula) instead 
+   of full card blocks
+5. Honest Limits as compact 3-column grid instead of big cards
+6. Assumptions table uses same styling as other PDF tables
+7. Validation path as 2×2 card grid (compact)
+8. Connected Value as a callout box (not a full section)
+9. Principles as a single footer line (not a full section)
+10. Cover page matches all other covers
+11. One template, four outputs — same code, different data
+12. Badges on mechanisms (DIRECTLY MEASURABLE, INDIRECT, 
+    POTENTIAL, QUALITATIVE) are small, subtle, informative
+
+═══════════════════════════════════════════════════════════════════════
+MECHANISM BADGE STYLING
+═══════════════════════════════════════════════════════════════════════
+
+DIRECTLY MEASURABLE:
+- Background: #F5F0EB
+- Text: #1A1A1A
+- Border: 1px solid #E0E0E0
+
+INDIRECT:
+- Background: #F5F0EB
+- Text: #666666
+- Border: 1px solid #E0E0E0
+
+CONNECTED:
+- Background: #F5F0EB
+- Text: #666666
+- Border: 1px solid #E0E0E0
+
+POTENTIAL VALUE:
+- Background: #FFF5F2
+- Text: #EA2C00
+- Border: 1px solid #EA2C00 at 30% opacity
+
+QUALITATIVE:
+- Background: #F5F5F5
+- Text: #999999
+- Border: 1px solid #E0E0E0
+
+All badges: 7px font, ALL CAPS, letter-spacing 1px, 
+padding 2px 6px, border-radius 3px
