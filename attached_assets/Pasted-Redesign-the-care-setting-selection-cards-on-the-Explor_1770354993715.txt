@@ -1,0 +1,130 @@
+Redesign the care setting selection cards on the Explore path's 
+"Select Care Setting" page. All four settings are available.
+These should feel like meaningful pathway choices with depth.
+
+═══════════════════════════════════════════════════════════════════════
+
+CARD STYLING (all four cards):
+
+- Background: #F5F0EB (warm beige)
+- Border: 2px solid transparent (default)
+- Border-radius: 12px
+- Padding: 28px
+- Min-height: 220px
+- Cursor: pointer
+- Transition: all 0.2s ease
+
+Icon circle:
+- Size: 52px
+- Background: white (#FFFFFF)
+- Border-radius: 50%
+- Icon color: #EA2C00
+- Shadow: 0 2px 8px rgba(0,0,0,0.06)
+
+Title:
+- 20px, bold, #1A1A1A
+
+Subtitle:
+- 13px, #666666
+- Margin-top: 4px
+
+Description (ADD THIS — new):
+- 12px, #999999
+- Margin-top: 12px
+- Line-height: 1.5
+
+HOVER STATE:
+- Border: 2px solid #EA2C00
+- Shadow: 0 4px 16px rgba(234, 44, 0, 0.08)
+- Transform: translateY(-2px)
+
+SELECTED STATE:
+- Background: #FFFFFF (flips from beige to white)
+- Border: 2px solid #EA2C00
+- Shadow: 0 4px 16px rgba(234, 44, 0, 0.1)
+- Small red-orange dot indicator top-right corner
+  (8px circle, #EA2C00, position absolute, 
+   top 16px, right 16px)
+
+═══════════════════════════════════════════════════════════════════════
+
+CARD CONTENT:
+
+OUTPATIENT:
+- Icon: stethoscope or clinic icon
+- Title: "Outpatient"
+- Subtitle: "Primary care & specialty"
+- Description: "wRVU capture, patient access, 
+  documentation quality, and provider wellbeing."
+
+EMERGENCY:
+- Icon: lightning/bolt icon
+- Title: "Emergency"
+- Subtitle: "Emergency department"
+- Description: "Throughput, LWBS reduction, 
+  E&M accuracy, and downstream capture."
+
+INPATIENT:
+- Icon: hospital/bed icon
+- Title: "Inpatient"
+- Subtitle: "Hospital medicine"
+- Description: "DRG accuracy, CC/MCC capture, 
+  CDI efficiency, and denial prevention."
+
+NURSING:
+- Icon: heart/care icon
+- Title: "Nursing"
+- Subtitle: "Inpatient nursing"
+- Description: "Overtime reduction, retention, 
+  care quality, and bedside time."
+
+═══════════════════════════════════════════════════════════════════════
+
+COPY UPDATES:
+
+Section label:
+- Keep: "BUILD YOUR MODEL" in #EA2C00
+
+Headline:
+- Change to: "Choose Your Care Setting"
+
+Subhead:
+- Change to: "Each setting has its own value story. 
+  We'll tailor the model to match how your 
+  organization works."
+
+═══════════════════════════════════════════════════════════════════════
+
+BUTTON:
+
+When nothing selected:
+- Background: #E0E0E0
+- Text: "Choose a setting to continue" in #999999
+- Disabled, no hover effect
+- Remove the separate helper text below button
+
+When card selected:
+- Background: #EA2C00
+- Text: "Continue with [Setting Name] →" in white
+- Dynamic — shows the name of selected setting
+- Height: 52px
+- Border-radius: 8px
+- Full width of content area (max-width: 480px, centered)
+- Subtle fade-in animation when it activates
+
+═══════════════════════════════════════════════════════════════════════
+
+OPTIONAL CONTEXT LINE (below cards, above button):
+
+"All settings use the same transparent methodology. 
+Each is calibrated to its unique value drivers."
+[11px, #999999, centered, margin-top: 24px]
+
+The key differences from Measure's version:
+
+No coming soon badges — all four are live and equal
+Descriptions tell you what's inside each path — this is what creates depth. "wRVU capture, patient access, documentation quality, and provider wellbeing" is way more compelling than just "Primary care & specialty"
+Selection state inverts the color — beige → white creates a clear "I chose this" moment
+Dynamic button — "Continue with Outpatient →" confirms the choice and feels intentional
+
+The descriptions are doing the heavy lifting here. They turn flat labels into previews of what's ahead.

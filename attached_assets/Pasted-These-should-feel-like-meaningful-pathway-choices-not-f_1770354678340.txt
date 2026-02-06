@@ -1,0 +1,173 @@
+These should feel like meaningful pathway choices, not flat radio buttons.
+
+═══════════════════════════════════════════════════════════════════════
+
+CARD LAYOUT:
+
+- 4 cards in a row (keep the current grid)
+- Each card: min-height 200px
+- Gap between cards: 20px
+- Border-radius: 12px
+
+═══════════════════════════════════════════════════════════════════════
+
+ACTIVE CARD (Outpatient — available):
+
+- Background: #F5F0EB (warm beige)
+- Border: 2px solid transparent (default)
+- Padding: 28px
+- Cursor: pointer
+
+Icon circle:
+- Size: 56px
+- Background: white (#FFFFFF)
+- Border-radius: 50%
+- Icon color: #EA2C00
+- Subtle shadow: 0 2px 8px rgba(0,0,0,0.06)
+
+Title:
+- "Outpatient"
+- 20px, bold, #1A1A1A
+
+Subtitle:
+- "Primary care & specialty"
+- 13px, #666666
+
+Add a short description below subtitle:
+- "Physician and APP workflows with 
+  wRVU, capacity, and documentation 
+  quality drivers."
+- 12px, #999999, margin-top 12px
+
+Bottom of card — add a subtle indicator:
+- Small arrow or "Select →" text
+- 12px, #EA2C00
+- Only visible on hover (opacity 0 → 1)
+
+HOVER STATE:
+- Border: 2px solid #EA2C00
+- Shadow: 0 4px 16px rgba(234, 44, 0, 0.08)
+- Transform: translateY(-2px)
+- Arrow/select text fades in
+- Transition: all 0.2s ease
+
+SELECTED STATE:
+- Border: 2px solid #EA2C00
+- Background: white (#FFFFFF) 
+  (inverts from beige to white to show selection)
+- Shadow: 0 4px 16px rgba(234, 44, 0, 0.1)
+- Add a small checkmark or red-orange dot in 
+  top-right corner (8px circle, #EA2C00)
+
+═══════════════════════════════════════════════════════════════════════
+
+COMING SOON CARDS (Emergency, Inpatient, Nursing):
+
+- Background: #F5F0EB (same beige)
+- Opacity: 0.55
+- Cursor: default (not pointer)
+- No hover effects
+
+Icon circle:
+- Size: 56px
+- Background: white
+- Icon color: #CCCCCC (gray, not red)
+
+Title:
+- "Emergency" / "Inpatient" / "Nursing"
+- 20px, bold, #999999 (gray, not black)
+
+Subtitle:
+- 13px, #BBBBBB
+
+SOON badge:
+- Position: top-right of card
+- Background: #E0E0E0 (gray)
+- Text: "COMING SOON" (not just "SOON")
+- 9px, ALL CAPS, #666666, letter-spacing 1px
+- Padding: 4px 10px
+- Border-radius: 4px
+
+DO NOT use red-orange for "SOON" badge — it draws 
+attention to unavailable items.
+
+Add description text for coming soon cards:
+- Emergency: "High-volume, fast-paced workflows 
+  with throughput and LWBS drivers."
+- Inpatient: "DRG-based workflows with coding 
+  accuracy and denial prevention drivers."
+- Nursing: "Shift-based workflows with overtime, 
+  retention, and care quality drivers."
+- 12px, #BBBBBB
+
+═══════════════════════════════════════════════════════════════════════
+
+COPY UPDATES:
+
+Page label (above headline):
+- Current: "MEASURE YOUR VALUE"
+- Keep this — it's good
+
+Headline:
+- Current: "Select Your Care Setting"
+- Revised: "Choose Your Care Setting"
+  (slightly warmer — "choose" feels more empowering 
+   than "select")
+
+Subhead:
+- Current: "Each care setting has unique workflows and 
+  documentation requirements. We'll customize your value 
+  measurement to match your environment."
+- Revised: "Each setting has its own value story. We'll 
+  tailor the model to match how your organization works."
+  (shorter, more confident, less clinical)
+
+═══════════════════════════════════════════════════════════════════════
+
+BUTTON:
+
+Current: "Continue with Setting →" (gray/disabled looking)
+
+Updated:
+- When no card selected: 
+  - Button: #E0E0E0 background, #999999 text
+  - Text: "Choose a setting to continue"
+  - Disabled state
+
+- When card selected:
+  - Button: #EA2C00 background, white text
+  - Text: "Continue with Outpatient →"
+  - (dynamically shows selected setting name)
+  - Full width of content area (not small centered button)
+  - Height: 52px
+  - Border-radius: 8px
+  - Animate in (subtle fade/slide up)
+
+Remove the "Select a care setting to continue" helper 
+text below the button — the button state communicates this.
+
+═══════════════════════════════════════════════════════════════════════
+
+INTERACTION FLOW:
+
+1. User lands on page — all 4 cards visible
+2. Outpatient has subtle pulse or slightly different 
+   treatment to suggest "start here" (optional)
+3. User hovers Outpatient — card lifts, border appears
+4. User clicks — card inverts to white with red-orange 
+   border and checkmark dot
+5. Button activates with red-orange fill
+6. Coming soon cards don't respond to interaction
+
+═══════════════════════════════════════════════════════════════════════
+
+OPTIONAL: ADD CONTEXT BELOW CARDS
+
+Before the button, add a small context line:
+
+"All settings share the same methodology. 
+Each is calibrated to its unique value drivers."
+[11px, #999999, centered]
+
+This helps users understand the settings aren't 
+random — there's a reason for the separation.
