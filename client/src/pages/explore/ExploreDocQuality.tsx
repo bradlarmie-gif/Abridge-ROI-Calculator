@@ -215,12 +215,13 @@ export default function ExploreDocQuality({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          data-testid="card-how-to-use-doc-quality"
         >
           <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
             HOW TO USE THIS
           </p>
           <div className="h-px bg-[#D1D5DB] mb-6" />
-          <p className="text-sm text-black leading-relaxed">
+          <p className="text-sm text-black leading-relaxed" data-testid="text-doc-quality-intro">
             {isED
               ? "Better documentation captures the clinical complexity you\u2019re already delivering. In high-volume ED settings, notes often understate acuity\u2014especially during surges. Select the drivers that apply to your department and adjust scenarios to match your confidence level."
               : "Better documentation creates downstream revenue by capturing the complexity you\u2019re already delivering. Select the drivers that apply to your organization, adjust the scenarios to match your confidence level, and edit any assumption directly."
@@ -1063,6 +1064,7 @@ export default function ExploreDocQuality({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
+          data-testid="card-revenue-drivers"
         >
           <div>
             <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
