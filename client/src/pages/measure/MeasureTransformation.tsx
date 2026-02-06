@@ -148,7 +148,7 @@ export default function MeasureTransformation({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight" data-testid="text-page-title">
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
             What Changed
           </h1>
           <p className="text-base text-[#888888]" data-testid="text-page-subtitle">

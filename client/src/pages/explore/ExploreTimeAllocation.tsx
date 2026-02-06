@@ -2472,7 +2472,7 @@ export default function ExploreTimeAllocation({ state, updateState, totalHoursSa
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
                 {isNursing ? "Allocate Nursing Efficiency" : isInpatient ? "Allocate Hospitalist Efficiency" : isED ? "Allocate ED Efficiency Gains" : "Allocate Your Time Savings"}
               </p>
-              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
                 {isNursing ? "Allocate Nursing Time Savings" : "Allocate Your Time Savings"}
               </h1>
               <p className="text-slate-600">

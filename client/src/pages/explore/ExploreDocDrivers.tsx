@@ -1438,7 +1438,7 @@ export default function ExploreDocDrivers({ state, updateState, totalHoursSaved,
             Documentation Quality
           </p>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4 font-abridge uppercase tracking-tight">
             Capture value beyond time savings
           </h1>
 

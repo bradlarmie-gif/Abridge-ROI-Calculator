@@ -58,7 +58,7 @@ export default function MeasureTrends({ state, onBack, onHome }: MeasureTrendsPr
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3" data-testid="text-trends-title">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 font-abridge uppercase tracking-tight" data-testid="text-trends-title">
             YOUR JOURNEY
           </h1>
           <p className="text-lg text-slate-600">

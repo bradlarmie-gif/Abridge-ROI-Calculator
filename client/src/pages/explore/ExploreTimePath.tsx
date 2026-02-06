@@ -201,7 +201,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
               <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-3">
                 {isNursing ? "Model Nursing Time Savings" : isInpatient ? "Model Documentation Efficiency" : isED ? "Model ED Efficiency" : "Model Time Savings"}
               </p>
-              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
                 {isNursing ? "How much time can nurses save per shift?" : isInpatient ? "How much time per admission?" : isED ? "How much time per encounter?" : "Choose your modeling approach"}
               </h1>
               <p className="text-slate-600 mb-4">

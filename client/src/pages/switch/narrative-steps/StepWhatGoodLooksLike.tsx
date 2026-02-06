@@ -162,7 +162,7 @@ export default function StepWhatGoodLooksLike({
   return (
     <div className="space-y-8">
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2" data-testid="text-page-title">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
           What Good Looks Like
         </h1>
         <p className="text-base text-[#666666]">

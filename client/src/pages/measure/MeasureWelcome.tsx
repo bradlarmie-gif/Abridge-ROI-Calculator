@@ -120,7 +120,7 @@ export default function MeasureWelcome({ selectedSetting, onSelectSetting, onNex
             Measure Your Value
           </p>
 
-          <h1 className="text-2xl md:text-4xl font-bold text-black mb-3" data-testid="text-page-title">
+          <h1 className="text-2xl md:text-4xl font-bold text-black mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
             Choose Your Care Setting
           </h1>
 

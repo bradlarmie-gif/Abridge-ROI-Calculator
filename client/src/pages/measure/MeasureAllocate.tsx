@@ -205,7 +205,7 @@ function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureSt
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3" data-testid="text-page-title">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
             The Value You've Built
           </h1>
           <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
@@ -436,7 +436,7 @@ function GenericAllocate({ state, onNext, onBack, onHome }: { state: MeasureStat
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3" data-testid="text-page-title">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
             The Value You've Built
           </h1>
           <p className="text-base text-[#666666]" data-testid="text-page-subtitle">

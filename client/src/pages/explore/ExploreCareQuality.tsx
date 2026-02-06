@@ -105,7 +105,7 @@ export default function ExploreCareQuality({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 uppercase tracking-tight">
+              <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
                 Care Quality
               </h1>
               <p className="text-base text-[#888888]">

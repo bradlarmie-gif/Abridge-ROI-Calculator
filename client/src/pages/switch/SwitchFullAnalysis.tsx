@@ -94,7 +94,7 @@ export default function SwitchFullAnalysis({
       <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8">
           <div className="mb-4 sm:mb-0">
-            <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2" data-testid="text-page-title">
+            <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
               The Full Picture
             </h1>
             <p className="text-sm md:text-base text-[#6B7280]">

@@ -229,7 +229,7 @@ export default function ExploreReview({ state, totalHoursSaved, onContinueToInve
             <Sparkles className="w-8 h-8 text-[#EA2C00]" />
           </motion.div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-black mb-4 font-abridge uppercase tracking-tight">
             Your Model Is Ready
           </h1>
 

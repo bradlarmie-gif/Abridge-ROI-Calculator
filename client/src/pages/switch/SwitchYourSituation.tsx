@@ -94,7 +94,7 @@ export default function SwitchYourSituation({
 
       <main className="max-w-2xl mx-auto px-6 py-12">
         <div className="text-center mb-10">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Your situation</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2 font-abridge uppercase tracking-tight">Your situation</h1>
         </div>
 
         <div className="space-y-8">

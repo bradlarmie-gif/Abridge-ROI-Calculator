@@ -154,7 +154,7 @@ export default function SwitchAssessment({
 
       <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 md:mb-3" data-testid="text-page-title">
+          <h1 className="text-2xl md:text-3xl font-bold text-[#111827] mb-2 md:mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
             Where You Are Today
           </h1>
           <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto">

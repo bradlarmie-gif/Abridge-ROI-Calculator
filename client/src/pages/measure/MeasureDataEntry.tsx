@@ -139,7 +139,7 @@ export default function MeasureDataEntry({
           transition={{ duration: 0.5 }}
         >
           <h1
-            className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3"
+            className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
             data-testid="text-page-title"
           >
             Your Journey with Abridge
