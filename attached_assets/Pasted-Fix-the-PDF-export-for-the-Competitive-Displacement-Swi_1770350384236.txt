@@ -1,0 +1,804 @@
+Fix the PDF export for the Competitive Displacement (Switch → Competitor) flow.
+The PDF needs to match Abridge brand guidelines and align with the tone and 
+copy we use in the web application.
+
+═══════════════════════════════════════════════════════════════════════════════════
+GLOBAL PDF STYLING FIXES
+═══════════════════════════════════════════════════════════════════════════════════
+
+COLOR PALETTE — Replace ALL off-brand colors:
+
+REMOVE:
+- Dark navy (#1B2332 or similar) — used in page header banners
+- Green/teal (#4CAF50, #2E7D32, #A5D6A7, or similar) — used in benchmark values, 
+  cards, progress bars, and summary page
+- Orange/amber (#FF9800 or similar) — used in progress bars
+- Purple (#7B1FA2 or similar) — used in some value displays
+- Pink/salmon (#FFF0F0 or similar) — used in callout boxes
+
+REPLACE WITH:
+- Page backgrounds: #FFFFFF (white)
+- Card backgrounds: #F5F0EB (warm beige)
+- Primary accent: #EA2C00 (Abridge red-orange)
+- Light accent background: #FFEBE6 (very light red-orange) — for callout boxes
+- Primary text: #1A1A1A (near black)
+- Secondary text: #666666 (gray)
+- Borders: #E0E0E0 (light gray)
+- Benchmark indicators: #E0E0E0 (gray) — NOT green
+
+HEADER BANNERS:
+- Remove the dark navy header banners from all pages
+- Replace with: White background, thin bottom border (#E0E0E0)
+- Page label: 11px, ALL CAPS, #EA2C00, letter-spacing 2px
+- Page title: 28px, bold, #1A1A1A
+- Page subtitle: 14px, regular, #666666
+
+TYPOGRAPHY:
+- Font: Manrope throughout (or system sans-serif fallback)
+- Page headlines: 28px, bold, #1A1A1A
+- Section labels: 11px, ALL CAPS, #EA2C00, letter-spacing 1.5px
+- Body text: 12px, regular, #333333
+- Large numbers: 48px, bold, #1A1A1A (or #EA2C00 for key values)
+- Metric values: 24px, bold
+- Helper text: 10px, #666666
+
+FOOTER:
+- Thin line: #E0E0E0
+- ABRIDGE logo: left-aligned, red-orange (#EA2C00)
+- Page number: right-aligned, 10px, #999999
+
+CALLOUT BOXES:
+- Background: #F5F0EB (warm beige) — NOT pink/salmon
+- Left border: 3px solid #EA2C00
+- Text: 12px, #333333
+- Header text: 13px, bold, #1A1A1A
+
+STAT CARDS:
+- Background: #F5F0EB (warm beige) — NOT green
+- Left border accent: 3px solid #EA2C00
+- Number: 32px, bold, #1A1A1A
+- Label: 10px, ALL CAPS, #666666
+- Subtext: 10px, #666666
+
+PROGRESS BARS:
+- Filled portion: #EA2C00 (red-orange)
+- Unfilled portion: #E0E0E0 (light gray)
+- NO green anywhere
+
+BENCHMARK COMPARISON BARS:
+- "You" bar: #EA2C00 (red-orange)
+- "Benchmark" remaining: #E0E0E0 (light gray)
+- Percentage label: #EA2C00
+- NO orange/amber, NO green
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 1: COVER
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Full red background — too aggressive, not Abridge style
+- White text on red — Abridge uses white backgrounds with red accents
+- No organization name
+
+REVISED COVER:
+
+Background: #FFFFFF (white)
+
+Layout:
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  ABRIDGE                                                                        │
+│  [logo, red-orange, top-left]                                                   │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  AMBIENT ASSESSMENT                                                             │
+│  [11px, ALL CAPS, #666666, letter-spacing 2px]                                  │
+│                                                                                 │
+│  Performance &                                                                  │
+│  Opportunity                                                                    │
+│  [48px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│                                                                                 │
+│  ─────────────────────── [thin line, #E0E0E0, partial width]                    │
+│                                                                                 │
+│  Prepared for                                                                   │
+│  [Organization Name]                                                            │
+│  [14px, #666666]                                                                │
+│  [16px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Prepared by                                                                    │
+│  [Rep Name]                                                                     │
+│  [14px, #666666]                                                                │
+│  [16px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  [Date]                                                                         │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  [Compounding effect chart — small, subtle, bottom-right area]          │    │
+│  │  [Use #EA2C00 for line, #E0E0E0 for grid, very light]                  │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│                                                                                 │
+│  This assessment is for planning purposes. All calculations are based on        │
+│  inputs provided and Abridge benchmark data.                                    │
+│  [8px, #999999, bottom of page]                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 2: YOUR PERFORMANCE PROFILE (was "Understanding Where You Are")
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Dark navy header banner
+- "VALUE REALIZATION ASSESSMENT" label
+- Pink callout box
+- Copy says "Understanding Where You Are" — fine but should match web
+
+REVISED:
+
+Remove dark navy banner. Replace with:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR PERFORMANCE PROFILE                                                       │
+│  [11px, ALL CAPS, #EA2C00, letter-spacing 2px]                                  │
+│                                                                                 │
+│  Understanding Where You Are                                                    │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  You've invested in ambient AI. This assessment measures how much               │
+│  of the possible value you're currently capturing, and what the                 │
+│  opportunity ahead looks like.                                                  │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  YOUR VALUE REALIZATION SCORE                                                   │
+│  [11px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  Card (warm beige background #F5F0EB):                                          │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │                          59%                                            │    │
+│  │                          [72px, bold, #1A1A1A]                          │    │
+│  │                                                                         │    │
+│  │                     Early Progress                                      │    │
+│  │                     [16px, #EA2C00]                                     │    │
+│  │                                                                         │    │
+│  │  ┌──────────────────────────────────────┬───────────────────────────┐   │    │
+│  │  │████████████████████████████████████████│░░░░░░░░░░░░░░░░░░░░░░░░░│   │    │
+│  │  └──────────────────────────────────────┴───────────────────────────┘   │    │
+│  │  [59% filled: #EA2C00]              [41% unfilled: #E0E0E0]            │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  This score compares your metrics against what mature implementations           │
+│  typically achieve across four dimensions. It's not a grade—it's a              │
+│  starting point for understanding.                                              │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Four metric cards in a row:                                                    │
+│                                                                                 │
+│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐    │
+│  │               │  │               │  │               │  │               │    │
+│  │  ADOPTION     │  │  EFFICIENCY   │  │  QUALITY      │  │  EXPERIENCE   │    │
+│  │  [10px, gray] │  │  [10px, gray] │  │  [10px, gray] │  │  [10px, gray] │    │
+│  │               │  │               │  │               │  │               │    │
+│  │  50%          │  │  2.5 min      │  │  +4%          │  │  30%          │    │
+│  │  [24px, bold] │  │  [24px, bold] │  │  [24px, bold] │  │  [24px, bold] │    │
+│  │               │  │               │  │               │  │               │    │
+│  │  of providers │  │  saved per    │  │  wRVU         │  │  would        │    │
+│  │  using AI     │  │  encounter    │  │  improvement  │  │  recommend    │    │
+│  │  [10px, gray] │  │  [10px, gray] │  │  [10px, gray] │  │  [10px, gray] │    │
+│  │               │  │               │  │               │  │               │    │
+│  └───────────────┘  └───────────────┘  └───────────────┘  └───────────────┘    │
+│  [Warm beige cards #F5F0EB, NO borders or very subtle]                          │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Callout box (warm beige background, red-orange left border):                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  What This Tells Us                                                  │    │
+│  │  ┃  [13px, bold, #1A1A1A]                                              │    │
+│  │  ┃                                                                      │    │
+│  │  ┃  You've made real progress, but there's meaningful room to grow.     │    │
+│  │  ┃  The infrastructure is in place. The opportunity is in optimization. │    │
+│  │  ┃  [12px, #333333]                                                    │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Background: #F5F0EB, Left border: 3px solid #EA2C00]                          │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+COPY CHANGES:
+- Rename "UTILIZATION" → "ADOPTION" 
+- Rename "SATISFACTION" → "EXPERIENCE"
+- Change "of providers using it" → "of providers using AI"
+- Change "provider satisfaction" → "would recommend"
+- Change callout copy to remove "The good news:" (too salesy)
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 3: BENCHMARKS (was "What Mature Implementations Look Like")
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Dark navy header
+- Orange/amber progress bars for benchmark comparison
+- "Low performance in one area often explains struggles in others" — slightly negative
+
+REVISED:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  BENCHMARKS                                                                     │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  What Mature Implementations Achieve                                            │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  These benchmarks reflect actual performance data from established              │
+│  ambient AI programs. They represent achievable ranges, not aspirational        │
+│  targets.                                                                       │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  THE FOUR DIMENSIONS                                                            │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  How We Measure Value Realization                                               │
+│  [22px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Each dimension contributes to the overall picture. Performance in one          │
+│  area often influences the others.                                              │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  BENCHMARK CARD TEMPLATE:                                                       │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Adoption                                       66% of benchmark        │    │
+│  │  [16px, bold, #1A1A1A]                          [14px, #EA2C00]        │    │
+│  │                                                                         │    │
+│  │  YOU                    BENCHMARK                                       │    │
+│  │  50%                    76%                                              │    │
+│  │  [16px, bold, #1A1A1A]  [16px, bold, #EA2C00]                          │    │
+│  │                                                                         │    │
+│  │  ┌──────────────────────────────────────┬───────────────────────────┐   │    │
+│  │  │████████████████████████████████████████│░░░░░░░░░░░░░░░░░░░░░░░░░│   │    │
+│  │  └──────────────────────────────────────┴───────────────────────────┘   │    │
+│  │  [filled: #EA2C00, 66% width]           [unfilled: #E0E0E0]           │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐   │    │
+│  │  │                                                                 │   │    │
+│  │  │  Adoption measures how many providers consistently use AI       │   │    │
+│  │  │  documentation. When adoption is below 60%, it typically        │   │    │
+│  │  │  indicates workflow friction rather than a technology problem.  │   │    │
+│  │  │                                                                 │   │    │
+│  │  └─────────────────────────────────────────────────────────────────┘   │    │
+│  │  [Background: #F5F0EB, 11px, #666666]                                  │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [Card: white background, thin border #E0E0E0]                                  │
+│                                                                                 │
+│  [Repeat for all four dimensions]                                               │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+COPY CHANGES PER DIMENSION:
+
+Adoption (was "Utilization"):
+"Adoption measures how many providers consistently use AI documentation. 
+When adoption is below 60%, it typically indicates workflow friction rather 
+than a technology problem."
+
+Efficiency:
+"Per-encounter documentation time reduction. When providers report lower 
+savings, it often reflects workflow friction—editing time, integration gaps, 
+or notes that don't match their clinical style."
+
+Quality (wRVU):
+"Better documentation captures clinical complexity more accurately. Higher 
+wRVU lift often indicates baseline documentation was incomplete. Lift within 
+the benchmark range with already-strong documentation is equally healthy."
+
+Provider Experience (was "Satisfaction"):
+"Provider experience is a leading indicator of sustained adoption. When 
+experience scores are low, adoption tends to follow. Understanding what's 
+driving the experience is essential to long-term value."
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 4: YOUR VALUE OPPORTUNITY (was "Understanding the Gap")
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Dark navy header
+- "Understanding the Gap" — we renamed this
+- Green value cards for $16K, $12K, $8K
+- Purple "3-YEAR PROJECTION" number
+- Pink callout box
+- "This isn't pressure; it's just arithmetic" — too cute, remove
+- "MONTHLY COST / of current gap" — negative framing
+
+REVISED:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  YOUR VALUE OPPORTUNITY                                                         │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  The Opportunity Ahead                                                          │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  This section quantifies the difference between your current performance        │
+│  and what mature implementations typically achieve. These are potential          │
+│  outcomes, not guarantees.                                                       │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  ANNUAL VALUE OPPORTUNITY                                                       │
+│  [11px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  Hero card (warm beige background):                                             │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ANNUAL VALUE OPPORTUNITY                                               │    │
+│  │  [11px, ALL CAPS, #666666]                                             │    │
+│  │                                                                         │    │
+│  │                     $36K                                                │    │
+│  │                     [56px, bold, #EA2C00]                              │    │
+│  │                                                                         │    │
+│  │  Potential additional value per year based on benchmark performance     │    │
+│  │  [12px, #666666, centered]                                             │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  This value is built from three components, each tied to a specific             │
+│  dimension:                                                                     │
+│  [12px, #333333]                                                                │
+│                                                                                 │
+│  Three stat cards:                                                              │
+│  ┌───────────────────────────┐  ┌───────────────────────────┐  ┌───────────┐   │
+│  │                           │  │                           │  │           │   │
+│  │  ADOPTION                 │  │  EFFICIENCY               │  │  QUALITY  │   │
+│  │  [10px, gray]             │  │  [10px, gray]             │  │           │   │
+│  │                           │  │                           │  │           │   │
+│  │  ┃ $16K                   │  │  ┃ $12K                   │  │  ┃ $8K    │   │
+│  │  ┃ [32px, #EA2C00, bold]  │  │  ┃ [32px, #EA2C00, bold]  │  │  ┃       │   │
+│  │                           │  │                           │  │           │   │
+│  │  from higher adoption     │  │  from time savings        │  │  from     │   │
+│  │  [10px, gray]             │  │  [10px, gray]             │  │  wRVU     │   │
+│  │                           │  │                           │  │  capture  │   │
+│  └───────────────────────────┘  └───────────────────────────┘  └───────────┘   │
+│  [Warm beige cards, red-orange left border]                                     │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Callout box:                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  How to Read This                                                    │    │
+│  │  ┃                                                                      │    │
+│  │  ┃  These aren't guaranteed outcomes—they're what the math suggests     │    │
+│  │  ┃  based on benchmark performance. The actual path to capturing this   │    │
+│  │  ┃  value depends on addressing the specific factors in your            │    │
+│  │  ┃  implementation. The next page breaks down the calculations.         │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB background, #EA2C00 left border]                                      │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  THE TIMELINE                                                                   │
+│  [22px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Value grows as implementation matures. Earlier action accelerates              │
+│  value capture.                                                                 │
+│  [12px, #666666]                                                                │
+│                                                                                 │
+│  Three stat cards:                                                              │
+│  ┌───────────────────────────┐  ┌───────────────────────────┐  ┌───────────┐   │
+│  │                           │  │                           │  │           │   │
+│  │  MONTHLY OPPORTUNITY      │  │  3-YEAR PROJECTION        │  │  ROOM TO  │   │
+│  │                           │  │                           │  │  GROW     │   │
+│  │  $3K                      │  │  $100K                    │  │           │   │
+│  │  [32px, bold, #1A1A1A]    │  │  [32px, bold, #1A1A1A]    │  │  41%      │   │
+│  │                           │  │                           │  │           │   │
+│  │  potential value          │  │  cumulative               │  │  remaining│   │
+│  │  per month                │  │                           │  │  potential │   │
+│  │                           │  │                           │  │           │   │
+│  └───────────────────────────┘  └───────────────────────────┘  └───────────┘   │
+│  [Warm beige cards, NO green, NO purple]                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+COPY CHANGES:
+- Remove "This isn't pressure; it's just arithmetic"
+- Change "MONTHLY COST / of current gap" → "MONTHLY OPPORTUNITY / potential value per month"
+- Change "TOTAL ANNUAL DIFFERENCE" → "ANNUAL VALUE OPPORTUNITY"
+- Change "The value difference between your current state and benchmark" → 
+  "Potential additional value per year based on benchmark performance"
+- Change "Every month that passes is another month the gap exists" → 
+  "Value grows as implementation matures. Earlier action accelerates value capture."
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 5: THE MATH (was "The Math Behind the Numbers")
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Dark navy header
+- NaN% showing for conversion rates and attribution rates — THIS IS A BUG
+- Green/red-orange mixed value colors
+- Copy says "If something looks wrong, you can challenge it" — soften
+
+REVISED:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  TRANSPARENCY                                                                   │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  The Math                                                                       │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Every number traces back to your inputs and clearly stated assumptions.        │
+│  Adjust any value to match your organization's reality.                         │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  CALCULATION BREAKDOWN                                                          │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  Calculation cards:                                                             │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Adoption Opportunity                                       $16K        │    │
+│  │  [16px, bold, #1A1A1A]                              [24px, #EA2C00]    │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  1. Your adoption: 50% → Benchmark: 76% = 26 point gap                 │    │
+│  │  2. Additional encounters at benchmark: 6,500                           │    │
+│  │  3. Time value: 6,500 × 4 min × $150/hr × 25% conversion               │    │
+│  │  4. Annual value: $16K                                                  │    │
+│  │                                                                         │    │
+│  │  [12px, #333333, line height 1.8]                                      │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [White card, thin border #E0E0E0, left border 3px #EA2C00]                     │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Efficiency Opportunity                                     $12K        │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  1. Your time saved: 2.5 min → Benchmark: 4 min = 1.5 min gap          │    │
+│  │  2. Encounters with AI: 19,000 (at 76% adoption)                        │    │
+│  │  3. Additional hours saved: 475 hours/year                              │    │
+│  │  4. Value: 475 hours × $150/hr × 17% conversion = $12K                  │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  Documentation Quality Opportunity (wRVU)                   $8K         │    │
+│  │                                                                         │    │
+│  │  ─────────────────────────────────────────────────────────────────────  │    │
+│  │                                                                         │    │
+│  │  1. Your wRVU lift: +4% → Benchmark: +5.5% = 1.5% gap                  │    │
+│  │  2. Base wRVU: 1.5 per encounter × 19,000 encounters                    │    │
+│  │  3. Additional wRVU from improved documentation: 428 wRVUs              │    │
+│  │  4. Value: 428 wRVUs × $33/wRVU × 60% realization = $8K                │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  KEY ASSUMPTIONS                                                                │
+│  [11px, ALL CAPS, #666666]                                                      │
+│                                                                                 │
+│  Two-column layout:                                                             │
+│                                                                                 │
+│  YOUR INPUTS                            VALUE ASSUMPTIONS                       │
+│  [11px, ALL CAPS, #666666]              [11px, ALL CAPS, #666666]              │
+│                                                                                 │
+│  • 10 providers                         • Provider cost: $150/hour              │
+│  • 25,000 annual encounters             • wRVU value: $33                       │
+│  • 50% adoption rate                    • Time conversion: 25%                  │
+│  • 2.5 min saved/encounter              • wRVU realization: 60%                 │
+│  • +4% wRVU lift                                                                │
+│  • 30% would recommend                                                          │
+│                                                                                 │
+│  [12px, #333333]                        [12px, #333333]                         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+CRITICAL BUG FIX:
+- Fix NaN% values in calculations — these should show the actual conversion 
+  rates (25% for time conversion, 60% for wRVU realization, etc.)
+- The NaN suggests the values aren't being passed to the PDF generation correctly
+- Ensure all calculation values from the web app are properly passed to PDF
+
+COPY CHANGES:
+- "Utilization Opportunity" → "Adoption Opportunity"
+- "If something looks wrong, you can challenge it" → "Adjust any value to match your organization's reality"
+- Fix NaN% to show actual values (25%, 17%, 60% etc.)
+- "Quality Opportunity (wRVU)" → "Documentation Quality Opportunity (wRVU)"
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 6: PATTERNS (was "What We've Seen Work")
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Dark navy header
+- Dark navy numbered circles
+- Pink callout box
+- "The Bottom Line" callout is slightly too salesy
+
+REVISED:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  PATTERNS                                                                       │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  What We've Seen Work                                                           │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Across hundreds of ambient AI implementations, these patterns                  │
+│  consistently influence outcomes.                                               │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Pattern cards with numbered circles:                                           │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┌───┐                                                                  │    │
+│  │  │ 1 │  Adoption Is a Human Challenge                                   │    │
+│  │  └───┘  [16px, bold, #1A1A1A]                                          │    │
+│  │  [circle: #F5F0EB bg, #1A1A1A text]                                    │    │
+│  │                                                                         │    │
+│  │  Change management isn't a phase—it's ongoing. The most effective       │    │
+│  │  implementations have dedicated resources for provider onboarding,      │    │
+│  │  feedback loops, and continuous improvement.                             │    │
+│  │  [12px, #333333]                                                        │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┌───┐                                                                  │    │
+│  │  │ 2 │  Continuous Optimization Matters                                 │    │
+│  │  └───┘                                                                  │    │
+│  │                                                                         │    │
+│  │  Set-it-and-forget-it doesn't work. Mature implementations review       │    │
+│  │  performance regularly, identify friction points, and make adjustments. │    │
+│  │  The tool improves because someone is paying attention.                  │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┌───┐                                                                  │    │
+│  │  │ 3 │  Deep Customization Drives Results                               │    │
+│  │  └───┘                                                                  │    │
+│  │                                                                         │    │
+│  │  Generic configurations miss the nuances of different specialties and   │    │
+│  │  workflows. Organizations that invest in specialty-specific workflows   │    │
+│  │  see meaningfully higher adoption and satisfaction.                      │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │                                                                         │    │
+│  │  ┌───┐                                                                  │    │
+│  │  │ 4 │  Executive Visibility Sustains Momentum                          │    │
+│  │  └───┘                                                                  │    │
+│  │                                                                         │    │
+│  │  When leadership tracks ambient AI as a strategic initiative—not just   │    │
+│  │  an IT project—resources and attention follow. Executive sponsorship    │    │
+│  │  correlates strongly with sustained adoption.                           │    │
+│  │                                                                         │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ───────────────────────────────────────────────────────────────────────────    │
+│                                                                                 │
+│  Callout box:                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  The technology matters. But the approach to implementation,         │    │
+│  │  ┃  adoption, and ongoing optimization matters just as much.            │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB background, #EA2C00 left border]                                      │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+COPY CHANGES:
+- Pattern titles shortened and reframed:
+  1. "They Treat Adoption as a Human Challenge" → "Adoption Is a Human Challenge"
+  2. "They Optimize Continuously" → "Continuous Optimization Matters"
+  3. "They Customize Deeply" → "Deep Customization Drives Results"
+  4. "They Have Executive Visibility" → "Executive Visibility Sustains Momentum"
+- Removed "They" framing (too "us vs them")
+- Bottom Line: Remove "Organizations that partner with teams who understand 
+  these challenges..." (too salesy). Replace with simpler statement.
+
+NUMBER CIRCLES:
+- Background: #F5F0EB (warm beige) — NOT dark navy
+- Text: #1A1A1A (dark)
+- Border: none or very subtle #E0E0E0
+- Size: 32px diameter
+
+═══════════════════════════════════════════════════════════════════════════════════
+PAGE 7: YOUR SUMMARY (was "Your Analysis at a Glance")
+═══════════════════════════════════════════════════════════════════════════════════
+
+CURRENT PROBLEMS:
+- Dark navy header
+- Green benchmark cards with green borders/backgrounds
+- "MONTHLY COST / of current gap" — negative framing
+- Mixed color values (green for benchmark targets)
+- Pink callout box
+
+REVISED:
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                 │
+│  SUMMARY                                                                        │
+│  [11px, ALL CAPS, #EA2C00]                                                      │
+│                                                                                 │
+│  Your Complete Profile                                                          │
+│  [28px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Everything covered in this assessment, consolidated.                           │
+│  [14px, #666666]                                                                │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Top-level stats (four cards):                                                  │
+│                                                                                 │
+│  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────┐  ┌──────────┐ │
+│  │                   │  │                   │  │               │  │          │ │
+│  │  REALIZATION      │  │  ANNUAL           │  │  3-YEAR       │  │ MONTHLY  │ │
+│  │  SCORE            │  │  OPPORTUNITY      │  │  PROJECTION   │  │ OPPORT.  │ │
+│  │                   │  │                   │  │               │  │          │ │
+│  │  59%              │  │  $36K             │  │  $100K        │  │ $3K      │ │
+│  │  [32px, bold]     │  │  [32px, #EA2C00]  │  │  [32px, bold] │  │ [32px,   │ │
+│  │                   │  │                   │  │               │  │  #EA2C00]│ │
+│  │  Early Progress   │  │  potential value  │  │  cumulative   │  │ per month│ │
+│  │  [#EA2C00]        │  │                   │  │               │  │          │ │
+│  │                   │  │                   │  │               │  │          │ │
+│  └───────────────────┘  └───────────────────┘  └───────────────┘  └──────────┘ │
+│  [Warm beige cards #F5F0EB]                                                     │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Your Dimensions vs. Benchmark                                                  │
+│  [22px, bold, #1A1A1A]                                                          │
+│                                                                                 │
+│  Side-by-side comparison (two-column layout for each row):                      │
+│                                                                                 │
+│  ┌─────────────────────────────────┐  ┌─────────────────────────────────────┐   │
+│  │                                 │  │                                     │   │
+│  │  ADOPTION - YOU                 │  │  ADOPTION - BENCHMARK               │   │
+│  │  [10px, ALL CAPS, #666666]      │  │  [10px, ALL CAPS, #666666]          │   │
+│  │                                 │  │                                     │   │
+│  │  50%                            │  │  76%                                │   │
+│  │  [32px, bold, #1A1A1A]          │  │  [32px, bold, #EA2C00]              │   │
+│  │                                 │  │                                     │   │
+│  └─────────────────────────────────┘  └─────────────────────────────────────┘   │
+│  [Left card: #F5F0EB bg]              [Right card: white bg, left border        │
+│                                        3px #EA2C00]                             │
+│                                                                                 │
+│  [Repeat for Efficiency, Quality, Experience]                                   │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Callout box:                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │  ┃                                                                      │    │
+│  │  ┃  What This Means                                                     │    │
+│  │  ┃                                                                      │    │
+│  │  ┃  At 59%, you've made real progress. The opportunity ahead isn't      │    │
+│  │  ┃  about starting over—it's about understanding which specific         │    │
+│  │  ┃  factors are limiting value and addressing them. The answers are     │    │
+│  │  ┃  usually specific and actionable.                                    │    │
+│  │  ┃                                                                      │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│  [#F5F0EB background, #EA2C00 left border]                                      │
+│                                                                                 │
+│  ═══════════════════════════════════════════════════════════════════════════    │
+│                                                                                 │
+│  Disclaimer:                                                                    │
+│  This assessment is for planning purposes. All calculations are based on        │
+│  inputs provided and Abridge benchmark data. Actual results depend on           │
+│  implementation approach, organizational readiness, and clinical workflow        │
+│  factors.                                                                       │
+│  [10px, #999999, italic]                                                        │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+COPY CHANGES:
+- "MONTHLY COST / of current gap" → "MONTHLY OPPORTUNITY / per month"
+- Remove green from ALL benchmark cards — use white with red-orange left border
+- "YOU" cards: warm beige background
+- "BENCHMARK" cards: white background with #EA2C00 left border
+- "UTILIZATION" → "ADOPTION" everywhere
+- "SATISFACTION" → "EXPERIENCE" everywhere
+- Bottom callout: Remove "asking harder questions" (slightly aggressive). 
+  Replace with "understanding which specific factors are limiting value"
+- Remove "Which providers aren't using it? Where are notes being edited?" 
+  (too specific/accusatory for a PDF someone might share with leadership)
+
+IMPLEMENTATION CHECKLIST
+CopyPDF FIX CHECKLIST:
+
+═══════════════════════════════════════════════════════════════════════════════════
+COLORS (Critical — apply everywhere)
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Remove ALL dark navy (#1B2332) header banners — replace with white
+□ Remove ALL green (#4CAF50, #2E7D32, #A5D6A7) — replace with #EA2C00 or #E0E0E0
+□ Remove ALL orange/amber (#FF9800) progress bars — replace with #EA2C00
+□ Remove ALL purple (#7B1FA2) values — replace with #1A1A1A or #EA2C00
+□ Remove ALL pink/salmon (#FFF0F0) callout backgrounds — replace with #F5F0EB
+□ All accent colors should be #EA2C00 (red-orange)
+□ All card backgrounds should be #F5F0EB (warm beige) or white
+□ All progress bars: filled = #EA2C00, unfilled = #E0E0E0
+
+═══════════════════════════════════════════════════════════════════════════════════
+BUGS
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Fix NaN% in all calculations — ensure conversion rates pass to PDF correctly
+□ Ensure all dynamic values populate correctly
+
+═══════════════════════════════════════════════════════════════════════════════════
+COPY
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ "Utilization" → "Adoption" everywhere
+□ "Satisfaction" → "Experience" everywhere
+□ "MONTHLY COST / of current gap" → "MONTHLY OPPORTUNITY / per month"
+□ "TOTAL ANNUAL DIFFERENCE" → "ANNUAL VALUE OPPORTUNITY"
+□ "Understanding the Gap" → "The Opportunity Ahead"
+□ Remove "This isn't pressure; it's just arithmetic"
+□ Remove "If something looks wrong, you can challenge it"
+□ Fix all pattern titles (remove "They" framing)
+□ Soften bottom line copy on patterns page
+□ Update cover to white background with organization name
+
+═══════════════════════════════════════════════════════════════════════════════════
+STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════════
+
+□ Cover: White background, add organization name, add date
+□ Page 2: Remove navy banner, update metric labels
+□ Page 3: Remove navy banner, update bar colors
+□ Page 4: Remove navy banner, fix NaN, update labels
+□ Page 5: Remove navy banner, update number circles
+□ Page 6: Remove navy banner, remove green, update labels
+□ All pages: Ensure consistent warm beige for callouts/cards

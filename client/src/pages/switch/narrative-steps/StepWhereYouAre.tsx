@@ -167,7 +167,8 @@ export default function StepWhereYouAre({
             <FormattedNumberInput
               value={inputs.providers}
               onChange={(v) => updateInput("providers", v || 0)}
-              className="w-full text-right text-lg font-semibold text-[#1A1A1A] bg-transparent border-none focus:outline-none focus:ring-0"
+              className="w-full text-lg font-semibold text-[#1A1A1A] bg-white border border-[#D1D5DB] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
+              placeholder="e.g. 50"
               data-testid="input-providers"
             />
             <p className="text-[11px] text-[#999999] mt-1">Physicians, APPs, or other clinicians with AI access</p>
@@ -179,7 +180,8 @@ export default function StepWhereYouAre({
             <FormattedNumberInput
               value={inputs.annualEncounters}
               onChange={(v) => updateInput("annualEncounters", v || 0)}
-              className="w-full text-right text-lg font-semibold text-[#1A1A1A] bg-transparent border-none focus:outline-none focus:ring-0"
+              className="w-full text-lg font-semibold text-[#1A1A1A] bg-white border border-[#D1D5DB] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
+              placeholder="e.g. 100,000"
               data-testid="input-encounters"
             />
             <p className="text-[11px] text-[#999999] mt-1">Total visits where AI could be used for documentation</p>
