@@ -1,0 +1,463 @@
+REPLIT PROMPT:
+
+Update all nursing-specific labels, tooltips, and copy across 
+the entire app (Explore, Measure, and PDF exports) to accurately 
+reflect that Abridge supports targeted nursing workflows, not 
+all nursing documentation.
+
+═══════════════════════════════════════════════════════════════════════
+GLOBAL FIND & REPLACE (Nursing contexts only)
+═══════════════════════════════════════════════════════════════════════
+
+These changes apply ONLY when the care setting is "Nursing."
+Do not change these labels for Outpatient, ED, or Inpatient.
+
+LABEL CHANGES:
+
+1. "Utilization Rate" → "Workflow Adoption"
+   Everywhere this appears in nursing context:
+   - Data entry forms
+   - Presentation mode
+   - PDF exports
+   - What Changed page
+   - Value calculations display
+
+2. "Adoption Rate" → "Workflow Adoption"
+   Same — nursing context only
+
+3. "Providers on Abridge" → "Nurses on Supported Units"
+   In the nursing Partner Profile / deployment section
+
+4. "Total Providers" → "Total Nurse FTEs"
+   In nursing Partner Profile
+
+5. "Abridge Encounters" → "Abridge-Supported Workflows"
+   In nursing stat banners and calculation displays
+
+6. "Total Encounters" → "Total Eligible Workflows"
+   In nursing context only
+   Note: Keep "encounters" language for Outpatient, ED, Inpatient
+
+═══════════════════════════════════════════════════════════════════════
+TOOLTIP / HELPER TEXT ADDITIONS
+═══════════════════════════════════════════════════════════════════════
+
+ADD tooltips or small helper text below these fields when 
+care setting is Nursing:
+
+1. Workflow Adoption field:
+   Helper text: "Percentage of supported documentation 
+   workflows completed using Abridge (assessments, handoffs, 
+   shift documentation)"
+   [10px, #999999, below the input field]
+
+2. Time Saved per Shift field:
+   Helper text: "Time saved on Abridge-supported workflows 
+   per shift. Does not represent total documentation time."
+   [10px, #999999]
+
+3. Nurses on Supported Units field:
+   Helper text: "Nurses on units where Abridge is deployed 
+   for targeted documentation workflows."
+   [10px, #999999]
+
+4. Total Eligible Workflows field:
+   Helper text: "Annual count of documentation workflows 
+   Abridge supports (assessments, handoffs, shift summaries)."
+   [10px, #999999]
+
+═══════════════════════════════════════════════════════════════════════
+EXPLORE PATH — NURSING CARE SETTING
+═══════════════════════════════════════════════════════════════════════
+
+UPDATE the nursing input page labels:
+
+Current:
+┌─────────────────────────────────────────────────────────┐
+│  Staffed Beds              [___]                        │
+│  Nurse FTEs                [___]                        │
+│  Utilization Rate          [___] %                      │
+│  Time saved per shift      [___] min                    │
+└─────────────────────────────────────────────────────────┘
+
+Updated:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  YOUR UNIT PROFILE                                      │
+│                                                         │
+│  Staffed Beds              [___]                        │
+│  Nurse FTEs                [___]                        │
+│  Bed Occupancy             [___] %                      │
+│                                                         │
+│  ABRIDGE DEPLOYMENT                                     │
+│                                                         │
+│  Workflow Adoption         [___] %                      │
+│  Percentage of supported workflows completed            │
+│  using Abridge                                          │
+│  [10px, #999999]                                        │
+│                                                         │
+│  Time Saved per Shift      [___] min                    │
+│  On supported workflows (assessments, handoffs,         │
+│  shift documentation)                                   │
+│  [10px, #999999]                                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+MEASURE PATH — NURSING DATA ENTRY (Edit Mode)
+═══════════════════════════════════════════════════════════════════════
+
+When Nursing tab is selected, update the form:
+
+PARTNER PROFILE section:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  Organization Name         [_________________]          │
+│  Staffed Beds              [___]                        │
+│  Nurse FTEs                [___]                        │
+│  Nurses on Supported Units [___]                        │
+│  Total Nurse FTEs          [___]                        │
+│  Months on Abridge         [___]                        │
+│  Bed Occupancy             [___] %                      │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+TIME & EFFICIENCY section:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  TIME & EFFICIENCY              BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  Charting Time (min/shift)      [___]     [___]         │
+│  On supported workflows                                 │
+│  [10px, #999999]                                        │
+│                                                         │
+│  Overtime Hours/Week            [___]     [___]         │
+│                                                         │
+│  After-Shift Charting (min)     [___]     [___]         │
+│  Time spent charting after shift ends                   │
+│  [10px, #999999]                                        │
+│                                                         │
+│  Workflow Adoption              N/A       [___] %       │
+│  Of supported workflows                                 │
+│  [10px, #999999]                                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+QUALITY & RETENTION section:
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  QUALITY & RETENTION            BEFORE    WITH ABRIDGE  │
+│                                                         │
+│  Turnover Rate (%)              [___]     [___]         │
+│                                                         │
+│  Falls Rate (per 1,000)         [___]     [___]         │
+│  Track as directional — attribution is indirect         │
+│  [10px, #999999]                                        │
+│                                                         │
+│  HAPI Rate (per 1,000)          [___]     [___]         │
+│  Track as directional — attribution is indirect         │
+│  [10px, #999999]                                        │
+│                                                         │
+│  Nurse Satisfaction (%)         [___]     [___]         │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+MEASURE PATH — NURSING PRESENTATION MODE
+═══════════════════════════════════════════════════════════════════════
+
+The deployment stat bar for nursing should read:
+
+┌─────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                   │
+│                                                         │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐   │
+│  │  200     │ │  8 units │ │  72%     │ │  6 mo    │   │
+│  │  nurses  │ │  w/       │ │ workflow │ │  live    │   │
+│  │  on      │ │  Abridge │ │ adoption │ │          │   │
+│  │  supported│ │          │ │          │ │          │   │
+│  │  units   │ │          │ │          │ │          │   │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘   │
+│                                                         │
+│  200 of 450 total nurse FTEs on Abridge-supported units │
+│  [10px, #999999]                                        │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+The "WHAT WE MEASURED" table should use nursing-specific labels:
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  WHAT WE MEASURED                                       │
+│                                                         │
+│                         BEFORE       WITH ABRIDGE       │
+│  ─────────────────────────────────────────────────────  │
+│  TIME & EFFICIENCY                                      │
+│  Charting time/shift*    45 min       25 min            │
+│  Overtime hours/week     8.2 hrs      5.1 hrs           │
+│  After-shift charting    22 min       8 min             │
+│  Workflow adoption       N/A          72%               │
+│  ─────────────────────────────────────────────────────  │
+│  QUALITY & RETENTION                                    │
+│  Turnover rate           22%          18%               │
+│  Falls (per 1,000)       3.2          2.8               │
+│  HAPI (per 1,000)        1.8          1.5               │
+│  Nurse satisfaction      62%          78%               │
+│                                                         │
+│  * On supported workflows (assessments, handoffs,       │
+│    shift documentation)                                 │
+│  [8.5px, #999999]                                       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+MEASURE PATH — NURSING "WHAT CHANGED" PAGE
+═══════════════════════════════════════════════════════════════════════
+
+The before/after bars for nursing should use these labels:
+
+Bar 1: Charting Time
+- Left micro-insight: "20 min saved per shift"
+- Right micro-insight: "On supported workflows"
+- Below: "Per nurse: [X] hours saved over [X] months"
+  [12px, #999999]
+
+Bar 2: Overtime
+- Left: "[X] hrs/wk reduced"
+- Right: "Shifts finishing on time"
+
+Bar 3: After-Shift Charting
+- Left: "[X] min reduction"
+- Right: "Charting completed during shift"
+
+Bar 4: Nurse Satisfaction
+- Left: "+[X] percentage points"
+- Right: "Documentation burden reduced"
+
+The utilization headroom callout for nursing:
+
+┌─────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                   │
+│                                                         │
+│  ┃ AT 72% WORKFLOW ADOPTION                              │
+│  ┃                                                       │
+│  ┃ These results reflect nurses using Abridge for 72%    │
+│  ┃ of supported documentation workflows. Increasing      │
+│  ┃ adoption to 85% captures more value from units that   │
+│  ┃ already have access.                                  │
+│  ┃                                                       │
+│  ┃ As Abridge expands to additional nursing workflows,   │
+│  ┃ time savings per shift will increase proportionally.  │
+│  ┃ [12px, #666666]                                       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+NURSING VALUE PAGE — COPY UPDATES
+═══════════════════════════════════════════════════════════════════════
+
+The headline section for nursing value page:
+
+Current generic:
+"[X] hours reclaimed. Here's what that translates to."
+
+Nursing-specific:
+"[X] hours reclaimed from supported workflows. Here's 
+where that time goes for your organization."
+
+The value driver labels should distinguish direct vs potential:
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  LABOR ECONOMICS                                        │
+│  [9px, ALL CAPS, #EA2C00]                               │
+│  Direct, measurable value                               │
+│  [10px, #666666]                                        │
+│                                                         │
+│  ┃ Overtime Reduction                        $[X]       │
+│  ┃ [X] hours × [X]% OT conversion × $[X]/hr¹           │
+│                                                         │
+│  ┃ Retention Savings                         $[X]       │
+│  ┃ [X] FTEs × [X]% turnover × [X]% burnout             │
+│  ┃ × [X]% Abridge impact × $[X] replacement²           │
+│                                                         │
+│  ┃ Agency Avoidance                          $[X]       │
+│  ┃ [X] nurses retained × [X] wks × $[X]/wk³            │
+│                                                         │
+│  Labor Economics Subtotal                    $[X]       │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  CARE QUALITY POTENTIAL                                  │
+│  [9px, ALL CAPS, #666666]                               │
+│  Indirect — documentation supports, doesn't cause       │
+│  [10px, #999999]                                        │
+│                                                         │
+│  ┃ HAPI Prevention (potential)               $[X]       │
+│  ┃ [X] events × [X]% doc-preventable × $[X]⁴           │
+│                                                         │
+│  ┃ Falls Prevention (potential)              $[X]       │
+│  ┃ [X] events × [X]% doc-preventable × $[X]⁵           │
+│                                                         │
+│  ┃ Patient Experience (HCAHPS)          Not dollarized  │
+│  ┃ Track as directional indicator                       │
+│                                                         │
+│  Care Quality Potential                      $[X]       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+The total should clearly separate the two:
+
+┌─────────────────────────────────────────────────────────┐
+│  [#F5F0EB background]                                   │
+│                                                         │
+│  ESTIMATED ANNUAL VALUE                                 │
+│                                                         │
+│  $[X]               Per nurse: ~$[X]/year               │
+│  [28px, #EA2C00]    [10px, #666666]                     │
+│                                                         │
+│  Labor economics: $[X]                                  │
+│  Care quality potential: $[X]                           │
+│  [10px, #666666]                                        │
+│                                                         │
+│  Labor economics value is directly measurable.          │
+│  Care quality value requires clinical practice to       │
+│  realize — shown separately for transparency.           │
+│  [8.5px, #999999]                                       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+PDF EXPORTS — NURSING SPECIFIC UPDATES
+═══════════════════════════════════════════════════════════════════════
+
+In ALL nursing PDF exports (Explore and Measure), add this 
+context statement on the first content page:
+
+┌─────────────────────────────────────────────────────────┐
+│  ┃ SCOPE                                                │
+│  ┃                                                      │
+│  ┃ Abridge currently supports targeted nursing           │
+│  ┃ documentation workflows — assessments, handoffs,      │
+│  ┃ and shift documentation. Time savings and value       │
+│  ┃ estimates reflect these supported workflows.          │
+│  ┃ As product scope expands to additional workflows,     │
+│  ┃ value scales proportionally within the same           │
+│  ┃ infrastructure investment.                            │
+│  ┃                                                      │
+└─────────────────────────────────────────────────────────┘
+[#F5F0EB bg, #EA2C00 left border, 9px, placed after 
+ the org summary / deployment stats on page 1]
+
+In the methodology section of nursing PDFs, add:
+
+"Time savings are calculated on Abridge-supported 
+workflows only. Total nursing documentation burden 
+(25-35% of shift time) is broader than current 
+Abridge scope. Values reflect conservative estimates 
+within supported workflows."
+[8.5px, #999999]
+
+In the nursing PDF footer, update center text:
+"[Org Name] · Nursing Value Assessment"
+(not "Nursing ROI" or similar)
+
+═══════════════════════════════════════════════════════════════════════
+METHODOLOGY PAGE — NURSING SPECIFIC
+═══════════════════════════════════════════════════════════════════════
+
+The existing nursing methodology PDF (3 pages) is excellent.
+Keep the content. But add one paragraph to "THE CONTEXT" 
+section at the top:
+
+ADD after the first paragraph:
+
+"Abridge currently supports targeted nursing documentation 
+workflows — primarily assessments, handoffs, and shift 
+summaries. This represents a significant portion of 
+documentation burden but not all of it. Time savings in 
+this model reflect the supported workflows. As Abridge 
+expands to additional nursing workflows (care plans, 
+discharge documentation, real-time charting), the value 
+model scales proportionally."
+
+Also update the "CONNECTED VALUE" section to add:
+
+"This scope-specific approach means the model is 
+conservative by design. Organizations with broader 
+Abridge nursing deployment will see proportionally 
+higher time savings and downstream value."
+
+═══════════════════════════════════════════════════════════════════════
+EXPANSION NARRATIVE — NURSING SPECIFIC
+═══════════════════════════════════════════════════════════════════════
+
+On the "Path Ahead" or expansion page, nursing gets a 
+THIRD layer that the other settings don't have:
+
+LAYER 1: DEEPEN (increase workflow adoption)
+"72% → 85% on current workflows = +$[X]/year"
+
+LAYER 2: EXPAND (more units / nurses)  
+"200 → 450 nurses on supported units = +$[X]/year"
+
+LAYER 3: BROADEN (new — nursing only)
+"As Abridge expands to additional nursing workflows, 
+time savings per shift increase. Current: 20 min/shift 
+on assessments and handoffs. With care plans and 
+discharge docs: projected 35-45 min/shift."
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│  LAYER 3: BROADEN                                       │
+│  More workflows per nurse                               │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │                                                 │    │
+│  │  TODAY                  →    WITH EXPANDED       │    │
+│  │                              WORKFLOWS          │    │
+│  │                                                 │    │
+│  │  Assessments,                + Care plans        │    │
+│  │  handoffs, shift             + Discharge docs    │    │
+│  │  documentation               + Real-time charting│    │
+│  │                                                 │    │
+│  │  20 min/shift saved          35-45 min/shift    │    │
+│  │                              (projected)        │    │
+│  │                                                 │    │
+│  │  Same infrastructure. More value per nurse.     │    │
+│  │  [12px, #666666]                                │    │
+│  │                                                 │    │
+│  └─────────────────────────────────────────────────┘    │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+This is only for nursing. The other care settings don't 
+need this because their scope is already broad 
+(full encounter documentation).
+
+═══════════════════════════════════════════════════════════════════════
+IMPLEMENTATION NOTES
+═══════════════════════════════════════════════════════════════════════
+
+1. All changes are conditional on careSetting === "nursing"
+   Do NOT change labels for other care settings
+
+2. The helper text / tooltips should be persistent (always 
+   visible below the field), not hover-only. Nursing users 
+   need to see the scope context at all times.
+
+3. In the PDF, the SCOPE callout should appear on page 1 
+   of every nursing PDF, regardless of path (Explore or 
+   Measure). It's a trust signal.
+
+4. The "Care Quality Potential" section should always be 
+   visually separated from "Labor Economics" with a clear 
+   divider and different label styling (#666666 instead of 
+   #EA2C00) to signal "this is different."
+
+5. The word "potential" should appear with every care quality 
+   metric. Never just "$50K from falls prevention." Always 
+   "$50K falls prevention (potential)."
+
+6. HCAHPS should never be dollarized. Always: 
+   "Track as directional indicator" or "Not dollarized."

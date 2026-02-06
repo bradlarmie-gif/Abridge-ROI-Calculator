@@ -342,7 +342,8 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const timeTotal = timeDrivers.reduce((s, d) => s + safe(d.value), 0);
   const docTotal = docDrivers.reduce((s, d) => s + safe(d.value), 0);
 
-  const unitCount = data.careSetting === "nursing" ? (data.nursingStaffedBeds || data.providers) : data.providers;
+  const isNursing = data.careSetting === "nursing";
+  const unitCount = isNursing ? (data.nursingStaffedBeds || data.providers) : data.providers;
   const perUnit = unitCount > 0 ? Math.round(data.netAnnualValue / unitCount) : 0;
 
   const year1Value = data.netAnnualValue;
@@ -409,12 +410,12 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
                 <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>{config.providerTypePlural}</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{fmtNum(data.encounters)}</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>encounters</Text>
+                <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{isNursing ? fmtNum(data.hoursReturned) : fmtNum(data.encounters)}</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>{isNursing ? "hours saved" : "encounters"}</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primaryText }}>{data.utilizationPercent}%</Text>
-                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>utilization</Text>
+                <Text style={{ fontSize: 8, color: colors.tertiary, marginTop: 2 }}>{isNursing ? "adoption" : "utilization"}</Text>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.background, padding: 8, borderRadius: 3, alignItems: "center" }}>
                 <Text style={{ fontSize: 14, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(data.annualInvestment)}</Text>
@@ -703,7 +704,7 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               {fmtNum(unitCount)} {config.providerTypePlural}.
             </Text>
             <Text style={{ fontSize: 18, color: colors.primaryText, marginBottom: 4 }}>
-              {fmtNum(data.encounters)} encounters.
+              {isNursing ? `${fmtNum(data.hoursReturned)} hours saved.` : `${fmtNum(data.encounters)} encounters.`}
             </Text>
             <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>
               {fmtCurrency(data.netAnnualValue)} projected net value.
@@ -813,9 +814,9 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
               </Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
                 {fmtNum(unitCount)} {config.providerTypePlural}{"\n"}
-                {fmtNum(data.encounters)} encounters{"\n"}
-                {data.utilizationPercent}% utilization{"\n"}
-                {data.minutesSavedPerEncounter} min saved{"\n"}
+                {isNursing ? `${fmtNum(data.hoursReturned)} hours saved` : `${fmtNum(data.encounters)} encounters`}{"\n"}
+                {data.utilizationPercent}% {isNursing ? "adoption" : "utilization"}{"\n"}
+                {isNursing ? "" : `${data.minutesSavedPerEncounter} min saved\n`}
                 {fmtCurrency(data.annualInvestment)} investment{"\n"}
                 {fmtNum(data.hoursReturned)} hrs returned
               </Text>
