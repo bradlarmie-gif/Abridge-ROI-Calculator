@@ -1,0 +1,216 @@
+Update the Nursing "Your Nursing Program" page (Page 1) with the following:
+
+═══════════════════════════════════════════════════════════════════════════════
+
+HEADER:
+Explore · Opportunity Size
+
+HEADLINE:
+YOUR NURSING PROGRAM
+
+SUBHEAD:
+Tell us about your starting point.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SECTION 1: DEPLOYMENT SIZE
+
+Label: DEPLOYMENT SIZE
+
+Two input fields side by side:
+
+┌─────────────────────────────────┐  ┌─────────────────────────────────┐
+│ Staffed Beds                    │  │ Nurse FTEs                      │
+│                                 │  │                                 │
+│ ┌─────────────────────────────┐ │  │ ┌─────────────────────────────┐ │
+│ │ e.g., 200                   │ │  │ │ e.g., 300                   │ │
+│ └─────────────────────────────┘ │  │ └─────────────────────────────┘ │
+│                                 │  │                                 │
+│ Licensed beds with active       │  │ Full-time equivalent nurses     │
+│ staffing                        │  │ in scope for Abridge            │
+└─────────────────────────────────┘  └─────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SECTION 2: BED OCCUPANCY
+
+Label: BED OCCUPANCY
+
+Slider:
+○──────────────────────────────●──────────────────○
+50%                            85%               100%
+
+Display value: 85%
+
+Helper text:
+Most hospitals run 75-90% occupancy. This determines patient days per year.
+
+Calculation preview (gray, smaller text):
+Patient days/year: 200 beds × 85% × 365 = 62,050
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SECTION 3: EXPECTED IMPACT (RENAMED FROM "EXPECTED UTILIZATION")
+
+Label: EXPECTED IMPACT
+
+Subhead (14px, gray):
+How much of your nursing documentation will Abridge realistically touch?
+
+Explanation box (warm beige background, 12px text):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  This isn't just about adoption—it's about coverage.                        │
+│                                                                             │
+│  Abridge won't cover every flowsheet or documentation task. And not every   │
+│  nurse will use it consistently. This rate accounts for both factors:       │
+│                                                                             │
+│  • Which nurses are actively using Abridge                                  │
+│  • Which documentation types Abridge supports in your implementation        │
+│                                                                             │
+│  A 40% impact rate means 40% of total nursing documentation time is         │
+│  touched by Abridge—that's your value multiplier.                           │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Scenario selector:
+
+Impact Rate                                           OR enter custom
+
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐     ┌───────────────┐
+│Conservative │  │   Typical   │  │ Optimistic  │     │           %   │
+│    25%      │  │    40%      │  │    55%      │     │               │
+└─────────────┘  └─────────────┘  └─────────────┘     └───────────────┘
+
+Helper text below scenarios:
+Impact typically starts at 25-35% in Year 1 and grows to 45-60% as adoption 
+increases and workflows mature.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OPTIONAL: WHAT AFFECTS IMPACT RATE?
+
+Expandable section (collapsed by default):
+
+[v] What affects this rate?
+
+When expanded:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  NURSE ADOPTION                           DOCUMENTATION COVERAGE            │
+│  What % of nurses actively use Abridge?   What % of doc tasks does          │
+│                                           Abridge support?                  │
+│  Factors:                                                                   │
+│  • Change management quality              • Implementation scope            │
+│  • Unit type (ICU vs. Med-Surg)           • Flowsheet integration          │
+│  • Shift patterns                         • Workflow configuration          │
+│  • Training effectiveness                 • EHR integration depth           │
+│                                                                             │
+│  Typical adoption: 50-70%                 Typical coverage: 40-60%          │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  EFFECTIVE IMPACT = Adoption × Coverage                                     │
+│                                                                             │
+│  Example: 60% adoption × 50% coverage = 30% effective impact                │
+│                                                                             │
+│  We simplify this into a single "Impact Rate" so you don't have to          │
+│  estimate both factors separately.                                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+RIGHT PANEL:
+
+┌─────────────────────────────────────────┐
+│                                         │
+│  YOUR BASELINE                          │
+│  Program summary                        │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Staffed Beds              [value]      │
+│  Nurse FTEs                [value]      │
+│  Occupancy Rate            [value]%     │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Patient Days/Year         [calc]       │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  Impact Rate               [value]%     │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  ELIGIBLE DOCUMENTATION TIME            │
+│                                         │
+│  [calculated value]                     │
+│  hours / year                           │
+│                                         │
+│  This is the nursing documentation      │
+│  time Abridge will realistically        │
+│  touch—your value multiplier.           │
+│                                         │
+│  ─────────────────────────────────────  │
+│                                         │
+│  [ Continue → ]                         │
+│                                         │
+└─────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CALCULATIONS:
+
+// Patient Days
+patientDaysPerYear = staffedBeds * 365 * (occupancyRate / 100)
+
+// Annual Shifts (each nurse works ~260 shifts/year)
+annualShifts = nurseFTEs * 260
+
+// Base documentation time (assume 2 hours/shift average)
+baseDocTimePerShift = 2 // hours
+totalAnnualDocTime = annualShifts * baseDocTimePerShift
+
+// Eligible documentation time (what Abridge touches)
+eligibleDocTime = totalAnnualDocTime * (impactRate / 100)
+
+// This becomes the input for Time Savings page
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DEFAULTS:
+
+| Input              | Default              |
+|--------------------|----------------------|
+| Staffed Beds       | (no default - required) |
+| Nurse FTEs         | (no default - required) |
+| Occupancy Rate     | 85%                  |
+| Impact Rate        | No default until selected |
+| Conservative       | 25%                  |
+| Typical            | 40%                  |
+| Optimistic         | 55%                  |
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STYLING:
+
+- Explanation box: warm beige background (#F5F0EB), 12px text, 16px padding
+- Scenario buttons: same as other settings (selected = red-orange fill)
+- Helper text: 12px, gray (#666666)
+- Calculation preview: 11px, gray, italic
+- Expandable section: subtle, doesn't distract from main flow
+- Right panel: dark background (#1A1A1A), sticky
+
+THE KEY CHANGES
+BeforeAfter"Expected Utilization""Expected Impact""Utilization Rate""Impact Rate"40% / 55% / 60% defaults25% / 40% / 55% defaultsNo explanation of what it meansClear explanation that it's adoption × coverage"Eligible Shifts" output"Eligible Documentation Time" output
+
+WHY THIS IS BETTER
+
+Honest about complexity — Nursing isn't like outpatient where utilization is straightforward
+Accounts for partial coverage — Abridge doesn't touch all flowsheets, and the user knows we know that
+Lower, more realistic defaults — 25/40/55% is more believable than 40/55/60%
+Single input, explained well — We don't make them guess at adoption AND coverage separately
+Better output metric — "Eligible Documentation Time" is more meaningful than "Eligible Shifts"
+
