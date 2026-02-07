@@ -7,9 +7,9 @@ interface SplashScreenProps {
   onEnter: () => void;
 }
 
-const COLS = 8;
-const ROWS = 7;
-const SHAPE_SIZE = 56;
+const COLS = 7;
+const ROWS = 6;
+const SHAPE_SIZE = 72;
 const PEAK_OPACITY = 0.50;
 
 function seededRandom(seed: number): number {
