@@ -9,8 +9,8 @@ interface SplashScreenProps {
 
 const COLS = 9;
 const ROWS = 8;
-const SHAPE_SIZE = 32;
-const PEAK_OPACITY = 0.30;
+const SHAPE_SIZE = 48;
+const PEAK_OPACITY = 0.50;
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 127.1 + seed * 311.7) * 43758.5453;
@@ -54,7 +54,7 @@ const gridData = buildGrid();
 const maxDist = Math.max(...gridData.map(s => s.dist));
 
 const SWEEP_DURATION = 2.875;
-const PAUSE_DURATION = 2.3;
+const PAUSE_DURATION = 1.0;
 const TOTAL_CYCLE = SWEEP_DURATION + PAUSE_DURATION;
 const PULSE_WIDTH_PCT = 12;
 
@@ -97,7 +97,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
               width: `${SHAPE_SIZE}px`,
               top: s.top,
               left: s.left,
-              filter: 'grayscale(100%) brightness(0.8)',
+              filter: 'grayscale(100%) brightness(1.0)',
               opacity: 0,
               transform: `rotate(${s.rotate}deg)`,
               animation: `pulse${i} ${TOTAL_CYCLE}s ease-in-out infinite`,
