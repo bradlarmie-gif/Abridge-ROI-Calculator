@@ -45,7 +45,7 @@ function QuarterCircle({ size, rotation, opacity }: { size: number; rotation: nu
       style={{ opacity }}
     >
       <path
-        d="M 0 0 L 100 0 Q 100 100 0 100 Z"
+        d="M 0 0 L 100 0 L 100 100 L 100 100 Q 0 100 0 0 Z"
         fill="white"
         transform={`rotate(${rotation} 50 50)`}
       />
