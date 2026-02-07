@@ -7,12 +7,10 @@ interface SplashScreenProps {
   onEnter: () => void;
 }
 
-const greyFilter = 'grayscale(100%) brightness(0.6)';
-
 const COLS = 9;
 const ROWS = 8;
 const SHAPE_SIZE = 32;
-const PEAK_OPACITY = 0.15;
+const PEAK_OPACITY = 0.30;
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 127.1 + seed * 311.7) * 43758.5453;
@@ -55,10 +53,10 @@ function buildGrid(): GridShape[] {
 const gridData = buildGrid();
 const maxDist = Math.max(...gridData.map(s => s.dist));
 
-const SWEEP_DURATION = 2.0;
-const PAUSE_DURATION = 2.5;
+const SWEEP_DURATION = 2.5;
+const PAUSE_DURATION = 2.0;
 const TOTAL_CYCLE = SWEEP_DURATION + PAUSE_DURATION;
-const PULSE_WIDTH_PCT = 8;
+const PULSE_WIDTH_PCT = 12;
 
 function generateCSS(): string {
   let css = '';
@@ -67,16 +65,16 @@ function generateCSS(): string {
     const normalizedDist = s.dist / maxDist;
     const peakPct = (normalizedDist * SWEEP_DURATION / TOTAL_CYCLE) * 100;
     const startPct = Math.max(0, peakPct - PULSE_WIDTH_PCT);
-    const endPct = Math.min(100, peakPct + PULSE_WIDTH_PCT);
-    const shapeOpacity = PEAK_OPACITY * (0.7 + seededRandom(i * 17) * 0.3);
+    const endPct = Math.min(99, peakPct + PULSE_WIDTH_PCT);
+    const shapeOpacity = PEAK_OPACITY * (0.75 + seededRandom(i * 17) * 0.25);
 
     css += `
       @keyframes pulse${i} {
-        0%              { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
-        ${startPct.toFixed(1)}%  { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
-        ${peakPct.toFixed(1)}%   { opacity: ${shapeOpacity.toFixed(3)}; transform: rotate(${r}deg) scale(1); }
-        ${endPct.toFixed(1)}%    { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
-        100%            { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
+        0%              { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
+        ${startPct.toFixed(1)}%  { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
+        ${peakPct.toFixed(1)}%   { opacity: ${shapeOpacity.toFixed(3)}; transform: rotate(${r}deg) scale(1.05); }
+        ${endPct.toFixed(1)}%    { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
+        100%            { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
       }
     `;
   });
@@ -99,7 +97,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
               width: `${SHAPE_SIZE}px`,
               top: s.top,
               left: s.left,
-              filter: greyFilter,
+              filter: 'grayscale(100%) brightness(0.8)',
               opacity: 0,
               transform: `rotate(${s.rotate}deg)`,
               animation: `pulse${i} ${TOTAL_CYCLE}s ease-in-out infinite`,
