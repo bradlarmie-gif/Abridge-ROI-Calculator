@@ -12,9 +12,7 @@ const greyFilter = 'grayscale(100%) brightness(0.6)';
 const COLS = 9;
 const ROWS = 8;
 const SHAPE_SIZE = 32;
-const PEAK_OPACITY = 0.13;
-const WAVE_SPEED = 0.12;
-const WAVE_DURATION = 0.6;
+const PEAK_OPACITY = 0.15;
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 127.1 + seed * 311.7) * 43758.5453;
@@ -27,9 +25,7 @@ interface GridShape {
   left: string;
   top: string;
   rotate: number;
-  waveDelay: number;
-  twinkleDelay: number;
-  twinkleDur: number;
+  dist: number;
 }
 
 function buildGrid(): GridShape[] {
@@ -49,66 +45,68 @@ function buildGrid(): GridShape[] {
         left: `${left.toFixed(1)}%`,
         top: `${top.toFixed(1)}%`,
         rotate: Math.floor(seededRandom(seed * 7) * 360),
-        waveDelay: dist * WAVE_SPEED,
-        twinkleDelay: seededRandom(seed * 11) * 3,
-        twinkleDur: 3 + seededRandom(seed * 13) * 4,
+        dist,
       });
     }
   }
   return grid;
 }
 
-function generateCSS(grid: GridShape[]): string {
+const gridData = buildGrid();
+const maxDist = Math.max(...gridData.map(s => s.dist));
+
+const SWEEP_DURATION = 2.0;
+const PAUSE_DURATION = 2.5;
+const TOTAL_CYCLE = SWEEP_DURATION + PAUSE_DURATION;
+const PULSE_WIDTH_PCT = 8;
+
+function generateCSS(): string {
   let css = '';
-  grid.forEach((s, i) => {
+  gridData.forEach((s, i) => {
     const r = s.rotate;
+    const normalizedDist = s.dist / maxDist;
+    const peakPct = (normalizedDist * SWEEP_DURATION / TOTAL_CYCLE) * 100;
+    const startPct = Math.max(0, peakPct - PULSE_WIDTH_PCT);
+    const endPct = Math.min(100, peakPct + PULSE_WIDTH_PCT);
+    const shapeOpacity = PEAK_OPACITY * (0.7 + seededRandom(i * 17) * 0.3);
+
     css += `
-      @keyframes wave${i} {
-        0%   { opacity: 0;              transform: rotate(${r}deg) scale(0.85); }
-        50%  { opacity: ${PEAK_OPACITY}; transform: rotate(${r}deg) scale(1); }
-        100% { opacity: 0;              transform: rotate(${r}deg) scale(0.95); }
-      }
-      @keyframes twinkle${i} {
-        0%, 100% { opacity: 0; }
-        15%      { opacity: ${(PEAK_OPACITY * (0.6 + seededRandom(i * 17) * 0.4)).toFixed(3)}; }
-        50%      { opacity: 0.02; }
-        65%      { opacity: ${(PEAK_OPACITY * (0.4 + seededRandom(i * 23) * 0.5)).toFixed(3)}; }
+      @keyframes pulse${i} {
+        0%              { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
+        ${startPct.toFixed(1)}%  { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
+        ${peakPct.toFixed(1)}%   { opacity: ${shapeOpacity.toFixed(3)}; transform: rotate(${r}deg) scale(1); }
+        ${endPct.toFixed(1)}%    { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
+        100%            { opacity: 0;   transform: rotate(${r}deg) scale(0.92); }
       }
     `;
   });
   return css;
 }
 
-const gridData = buildGrid();
-const gridCSS = generateCSS(gridData);
+const gridCSS = generateCSS();
 
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        {gridData.map((s, i) => {
-          const totalWaveEnd = s.waveDelay + WAVE_DURATION;
-          const twinkleStart = totalWaveEnd + s.twinkleDelay * 0.3;
-
-          return (
-            <img
-              key={i}
-              src={brandShape}
-              alt=""
-              className="absolute"
-              style={{
-                width: `${SHAPE_SIZE}px`,
-                top: s.top,
-                left: s.left,
-                filter: greyFilter,
-                opacity: 0,
-                transform: `rotate(${s.rotate}deg)`,
-                animation: `wave${i} ${WAVE_DURATION}s ease-in-out ${s.waveDelay}s 1, twinkle${i} ${s.twinkleDur}s ease-in-out ${twinkleStart.toFixed(2)}s infinite`,
-              }}
-              data-testid={`shape-bg-${i}`}
-            />
-          );
-        })}
+        {gridData.map((s, i) => (
+          <img
+            key={i}
+            src={brandShape}
+            alt=""
+            className="absolute"
+            style={{
+              width: `${SHAPE_SIZE}px`,
+              top: s.top,
+              left: s.left,
+              filter: greyFilter,
+              opacity: 0,
+              transform: `rotate(${s.rotate}deg)`,
+              animation: `pulse${i} ${TOTAL_CYCLE}s ease-in-out infinite`,
+            }}
+            data-testid={`shape-bg-${i}`}
+          />
+        ))}
       </div>
 
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
