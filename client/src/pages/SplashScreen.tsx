@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 import brandShape from "@assets/IMG_0419_1770480513063.png";
+import patternA from "@assets/pattern-9-a_1769391110218.png";
 
 interface SplashScreenProps {
   onEnter: () => void;
@@ -117,7 +118,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
         <div className="mb-12 flex justify-center">
           <img 
-            src={brandShape} 
+            src={patternA} 
             alt="Abridge" 
             className="w-24 md:w-32"
             style={{ 
