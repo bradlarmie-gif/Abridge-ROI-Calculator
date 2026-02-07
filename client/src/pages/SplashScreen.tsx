@@ -9,7 +9,7 @@ interface SplashScreenProps {
 
 const COLS = 9;
 const ROWS = 8;
-const SHAPE_SIZE = 48;
+const SHAPE_SIZE = 56;
 const PEAK_OPACITY = 0.50;
 
 function seededRandom(seed: number): number {
@@ -23,7 +23,12 @@ interface GridShape {
   left: string;
   top: string;
   rotate: number;
-  dist: number;
+  duration: number;
+  delay: number;
+  driftX: number;
+  driftY: number;
+  rotateAmt: number;
+  peakOpacity: number;
 }
 
 function buildGrid(): GridShape[] {
@@ -35,7 +40,13 @@ function buildGrid(): GridShape[] {
       const jitterY = (seededRandom(seed * 3) - 0.5) * 4;
       const left = ((c + 0.5) / COLS) * 100 + jitterX;
       const top = ((r + 0.5) / ROWS) * 100 + jitterY;
-      const dist = Math.sqrt(c * c + r * r);
+
+      const duration = 4 + seededRandom(seed * 11) * 4;
+      const delay = seededRandom(seed * 13) * -8;
+      const driftX = (seededRandom(seed * 5) - 0.5) * 16;
+      const driftY = (seededRandom(seed * 7) - 0.5) * 16;
+      const rotateAmt = (seededRandom(seed * 9) - 0.5) * 20;
+      const peakOpacity = PEAK_OPACITY * (0.6 + seededRandom(seed * 17) * 0.4);
 
       grid.push({
         col: c,
@@ -43,7 +54,12 @@ function buildGrid(): GridShape[] {
         left: `${left.toFixed(1)}%`,
         top: `${top.toFixed(1)}%`,
         rotate: Math.floor(seededRandom(seed * 7) * 360),
-        dist,
+        duration,
+        delay,
+        driftX,
+        driftY,
+        rotateAmt,
+        peakOpacity,
       });
     }
   }
@@ -51,30 +67,23 @@ function buildGrid(): GridShape[] {
 }
 
 const gridData = buildGrid();
-const maxDist = Math.max(...gridData.map(s => s.dist));
-
-const SWEEP_DURATION = 2.875;
-const PAUSE_DURATION = 1.0;
-const TOTAL_CYCLE = SWEEP_DURATION + PAUSE_DURATION;
-const PULSE_WIDTH_PCT = 12;
 
 function generateCSS(): string {
   let css = '';
   gridData.forEach((s, i) => {
     const r = s.rotate;
-    const normalizedDist = s.dist / maxDist;
-    const peakPct = (normalizedDist * SWEEP_DURATION / TOTAL_CYCLE) * 100;
-    const startPct = Math.max(0, peakPct - PULSE_WIDTH_PCT);
-    const endPct = Math.min(99, peakPct + PULSE_WIDTH_PCT);
-    const shapeOpacity = PEAK_OPACITY * (0.75 + seededRandom(i * 17) * 0.25);
+    const dx = s.driftX;
+    const dy = s.driftY;
+    const dr = s.rotateAmt;
+    const op = s.peakOpacity;
 
     css += `
-      @keyframes pulse${i} {
-        0%              { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
-        ${startPct.toFixed(1)}%  { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
-        ${peakPct.toFixed(1)}%   { opacity: ${shapeOpacity.toFixed(3)}; transform: rotate(${r}deg) scale(1.05); }
-        ${endPct.toFixed(1)}%    { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
-        100%            { opacity: 0; transform: rotate(${r}deg) scale(0.9); }
+      @keyframes float${i} {
+        0%   { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) rotate(${r}deg) scale(0.95); }
+        25%  { opacity: ${op.toFixed(3)}; transform: translate(${dx.toFixed(1)}px, ${(dy * 0.5).toFixed(1)}px) rotate(${(r + dr * 0.5).toFixed(1)}deg) scale(1.02); }
+        50%  { opacity: ${(op * 0.5).toFixed(3)}; transform: translate(${(dx * 0.3).toFixed(1)}px, ${dy.toFixed(1)}px) rotate(${(r + dr).toFixed(1)}deg) scale(0.98); }
+        75%  { opacity: ${op.toFixed(3)}; transform: translate(${(-dx * 0.5).toFixed(1)}px, ${(dy * 0.3).toFixed(1)}px) rotate(${(r + dr * 0.7).toFixed(1)}deg) scale(1.03); }
+        100% { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) rotate(${r}deg) scale(0.95); }
       }
     `;
   });
@@ -98,9 +107,9 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
               top: s.top,
               left: s.left,
               filter: 'grayscale(100%) brightness(1.0)',
-              opacity: 0,
+              opacity: s.peakOpacity * 0.3,
               transform: `rotate(${s.rotate}deg)`,
-              animation: `pulse${i} ${TOTAL_CYCLE}s ease-in-out infinite`,
+              animation: `float${i} ${s.duration.toFixed(1)}s ease-in-out ${s.delay.toFixed(1)}s infinite`,
             }}
             data-testid={`shape-bg-${i}`}
           />
