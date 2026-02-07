@@ -53,8 +53,8 @@ function buildGrid(): GridShape[] {
 const gridData = buildGrid();
 const maxDist = Math.max(...gridData.map(s => s.dist));
 
-const SWEEP_DURATION = 2.5;
-const PAUSE_DURATION = 2.0;
+const SWEEP_DURATION = 2.875;
+const PAUSE_DURATION = 2.3;
 const TOTAL_CYCLE = SWEEP_DURATION + PAUSE_DURATION;
 const PULSE_WIDTH_PCT = 12;
 
