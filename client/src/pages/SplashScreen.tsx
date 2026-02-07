@@ -7,8 +7,8 @@ interface SplashScreenProps {
   onEnter: () => void;
 }
 
-const COLS = 9;
-const ROWS = 8;
+const COLS = 8;
+const ROWS = 7;
 const SHAPE_SIZE = 56;
 const PEAK_OPACITY = 0.50;
 
@@ -45,7 +45,7 @@ function buildGrid(): GridShape[] {
       const delay = seededRandom(seed * 13) * -8;
       const driftX = (seededRandom(seed * 5) - 0.5) * 16;
       const driftY = (seededRandom(seed * 7) - 0.5) * 16;
-      const rotateAmt = (seededRandom(seed * 9) - 0.5) * 20;
+      const rotateAmt = 0;
       const peakOpacity = PEAK_OPACITY * (0.6 + seededRandom(seed * 17) * 0.4);
 
       grid.push({
@@ -53,7 +53,7 @@ function buildGrid(): GridShape[] {
         row: r,
         left: `${left.toFixed(1)}%`,
         top: `${top.toFixed(1)}%`,
-        rotate: Math.floor(seededRandom(seed * 7) * 360),
+        rotate: 0,
         duration,
         delay,
         driftX,
