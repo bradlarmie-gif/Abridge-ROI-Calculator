@@ -1,12 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
-import patternA from "@assets/pattern-9-a_1769391110218.png";
-import patternBridge from "@assets/pattern-10-bridge_1769391110219.png";
-import patternV from "@assets/pattern-3-v_1769391110218.png";
-import patternSemicircle from "@assets/pattern-4-semicircle_1769391110218.png";
-import patternQuarter from "@assets/pattern-8-quartercircle_1769391110218.png";
-import patternCorner from "@assets/pattern-2-corner_1769391110218.png";
+import brandShape from "@assets/IMG_0419_1770480513063.png";
 
 interface SplashScreenProps {
   onEnter: () => void;
@@ -19,7 +14,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <img 
-          src={patternV} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[120px] md:w-[168px] opacity-50"
           style={{ 
@@ -30,7 +25,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternCorner} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[144px] md:w-[216px] opacity-40"
           style={{ 
@@ -41,7 +36,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternQuarter} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[168px] md:w-[264px] opacity-45"
           style={{ 
@@ -52,7 +47,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternBridge} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[216px] md:w-[312px] opacity-35"
           style={{ 
@@ -63,7 +58,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternBridge} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[216px] md:w-[312px] opacity-35"
           style={{ 
@@ -74,7 +69,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternCorner} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[120px] md:w-[168px] opacity-30"
           style={{ 
@@ -85,7 +80,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternQuarter} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[120px] md:w-[192px] opacity-30"
           style={{ 
@@ -96,7 +91,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternA} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[96px] md:w-[144px] opacity-35"
           style={{ 
@@ -107,7 +102,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
           }}
         />
         <img 
-          src={patternSemicircle} 
+          src={brandShape} 
           alt="" 
           className="absolute w-[108px] md:w-[168px] opacity-30"
           style={{ 
@@ -122,7 +117,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
         <div className="mb-12 flex justify-center">
           <img 
-            src={patternA} 
+            src={brandShape} 
             alt="Abridge" 
             className="w-24 md:w-32"
             style={{ 
