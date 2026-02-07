@@ -10,109 +10,66 @@ interface SplashScreenProps {
 
 const greyFilter = 'grayscale(100%) brightness(0.6)';
 
+const shapes = [
+  { top: '4%',  left: '3%',   size: 44, rotate: 0,    opacity: 0.25, delay: 0.0,  breathDur: 5   },
+  { top: '7%',  left: '22%',  size: 36, rotate: 45,   opacity: 0.18, delay: 0.15, breathDur: 6   },
+  { top: '3%',  right: '15%', size: 52, rotate: 120,  opacity: 0.22, delay: 0.3,  breathDur: 7   },
+  { top: '6%',  right: '4%',  size: 40, rotate: 200,  opacity: 0.2,  delay: 0.1,  breathDur: 5.5 },
+  { top: '25%', left: '2%',   size: 48, rotate: 90,   opacity: 0.2,  delay: 0.45, breathDur: 6.5 },
+  { top: '30%', right: '5%',  size: 56, rotate: 270,  opacity: 0.18, delay: 0.6,  breathDur: 7.5 },
+  { top: '50%', left: '4%',   size: 42, rotate: 160,  opacity: 0.22, delay: 0.2,  breathDur: 5   },
+  { top: '55%', right: '3%',  size: 38, rotate: 30,   opacity: 0.2,  delay: 0.75, breathDur: 6   },
+  { top: '72%', left: '6%',   size: 50, rotate: 310,  opacity: 0.18, delay: 0.35, breathDur: 8   },
+  { top: '78%', left: '25%',  size: 34, rotate: 70,   opacity: 0.15, delay: 0.9,  breathDur: 5.5 },
+  { top: '80%', right: '8%',  size: 46, rotate: 240,  opacity: 0.2,  delay: 0.5,  breathDur: 7   },
+  { top: '12%', left: '42%',  size: 32, rotate: 135,  opacity: 0.12, delay: 1.05, breathDur: 6.5 },
+  { top: '88%', left: '48%',  size: 38, rotate: 180,  opacity: 0.15, delay: 0.65, breathDur: 5   },
+  { top: '40%', left: '12%',  size: 30, rotate: 15,   opacity: 0.14, delay: 1.2,  breathDur: 7   },
+  { top: '60%', right: '14%', size: 34, rotate: 290,  opacity: 0.16, delay: 0.8,  breathDur: 6   },
+];
+
+function generateKeyframes(): string {
+  let css = '';
+  shapes.forEach((s, i) => {
+    const r = s.rotate;
+    const o = s.opacity;
+    const dim = o * 0.4;
+    css += `
+      @keyframes enter${i} {
+        0%   { opacity: 0;   transform: rotate(${r}deg) scale(0.7); }
+        100% { opacity: ${o}; transform: rotate(${r}deg) scale(1); }
+      }
+      @keyframes breathe${i} {
+        0%, 100% { opacity: ${o}; }
+        50%      { opacity: ${dim.toFixed(3)}; }
+      }
+    `;
+  });
+  return css;
+}
+
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[120px] md:w-[168px] opacity-50"
-          style={{ 
-            top: '8%', 
-            left: '5%',
-            filter: greyFilter,
-            animation: 'splashFloat1 13s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[144px] md:w-[216px] opacity-40"
-          style={{ 
-            top: '5%', 
-            right: '8%',
-            filter: greyFilter,
-            animation: 'splashFloat2 16s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[168px] md:w-[264px] opacity-45"
-          style={{ 
-            bottom: '8%', 
-            left: '8%',
-            filter: greyFilter,
-            animation: 'splashFloat3 10s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[216px] md:w-[312px] opacity-35"
-          style={{ 
-            top: '35%', 
-            left: '3%',
-            filter: greyFilter,
-            animation: 'splashFloat5 18s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[216px] md:w-[312px] opacity-35"
-          style={{ 
-            top: '35%', 
-            right: '3%',
-            filter: greyFilter,
-            animation: 'splashFloat6 17s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[120px] md:w-[168px] opacity-30"
-          style={{ 
-            top: '70%', 
-            right: '20%',
-            filter: greyFilter,
-            animation: 'splashFloat8 12s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[120px] md:w-[192px] opacity-30"
-          style={{ 
-            top: '15%', 
-            right: '30%',
-            filter: greyFilter,
-            animation: 'splashFloat10 15s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[96px] md:w-[144px] opacity-35"
-          style={{ 
-            top: '45%', 
-            right: '25%',
-            filter: greyFilter,
-            animation: 'splashFloat11 16s ease-in-out infinite'
-          }}
-        />
-        <img 
-          src={brandShape} 
-          alt="" 
-          className="absolute w-[108px] md:w-[168px] opacity-30"
-          style={{ 
-            top: '75%', 
-            left: '45%',
-            filter: greyFilter,
-            animation: 'splashFloat13 17s ease-in-out infinite'
-          }}
-        />
+        {shapes.map((s, i) => (
+          <img
+            key={i}
+            src={brandShape}
+            alt=""
+            className="absolute"
+            style={{
+              width: `${s.size}px`,
+              top: s.top,
+              left: 'left' in s ? (s as any).left : undefined,
+              right: 'right' in s ? (s as any).right : undefined,
+              filter: greyFilter,
+              opacity: 0,
+              animation: `enter${i} 0.8s ease-out ${s.delay}s forwards, breathe${i} ${s.breathDur}s ease-in-out ${s.delay + 0.8}s infinite`,
+            }}
+            data-testid={`shape-bg-${i}`}
+          />
+        ))}
       </div>
 
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
@@ -149,74 +106,7 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
       </div>
 
       <style>{`
-        @keyframes splashFloat1 {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          15% { transform: translate(60px, -40px) rotate(8deg); }
-          35% { transform: translate(120px, 30px) rotate(-5deg); }
-          55% { transform: translate(80px, -80px) rotate(12deg); }
-          75% { transform: translate(-30px, -50px) rotate(-3deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat2 {
-          0% { transform: translate(0, 0) rotate(180deg); }
-          20% { transform: translate(-80px, 50px) rotate(190deg); }
-          45% { transform: translate(-140px, -30px) rotate(170deg); }
-          70% { transform: translate(-60px, -90px) rotate(185deg); }
-          100% { transform: translate(0, 0) rotate(180deg); }
-        }
-        @keyframes splashFloat3 {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          18% { transform: translate(90px, 60px) rotate(-8deg); }
-          36% { transform: translate(40px, -70px) rotate(6deg); }
-          54% { transform: translate(-50px, -120px) rotate(-12deg); }
-          72% { transform: translate(-100px, -40px) rotate(4deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat5 {
-          0% { transform: translate(0, 0); }
-          20% { transform: translate(80px, -60px); }
-          40% { transform: translate(140px, 20px); }
-          60% { transform: translate(100px, 80px); }
-          80% { transform: translate(30px, 50px); }
-          100% { transform: translate(0, 0); }
-        }
-        @keyframes splashFloat6 {
-          0% { transform: translate(0, 0) scaleX(-1); }
-          30% { transform: translate(-90px, -70px) scaleX(-1); }
-          60% { transform: translate(-50px, 60px) scaleX(-1); }
-          100% { transform: translate(0, 0) scaleX(-1); }
-        }
-        @keyframes splashFloat8 {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(70px, -100px) rotate(-12deg); }
-          50% { transform: translate(-40px, -140px) rotate(8deg); }
-          75% { transform: translate(-90px, -60px) rotate(-6deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat10 {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          20% { transform: translate(-80px, 40px) rotate(10deg); }
-          40% { transform: translate(-120px, -50px) rotate(-8deg); }
-          60% { transform: translate(-50px, -100px) rotate(15deg); }
-          80% { transform: translate(30px, -60px) rotate(-5deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat11 {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          28% { transform: translate(-90px, -80px) rotate(-15deg); }
-          56% { transform: translate(20px, -130px) rotate(10deg); }
-          84% { transform: translate(70px, -50px) rotate(-8deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
-        }
-        @keyframes splashFloat13 {
-          0% { transform: translate(0, 0); }
-          18% { transform: translate(-70px, 50px); }
-          36% { transform: translate(-110px, -40px); }
-          54% { transform: translate(-40px, -100px); }
-          72% { transform: translate(40px, -70px); }
-          90% { transform: translate(30px, -20px); }
-          100% { transform: translate(0, 0); }
-        }
+        ${generateKeyframes()}
         @keyframes splashLogoEnter {
           0% { 
             opacity: 0; 
