@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, CheckCircle, ChevronRight, Clock, Shield, RefreshCw, Monitor } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, CheckCircle, ChevronRight, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
@@ -224,32 +224,6 @@ export default function StepWhyThisHappens({
         </p>
       ),
     },
-    {
-      id: "contract-lock-in",
-      icon: Shield,
-      title: '"Contract lock-in"',
-      content: (
-        <p className="text-sm text-[#333333]">
-          Many contracts have flexibility. It's worth reviewing your terms alongside the potential value of a change.
-        </p>
-      ),
-    },
-    {
-      id: "it-bandwidth",
-      icon: Monitor,
-      title: '"IT bandwidth concerns"',
-      content: (
-        <>
-          <p className="text-sm text-[#333333]">
-            Our team is built to minimize IT burden. Most implementations require about:
-          </p>
-          <p className="text-xl font-bold text-[#EA2C00] mt-2">40 hours of IT time total.</p>
-          <p className="text-sm text-[#333333] mt-2">
-            That's one person for one week — not a multi-month project.
-          </p>
-        </>
-      ),
-    },
   ];
 
   return (
@@ -296,13 +270,6 @@ export default function StepWhyThisHappens({
           })}
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 text-center">
-          <p className="text-sm text-[#666666] mb-1">Typical timeline from decision to go-live:</p>
-          <p className="text-2xl font-bold text-[#EA2C00]" data-testid="text-45-days">45 days</p>
-          <p className="text-xs text-[#666666] mt-2">
-            This includes full data migration, EHR integration, provider training, and go-live support.
-          </p>
-        </div>
       </section>
 
       <div className="h-px bg-[#E5E7EB]" />
