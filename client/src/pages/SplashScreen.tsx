@@ -7,9 +7,7 @@ interface SplashScreenProps {
   onEnter: () => void;
 }
 
-const COLS = 4;
-const ROWS = 4;
-const SHAPE_SIZE = 168;
+const SHAPE_SIZE = 200;
 const PEAK_OPACITY = 0.50;
 
 function seededRandom(seed: number): number {
@@ -18,52 +16,44 @@ function seededRandom(seed: number): number {
 }
 
 interface GridShape {
-  col: number;
-  row: number;
   left: string;
   top: string;
-  rotate: number;
   duration: number;
   delay: number;
   driftX: number;
   driftY: number;
-  rotateAmt: number;
   peakOpacity: number;
 }
 
+const EDGE_POSITIONS: [number, number][] = [
+  [5, 5],    [35, 3],    [65, 3],    [92, 5],
+  [3, 35],                            [95, 35],
+  [3, 65],                            [95, 65],
+  [5, 92],   [35, 95],   [65, 95],   [92, 92],
+];
+
 function buildGrid(): GridShape[] {
-  const grid: GridShape[] = [];
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const seed = r * COLS + c;
-      const jitterX = (seededRandom(seed * 2) - 0.5) * 4;
-      const jitterY = (seededRandom(seed * 3) - 0.5) * 4;
-      const left = ((c + 0.5) / COLS) * 100 + jitterX;
-      const top = ((r + 0.5) / ROWS) * 100 + jitterY;
+  return EDGE_POSITIONS.map(([baseLeft, baseTop], i) => {
+    const seed = i * 7 + 3;
+    const jitterX = (seededRandom(seed * 2) - 0.5) * 3;
+    const jitterY = (seededRandom(seed * 3) - 0.5) * 3;
 
-      const duration = 4 + seededRandom(seed * 11) * 4;
-      const delay = seededRandom(seed * 13) * -8;
-      const driftX = (seededRandom(seed * 5) - 0.5) * 16;
-      const driftY = (seededRandom(seed * 7) - 0.5) * 16;
-      const rotateAmt = 0;
-      const peakOpacity = PEAK_OPACITY * (0.6 + seededRandom(seed * 17) * 0.4);
+    const duration = 5 + seededRandom(seed * 11) * 4;
+    const delay = seededRandom(seed * 13) * -8;
+    const driftX = (seededRandom(seed * 5) - 0.5) * 20;
+    const driftY = (seededRandom(seed * 7) - 0.5) * 20;
+    const peakOpacity = PEAK_OPACITY * (0.6 + seededRandom(seed * 17) * 0.4);
 
-      grid.push({
-        col: c,
-        row: r,
-        left: `${left.toFixed(1)}%`,
-        top: `${top.toFixed(1)}%`,
-        rotate: 0,
-        duration,
-        delay,
-        driftX,
-        driftY,
-        rotateAmt,
-        peakOpacity,
-      });
-    }
-  }
-  return grid;
+    return {
+      left: `${(baseLeft + jitterX).toFixed(1)}%`,
+      top: `${(baseTop + jitterY).toFixed(1)}%`,
+      duration,
+      delay,
+      driftX,
+      driftY,
+      peakOpacity,
+    };
+  });
 }
 
 const gridData = buildGrid();
@@ -71,19 +61,17 @@ const gridData = buildGrid();
 function generateCSS(): string {
   let css = '';
   gridData.forEach((s, i) => {
-    const r = s.rotate;
     const dx = s.driftX;
     const dy = s.driftY;
-    const dr = s.rotateAmt;
     const op = s.peakOpacity;
 
     css += `
       @keyframes float${i} {
-        0%   { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) rotate(${r}deg) scale(0.95); }
-        25%  { opacity: ${op.toFixed(3)}; transform: translate(${dx.toFixed(1)}px, ${(dy * 0.5).toFixed(1)}px) rotate(${(r + dr * 0.5).toFixed(1)}deg) scale(1.02); }
-        50%  { opacity: ${(op * 0.5).toFixed(3)}; transform: translate(${(dx * 0.3).toFixed(1)}px, ${dy.toFixed(1)}px) rotate(${(r + dr).toFixed(1)}deg) scale(0.98); }
-        75%  { opacity: ${op.toFixed(3)}; transform: translate(${(-dx * 0.5).toFixed(1)}px, ${(dy * 0.3).toFixed(1)}px) rotate(${(r + dr * 0.7).toFixed(1)}deg) scale(1.03); }
-        100% { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) rotate(${r}deg) scale(0.95); }
+        0%   { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) scale(0.95); }
+        25%  { opacity: ${op.toFixed(3)}; transform: translate(${dx.toFixed(1)}px, ${(dy * 0.5).toFixed(1)}px) scale(1.02); }
+        50%  { opacity: ${(op * 0.5).toFixed(3)}; transform: translate(${(dx * 0.3).toFixed(1)}px, ${dy.toFixed(1)}px) scale(0.98); }
+        75%  { opacity: ${op.toFixed(3)}; transform: translate(${(-dx * 0.5).toFixed(1)}px, ${(dy * 0.3).toFixed(1)}px) scale(1.03); }
+        100% { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) scale(0.95); }
       }
     `;
   });
@@ -108,7 +96,6 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
               left: s.left,
               filter: 'grayscale(100%) brightness(1.0)',
               opacity: s.peakOpacity * 0.3,
-              transform: `rotate(${s.rotate}deg)`,
               animation: `float${i} ${s.duration.toFixed(1)}s ease-in-out ${s.delay.toFixed(1)}s infinite`,
             }}
             data-testid={`shape-bg-${i}`}
