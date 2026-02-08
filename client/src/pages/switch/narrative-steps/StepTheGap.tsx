@@ -381,8 +381,8 @@ export default function StepTheGap({
               Pajama Time
             </p>
           </div>
-          <p className="text-xl font-bold text-[#EA2C00] mb-1">
-            {storyMetrics.afterHoursAnnual.toLocaleString()} hours/year spent charting at home — time away from family, rest, and life outside work
+          <p className="text-xl font-bold text-white mb-1">
+            {storyMetrics.afterHoursAnnual.toLocaleString()} hours/year spent charting at home — time that could be spent on what matters most
           </p>
           <p className="text-xs text-[#999999] mb-4">
             {inputs.afterHoursPerWeek} hours/week x {storyMetrics.providers} providers x 52 weeks
