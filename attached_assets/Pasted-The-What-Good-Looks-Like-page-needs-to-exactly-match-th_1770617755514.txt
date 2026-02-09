@@ -1,0 +1,82 @@
+The "What Good Looks Like" page needs to exactly match the visual design language of the "Where You Are" page from the original production app at the-roi-calculator.replit.app. I'm going to be extremely specific about what that means.
+
+Go look at the "Where You Are" page on the production app. Study it. The "What Good Looks Like" page needs to feel like it came from the exact same designer on the exact same day. Here's what to match:
+
+PAGE BACKGROUND: White
+
+SECTION CONTAINERS: Beige (#F5F0EB), large border-radius (16px), generous padding (32-40px). These are the grouping elements. There are NO other borders, shadows, or separators anywhere.
+
+HEADER:
+- "WHAT GOOD LOOKS LIKE" in the same large serif font used on other page headers
+- Subtitle below: "These benchmarks come from mature implementations. They're achievable with the right approach and support."
+- This header sits directly on the white page background, NOT inside a beige container
+
+FIRST BEIGE CONTAINER: "YOUR POSITION"
+- Inside the beige container, laid out as a single row:
+  - Left: small icon (same size and style as the icons on the "Where You Are" page — small, in a light muted circle, NOT a big red filled circle) + "YOUR POSITION" in small caps + "See where you stand against top performers" in small gray text
+  - Right: two bordered stat boxes: "[X] IN RANGE" and "[X] OPPORTUNITIES" (opportunities number in red)
+
+SECOND BEIGE CONTAINER: The six dimension cards
+- The beige container holds all six cards
+- NO label or header text at the top of this container — just the cards
+- Cards arranged in a 2-column grid, 3 rows
+- Gap between cards: same gap as the "Where You Are" page uses between its metric cards
+
+EACH CARD MUST MATCH THE EXACT STYLE OF THE CARDS ON "WHERE YOU ARE":
+Look at how Utilization, Time Saved, Edit Time, Documentation Quality, Provider Satisfaction cards look on the "Where You Are" page. Each card on "What Good Looks Like" must match that EXACTLY in terms of:
+
+1. CARD BACKGROUND: White, no border, no shadow. Card gets its definition from sitting on the beige container.
+
+2. ICON + TITLE ROW: 
+   - Small icon in a LIGHT, MUTED circle (not a big red filled circle — look at how the icons appear on "Where You Are"). The icon circles should be the same light salmon/light coral that the production app uses — subtle, not aggressive.
+   - Metric name next to the icon in medium weight (not heavy bold)
+   - NO description text under the metric name on this page (the "Where You Are" page has descriptions because those are inputs — this page is output, keep it clean)
+
+3. THE VALUE: 
+   - Large number displayed prominently
+   - "CURRENT" label in tiny gray caps below it
+   - Position this the same way the "Where You Are" page positions its input values
+
+4. THE BENCHMARK VISUALIZATION:
+   - Use the SAME slider track style as "Where You Are" — the horizontal gray track with the red dot
+   - But make it non-interactive (display only, not draggable)
+   - Show the benchmark range as a slightly darker/raised section on the track (same style as the benchmark indicators on "Where You Are")
+   - The red dot shows their current position
+
+5. BENCHMARK LABEL:
+   - Below the track, show a small rounded gray pill/badge: "Typical: 70-80%" 
+   - This should look IDENTICAL to the "Abridge Benchmark: 76%" pills on the "Where You Are" page — same size, same gray background, same border-radius, same font size
+
+6. GAP INDICATOR:
+   - Below the benchmark pill
+   - If below range: red text for the gap number, gray text for the rest — e.g., "30% gap to reach benchmark range"
+   - If in range: gray text "In Range" (no checkmark, no green — keep it minimal like the rest of the Abridge design)
+   - This text should be small, understated, not shouty
+
+THE SIX CARDS:
+
+Card 1: Utilization | [value]% | Typical: 70-80%
+Card 2: Net Time Impact | +[net value] min | Typical: 3-4 min net
+Card 3: Note Acceptance | [value]% | Typical: 75-85%
+Card 4: Coding Impact | +[value]% | Typical: +4-7%
+Card 5: After-Hours Work | [value] hrs/wk | Typical: 1-3 hrs/wk (lower is better — invert gap logic)
+Card 6: Provider Satisfaction | [value]% | Typical: 80-95%
+
+SPACING:
+- 32px between page header and first beige container
+- 24px between first and second beige containers  
+- Cards inside the second container should have the same spacing as the cards on "Where You Are"
+- 48px between the second beige container and the bottom navigation
+
+NAVIGATION:
+← Back (left) | See the Math → (red button, right)
+
+WHAT TO ABSOLUTELY NOT DO:
+- Do NOT use big red filled circles for icons. Match the production app's icon style exactly.
+- Do NOT use borders or shadows on the white cards.
+- Do NOT use bold/heavy text for metric names. Match the weight used on "Where You Are."
+- Do NOT add any extra visual elements, dividers, section labels inside the beige containers, or decorative elements. The Abridge style is MINIMAL. When in doubt, remove something.
+- Do NOT use any green colors. The production app doesn't use green anywhere. "In Range" should be in gray.
+- Do NOT make the cards feel heavier or denser than the cards on "Where You Are." They should feel lighter if anything.
+
+The goal: someone looking at "Where You Are" and "What Good Looks Like"
