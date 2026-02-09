@@ -61,9 +61,11 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const defaultEncountersPerProvider = isInpatient ? 400 : isED ? 1800 : 3000;
   
   const [encountersPerProvider, setEncountersPerProvider] = useState(
-    state.numberOfProviders > 0 && state.annualEncounters > 0 
-      ? Math.round(state.annualEncounters / state.numberOfProviders) 
-      : 0  // No default selection - user must choose
+    state.encountersPerProvider > 0
+      ? state.encountersPerProvider
+      : state.numberOfProviders > 0 && state.annualEncounters > 0 
+        ? Math.round(state.annualEncounters / state.numberOfProviders) 
+        : 0
   );
   const [totalEncountersInput, setTotalEncountersInput] = useState(state.annualEncounters > 0 ? state.annualEncounters : 0);
   const [usingTotalInput, setUsingTotalInput] = useState(false);
@@ -74,16 +76,17 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
       if (usingTotalInput && state.annualEncounters > 0) {
         const newPerProvider = Math.round(state.annualEncounters / clampedValue);
         setEncountersPerProvider(newPerProvider);
-        updateState({ numberOfProviders: clampedValue });
+        updateState({ numberOfProviders: clampedValue, encountersPerProvider: newPerProvider });
       } else {
         const annualEncounters = clampedValue * encountersPerProvider;
         updateState({ 
           numberOfProviders: clampedValue,
           annualEncounters,
+          encountersPerProvider,
         });
       }
     } else {
-      updateState({ numberOfProviders: 0, annualEncounters: 0 });
+      updateState({ numberOfProviders: 0, annualEncounters: 0, encountersPerProvider: 0 });
     }
   }, [updateState, encountersPerProvider, usingTotalInput, state.annualEncounters]);
 
@@ -102,7 +105,9 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     setUsingTotalInput(false);
     if (state.numberOfProviders > 0) {
       const annualEncounters = state.numberOfProviders * value;
-      updateState({ annualEncounters });
+      updateState({ annualEncounters, encountersPerProvider: value });
+    } else {
+      updateState({ encountersPerProvider: value });
     }
   }, [updateState, state.numberOfProviders]);
 
@@ -110,10 +115,9 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
     setTotalEncountersInput(numValue);
     if (numValue >= 1000) {
       setUsingTotalInput(true);
-      updateState({ annualEncounters: numValue });
-      if (state.numberOfProviders > 0) {
-        setEncountersPerProvider(Math.round(numValue / state.numberOfProviders));
-      }
+      const newPerProvider = state.numberOfProviders > 0 ? Math.round(numValue / state.numberOfProviders) : 0;
+      setEncountersPerProvider(newPerProvider);
+      updateState({ annualEncounters: numValue, encountersPerProvider: newPerProvider });
     }
   }, [updateState, state.numberOfProviders]);
 

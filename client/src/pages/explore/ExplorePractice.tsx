@@ -17,6 +17,12 @@ interface ExplorePracticeProps {
 type EncounterPreset = 'lighter' | 'typical' | 'busy' | 'custom' | null;
 type UtilizationPreset = 'conservative' | 'typical' | 'aggressive' | null;
 
+const ENCOUNTER_MULTIPLIERS = {
+  lighter: 2000,
+  typical: 3000,
+  busy: 4000,
+} as const;
+
 export default function ExplorePractice({
   state,
   updateState,
@@ -25,10 +31,10 @@ export default function ExplorePractice({
   onHome,
 }: ExplorePracticeProps) {
   const providers = state.numberOfProviders || 0;
+  const perProvider = state.encountersPerProvider || 0;
 
   const getEncounterPreset = (): EncounterPreset | null => {
-    if (state.annualEncounters === 0) return null;
-    const perProvider = providers > 0 ? state.annualEncounters / providers : 0;
+    if (perProvider === 0) return null;
     if (perProvider === 2000) return 'lighter';
     if (perProvider === 3000) return 'typical';
     if (perProvider === 4000) return 'busy';
@@ -46,18 +52,32 @@ export default function ExplorePractice({
   const selectedEncounterPreset = getEncounterPreset();
   const selectedUtilizationPreset = getUtilizationPreset();
 
-  const eligibleEncounters = useMemo(() => {
-    return Math.round(state.annualEncounters * (state.utilizationPercent / 100));
-  }, [state.annualEncounters, state.utilizationPercent]);
+  const totalEncounters = providers * perProvider;
 
-  const handleEncounterPreset = (preset: 'lighter' | 'typical' | 'busy' | 'custom') => {
-    const multipliers = {
-      lighter: 2000,
-      typical: 3000,
-      busy: 4000,
-      custom: 3000,
-    };
-    updateState({ annualEncounters: providers * multipliers[preset] });
+  const eligibleEncounters = useMemo(() => {
+    return Math.round(totalEncounters * (state.utilizationPercent / 100));
+  }, [totalEncounters, state.utilizationPercent]);
+
+  const handleProviderChange = (v: number) => {
+    updateState({
+      numberOfProviders: v,
+      annualEncounters: v * perProvider,
+    });
+  };
+
+  const handleEncounterPreset = (preset: 'lighter' | 'typical' | 'busy') => {
+    const perProv = ENCOUNTER_MULTIPLIERS[preset];
+    updateState({
+      encountersPerProvider: perProv,
+      annualEncounters: providers * perProv,
+    });
+  };
+
+  const handleCustomEncountersPerProvider = (v: number) => {
+    updateState({
+      encountersPerProvider: v,
+      annualEncounters: providers * v,
+    });
   };
 
   const handleUtilizationPreset = (preset: 'conservative' | 'typical' | 'aggressive') => {
@@ -71,7 +91,7 @@ export default function ExplorePractice({
 
   const formatNumber = (n: number) => n.toLocaleString();
 
-  const canContinue = state.numberOfProviders > 0 && state.annualEncounters > 0 && state.utilizationPercent > 0;
+  const canContinue = providers > 0 && perProvider > 0 && state.utilizationPercent > 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -87,9 +107,7 @@ export default function ExplorePractice({
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content - Left Column */}
           <div className="flex-1 max-w-[700px]">
-            {/* Header */}
             <motion.div 
               className="text-center mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -103,14 +121,12 @@ export default function ExplorePractice({
               </p>
             </motion.div>
 
-            {/* Main Card */}
             <motion.div
               className="bg-[#F5F0EB] rounded-lg p-6 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              {/* Deployment Size */}
               <div className="mb-8">
                 <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Deployment Size
@@ -125,25 +141,13 @@ export default function ExplorePractice({
                 </p>
                 <FormattedNumberInput
                   value={state.numberOfProviders || ''}
-                  onChange={(v: number) => {
-                    const newProviders = v;
-                    if (selectedEncounterPreset && selectedEncounterPreset !== 'custom') {
-                      const multipliers = { lighter: 2000, typical: 3000, busy: 4000 };
-                      updateState({ 
-                        numberOfProviders: newProviders,
-                        annualEncounters: newProviders * multipliers[selectedEncounterPreset]
-                      });
-                    } else {
-                      updateState({ numberOfProviders: newProviders });
-                    }
-                  }}
+                  onChange={handleProviderChange}
                   className="h-11 text-base bg-white"
                   placeholder="Enter number of providers"
                   data-testid="input-providers"
                 />
               </div>
 
-              {/* Encounter Volume */}
               <div className="mb-8">
                 <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Encounter Volume
@@ -177,23 +181,36 @@ export default function ExplorePractice({
                 </div>
 
                 <p className="text-sm text-[#888888] mb-2">
-                  Or enter your total practice volume:
+                  Or enter encounters per provider:
                 </p>
                 <div className="relative">
                   <FormattedNumberInput
-                    value={state.annualEncounters || ''}
-                    onChange={(v: number) => updateState({ annualEncounters: v })}
-                    className="h-11 text-base bg-white pr-16"
-                    placeholder="Enter total volume"
-                    data-testid="input-encounters"
+                    value={perProvider || ''}
+                    onChange={handleCustomEncountersPerProvider}
+                    className="h-11 text-base bg-white pr-20"
+                    placeholder="e.g., 3,000"
+                    data-testid="input-encounters-per-provider"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">
-                    /year
+                    /prov/yr
                   </span>
                 </div>
+
+                {providers > 0 && perProvider > 0 && (
+                  <div className="mt-3 px-3 py-2 bg-white rounded-md">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[#666666]">Total practice volume</span>
+                      <span className="text-sm font-semibold text-black" data-testid="text-total-encounters">
+                        {formatNumber(totalEncounters)} encounters/yr
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#999999] mt-0.5">
+                      {formatNumber(providers)} providers x {formatNumber(perProvider)} encounters
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {/* Expected Utilization */}
               <div>
                 <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">
                   Expected Utilization
@@ -232,7 +249,6 @@ export default function ExplorePractice({
               </div>
             </motion.div>
 
-            {/* Continue Button - Mobile */}
             <motion.div 
               className="flex justify-center lg:hidden"
               initial={{ opacity: 0 }}
@@ -251,7 +267,6 @@ export default function ExplorePractice({
             </motion.div>
           </div>
 
-          {/* Right Panel - Desktop Only */}
           <motion.div
             className="hidden lg:block w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
@@ -259,7 +274,6 @@ export default function ExplorePractice({
             transition={{ delay: 0.15 }}
           >
             <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
-              {/* Header */}
               <div className="mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
                   Your Baseline
@@ -267,7 +281,6 @@ export default function ExplorePractice({
                 <p className="text-sm text-[#888888] mt-1">Practice summary</p>
               </div>
 
-              {/* Stats with left border */}
               <div className="space-y-3 mb-4">
                 <div className="border-l-4 border-[#EA2C00] pl-3">
                   <p className="text-lg font-bold text-white">
@@ -277,9 +290,15 @@ export default function ExplorePractice({
                 </div>
                 <div className="border-l-4 border-[#EA2C00] pl-3">
                   <p className="text-lg font-bold text-white">
-                    {state.annualEncounters > 0 ? formatNumber(state.annualEncounters) : '—'}
+                    {perProvider > 0 ? formatNumber(perProvider) : '—'}
                   </p>
-                  <p className="text-sm text-[#888888]">encounters/year</p>
+                  <p className="text-sm text-[#888888]">encounters/provider/yr</p>
+                </div>
+                <div className="border-l-4 border-[#EA2C00] pl-3">
+                  <p className="text-lg font-bold text-white">
+                    {totalEncounters > 0 ? formatNumber(totalEncounters) : '—'}
+                  </p>
+                  <p className="text-sm text-[#888888]">total encounters/year</p>
                 </div>
                 <div className="border-l-4 border-[#EA2C00] pl-3">
                   <p className="text-lg font-bold text-white">
@@ -291,7 +310,6 @@ export default function ExplorePractice({
 
               <div className="h-px bg-[#333333] my-4" />
 
-              {/* Eligible Encounters */}
               <div className="text-center my-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px] mb-2">
                   Eligible Encounters
@@ -306,7 +324,6 @@ export default function ExplorePractice({
 
               <div className="h-px bg-[#333333] my-4" />
 
-              {/* Continue Button */}
               <Button
                 onClick={onNext}
                 disabled={!canContinue}

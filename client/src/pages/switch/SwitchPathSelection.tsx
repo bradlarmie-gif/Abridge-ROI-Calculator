@@ -1,41 +1,29 @@
 import { useState } from "react";
-import { Mic, Users, ArrowRight, TrendingUp, Clock, DollarSign, ChevronRight, Search, BarChart3 } from "lucide-react";
-import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
+import { Mic, Users, ArrowRight, TrendingUp, DollarSign, Search, BarChart3 } from "lucide-react";
+import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 
 type PathType = "ambient-ai" | "human-scribes";
 
 interface SwitchPathSelectionProps {
   onSelectPath: (path: PathType) => void;
   onBack: () => void;
+  onBackToJourney?: () => void;
 }
 
-export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPathSelectionProps) {
+export default function SwitchPathSelection({ onSelectPath, onBack, onBackToJourney }: SwitchPathSelectionProps) {
   const [hoveredPath, setHoveredPath] = useState<PathType | null>(null);
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
-      <header className="relative z-10 px-6 md:px-10 py-6 flex items-center justify-between">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors text-sm font-medium"
-          data-testid="button-back"
-        >
-          <ArrowRight className="w-4 h-4 rotate-180" />
-          Back
-        </button>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => { window.location.href = '/'; }}
-            className="cursor-pointer"
-            data-testid="link-logo-home"
-          >
-            <img src={abridgeLogoPath} alt="Abridge" className="h-6 md:h-7" />
-          </button>
-          <span className="text-slate-300 text-sm">|</span>
-          <span className="text-sm text-slate-500 font-medium">Switch</span>
-        </div>
-        <div className="w-16" />
-      </header>
+      <UnifiedHeader
+        pathType="switch"
+        currentStep={1}
+        totalSteps={2}
+        stepName="Choose Your Path"
+        onBack={onBack}
+        onHome={onBackToJourney}
+      />
+      <UnifiedHeaderSpacer />
 
       <main className="relative z-10 max-w-4xl mx-auto px-6 py-8 md:py-12">
         <div className="text-center mb-12 md:mb-14">

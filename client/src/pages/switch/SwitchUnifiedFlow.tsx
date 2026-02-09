@@ -102,6 +102,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
           <SwitchPathSelection
             onSelectPath={handleSelectPath}
             onBack={onBack}
+            onBackToJourney={onBackToJourney}
           />
         );
       
