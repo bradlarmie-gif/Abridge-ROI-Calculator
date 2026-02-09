@@ -95,7 +95,7 @@ export const ABRIDGE_BENCHMARKS = {
   editTime: 0.5,
   editTimeMax: 1,
   netImpact: 3.5,
-  docCompleteness: 90,
+  docCompleteness: 95,
   docCompletenessMin: 85,
   docCompletenessMax: 95,
   wrvuLift: 5.5,

@@ -11,7 +11,7 @@ import {
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import type { SwitchInputs, SwitchCalculations } from "@/lib/switchGapCalculator";
-import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS } from "@/lib/switchGapCalculator";
+import { ABRIDGE_BENCHMARKS, VALUE_ASSUMPTIONS, REALIZATION_WEIGHTS } from "@/lib/switchGapCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
@@ -191,7 +191,7 @@ const DimensionCard = ({
         <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primaryText }}>{youValue}</Text>
       </View>
       <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-        <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>ABRIDGE BENCHMARK</Text>
+        <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: "bold" }}>WHAT WE TYPICALLY SEE</Text>
         <Text style={{ fontSize: 20, fontWeight: "bold", color: colors.primary }}>{benchValue}</Text>
       </View>
     </View>
@@ -211,9 +211,13 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
 
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - inputs.utilization);
   const encountersWithoutAI = Math.round(encounters * (utilizationGapPP / 100));
-  const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - inputs.timeSavedPerEncounter);
-  const efficiencyGapHours = Math.round((efficiencyGapMin * eligibleEncounters) / 60);
+  const netBenchTime = calculations.benchmarkNetImpact;
+  const currentNetImpact = calculations.currentNetImpact;
+  const netTimeGap = Math.max(0, netBenchTime - currentNetImpact);
+  const encountersAtCurrentUtil = Math.round(encounters * (inputs.utilization / 100));
+  const netEfficiencyGapHours = Math.round((netTimeGap * encountersAtCurrentUtil) / 60);
   const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift);
+  const docCompleteness = inputs.docCompleteness || 65;
 
   return (
     <Document>
@@ -244,7 +248,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             </View>
 
             <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 10, lineHeight: 1.5 }}>
-              You've invested in ambient AI. This assessment measures how that investment is performing against what mature implementations typically achieve.
+              You've invested in ambient AI. This assessment measures how that investment is performing{"\u2014"}and where the unrealized value sits.
             </Text>
 
             <View style={{ flexDirection: "row", gap: 6 }}>
@@ -269,9 +273,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
 
           <View style={styles.thickDivider} />
 
-          <Text style={styles.sectionLabel}>YOUR FOUR DIMENSIONS</Text>
+          <Text style={styles.sectionLabel}>YOUR FIVE DIMENSIONS</Text>
           <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 6 }}>
-            How you compare to mature Abridge implementations.
+            How you compare to what we typically see in mature implementations.
           </Text>
 
           <View style={styles.divider} />
@@ -281,29 +285,40 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             benchPercent={calculations.utilizationScore}
             youValue={`${inputs.utilization}%`}
             benchValue={`${ABRIDGE_BENCHMARKS.utilization}%`}
-            insight="When adoption is below 60%, it typically reflects workflow friction\u2014the tool isn't fitting naturally into how providers work."
+            insight={`When adoption is below 60%, it typically reflects workflow friction\u2014the tool isn't fitting naturally into how providers work.`}
           />
           <DimensionCard
-            name="Efficiency"
+            name="Net Efficiency"
             benchPercent={calculations.efficiencyScore}
-            youValue={`${inputs.timeSavedPerEncounter} min`}
-            benchValue={`${ABRIDGE_BENCHMARKS.timeSavedAvg} min`}
-            insight="Lower savings often reflect editing time, integration gaps, or notes that don't match clinical style."
+            youValue={`+${calculations.currentNetImpact.toFixed(1)} min`}
+            benchValue={`+${calculations.benchmarkNetImpact.toFixed(1)} min`}
+            insight={`Your gross savings is ${inputs.timeSavedPerEncounter} min, but ${inputs.editTimePerEncounter} min is consumed by edits\u2014leaving only ${calculations.currentNetImpact.toFixed(1)} min of net impact per encounter. Top implementations save ${ABRIDGE_BENCHMARKS.timeSavedAvg} min with <${ABRIDGE_BENCHMARKS.editTime} min of editing.`}
           />
           <DimensionCard
             name="Documentation Quality"
-            benchPercent={calculations.qualityScore}
-            youValue={`+${inputs.wrvuLift}%`}
-            benchValue={`+${ABRIDGE_BENCHMARKS.wrvuLift}%`}
-            insight="Higher lift often indicates baseline documentation was incomplete. In-range lift with strong docs is healthy."
+            benchPercent={calculations.docCompletenessScore}
+            youValue={`${inputs.docCompleteness || 65}%`}
+            benchValue={`${ABRIDGE_BENCHMARKS.docCompleteness}%`}
+            insight={`When notes don't capture the full clinical picture, coding doesn't reflect the work performed. The revenue impact is real but often invisible.`}
           />
           <DimensionCard
             name="Provider Experience"
             benchPercent={calculations.satisfactionScore}
             youValue={`${inputs.satisfaction}%`}
             benchValue={`${ABRIDGE_BENCHMARKS.satisfaction}%`}
-            insight="Experience is a leading indicator. Low scores predict declining adoption months before it shows in data."
+            insight="Satisfaction below 65% is a leading indicator. Low scores predict declining adoption months before it shows in utilization data."
           />
+
+          <View style={{ backgroundColor: "#1A1A1A", padding: 12, borderRadius: 4, marginTop: 4, marginBottom: 4 }}>
+            <Text style={{ fontSize: 9, color: "#999999", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6, fontWeight: "bold" }}>AFTER-HOURS DOCUMENTATION</Text>
+            <Text style={{ fontSize: 11, color: "#FFFFFF", fontWeight: "bold", marginBottom: 4 }}>
+              {fmtNum(calculations.afterHoursAnnual)} hours/year spent charting at home.
+            </Text>
+            <Text style={{ fontSize: 9, color: "#CCCCCC", lineHeight: 1.5 }}>
+              {inputs.afterHoursPerWeek || 0} hrs/wk {"\u00D7"} {fmtNum(providers)} providers {"\u00D7"} 52 weeks.{"\n"}
+              Before ambient AI, the industry average was 5-8 hrs/week (AMA, 2023). You've improved. The question is whether you've improved enough.
+            </Text>
+          </View>
 
           <PageFooter pageNum={1} orgName={orgName} />
         </View>
@@ -361,7 +376,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                     {fmtNum(encounters)} {"\u00D7"} {utilizationGapPP}% = {fmtNum(encountersWithoutAI)} encounters without AI
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    {fmtNum(encountersWithoutAI)} {"\u00D7"} {ABRIDGE_BENCHMARKS.timeSavedAvg} min {"\u00D7"} (${VALUE_ASSUMPTIONS.hourlyRate}/hr) {"\u00D7"} {VALUE_ASSUMPTIONS.timeConversionRate * 100}% conversion{"\u00B9"}
+                    {fmtNum(encountersWithoutAI)} {"\u00D7"} {netBenchTime.toFixed(1)} min net benchmark {"\u00D7"} (${VALUE_ASSUMPTIONS.hourlyRate}/hr) {"\u00D7"} {VALUE_ASSUMPTIONS.timeConversionRate * 100}% conversion{"\u00B9"}
                   </Text>
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary, marginTop: 2 }}>
                     = {fmtCurrency(calculations.utilizationGapValue)}/year
@@ -372,26 +387,32 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             </View>
           )}
 
-          {calculations.efficiencyGapValue > 0 && (
+          {calculations.netEfficiencyGapValue > 0 && (
             <View style={{ marginBottom: 8 }}>
               <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
                 <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 50 }} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Efficiency Gap</Text>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(calculations.efficiencyGapValue)}</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Net Efficiency Gap</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(calculations.netEfficiencyGapValue)}</Text>
                   </View>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    {inputs.timeSavedPerEncounter} min {"\u2192"} {ABRIDGE_BENCHMARKS.timeSavedAvg} min = {efficiencyGapMin.toFixed(1)} min gap
+                    Current net: +{currentNetImpact.toFixed(1)} min ({inputs.timeSavedPerEncounter} min saved {"\u2212"} {inputs.editTimePerEncounter} min editing)
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    {fmtNum(eligibleEncounters)} encounters (at {ABRIDGE_BENCHMARKS.utilization}%) {"\u00D7"} {efficiencyGapMin.toFixed(1)} min = {fmtNum(efficiencyGapHours)} hrs
+                    Benchmark net: +{netBenchTime.toFixed(1)} min ({ABRIDGE_BENCHMARKS.timeSavedAvg} min saved {"\u2212"} {ABRIDGE_BENCHMARKS.editTime} min editing)
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    {fmtNum(efficiencyGapHours)} {"\u00D7"} ${VALUE_ASSUMPTIONS.hourlyRate}/hr {"\u00D7"} {VALUE_ASSUMPTIONS.timeConversionRate * 100}% conversion{"\u00B9"}
+                    Gap: {netTimeGap.toFixed(1)} min per encounter
+                  </Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                    {fmtNum(encountersAtCurrentUtil)} encounters (at current {inputs.utilization}%) {"\u00D7"} {netTimeGap.toFixed(1)} min = {fmtNum(netEfficiencyGapHours)} hrs
+                  </Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                    {fmtNum(netEfficiencyGapHours)} {"\u00D7"} ${VALUE_ASSUMPTIONS.hourlyRate}/hr {"\u00D7"} {VALUE_ASSUMPTIONS.timeConversionRate * 100}% conversion{"\u00B9"}
                   </Text>
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary, marginTop: 2 }}>
-                    = {fmtCurrency(calculations.efficiencyGapValue)}/year
+                    = {fmtCurrency(calculations.netEfficiencyGapValue)}/year (at current utilization)
                   </Text>
                 </View>
               </View>
@@ -405,17 +426,20 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 50 }} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Documentation Quality Gap</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Documentation Revenue Gap</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(calculations.wrvuGapValue)}</Text>
                   </View>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    +{inputs.wrvuLift}% {"\u2192"} +{ABRIDGE_BENCHMARKS.wrvuLift}% = {wrvuGapPercent.toFixed(1)}% gap
+                    Documentation completeness: {docCompleteness}% {"\u2192"} {ABRIDGE_BENCHMARKS.docCompleteness}%
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    {VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU {"\u00D7"} {fmtNum(eligibleEncounters)} encounters {"\u00D7"} {wrvuGapPercent.toFixed(1)}% lift
+                    Observed wRVU correlation: +{inputs.wrvuLift}% current {"\u2192"} +{ABRIDGE_BENCHMARKS.wrvuLift}% at high completeness
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    {"\u00D7"} ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU {"\u00D7"} {Math.round(VALUE_ASSUMPTIONS.wrvuRealization * 100)}% realization{"\u00B2"}
+                    Gap: {wrvuGapPercent.toFixed(1)}% wRVU lift
+                  </Text>
+                  <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
+                    {VALUE_ASSUMPTIONS.avgWRVUPerEncounter} wRVU {"\u00D7"} {fmtNum(eligibleEncounters)} encounters {"\u00D7"} {wrvuGapPercent.toFixed(1)}% lift {"\u00D7"} ${VALUE_ASSUMPTIONS.wrvuDollarValue}/wRVU {"\u00D7"} {Math.round(VALUE_ASSUMPTIONS.wrvuRealization * 100)}% realization{"\u00B2"}
                   </Text>
                   <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary, marginTop: 2 }}>
                     = {fmtCurrency(calculations.wrvuGapValue)}/year
@@ -439,11 +463,14 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>YOUR INPUTS</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.7 }}>
                 {fmtNum(providers)} providers{"\n"}
-                {fmtNum(encounters)} encounters{"\n"}
+                {fmtNum(encounters)} encounters/year{"\n"}
                 {inputs.utilization}% adoption{"\n"}
-                {inputs.timeSavedPerEncounter} min saved{"\n"}
+                {inputs.timeSavedPerEncounter} min saved/encounter{"\n"}
+                {inputs.editTimePerEncounter} min edit time/encounter{"\n"}
+                {docCompleteness}% documentation completeness{"\n"}
                 +{inputs.wrvuLift}% wRVU lift{"\n"}
-                {inputs.satisfaction}% satisfaction
+                {inputs.satisfaction}% satisfaction{"\n"}
+                {inputs.afterHoursPerWeek || 0} hrs/wk after-hours charting
               </Text>
             </View>
             <View style={[styles.cardBg, { flex: 1 }]}>
@@ -452,8 +479,9 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 {"\u00B9"} Provider cost: ${VALUE_ASSUMPTIONS.hourlyRate}/hr{"\n"}
                 {"\u00B9"} Time conversion: {VALUE_ASSUMPTIONS.timeConversionRate * 100}%{"\n"}
                 {"\u00B2"} wRVU value: ${VALUE_ASSUMPTIONS.wrvuDollarValue}{"\n"}
-                {"\u00B2"} wRVU realization: {Math.round(VALUE_ASSUMPTIONS.wrvuRealization * 100)}%{"\n\n"}
-                Benchmarks from 150+{"\n"}Abridge health systems
+                {"\u00B2"} wRVU realization: {Math.round(VALUE_ASSUMPTIONS.wrvuRealization * 100)}%{"\n"}
+                Net time impact = gross savings {"\u2212"} edit time{"\n\n"}
+                Observed patterns: 150+ health systems
               </Text>
             </View>
           </View>
@@ -516,32 +544,42 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
             <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>"We just implemented"</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>{`"We just implemented"`}</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                The ROI gap often exceeds switching costs within 6 months. Sunk cost {"\u2260"} future value.
+                Organizations still in Stage 2 after 6 months rarely advance without a change in approach. Your current gap: ~{fmtCurrency(calculations.annualGap)}/year. Patience is a virtue{"\u2014"}but it's not a strategy.
               </Text>
             </View>
             <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>"Change fatigue"</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>{`"Change fatigue"`}</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                Providers who've used AI before adopt 40% faster. They know what "good" looks like.
+                Providers with prior AI experience adopt faster, not slower. They know what to look for. The friction of switching is real but brief. The friction of underperformance is ongoing.
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+            <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>{`"Contract lock-in"`}</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                Many contracts have more flexibility than they appear{"\u2014"}especially around performance benchmarks. Even when time remains, the smartest organizations evaluate in advance. Preparation isn't commitment. It's diligence.
+              </Text>
+            </View>
+            <View style={[styles.cardBg, { flex: 1 }]}>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>{`"IT bandwidth"`}</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
+                Our team handles 80% of technical lift. Avg IT burden: 40 hours total.
               </Text>
             </View>
           </View>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 10 }}>
             <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>"Contract lock-in"</Text>
+              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>{`"Broader vendor relationship"`}</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                Most contracts have exit clauses. We can help navigate the transition.
+                Enterprise relationships matter. They also sometimes pull decisions away from clinical best fit. The best outcomes come from evaluating ambient AI on its own merits.
               </Text>
             </View>
-            <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>"IT bandwidth"</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.4 }}>
-                Our team handles 80% of technical lift. Avg IT burden: 40 hours total.
-              </Text>
-            </View>
+            <View style={{ flex: 1 }} />
           </View>
 
           <View style={[styles.cardBg, { alignItems: "center", paddingVertical: 12 }]}>
@@ -584,8 +622,8 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               {calculations.realizationScore >= 75
                 ? `At ${safe(calculations.realizationScore)}%, you're outperforming most implementations. The ${fmtCurrency(calculations.annualGap)} remaining opportunity is about refinement\u2014finding edge cases and optimizing further. The foundation is strong.`
                 : calculations.realizationScore >= 50
-                ? `At ${safe(calculations.realizationScore)}%, you've made real progress. The ${fmtCurrency(calculations.annualGap)} opportunity ahead isn't about starting over\u2014it's about understanding which specific factors are limiting value and addressing them. The answers are usually specific and actionable.`
-                : `At ${safe(calculations.realizationScore)}%, you're early in the journey. That's normal. The ${fmtCurrency(calculations.annualGap)} ahead represents what's possible with the right support. The encouraging part: you don't need to change everything. Usually it's a few specific things that explain most of the gap.`
+                ? `At ${safe(calculations.realizationScore)}%, you've made real progress. The gap isn't about your decision to invest in ambient AI\u2014that was right. It's about whether your current approach can move you from Stage 2 to Stage 3. The factors limiting value are specific, measurable, and addressable.`
+                : `At ${safe(calculations.realizationScore)}%, you're early in the journey\u2014but that's normal. The ${fmtCurrency(calculations.annualGap)} ahead represents what's possible with the right support. The encouraging part: you don't need to change everything. Usually a few specific factors explain most of the gap, and they're addressable.`
               }
             </Text>
           </View>
@@ -613,19 +651,23 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>Adoption</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{inputs.utilization}% (bench: {ABRIDGE_BENCHMARKS.utilization}%)</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>{inputs.utilization}% (typical: {ABRIDGE_BENCHMARKS.utilization}%)</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Efficiency</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{inputs.timeSavedPerEncounter} min (bench: {ABRIDGE_BENCHMARKS.timeSavedAvg} min)</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>Net Efficiency</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>+{calculations.currentNetImpact.toFixed(1)} min (typical: +{calculations.benchmarkNetImpact.toFixed(1)} min)</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Documentation Quality</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>+{inputs.wrvuLift}% (bench: +{ABRIDGE_BENCHMARKS.wrvuLift}%)</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>Documentation</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>{docCompleteness}% (typical: {ABRIDGE_BENCHMARKS.docCompleteness}%)</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>Coding Impact</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>+{inputs.wrvuLift}% (typical: +{ABRIDGE_BENCHMARKS.wrvuLift}%)</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>Provider Experience</Text>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>{inputs.satisfaction}% (bench: {ABRIDGE_BENCHMARKS.satisfaction}%)</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>{inputs.satisfaction}% (typical: {ABRIDGE_BENCHMARKS.satisfaction}%)</Text>
             </View>
           </View>
 
@@ -633,7 +675,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
 
           <Text style={styles.sectionLabel}>METHODOLOGY</Text>
           <Text style={{ fontSize: 10, color: colors.secondary, marginBottom: 8 }}>
-            This analysis compares your reported metrics against Abridge benchmark data.
+            This analysis compares your reported metrics against patterns observed across Abridge implementations.
           </Text>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
@@ -644,7 +686,10 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 {fmtNum(encounters)} encounters/year{"\n"}
                 {inputs.utilization}% adoption{"\n"}
                 {inputs.timeSavedPerEncounter} min saved/encounter{"\n"}
-                +{inputs.wrvuLift}% wRVU lift
+                {inputs.editTimePerEncounter} min edit time/encounter{"\n"}
+                {docCompleteness}% documentation completeness{"\n"}
+                +{inputs.wrvuLift}% wRVU lift{"\n"}
+                {inputs.satisfaction}% satisfaction
               </Text>
             </View>
             <View style={[styles.cardBg, { flex: 1 }]}>
@@ -654,24 +699,27 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 Time conversion: {VALUE_ASSUMPTIONS.timeConversionRate * 100}%{"\n"}
                 wRVU value: ${VALUE_ASSUMPTIONS.wrvuDollarValue}{"\n"}
                 wRVU realization: {Math.round(VALUE_ASSUMPTIONS.wrvuRealization * 100)}%{"\n"}
-                Benchmark: 150+ systems
+                Net impact = gross savings {"\u2212"} edit time{"\n"}
+                Observed patterns: 150+ health systems
               </Text>
             </View>
           </View>
 
           <Text style={{ fontSize: 8.5, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>FORMULAS</Text>
           <View style={{ marginBottom: 8 }}>
-            <Text style={{ fontSize: 8.5, color: colors.secondary, fontFamily: "Courier", lineHeight: 1.6 }}>
-              Adoption Gap = Encounters {"\u00D7"} Util Gap% {"\u00D7"} BenchTime {"\u00D7"} Rate {"\u00D7"} Conv{"\n"}
-              Efficiency Gap = Encounters@Bench {"\u00D7"} TimeGap {"\u00D7"} Rate {"\u00D7"} Conv{"\n"}
-              Quality Gap = AvgWRVU {"\u00D7"} Encounters {"\u00D7"} LiftGap% {"\u00D7"} $/wRVU {"\u00D7"} Real
+            <Text style={{ fontSize: 8.5, color: colors.secondary, lineHeight: 1.6 }}>
+              Adoption Gap = Encounters {"\u00D7"} Util Gap% {"\u00D7"} Net Bench Time {"\u00D7"} Rate {"\u00D7"} Conv{"\n"}
+              Efficiency Gap = Encounters@Current Util {"\u00D7"} Net Time Gap {"\u00D7"} Rate {"\u00D7"} Conv{"\n"}
+              Quality Gap = Avg wRVU {"\u00D7"} Encounters {"\u00D7"} Lift Gap% {"\u00D7"} $/wRVU {"\u00D7"} Real{"\n"}
+              Value Realization = Weighted composite (Util {Math.round(REALIZATION_WEIGHTS.utilization * 100)}%, Net Eff {Math.round(REALIZATION_WEIGHTS.netTimeImpact * 100)}%,{"\n"}
+              {"  "}Doc Quality {Math.round(REALIZATION_WEIGHTS.docCompleteness * 100)}%, Coding {Math.round(REALIZATION_WEIGHTS.codingImpact * 100)}%, Satisfaction {Math.round(REALIZATION_WEIGHTS.satisfaction * 100)}%, After-Hours {Math.round(REALIZATION_WEIGHTS.afterHoursReduction * 100)}%)
             </Text>
           </View>
 
           <View style={styles.divider} />
 
           <Text style={{ fontSize: 8.5, color: colors.tertiary, lineHeight: 1.5 }}>
-            This assessment is for planning purposes. All calculations are based on inputs provided and Abridge benchmark data. Actual results depend on implementation approach, organizational readiness, and clinical workflow factors.
+            This assessment is for planning purposes. All calculations are based on inputs provided and patterns observed across Abridge implementations. "What we typically see" ranges reflect aggregate data across multiple health systems and specialties. Actual results depend on implementation approach, organizational readiness, and clinical workflow factors.
           </Text>
 
           <PageFooter pageNum={4} orgName={orgName} />

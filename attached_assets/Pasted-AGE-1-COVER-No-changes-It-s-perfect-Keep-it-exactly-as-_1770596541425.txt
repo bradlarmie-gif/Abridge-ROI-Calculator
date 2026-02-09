@@ -1,0 +1,317 @@
+AGE 1: COVER
+No changes. It's perfect. Keep it exactly as-is.
+
+PAGE 2: YOUR POSITION + YOUR FOUR DIMENSIONS
+This page needs the most updates. Same layout, same visual structure, just updated labels, numbers, and copy to reflect the new logic.
+YOUR POSITION section — update the copy:
+Current:
+
+You've invested in ambient AI. This assessment measures how that investment is performing against what mature implementations typically achieve.
+
+Change to:
+
+You've invested in ambient AI. This assessment measures how that investment is performing — and where the unrealized value sits.
+
+Why: Slightly more direct. "Unrealized value" is the frame for the whole document.
+Value Realization Score: Change from 63% to 57% (this reflects the updated weighting with six dimensions including edit time and documentation completeness as separate inputs).
+Four stat boxes — update:
+
+$138K annual opportunity → keep (or recalculate based on updated logic — see page 3)
+$12K monthly opportunity → keep (tracks to annual)
+$386K 3-year projection → keep (tracks to annual)
+37% room to grow → change to 43% (100% minus 57%)
+
+
+YOUR FOUR DIMENSIONS — change to FIVE DIMENSIONS
+Same visual layout (the YOU vs ABRIDGE BENCHMARK side-by-side cards), but update labels, benchmarks, and commentary. Add one dimension by making the existing four slightly more compact — or keep four and make the fifth dimension a callout card below. Your call on design, but here's the content:
+Dimension 1: Adoption (was "Adoption" — keep)
+CopyAdoption                                    59% of bench.
+
+YOU                     WHAT WE TYPICALLY SEE
+45%                     76%
+
+When adoption is below 60%, it typically reflects 
+workflow friction — the tool isn't fitting naturally 
+into how providers work.
+Change "ABRIDGE BENCHMARK" label to "WHAT WE TYPICALLY SEE" across all dimensions.
+Why: Until your benchmark data is large-sample and defensible under scrutiny, "what we typically see" is honest and still powerful. It's also vendor-agnostic language — this assessment works whether they're on DAX, Suki, or Abridge. When your data matures, you can switch back to "Abridge Benchmark."
+
+Dimension 2: Net Efficiency (was "Efficiency" — rename and reframe)
+CopyNet Efficiency                              14% of bench.
+
+YOU                     WHAT WE TYPICALLY SEE
++0.5 min                +3.5 min
+
+Your gross savings is 2 min, but 1.5 min is consumed 
+by edits — leaving only 0.5 min of net impact per 
+encounter. Top implementations save 4 min with 
+<0.5 min of editing.
+This is the biggest single change in the PDF. The old version showed "2 min vs 3 min" which is a modest gap. The new version shows "+0.5 min net vs +3.5 min net" which is a 7x gap. Same underlying data, completely different story. This is the number that makes a DAX customer's stomach drop.
+The "14% of bench" number in the corner makes it even more stark. They're realizing 14% of the efficiency potential. That's devastating — and it's their own data.
+The commentary line is critical. "Your gross savings is 2 min, but 1.5 min is consumed by edits" — this single sentence teaches the reader a new way to evaluate ambient AI. They will never look at a "time saved" claim the same way again. Every future vendor conversation will be filtered through this lens — the lens you built.
+
+Dimension 3: Documentation Quality (keep label, update framing)
+CopyDocumentation Quality                       68% of bench.
+
+YOU                     WHAT WE TYPICALLY SEE
+65%                     95%
+
+When notes don't capture the full clinical picture, 
+coding doesn't reflect the work performed. The revenue 
+impact is real but often invisible.
+Change from wRVU lift (+3.5% vs +5.5%) to documentation completeness (65% vs 95%).
+Why: Documentation completeness is directly attributable to AI quality. wRVU lift has confounders. Leading with the defensible metric makes you bulletproof. The wRVU impact shows up in the math on page 3 as a downstream consequence, not a primary dimension.
+
+Dimension 4: Provider Experience (keep, minor copy update)
+CopyProvider Experience                         65% of bench.
+
+YOU                     WHAT WE TYPICALLY SEE
+55%                     85%
+
+Satisfaction below 65% is a leading indicator. 
+Low scores predict declining adoption months before 
+it shows in utilization data.
+Change benchmark from 88% to 85%. More conservative, more defensible. The range you can defend is 80-90%, so 85% is the safe midpoint.
+
+Dimension 5: After-Hours Impact (NEW — add as a callout card below the four)
+If adding a fifth card breaks the layout, make it a dark/shaded banner at the bottom of the page instead:
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  AFTER-HOURS DOCUMENTATION                          │
+│                                                     │
+│  5,200 hours/year spent charting at home.            │
+│  2 hrs/wk × 50 providers × 52 weeks.               │
+│                                                     │
+│  Before ambient AI, the industry average was         │
+│  5-8 hrs/week (AMA, 2023). You've improved.         │
+│  The question is whether you've improved enough.     │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+If this doesn't fit on page 2, cut it. The four dimensions plus net efficiency are strong enough. But if it fits — it's the emotional anchor of the document.
+
+PAGE 3: YOUR VALUE GAP — THE MATH
+Same layout. Update the gap calculations to reflect the new logic.
+ANNUAL VALUE OPPORTUNITY box: Keep the $138K hero number (or recalculate — I'll give you the updated formulas below).
+THE MATH section — update the three gap calculations:
+Gap 1: Adoption Gap
+CopyAdoption Gap                                        $58K
+
+45% → 76% = 31 point gap
+100,000 × 31% = 31,000 encounters without AI
+31,000 × 3.5 min net benchmark × ($150/hr) × 25% conversion¹
+
+= $58K/year
+Change: Use 3.5 min (net benchmark) instead of 3 min (gross benchmark). This is more intellectually honest — you're valuing the encounters they're missing at the net impact rate, not the gross rate.
+
+Gap 2: Net Efficiency Gap (was "Efficiency Gap" — rename)
+CopyNet Efficiency Gap                                  $42K
+
+Current net: +0.5 min (2 min saved − 1.5 min editing)
+Benchmark net: +3.5 min (4 min saved − 0.5 min editing)
+Gap: 3.0 min per encounter
+
+40,000 encounters (at current 40% utilization) × 3.0 min = 2,000 hrs
+2,000 × $150/hr × 25% conversion¹
+
+= $42K/year (at current utilization)
+This is the key logic change. The old version showed a 1 min gap (2 min → 3 min gross). The new version shows a 3.0 min gap (0.5 min net → 3.5 min net). The dollar impact jumps from $28K to $42K. And the math is transparent — you're showing that edit time is eating their savings alive.
+Note: I calculated this on current utilization (40% = 40,000 encounters) rather than benchmark utilization. Why: the adoption gap already captures the value of the missing encounters. The efficiency gap should only capture the value of making existing encounters more efficient. This prevents double-counting, which is critical for credibility.
+
+Gap 3: Documentation Revenue Gap (was "Documentation Quality Gap" — rename)
+CopyDocumentation Revenue Gap                           $38K
+
+Documentation completeness: 65% → 95%
+Observed wRVU correlation: +3.5% current → +5.5% at 
+high completeness
+Gap: 2.0% wRVU lift
+
+1.5 wRVU × 76,000 encounters × 2.0% lift
+× $33/wRVU × 85% realization²
+
+= $38K/year
+Change: Lead with documentation completeness as the driver, then show wRVU as the financial consequence. Same math, better framing. This makes the causal chain defensible: "better documentation → more complete coding → higher wRVU capture."
+
+Total Annual Gap: Recalculate: $58K + $42K + $38K = $138K (happens to match — adjust if your specific inputs produce different numbers)
+
+YOUR INPUTS box — update to include new fields:
+CopyYOUR INPUTS
+
+50 providers
+100,000 encounters/year
+45% adoption
+2 min saved/encounter
+1.5 min edit time/encounter
+65% documentation completeness
++3.5% wRVU lift
+55% satisfaction
+2 hrs/wk after-hours charting
+VALUE ASSUMPTIONS box — keep as-is (the assumptions haven't changed)
+Add one line to assumptions:
+CopyNet time impact = gross savings − edit time
+Why: This makes the net calculation transparent in the methodology.
+
+PAGE 4: WHAT DRIVES PERFORMANCE + THE SWITCHING QUESTION + YOUR ASSESSMENT
+WHAT DRIVES PERFORMANCE section — minor copy updates:
+Pattern 1: Keep "Adoption Is a Human Challenge" — no changes needed.
+Pattern 2: Keep "Continuous Optimization" — no changes needed.
+Pattern 3: Keep "Deep Customization" — no changes needed.
+Pattern 4: Keep "Executive Visibility" — no changes needed.
+These are excellent as written.
+
+THE SWITCHING QUESTION section — update two cards and add one:
+"We just implemented" card — update:
+Current:
+
+The ROI gap often exceeds switching costs within 6 months. Sunk cost ≠ future value.
+
+Change to:
+
+Organizations still in Stage 2 after 6 months rarely advance without a change in approach. Your current gap: ~$138K/year. Patience is a virtue — but it's not a strategy.
+
+Why: Ties to the maturity model and uses that killer closing line.
+
+"Change fatigue" card — update:
+Current:
+
+Providers who've used AI before adopt 40% faster. They know what "good" looks like.
+
+Change to:
+
+Providers with prior AI experience adopt faster, not slower. They know what to look for. The friction of switching is real but brief. The friction of underperformance is ongoing.
+
+Why: Drops the specific "40% faster" claim (unless you can defend it) and replaces with the more powerful directional statement.
+
+"Contract lock-in" card — update:
+Current:
+
+Most contracts have exit clauses. We can help navigate the transition.
+
+Change to:
+
+Many contracts have more flexibility than they appear — especially around performance benchmarks. Even when time remains, the smartest organizations evaluate in advance. Preparation isn't commitment. It's diligence.
+
+Why: More consultative, less salesy.
+
+"IT bandwidth" card — keep as-is. It's clean and effective.
+
+Add a fifth card if space allows (may need to tighten other cards slightly):
+Copy"Broader vendor relationship"
+
+Enterprise relationships matter. They also 
+sometimes pull decisions away from clinical 
+best fit. The best outcomes come from evaluating 
+ambient AI on its own merits.
+
+YOUR ASSESSMENT section (bottom of page 4) — update:
+Hero statement:
+Copy50 providers.
+100,000 encounters.
+57% of potential realized.
+
+$138K in annual value ahead — $12K for every 
+month you act.
+Change 63% to 57% to match updated Value Realization Score.
+Paragraph below:
+Current:
+
+At 63%, you've made real progress. The $138K opportunity ahead isn't about starting over — it's about understanding which specific factors are limiting value and addressing them. The answers are usually specific and actionable.
+
+Change to:
+
+At 57%, you've made real progress. The gap isn't about your decision to invest in ambient AI — that was right. It's about whether your current approach can move you from Stage 2 to Stage 3. The factors limiting value are specific, measurable, and addressable.
+
+Why: Validates their investment, introduces the maturity model language, and creates the question "can our current vendor get us there?" without asking it.
+
+AT A GLANCE table — update:
+CopyAT A GLANCE
+
+Value Realization Score                    57%
+Annual Value Opportunity                   $138K
+Monthly Opportunity                        $12K
+3-Year Projection                          $386K
+
+Adoption              45%  (typical: 76%)
+Net Efficiency        +0.5 min  (typical: +3.5 min)
+Documentation         65%  (typical: 95%)
+Coding Impact         +3.5%  (typical: +5.5%)
+Provider Experience   55%  (typical: 85%)
+Changes:
+
+"bench:" → "typical:" (more defensible language)
+"Efficiency" → "Net Efficiency" with net values
+Added "Documentation" as separate line
+Changed order to match importance weighting
+
+
+METHODOLOGY section — update:
+YOUR DATA box:
+CopyYOUR DATA
+
+50 providers
+100,000 encounters/year
+45% adoption
+2 min saved/encounter
+1.5 min edit time/encounter
+65% documentation completeness
++3.5% wRVU lift
+55% satisfaction
+VALUE MODEL box:
+CopyVALUE MODEL
+
+Provider rate: $150/hr
+Time conversion: 25%
+wRVU value: $33
+wRVU realization: 85%
+Net impact = gross savings − edit time
+Observed patterns: 150+ health systems
+Change "Benchmark: 150+ systems" to "Observed patterns: 150+ health systems" — more honest, same credibility signal.
+FORMULAS — update:
+CopyFORMULAS
+
+Adoption Gap = Encounters × Util Gap% × Net Bench Time × Rate × Conv
+Efficiency Gap = Encounters@Current Util × Net Time Gap × Rate × Conv
+Quality Gap = Avg wRVU × Encounters@Bench × Lift Gap% × $/wRVU × Real
+Value Realization = Weighted composite (Util 25%, Net Eff 20%, 
+  Doc Quality 20%, Coding 15%, Satisfaction 10%, After-Hours 10%)
+Added the Value Realization formula. Shows the weights. Radical transparency.
+
+Footer disclaimer — update:
+Current:
+
+This assessment is for planning purposes. All calculations are based on inputs provided and Abridge benchmark data. Actual results depend on implementation approach, organizational readiness, and clinical workflow factors.
+
+Change to:
+
+This assessment is for planning purposes. All calculations are based on inputs provided and patterns observed across Abridge implementations. "What we typically see" ranges reflect aggregate data across multiple health systems and specialties. Actual results depend on implementation approach, organizational readiness, and clinical workflow factors.
+
+
+SUMMARY OF ALL CHANGES
+Page 1: No changes.
+Page 2:
+
+Value Realization 63% → 57%
+Room to grow 37% → 43%
+"ABRIDGE BENCHMARK" → "WHAT WE TYPICALLY SEE" across all dimensions
+"Efficiency" → "Net Efficiency" showing +0.5 min vs +3.5 min (the killer change)
+"Documentation Quality" reframed from wRVU to documentation completeness (65% vs 95%)
+Provider Experience benchmark 88% → 85%
+Updated commentary copy for each dimension
+Add Pajama Time banner if space allows
+
+Page 3:
+
+Adoption Gap uses net benchmark time (3.5 min)
+Efficiency Gap → Net Efficiency Gap showing 3.0 min gap (0.5 vs 3.5), calculated on current utilization to avoid double-counting
+Documentation Quality Gap → Documentation Revenue Gap with completeness as the driver, wRVU as the consequence
+YOUR INPUTS box expanded with edit time, documentation completeness
+VALUE ASSUMPTIONS adds "Net time impact = gross savings − edit time"
+
+Page 4:
+
+Switching question cards updated with stronger copy
+Fifth card added for vendor relationship objection
+Value Realization 63% → 57%
+"bench:" → "typical:" throughout
+AT A GLANCE table expanded with net efficiency and documentation
+Methodology updated with Value Realization formula and weights
+Footer disclaimer updated
