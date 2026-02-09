@@ -6,7 +6,7 @@ import AmbientNarrativeFlow from "./AmbientNarrativeFlow";
 import { type SwitchInputs, type SolutionType } from "@/lib/switchGapCalculator";
 import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 import { PageTransition } from "@/components/PageTransition";
-import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
+import { CinematicTransition } from "@/components/CinematicTransition";
 
 interface SwitchUnifiedFlowProps {
   onBack: () => void;
@@ -141,7 +141,7 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
 
   return (
     <>
-      <BrandedLoadingOverlay 
+      <CinematicTransition 
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
       />

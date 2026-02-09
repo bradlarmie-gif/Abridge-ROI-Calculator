@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
+import { CinematicTransition } from "@/components/CinematicTransition";
 import { ExploreProgressBar } from "@/components/ExploreProgressBar";
 import { type ModelResults, type ValueResults } from "@/pages/ModelBuilder";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
@@ -179,7 +179,7 @@ export default function InvestmentPage({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <BrandedLoadingOverlay 
+      <CinematicTransition 
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
       />

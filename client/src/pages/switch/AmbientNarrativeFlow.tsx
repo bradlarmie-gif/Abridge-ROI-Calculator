@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
-import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
+import { CinematicTransition } from "@/components/CinematicTransition";
 import { 
   calculateSwitchGap, 
   type SwitchInputs 
@@ -169,7 +169,7 @@ export default function AmbientNarrativeFlow({
 
   return (
     <>
-      <BrandedLoadingOverlay 
+      <CinematicTransition 
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
       />

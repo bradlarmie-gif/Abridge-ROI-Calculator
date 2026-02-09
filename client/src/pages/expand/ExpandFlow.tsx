@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { PageTransition } from "@/components/PageTransition";
-import { BrandedLoadingOverlay } from "@/components/BrandedLoadingOverlay";
+import { CinematicTransition } from "@/components/CinematicTransition";
 import ExpandDeploymentSetup from "./ExpandDeploymentSetup";
 import ExpandDataEntry from "./ExpandDataEntry";
 import ExpandBenchmarkComparison from "./ExpandBenchmarkComparison";
@@ -358,7 +358,7 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <BrandedLoadingOverlay 
+      <CinematicTransition 
         isVisible={showLoadingOverlay} 
         onComplete={handleLoadingComplete}
       />
