@@ -142,7 +142,7 @@ export default function StepWhatGoodLooksLike({
     },
     {
       icon: <ClipboardList className="w-5 h-5 text-[#EA2C00]" />,
-      label: "Documentation Completeness",
+      label: "Note Acceptance",
       currentValue: inputs.docCompleteness || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.docCompletenessMin,
       benchmarkMax: ABRIDGE_BENCHMARKS.docCompletenessMax,

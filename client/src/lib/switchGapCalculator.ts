@@ -95,9 +95,9 @@ export const ABRIDGE_BENCHMARKS = {
   editTime: 0.5,
   editTimeMax: 1,
   netImpact: 3.5,
-  docCompleteness: 95,
-  docCompletenessMin: 85,
-  docCompletenessMax: 95,
+  docCompleteness: 80,
+  docCompletenessMin: 75,
+  docCompletenessMax: 85,
   wrvuLift: 5.5,
   wrvuLiftMin: 4,
   wrvuLiftMax: 7,
@@ -153,7 +153,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime;
   const efficiencyScore = Math.min(100, Math.round((Math.max(0, currentNetImpact) / benchmarkNetImpact) * 100));
 
-  const docCompletenessScore = Math.min(100, Math.round(((docCompleteness || 65) / ABRIDGE_BENCHMARKS.docCompleteness) * 100));
+  const docCompletenessScore = Math.min(100, Math.round(((docCompleteness || 50) / ABRIDGE_BENCHMARKS.docCompleteness) * 100));
   const qualityScore = Math.min(100, Math.round((wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100));
   const satisfactionScore = Math.min(100, Math.round((satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100));
 

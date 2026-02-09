@@ -62,16 +62,16 @@ export default function StepWhyThisHappens({
     },
     {
       id: "doc-completeness",
-      label: "Documentation Quality",
+      label: "Note Acceptance",
       yourValue: `${inputs.docCompleteness}%`,
       benchmarkValue: `${ABRIDGE_BENCHMARKS.docCompleteness}%`,
       score: calculations.docCompletenessScore,
       status: calculations.docCompletenessScore >= 85 ? "on-track" : calculations.docCompletenessScore >= 60 ? "watch" : "priority",
       recommendation: calculations.docCompletenessScore >= 85
-        ? "Documentation quality is strong. Continue monitoring for specialty-specific gaps."
+        ? "Note acceptance is strong — providers trust the AI output. Continue monitoring for specialty-specific gaps."
         : calculations.docCompletenessScore >= 60
-        ? "Notes are capturing most of the clinical picture, but gaps in completeness directly affect coding accuracy and downstream revenue."
-        : "Incomplete notes create a cascading problem: missed codes, lower reimbursement, and audit risk. This is often the fastest area to improve.",
+        ? "Providers are editing notes more than expected. This usually means the AI is missing clinical details or not matching provider style."
+        : "Low note acceptance means providers are rewriting most of the AI output. This erodes time savings and signals the AI isn't matching clinical workflow.",
     },
     {
       id: "coding-impact",

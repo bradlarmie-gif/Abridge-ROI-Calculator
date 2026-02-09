@@ -217,7 +217,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
   const encountersAtCurrentUtil = Math.round(encounters * (inputs.utilization / 100));
   const netEfficiencyGapHours = Math.round((netTimeGap * encountersAtCurrentUtil) / 60);
   const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - inputs.wrvuLift);
-  const docCompleteness = inputs.docCompleteness || 65;
+  const docCompleteness = inputs.docCompleteness || 50;
 
   return (
     <Document>
@@ -319,11 +319,11 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
             insight={`Your gross savings is ${inputs.timeSavedPerEncounter} min, but ${inputs.editTimePerEncounter} min is consumed by edits\u2014leaving only ${calculations.currentNetImpact.toFixed(1)} min of net impact per encounter. Top implementations save ${ABRIDGE_BENCHMARKS.timeSavedAvg} min with <${ABRIDGE_BENCHMARKS.editTime} min of editing.`}
           />
           <DimensionCard
-            name="Documentation Quality"
+            name="Note Acceptance"
             benchPercent={calculations.docCompletenessScore}
-            youValue={`${inputs.docCompleteness || 65}%`}
+            youValue={`${inputs.docCompleteness || 50}%`}
             benchValue={`${ABRIDGE_BENCHMARKS.docCompleteness}%`}
-            insight={`When notes don't capture the full clinical picture, coding doesn't reflect the work performed. The revenue impact is real but often invisible.`}
+            insight={`Low note acceptance means providers are rewriting AI output — eroding time savings and signaling the AI isn't matching clinical workflow.`}
           />
           <DimensionCard
             name="Provider Experience"
@@ -450,14 +450,14 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 <View style={{ width: 3, backgroundColor: colors.primary, marginRight: 10, borderRadius: 1, minHeight: 50 }} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Documentation Revenue Gap</Text>
+                    <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primaryText }}>Note Acceptance Revenue Gap</Text>
                     <Text style={{ fontSize: 10, fontWeight: "bold", color: colors.primary }}>{fmtCurrency(calculations.wrvuGapValue)}</Text>
                   </View>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    Documentation completeness: {docCompleteness}% {"\u2192"} {ABRIDGE_BENCHMARKS.docCompleteness}%
+                    Note acceptance: {docCompleteness}% {"\u2192"} {ABRIDGE_BENCHMARKS.docCompleteness}%
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
-                    Observed wRVU correlation: +{inputs.wrvuLift}% current {"\u2192"} +{ABRIDGE_BENCHMARKS.wrvuLift}% at high completeness
+                    Observed wRVU correlation: +{inputs.wrvuLift}% current {"\u2192"} +{ABRIDGE_BENCHMARKS.wrvuLift}% at high acceptance
                   </Text>
                   <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.5 }}>
                     Gap: {wrvuGapPercent.toFixed(1)}% wRVU lift
@@ -491,7 +491,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 {inputs.utilization}% adoption{"\n"}
                 {inputs.timeSavedPerEncounter} min saved/encounter{"\n"}
                 {inputs.editTimePerEncounter} min edit time/encounter{"\n"}
-                {docCompleteness}% documentation completeness{"\n"}
+                {docCompleteness}% note acceptance{"\n"}
                 +{inputs.wrvuLift}% wRVU lift{"\n"}
                 {inputs.satisfaction}% satisfaction{"\n"}
                 {inputs.afterHoursPerWeek || 0} hrs/wk after-hours charting
@@ -682,7 +682,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               <Text style={{ fontSize: 10, color: colors.primaryText }}>+{calculations.currentNetImpact.toFixed(1)} min (typical: +{calculations.benchmarkNetImpact.toFixed(1)} min)</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
-              <Text style={{ fontSize: 10, color: colors.primaryText }}>Documentation</Text>
+              <Text style={{ fontSize: 10, color: colors.primaryText }}>Note Acceptance</Text>
               <Text style={{ fontSize: 10, color: colors.primaryText }}>{docCompleteness}% (typical: {ABRIDGE_BENCHMARKS.docCompleteness}%)</Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3 }}>
@@ -711,7 +711,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
                 {inputs.utilization}% adoption{"\n"}
                 {inputs.timeSavedPerEncounter} min saved/encounter{"\n"}
                 {inputs.editTimePerEncounter} min edit time/encounter{"\n"}
-                {docCompleteness}% documentation completeness{"\n"}
+                {docCompleteness}% note acceptance{"\n"}
                 +{inputs.wrvuLift}% wRVU lift{"\n"}
                 {inputs.satisfaction}% satisfaction
               </Text>
@@ -736,7 +736,7 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
               Efficiency Gap = Encounters@Current Util {"\u00D7"} Net Time Gap {"\u00D7"} Rate {"\u00D7"} Conv{"\n"}
               Quality Gap = Avg wRVU {"\u00D7"} Encounters {"\u00D7"} Lift Gap% {"\u00D7"} $/wRVU {"\u00D7"} Real{"\n"}
               Value Realization = Weighted composite (Util {Math.round(REALIZATION_WEIGHTS.utilization * 100)}%, Net Eff {Math.round(REALIZATION_WEIGHTS.netTimeImpact * 100)}%,{"\n"}
-              {"  "}Doc Quality {Math.round(REALIZATION_WEIGHTS.docCompleteness * 100)}%, Coding {Math.round(REALIZATION_WEIGHTS.codingImpact * 100)}%, Satisfaction {Math.round(REALIZATION_WEIGHTS.satisfaction * 100)}%, After-Hours {Math.round(REALIZATION_WEIGHTS.afterHoursReduction * 100)}%)
+              {"  "}Note Accept {Math.round(REALIZATION_WEIGHTS.docCompleteness * 100)}%, Coding {Math.round(REALIZATION_WEIGHTS.codingImpact * 100)}%, Satisfaction {Math.round(REALIZATION_WEIGHTS.satisfaction * 100)}%, After-Hours {Math.round(REALIZATION_WEIGHTS.afterHoursReduction * 100)}%)
             </Text>
           </View>
 

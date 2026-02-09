@@ -207,9 +207,9 @@ export default function StepWhereYouAre({
 
           <MetricInput
             icon={<ClipboardList className="w-5 h-5 text-[#EA2C00]" />}
-            title="Documentation Completeness"
-            description="How often do notes fully reflect the clinical visit?"
-            tooltip="When AI-generated notes miss clinical details, three things happen: providers lose trust and edit more, coding doesn't reflect the work actually performed, and quality measures get missed. Most organizations underestimate this gap."
+            title="Note Acceptance"
+            description="How often do providers use the AI note without significant edits?"
+            tooltip="When providers consistently use the AI-generated note without major edits, it signals strong output quality. Low acceptance usually means the AI is missing clinical details, using the wrong structure, or not matching provider style. This metric is the clearest signal of whether the AI is truly saving time or just shifting the work."
             value={inputs.docCompleteness}
             benchmark={ABRIDGE_BENCHMARKS.docCompleteness}
             unit="%"
@@ -218,7 +218,7 @@ export default function StepWhereYouAre({
             step={5}
             onChange={(v) => updateInput("docCompleteness", v)}
             testId="slider-doc-completeness"
-            benchmarkLabel="What we typically see: 85-95%"
+            benchmarkLabel="What we typically see: 75-85%"
           />
 
           <MetricInput

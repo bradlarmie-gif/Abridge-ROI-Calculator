@@ -167,7 +167,7 @@ export default function StepTheInvitation({
                 {[
                   { label: "Utilization", weight: "25%" },
                   { label: "Net Time Impact", weight: "20%" },
-                  { label: "Documentation Completeness", weight: "20%" },
+                  { label: "Note Acceptance", weight: "20%" },
                   { label: "Coding Impact (wRVU)", weight: "15%" },
                   { label: "Provider Satisfaction", weight: "10%" },
                   { label: "After-Hours Reduction", weight: "10%" },
