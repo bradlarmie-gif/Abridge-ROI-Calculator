@@ -145,7 +145,7 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   const isPresetSelected = (presetValue: number) => encountersPerProvider === presetValue && !usingTotalInput;
   const isUtilizationPresetSelected = (presetValue: number) => state.utilizationPercent === presetValue;
 
-  const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your ED" : "Your Practice";
+  const pageTitle = isNursing ? "Your Nursing Program" : isInpatient ? "Your Hospitalist Program" : isED ? "Your Emergency Department" : "Your Practice";
   const providerLabel = isNursing ? "Nurse FTEs" : isInpatient ? "Hospitalists" : isED ? "ED Physicians" : "Number of Providers";
   const encounterLabel = isInpatient ? "Admissions" : "Encounters";
 
