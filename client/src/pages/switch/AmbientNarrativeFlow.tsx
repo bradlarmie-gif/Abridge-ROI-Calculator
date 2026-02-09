@@ -83,8 +83,7 @@ export default function AmbientNarrativeFlow({
     }
   };
 
-  const handleLoadingComplete = useCallback(() => {
-    setShowLoadingOverlay(false);
+  const handleTransitionMidpoint = useCallback(() => {
     setCompletedSteps(prev => {
       const newSet = new Set(prev);
       newSet.add(6);
@@ -92,6 +91,10 @@ export default function AmbientNarrativeFlow({
     });
     setCurrentStep(7);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleTransitionComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
   }, []);
 
   const handleBack = () => {
@@ -171,7 +174,8 @@ export default function AmbientNarrativeFlow({
     <>
       <CinematicTransition 
         isVisible={showLoadingOverlay} 
-        onComplete={handleLoadingComplete}
+        onMidpoint={handleTransitionMidpoint}
+        onComplete={handleTransitionComplete}
       />
       <div className="min-h-screen bg-white">
         <UnifiedHeader 

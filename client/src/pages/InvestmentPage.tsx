@@ -159,12 +159,15 @@ export default function InvestmentPage({
     setShowLoadingOverlay(true);
   };
 
-  const handleLoadingComplete = useCallback(() => {
-    setShowLoadingOverlay(false);
+  const handleTransitionMidpoint = useCallback(() => {
     if (pendingResults) {
       onComplete(pendingResults);
     }
   }, [pendingResults, onComplete]);
+
+  const handleTransitionComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
+  }, []);
 
   const canComplete = hasPricingEntered;
 
@@ -181,7 +184,8 @@ export default function InvestmentPage({
     <div className="min-h-screen bg-slate-50">
       <CinematicTransition 
         isVisible={showLoadingOverlay} 
-        onComplete={handleLoadingComplete}
+        onMidpoint={handleTransitionMidpoint}
+        onComplete={handleTransitionComplete}
       />
       
       <UnifiedHeader

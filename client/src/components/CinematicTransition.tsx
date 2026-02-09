@@ -1,15 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 
+const FADE_IN_MS = 300;
+const HOLD_MS = 100;
+const FADE_OUT_MS = 300;
+
 interface CinematicTransitionProps {
   isVisible: boolean;
+  onMidpoint: () => void;
   onComplete: () => void;
-  duration?: number;
 }
 
 export function CinematicTransition({
   isVisible,
+  onMidpoint,
   onComplete,
-  duration = 700,
 }: CinematicTransitionProps) {
   const [phase, setPhase] = useState<"idle" | "entering" | "solid" | "exiting">("idle");
   const rafRef = useRef<number>(0);
@@ -28,20 +32,25 @@ export function CinematicTransition({
       });
     });
 
+    const midTimer = setTimeout(() => {
+      onMidpoint();
+    }, FADE_IN_MS);
+
     const exitTimer = setTimeout(() => {
       setPhase("exiting");
-    }, 400);
+    }, FADE_IN_MS + HOLD_MS);
 
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, duration);
+    }, FADE_IN_MS + HOLD_MS + FADE_OUT_MS);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      clearTimeout(midTimer);
       clearTimeout(exitTimer);
       clearTimeout(completeTimer);
     };
-  }, [isVisible, onComplete, duration]);
+  }, [isVisible, onMidpoint, onComplete]);
 
   if (!isVisible && phase === "idle") return null;
 
@@ -52,9 +61,9 @@ export function CinematicTransition({
 
   const transition =
     phase === "solid"
-      ? "opacity 0.3s ease-in"
+      ? `opacity ${FADE_IN_MS}ms ease-in`
       : phase === "exiting"
-      ? "opacity 0.3s ease-out"
+      ? `opacity ${FADE_OUT_MS}ms ease-out`
       : "none";
 
   return (

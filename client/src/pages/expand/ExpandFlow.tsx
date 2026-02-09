@@ -267,10 +267,13 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     }
   };
 
-  const handleLoadingComplete = useCallback(() => {
-    setShowLoadingOverlay(false);
+  const handleTransitionMidpoint = useCallback(() => {
     setCurrentStep(5);
     window.scrollTo(0, 0);
+  }, []);
+
+  const handleTransitionComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
   }, []);
 
   const goBack = () => {
@@ -360,7 +363,8 @@ export default function ExpandFlow({ onBackToJourney, onGoToExplore }: ExpandFlo
     <div className="min-h-screen bg-[#f8fafc]">
       <CinematicTransition 
         isVisible={showLoadingOverlay} 
-        onComplete={handleLoadingComplete}
+        onMidpoint={handleTransitionMidpoint}
+        onComplete={handleTransitionComplete}
       />
       <PageTransition pageKey={`expand-step-${currentStep}`}>
         {renderStep()}

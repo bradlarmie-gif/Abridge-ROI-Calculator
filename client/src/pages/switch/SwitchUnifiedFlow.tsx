@@ -76,10 +76,13 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     setShowLoadingOverlay(true);
   };
 
-  const handleLoadingComplete = useCallback(() => {
-    setShowLoadingOverlay(false);
+  const handleTransitionMidpoint = useCallback(() => {
     setPhase("scribe-analysis");
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleTransitionComplete = useCallback(() => {
+    setShowLoadingOverlay(false);
   }, []);
 
   const handleBackToPathSelection = () => {
@@ -143,7 +146,8 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
     <>
       <CinematicTransition 
         isVisible={showLoadingOverlay} 
-        onComplete={handleLoadingComplete}
+        onMidpoint={handleTransitionMidpoint}
+        onComplete={handleTransitionComplete}
       />
       <PageTransition pageKey={`switch-${phase}`}>
         {getPageContent()}
