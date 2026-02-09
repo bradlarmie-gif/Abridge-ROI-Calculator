@@ -582,35 +582,6 @@ export default function StepTheMath({
         </div>
       </section>
 
-      <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
-        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">Timing Comparison</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#F5F0EB] rounded-lg p-4">
-            <p className="text-xs text-[#666666] mb-1">Start now</p>
-            <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.switchNowValue)}</p>
-            <p className="text-xs text-[#999999]">3-year value</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <p className="text-xs text-[#666666] mb-1">Wait 6 months</p>
-            <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
-            <p className="text-xs text-[#999999] mb-1">3-year value</p>
-            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait6MonthsLoss)} opportunity cost</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <p className="text-xs text-[#666666] mb-1">Wait 12 months</p>
-            <p className="text-xl font-bold text-[#1A1A1A]">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
-            <p className="text-xs text-[#999999] mb-1">3-year value</p>
-            <p className="text-xs text-[#EA2C00] font-medium">-{formatCurrency(recalculatedValues.wait12MonthsLoss)} opportunity cost</p>
-          </div>
-        </div>
-        
-        <div className="mt-4 border-t border-[#E5E7EB] pt-4 text-center">
-          <p className="text-sm text-[#EA2C00] font-semibold">
-            Monthly opportunity: ~{formatCurrency(recalculatedValues.monthlyGap)} in potential value
-          </p>
-        </div>
-      </section>
-
       <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8">
         <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-4">
           The Cost of Waiting
