@@ -585,13 +585,17 @@ export default function ExpandJourneyExpansion({
                 <div>
                   <label className="text-xs text-[#6B7280] block mb-1">Total providers</label>
                   <input
-                    type="number"
-                    value={expansionTarget.providers}
+                    type="text"
+                    inputMode="numeric"
+                    value={expansionTarget.providers !== "" ? Number(expansionTarget.providers).toLocaleString("en-US") : ""}
                     placeholder="e.g., 150"
-                    onChange={(e) => setExpansionTarget({
-                      ...expansionTarget,
-                      providers: e.target.value === "" ? "" : Number(e.target.value),
-                    })}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/,/g, "");
+                      setExpansionTarget({
+                        ...expansionTarget,
+                        providers: raw === "" ? "" : Number(raw),
+                      });
+                    }}
                     className={`w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                       providerError ? "border-red-300" : "border-emerald-200"
                     }`}

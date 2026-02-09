@@ -794,10 +794,10 @@ export default function ExploreDocQuality({
                           <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888]">$</span>
                             <input
-                              type="number"
-                              step="100"
-                              value={docQualityInputs.ipDrgBasePayment}
-                              onChange={(e) => updateDocInputs({ ipDrgBasePayment: parseFloat(e.target.value) || 0 })}
+                              type="text"
+                              inputMode="numeric"
+                              value={docQualityInputs.ipDrgBasePayment ? docQualityInputs.ipDrgBasePayment.toLocaleString("en-US") : ""}
+                              onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ ipDrgBasePayment: v }); }}
                               className="w-full h-12 bg-white border border-[#E5E5E5] rounded-lg pl-8 pr-4 text-black font-semibold"
                               data-testid="input-drg-base"
                             />
@@ -1291,9 +1291,10 @@ export default function ExploreDocQuality({
                         <span className="text-[#666666]">× Panel size per provider</span>
                         <div className="flex items-center gap-1">
                           <input
-                            type="number"
-                            value={docQualityInputs.panelSize}
-                            onChange={(e) => updateDocInputs({ panelSize: parseFloat(e.target.value) || 0 })}
+                            type="text"
+                            inputMode="numeric"
+                            value={docQualityInputs.panelSize ? docQualityInputs.panelSize.toLocaleString("en-US") : ""}
+                            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ panelSize: v }); }}
                             className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                             data-testid="input-panel-size"
                           />
@@ -1387,9 +1388,10 @@ export default function ExploreDocQuality({
                         <div className="flex items-center gap-1">
                           <span className="text-[#888888]">$</span>
                           <input
-                            type="number"
-                            value={docQualityInputs.annualPayment}
-                            onChange={(e) => updateDocInputs({ annualPayment: parseFloat(e.target.value) || 0 })}
+                            type="text"
+                            inputMode="numeric"
+                            value={docQualityInputs.annualPayment ? docQualityInputs.annualPayment.toLocaleString("en-US") : ""}
+                            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ annualPayment: v }); }}
                             className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                             data-testid="input-annual-payment"
                           />
@@ -1577,10 +1579,11 @@ export default function ExploreDocQuality({
                         <div className="flex items-center gap-1">
                           <span className="text-[#888888]">$</span>
                           <input
-                            type="number"
-                            value={docQualityInputs.avgClaimValue}
-                            onChange={(e) => updateDocInputs({ avgClaimValue: parseFloat(e.target.value) || 0 })}
-                            className="w-16 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
+                            type="text"
+                            inputMode="numeric"
+                            value={docQualityInputs.avgClaimValue ? docQualityInputs.avgClaimValue.toLocaleString("en-US") : ""}
+                            onChange={(e) => { const v = parseFloat(e.target.value.replace(/,/g, "")) || 0; updateDocInputs({ avgClaimValue: v }); }}
+                            className="w-20 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                             data-testid="input-claim-value"
                           />
                         </div>

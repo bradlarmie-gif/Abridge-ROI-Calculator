@@ -200,11 +200,13 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
               <div className="space-y-1">
                 <Label className="text-xs">Cost per Provider Departure ($)</Label>
                 <Input
-                  type="number"
-                  value={inputs.workforce.costPerDeparture}
-                  onChange={(e) => 
-                    onInputChange("workforce.costPerDeparture", Number(e.target.value))
-                  }
+                  type="text"
+                  inputMode="numeric"
+                  value={inputs.workforce.costPerDeparture ? inputs.workforce.costPerDeparture.toLocaleString("en-US") : ""}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value.replace(/,/g, "")) || 0;
+                    onInputChange("workforce.costPerDeparture", v);
+                  }}
                   data-testid="input-departure-cost"
                 />
               </div>
@@ -256,11 +258,13 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
                 <div className="space-y-1">
                   <Label className="text-xs">Net Collectible Revenue ($)</Label>
                   <Input
-                    type="number"
-                    value={inputs.denials.netCollectibleRevenue}
-                    onChange={(e) => 
-                      onInputChange("denials.netCollectibleRevenue", Number(e.target.value))
-                    }
+                    type="text"
+                    inputMode="numeric"
+                    value={inputs.denials.netCollectibleRevenue ? inputs.denials.netCollectibleRevenue.toLocaleString("en-US") : ""}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value.replace(/,/g, "")) || 0;
+                      onInputChange("denials.netCollectibleRevenue", v);
+                    }}
                     data-testid="input-collectible-revenue"
                   />
                 </div>
@@ -314,11 +318,13 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
                 <div className="space-y-1">
                   <Label className="text-xs">Impacted MA Patients</Label>
                   <Input
-                    type="number"
-                    value={inputs.hcc.impactedMaPatients}
-                    onChange={(e) => 
-                      onInputChange("hcc.impactedMaPatients", Number(e.target.value))
-                    }
+                    type="text"
+                    inputMode="numeric"
+                    value={inputs.hcc.impactedMaPatients ? inputs.hcc.impactedMaPatients.toLocaleString("en-US") : ""}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value.replace(/,/g, "")) || 0;
+                      onInputChange("hcc.impactedMaPatients", v);
+                    }}
                     data-testid="input-ma-patients"
                   />
                 </div>
@@ -399,11 +405,13 @@ export function LeverAccordion({ inputs, onInputChange }: LeverAccordionProps) {
                 <div className="space-y-1">
                   <Label className="text-xs">PMPM Benchmark ($)</Label>
                   <Input
-                    type="number"
-                    value={inputs.hcc.pmpmBenchmark}
-                    onChange={(e) => 
-                      onInputChange("hcc.pmpmBenchmark", Number(e.target.value))
-                    }
+                    type="text"
+                    inputMode="numeric"
+                    value={inputs.hcc.pmpmBenchmark ? inputs.hcc.pmpmBenchmark.toLocaleString("en-US") : ""}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value.replace(/,/g, "")) || 0;
+                      onInputChange("hcc.pmpmBenchmark", v);
+                    }}
                     data-testid="input-pmpm-benchmark"
                   />
                 </div>

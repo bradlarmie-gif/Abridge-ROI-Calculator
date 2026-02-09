@@ -805,12 +805,14 @@ export default function ExpandResults({
                 <div>
                   <label className="text-sm text-[#6B7280] block mb-1">Total providers</label>
                   <input
-                    type="number"
+                    type="text"
                     inputMode="numeric"
-                    value={targetProviders}
-                    onChange={(e) => setTargetProviders(e.target.value ? parseInt(e.target.value) : "")}
+                    value={targetProviders !== "" ? Number(targetProviders).toLocaleString("en-US") : ""}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/,/g, "");
+                      setTargetProviders(raw ? parseInt(raw) : "");
+                    }}
                     placeholder="e.g., 150"
-                    min={providers + 1}
                     className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                     data-testid="input-target-providers"
                   />

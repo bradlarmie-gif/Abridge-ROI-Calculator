@@ -348,14 +348,17 @@ export default function ExpandValueConfiguration({
                         <div className="flex items-center gap-2">
                           <span className="text-[#6B7280]">$</span>
                           <input
-                            type="number"
+                            type="text"
                             inputMode="numeric"
-                            placeholder="e.g., 150000"
-                            value={valueConfig.overtimeReduction || ""}
-                            onChange={(e) => setValueConfig({ 
-                              ...valueConfig, 
-                              overtimeReduction: e.target.value ? parseInt(e.target.value) : null 
-                            })}
+                            placeholder="e.g., 150,000"
+                            value={valueConfig.overtimeReduction ? valueConfig.overtimeReduction.toLocaleString("en-US") : ""}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/,/g, "");
+                              setValueConfig({ 
+                                ...valueConfig, 
+                                overtimeReduction: raw ? parseInt(raw) : null 
+                              });
+                            }}
                             className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent text-sm"
                             data-testid="input-overtime-reduction"
                           />

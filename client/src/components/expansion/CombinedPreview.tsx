@@ -193,13 +193,17 @@ export function CombinedPreview({ baseline, settingType, onBack, onSave }: Combi
                       </Label>
                       {config.customEncounters && (
                         <Input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           placeholder="Enter encounters/year"
-                          value={config.encounters || ""}
-                          onChange={(e) => setConfig(prev => ({
-                            ...prev,
-                            encounters: parseInt(e.target.value) || null,
-                          }))}
+                          value={config.encounters ? config.encounters.toLocaleString("en-US") : ""}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/,/g, "");
+                            setConfig(prev => ({
+                              ...prev,
+                              encounters: val ? parseInt(val) : null,
+                            }));
+                          }}
                           className="mt-2 w-48"
                           data-testid="input-custom-encounters"
                         />

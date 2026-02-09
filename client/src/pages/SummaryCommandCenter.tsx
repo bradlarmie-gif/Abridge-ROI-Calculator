@@ -1160,14 +1160,15 @@ export default function SummaryCommandCenter({
                     <div className="text-[#EA2C00] text-xs uppercase tracking-wider mb-2">Full Scale</div>
                     <div className="flex items-center justify-center lg:justify-end gap-2 mb-1">
                       <input 
-                        type="number" 
-                        value={fullScaleUnits}
+                        type="text" 
+                        inputMode="numeric"
+                        value={fullScaleUnits ? fullScaleUnits.toLocaleString("en-US") : ""}
                         onChange={(e) => {
-                          const val = e.target.value;
+                          const val = e.target.value.replace(/,/g, "");
                           if (val === "") {
                             setFullScaleUnits("");
                           } else {
-                            setFullScaleUnits(Number(val));
+                            setFullScaleUnits(Number(val) || 0);
                           }
                         }}
                         onBlur={() => {
@@ -1175,7 +1176,6 @@ export default function SummaryCommandCenter({
                             setFullScaleUnits(pilotUnits + 1);
                           }
                         }}
-                        min={pilotUnits + 1}
                         className="w-24 bg-transparent text-4xl font-bold text-[#EA2C00] text-center lg:text-right border-b-2 border-[#EA2C00]/30 focus:border-[#EA2C00] focus:text-white outline-none transition-colors"
                         data-testid="input-fullscale-units"
                       />

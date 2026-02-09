@@ -363,12 +363,14 @@ export function Step2_ExpansionPlan({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">$</span>
                       <Input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         placeholder="Enter annual cost"
-                        value={enterpriseCost || ""}
-                        onChange={(e) =>
-                          setEnterpriseCost(e.target.value ? parseFloat(e.target.value) : null)
-                        }
+                        value={enterpriseCost ? enterpriseCost.toLocaleString("en-US") : ""}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/,/g, "");
+                          setEnterpriseCost(val ? parseFloat(val) : null);
+                        }}
                         className="flex-1"
                         data-testid="input-enterprise-cost"
                       />

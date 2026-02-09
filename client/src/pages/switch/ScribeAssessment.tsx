@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ export default function ScribeAssessment({
                   testId="input-total-providers"
                 />
                 <InputField
-                  label="Hours per week"
+                  label="Hours per scribe per week"
                   value={inputs.scribeHoursPerWeek}
                   onChange={(v) => updateInput("scribeHoursPerWeek", v)}
                   testId="input-scribe-hours"
@@ -366,7 +366,7 @@ export default function ScribeAssessment({
   );
 }
 
-// Simple Input Field Component
+// Simple Input Field Component with comma formatting
 function InputField({
   label,
   value,
@@ -378,14 +378,76 @@ function InputField({
   onChange: (value: number) => void;
   testId: string;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cursorRef = useRef<number>(0);
+
+  const formatDisplay = (num: number): string => {
+    if (num === 0) return "";
+    return num.toLocaleString("en-US");
+  };
+
+  const parseFormatted = (str: string): number => {
+    const cleaned = str.replace(/,/g, "").replace(/[^\d.-]/g, "");
+    if (!cleaned) return 0;
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const formatAsYouType = (input: string): string => {
+    const cleaned = input.replace(/[^\d.]/g, "");
+    const parts = cleaned.split(".");
+    const integerPart = parts[0] || "";
+    const decimalPart = parts[1];
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    if (decimalPart !== undefined) return `${formattedInteger}.${decimalPart}`;
+    return formattedInteger;
+  };
+
+  const [displayValue, setDisplayValue] = useState(() => formatDisplay(value));
+
+  useEffect(() => {
+    const currentParsed = parseFormatted(displayValue);
+    if (currentParsed !== value) {
+      setDisplayValue(formatDisplay(value));
+    }
+  }, [value]);
+
+  useEffect(() => {
+    if (inputRef.current && document.activeElement === inputRef.current) {
+      inputRef.current.setSelectionRange(cursorRef.current, cursorRef.current);
+    }
+  }, [displayValue]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const rawValue = input.value;
+    const cursorPos = input.selectionStart || 0;
+    const formatted = formatAsYouType(rawValue);
+    const digitsBeforeCursor = rawValue.slice(0, cursorPos).replace(/[^\d.]/g, "").length;
+    let newCursorPos = 0;
+    let digitCount = 0;
+    for (let i = 0; i < formatted.length; i++) {
+      if (formatted[i] !== ",") digitCount++;
+      if (digitCount === digitsBeforeCursor) { newCursorPos = i + 1; break; }
+    }
+    if (digitCount < digitsBeforeCursor) newCursorPos = formatted.length;
+    cursorRef.current = newCursorPos;
+    setDisplayValue(formatted);
+    onChange(parseFormatted(formatted));
+  };
+
   return (
     <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
       <label className="block text-xs text-[#888888] mb-2">{label}</label>
       <input
-        type="number"
-        value={value || ""}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className="w-full text-right text-lg font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        ref={inputRef}
+        type="text"
+        inputMode="numeric"
+        value={displayValue}
+        onChange={handleChange}
+        onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+        onBlur={() => setDisplayValue(formatDisplay(parseFormatted(displayValue)))}
+        className="w-full text-right text-lg font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0"
         placeholder="0"
         data-testid={testId}
       />
