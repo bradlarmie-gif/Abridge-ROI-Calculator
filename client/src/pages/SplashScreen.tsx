@@ -10,8 +10,8 @@ interface SplashScreenProps {
 const COLS = 6;
 const ROWS = 5;
 const SHAPE_SIZE = 120;
-const BASE_OPACITY = 0.28;
-const PEAK_OPACITY = 0.48;
+const BASE_OPACITY = 0.35;
+const PEAK_OPACITY = 0.58;
 
 function getRotation(row: number, col: number): number {
   const pattern = [
