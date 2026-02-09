@@ -556,7 +556,7 @@ function CoverPage({ setting }: { setting: MethodologyCareSetting }) {
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   return (
-    <Page size="LETTER" style={styles.coverPage}>
+    <Page size="LETTER" style={styles.coverPage} wrap={false}>
       <Image src={abridgeLogoRed} style={styles.coverLogo} />
       <View style={styles.coverCurve}>
         <Svg width={300} height={300} viewBox="0 0 300 300">
@@ -616,7 +616,7 @@ function MechanismItem({ mechanism, isLast }: { mechanism: MechanismData; isLast
 function Page1Content({ setting }: { setting: MethodologyCareSetting }) {
   const data = settingData[setting];
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>THE CONTEXT</Text>
 
@@ -709,7 +709,7 @@ function Page1Content({ setting }: { setting: MethodologyCareSetting }) {
 function Page2Content({ setting }: { setting: MethodologyCareSetting }) {
   const data = settingData[setting];
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>VALUE MECHANISMS</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 8 }}>{data.mechanismsSubtitle}</Text>
@@ -743,7 +743,7 @@ function Page2Content({ setting }: { setting: MethodologyCareSetting }) {
 function Page3Content({ setting }: { setting: MethodologyCareSetting }) {
   const data = settingData[setting];
   return (
-    <Page size="LETTER" style={styles.page}>
+    <Page size="LETTER" style={styles.page} wrap={false}>
       <View style={styles.pageWrapper}>
         <Text style={styles.sectionLabel}>TRANSPARENCY</Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>Every Number Has a Source</Text>
