@@ -208,8 +208,8 @@ export default function ExploreDocQuality({
           </p>
         </motion.div>
 
-        {/* Outpatient/ED: How to Use This */}
-        {!isInpatient && !isNursing && (
+        {/* How to Use This - Outpatient/ED/Inpatient */}
+        {!isNursing && (
         <motion.div
           className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -222,7 +222,9 @@ export default function ExploreDocQuality({
           </p>
           <div className="h-px bg-[#D1D5DB] mb-6" />
           <p className="text-sm text-black leading-relaxed" data-testid="text-doc-quality-intro">
-            {isED
+            {isInpatient
+              ? "Complete documentation drives DRG accuracy and revenue integrity. A single missed CC/MCC can shift DRG weight by 0.3\u20130.5\u2014worth $2,000\u2013$4,000 per case. Select the drivers that apply to your organization, adjust scenarios to match your confidence level, and edit any assumption directly."
+              : isED
               ? "Better documentation captures the clinical complexity you\u2019re already delivering. In high-volume ED settings, notes often understate acuity\u2014especially during surges. Select the drivers that apply to your department and adjust scenarios to match your confidence level."
               : "Better documentation creates downstream revenue by capturing the complexity you\u2019re already delivering. Select the drivers that apply to your organization, adjust the scenarios to match your confidence level, and edit any assumption directly."
             }
@@ -626,14 +628,24 @@ export default function ExploreDocQuality({
         </>
         )}
 
-        {/* Inpatient: DRG Accuracy */}
+        {/* Inpatient: Revenue Drivers Container */}
         {isInpatient && (
         <motion.div
-          className="mb-4"
+          className="bg-[#F5F0EB] rounded-lg p-6 space-y-4 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.15 }}
+          data-testid="card-revenue-drivers-inpatient"
         >
+          <div>
+            <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+              REVENUE DRIVERS
+            </p>
+            <div className="h-px bg-[#D1D5DB]" />
+          </div>
+
+        {/* DRG Accuracy */}
+        <div className="space-y-0">
           <button
             onClick={() => updateDocInputs({ ipDrgEnabled: !docQualityInputs.ipDrgEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
@@ -889,17 +901,10 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-        )}
+        </div>
 
-        {/* Inpatient: CDI Query Reduction */}
-        {isInpatient && (
-        <motion.div
-          className="mb-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
+        {/* CDI Query Reduction */}
+        <div className="space-y-0">
           <button
             onClick={() => updateDocInputs({ ipCdiEnabled: !docQualityInputs.ipCdiEnabled })}
             className={`w-full p-4 rounded-lg text-left transition-all ${
@@ -1054,6 +1059,8 @@ export default function ExploreDocQuality({
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
         </motion.div>
         )}
 
