@@ -1,0 +1,120 @@
+HEADER:
+- Large serif: "WHAT GOOD LOOKS LIKE"
+- Subtitle: "These benchmarks come from mature implementations. They're achievable with the right approach and support."
+- 40px space below subtitle
+
+SECTION 1: YOUR POSITION (beige container)
+Full-width beige (#F5F0EB) container, border-radius 12px, padding 32px.
+
+Inside, single row layout:
+- Left side: red circle icon (target/bullseye) + "YOUR POSITION" in bold small caps + "See where you stand against top performers" in gray body text
+- Right side: two stat boxes with clear borders
+  - Box 1: large bold number "[X]" with "IN RANGE" below in small gray caps
+  - Box 2: large bold number "[X]" in red (#C54B2A) with "OPPORTUNITIES" below in small red caps
+
+48px space below this section.
+
+SECTION 2: YOUR DIMENSIONS (beige container)
+Full-width beige (#F5F0EB) container, border-radius 12px, padding 40px.
+
+At the top of the beige container:
+- No section label needed. The cards speak for themselves.
+
+Six WHITE cards inside the beige container, 2-column grid, 3 rows.
+Gap between cards: 24px horizontal, 24px vertical.
+Each card: white (#FFFFFF), border-radius 12px, NO border, NO shadow. The white-on-beige contrast is the visual separation. Padding inside each card: 32px.
+
+EACH CARD LAYOUT (top to bottom):
+
+ROW 1 — Header row:
+- Left: icon in a 36px red (#C54B2A) circle with white icon inside + metric name in bold 15px #1A1A1A
+- Right: large value in 32px bold #1A1A1A, with "CURRENT" in 10px caps #9B9590 directly below the number, right-aligned
+
+ROW 2 — The visual comparison (this is the hero element of each card):
+Full width of the card. This should NOT look like a basic slider. Design it as a horizontal track with clear visual storytelling:
+
+- A horizontal bar, full card width, height 6px, border-radius 3px, background #ECEAE6 (light warm gray)
+- The benchmark range shown as a shaded band ON the bar: background #D1CEC9 (slightly darker warm gray), positioned at the correct percentage range. This band should be clearly visible but subtle.
+- The user's current value shown as a solid red dot (14px diameter, #C54B2A) positioned at the correct point on the bar
+- If the red dot is LEFT of the benchmark band, it's visually obvious they're below range
+- If the red dot is INSIDE the benchmark band, it's visually obvious they're in range
+
+Below the bar, right-aligned:
+- Small text in #9B9590: "Typical: [range]" — e.g., "Typical: 70-80%"
+
+ROW 3 — Gap indicator:
+24px of space above this row.
+
+IF BELOW BENCHMARK:
+- Single line of text, left-aligned
+- Gap number in bold 14px red (#C54B2A) — e.g., "20%"
+- Followed by " gap to reach benchmark range" in regular 14px #9B9590
+- Example rendering: "20% gap to reach benchmark range"
+
+IF IN RANGE:
+- Small checkmark "✓" in muted green (#5B8C5A) followed by "In Range" in same green
+- Regular weight, 14px
+
+IF ABOVE RANGE:
+- Small up arrow "↑" in muted green followed by "Above benchmark range" in same green
+
+THE SIX CARDS:
+
+Card 1 (top left): Utilization
+- Icon: bar chart
+- Value: [their utilization]%
+- Bar: 0-100% scale
+- Benchmark band: 70-80%
+- Typical label: "Typical: 70-80%"
+
+Card 2 (top right): Net Time Impact
+- Icon: clock
+- Value: +[their net time] min (calculated as time saved minus edit time)
+- Bar: 0-6 min scale
+- Benchmark band: 3-4 min
+- Typical label: "Typical: 3-4 min net"
+
+Card 3 (middle left): Note Acceptance
+- Icon: document with checkmark
+- Value: [their note acceptance]%
+- Bar: 0-100% scale
+- Benchmark band: 75-85%
+- Typical label: "Typical: 75-85%"
+
+Card 4 (middle right): Coding Impact
+- Icon: dollar sign
+- Value: +[their wRVU]%
+- Bar: 0-12% scale
+- Benchmark band: 4-7%
+- Typical label: "Typical: +4-7%"
+
+Card 5 (bottom left): After-Hours Work
+- Icon: moon
+- Value: [their hours] hrs/wk
+- Bar: 0-10 hrs/wk scale
+- Benchmark band: 1-3 hrs/wk
+- Typical label: "Typical: 1-3 hrs/wk"
+- NOTE: For this metric LOWER is better. Gap logic is inverted:
+  - If above 3 hrs/wk: "[X] hrs/wk above typical range" in red
+  - If 1-3 hrs/wk: "✓ In Range" in green
+  - If below 1: "↑ Above benchmark range" in green
+  - The red dot should appear to the RIGHT of the benchmark band when they're worse (higher hours)
+
+Card 6 (bottom right): Provider Satisfaction
+- Icon: heart
+- Value: [their satisfaction]%
+- Bar: 0-100% scale
+- Benchmark band: 80-95%
+- Typical label: "Typical: 80-95%"
+
+BOTTOM:
+48px space after the beige container.
+Navigation: ← Back (left) | See the Math → (red button, right)
+
+CRITICAL RULES:
+- NO maturity model on this page. Remove it completely.
+- NO brown or dark warm gray borders on cards. White cards sit on beige with no border and no shadow.
+- NO salmon or pink background fills anywhere.
+- Red (#C54B2A) appears ONLY on: icon circles, the position dot on the bar, gap numbers, the OPPORTUNITIES count, and the CTA button.
+- Everything else is white, beige (#F5F0EB), warm grays (#9B9590, #D1CEC9, #ECEAE6), and near-black (#1A1A1A) text.
+- The page should feel spacious and premium. If in doubt, add more whitespace.Add to Conversation

@@ -1,0 +1,27 @@
+CopyOn the "What Good Looks Like" page, fix the styling to match the rest of the app. The current version has white cards on a white background with brown/warm gray borders — it looks off-brand and cheap. It needs to match the styling pattern used on the "Where You Are" page, where content cards sit inside beige (#F5F0EB) container sections.
+
+Here's exactly what to do:
+
+1. YOUR POSITION card — wrap it in a beige (#F5F0EB) container with border-radius 12px and padding 32px. The card itself stays as-is inside the beige container. Remove any border or shadow from the card — the beige background IS the container.
+
+2. YOUR DIMENSIONS section — wrap ALL six metric cards inside ONE large beige (#F5F0EB) container, just like how the "YOUR CURRENT PERFORMANCE" section on the "Where You Are" page wraps all the input cards in one beige block.
+
+Inside this beige container:
+- "YOUR DIMENSIONS" label at the top in small caps, dark text
+- Subtitle below it: "How you compare across each dimension — and where the opportunities are."
+- Then the six cards in a 2-column grid inside the beige container
+
+3. The six individual metric cards should be WHITE (#FFFFFF) with border-radius 12px, sitting inside the beige container. NO border on the white cards — the contrast between white cards and beige background provides the visual separation (this is exactly how the "Where You Are" page works with Utilization, Time Saved, etc.)
+
+4. Inside each white card, keep the current content:
+- Icon (red circle) + metric name + large value with "CURRENT" label
+- The horizontal benchmark bar visualization (keep the warm gray track with darker benchmark band and red dot)
+- The gap text at bottom (red number + "below typical range" in gray, or green "✓ In Range")
+
+5. The "Typical: X-Y" text should be a small gray pill/badge sitting below the benchmark bar, right-aligned — matching the style of "Abridge Benchmark: 76%" pills on the "Where You Are" page.
+
+6. Remove ALL brown/dark warm gray borders from the cards. The visual hierarchy should come from:
+- White page background
+- Beige section containers
+- White cards inside beige containers
+- Red accents only on data points, icons, and gap numbers

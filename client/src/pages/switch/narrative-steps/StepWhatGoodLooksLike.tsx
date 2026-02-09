@@ -45,64 +45,64 @@ function BenchmarkCard({
     ? Math.max(0, currentValue - benchmarkMax)
     : Math.max(0, benchmarkMin - currentValue);
 
-  const gapLabel = invertedScale ? "above typical range" : "below typical range";
+  const gapLabel = invertedScale ? "above typical range" : "gap to reach benchmark range";
 
   return (
     <div
-      className="bg-white rounded-xl border border-[#E8E4DF] p-7"
+      className="bg-white rounded-xl p-8"
       data-testid={`card-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      <div className="flex items-start justify-between mb-6 gap-2 flex-wrap">
+      <div className="flex items-start justify-between mb-6 gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#C54B2A] flex items-center justify-center flex-shrink-0">
             {icon}
           </div>
-          <h3 className="font-bold text-[#1A1A1A] text-base">{label}</h3>
+          <h3 className="font-bold text-[#1A1A1A] text-[15px]">{label}</h3>
         </div>
 
         <div className="text-right">
-          <span className="text-[28px] font-bold text-[#1A1A1A] leading-none">
+          <span className="text-[32px] font-bold text-[#1A1A1A] leading-none">
             {prefix}{currentValue}{unit}
           </span>
-          <p className="text-[10px] text-[#8A8478] uppercase tracking-wider mt-1">Current</p>
+          <p className="text-[10px] text-[#9B9590] uppercase tracking-wider mt-1">Current</p>
         </div>
       </div>
 
       <div className="relative mb-3">
-        <div className="h-2 bg-[#F0EDE8] rounded-full relative">
+        <div className="h-1.5 bg-[#ECEAE6] rounded-full relative">
           <div
-            className="absolute h-full bg-[#D4CFC8] rounded-full"
+            className="absolute h-full bg-[#D1CEC9] rounded-full"
             style={{
               left: `${benchmarkMinPercent}%`,
               width: `${benchmarkMaxPercent - benchmarkMinPercent}%`,
             }}
           />
           <div
-            className="absolute top-1/2 w-3 h-3 rounded-full bg-[#C54B2A] z-10"
+            className="absolute top-1/2 w-3.5 h-3.5 rounded-full bg-[#C54B2A] z-10"
             style={{ left: `${currentPercent}%`, transform: "translate(-50%, -50%)" }}
           />
         </div>
 
-        <div className="flex justify-end mt-1.5">
-          <span className="text-xs text-[#8A8478]">
-            {typicalLabel || `Typical: ${prefix}${benchmarkMin}–${benchmarkMax}${unit}`}
+        <div className="flex justify-end mt-2">
+          <span className="text-xs text-[#9B9590]">
+            {typicalLabel || `Typical: ${prefix}${benchmarkMin}\u2013${benchmarkMax}${unit}`}
           </span>
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-6">
         {isBelowRange ? (
           <p className="text-sm" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
             <span className="font-bold text-[#C54B2A]">{Math.round(gapToRange)}{unit}</span>
-            <span className="text-[#8A8478]"> {gapLabel}</span>
+            <span className="text-[#9B9590]"> {gapLabel}</span>
           </p>
         ) : isAboveRange ? (
-          <p className="text-sm text-[#6B8A6B] flex items-center gap-1.5" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
+          <p className="text-sm text-[#5B8C5A] flex items-center gap-1.5" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
             <ArrowUp className="w-3.5 h-3.5" />
-            <span>Above typical range</span>
+            <span>Above benchmark range</span>
           </p>
         ) : (
-          <p className="text-sm text-[#6B8A6B] flex items-center gap-1.5" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
+          <p className="text-sm text-[#5B8C5A] flex items-center gap-1.5" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
             <Check className="w-3.5 h-3.5" />
             <span>In Range</span>
           </p>
@@ -118,11 +118,11 @@ export default function StepWhatGoodLooksLike({
   onNext,
   onBack,
 }: StepWhatGoodLooksLikeProps) {
-  const currentNetImpact = (inputs.timeSavedPerEncounter || 0) - (inputs.editTimePerEncounter || 0);
+  const currentNetImpact = Math.max(0, (inputs.timeSavedPerEncounter || 0) - (inputs.editTimePerEncounter || 0));
 
   const dimensions = [
     {
-      icon: <BarChart3 className="w-5 h-5 text-[#EA2C00]" />,
+      icon: <BarChart3 className="w-4 h-4 text-white" />,
       label: "Utilization",
       currentValue: inputs.utilization || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.utilizationMin,
@@ -131,9 +131,9 @@ export default function StepWhatGoodLooksLike({
       maxScale: 100,
     },
     {
-      icon: <Clock className="w-5 h-5 text-[#EA2C00]" />,
+      icon: <Clock className="w-4 h-4 text-white" />,
       label: "Net Time Impact",
-      currentValue: Math.max(0, currentNetImpact),
+      currentValue: currentNetImpact,
       benchmarkMin: 3,
       benchmarkMax: 4,
       unit: " min",
@@ -142,7 +142,7 @@ export default function StepWhatGoodLooksLike({
       typicalLabel: "Typical: 3\u20134 min net",
     },
     {
-      icon: <ClipboardCheck className="w-5 h-5 text-[#EA2C00]" />,
+      icon: <ClipboardCheck className="w-4 h-4 text-white" />,
       label: "Note Acceptance",
       currentValue: inputs.docCompleteness || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.docCompletenessMin,
@@ -151,7 +151,7 @@ export default function StepWhatGoodLooksLike({
       maxScale: 100,
     },
     {
-      icon: <DollarSign className="w-5 h-5 text-[#EA2C00]" />,
+      icon: <DollarSign className="w-4 h-4 text-white" />,
       label: "Coding Impact",
       currentValue: inputs.wrvuLift || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.wrvuLiftMin,
@@ -159,9 +159,10 @@ export default function StepWhatGoodLooksLike({
       unit: "%",
       prefix: "+",
       maxScale: 12,
+      typicalLabel: "Typical: +4\u20137%",
     },
     {
-      icon: <Moon className="w-5 h-5 text-[#EA2C00]" />,
+      icon: <Moon className="w-4 h-4 text-white" />,
       label: "After-Hours Work",
       currentValue: inputs.afterHoursPerWeek || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.afterHoursMin,
@@ -171,7 +172,7 @@ export default function StepWhatGoodLooksLike({
       invertedScale: true,
     },
     {
-      icon: <Heart className="w-5 h-5 text-[#EA2C00]" />,
+      icon: <Heart className="w-4 h-4 text-white" />,
       label: "Provider Satisfaction",
       currentValue: inputs.satisfaction || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.satisfactionMin,
@@ -194,63 +195,56 @@ export default function StepWhatGoodLooksLike({
     <div className="space-y-10">
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           What Good Looks Like
         </h1>
-        <p className="text-base text-[#666666]">
-          Here's how you compare across each dimension — and where the opportunities are.
+        <p className="text-base text-[#666666] max-w-2xl">
+          These benchmarks come from mature implementations. They're achievable with the right approach and support.
         </p>
       </div>
 
       <section className="bg-[#F5F0EB] rounded-xl p-8" data-testid="your-position-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-              <Target className="w-6 h-6 text-[#EA2C00]" />
+            <div className="w-11 h-11 rounded-full bg-[#C54B2A] flex items-center justify-center flex-shrink-0">
+              <Target className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="text-xs font-bold text-[#1A1A1A] uppercase tracking-[1.5px] mb-1">
                 Your Position
               </p>
-              <p className="text-sm text-[#666666]">
-                Based on patterns across 150+ health systems.
+              <p className="text-sm text-[#9B9590]">
+                See where you stand against top performers.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-center px-4 py-2 bg-white rounded-lg">
+            <div className="text-center px-5 py-2.5 bg-white rounded-lg border border-[#E8E4DF]">
               <span className="text-2xl font-bold text-[#1A1A1A]">{inRangeCount}</span>
-              <p className="text-[10px] text-[#8A8478] uppercase tracking-wider">In Range</p>
+              <p className="text-[10px] text-[#9B9590] uppercase tracking-wider mt-0.5">In Range</p>
             </div>
             {belowRangeCount > 0 && (
-              <div className="text-center px-4 py-2 bg-white rounded-lg">
+              <div className="text-center px-5 py-2.5 bg-white rounded-lg border border-[#E8E4DF]">
                 <span className="text-2xl font-bold text-[#C54B2A]">{belowRangeCount}</span>
-                <p className="text-[10px] text-[#C54B2A] uppercase tracking-wider">Opportunities</p>
+                <p className="text-[10px] text-[#C54B2A] uppercase tracking-wider mt-0.5">Opportunities</p>
               </div>
             )}
           </div>
         </div>
       </section>
 
-      <section data-testid="dimensions-section">
-        <div className="mb-6">
-          <p className="text-xs font-medium text-[#8A8478] uppercase tracking-[2px] mb-3">
-            Your Dimensions
-          </p>
-          <div className="h-px bg-[#E0DCD7]" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <section className="bg-[#F5F0EB] rounded-xl p-8 md:p-10" data-testid="dimensions-section">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {dimensions.map((dimension) => (
             <BenchmarkCard key={dimension.label} {...dimension} />
           ))}
         </div>
       </section>
 
-      <div className="flex justify-between items-center pt-4">
+      <div className="flex justify-between items-center pt-2">
         <Button variant="ghost" onClick={onBack} className="gap-2" data-testid="button-back">
           <ArrowLeft className="w-4 h-4" />
           Back
