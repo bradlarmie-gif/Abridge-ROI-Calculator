@@ -46,8 +46,11 @@ const colors = {
 const styles = StyleSheet.create({
   coverPage: {
     backgroundColor: colors.background,
-    position: "relative",
-    padding: 0,
+    padding: 54,
+    paddingBottom: 36,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
   },
   coverCurve: {
     position: "absolute",
@@ -56,25 +59,21 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
   },
-  coverContent: {
-    flex: 1,
-    paddingHorizontal: 54,
-    paddingTop: 54,
-    justifyContent: "center",
-    position: "relative",
-    zIndex: 10,
+  coverLogoWrap: {
+    marginBottom: 40,
   },
   coverLogo: {
     width: 90,
-    position: "absolute",
-    top: 54,
-    left: 54,
+  },
+  coverContent: {
+    flex: 1,
+    justifyContent: "center",
   },
   coverLabel: {
     fontSize: 9,
     color: colors.secondary,
     letterSpacing: 3,
-    marginBottom: 12,
+    marginBottom: 16,
     textTransform: "uppercase",
   },
   coverTitle: {
@@ -84,32 +83,29 @@ const styles = StyleSheet.create({
     color: colors.primaryText,
     lineHeight: 1.2,
     letterSpacing: -0.5,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   coverRule: {
     width: 60,
     height: 2,
     backgroundColor: colors.primary,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   coverSubtitle: {
     fontSize: 14,
     color: colors.secondary,
-    marginBottom: 32,
+    lineHeight: 1.5,
+    marginBottom: 40,
   },
   coverDate: {
     fontSize: 12,
     color: colors.secondary,
-    marginBottom: 20,
   },
   coverDisclaimer: {
-    position: "absolute",
-    bottom: 36,
-    left: 54,
-    right: 54,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingTop: 10,
+    paddingTop: 12,
+    marginTop: "auto",
   },
   coverDisclaimerText: {
     fontSize: 8.5,
@@ -557,7 +553,9 @@ function CoverPage({ setting }: { setting: MethodologyCareSetting }) {
   const dateStr = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   return (
     <Page size="LETTER" style={styles.coverPage} wrap={false}>
-      <Image src={abridgeLogoRed} style={styles.coverLogo} />
+      <View style={styles.coverLogoWrap}>
+        <Image src={abridgeLogoRed} style={styles.coverLogo} />
+      </View>
       <View style={styles.coverCurve}>
         <Svg width={300} height={300} viewBox="0 0 300 300">
           <Path
