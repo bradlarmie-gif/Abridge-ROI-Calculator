@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowLeft, Target, BarChart3, Clock, DollarSign, Heart, ClipboardCheck, Moon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, BarChart3, Clock, DollarSign, Heart, ClipboardCheck, Moon, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type SwitchInputs, type SwitchCalculations, ABRIDGE_BENCHMARKS } from "@/lib/switchGapCalculator";
 
@@ -48,7 +48,7 @@ function BenchmarkCard({
 
   return (
     <div
-      className="bg-white rounded-xl p-5"
+      className="bg-white rounded-xl p-5 min-h-[180px] flex flex-col"
       data-testid={`card-${label.toLowerCase().replace(/\s+/g, "-")}`}
     >
       <div className="flex items-start justify-between mb-4 gap-3 flex-wrap">
@@ -94,16 +94,17 @@ function BenchmarkCard({
         {typicalLabel}
       </div>
 
-      <div>
+      <div className="mt-auto">
         {isBelowRange ? (
           <p className="text-xs" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
             <span className="font-semibold text-[#C54B2A]">{Math.round(gapToRange)}{unit}</span>
             <span className="text-[#999999]"> {gapSuffix}</span>
           </p>
         ) : (
-          <p className="text-xs text-[#999999]" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
-            In Range
-          </p>
+          <div className="inline-flex items-center gap-1.5 bg-[#E8F5E9] text-[#2E7D32] px-3 py-1.5 rounded-md" data-testid={`gap-${label.toLowerCase().replace(/\s+/g, "-")}`}>
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold">In Range</span>
+          </div>
         )}
       </div>
     </div>
@@ -224,9 +225,9 @@ export default function StepWhatGoodLooksLike({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-center px-4 py-2 bg-white rounded-lg border border-[#E5E7EB]">
-              <span className="text-xl font-bold text-[#1A1A1A]">{inRangeCount}</span>
-              <p className="text-[10px] text-[#999999] uppercase tracking-wider">In Range</p>
+            <div className="text-center px-4 py-2 bg-[#E8F5E9] rounded-lg border border-[#C8E6C9]">
+              <span className="text-xl font-bold text-[#2E7D32]">{inRangeCount}</span>
+              <p className="text-[10px] text-[#2E7D32] uppercase tracking-wider">In Range</p>
             </div>
             {belowRangeCount > 0 && (
               <div className="text-center px-4 py-2 bg-white rounded-lg border border-[#E5E7EB]">
