@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Clock, Users, TrendingUp, Heart, Moon, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowRight, ArrowLeft, Clock, Users, TrendingUp, Heart, Moon, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   ABRIDGE_BENCHMARKS,
@@ -22,7 +22,6 @@ export default function StepTheGap({
   onNext,
   onBack,
 }: StepTheGapProps) {
-  const [showCalcDetails, setShowCalcDetails] = useState(false);
   const gapPercentage = Math.max(0, 100 - calculations.realizationScore);
   
   const storyMetrics = useMemo(() => {
@@ -77,7 +76,7 @@ export default function StepTheGap({
           The Gap
         </h1>
         <p className="text-base text-[#666666]">
-          Here's what your data tells us — and where the opportunity lives.
+          Gaps like these are common — and usually addressable. Here's what the data suggests.
         </p>
       </div>
 
@@ -114,45 +113,6 @@ export default function StepTheGap({
             />
           </div>
         </div>
-
-        <div className="mt-4 border-t border-[#E0E0E0] pt-4">
-          <button 
-            onClick={() => setShowCalcDetails(!showCalcDetails)}
-            className="flex items-center gap-2 text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-            data-testid="button-calc-details"
-          >
-            {showCalcDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            How we calculate this
-          </button>
-          
-          {showCalcDetails && (
-            <div className="mt-3 bg-white rounded-lg border border-[#E5E7EB] p-4">
-              <p className="text-xs text-[#666666] mb-3">We compare your metrics against Abridge benchmarks:</p>
-              <div className="space-y-2 text-sm font-mono text-[#333333]">
-                <div className="flex justify-between items-center">
-                  <span>Utilization</span>
-                  <span>{inputs.utilization}% / {ABRIDGE_BENCHMARKS.utilization}% = <span className="font-bold">{calculations.utilizationScore}%</span></span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Time Saved</span>
-                  <span>{inputs.timeSavedPerEncounter} / {ABRIDGE_BENCHMARKS.timeSavedAvg} min = <span className="font-bold">{calculations.efficiencyScore}%</span></span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>wRVU Lift</span>
-                  <span>{inputs.wrvuLift}% / {ABRIDGE_BENCHMARKS.wrvuLift}% = <span className="font-bold">{calculations.qualityScore}%</span></span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Satisfaction</span>
-                  <span>{inputs.satisfaction}% / {ABRIDGE_BENCHMARKS.satisfaction}% = <span className="font-bold">{calculations.satisfactionScore}%</span></span>
-                </div>
-                <div className="border-t border-[#E5E7EB] pt-2 flex justify-between items-center font-bold">
-                  <span>Value Realization Score</span>
-                  <span className="text-[#EA2C00]">{calculations.realizationScore}%</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </section>
 
       <div className="text-left">
@@ -179,23 +139,48 @@ export default function StepTheGap({
           
           <div className="h-px bg-[#E5E7EB] mb-4" />
 
-          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Your Current Reality</p>
-          <div className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
-            <div className="space-y-2 text-sm text-[#333333]">
-              <div className="flex justify-between">
-                <span>Time saved per encounter</span>
-                <span className="font-medium">{inputs.timeSavedPerEncounter} min</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Your Current</p>
+              <div className="bg-[#F5F5F5] rounded-lg p-4">
+                <div className="space-y-2 text-sm text-[#333333]">
+                  <div className="flex justify-between">
+                    <span>Time saved per encounter</span>
+                    <span className="font-medium">{inputs.timeSavedPerEncounter} min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{"\u2212"} Edit time per encounter</span>
+                    <span className="font-medium">{inputs.editTimePerEncounter || 0} min</span>
+                  </div>
+                  <div className="h-px bg-[#E0E0E0] my-1" />
+                  <div className="flex justify-between">
+                    <span className="font-medium">= Net impact</span>
+                    <span className={`font-bold text-lg ${storyMetrics.currentNetImpact < 0 ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
+                      {formatNetImpact(storyMetrics.currentNetImpact)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>- Edit time per encounter</span>
-                <span className="font-medium">{inputs.editTimePerEncounter || 0} min</span>
-              </div>
-              <div className="h-px bg-[#E0E0E0] my-1" />
-              <div className="flex justify-between">
-                <span className="font-medium">= Net impact per encounter</span>
-                <span className={`font-bold text-lg ${storyMetrics.currentNetImpact < 0 ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
-                  {formatNetImpact(storyMetrics.currentNetImpact)}
-                </span>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Optimized</p>
+              <div className="bg-[#F5F5F5] rounded-lg p-4">
+                <div className="space-y-2 text-sm text-[#333333]">
+                  <div className="flex justify-between">
+                    <span>Time saved per encounter</span>
+                    <span className="font-medium">{ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{"\u2212"} Edit time per encounter</span>
+                    <span className="font-medium">{ABRIDGE_BENCHMARKS.editTime} min</span>
+                  </div>
+                  <div className="h-px bg-[#E0E0E0] my-1" />
+                  <div className="flex justify-between">
+                    <span className="font-medium">= Net impact</span>
+                    <span className="font-bold text-lg text-[#1A1A1A]">{formatNetImpact(storyMetrics.benchmarkNetImpact)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -224,27 +209,6 @@ export default function StepTheGap({
 
           <div className="h-px bg-[#E5E7EB] mb-4" />
 
-          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">At Abridge Benchmark</p>
-          <div className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
-            <div className="space-y-2 text-sm text-[#333333]">
-              <div className="flex justify-between">
-                <span>Time saved per encounter</span>
-                <span className="font-medium">{ABRIDGE_BENCHMARKS.timeSavedAvg} min</span>
-              </div>
-              <div className="flex justify-between">
-                <span>- Edit time per encounter</span>
-                <span className="font-medium">{ABRIDGE_BENCHMARKS.editTime} min</span>
-              </div>
-              <div className="h-px bg-[#E0E0E0] my-1" />
-              <div className="flex justify-between">
-                <span className="font-medium">= Net impact per encounter</span>
-                <span className="font-bold text-lg text-[#1A1A1A]">{formatNetImpact(storyMetrics.benchmarkNetImpact)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-[#E5E7EB] mb-4" />
-
           <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">The Gap</p>
           {storyMetrics.netImpactGap > 0 ? (
             <>
@@ -255,7 +219,7 @@ export default function StepTheGap({
                 <span className="text-sm text-[#999999]">per encounter</span>
               </div>
               <p className="text-sm text-[#666666]">
-                That's {Math.max(0, storyMetrics.annualNetImpactGapHours).toLocaleString()} hours/year {storyMetrics.currentNetImpact < 0 ? "across your AI-documented encounters" : "you could reclaim"}.
+                That's {Math.max(0, storyMetrics.annualNetImpactGapHours).toLocaleString()} hours/year you could reclaim.
               </p>
             </>
           ) : (
