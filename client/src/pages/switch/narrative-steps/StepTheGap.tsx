@@ -138,7 +138,7 @@ export default function StepTheGap({
         </div>
       </section>
 
-      <div className="bg-white rounded-xl border border-[#E5E7EB] p-5" data-testid="card-net-time-impact">
+      <div className="bg-[#F5F0EB] rounded-xl p-5" data-testid="card-net-time-impact">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
             <Clock className="w-5 h-5 text-[#EA2C00]" />
