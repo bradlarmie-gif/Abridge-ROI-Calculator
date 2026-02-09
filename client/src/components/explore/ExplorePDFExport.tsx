@@ -861,7 +861,7 @@ export const generateExplorePDF = async (data: ExplorePDFData): Promise<void> =>
   const config = SETTING_CONFIGS[data.careSetting];
   const orgName = data.clientName ? data.clientName.replace(/[^a-zA-Z0-9]/g, "_") : "Organization";
   const settingSlug = data.careSetting === "ed" ? "ED" : config.label.replace(/\s+/g, "_");
-  const fileName = `Abridge_${settingSlug}_Value_Assessment_${orgName}.pdf`;
+  const fileName = `Abridge_${settingSlug}_Analysis_${orgName}.pdf`;
 
   await savePdfBlob(blob, fileName);
 };
