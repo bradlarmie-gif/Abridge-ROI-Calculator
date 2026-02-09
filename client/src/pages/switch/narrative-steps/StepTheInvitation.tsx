@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Download, Loader2, TrendingUp, Clock, DollarSign, Users, CheckCircle } from "lucide-react";
+import { ArrowLeft, Download, Loader2, TrendingUp, Clock, DollarSign, Users, CheckCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
@@ -46,6 +46,7 @@ export default function StepTheInvitation({
 }: StepTheInvitationProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showMethodology, setShowMethodology] = useState(false);
   const { toast } = useToast();
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
@@ -145,6 +146,50 @@ export default function StepTheInvitation({
         </div>
         
         <p className="text-sm text-[#666666]">{scoreContext.message}</p>
+        
+        <div className="mt-4 border-t border-[#E5E7EB] pt-4">
+          <button
+            onClick={() => setShowMethodology(!showMethodology)}
+            className="flex items-center gap-2 text-sm font-medium text-[#666666] transition-colors w-full text-left"
+            data-testid="button-toggle-methodology"
+          >
+            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showMethodology ? 'rotate-180' : ''}`} />
+            How we calculate this
+          </button>
+          
+          {showMethodology && (
+            <div className="mt-4 bg-[#F5F5F5] rounded-lg p-5 space-y-4">
+              <p className="text-sm text-[#333333]">
+                Your Value Realization Score is a weighted composite of six performance dimensions:
+              </p>
+              
+              <div className="space-y-2">
+                {[
+                  { label: "Utilization", weight: "25%" },
+                  { label: "Net Time Impact", weight: "20%" },
+                  { label: "Documentation Completeness", weight: "20%" },
+                  { label: "Coding Impact (wRVU)", weight: "15%" },
+                  { label: "Provider Satisfaction", weight: "10%" },
+                  { label: "After-Hours Reduction", weight: "10%" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between">
+                    <span className="text-sm text-[#333333]">{item.label}</span>
+                    <span className="text-sm font-semibold text-[#1A1A1A] bg-white px-3 py-0.5 rounded">{item.weight}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="h-px bg-[#E0E0E0]" />
+              
+              <p className="text-xs text-[#666666]">
+                Each dimension is scored relative to the top range of what we've observed across implementations. 100% means you're performing at the highest levels we've seen. Most organizations begin between 45-65%.
+              </p>
+              <p className="text-xs text-[#666666]">
+                We show the weights because you should know what's driving your score.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">

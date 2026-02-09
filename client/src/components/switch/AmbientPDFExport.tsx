@@ -273,6 +273,30 @@ const AmbientPDFDocument = ({ data }: { data: AmbientPDFData }) => {
 
           <View style={styles.thickDivider} />
 
+          <View style={{ backgroundColor: "#1A1A1A", padding: 14, borderRadius: 4, marginBottom: 10 }}>
+            <Text style={{ fontSize: 9, color: "#999999", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6, fontWeight: "bold" }}>AMBIENT AI MATURITY MODEL</Text>
+            <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 8, marginBottom: 8 }}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF" }}>{calculations.maturityLevel}</Text>
+              <Text style={{ fontSize: 10, color: "#999999" }}>Stage {calculations.maturityStage} of 4</Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 4, marginBottom: 8 }}>
+              {[1, 2, 3, 4].map((stage) => (
+                <View key={stage} style={{ flex: 1 }}>
+                  <View style={{ height: 4, borderRadius: 2, backgroundColor: stage <= calculations.maturityStage ? colors.primary : "#333333" }} />
+                  <Text style={{ fontSize: 7, color: stage <= calculations.maturityStage ? "#FFFFFF" : "#666666", marginTop: 3 }}>
+                    {stage === 1 ? 'Deployed' : stage === 2 ? 'Adopted' : stage === 3 ? 'Optimized' : 'Transformed'}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <Text style={{ fontSize: 9, color: "#CCCCCC", lineHeight: 1.4 }}>
+              {calculations.maturityStage === 1 ? "You've deployed ambient AI, but adoption and optimization haven't followed. This is the most common\u2014and most addressable\u2014gap."
+                : calculations.maturityStage === 2 ? "Your team is using the tool, but not yet seeing the full returns. The gap between adoption and optimization is where most value is lost."
+                : calculations.maturityStage === 3 ? "You're extracting real value. The remaining opportunity is in the fine-tuning\u2014deeper utilization, better workflows, and specialty-specific optimization."
+                : "You're among the top performers. The question now is: how do you maintain this and scale it across the organization?"}
+            </Text>
+          </View>
+
           <Text style={styles.sectionLabel}>YOUR FIVE DIMENSIONS</Text>
           <Text style={{ fontSize: 10.5, color: colors.secondary, marginBottom: 6 }}>
             How you compare to what we typically see in mature implementations.
