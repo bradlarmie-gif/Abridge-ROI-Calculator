@@ -1,0 +1,704 @@
+I need you to rebuild the entire Switch → Ambient AI path from scratch. Keep the same tech stack, same Abridge brand colors (red #C54B2A, dark text #1A1A1A, beige/warm gray backgrounds #F5F0EB, white cards), same typography style (serif headers, clean sans-serif body), same premium feel. But rebuild every screen with the exact content and layout I'm about to specify.
+
+The path has 7 screens total. Navigation dots at top right should reflect 7 steps. Each screen should feel spacious — generous padding, lots of whitespace, nothing cramped. This should feel like a premium consulting deliverable, not a software tool.
+
+============================
+SCREEN 1: YOUR ORGANIZATION
+Nav label: "Your Organization"
+Active dot: 1 of 7
+============================
+
+Header (large serif): YOUR ORGANIZATION
+Subtitle: Let's start with the basics.
+
+Two input cards side by side in a light beige container:
+
+Left card:
+- Label: "Providers using ambient AI"
+- Input field with default value: 50
+- Helper text below: "Physicians, APPs, or other clinicians with AI access"
+
+Right card:
+- Label: "Annual encounters"
+- Input field with default value: 100,000
+- Helper text below: "Total visits where AI could be used for documentation"
+
+Below that, another beige container:
+- Label: "Specialty mix"
+- Three toggle buttons in a row: "Primary Care heavy" | "Balanced" | "Specialty heavy"
+- "Balanced" is selected by default (red background, white text). Others are white with gray border.
+- Helper text below: "Helps us calibrate. Different specialties have different documentation patterns."
+
+At the bottom of the page, centered italic text in warm gray:
+"These inputs shape every calculation that follows. Directionally right is more useful than precisely wrong."
+
+Bottom navigation: ← Back (left) | Next → (red button, right)
+
+============================
+SCREEN 2: WHERE YOU ARE
+Nav label: "Where You Are"
+Active dot: 2 of 7
+============================
+
+Header (large serif): WHERE YOU ARE
+Subtitle: The more accurate you are, the clearer the picture.
+
+Six metric cards arranged in a 2-column grid (3 rows of 2). Each card has:
+- An icon (colored circle with icon inside, top left)
+- Metric name (bold) with an ⓘ tooltip icon
+- Description text (small, gray)
+- A horizontal slider
+- Current value displayed to the right of the slider
+- Below the slider: "What we typically see: [range]" in a small gray pill/badge
+
+Card 1 (top left):
+- Icon: people/group icon (red circle)
+- Name: "Utilization"
+- Description: "% of encounters documented with AI"
+- Default value: 40%
+- Slider range: 0-100%
+- Benchmark pill: "What we typically see: 70-80%"
+- Tooltip: "Utilization is the single strongest predictor of ambient AI ROI. Low utilization usually isn't a technology problem — it's a workflow, training, or trust issue."
+
+Card 2 (top right):
+- Icon: clock icon (red circle)
+- Name: "Time Saved"
+- Description: "Minutes saved per encounter (before any edits)"
+- Default value: 2.5 min
+- Slider range: 0-8 min
+- Benchmark pill: "What we typically see: 3-5 min"
+- Tooltip: "This is gross time savings — before accounting for time spent reviewing or correcting AI output. We'll calculate the net impact on the next screen."
+
+Card 3 (middle left):
+- Icon: pencil/edit icon (red circle)
+- Name: "Edit Time"
+- Description: "Minutes spent correcting AI output per encounter"
+- Default value: 1.0 min
+- Slider range: 0-5 min
+- Benchmark pill: "What we typically see: < 1 min"
+- Tooltip: "Edit time is the hidden tax on ambient AI. Every minute spent correcting output erodes the time savings the tool was supposed to deliver."
+
+Card 4 (middle right):
+- Icon: document/clipboard icon (red circle)
+- Name: "Documentation Completeness"
+- Description: "How often do notes fully reflect the clinical visit?"
+- Default value: 65%
+- Slider range: 0-100%
+- Benchmark pill: "What we typically see: 85-95%"
+- Tooltip: "When AI-generated notes miss clinical details, three things happen: providers lose trust, coding doesn't reflect work performed, and quality measures get missed."
+
+Card 5 (bottom left):
+- Icon: heart icon (red circle)
+- Name: "Provider Satisfaction"
+- Description: "Would recommend current AI to a colleague?"
+- Default value: 55%
+- Slider range: 0-100%
+- Benchmark pill: "What we typically see: 80-90%"
+- Tooltip: "Satisfaction below 65% is a leading indicator of declining utilization. Providers who wouldn't recommend the tool are often already using it less."
+
+Card 6 (bottom right):
+- Icon: dollar/trending icon (red circle)
+- Name: "Coding Impact"
+- Description: "Observed wRVU change since AI implementation"
+- Default value: +3.5%
+- Slider range: 0-12%
+- Display as: "+ [value] %"
+- Benchmark pill: "What we typically see: +4-7%"
+- Tooltip: "wRVU lift reflects whether documentation is capturing clinical complexity. The correlation is strongest when utilization exceeds 70% and documentation completeness exceeds 85%."
+
+Below the 6 cards, a full-width DARK card (dark charcoal/near-black background, white text):
+- Icon: moon icon (white)
+- Title: "After-Hours Documentation"
+- Subtitle: "Hours per week charting at home"
+- Slider on dark background, default value: 2 hrs/wk, range 0-10
+- Below slider, white text: "That's [calculated: providers × hours × 52] hours/year your team is spending outside the clinic."
+- Smaller gray text: "Before ambient AI, the industry average was 5-8 hrs/week (AMA, 2023)."
+
+Bottom navigation: ← Back | See the Gap → (red button)
+
+============================
+SCREEN 3: THE GAP
+Nav label: "The Gap"
+Active dot: 3 of 7
+============================
+
+Header (large serif): THE GAP
+Subtitle: Gaps like these are common — and usually addressable. Here's what the data suggests.
+
+SECTION 1: Value Realization Score
+Full-width beige container:
+- Small caps label: "VALUE REALIZATION"
+- Large red number: "[calculated]%" (large, bold, serif)
+- Below it: "of what top-performing organizations achieve"
+- Progress bar: filled portion in red, unfilled in light gray
+- To the right of the main number, a bordered box:
+  - "UNTAPPED POTENTIAL"
+  - "[100 minus score]% opportunity" in red
+  - "remaining" in gray
+
+The Value Realization Score should be calculated as a weighted average:
+- Utilization: 25% weight. Score = (their value / 76) capped at 100
+- Net Time Impact: 20% weight. Score = (their net time / 3.5) capped at 100, where net time = time saved - edit time
+- Documentation Completeness: 20% weight. Score = (their value / 95) capped at 100
+- Coding Impact: 15% weight. Score = (their wRVU% / 5.5) capped at 100
+- Provider Satisfaction: 10% weight. Score = (their value / 85) capped at 100
+- After-Hours Reduction: 10% weight. Score = max(0, (8 - their hours) / (8 - 1)) capped at 100, where 8 is pre-AI average and 1 is best case
+
+SECTION 2: Net Time Impact
+Full-width white card:
+- Icon + Title: clock icon, "Net Time Impact"
+- Subtitle: "The real math on your AI investment"
+
+Two cards SIDE BY SIDE (not stacked):
+
+Left card (light gray background):
+- Small caps: "YOUR CURRENT"
+- "Time saved per encounter" → [their input] min (right-aligned)
+- "− Edit time per encounter" → [their input] min (right-aligned)
+- Horizontal divider line
+- "= Net impact per encounter" → [calculated, bold] min (right-aligned)
+
+Right card (light gray background):
+- Small caps: "OPTIMIZED"
+- "Time saved per encounter" → 4 min (right-aligned)
+- "− Edit time per encounter" → 0.5 min (right-aligned)
+- Horizontal divider line
+- "= Net impact per encounter" → +3.5 min (right-aligned, bold)
+
+Below both cards, centered:
+- Small caps: "THE GAP"
+- Large red number: "[difference] min" with "per encounter" in smaller gray text next to it
+- Below: "That's [calculated] hours/year you could reclaim."
+
+The hours calculation: gap in minutes × encounters at current utilization rate / 60
+
+SECTION 3: Three gap cards in a grid
+
+Card layout: 2 cards on first row, 1 card on second row. Each card has a red left border accent.
+
+Card 1 (left):
+- Icon: group/people icon (red)
+- Title: "Utilization Gap"
+- Subtitle: "Where AI isn't being used"
+- Large red number: "[calculated] encounters/year" (encounters × (benchmark util - their util))
+- Two pills side by side: "[their %] current" (red outline) | "76% benchmark" (gray outline)
+- Body text: "Utilization is the single strongest predictor of ROI. Low utilization usually signals workflow friction, not technology failure."
+
+Card 2 (right):
+- Icon: trending up icon (red)
+- Title: "Documentation Revenue Gap"
+- Subtitle: "Revenue you're earning but not capturing"
+- Large red number: "+[gap]%" with "wRVU lift" in gray
+- Below: "vs. +5.5% for top performers"
+- Body text: "The correlation between documentation completeness and accurate coding is strongest above 70% utilization."
+- Red text: "Gap value: ~$[calculated]K/year"
+
+Card 3 (left of second row):
+- Icon: heart icon (red)
+- Title: "Burnout Signal"
+- Subtitle: "The leading indicator most organizations miss"
+- Large red number: "[their satisfaction]%" with "satisfaction" in gray
+- Below: "vs. 85% at top performers"
+- Body text: "Satisfaction below 65% is a strong signal of declining utilization ahead. Providers who wouldn't recommend the tool often stop using it within 6 months."
+
+SECTION 4: Pajama Time (full-width dark card)
+- Dark charcoal background, white/light text
+- Small caps: "PAJAMA TIME"
+- Large text: "[calculated] hours/year spent charting at home — time that could be spent on what matters most"
+- Smaller: "[hours]/week × [providers] providers × 52 weeks"
+- Below: "Before ambient AI, the average was 5-8 hrs/week. You've improved. The question is whether you've improved enough."
+
+Bottom navigation: ← Back | What Good Looks Like → (red button)
+
+============================
+SCREEN 4: WHAT GOOD LOOKS LIKE
+Nav label: "What Good Looks Like"
+Active dot: 4 of 7
+============================
+
+Header (large serif): WHAT GOOD LOOKS LIKE
+Subtitle: Here's what the best implementations achieve — and where you stand.
+
+SECTION 1 (FIRST on page): Ambient AI Maturity Model
+Full-width DARK card (same dark charcoal as pajama time card):
+- Small caps: "AMBIENT AI MATURITY MODEL"
+- Large white serif text: "[Stage Name]" with "Stage [X] of 4" in smaller gray text
+- Visual progress bar with 4 segments:
+  - Segment 1: "Deployed" — red if active, gray if not
+  - Segment 2: "Adopted" — red if active, gray if not
+  - Segment 3: "Optimized" — red if active, gray if not
+  - Segment 4: "Transformed" — red if active, gray if not
+  - Fill segments up to and including their current stage
+- Below the bar, inside a slightly lighter inset box:
+  - Body text explaining their stage
+
+Stage logic:
+- Value Realization 0-35%: Stage 1 "Deployed" — "AI is live but adoption is limited. Most providers haven't integrated it into their workflow."
+- Value Realization 35-65%: Stage 2 "Adopted" — "Your team is using the tool, but not yet seeing the full returns. The gap between adoption and optimization is where most value is lost."
+- Value Realization 65-85%: Stage 3 "Optimized" — "Strong adoption with measurable downstream impact. You're realizing most of the available value."
+- Value Realization 85-100%: Stage 4 "Transformed" — "AI is embedded in clinical operations. Documentation drives revenue cycle, quality reporting, and strategic planning."
+
+SECTION 2: Your Position
+Beige container card:
+- Icon: target/bullseye icon (red circle)
+- "YOUR POSITION"
+- "Based on patterns across 150+ health systems."
+- Right side: two stat boxes
+  - "[X] IN RANGE" (dark text, bold number)
+  - "[X] OPPORTUNITIES" (red text, bold number)
+
+Count "in range" vs "opportunities" by comparing each of the 6 metrics to their benchmark range. If within range = in range, if below = opportunity.
+
+SECTION 3: Six metric comparison cards
+2-column grid, 3 rows. Each card:
+- Icon (red circle) + metric name + current value (large, right-aligned) with "CURRENT" label
+- Horizontal slider visualization showing their position (red dot) relative to the Abridge Range (gray shaded band)
+- Below slider: either a red pill "X% gap to reach benchmark range" OR a gray pill "In Range"
+
+Card 1: Utilization | [value]% | Range: 70-80%
+Card 2: Net Time Impact | +[net value] min | Range: 3-4 min
+  - IMPORTANT: This card shows NET time (time saved minus edit time), NOT gross time saved
+  - The net value = their time saved input minus their edit time input
+Card 3: Documentation Completeness | [value]% | Range: 85-95%
+Card 4: Coding Impact | +[value]% | Range: +4-7%
+Card 5: After-Hours Work | [value] hrs/wk | Range: 1-3 hrs/wk
+Card 6: Provider Satisfaction | [value]% | Range: 80-95%
+
+Bottom navigation: ← Back | See the Math → (red button)
+
+============================
+SCREEN 5: THE MATH
+Nav label: "The Math"
+Active dot: 5 of 7
+============================
+
+Header (large serif): THE MATH
+Subtitle: Every number is transparent. Every assumption is yours to challenge.
+
+SECTION 1: Value Breakdown
+White card with header:
+- Icon: grid/table icon (red)
+- Small caps: "VALUE BREAKDOWN"
+- Title: "Your Annual Value Gap"
+- Right side: "Click to expand"
+
+Three expandable rows inside:
+
+Row 1:
+- Icon: bar chart (red circle)
+- "Utilization Gap"
+- Subtitle: "[their %] → 76%"
+- Dollar value in red: "$[calculated]K"
+- Expandable detail:
+  "[their %] → 76% = [gap] point gap
+  [encounters] × [gap]% = [number] encounters without AI
+  [number] × 3.5 min net × ($150/hr) × 25% conversion
+  = $[result]K/year"
+
+Row 2:
+- Icon: clock (red circle)
+- "Net Efficiency Gap"
+- Subtitle: "[their net] min net → 3.5 min net"
+- Dollar value in red: "$[calculated]K"
+- Expandable detail:
+  "Current net: +[their net] min ([saved] min saved − [edit] min editing)
+  Benchmark net: +3.5 min (4 min saved − 0.5 min editing)
+  Gap: [difference] min per encounter
+  [encounters at their utilization] × [gap] min = [hours] hrs
+  [hours] × $150/hr × 25% conversion
+  = $[result]K/year"
+
+Row 3:
+- Icon: dollar/trending (red circle)
+- "Coding Impact Gap"
+- Subtitle: "Your +[their %]% vs. benchmark +5.5%"
+- Dollar value in red: "$[calculated]K"
+- Expandable detail:
+  "+[their %]% → +5.5% = [gap]% gap
+  1.5 wRVU × [encounters at benchmark util] × [gap]% lift
+  × $33/wRVU × 85% realization
+  = $[result]K/year"
+
+Total row (beige background, full width):
+- Icon: trending up (red circle)
+- Small caps: "TOTAL ANNUAL GAP"
+- "Unrealized value per year"
+- Large red number: "$[total]K"
+- Below: line items
+  "Utilization Gap — $[x]K"
+  "Net Efficiency Gap — $[x]K"
+  "Coding Impact Gap — $[x]K"
+
+SECTION 2: 3-Year Projection
+White card:
+- Small caps: "3-YEAR PROJECTION"
+- Title: "The Compounding Effect"
+- Body: "The shaded area represents potential value over time. Earlier action captures more of it."
+- Line chart with:
+  - Red solid line curving upward: "Optimized (with Abridge)"
+  - Gray dashed line barely rising: "Current (staying course)"
+  - Shaded red area between the two lines
+  - Y-axis: $0K to appropriate max
+  - X-axis: Year 0, Year 1, Year 2, Year 3
+  - Red dots at Year 1, 2, 3 on the optimized line
+
+Year-by-year calculations:
+- Current trajectory: Total gap × 10% (they capture only 10% of potential annually, growing slowly)
+  Year 1 current = total gap × 0.10
+  Year 2 current cumulative = Year 1 × 2.05
+  Year 3 current cumulative = Year 1 × 3.15
+- Optimized trajectory: 
+  Year 1 optimized = total gap × 0.87 (ramp-up discount)
+  Year 2 cumulative = Year 1 + (total gap × 1.0)
+  Year 3 cumulative = Year 2 + (total gap × 1.08) (compounding improvement)
+
+Below chart:
+"YEAR-BY-YEAR:"
+"Year 1: $[optimized]K optimized vs $[current]K current (gap: $[diff]K)" — gap amount in red
+"Year 2: $[optimized]K cumulative vs $[current]K current (gap: $[diff]K)" — gap amount in red
+"Year 3: $[optimized]K cumulative vs $[current]K current (gap: $[diff]K)" — gap amount in red
+
+SECTION 3: Cost of Waiting
+Full-width DARK card (charcoal background):
+- Small caps: "THE COST OF WAITING"
+- Body: "Every month of delay has a measurable cost. Here's what the math suggests:"
+- Three boxes side by side inside the dark card:
+  - Box 1 (slightly lighter background): "ACT NOW" | Large white "$[3yr optimized]K" | "3-year cumulative value"
+  - Box 2: "WAIT 6 MONTHS" | Large white "$[reduced]K" | Red text: "−$[diff]K opportunity cost"
+  - Box 3: "WAIT 12 MONTHS" | Large white "$[reduced]K" | Red text: "−$[diff]K opportunity cost"
+- Below boxes: "That's approximately $[monthly]K/month in unrealized value at current performance levels."
+
+Wait 6 months = 3-year value minus (monthly opportunity × 6)
+Wait 12 months = 3-year value minus (monthly opportunity × 12)
+Monthly opportunity = annual gap / 12
+
+ONLY ONE cost of waiting section. Do not duplicate this anywhere else on the page.
+
+Bottom navigation: ← Back | What It Takes → (red button)
+
+============================
+SCREEN 6: WHAT IT TAKES
+Nav label: "What It Takes"
+Active dot: 6 of 7
+============================
+
+Header (large serif): WHAT IT TAKES
+Subtitle: Patterns we've observed across hundreds of implementations.
+
+SECTION 1: The Switching Question
+- Small caps: "THE SWITCHING QUESTION"
+- Large serif: "We already have a solution. Isn't switching too disruptive?"
+- Body: "It's worth weighing the cost of switching against the cost of staying."
+
+Four cards in a 2×2 grid. Each card has:
+- An icon (red circle) top left
+- Bold title in quotes
+- Body text
+- Cards have white background with subtle shadow, generous padding
+
+Card 1 (top left):
+- Icon: clock
+- Title: "We just implemented"
+- Body: "It's natural to want to give a new investment time. At the same time, if the gap is significant, the math may favor acting sooner rather than later."
+- Red text at bottom: "Your current gap: ~$[annual gap]K/year."
+
+Card 2 (top right):
+- Icon: refresh/cycle
+- Title: "Change fatigue is real"
+- Body: "Providers with prior AI experience often adopt faster. They know what to look for and what's possible. The friction of switching is brief. The friction of underperformance is ongoing."
+
+Card 3 (bottom left):
+- Icon: circle/ring
+- Title: "It's good enough for now"
+- Body: "At your current realization score of [score]%, approximately $[monthly gap]K in potential value goes unrealized each month. The question isn't whether the tool works — it's whether you're getting what you're paying for."
+
+Card 4 (bottom right):
+- Icon: switch/arrows
+- Title: "The switching costs are too high"
+- Body: "We've supported transitions from every major ambient AI vendor. Most providers are productive within 3 months. Providers with prior AI experience ramp faster, not slower."
+
+SECTION 2: What Drives Performance
+Horizontal divider line.
+- Small caps: "WHAT DRIVES PERFORMANCE"
+- Body: "Across hundreds of implementations, four patterns consistently separate high performers from the rest."
+
+Four pattern cards stacked vertically. Each has:
+- Red left border (4px solid red accent on left side)
+- Bold title
+- Body text
+- Generous padding, white background
+
+Pattern 1:
+- Title: "Adoption Is a Human Challenge"
+- Body: "Change management isn't a phase — it's ongoing. Dedicated onboarding, feedback loops, and continuous improvement resources matter."
+
+Pattern 2:
+- Title: "Continuous Optimization"
+- Body: "Set-it-and-forget-it doesn't work. Mature implementations review performance regularly and adjust."
+
+Pattern 3:
+- Title: "Deep Customization"
+- Body: "Generic configurations miss specialty nuances. Specialty-specific workflows drive meaningfully higher adoption and satisfaction."
+
+Pattern 4:
+- Title: "Executive Visibility"
+- Body: "When leadership tracks ambient AI as strategic — not just an IT project — resources follow. Sponsorship correlates with sustained adoption."
+
+SECTION 3: Go-live banner
+Full-width beige/warm banner:
+- Large centered red text: "Average time from decision to go-live: 45 days"
+- Smaller centered gray text below: "Including EHR integration, provider training, and go-live support."
+
+NO timeline steps. NO numbered phases. NO weeks breakdown. Just the banner.
+
+Bottom navigation: ← Back | The Opportunity → (red button)
+
+============================
+SCREEN 7: THE OPPORTUNITY
+Nav label: "The Opportunity"
+Active dot: 7 of 7
+============================
+
+Header (large serif): THE OPPORTUNITY
+Subtitle: A summary of what we found — and what the benchmarks suggest is possible.
+
+SECTION 1: Hero number
+Full-width beige container:
+- Small caps: "ANNUAL VALUE TO UNLOCK"
+- Large red serif number: "$[annual gap]K"
+- Body: "Based on your [providers] providers across [encounters] annual encounters."
+
+SECTION 2: Impact summary
+Three stat boxes side by side (white, bordered):
+- Box 1: "YEAR 1 IMPACT" | "$[year 1 optimized gap]K" | "Accounting for ramp-up"
+- Box 2: "3-YEAR IMPACT" | "$[3 year gap]K" | "Compounding value"
+- Box 3 (red text for number): "MONTHLY OPPORTUNITY" | "~$[monthly]K" | "Potential value"
+
+SECTION 3: Value Realization Score with methodology
+White card:
+- "VALUE REALIZATION SCORE"
+- Large number: "[score]%" with stage label next to it (e.g., "Stage 2: Adopted")
+- Progress bar (red filled, gray unfilled)
+- Right side: "ROOM TO GROW" with "[100-score]%" in red
+- Body: "There's meaningful room to improve based on what the benchmarks suggest."
+
+Expandable section below (collapsed by default):
+- Trigger text: "▼ How we calculate this"
+- When expanded, shows:
+  "Your Value Realization Score is a weighted composite of six performance dimensions:
+
+  Utilization — 25%
+  Net Time Impact — 20%
+  Documentation Completeness — 20%
+  Coding Impact (wRVU) — 15%
+  Provider Satisfaction — 10%
+  After-Hours Reduction — 10%
+
+  Each dimension is scored relative to the top range of what we've observed across implementations. 100% means you're performing at the highest levels we've seen. Most organizations begin between 45-65%.
+
+  We show the weights because you should know what's driving your score."
+
+SECTION 4: Metric summary
+Four stat boxes in a row (icons above each):
+- Group icon | [utilization]% | "Utilization" | "vs. 76%"
+- Clock icon | +[net time] min | "Net Time" | "vs. 3.5 min"
+- Dollar icon | +[wRVU]% | "Coding Impact" | "vs. +5.5%"
+- Heart icon | [satisfaction]% | "Satisfaction" | "vs. 85%"
+
+SECTION 5: What Comes Next
+Full-width beige card:
+- Small caps: "WHAT COMES NEXT"
+- Bold: "If this raises questions, we're here to help."
+- Body: "This captures what you entered. If you'd like to discuss further, our team is available."
+- Red button: "Download Report" with download icon
+
+SECTION 6: Credibility footer
+Light card with checkmark icon:
+- "All calculations are based on your inputs and patterns observed across implementations. 'What we typically see' ranges reflect aggregate data from Abridge implementations across multiple health systems and specialties. Actual results depend on implementation quality, organizational readiness, and partnership approach."
+
+Bottom navigation: ← Back (no forward button — this is the last page)
+
+============================
+PDF EXPORT
+============================
+
+When the user clicks "Download Report", generate a PDF that matches the current PDF styling exactly — same Abridge logo placement, same typography, same beige/white/red color scheme, same page structure. 4 pages total.
+
+PAGE 1 (Cover):
+- Abridge logo top left
+- "AMBIENT ASSESSMENT" small caps
+- Organization name in large serif
+- Red underline
+- "[providers] providers · [encounters] annual encounters · Outpatient"
+- "PREPARED BY" + name + date
+- Abridge coral/pink diagonal accent shape in bottom right
+- Footer: "This assessment is for planning purposes. Calculations are based on your inputs and patterns observed across Abridge implementations."
+
+PAGE 2 (Your Position):
+- "YOUR POSITION" section header (red small caps)
+- Beige box with:
+  "[providers] providers. [encounters] annual encounters."
+  "Value Realization: [score]%" in large red serif
+  Red progress bar
+  "You've invested in ambient AI. This assessment measures how that investment is performing — and where the unrealized value sits."
+- Four stat boxes: $[annual]K annual opportunity | $[monthly]K monthly opportunity | $[3yr]K 3-year projection | [100-score]% room to grow
+
+- "YOUR SIX DIMENSIONS" section header
+- "How you compare to what we typically see across mature implementations."
+
+- Six dimension cards, each showing:
+  Dimension name | "X% of benchmark" (red, right-aligned)
+  Two side-by-side boxes: "YOU [value]" | "WHAT WE TYPICALLY SEE [benchmark]"
+  One line of insight text below
+
+Dimension 1: Adoption
+  YOU: [util]% | TYPICAL: 76%
+  "When adoption is below 60%, it typically reflects workflow friction — the tool isn't fitting naturally into how providers work."
+
+Dimension 2: Net Efficiency
+  YOU: +[net time] min | TYPICAL: +3.5 min
+  "Your gross savings is [saved] min, but [edit] min is consumed by edits — leaving [net] min of net impact. Top implementations save 4 min with <0.5 min of editing."
+
+Dimension 3: Documentation Completeness
+  YOU: [doc]% | TYPICAL: 90%
+  "When notes don't capture the full clinical picture, coding doesn't reflect the work performed."
+
+Dimension 4: Coding Impact
+  YOU: +[wRVU]% | TYPICAL: +5.5%
+  "Strongest in implementations with >70% utilization and >85% documentation completeness."
+
+Dimension 5: Provider Experience
+  YOU: [satisfaction]% | TYPICAL: 85%
+  "Satisfaction below 65% is a leading indicator. Low scores predict declining adoption months before it shows in data."
+
+Dimension 6: After-Hours Work
+  YOU: [hours] hrs/wk | TYPICAL: 1-2 hrs/wk
+  "That's [calculated] hours/year your team spends outside the clinic."
+
+Footer: "ABRIDGE | [Org Name] · Ambient Assessment | Page 1 of 4"
+
+PAGE 3 (The Math):
+- "YOUR VALUE GAP" section header
+- "The Opportunity in Numbers"
+- "The difference between your current performance and what top implementations achieve — in encounters, hours, and dollars."
+
+- Beige hero box: "ANNUAL VALUE OPPORTUNITY" | Large red "$[total]K" | "Per provider: ~$[per provider]K/year" | "Per month: $[monthly]K"
+
+- "THE MATH" section header
+- "Every number is transparent. Every assumption is stated."
+
+Three gap calculations with red left border accent:
+
+1. "Adoption Gap" → $[x]K
+   [their %] → 76% = [gap] point gap
+   [encounters] × [gap]% = [number] encounters without AI
+   [number] × 3.5 min net × ($150/hr) × 25% conversion¹
+   = $[result]K/year
+
+2. "Net Efficiency Gap" → $[x]K
+   Current net: +[their net] min ([saved] − [edit] editing)
+   Benchmark net: +3.5 min (4 min saved − 0.5 min editing)
+   [encounters at current util] × [gap] min = [hours] hrs
+   [hours] × $150/hr × 25% conversion¹
+   = $[result]K/year
+
+3. "Coding Impact Gap" → $[x]K
+   +[their %]% → +5.5% = [gap]% gap
+   1.5 wRVU × [encounters at bench util] × [gap]%
+   × $33/wRVU × 85% realization²
+   = $[result]K/year
+
+- "Total Annual Gap" with large red "$[total]K"
+
+- Two side-by-side boxes at bottom:
+  YOUR INPUTS: [list all inputs including edit time and doc completeness]
+  VALUE ASSUMPTIONS: ¹Provider cost: $150/hr, ¹Time conversion: 25%, ²wRVU value: $33, ²wRVU realization: 85%, Net impact = gross savings − edit time, Observed patterns: 150+ health systems
+
+- FORMULAS section in monospace:
+  Adoption Gap = Encounters × Util Gap% × Net Bench Time × Rate × Conv
+  Efficiency Gap = Encounters@CurrentUtil × Net Time Gap × Rate × Conv
+  Quality Gap = AvgWRVU × Encounters@Bench × LiftGap% × $/wRVU × Real
+
+Footer: "ABRIDGE | [Org Name] · Ambient Assessment | Page 2 of 4"
+
+PAGE 4 (What Drives Performance + Summary):
+- "WHAT DRIVES PERFORMANCE" section header
+- "What We've Seen Work"
+- "Across hundreds of implementations, these patterns consistently separate high performers from the rest."
+
+Four pattern cards with red left border:
+1. "Adoption Is a Human Challenge" — "Change management isn't a phase — it's ongoing. Dedicated onboarding, feedback loops, and continuous improvement resources matter."
+2. "Continuous Optimization" — "Set-it-and-forget-it doesn't work. Mature implementations review performance regularly and adjust."
+3. "Deep Customization" — "Generic configurations miss specialty nuances. Specialty-specific workflows drive meaningfully higher adoption and satisfaction."
+4. "Executive Visibility" — "When leadership tracks ambient AI as strategic — not just an IT project — resources follow. Sponsorship correlates with sustained adoption."
+
+- "THE SWITCHING QUESTION" section header
+- "What Organizations That Switched Tell Us"
+- Four cards in 2×2:
+  "We just implemented" — "It's natural to want to give a new investment time. If the gap is significant, the math may favor acting sooner."
+  "Change fatigue" — "Providers with prior AI experience adopt faster. They know what good looks like."
+  "It's good enough" — "At [score]% realization, ~$[monthly]K/month in value goes unrealized. The question is whether you're getting what you're paying for."
+  "Switching costs" — "We've supported transitions from every major vendor. Most providers productive within 3 months."
+
+- Beige banner: "Average time from decision to go-live: 45 days" | "Including EHR integration, provider training, and go-live support."
+
+Footer: "ABRIDGE | [Org Name] · Ambient Assessment | Page 3 of 4"
+
+PAGE 5 (Your Assessment - final page):
+- "YOUR ASSESSMENT" section header
+- Large beige box:
+  "[providers] providers."
+  "[encounters] encounters."
+  "[score]% of potential realized."
+  Large red serif: "$[annual]K in annual value ahead — $[monthly]K for every month you act."
+
+- Red left border callout:
+  "At [score]%, you've made real progress. The gap isn't about your decision to invest in ambient AI — that was right. It's about whether your current approach can move you from [current stage] to the next stage. The factors limiting value are specific, measurable, and addressable."
+
+- "AT A GLANCE" section:
+  Value Realization Score → [score]%
+  Annual Value Opportunity → $[annual]K
+  Monthly Opportunity → $[monthly]K
+  3-Year Projection → $[3yr]K
+  
+  Adoption → [util]% (typical: 76%)
+  Net Efficiency → +[net] min (typical: +3.5 min)
+  Documentation → [doc]% (typical: 90%)
+  Coding Impact → +[wRVU]% (typical: +5.5%)
+  Provider Experience → [sat]% (typical: 85%)
+  After-Hours → [hours] hrs/wk (typical: 1-2 hrs/wk)
+
+- "METHODOLOGY" section:
+  Two boxes side by side:
+  YOUR DATA: [all their inputs]
+  VALUE MODEL: Provider rate: $150/hr, Time conversion: 25%, wRVU value: $33, wRVU realization: 85%, Net impact = gross savings − edit time, Observed patterns: 150+ health systems
+
+- FORMULAS in monospace (same as page 3)
+
+- Footer disclaimer: "This assessment is for planning purposes. All calculations are based on inputs provided and patterns observed across Abridge implementations. 'What we typically see' ranges reflect aggregate data across multiple health systems and specialties. Actual results depend on implementation approach, organizational readiness, and clinical workflow factors."
+
+Footer: "ABRIDGE | [Org Name] · Ambient Assessment | Page 4 of 4"
+
+============================
+IMPORTANT IMPLEMENTATION NOTES:
+============================
+
+1. All calculations should flow from the inputs on Screen 2. Every number on every subsequent screen should update dynamically when inputs change.
+
+2. The premium feel comes from WHITESPACE. Every section should have generous padding (at least 32px between sections, 24px inside cards). Nothing should feel cramped.
+
+3. Cards should have subtle shadows (box-shadow: 0 1px 3px rgba(0,0,0,0.08)) — not harsh borders.
+
+4. The dark cards (Pajama Time, Maturity Model, Cost of Waiting) should use background color #1A1A1A or very close to it, with white text.
+
+5. Red accent color for all numbers, progress bars, highlights: #C54B2A
+
+6. Beige background containers: #F5F0EB
+
+7. Transitions between pages should be smooth — no jarring reloads.
+
+8. The slider styling should match what's already in the app — red dot handle, gray track, clean.
+
+9. Make sure the PDF exports cleanly with no cut-off content, no bleed, no overlapping elements. Each page should fit exactly on one PDF page.
+
+10. Do NOT include any timeline steps, numbered implementation phases, or week-by-week breakdowns anywhere in the app or PDF. The only reference to timeline is the "45 days" banner.
