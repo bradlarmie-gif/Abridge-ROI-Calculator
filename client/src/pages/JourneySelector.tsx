@@ -22,7 +22,6 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       <GlobalHeader pageName="Home" />
-      
       <div 
         className="absolute pointer-events-none z-0"
         style={{
@@ -41,7 +40,6 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           aria-hidden="true"
         />
       </div>
-      
       <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
         <motion.section 
           initial={{ opacity: 0, y: 12 }}
@@ -199,7 +197,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="text-center pt-4 md:pt-6 space-y-4"
+          className="text-center pt-4 md:pt-6 space-y-4 text-[18px]"
         >
           <p className="text-[10px] text-[#999999]">
             Estimates are for planning purposes. Results should be validated with your organization's data.
