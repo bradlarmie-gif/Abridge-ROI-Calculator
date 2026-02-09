@@ -72,7 +72,7 @@ function BenchmarkCard({
 
       <div className="mb-3">
         <div className="relative h-2 rounded-lg" style={{
-          background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${currentPercent}%, #E0E0E0 ${currentPercent}%, #E0E0E0 100%)`,
+          background: `linear-gradient(to right, ${isInRange ? '#2E7D32' : '#EA2C00'} 0%, ${isInRange ? '#2E7D32' : '#EA2C00'} ${currentPercent}%, #E0E0E0 ${currentPercent}%, #E0E0E0 100%)`,
         }}>
           <div
             className="absolute h-full rounded-lg"
