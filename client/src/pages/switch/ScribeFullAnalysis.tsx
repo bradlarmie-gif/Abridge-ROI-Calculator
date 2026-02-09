@@ -260,25 +260,25 @@ export default function ScribeFullAnalysis({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="bg-white rounded-xl border border-[#E5E7EB] p-6 md:p-8 mb-8 text-center"
+          className="bg-[#1A1A1A] rounded-xl p-6 md:p-8 mb-8 text-center"
         >
-          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-6">
+          <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-6">
             Your True Annual Cost
           </p>
 
           <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-16">
             <div className="border-l-[3px] border-l-[#EA2C00] pl-4 text-left">
-              <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(trueTotalCost)}</div>
-              <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-2">Total Annual Cost</div>
-              <div className="text-xs text-[#888888] italic mt-1">
+              <div className="text-4xl md:text-5xl font-bold text-white">{formatCurrency(trueTotalCost)}</div>
+              <div className="text-xs font-medium text-[#999999] uppercase tracking-wide mt-2">Total Annual Cost</div>
+              <div className="text-xs text-[#777777] italic mt-1">
                 {formatCurrency(calculations.totalScribeCost)} salaries + {formatCurrency(totalHiddenCosts)} overhead
               </div>
             </div>
 
             <div className="border-l-[3px] border-l-[#EA2C00] pl-4 text-left">
-              <div className="text-4xl md:text-5xl font-bold text-black">{formatCurrency(costPerProvider)}</div>
-              <div className="text-xs font-medium text-[#888888] uppercase tracking-wide mt-2">Per Covered Provider</div>
-              <div className="text-xs text-[#888888] italic mt-1">
+              <div className="text-4xl md:text-5xl font-bold text-white">{formatCurrency(costPerProvider)}</div>
+              <div className="text-xs font-medium text-[#999999] uppercase tracking-wide mt-2">Per Covered Provider</div>
+              <div className="text-xs text-[#777777] italic mt-1">
                 Annual cost per provider with scribe support
               </div>
             </div>
