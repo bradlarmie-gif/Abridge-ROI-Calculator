@@ -337,16 +337,13 @@ export default function ScribeAssessment({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="bg-white rounded-xl p-8 md:p-12 text-center border border-[#E5E7EB]"
+              className="bg-[#F5F0EB] rounded-xl p-8 md:p-12 text-center"
             >
-              <p className="text-[#6B7280] text-base mb-2">
-                Scaling your scribe program to full coverage would require an additional
+              <p className="text-xl md:text-2xl font-bold text-black mb-2">
+                Scaling would cost an additional {formatCurrency(calculations.costToScale)}/year.
               </p>
-              <p className="text-3xl md:text-4xl font-bold text-black mb-4">
-                {formatCurrency(calculations.costToScale)}/year
-              </p>
-              <p className="text-lg font-medium text-black mb-6">
-                There's another way.
+              <p className="text-base text-[#6B7280] mb-6">
+                There's a better way to scale.
               </p>
               
               <Button
