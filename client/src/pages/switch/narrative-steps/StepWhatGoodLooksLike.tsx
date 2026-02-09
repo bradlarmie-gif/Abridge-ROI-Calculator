@@ -20,6 +20,7 @@ interface BenchmarkCardProps {
   prefix?: string;
   maxScale: number;
   invertedScale?: boolean;
+  rangeLabel?: string;
 }
 
 function BenchmarkCard({
@@ -32,6 +33,7 @@ function BenchmarkCard({
   prefix = "",
   maxScale,
   invertedScale = false,
+  rangeLabel,
 }: BenchmarkCardProps) {
   const currentPercent = Math.min(100, Math.max(0, (currentValue / maxScale) * 100));
   const benchmarkMinPercent = (benchmarkMin / maxScale) * 100;
@@ -88,7 +90,7 @@ function BenchmarkCard({
           }}
         >
           <span className="bg-[#E8E8E8] px-2 py-0.5 rounded text-[#333333] font-medium whitespace-nowrap">
-            Abridge Range: {prefix}{benchmarkMin}–{benchmarkMax}{unit}
+            {rangeLabel || `Abridge Range: ${prefix}${benchmarkMin}–${benchmarkMax}${unit}`}
           </span>
         </div>
       </div>
@@ -118,6 +120,8 @@ export default function StepWhatGoodLooksLike({
   onNext,
   onBack,
 }: StepWhatGoodLooksLikeProps) {
+  const currentNetImpact = (inputs.timeSavedPerEncounter || 0) - (inputs.editTimePerEncounter || 0);
+
   const dimensions = [
     {
       icon: <BarChart3 className="w-5 h-5 text-[#EA2C00]" />,
@@ -130,12 +134,14 @@ export default function StepWhatGoodLooksLike({
     },
     {
       icon: <Clock className="w-5 h-5 text-[#EA2C00]" />,
-      label: "Time Saved",
-      currentValue: inputs.timeSavedPerEncounter || 0,
-      benchmarkMin: ABRIDGE_BENCHMARKS.timeSavedMin,
-      benchmarkMax: ABRIDGE_BENCHMARKS.timeSavedMax,
+      label: "Net Time Impact",
+      currentValue: Math.max(0, currentNetImpact),
+      benchmarkMin: 3,
+      benchmarkMax: 4,
       unit: " min",
+      prefix: "+",
       maxScale: 6,
+      rangeLabel: "Abridge Range: 3–4 min net",
     },
     {
       icon: <ClipboardList className="w-5 h-5 text-[#EA2C00]" />,
@@ -148,7 +154,7 @@ export default function StepWhatGoodLooksLike({
     },
     {
       icon: <DollarSign className="w-5 h-5 text-[#EA2C00]" />,
-      label: "wRVU Lift",
+      label: "Coding Impact",
       currentValue: inputs.wrvuLift || 0,
       benchmarkMin: ABRIDGE_BENCHMARKS.wrvuLiftMin,
       benchmarkMax: ABRIDGE_BENCHMARKS.wrvuLiftMax,
@@ -197,6 +203,36 @@ export default function StepWhatGoodLooksLike({
         </p>
       </div>
 
+      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8">
+        <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-4">
+          Ambient AI Maturity Model
+        </p>
+        <div className="flex items-baseline gap-3 mb-6">
+          <span className="text-3xl md:text-4xl font-bold text-white">{calculations.maturityLevel}</span>
+          <span className="text-sm text-[#999999]">Stage {calculations.maturityStage} of 4</span>
+        </div>
+        
+        <div className="flex gap-2 mb-6">
+          {[1, 2, 3, 4].map((stage) => (
+            <div key={stage} className="flex-1">
+              <div className={`h-2 rounded-full ${stage <= calculations.maturityStage ? 'bg-[#EA2C00]' : 'bg-[#333333]'}`} />
+              <p className={`text-[10px] mt-2 ${stage <= calculations.maturityStage ? 'text-white' : 'text-[#666666]'}`}>
+                {stage === 1 ? 'Deployed' : stage === 2 ? 'Adopted' : stage === 3 ? 'Optimized' : 'Transformed'}
+              </p>
+            </div>
+          ))}
+        </div>
+        
+        <div className="bg-[#333333] rounded-lg p-4">
+          <p className="text-sm text-[#CCCCCC]">
+            {calculations.maturityStage === 1 && "You've deployed ambient AI, but adoption and optimization haven't followed. This is the most common — and most addressable — gap."}
+            {calculations.maturityStage === 2 && "Your team is using the tool, but not yet seeing the full returns. The gap between adoption and optimization is where most value is lost."}
+            {calculations.maturityStage === 3 && "You're extracting real value. The remaining opportunity is in the fine-tuning — deeper utilization, better workflows, and specialty-specific optimization."}
+            {calculations.maturityStage === 4 && "You're among the top performers. The question now is: how do you maintain this and scale it across the organization?"}
+          </p>
+        </div>
+      </section>
+
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -236,36 +272,6 @@ export default function StepWhatGoodLooksLike({
           />
         ))}
       </div>
-
-      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8">
-        <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-4">
-          Ambient AI Maturity Model
-        </p>
-        <div className="flex items-baseline gap-3 mb-6">
-          <span className="text-3xl md:text-4xl font-bold text-white">{calculations.maturityLevel}</span>
-          <span className="text-sm text-[#999999]">Stage {calculations.maturityStage} of 4</span>
-        </div>
-        
-        <div className="flex gap-2 mb-6">
-          {[1, 2, 3, 4].map((stage) => (
-            <div key={stage} className="flex-1">
-              <div className={`h-2 rounded-full ${stage <= calculations.maturityStage ? 'bg-[#EA2C00]' : 'bg-[#333333]'}`} />
-              <p className={`text-[10px] mt-2 ${stage <= calculations.maturityStage ? 'text-white' : 'text-[#666666]'}`}>
-                {stage === 1 ? 'Deployed' : stage === 2 ? 'Adopted' : stage === 3 ? 'Optimized' : 'Transformed'}
-              </p>
-            </div>
-          ))}
-        </div>
-        
-        <div className="bg-[#333333] rounded-lg p-4">
-          <p className="text-sm text-[#CCCCCC]">
-            {calculations.maturityStage === 1 && "You've deployed ambient AI, but adoption and optimization haven't followed. This is the most common — and most addressable — gap."}
-            {calculations.maturityStage === 2 && "Your team is using the tool, but not yet seeing the full returns. The gap between adoption and optimization is where most value is lost."}
-            {calculations.maturityStage === 3 && "You're extracting real value. The remaining opportunity is in the fine-tuning — deeper utilization, better workflows, and specialty-specific optimization."}
-            {calculations.maturityStage === 4 && "You're among the top performers. The question now is: how do you maintain this and scale it across the organization?"}
-          </p>
-        </div>
-      </section>
 
       <div className="flex justify-between items-center pt-4">
         <Button 
