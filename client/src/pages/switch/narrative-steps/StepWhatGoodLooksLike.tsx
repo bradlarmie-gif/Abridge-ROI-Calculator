@@ -97,17 +97,14 @@ function BenchmarkCard({
 
       <div className="mt-8">
         {isBelowRange ? (
-          <div className="p-3 bg-[#FFEBE6] rounded-lg">
-            <p className="text-xs text-[#EA2C00] font-semibold">
-              {Math.round(gapToRange)}{unit} gap to reach benchmark range
-            </p>
-          </div>
+          <p className="text-xs">
+            <span className="font-semibold text-[#C54B2A]">{Math.round(gapToRange)}{unit}</span>
+            <span className="text-[#8A8478]"> gap to reach benchmark range</span>
+          </p>
         ) : (
-          <div className="p-3 bg-[#E8E8E8] rounded-lg">
-            <p className="text-xs text-[#333333] font-medium">
-              In Range
-            </p>
-          </div>
+          <p className="text-xs text-[#6B8A6B] font-medium">
+            &#10003; In Range
+          </p>
         )}
       </div>
     </div>
