@@ -96,7 +96,7 @@ export default function SwitchAssessment({
     // wRVU to dollars calculation
     const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
     const additionalWRVU = Math.round(documentsAtBenchmark * VALUE_ASSUMPTIONS.avgWRVUPerEncounter * (wrvuGapPercent / 100));
-    const additionalRevenue = Math.round(additionalWRVU * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuAttribution);
+    const additionalRevenue = Math.round(additionalWRVU * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuRealization);
     
     return {
       additionalHoursPerYear,

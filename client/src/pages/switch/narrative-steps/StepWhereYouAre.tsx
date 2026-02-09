@@ -131,6 +131,22 @@ export default function StepWhereYouAre({
   onNext,
   onBack,
 }: StepWhereYouAreProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const handleMetricChange = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
+    setTouched(prev => ({ ...prev, [key]: true }));
+    updateInput(key, value);
+  };
+
+  const allMetricsTouched = 
+    touched.utilization && 
+    touched.timeSavedPerEncounter && 
+    touched.editTimePerEncounter && 
+    touched.docCompleteness && 
+    touched.satisfaction && 
+    touched.wrvuLift &&
+    touched.afterHoursPerWeek;
+
   const afterHoursPerWeek = inputs.afterHoursPerWeek || 0;
   const providers = inputs.providers || 0;
   const annualPajamaTime = afterHoursPerWeek * providers * 52;
@@ -168,7 +184,7 @@ export default function StepWhereYouAre({
             maxValue={100}
             minValue={0}
             step={5}
-            onChange={(v) => updateInput("utilization", v)}
+            onChange={(v) => handleMetricChange("utilization", v)}
             testId="slider-utilization"
             benchmarkLabel="What we typically see: 70-80%"
           />
@@ -184,7 +200,7 @@ export default function StepWhereYouAre({
             maxValue={6}
             minValue={0}
             step={0.5}
-            onChange={(v) => updateInput("timeSavedPerEncounter", v)}
+            onChange={(v) => handleMetricChange("timeSavedPerEncounter", v)}
             testId="slider-efficiency"
             benchmarkLabel="What we typically see: 3-5 min"
           />
@@ -200,7 +216,7 @@ export default function StepWhereYouAre({
             maxValue={10}
             minValue={0}
             step={0.5}
-            onChange={(v) => updateInput("editTimePerEncounter", v)}
+            onChange={(v) => handleMetricChange("editTimePerEncounter", v)}
             testId="slider-edit-time"
             benchmarkLabel="What we typically see: < 1 min"
           />
@@ -216,7 +232,7 @@ export default function StepWhereYouAre({
             maxValue={100}
             minValue={0}
             step={5}
-            onChange={(v) => updateInput("docCompleteness", v)}
+            onChange={(v) => handleMetricChange("docCompleteness", v)}
             testId="slider-doc-completeness"
             benchmarkLabel="What we typically see: 75-85%"
           />
@@ -232,7 +248,7 @@ export default function StepWhereYouAre({
             maxValue={100}
             minValue={0}
             step={5}
-            onChange={(v) => updateInput("satisfaction", v)}
+            onChange={(v) => handleMetricChange("satisfaction", v)}
             testId="slider-satisfaction"
             benchmarkLabel="What we typically see: 80-90%"
           />
@@ -249,7 +265,7 @@ export default function StepWhereYouAre({
             maxValue={12}
             minValue={0}
             step={0.5}
-            onChange={(v) => updateInput("wrvuLift", v)}
+            onChange={(v) => handleMetricChange("wrvuLift", v)}
             testId="slider-wrvu"
             benchmarkLabel="What we typically see: +4-7%"
           />
@@ -274,7 +290,7 @@ export default function StepWhereYouAre({
             max={15}
             step={1}
             value={afterHoursPerWeek}
-            onChange={(e) => updateInput('afterHoursPerWeek', parseFloat(e.target.value))}
+            onChange={(e) => handleMetricChange('afterHoursPerWeek', parseFloat(e.target.value))}
             className="flex-1 h-2 rounded-lg appearance-none cursor-pointer"
             style={{
               background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${afterHoursFillPercent}%, #333333 ${afterHoursFillPercent}%, #333333 100%)`,
@@ -285,7 +301,7 @@ export default function StepWhereYouAre({
             <input
               type="number"
               value={afterHoursPerWeek || ''}
-              onChange={(e) => updateInput('afterHoursPerWeek', parseFloat(e.target.value) || 0)}
+              onChange={(e) => handleMetricChange('afterHoursPerWeek', parseFloat(e.target.value) || 0)}
               placeholder="--"
               min={0}
               max={15}
@@ -309,6 +325,18 @@ export default function StepWhereYouAre({
         )}
       </section>
 
+      {!allMetricsTouched && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+          <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800">Complete all metrics to continue</p>
+            <p className="text-xs text-amber-600 mt-1">
+              Adjust each slider above to reflect your current performance. All 7 metrics are required for an accurate realization score.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center pt-4">
         <Button 
           variant="ghost" 
@@ -322,7 +350,8 @@ export default function StepWhereYouAre({
         
         <Button
           onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
+          disabled={!allMetricsTouched}
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11 disabled:opacity-50 disabled:cursor-not-allowed"
           data-testid="button-next"
         >
           See the Gap
