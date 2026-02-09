@@ -10,8 +10,8 @@ interface SplashScreenProps {
 const COLS = 6;
 const ROWS = 5;
 const SHAPE_SIZE = 120;
-const BASE_OPACITY = 0.18;
-const PEAK_OPACITY = BASE_OPACITY * 1.5;
+const BASE_OPACITY = 0.22;
+const PEAK_OPACITY = 0.38;
 
 function getRotation(row: number, col: number): number {
   const pattern = [
@@ -39,7 +39,7 @@ function buildGrid(): GridCell[] {
         leftPercent: ((c + 0.5) / COLS) * 100,
         topPercent: ((r + 0.5) / ROWS) * 100,
         rotation: getRotation(r, c),
-        waveDelay: (r + c) * 0.5,
+        waveDelay: (r + c) * 0.8,
       });
     }
   }
@@ -112,12 +112,12 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
 
       <style>{`
         .splash-tile {
-          animation: tileWave 6s ease-in-out var(--tile-delay, 0s) infinite;
+          animation: tileWave 12s ease-in-out var(--tile-delay, 0s) infinite;
           transform: rotate(var(--tile-rot, 0deg));
         }
         @keyframes tileWave {
           0%, 100% { opacity: ${BASE_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1); }
-          50%      { opacity: ${PEAK_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1.04); }
+          50%      { opacity: ${PEAK_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1.02); }
         }
         .splash-logo {
           animation: splashLogoEnter 0.4s ease-out forwards, splashLogoPulse 4s ease-in-out 0.4s infinite;
