@@ -94,6 +94,7 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
       toast({
         title: "PDF Downloaded",
         description: "Your Value Story has been saved.",
+        variant: "brand",
       });
     } catch (error) {
       console.error('PDF export failed:', error);

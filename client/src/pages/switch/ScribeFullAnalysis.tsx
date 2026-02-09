@@ -46,6 +46,7 @@ export default function ScribeFullAnalysis({
       toast({
         title: "PDF Downloaded",
         description: "Your Scribe Program Analysis has been saved.",
+        variant: "brand",
       });
     } catch (error) {
       console.error("Failed to generate PDF:", error);

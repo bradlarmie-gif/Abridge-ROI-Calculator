@@ -331,6 +331,7 @@ export default function ExpandJourneyExpansion({
       toast({
         title: "PDF Ready",
         description: "Your expansion report is ready to print or save as PDF.",
+        variant: "brand",
       });
     }
   }, [currentValue, calculatedROI.roi, hasValidExpansion, expansionValue, providers, utilizationRate, expansionTarget, targetValue, valuePerProvider, toast]);

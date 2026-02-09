@@ -62,6 +62,7 @@ export default function StepTheInvitation({
       toast({
         title: "PDF Downloaded",
         description: "Your Value Realization Assessment has been saved.",
+        variant: "brand",
       });
     } catch (error) {
       console.error("Error generating PDF:", error);

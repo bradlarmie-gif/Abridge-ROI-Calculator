@@ -550,7 +550,8 @@ export default function ExpandResults({
       setShowExportModal(false);
       toast({ 
         title: "PDF exported", 
-        description: "Your value realization report has been downloaded" 
+        description: "Your value realization report has been downloaded",
+        variant: "brand",
       });
     } catch (error) {
       console.error('PDF generation error:', error);

@@ -531,6 +531,7 @@ export default function ExploreModel({
       toast({
         title: "PDF Downloaded",
         description: "Your ROI model has been saved.",
+        variant: "brand",
       });
     } catch (error: any) {
       console.error("PDF generation error:", error?.message || error?.toString?.() || JSON.stringify(error), error);
