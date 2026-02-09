@@ -13,6 +13,8 @@ interface PDFCoverPageProps {
   subtitle?: string;
   clientName?: string;
   preparedBy?: string;
+  disclaimerText?: string;
+  showPreparedBy?: boolean;
 }
 
 const colors = {
@@ -118,6 +120,8 @@ export function PDFCoverPage({
   subtitle,
   clientName,
   preparedBy,
+  disclaimerText,
+  showPreparedBy = true,
 }: PDFCoverPageProps) {
   const displayPreparedBy = preparedBy || "Abridge Partner Success";
   const today = new Date().toLocaleDateString("en-US", {
@@ -159,15 +163,19 @@ export function PDFCoverPage({
           </View>
         ) : null}
 
-        <Text style={styles.metaLabel}>PREPARED BY</Text>
-        <Text style={styles.preparedByText}>
-          {displayPreparedBy} {"\u00B7"} {today}
-        </Text>
+        {showPreparedBy ? (
+          <View>
+            <Text style={styles.metaLabel}>PREPARED BY</Text>
+            <Text style={styles.preparedByText}>
+              {displayPreparedBy} {"\u00B7"} {today}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.disclaimer}>
         <Text style={styles.disclaimerText}>
-          This assessment is for planning purposes. Calculations are based on actual deployment data and Abridge methodology.
+          {disclaimerText || "This assessment is for planning purposes. Calculations are based on actual deployment data and Abridge methodology."}
         </Text>
       </View>
     </Page>

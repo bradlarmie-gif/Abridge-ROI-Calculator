@@ -5,16 +5,12 @@ import {
   View,
   StyleSheet,
   pdf,
-  Svg,
-  Path,
-  Image,
   Font,
 } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
+import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../assets/fonts/manrope-bold.ttf";
-import abridgeFont from "../assets/fonts/abridge.otf";
-import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -24,11 +20,6 @@ Font.register({
     { src: manropeRegular, fontWeight: 400 },
     { src: manropeBold, fontWeight: 700 },
   ],
-});
-
-Font.register({
-  family: "Abridge",
-  src: abridgeFont,
 });
 
 export type MethodologyCareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
@@ -44,74 +35,6 @@ const colors = {
 };
 
 const styles = StyleSheet.create({
-  coverPage: {
-    backgroundColor: colors.background,
-    padding: 54,
-    paddingBottom: 36,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-  },
-  coverCurve: {
-    position: "absolute",
-    bottom: 80,
-    right: 0,
-    width: 300,
-    height: 300,
-  },
-  coverLogoWrap: {
-    marginBottom: 40,
-  },
-  coverLogo: {
-    width: 90,
-  },
-  coverContent: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  coverLabel: {
-    fontSize: 9,
-    color: colors.secondary,
-    letterSpacing: 3,
-    marginBottom: 16,
-    textTransform: "uppercase",
-  },
-  coverTitle: {
-    fontSize: 36,
-    fontFamily: "Abridge",
-    fontWeight: "bold",
-    color: colors.primaryText,
-    lineHeight: 1.2,
-    letterSpacing: -0.5,
-    marginBottom: 20,
-  },
-  coverRule: {
-    width: 60,
-    height: 2,
-    backgroundColor: colors.primary,
-    marginBottom: 20,
-  },
-  coverSubtitle: {
-    fontSize: 14,
-    color: colors.secondary,
-    lineHeight: 1.5,
-    marginBottom: 40,
-  },
-  coverDate: {
-    fontSize: 12,
-    color: colors.secondary,
-  },
-  coverDisclaimer: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 12,
-    marginTop: "auto",
-  },
-  coverDisclaimerText: {
-    fontSize: 8.5,
-    color: colors.tertiary,
-    lineHeight: 1.5,
-  },
   page: {
     padding: 54,
     paddingBottom: 50,
@@ -549,38 +472,14 @@ const settingData: Record<MethodologyCareSetting, SettingData> = {
 
 function CoverPage({ setting }: { setting: MethodologyCareSetting }) {
   const data = settingData[setting];
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   return (
-    <Page size="LETTER" style={styles.coverPage} wrap={false}>
-      <View style={styles.coverLogoWrap}>
-        <Image src={abridgeLogoRed} style={styles.coverLogo} />
-      </View>
-      <View style={styles.coverCurve}>
-        <Svg width={300} height={300} viewBox="0 0 300 300">
-          <Path
-            d="M 300 0 Q 250 50 200 120 Q 150 190 80 240 Q 40 270 0 300"
-            stroke={colors.primary}
-            strokeWidth={80}
-            fill="none"
-            strokeOpacity={0.08}
-            strokeLinecap="round"
-          />
-        </Svg>
-      </View>
-      <View style={styles.coverContent}>
-        <Text style={styles.coverLabel}>ROI METHODOLOGY</Text>
-        <Text style={styles.coverTitle}>{data.settingLabel}: How We{"\n"}Think About Value</Text>
-        <View style={styles.coverRule} />
-        <Text style={styles.coverSubtitle}>{data.coverSubtitle}</Text>
-        <Text style={styles.coverDate}>{dateStr}</Text>
-      </View>
-      <View style={styles.coverDisclaimer}>
-        <Text style={styles.coverDisclaimerText}>
-          Every assumption is visible. Every calculation is transparent.
-        </Text>
-      </View>
-    </Page>
+    <PDFCoverPage
+      reportLabel="ROI METHODOLOGY"
+      title={`${data.settingLabel}: How We Think About Value`}
+      subtitle={data.coverSubtitle}
+      showPreparedBy={false}
+      disclaimerText="Every assumption is visible. Every calculation is transparent."
+    />
   );
 }
 
