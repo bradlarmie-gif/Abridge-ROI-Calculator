@@ -85,7 +85,7 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
           <div className="flex items-center gap-4">
             <a
               href="/"
-              onClick={(e) => { e.preventDefault(); window.location.href = "/"; }}
+              onClick={(e) => { e.preventDefault(); onBack(); }}
               className="flex items-center"
               data-testid="link-home-logo"
             >
