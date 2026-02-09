@@ -7,130 +7,90 @@ interface SplashScreenProps {
   onEnter: () => void;
 }
 
-const COLS = 4;
-const ROWS = 4;
-const SHAPE_SIZE = 168;
-const PEAK_OPACITY = 0.50;
+const COLS = 6;
+const ROWS = 5;
+const SHAPE_SIZE = 120;
+const BASE_OPACITY = 0.18;
+const PEAK_OPACITY = BASE_OPACITY * 1.5;
 
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 127.1 + seed * 311.7) * 43758.5453;
-  return x - Math.floor(x);
+function getRotation(row: number, col: number): number {
+  const pattern = [
+    [0, 90, 180, 270, 0, 90],
+    [270, 180, 90, 0, 270, 180],
+    [180, 270, 0, 90, 180, 270],
+    [90, 0, 270, 180, 90, 0],
+    [0, 90, 180, 270, 0, 90],
+  ];
+  return pattern[row % pattern.length][col % pattern[0].length];
 }
 
-interface GridShape {
-  col: number;
-  row: number;
-  left: string;
-  top: string;
-  rotate: number;
-  duration: number;
-  delay: number;
-  driftX: number;
-  driftY: number;
-  rotateAmt: number;
-  peakOpacity: number;
+interface GridCell {
+  leftPercent: number;
+  topPercent: number;
+  rotation: number;
+  waveDelay: number;
 }
 
-function buildGrid(): GridShape[] {
-  const grid: GridShape[] = [];
+function buildGrid(): GridCell[] {
+  const cells: GridCell[] = [];
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const seed = r * COLS + c;
-      const jitterX = (seededRandom(seed * 2) - 0.5) * 4;
-      const jitterY = (seededRandom(seed * 3) - 0.5) * 4;
-      const left = ((c + 0.5) / COLS) * 100 + jitterX;
-      const top = ((r + 0.5) / ROWS) * 100 + jitterY;
-
-      const duration = 4 + seededRandom(seed * 11) * 4;
-      const delay = seededRandom(seed * 13) * -8;
-      const driftX = (seededRandom(seed * 5) - 0.5) * 16;
-      const driftY = (seededRandom(seed * 7) - 0.5) * 16;
-      const rotateAmt = 0;
-      const peakOpacity = PEAK_OPACITY * (0.6 + seededRandom(seed * 17) * 0.4);
-
-      grid.push({
-        col: c,
-        row: r,
-        left: `${left.toFixed(1)}%`,
-        top: `${top.toFixed(1)}%`,
-        rotate: 0,
-        duration,
-        delay,
-        driftX,
-        driftY,
-        rotateAmt,
-        peakOpacity,
+      cells.push({
+        leftPercent: ((c + 0.5) / COLS) * 100,
+        topPercent: ((r + 0.5) / ROWS) * 100,
+        rotation: getRotation(r, c),
+        waveDelay: (r + c) * 0.5,
       });
     }
   }
-  return grid;
+  return cells;
 }
 
-const gridData = buildGrid();
-
-function generateCSS(): string {
-  let css = '';
-  gridData.forEach((s, i) => {
-    const r = s.rotate;
-    const dx = s.driftX;
-    const dy = s.driftY;
-    const dr = s.rotateAmt;
-    const op = s.peakOpacity;
-
-    css += `
-      @keyframes float${i} {
-        0%   { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) rotate(${r}deg) scale(0.95); }
-        25%  { opacity: ${op.toFixed(3)}; transform: translate(${dx.toFixed(1)}px, ${(dy * 0.5).toFixed(1)}px) rotate(${(r + dr * 0.5).toFixed(1)}deg) scale(1.02); }
-        50%  { opacity: ${(op * 0.5).toFixed(3)}; transform: translate(${(dx * 0.3).toFixed(1)}px, ${dy.toFixed(1)}px) rotate(${(r + dr).toFixed(1)}deg) scale(0.98); }
-        75%  { opacity: ${op.toFixed(3)}; transform: translate(${(-dx * 0.5).toFixed(1)}px, ${(dy * 0.3).toFixed(1)}px) rotate(${(r + dr * 0.7).toFixed(1)}deg) scale(1.03); }
-        100% { opacity: ${(op * 0.3).toFixed(3)}; transform: translate(0px, 0px) rotate(${r}deg) scale(0.95); }
-      }
-    `;
-  });
-  return css;
-}
-
-const gridCSS = generateCSS();
+const gridCells = buildGrid();
 
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        {gridData.map((s, i) => (
+        {gridCells.map((cell, i) => (
           <img
             key={i}
             src={brandShape}
             alt=""
-            className="absolute"
+            className="absolute splash-tile"
             style={{
               width: `${SHAPE_SIZE}px`,
-              top: s.top,
-              left: s.left,
-              filter: 'grayscale(100%) brightness(1.0)',
-              opacity: s.peakOpacity * 0.3,
-              transform: `rotate(${s.rotate}deg)`,
-              animation: `float${i} ${s.duration.toFixed(1)}s ease-in-out ${s.delay.toFixed(1)}s infinite`,
-            }}
+              height: `${SHAPE_SIZE}px`,
+              left: `${cell.leftPercent}%`,
+              top: `${cell.topPercent}%`,
+              marginLeft: `-${SHAPE_SIZE / 2}px`,
+              marginTop: `-${SHAPE_SIZE / 2}px`,
+              filter: 'grayscale(100%) brightness(0.6)',
+              '--tile-rot': `${cell.rotation}deg`,
+              '--tile-delay': `${cell.waveDelay}s`,
+            } as React.CSSProperties}
             data-testid={`shape-bg-${i}`}
           />
         ))}
       </div>
+
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 60% 55% at 50% 48%, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)',
+        }}
+      />
 
       <div className="relative z-10 text-center px-6 max-w-2xl mx-auto">
         <div className="mb-12 flex justify-center">
           <img
             src={patternA}
             alt="Abridge"
-            className="w-24 md:w-32"
-            style={{
-              animation: 'splashLogoEnter 0.3s ease-out forwards, splashPulse 3s ease-in-out 0.3s infinite'
-            }}
+            className="w-24 md:w-32 splash-logo"
           />
         </div>
 
-        <h1
-          className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight font-abridge uppercase"
-        >
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight font-abridge uppercase">
           Build Your Value Story
         </h1>
 
@@ -141,7 +101,8 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
         <Button
           onClick={onEnter}
           size="lg"
-          className="bg-[#4B5563] hover:bg-[#374151] text-white px-8 py-3 text-lg rounded-lg group border border-white/30 focus:ring-2 focus:ring-white focus:ring-offset-0 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-0"
+          variant="secondary"
+          className="border border-white/30"
           data-testid="button-enter-app"
         >
           Get Started
@@ -150,14 +111,24 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
       </div>
 
       <style>{`
-        ${gridCSS}
+        .splash-tile {
+          animation: tileWave 6s ease-in-out var(--tile-delay, 0s) infinite;
+          transform: rotate(var(--tile-rot, 0deg));
+        }
+        @keyframes tileWave {
+          0%, 100% { opacity: ${BASE_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1); }
+          50%      { opacity: ${PEAK_OPACITY}; transform: rotate(var(--tile-rot, 0deg)) scale(1.04); }
+        }
+        .splash-logo {
+          animation: splashLogoEnter 0.4s ease-out forwards, splashLogoPulse 4s ease-in-out 0.4s infinite;
+        }
         @keyframes splashLogoEnter {
-          0% { opacity: 0; transform: scale(0.8); }
+          0% { opacity: 0; transform: scale(0.85); }
           100% { opacity: 1; transform: scale(1); }
         }
-        @keyframes splashPulse {
+        @keyframes splashLogoPulse {
           0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.85; transform: scale(1.02); }
+          50% { opacity: 0.88; transform: scale(1.02); }
         }
       `}</style>
     </div>
