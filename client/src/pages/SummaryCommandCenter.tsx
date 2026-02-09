@@ -43,7 +43,7 @@ import { generateNursingROIPDF, generateNursingROIPDFBlob } from "@/lib/nursing-
 import { transformToNursingPDFData } from "@/lib/nursing-pdf-data-transformer";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import { ManageModelSheet } from "@/components/ManageModelSheet";
 import {
   ComposedChart,
@@ -597,35 +597,7 @@ export default function SummaryCommandCenter({
       fileName = clientSlug ? `Abridge_Outpatient_ROI_${clientSlug}_${today}.pdf` : `Abridge_Outpatient_ROI_${today}.pdf`;
     }
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-    if (isMobile) {
-      if (navigator.share && navigator.canShare) {
-        const file = new File([blob], fileName, { type: "application/pdf" });
-        const shareData = { files: [file], title: "Abridge ROI Assessment" };
-        
-        if (navigator.canShare(shareData)) {
-          try {
-            await navigator.share(shareData);
-            return;
-          } catch (err) {
-            if ((err as Error).name === 'AbortError') return;
-          }
-        }
-      }
-      
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = fileName;
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-    } else {
-      saveAs(blob, fileName);
-    }
+    await savePdfBlob(blob, fileName);
   }, [
     activeSetting,
     mergedDriverResults,

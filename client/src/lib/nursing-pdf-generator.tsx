@@ -8,7 +8,7 @@ import {
   pdf,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_(1)_1770226183506.png";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -780,7 +780,7 @@ function NursingMethodologyDocument() {
 
 export async function generateNursingMethodologyPDF(): Promise<void> {
   const blob = await pdf(<NursingMethodologyDocument />).toBlob();
-  saveAs(blob, "Abridge-Nursing-ROI-Methodology.pdf");
+  await savePdfBlob(blob, "Abridge-Nursing-ROI-Methodology.pdf");
 }
 
 export async function generateNursingROIPDF(data: NursingPDFData): Promise<void> {
@@ -788,7 +788,7 @@ export async function generateNursingROIPDF(data: NursingPDFData): Promise<void>
   const filename = data.organizationName 
     ? `Abridge-Nursing-ROI-${data.organizationName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`
     : "Abridge-Nursing-ROI-Analysis.pdf";
-  saveAs(blob, filename);
+  await savePdfBlob(blob, filename);
 }
 
 export async function generateNursingROIPDFBlob(data: NursingPDFData): Promise<{ blob: Blob; filename: string }> {

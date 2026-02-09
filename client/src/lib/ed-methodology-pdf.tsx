@@ -6,7 +6,7 @@ import {
   pdf,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import {
   brand,
   sharedStyles as styles,
@@ -317,7 +317,7 @@ function EDMethodologyDocument() {
 export async function generateEDMethodologyPDF(): Promise<void> {
   try {
     const blob = await pdf(<EDMethodologyDocument />).toBlob();
-    saveAs(blob, "Abridge-ED-ROI-Methodology.pdf");
+    await savePdfBlob(blob, "Abridge-ED-ROI-Methodology.pdf");
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;

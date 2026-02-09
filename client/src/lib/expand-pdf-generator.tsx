@@ -12,7 +12,7 @@ import {
   Circle,
   Polyline,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 // ============================================================================
@@ -1357,15 +1357,7 @@ export const generateExpandROIPDF = async (data: ExpandPDFData): Promise<void> =
   const date = new Date().toISOString().split("T")[0];
   const filename = `abridge-value-realization-${date}.pdf`;
   
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-  
-  if (isMobile) {
-    const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, '_blank');
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-  } else {
-    saveAs(blob, filename);
-  }
+  await savePdfBlob(blob, filename);
 };
 
 export const generateExpandROIPDFBlob = async (data: ExpandPDFData): Promise<{ blob: Blob; filename: string }> => {

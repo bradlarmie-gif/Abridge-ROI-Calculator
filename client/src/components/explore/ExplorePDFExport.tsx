@@ -9,7 +9,7 @@ import {
   Rect,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
 import manropeBold from "../../assets/fonts/manrope-bold.ttf";
@@ -863,35 +863,7 @@ export const generateExplorePDF = async (data: ExplorePDFData): Promise<void> =>
   const settingSlug = data.careSetting === "ed" ? "ED" : config.label.replace(/\s+/g, "_");
   const fileName = `Abridge_${settingSlug}_Value_Assessment_${orgName}.pdf`;
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-  if (isMobile) {
-    if (navigator.share && navigator.canShare) {
-      const file = new File([blob], fileName, { type: "application/pdf" });
-      const shareData = { files: [file], title: `${config.label} Value Assessment` };
-
-      if (navigator.canShare(shareData)) {
-        try {
-          await navigator.share(shareData);
-          return;
-        } catch (err) {
-          if ((err as Error).name === "AbortError") return;
-        }
-      }
-    }
-
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = blobUrl;
-    link.download = fileName;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-  } else {
-    saveAs(blob, fileName);
-  }
+  await savePdfBlob(blob, fileName);
 };
 
 export default ExplorePDFDocument;

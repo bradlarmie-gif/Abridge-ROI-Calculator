@@ -8,7 +8,7 @@ import {
   pdf,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import type { MeasureState } from "@/lib/measureCalculator";
 import { calculateExpansionResults } from "@/lib/measureCalculator";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
@@ -771,5 +771,5 @@ export async function generateMeasurePDF(
   ).toBlob();
 
   const orgName = clientName ? clientName.replace(/[^a-zA-Z0-9]/g, "_") : "Organization";
-  saveAs(blob, `Abridge_Value_Story_${orgName}.pdf`);
+  await savePdfBlob(blob, `Abridge_Value_Story_${orgName}.pdf`);
 }

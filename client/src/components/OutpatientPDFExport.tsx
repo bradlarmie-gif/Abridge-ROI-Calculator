@@ -7,7 +7,7 @@ import {
   Image,
   pdf,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import type { RoiInputs, LeverId } from "@/lib/roi-types";
 import { leverLabels, leverDescriptions } from "@/lib/roi-types";
 import type { calculateRoi } from "@/lib/roi-calculator";
@@ -1158,7 +1158,7 @@ export async function generateOutpatientPDF(
     ? `abridge-${careSettingLabel.toLowerCase()}-roi-${orgSlug}-${today}.pdf`
     : `abridge-${careSettingLabel.toLowerCase()}-roi-${today}.pdf`;
 
-  saveAs(blob, filename);
+  await savePdfBlob(blob, filename);
 }
 
 export default OutpatientPDFDocument;

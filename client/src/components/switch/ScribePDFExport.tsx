@@ -9,7 +9,7 @@ import {
   Rect,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import type { ScribeInputs, ScribeCalculations } from "@/lib/scribeGapCalculator";
 import { PDFCoverPage } from "@/components/pdf/PDFCoverPage";
 import manropeRegular from "../../assets/fonts/manrope-regular.ttf";
@@ -715,35 +715,7 @@ export const generateScribePDF = async (
   const orgName = clientName ? clientName.replace(/[^a-zA-Z0-9]/g, "_") : "Organization";
   const fileName = `Abridge_Scribe_Analysis_${orgName}.pdf`;
 
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-  if (isMobile) {
-    if (navigator.share && navigator.canShare) {
-      const file = new File([blob], fileName, { type: "application/pdf" });
-      const shareData = { files: [file], title: "Scribe Program Analysis" };
-
-      if (navigator.canShare(shareData)) {
-        try {
-          await navigator.share(shareData);
-          return;
-        } catch (err) {
-          if ((err as Error).name === 'AbortError') return;
-        }
-      }
-    }
-
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = blobUrl;
-    link.download = fileName;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-  } else {
-    saveAs(blob, fileName);
-  }
+  await savePdfBlob(blob, fileName);
 };
 
 export default ScribePDFDocument;

@@ -8,7 +8,7 @@ import {
   pdf,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import abridgeLogoPath from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 
 Font.registerHyphenationCallback((word) => [word]);
@@ -1388,35 +1388,7 @@ export async function generateOutpatientROIPDF(data: OutpatientPDFData): Promise
                            data.careSetting === "inpatient" ? "Inpatient" : "Outpatient";
   const fileName = `${careSettingLabel}_ROI_Model_${orgName.replace(/\s+/g, "_")}_${today}.pdf`;
   
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile && navigator.share && navigator.canShare) {
-    const file = new File([blob], fileName, { type: 'application/pdf' });
-    if (navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: `${careSettingLabel} ROI Model`,
-          text: `Abridge ${careSettingLabel} ROI Assessment for ${orgName}`,
-        });
-        return;
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') {
-          const blobUrl = URL.createObjectURL(blob);
-          window.open(blobUrl, '_blank');
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-        }
-        return;
-      }
-    }
-  }
-  
-  if (isMobile) {
-    const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, '_blank');
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
-  } else {
-    saveAs(blob, fileName);
-  }
+  await savePdfBlob(blob, fileName);
 }
 
 export async function generateOutpatientROIPDFBlob(data: OutpatientPDFData): Promise<Blob> {

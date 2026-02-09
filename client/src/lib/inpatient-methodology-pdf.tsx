@@ -6,7 +6,7 @@ import {
   pdf,
   Font,
 } from "@react-pdf/renderer";
-import { saveAs } from "file-saver";
+import { savePdfBlob } from "@/lib/pdf-save";
 import {
   brand,
   sharedStyles as styles,
@@ -318,7 +318,7 @@ function InpatientMethodologyDocument() {
 export async function generateInpatientMethodologyPDF(): Promise<void> {
   try {
     const blob = await pdf(<InpatientMethodologyDocument />).toBlob();
-    saveAs(blob, "Abridge-Inpatient-ROI-Methodology.pdf");
+    await savePdfBlob(blob, "Abridge-Inpatient-ROI-Methodology.pdf");
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;
