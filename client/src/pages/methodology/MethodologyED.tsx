@@ -158,45 +158,66 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
             <CollapsibleSection
               sectionId="context"
               title="The Context"
-              subtitle="Why ED value shows up differently"
+              subtitle="Why you can't schedule value in the ED — it shows up in the patients you keep and the complexity you capture"
               defaultOpen={true}
             >
               <div className="space-y-4 text-[15px] text-black leading-relaxed">
                 <p>
-                  The ED is a different animal. Documentation happens faster, volume is unpredictable, 
-                  and the connection between documentation and revenue follows different paths.
+                  In the ED, you can't schedule value. There are no appointment slots to optimize, 
+                  no panels to expand. Patients arrive when they arrive, and value shows up in 
+                  three places: the patients you keep, the complexity you capture, and the physicians 
+                  you retain.
                 </p>
                 <p>
-                  Time savings per encounter are smaller in the ED—1-3 minutes vs. 4-6 in outpatient—because 
-                  ED documentation is already faster-paced with more templated workflows. But with 40,000+ 
-                  visits per year, those minutes compound.
+                  Time savings per encounter are smaller here — 1-3 minutes vs. 4-6 in outpatient — 
+                  because ED documentation is already faster-paced with more templated workflows. But 
+                  the ED is a volume engine. At 40,000-80,000 visits per year, those minutes compound 
+                  into something real. Two minutes across 50,000 visits is 1,600 hours of physician time.
                 </p>
-                <p className="font-semibold">Where ED value lives:</p>
+                <p>
+                  The harder question is: where does that time go? In outpatient, you can trace 
+                  time to wRVUs. In the ED, the value chain is more operational — it shows up in 
+                  throughput, LWBS recovery, and the quality of documentation during surges when 
+                  notes get rushed.
+                </p>
+                <p className="font-semibold">Three value paths — each with different measurement challenges:</p>
 
                 <div className="space-y-4 mt-6">
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">1. Throughput & LWBS</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      Every patient who leaves without being seen (LWBS) is lost revenue—often $300-500+ 
-                      per visit. Faster documentation can reduce door-to-doc time and improve throughput, 
-                      potentially recovering LWBS patients.
+                      Every patient who leaves without being seen is lost revenue — $300-$500+ per visit, 
+                      gone permanently. Faster documentation contributes to faster throughput, which can 
+                      recover some of these patients. But documentation is one factor among many — staffing, 
+                      triage, bed availability all matter. We model the contribution honestly.
                     </p>
                   </div>
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
-                    <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">2. Documentation Quality</h4>
+                    <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">2. Documentation Quality Under Pressure</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      ED notes often understate complexity during surges. Better documentation captures 
-                      appropriate E/M levels, supports medical necessity, and—for admitted patients—
-                      affects the entire inpatient DRG assignment through CDI.
+                      This is the ED's unique challenge: notes get worse when volume gets high. During surges, 
+                      documentation quality drops — E/M levels understate complexity, medical necessity 
+                      gets under-documented, and for admitted patients, the ED note becomes the foundation 
+                      of the entire inpatient DRG. Ambient AI doesn't get tired during a surge.
                     </p>
                   </div>
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">3. Clinician Sustainability</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      ED burnout is at crisis levels. Documentation burden contributes significantly. 
-                      Retention savings are substantial given the cost to replace ED physicians ($400k-$700k).
+                      ED burnout is a workforce crisis, not a trend. Documentation burden is a significant 
+                      contributor. At $400k-$700k per physician replacement, retention isn't a soft metric — 
+                      it's an existential budget line item for many EDs.
                     </p>
                   </div>
+                </div>
+
+                <div className="mt-6 bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                  <p className="text-sm text-[#666666] leading-relaxed">
+                    <strong className="text-black">Our approach:</strong> We model all three paths but we're honest 
+                    about which are directly measurable and which depend on operational decisions your ED team 
+                    makes. LWBS recovery is trackable. E/M accuracy is auditable. Throughput improvement 
+                    depends on how your team uses recaptured time.
+                  </p>
                 </div>
               </div>
             </CollapsibleSection>
@@ -219,29 +240,41 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Faster documentation contributes to faster throughput. Some portion of LWBS 
-                        patients can be recovered if door-to-doc time improves.
+                        When physicians spend less time documenting, they move through patients faster. 
+                        Faster throughput means shorter wait times. Shorter wait times mean fewer patients 
+                        leave before being seen. Each recovered LWBS patient is revenue that was walking 
+                        out the door.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        LWBS patients × Recovery rate × Revenue per visit = LWBS value
+                        Annual visits × LWBS rate × Recovery % × Avg ED visit revenue
                       </p>
                     </div>
                     <div>
                       <p className="text-[#888888] mb-1">Key assumptions:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>National LWBS rate: 2-4%</li>
-                        <li>Documentation-attributable recovery: 5-15%</li>
-                        <li>Average ED visit revenue: $300-$500</li>
+                        <li>National LWBS rate: 2-4% (urban high-volume EDs often higher)</li>
+                        <li>Documentation-attributable recovery: 5-15% of LWBS patients</li>
+                        <li>Average ED visit revenue: $300-$500 (blended facility + professional)</li>
                       </ul>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        LWBS rates are tracked by every ED. Door-to-doc times are in your EMR. The before/after 
+                        comparison is clean. The challenge is attribution — documentation speed is one factor 
+                        among many. That's why we use conservative recovery rates (5-15%) instead of claiming 
+                        we solve the whole problem.
+                      </p>
                     </div>
                     <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
                       <p className="text-[#666666]">
-                        <strong className="text-black">Honest limit:</strong> Many factors drive LWBS—staffing, 
-                        triage, bed availability. Documentation is one lever, not the only one. 
-                        We use conservative recovery rates.
+                        <strong className="text-black">Honest limit:</strong> LWBS is driven by staffing, triage 
+                        protocols, bed availability, and patient expectations. Documentation speed is one lever, 
+                        not the only one. If your LWBS rate is already below 2%, this lever is smaller. 
+                        We let you adjust based on your reality.
                       </p>
                     </div>
                   </div>
@@ -260,21 +293,32 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        During high-volume surges, ED notes often understate complexity. Complete 
-                        documentation of medical decision-making supports appropriate E/M coding.
+                        During surges, ED notes understate what actually happened. A physician manages 
+                        a complex patient — multiple differentials, medication adjustments, procedure 
+                        decisions — but the note reflects a simpler encounter because there wasn't time 
+                        to document the full decision-making. That's revenue left on the table.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Encounters × Baseline wRVU × Lift % × Conversion factor
+                        Encounters × Baseline wRVU × Lift % × Conversion factor × Realization rate
+                      </p>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        E/M distributions are in your claims data. Compare shift-by-shift: do high-volume 
+                        shifts show lower E/M levels than quieter shifts for similar patient populations? 
+                        That gap is documentation-driven, not clinical. It's measurable and auditable.
                       </p>
                     </div>
                     <div>
-                      <p className="text-[#888888] mb-1">ED-specific notes:</p>
+                      <p className="text-[#888888] mb-1">ED-specific calibration:</p>
                       <p className="text-[#666666]">
                         ED wRVU lift is typically lower than outpatient (2-4% vs 3-7%) because 
-                        ED workflows are already more templated and fast-paced.
+                        ED workflows are already more templated. We account for this — we don't 
+                        apply outpatient assumptions to the ED.
                       </p>
                     </div>
                   </div>
@@ -285,14 +329,24 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Medical necessity documentation is critical in the ED. Incomplete notes 
-                        lead to denials that can't be appealed—permanent revenue loss.
+                        Medical necessity is the ED's denial vulnerability. When a note doesn't capture 
+                        why a test was ordered, why a patient was admitted, or why observation wasn't 
+                        sufficient — that's a denial waiting to happen. And many ED denials are 
+                        unappealable because the documentation gap existed at the time of service.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Encounters × Denial rate × Med necessity % × Prevention rate × Claim value
+                        Claims × Denial rate × Doc-related % × Prevention rate × Avg claim value
+                      </p>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        Your RCM team can categorize denials by root cause. Documentation-related denials 
+                        are identifiable. Track them before and after — the signal is usually clear within 
+                        6 months, and most organizations are surprised by the magnitude.
                       </p>
                     </div>
                   </div>
@@ -303,21 +357,32 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        For admitted patients, ED documentation becomes the foundation of the inpatient 
-                        record. Better ED notes reduce CDI queries and support appropriate DRG assignment.
+                        For admitted patients, the ED note is where the inpatient stay begins. A complete 
+                        ED note captures presenting conditions, comorbidities, and clinical reasoning that 
+                        CDI teams need for accurate DRG assignment. When ED notes are thin, CDI teams 
+                        spend time querying — and some opportunities are missed entirely.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Admissions × DRG improvement rate × Avg DRG value increase
+                        ED admissions × DRG improvement rate × Avg DRG value increase × Realization rate
                       </p>
                     </div>
                     <div>
                       <p className="text-[#888888] mb-1">Key assumption:</p>
                       <p className="text-[#666666]">
                         Typical ED admission rate: 15-25% of visits. The DRG impact only applies 
-                        to admitted patients.
+                        to admitted patients, but at average DRG values of $6,000-$8,000, even small 
+                        improvements in documentation accuracy matter.
+                      </p>
+                    </div>
+                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
+                      <p className="text-[#666666]">
+                        <strong className="text-black">Honest limit:</strong> The CDI connection is real but 
+                        indirect. ED documentation influences inpatient DRG, but the inpatient team's 
+                        documentation matters too. We quantify this in the Inpatient methodology to 
+                        avoid double-counting.
                       </p>
                     </div>
                   </div>
@@ -336,18 +401,39 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        ED physician burnout is at crisis levels. Documentation burden is a major 
-                        contributor. Reducing this burden can help retain physicians who would otherwise leave.
+                        ED physician burnout isn't a trend — it's a workforce crisis. Documentation burden 
+                        is consistently cited as a top contributor. When an ED physician leaves, the cost 
+                        isn't just recruiting — it's locum coverage at $250-$400/hour, coverage gaps that 
+                        affect throughput, and the institutional knowledge that walks out the door.
+                      </p>
+                    </div>
+                    <div className="bg-[#F5F0EB] rounded-lg p-4">
+                      <p className="text-[#888888] mb-1">The calculation:</p>
+                      <p className="font-mono text-black text-sm">
+                        ED physicians × Turnover rate × Burnout % × Abridge impact % × Replacement cost
                       </p>
                     </div>
                     <div>
-                      <p className="text-[#888888] mb-1">ED-specific considerations:</p>
+                      <p className="text-[#888888] mb-1">ED-specific defaults:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>ED physician replacement cost: $400,000-$700,000</li>
-                        <li>ED turnover rates: Often higher than other specialties</li>
-                        <li>Locum ED coverage: $250-$400/hour</li>
+                        <li>Replacement cost: $400,000-$700,000 (higher than most specialties)</li>
+                        <li>Turnover: Often 8-15%, above the physician average</li>
+                        <li>Locum coverage: $250-$400/hour during vacancy period</li>
                       </ul>
                     </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        The link between documentation burden and ED burnout is well-established — ACEP surveys, 
+                        Medscape reports, and internal exit interviews consistently cite it. We use conservative 
+                        impact rates (10-20%) because documentation is one of many burnout drivers in the ED. 
+                        But the replacement cost is real and verifiable.
+                      </p>
+                    </div>
+                    <p className="text-[#666666] italic">
+                      This takes 12-18 months to measure — but in a setting with $500K+ replacement costs, 
+                      retaining even one additional physician can justify the investment.
+                    </p>
                   </div>
                 </MechanismCard>
               </div>
@@ -464,43 +550,59 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
             <CollapsibleSection
               sectionId="honest-limits"
               title="The Honest Limits"
-              subtitle="What's measurable vs. influential in the ED"
+              subtitle="What we can prove, what we can support, and what we can only enable in the ED"
             >
               <div className="space-y-6">
+                <p className="text-[15px] text-black leading-relaxed">
+                  The ED is operationally complex. Many factors drive throughput, revenue, and retention. 
+                  We're transparent about exactly how much of each outcome we can credibly attribute to 
+                  documentation improvement.
+                </p>
                 <div className="grid gap-4">
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-3 h-3 bg-[#22C55E] rounded-full" />
-                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Direct & Measurable</h4>
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Measure This</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>Documentation time:</strong> EHR timestamps</li>
-                      <li><strong>E/M level distribution:</strong> Claims data</li>
-                      <li><strong>Denial rates:</strong> Payer reports</li>
+                      <li><strong>Documentation time per encounter:</strong> EHR timestamps show exactly when charting happens and how long it takes. Visible in weeks.</li>
+                      <li><strong>E/M level distribution:</strong> Claims data shows coding accuracy shifts. Compare high-volume vs. low-volume shifts for proof.</li>
+                      <li><strong>Denial rates by category:</strong> RCM data identifies documentation-related denials specifically. Track before and after.</li>
+                      <li><strong>LWBS rate:</strong> Every ED tracks this. The metric is clean — the attribution is the challenge.</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-3 h-3 bg-[#F59E0B] rounded-full" />
-                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Logical but Multi-Factorial</h4>
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Influence This</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>LWBS improvement:</strong> Many factors; documentation is one</li>
-                      <li><strong>Door-to-doc time:</strong> Influenced by staffing, space, acuity</li>
+                      <li><strong>Throughput improvement:</strong> Documentation is one input to throughput. Staffing, bed management, triage protocols all matter. We contribute, we don't control.</li>
+                      <li><strong>Door-to-doc time:</strong> Influenced by staffing, space, acuity mix, and workflow design. Documentation speed is a factor, not the only factor.</li>
+                      <li><strong>CDI query reduction:</strong> Better ED notes reduce queries, but inpatient documentation matters too. Track ED-specific query rates.</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-3 h-3 bg-[#EF4444] rounded-full" />
-                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Indirect</h4>
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only Enable This</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>CDI/DRG impact:</strong> Requires tracking admitted patients downstream</li>
-                      <li><strong>Retention:</strong> Long-term measurement needed</li>
+                      <li><strong>DRG impact on admitted patients:</strong> ED documentation influences but doesn't determine inpatient DRG. Requires downstream tracking.</li>
+                      <li><strong>Retention:</strong> Documentation burden is one of many ED burnout drivers. Impact takes 12-18 months. Real, but not the whole story.</li>
                     </ul>
                   </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                  <p className="text-sm text-[#666666] leading-relaxed">
+                    <strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number 
+                    you can defend in an ED leadership meeting than a larger number that falls apart when your 
+                    CMO asks "how did you attribute that?" Every assumption is editable — because your ED's 
+                    data should drive the answer, not our defaults.
+                  </p>
                 </div>
               </div>
             </CollapsibleSection>
@@ -509,38 +611,123 @@ export function MethodologyED({ onBack, onNavigateToSetting }: MethodologyEDProp
             <CollapsibleSection
               sectionId="validation-path"
               title="The Validation Path"
-              subtitle="How to validate in your ED"
+              subtitle="How to prove this with your ED's data — before, during, and after"
             >
               <div className="space-y-6">
+                <p className="text-[15px] text-black leading-relaxed">
+                  ED metrics move fast but are noisy. Seasonality, staffing changes, and patient mix 
+                  all affect outcomes. Here's how to build a credible before/after comparison despite the noise.
+                </p>
                 <div className="space-y-4">
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">Before Implementation</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4>
+                      <span className="text-xs text-[#888888] font-medium">Baseline period</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Get 12 months minimum — ED metrics are seasonal and you need to control for that.
+                    </p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Pull 12 months of LWBS data</li>
-                      <li>Baseline E/M level distribution</li>
-                      <li>Document CDI query rates for ED-to-inpatient cases</li>
-                      <li>Baseline door-to-doc times</li>
+                      <li>LWBS data by month, day of week, and shift — you need to see the patterns</li>
+                      <li>E/M level distribution by provider and shift volume</li>
+                      <li>CDI query rates specifically for ED-to-inpatient cases</li>
+                      <li>Door-to-doc and door-to-disposition times</li>
+                      <li>Denial rates with root cause categorization</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 90 Days</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4>
+                      <span className="text-xs text-[#888888] font-medium">Early signal</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Documentation improvements show fast. Throughput takes longer. Be patient with LWBS.
+                    </p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Documentation time comparison</li>
-                      <li>E/M level trends</li>
-                      <li>LWBS rate monitoring (with caveats about seasonality)</li>
+                      <li>Documentation time per encounter — this will be the most dramatic early metric</li>
+                      <li>E/M level trends (compare same providers, same shift types)</li>
+                      <li>LWBS rate monitoring — but caveat for seasonality and staffing changes</li>
+                      <li>Physician satisfaction surveys — qualitative signal matters in the ED</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 12 Months</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4>
+                      <span className="text-xs text-[#888888] font-medium">Operational validation</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Throughput and revenue signals become statistically meaningful with enough volume.
+                    </p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Year-over-year LWBS and throughput comparison</li>
+                      <li>Year-over-year LWBS comparison (same months, controlling for volume)</li>
                       <li>CDI query rate trends for admitted patients</li>
-                      <li>Denial rate trends</li>
+                      <li>Denial rate trends by documentation-related categories</li>
+                      <li>Door-to-disposition trends — control for staffing and volume changes</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4>
+                      <span className="text-xs text-[#888888] font-medium">Long-term impact</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Retention is the long game. Don't rush this measurement.
+                    </p>
+                    <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                      <li>Physician turnover: Abridge providers vs. non-Abridge (if applicable)</li>
+                      <li>Locum utilization trends</li>
+                      <li>Exit interview data — is documentation still a cited burnout factor?</li>
                     </ul>
                   </div>
                 </div>
+              </div>
+            </CollapsibleSection>
+
+            {/* Section 6: Connected Value */}
+            <CollapsibleSection
+              sectionId="connected-value"
+              title="Connected Value"
+              subtitle="How ED documentation connects to the rest of your organization"
+            >
+              <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                <p>
+                  The ED doesn't operate in isolation. Documentation quality here creates 
+                  ripple effects across the organization:
+                </p>
+                <div className="space-y-4 mt-4">
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">ED → Inpatient (DRG impact)</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      When ED documentation captures presenting conditions, comorbidities, and clinical 
+                      reasoning completely, the inpatient stay begins with a stronger clinical picture. 
+                      This directly affects CDI capture and DRG accuracy. We quantify this separately 
+                      in the Inpatient methodology to avoid double-counting.
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">ED → Nursing (care continuity)</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      ED nursing documentation feeds into inpatient handoffs. When assessments are 
+                      captured in real-time during the ED stay, the transition to floor nursing has 
+                      better clinical context — reducing missed information at a high-risk transition point.
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">ED → Outpatient (follow-up quality)</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      Complete ED documentation improves follow-up care. When the PCP gets a comprehensive 
+                      ED visit note, they can continue care without gaps. Hard to quantify, but real.
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[#666666] italic mt-4">
+                  We don't sum these cross-setting values into the ED model because the attribution 
+                  gets complex. But they're part of the strategic case for comprehensive documentation 
+                  that goes beyond the ED's own P&L.
+                </p>
               </div>
             </CollapsibleSection>
           </div>

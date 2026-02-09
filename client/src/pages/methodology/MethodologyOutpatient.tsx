@@ -135,47 +135,65 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
             <CollapsibleSection
               sectionId="context"
               title="The Context"
-              subtitle="Why outpatient is the most straightforward setting"
+              subtitle="Why outpatient has the clearest path from time to value — and why that doesn't make it simple"
               defaultOpen={true}
             >
               <div className="space-y-4 text-[15px] text-black leading-relaxed">
                 <p>
-                  Outpatient medicine has the clearest value chain of any care setting.
+                  Outpatient is the setting where everyone starts the ROI conversation — because 
+                  the math looks easy. A physician saves 4 minutes per visit. Multiply by encounters, 
+                  multiply by hourly rate. Done.
                 </p>
                 <p>
-                  When a physician saves 4 minutes per visit, that time can flow into more patients, 
-                  better documentation (higher E/M coding), reduced after-hours work, or simply going 
-                  home on time. Each path has a measurable financial outcome.
+                  Except it's not that simple. The 4 minutes is real. But what happens to those 4 minutes 
+                  is a strategic question that every organization answers differently.
                 </p>
                 <p>
-                  The billing relationship makes this traceable. Unlike nursing, where value shows up 
-                  in labor economics, outpatient value shows up in revenue—wRVUs, capacity, and 
-                  documentation quality that supports proper coding.
+                  Some practices reinvest in capacity — more patients, more revenue. Others let physicians 
+                  go home on time — less burnout, better retention. Some see the bigger win in documentation 
+                  quality: notes that actually capture the complexity of the visit, leading to appropriate 
+                  E/M coding and fewer denials. Most organizations see a combination of all three.
                 </p>
-                <p className="font-semibold">The two value lanes:</p>
+                <p>
+                  The billing relationship makes outpatient the most <em>traceable</em> setting. Every wRVU has 
+                  a dollar conversion. Every visit has a claim. Every denial has a root cause. Unlike nursing, 
+                  where value shows up in labor economics, or inpatient, where DRG weight drives everything — 
+                  outpatient value can be tracked visit by visit.
+                </p>
+                <p>
+                  But traceable doesn't mean automatic. The value only realizes if the organization makes 
+                  decisions about how to use recaptured time.
+                </p>
+                <p className="font-semibold">Two value lanes — both real, both different to measure:</p>
 
-                {/* Value Location Cards */}
                 <div className="space-y-4 mt-6">
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
-                    <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">1. Time Efficiency</h4>
+                    <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">1. Time Recaptured</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
                       Reduced pajama time and after-hours documentation. Less need for locums or overtime. 
-                      Potential to see more patients (capacity expansion) or same patients with less burnout.
+                      Potential to see more patients — or the same patients with less burnout. The question 
+                      isn't whether time is saved. It's what your organization does with it.
                     </p>
                   </div>
                   <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
                     <h4 className="font-bold text-black mb-2 text-sm uppercase tracking-wide">2. Documentation Quality</h4>
                     <p className="text-sm text-[#666666] leading-relaxed">
-                      Better notes capture complexity that's discussed but not documented. This shows up as 
-                      wRVU lift (higher E/M levels), HCC capture (risk adjustment), and denial prevention 
-                      (medical necessity documentation).
+                      Every clinical conversation contains complexity that gets discussed but doesn't 
+                      make it into the note. That gap costs money — in under-coded visits, missed HCC 
+                      conditions, and denials that can't be appealed because the documentation wasn't 
+                      there. Abridge captures what's said, so the note reflects what actually happened.
                     </p>
                   </div>
                 </div>
 
-                <p className="mt-4 text-[#666666] italic">
-                  Most organizations see value in both lanes—the question is which dominates in your context.
-                </p>
+                <div className="mt-6 bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                  <p className="text-sm text-[#666666] leading-relaxed">
+                    <strong className="text-black">Our approach:</strong> We model both lanes — but we're honest about 
+                    which value is directly measurable and which depends on downstream decisions. Time savings are 
+                    defensible in any conversation. Revenue optimization depends on coding workflows, payer mix, 
+                    and whether your practice actually has patient demand to fill new slots.
+                  </p>
+                </div>
               </div>
             </CollapsibleSection>
 
@@ -192,52 +210,63 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
 
-                <MechanismCard title="Overtime & Locum Reduction">
+                <MechanismCard title="Operational Savings">
                   <div className="space-y-4 text-sm">
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Physicians spend 1-2 hours per day on documentation outside of patient care. 
-                        Reducing this burden decreases overtime and the need for expensive locum coverage.
+                        Physicians spend 1-2 hours per day on documentation outside of patient care — 
+                        the "pajama time" that drives overtime, locum dependency, and the slow erosion 
+                        of why people went into medicine. Reducing this burden has direct financial impact.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Time saved × Encounters × (Overtime rate or Locum cost) × Conversion factor
+                        Providers × Encounters × Time saved × Hourly rate × Realization rate
                       </p>
                     </div>
                     <div className="border-l-2 border-[#EA2C00] pl-4">
                       <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Payroll systems track overtime. Locum invoices are available. Time-tracking can 
-                        measure documentation before/after.
+                        Payroll systems track overtime. Locum invoices are in the budget. EHR timestamps 
+                        show when documentation happens. This is one of the most verifiable ROI components 
+                        in healthcare — you can measure it before deployment and after.
                       </p>
                     </div>
                   </div>
                 </MechanismCard>
 
-                <MechanismCard title="Capacity Expansion">
+                <MechanismCard title="Patient Capacity">
                   <div className="space-y-4 text-sm">
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Some organizations reinvest time savings into additional patient slots. 
-                        If demand exists and access is a priority, saved documentation time can 
-                        convert to additional visits.
+                        If a provider saves 4 minutes per visit across 20 visits, that's 80 minutes. 
+                        Some practices convert that time to additional patient slots — if demand exists 
+                        and access is a strategic priority. Others don't, and that's a legitimate choice.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Time saved × Conversion to visits × Revenue per visit
+                        Hours freed × % allocated to capacity × Revenue per visit × Realization rate
                       </p>
                     </div>
-                    <div>
-                      <p className="text-[#888888] mb-1">The key assumption:</p>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
                       <p className="text-[#666666]">
-                        Not all time becomes visits. We use a 30-50% conversion factor. The rest goes 
-                        to quality of life, thoroughness, or other activities.
+                        Schedule utilization data shows open slots. Patient wait-lists show demand. 
+                        Volume trends can be tracked pre/post. The conversion rate is the key variable — 
+                        we default to 30-50% because not all freed time becomes visits, and we'd rather 
+                        undercount than overclaim.
+                      </p>
+                    </div>
+                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
+                      <p className="text-[#666666]">
+                        <strong className="text-black">Honest limit:</strong> Capacity expansion requires 
+                        patient demand, scheduling changes, and organizational intent. If your panels are 
+                        full and access isn't a priority, this lever is smaller. We let you adjust or disable it.
                       </p>
                     </div>
                   </div>
@@ -248,24 +277,38 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Burnout drives turnover. Documentation burden is a top contributor to burnout. 
-                        Reducing the burden can help retain physicians who would otherwise leave.
+                        Burnout drives turnover. Documentation burden is consistently cited as a top contributor 
+                        to burnout. Reducing the burden can help retain physicians who would otherwise leave — 
+                        and physician replacement is extraordinarily expensive.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Providers × Turnover rate × Burnout % × Impact % × Replacement cost
+                        Providers × Turnover rate × Burnout % × Abridge impact % × Replacement cost
                       </p>
                     </div>
                     <div>
                       <p className="text-[#888888] mb-1">Key assumptions:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Physician replacement cost: $500,000-$1,000,000</li>
-                        <li>Burnout-related turnover: 30-50%</li>
-                        <li>Abridge impact: 10-20% (conservative)</li>
+                        <li>Physician replacement cost: $500,000-$1,000,000 (Merritt Hawkins)</li>
+                        <li>Burnout-related turnover: 30-50% of all physician turnover</li>
+                        <li>Abridge impact on burnout-related turnover: 10-20%</li>
                       </ul>
                     </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        The link between documentation burden and burnout is well-established — AMA, KLAS, 
+                        and Medscape surveys consistently rank it as a top driver. The question is magnitude, 
+                        not direction. We use conservative impact rates because documentation is one of many 
+                        burnout factors.
+                      </p>
+                    </div>
+                    <p className="text-[#666666] italic">
+                      This is the slowest ROI lever to measure — 12-18 months minimum — but often the largest 
+                      in absolute dollar terms.
+                    </p>
                   </div>
                 </MechanismCard>
               </div>
@@ -277,13 +320,14 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                 </p>
                 <div className="h-px bg-[#D1D5DB] mb-6" />
 
-                <MechanismCard title="wRVU Improvement">
+                <MechanismCard title="wRVU Accuracy">
                   <div className="space-y-4 text-sm">
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        Better documentation captures the complexity that's discussed but not written down. 
-                        When notes fully reflect visit intensity, E/M levels code appropriately.
+                        Every visit contains clinical complexity that gets discussed but doesn't make it 
+                        into the note. A 99214 that should have been a 99215. A procedure that was performed 
+                        but not documented. This isn't upcoding — it's capturing what actually happened.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
@@ -292,9 +336,19 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                         Encounters × Current wRVU × Lift % × Conversion factor × Realization rate
                       </p>
                     </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        Claims data shows E/M distributions before and after. If your providers are 
+                        coding 80% at level 4 and peers at similar complexity code 60/40 level 4/5, 
+                        there's a documentation gap — not a clinical one. This is measurable and auditable.
+                      </p>
+                    </div>
                     <div>
                       <p className="text-[#888888] mb-1">Typical range:</p>
-                      <p className="text-[#666666]">2-7% wRVU lift, with 50% realization rate (conservative).</p>
+                      <p className="text-[#666666]">2-7% wRVU lift, with 50% realization rate. We default conservative 
+                        because not every coding opportunity converts — compliance review, payer mix, and 
+                        specialty norms all affect realization.</p>
                     </div>
                   </div>
                 </MechanismCard>
@@ -304,23 +358,33 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        In Medicare Advantage, HCC codes drive risk adjustment and capitated revenue. 
-                        Complete documentation ensures conditions discussed are captured for RAF scoring.
+                        In Medicare Advantage populations, chronic conditions need to be documented annually 
+                        to maintain risk adjustment scores. When a physician discusses diabetes management 
+                        but the note doesn't capture the HCC-qualifying language, that's lost RAF value — 
+                        often $3,000-$10,000 per patient per year.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        MA patients × Gap rate × Capture improvement × RAF value × Payment
+                        MA patients × Gap rate × Recapture improvement × RAF impact × Annual payment
                       </p>
                     </div>
                     <div>
                       <p className="text-[#888888] mb-1">Key assumptions:</p>
                       <ul className="text-[#666666] space-y-1 ml-4 list-disc">
-                        <li>Typical HCC gap rate: 25-35%</li>
-                        <li>RAF impact per HCC: 0.10-0.15</li>
+                        <li>Typical HCC gap rate: 25-35% of conditions not recaptured annually</li>
+                        <li>RAF impact per HCC: 0.10-0.15 weight increase</li>
                         <li>Annual payment per RAF point: $10,000-$12,000</li>
                       </ul>
+                    </div>
+                    <div className="bg-[#FFF8F0] border border-[#EA2C00]/20 rounded-lg p-4">
+                      <p className="text-[#666666]">
+                        <strong className="text-black">Honest limit:</strong> HCC value depends heavily on your 
+                        MA population percentage and existing retrospective review processes. If you already 
+                        have a strong HCC program, the incremental gain from documentation is smaller. 
+                        We show this separately so you can calibrate to your reality.
+                      </p>
                     </div>
                   </div>
                 </MechanismCard>
@@ -330,14 +394,25 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                     <div>
                       <p className="text-[#888888] mb-1">The mechanism:</p>
                       <p className="text-black">
-                        30-40% of denials are "unappealable"—permanent revenue loss due to documentation gaps. 
-                        Abridge captures clinical reasoning in real-time, preventing these denials before they occur.
+                        Here's the number most organizations don't track well: 30-40% of claim denials 
+                        are "unappealable" — permanent revenue loss because the documentation wasn't there 
+                        at the time of service. You can't retroactively document medical necessity. Abridge 
+                        captures clinical reasoning in real-time, preventing these gaps before they become denials.
                       </p>
                     </div>
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
                       <p className="text-[#888888] mb-1">The calculation:</p>
                       <p className="font-mono text-black text-sm">
-                        Denials × Unappealable % × Prevention rate × Avg claim value × Realization
+                        Claims × Denial rate × Doc-related % × Prevention rate × Avg claim value
+                      </p>
+                    </div>
+                    <div className="border-l-2 border-[#EA2C00] pl-4">
+                      <p className="text-[#888888] mb-1">Why this is defensible:</p>
+                      <p className="text-[#666666]">
+                        Denial reason codes identify documentation-related denials specifically. RCM teams 
+                        can categorize and track these. The before/after comparison is clean — and most 
+                        organizations are surprised by how much revenue they're losing to documentation gaps 
+                        they didn't know existed.
                       </p>
                     </div>
                   </div>
@@ -460,43 +535,58 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
             <CollapsibleSection
               sectionId="honest-limits"
               title="The Honest Limits"
-              subtitle="What we can measure vs. what we can only influence"
+              subtitle="What we can prove, what we can support, and what we can only enable"
             >
               <div className="space-y-6">
+                <p className="text-[15px] text-black leading-relaxed">
+                  Every vendor will tell you their product saves money. We think you deserve to know 
+                  exactly how confident we are in each claim — and what it takes to verify it.
+                </p>
                 <div className="grid gap-4">
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-3 h-3 bg-[#22C55E] rounded-full" />
-                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Direct & Measurable</h4>
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Measure This</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>Documentation time:</strong> EHR timestamps, before/after studies</li>
-                      <li><strong>wRVU per visit:</strong> Claims data, coding analysis</li>
-                      <li><strong>Denial rates:</strong> Payer reports, RCM data</li>
+                      <li><strong>Documentation time per encounter:</strong> EHR session data, before/after studies. You'll see this in weeks.</li>
+                      <li><strong>wRVU per visit:</strong> Claims data shows E/M distribution shifts. Measurable at 90 days.</li>
+                      <li><strong>Same-day note closure:</strong> EHR timestamps. Immediate and unambiguous.</li>
+                      <li><strong>After-hours documentation:</strong> Session data shows when charting happens. This is the "pajama time" metric.</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-3 h-3 bg-[#F59E0B] rounded-full" />
-                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Logical & Attributable</h4>
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Influence This</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>Capacity expansion:</strong> Requires workflow changes to realize</li>
-                      <li><strong>HCC capture:</strong> Depends on MA population and baseline gaps</li>
+                      <li><strong>Capacity expansion:</strong> Requires patient demand and scheduling intent. We provide the time; you decide how to use it.</li>
+                      <li><strong>HCC recapture:</strong> Depends on MA population, baseline gap rate, and coding workflows. Trackable but multi-factorial.</li>
+                      <li><strong>Denial prevention:</strong> Doc-related denials are identifiable, but denial rates reflect many process factors.</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-3 h-3 bg-[#EF4444] rounded-full" />
-                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Indirect & Harder to Attribute</h4>
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">We Can Only Enable This</h4>
                     </div>
                     <ul className="text-sm text-[#666666] space-y-2 ml-5">
-                      <li><strong>Retention impact:</strong> Multiple factors; 6-12 months to measure</li>
-                      <li><strong>Patient satisfaction:</strong> Can track but not directly attribute</li>
+                      <li><strong>Retention:</strong> Documentation burden is one of many burnout drivers. Impact takes 12-18 months to observe. Track it, but don't bet on it alone.</li>
+                      <li><strong>Patient satisfaction:</strong> More present providers may improve experience, but CAHPS is influenced by everything from wait times to parking.</li>
+                      <li><strong>Referral patterns:</strong> Better documentation may improve referral quality, but attribution is indirect.</li>
                     </ul>
                   </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-5 border-l-2 border-[#EA2C00]">
+                  <p className="text-sm text-[#666666] leading-relaxed">
+                    <strong className="text-black">Our philosophy:</strong> We'd rather show you a smaller number 
+                    you can defend in a board presentation than a larger number that falls apart under scrutiny. 
+                    Every assumption in our model is editable — because your data should drive the answer, not ours.
+                  </p>
                 </div>
               </div>
             </CollapsibleSection>
@@ -505,38 +595,121 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
             <CollapsibleSection
               sectionId="validation-path"
               title="The Validation Path"
-              subtitle="How to validate these assumptions with your own data"
+              subtitle="How to prove this with your own data — before, during, and after"
             >
               <div className="space-y-6">
+                <p className="text-[15px] text-black leading-relaxed">
+                  A model is only as good as its validation. Here's exactly what to measure and when — 
+                  so you're never relying on our assumptions when you could be relying on your data.
+                </p>
                 <div className="space-y-4">
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">Before Implementation</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">Before Implementation</h4>
+                      <span className="text-xs text-[#888888] font-medium">Baseline period</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Lock in your baselines before anything changes. This is what makes before/after credible.
+                    </p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Pull 12 months of wRVU data by provider and specialty</li>
-                      <li>Baseline E/M level distribution</li>
-                      <li>Document current denial rates and reasons</li>
-                      <li>Survey physicians on documentation burden</li>
+                      <li>Pull 12 months of wRVU data by provider and specialty — you need enough volume to see patterns</li>
+                      <li>Baseline E/M level distribution (what % at each level, by provider)</li>
+                      <li>Document current denial rates by reason code — isolate documentation-related denials</li>
+                      <li>Survey physicians on documentation burden — you'll want to repeat this</li>
+                      <li>EHR session data: when does charting happen? How much is after-hours?</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 90 Days</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 90 Days</h4>
+                      <span className="text-xs text-[#888888] font-medium">Early signal</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Time savings and documentation quality show up fast. Revenue impact takes longer.
+                    </p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Time studies on documentation</li>
-                      <li>E/M level comparison (pilot vs. baseline)</li>
-                      <li>Provider satisfaction surveys</li>
+                      <li>Repeat time studies — compare doc time per encounter, after-hours charting</li>
+                      <li>E/M level comparison: pilot providers vs. baseline (same providers, not just average)</li>
+                      <li>Same-day note closure rate — often the most dramatic early metric</li>
+                      <li>Provider satisfaction survey — qualitative signal matters here</li>
                     </ul>
                   </div>
 
                   <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
-                    <h4 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">At 12 Months</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 6-12 Months</h4>
+                      <span className="text-xs text-[#888888] font-medium">Revenue validation</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      This is where financial impact becomes statistically meaningful.
+                    </p>
                     <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
-                      <li>Year-over-year wRVU comparison</li>
-                      <li>Denial rate trends</li>
-                      <li>Turnover rates on Abridge providers vs. control</li>
+                      <li>Year-over-year wRVU comparison — control for patient mix and volume changes</li>
+                      <li>Denial rate trends by category — isolate documentation-related improvement</li>
+                      <li>Capacity utilization: did volumes increase? Were new slots added?</li>
+                      <li>HCC recapture rates for MA populations (if applicable)</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-white border border-[#E5E5E5] rounded-lg p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-black text-sm uppercase tracking-wide">At 18+ Months</h4>
+                      <span className="text-xs text-[#888888] font-medium">Long-term impact</span>
+                    </div>
+                    <p className="text-sm text-[#666666] mb-3">
+                      Retention and culture shifts take time. Don't rush this measurement.
+                    </p>
+                    <ul className="text-sm text-[#666666] space-y-2 ml-4 list-disc">
+                      <li>Turnover rates: Abridge providers vs. control group</li>
+                      <li>Exit interview data — is documentation still cited as a burnout driver?</li>
+                      <li>Recruiting pipeline — are candidates asking about AI documentation tools?</li>
                     </ul>
                   </div>
                 </div>
+              </div>
+            </CollapsibleSection>
+
+            {/* Section 6: Connected Value */}
+            <CollapsibleSection
+              sectionId="connected-value"
+              title="Connected Value"
+              subtitle="How outpatient documentation connects to the rest of your organization"
+            >
+              <div className="space-y-4 text-[15px] text-black leading-relaxed">
+                <p>
+                  Outpatient documentation doesn't exist in isolation. The quality of what's captured 
+                  in the office visit ripples across the organization:
+                </p>
+                <div className="space-y-4 mt-4">
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">Downstream referrals</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      When primary care documentation is complete, specialists receive better context. 
+                      Fewer repeat tests, faster diagnoses, better outcomes. Hard to quantify, but real.
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">Value-based contracts</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      HCC accuracy drives risk adjustment in MA plans. Complete documentation 
+                      supports accurate RAF scores, which determine capitated payments. This is 
+                      quantified separately in our model for practices with significant MA populations.
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-5 border border-[#E5E5E5]">
+                    <h4 className="font-bold text-black mb-2 text-sm">Pre-authorization efficiency</h4>
+                    <p className="text-sm text-[#666666] leading-relaxed">
+                      Complete clinical documentation reduces prior auth denials and the back-and-forth 
+                      that consumes staff time. We don't model this directly, but organizations with 
+                      high prior auth volumes report meaningful time savings.
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[#666666] italic mt-4">
+                  We don't sum these into the ROI model because the attribution gets fuzzy. But they're real — 
+                  and they're part of the strategic case for documentation quality that goes beyond the numbers.
+                </p>
               </div>
             </CollapsibleSection>
           </div>
