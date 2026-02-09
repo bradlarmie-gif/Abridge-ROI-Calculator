@@ -87,6 +87,15 @@ function BenchmarkCard({
             className="absolute top-1/2 w-0.5 h-4 bg-[#999999] pointer-events-none"
             style={{ left: `${benchmarkMaxPercent}%`, transform: 'translateY(-50%)' }}
           />
+          <div
+            className="absolute top-1/2 pointer-events-none"
+            style={{
+              left: `${currentPercent}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <div className="w-4 h-4 rounded-full bg-[#EA2C00] border-2 border-white shadow-md" />
+          </div>
         </div>
       </div>
 
