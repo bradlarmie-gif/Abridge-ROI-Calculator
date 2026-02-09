@@ -304,11 +304,11 @@ export default function ScribeAssessment({
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Today Card - White */}
-                <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
-                  <p className="text-xs font-medium text-[#888888] uppercase tracking-wide mb-3">Today</p>
-                  <div className="text-3xl font-bold text-black mb-1">{formatCurrency(calculations.totalScribeCost)}/year</div>
-                  <div className="text-sm text-[#888888]">
+                {/* Today Card - Black to match Coverage Gap bar */}
+                <div className="bg-black rounded-xl p-5">
+                  <p className="text-xs font-medium text-white/60 uppercase tracking-wide mb-3">Today</p>
+                  <div className="text-3xl font-bold text-white mb-1">{formatCurrency(calculations.totalScribeCost)}/year</div>
+                  <div className="text-sm text-white/60">
                     {inputs.scribeCount} scribes · {calculations.coveragePercent}% coverage
                   </div>
                 </div>
