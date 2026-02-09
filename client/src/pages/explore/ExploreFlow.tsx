@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import ExploreCareSettings from "./ExploreCareSettings";
 import ExploreOpportunity from "./ExploreOpportunity";
 import ExploreTimeSavings from "./ExploreTimeSavings";
@@ -417,33 +417,27 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Apply care setting-specific defaults when careSetting changes
+  const prevCareSettingRef = useRef(state.careSetting);
   useEffect(() => {
-    if (state.careSetting === 'ed') {
-      // ED-specific defaults for DocQuality
-      setState(prev => ({
-        ...prev,
-        minutesSavedPerEncounter: 2, // ED uses 2 min typical (vs 4 for outpatient)
-        docQualityInputs: {
-          ...prev.docQualityInputs,
-          currentWrvu: 2.5, // ED wRVU baseline (vs 1.5 for outpatient)
-          denialRate: 10, // ED denial rate (vs 8% for outpatient)
-          avgClaimValue: 300, // ED avg claim (vs $200 for outpatient)
+    if (state.careSetting && state.careSetting !== prevCareSettingRef.current) {
+      const newCareSetting = state.careSetting;
+      setState(() => {
+        const fresh = { ...DEFAULT_EXPLORE_STATE, careSetting: newCareSetting };
+        if (newCareSetting === 'ed') {
+          fresh.minutesSavedPerEncounter = 2;
+          fresh.docQualityInputs = {
+            ...fresh.docQualityInputs,
+            currentWrvu: 2.5,
+            denialRate: 10,
+            avgClaimValue: 300,
+          };
+        } else if (newCareSetting === 'inpatient') {
+          fresh.minutesSavedPerEncounter = 3;
         }
-      }));
-    } else if (state.careSetting === 'outpatient') {
-      // Reset to outpatient defaults
-      setState(prev => ({
-        ...prev,
-        minutesSavedPerEncounter: 4,
-        docQualityInputs: {
-          ...prev.docQualityInputs,
-          currentWrvu: 1.5,
-          denialRate: 8,
-          avgClaimValue: 200,
-        }
-      }));
+        return fresh;
+      });
     }
+    prevCareSettingRef.current = state.careSetting;
   }, [state.careSetting]);
 
   // Scroll to top on every phase change (mobile fix)
