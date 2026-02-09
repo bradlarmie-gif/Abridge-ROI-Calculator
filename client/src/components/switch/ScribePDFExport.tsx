@@ -213,7 +213,6 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
   const fullCoverageTrueCost = Math.round(calculations.fullScribeCost * (1 + hiddenCostPct / 100));
   const scribeReplacements = Math.round(inputs.scribeCount * turnoverRate);
   const orgName = clientName || "Organization";
-  const aiCostPerProvider = 2500;
 
   return (
     <Document>
@@ -414,30 +413,32 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
 
           <View style={styles.thickDivider} />
 
-          <Text style={styles.sectionLabel}>A DIFFERENT APPROACH</Text>
-          <Text style={styles.subHeadline}>The Per-Provider Comparison</Text>
+          <Text style={styles.sectionLabel}>THE UTILIZATION REALITY</Text>
+          <Text style={styles.subHeadline}>Where Your Investment Goes</Text>
 
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
             <View style={[styles.cardBg, { flex: 1 }]}>
-              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>SCRIBES</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>YOUR SCRIBE PROGRAM TODAY</Text>
               <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primaryText, marginBottom: 4 }}>{fmtCurrency(trueCostPerProvider)}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 8 }}>per provider/year</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 8 }}>true cost per supported provider/year</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-                {safe(calculations.coveragePercent)}% coverage{"\n"}
-                Linear scaling{"\n"}
-                {Math.round(turnoverRate * 100)}% annual turnover{"\n"}
-                Training ramp: 3-6 mo
+                {safe(calculations.coveragePercent)}% of providers covered{"\n"}
+                {safe(calculations.scribeRatio)}:1 provider-to-scribe ratio{"\n"}
+                {Math.round(turnoverRate * 100)}% annual turnover cycle{"\n"}
+                3-6 month ramp per new scribe{"\n"}
+                Linear cost curve to scale
               </Text>
             </View>
             <View style={{ flex: 1, padding: 14, borderRadius: 4, backgroundColor: colors.background, borderLeftWidth: 3, borderLeftColor: colors.primary }}>
-              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>AMBIENT AI</Text>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>~{fmtCurrency(aiCostPerProvider)}</Text>
-              <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 8 }}>per provider/year</Text>
+              <Text style={{ fontSize: 9, color: colors.primary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: "bold" }}>WHAT IF EVERY PROVIDER HAD SUPPORT</Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.primary, marginBottom: 4 }}>100%</Text>
+              <Text style={{ fontSize: 9, color: colors.secondary, marginBottom: 8 }}>coverage from day one</Text>
               <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6 }}>
-                100% coverage{"\n"}
-                Flat per-provider cost{"\n"}
-                No turnover impact{"\n"}
-                Available day one
+                Every provider, every encounter{"\n"}
+                No hiring or training pipeline{"\n"}
+                No turnover risk{"\n"}
+                No coverage gaps during transitions{"\n"}
+                Scales without added headcount
               </Text>
             </View>
           </View>
@@ -447,6 +448,10 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
               This isn't scribes vs. AI. Many organizations find that a thoughtful blend{"\u2014"}retaining scribes where they add unique value, using AI for broader coverage{"\u2014"}delivers the best outcomes.
             </Text>
           </View>
+
+          <Text style={{ fontSize: 8.5, color: colors.tertiary, textAlign: "center", fontStyle: "italic" }}>
+            Contact Abridge for custom pricing tailored to your organization.
+          </Text>
 
           <PageFooter pageNum={2} orgName={orgName} />
         </View>
@@ -627,14 +632,14 @@ const ScribePDFDocument = ({ inputs, calculations, clientName, preparedBy }: Scr
                 <Text style={{ fontSize: 10, color: colors.primaryText }}>+{fmtCurrency(calculations.costToScale)}</Text>
               </View>
               <View style={{ borderBottomWidth: 1, borderBottomColor: colors.border, marginVertical: 4 }} />
-              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, marginTop: 2, fontWeight: "bold" }}>COMPARISON</Text>
+              <Text style={{ fontSize: 9, color: colors.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, marginTop: 2, fontWeight: "bold" }}>UTILIZATION GAP</Text>
               <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 2 }}>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>Scribes</Text>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>{fmtCurrency(trueCostPerProvider)}/provider</Text>
+                <Text style={{ fontSize: 10, color: colors.primaryText }}>Unsupported Providers</Text>
+                <Text style={{ fontSize: 10, color: colors.primaryText }}>{fmtNum(safe(calculations.providersWithoutSupport))}</Text>
               </View>
               <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 2 }}>
-                <Text style={{ fontSize: 10, color: colors.primaryText }}>Ambient AI</Text>
-                <Text style={{ fontSize: 10, color: colors.primary }}>~{fmtCurrency(aiCostPerProvider)}/provider</Text>
+                <Text style={{ fontSize: 10, color: colors.primaryText }}>Unsupported Doc Hours</Text>
+                <Text style={{ fontSize: 10, color: colors.primary }}>{fmtNum(safe(calculations.unsupportedDocTimeHours))}/yr</Text>
               </View>
             </View>
           </View>
