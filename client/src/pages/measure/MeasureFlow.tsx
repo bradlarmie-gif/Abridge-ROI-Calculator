@@ -32,10 +32,11 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
     });
   }, [phase]);
 
@@ -62,7 +63,6 @@ export default function MeasureFlow({ onBackToJourney }: MeasureFlowProps) {
 
   const navigate = useCallback((nextPhase: MeasurePhase) => {
     setPhase(nextPhase);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   switch (phase) {
