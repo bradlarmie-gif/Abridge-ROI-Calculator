@@ -1,0 +1,135 @@
+YOUR POSITION (second element — beige card):
+Background: #F5F0EB
+Border radius: 12px
+Padding: 32px
+Margin top: 32px
+
+Layout: icon on left, text in middle, stats on right
+- Left: red circle icon with target/bullseye symbol
+- Middle:
+  - "YOUR POSITION" in small caps, bold, dark text
+  - "Based on patterns across 150+ health systems." in gray body text
+- Right: two stat boxes side by side
+  - Box 1: large bold number "[X]" with "IN RANGE" below in small caps gray
+  - Box 2: large bold number "[X]" in red with "OPPORTUNITIES" below in small caps red
+
+DIMENSION CARDS (the main comparison section):
+Margin top: 48px
+
+Before the cards, add a subtle section label:
+- Small caps in warm gray: "YOUR DIMENSIONS"
+- Thin horizontal line below it (1px, #E0DCD7)
+- 24px spacing before first row of cards
+
+Layout: 2 columns, 3 rows of cards
+Card spacing: 20px gap between cards, 20px gap between rows
+
+Each card design:
+- Background: white (#FFFFFF)
+- Border: 1px solid #E8E4DF (very subtle warm gray border — NOT a harsh shadow)
+- Border radius: 12px
+- Padding: 28px
+- NO box shadow. Use the subtle border instead. This is cleaner and more premium.
+
+Inside each card, laid out top to bottom:
+
+ROW 1 (top of card): 
+- Left side: Icon (24px, in a 40px red circle) + Metric name in bold 16px dark text
+- Right side: Large value (28px, bold, #1A1A1A) with "CURRENT" in tiny gray caps below it
+
+ROW 2 (middle of card — the comparison visualization):
+This is the key visual element. Replace the current slider with a custom range visualization:
+
+- Full width horizontal bar, height 8px, border-radius 4px
+- Background of full bar: #F0EDE8 (light warm gray)
+- The benchmark range is shown as a darker band: #D4CFC8 (medium warm gray), positioned at the correct percentage range on the bar
+- Their current value is shown as a red dot (12px circle, #C54B2A) positioned at the correct point on the bar
+- Below the bar, right-aligned under the benchmark band: small text "Typical: [range]" in gray
+
+ROW 3 (bottom of card — the gap indicator):
+This is where the current design is cheapest. Fix it:
+
+IF BELOW BENCHMARK:
+- No colored pill. No background fill.
+- Just a single line of text:
+  - The gap value in red (#C54B2A), bold: e.g., "20%"
+  - Followed by "below typical range" in warm gray (#8A8478), regular weight
+  - Example: "20% below typical range"
+
+IF IN RANGE:
+- A small checkmark icon (✓) in a muted sage green (#6B8A6B)
+- Followed by "In Range" in the same green, regular weight
+
+IF ABOVE BENCHMARK:
+- A small arrow-up icon in the sage green
+- Followed by "Above typical range" in green
+
+The six cards in order:
+
+Card 1: Utilization
+- Icon: bar chart
+- Value: [their %]%
+- Bar range: 0-100%
+- Benchmark band: 70-80%
+- Gap text: "[X]% below typical range" or "In Range"
+
+Card 2: Net Time Impact
+- Icon: clock
+- Value: +[net time] min
+- Net time = time saved - edit time
+- Bar range: 0-6 min
+- Benchmark band: 3-4 min net
+- Gap text: "[X] min below typical range" or "In Range"
+
+Card 3: Note Acceptance (this replaced Documentation Completeness)
+- Icon: document with checkmark
+- Value: [their %]%
+- Bar range: 0-100%
+- Benchmark band: 75-85%
+- Gap text: "[X]% below typical range" or "In Range"
+
+Card 4: Coding Impact
+- Icon: dollar sign
+- Value: +[their %]%
+- Bar range: 0-12%
+- Benchmark band: 4-7%
+- Gap text: "[X]% below typical range" or "In Range"
+
+Card 5: After-Hours Work
+- Icon: moon
+- Value: [their hours] hrs/wk
+- Bar range: 0-10 hrs/wk
+- Benchmark band: 1-3 hrs/wk
+- NOTE: For this metric, LOWER is better. So the gap logic is inverted:
+  - If their value is ABOVE 3 hrs/wk: "[X] hrs/wk above typical range" in red
+  - If within 1-3: "In Range" in green
+  - If below 1: "Above typical range" in green
+
+Card 6: Provider Satisfaction
+- Icon: heart
+- Value: [their %]%
+- Bar range: 0-100%
+- Benchmark band: 80-95%
+- Gap text: "[X]% below typical range" or "In Range"
+
+BOTTOM SPACING:
+- 48px of space between the last row of cards and the navigation buttons
+- Navigation: ← Back (left) | See the Math → (red button, right)
+
+CRITICAL STYLING NOTES:
+
+1. NO salmon/pink/light-red background fills anywhere on this page. Red is only used for: the Abridge logo, the dot values, the gap text numbers, and the progress bar. That's it.
+
+2. The cards should feel like they're resting on the page, not floating above it. Subtle border, no shadow. The hierarchy comes from the content inside, not from the container styling.
+
+3. Typography hierarchy inside cards:
+   - Metric name: 16px, bold, #1A1A1A
+   - Current value: 28px, bold, #1A1A1A
+   - "CURRENT" label: 10px, caps, #8A8478
+   - "Typical: X-Y" text: 12px, #8A8478
+   - Gap text number: 14px, bold, #C54B2A
+   - Gap text words: 14px, regular, #8A8478
+
+4. The overall page should feel like it has ROOM. Nothing cramped. The whitespace between the maturity model, the position card, and the dimension cards should feel intentional and generous.
+
+5. On mobile/narrow screens, the cards should stack to single column with the same spacing and typography.
