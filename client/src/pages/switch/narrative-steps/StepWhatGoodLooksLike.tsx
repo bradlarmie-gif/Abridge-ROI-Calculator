@@ -39,6 +39,9 @@ function BenchmarkCard({
   const benchmarkMinPercent = (benchmarkMin / maxScale) * 100;
   const benchmarkMaxPercent = Math.min(100, (benchmarkMax / maxScale) * 100);
 
+  const isInRange = invertedScale
+    ? currentValue <= benchmarkMax
+    : currentValue >= benchmarkMin && currentValue <= benchmarkMax;
   const isBelowRange = invertedScale ? currentValue > benchmarkMax : currentValue < benchmarkMin;
   const gapToRange = invertedScale
     ? Math.max(0, currentValue - benchmarkMax)
@@ -94,7 +97,7 @@ function BenchmarkCard({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <div className="w-4 h-4 rounded-full bg-[#EA2C00] border-2 border-white shadow-md" />
+            <div className={`w-4 h-4 rounded-full border-2 border-white shadow-md ${isInRange ? 'bg-[#2E7D32]' : 'bg-[#EA2C00]'}`} />
           </div>
         </div>
       </div>
