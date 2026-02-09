@@ -77,7 +77,7 @@ export default function StepTheGap({
           The Gap
         </h1>
         <p className="text-base text-[#666666]">
-          Gaps like this are common — and usually addressable. Here's what the data suggests.
+          Here's what your data tells us — and where the opportunity lives.
         </p>
       </div>
 
@@ -159,9 +159,9 @@ export default function StepTheGap({
         <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">
           Performance Breakdown
         </p>
-        <h2 className="text-xl font-bold text-[#1A1A1A]">What this opportunity looks like in practice</h2>
+        <h2 className="text-xl font-bold text-[#1A1A1A]">Where the value lives</h2>
         <p className="text-sm text-[#666666] mt-1">
-          These aren't abstract numbers — they translate directly to hours, encounters, and revenue.
+          Each dimension below represents a specific, addressable gap.
         </p>
       </div>
 
@@ -292,7 +292,7 @@ export default function StepTheGap({
                 <span className="text-xs text-[#999999]">vs.</span>
                 <span className="text-xs font-semibold text-[#333333] bg-[#E8E8E8] px-2 py-1 rounded">{ABRIDGE_BENCHMARKS.utilization}% benchmark</span>
               </div>
-              <p className="text-xs text-[#666666]">Low utilization rarely means the tool doesn't work — it usually means workflow friction.</p>
+              <p className="text-xs text-[#666666]">Utilization is the single strongest predictor of ROI. Low utilization usually signals workflow friction, not technology failure.</p>
             </>
           ) : (
             <div className="border-l-4 border-[#E8E8E8] pl-4">
@@ -309,7 +309,7 @@ export default function StepTheGap({
             </div>
             <div>
               <h3 className="font-semibold text-[#1A1A1A] text-sm">Coding Leakage</h3>
-              <p className="text-xs text-[#999999]">Work done but not captured</p>
+              <p className="text-xs text-[#999999]">Revenue you're earning but not capturing</p>
             </div>
           </div>
           
@@ -322,7 +322,7 @@ export default function StepTheGap({
               <p className="text-xs text-[#999999] mb-2">vs. +{ABRIDGE_BENCHMARKS.wrvuLift}% for top performers</p>
               <div className="h-px bg-[#E5E7EB] my-3" />
               <p className="text-xs text-[#666666]">
-                Every 1% wRVU gap means you're providing care that isn't being credited.
+                The correlation between documentation completeness and accurate coding is strongest above 70% utilization.
               </p>
               {calculations.wrvuGapValue > 0 && (
                 <p className="text-xs text-[#EA2C00] font-medium mt-2">Gap value: ~{formatCurrency(calculations.wrvuGapValue)}/year</p>
@@ -343,7 +343,7 @@ export default function StepTheGap({
             </div>
             <div>
               <h3 className="font-semibold text-[#1A1A1A] text-sm">Burnout Signal</h3>
-              <p className="text-xs text-[#999999]">A leading indicator worth watching</p>
+              <p className="text-xs text-[#999999]">The leading indicator most organizations miss</p>
             </div>
           </div>
           
@@ -357,8 +357,8 @@ export default function StepTheGap({
               <div className="h-px bg-[#E5E7EB] my-3" />
               <p className="text-xs text-[#666666]">
                 {(inputs.satisfaction || 0) < 65 
-                  ? "Satisfaction below 65-70% often correlates with declining engagement over time."
-                  : "Satisfaction below 65-70% often correlates with declining engagement over time."
+                  ? "Satisfaction below 65% is a strong signal of declining utilization ahead. Providers who wouldn't recommend the tool often stop using it within 6 months."
+                  : "Below benchmark, but above the critical 65% threshold. Worth monitoring — this is often the first metric to decline before utilization drops."
                 }
               </p>
             </>
@@ -395,13 +395,16 @@ export default function StepTheGap({
             <p className="text-xs text-[#999999]">
               Your gap: <span className="text-white font-medium">{storyMetrics.afterHoursGap.toLocaleString()} hours</span> of provider life reclaimed
             </p>
+            <p className="text-xs text-[#999999] mt-1">
+              Before ambient AI, the industry average was 5-8 hrs/week (AMA, 2023).
+            </p>
           </div>
         </section>
       )}
 
       <section className="bg-[#F5F0EB] rounded-xl p-5">
         <p className="text-sm text-[#666666]">
-          <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> These patterns are common. Understanding what's behind them helps clarify your options.
+          <span className="font-semibold text-[#1A1A1A]">The bottom line:</span> These gaps are common and usually addressable. The question is whether they're being addressed — and how quickly.
         </p>
       </section>
 
@@ -421,7 +424,7 @@ export default function StepTheGap({
           className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
-          See the Benchmarks
+          What Good Looks Like
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>

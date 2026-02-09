@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, CheckCircle, ChevronRight, Clock, RefreshCw } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, CheckCircle, ChevronRight, Clock, RefreshCw, Shield, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
+  IMPLEMENTATION_TIMELINE,
   type SwitchInputs,
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
@@ -224,6 +225,31 @@ export default function StepWhyThisHappens({
         </p>
       ),
     },
+    {
+      id: "good-enough",
+      icon: Shield,
+      title: '"It\'s good enough for now"',
+      content: (
+        <>
+          <p className="text-sm text-[#333333]">
+            "Good enough" has a cost. At your current realization score of {calculations.realizationScore}%, approximately {formatCurrency(calculations.monthlyGap)} in potential value goes unrealized each month.
+          </p>
+          <p className="text-sm text-[#333333] mt-2">
+            The question isn't whether the tool works — it's whether you're getting what you're paying for.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: "switching-costs",
+      icon: ArrowRightLeft,
+      title: '"The switching costs are too high"',
+      content: (
+        <p className="text-sm text-[#333333]">
+          We've supported transitions from every major ambient AI vendor. The typical full deployment takes {IMPLEMENTATION_TIMELINE.implementationWeeks} weeks, with most providers productive within {IMPLEMENTATION_TIMELINE.rampMonths} months. Providers with prior AI experience typically ramp faster, not slower.
+        </p>
+      ),
+    },
   ];
 
   return (
@@ -237,42 +263,6 @@ export default function StepWhyThisHappens({
           <span className="block mt-1">Tap to explore each one.</span>
         </p>
       </div>
-
-      <section className="space-y-6" data-testid="switching-question-section">
-        <div>
-          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">The Switching Question</p>
-          <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
-            "We already have a solution. Isn't switching too disruptive?"
-          </h2>
-          <p className="text-sm text-[#666666]">
-            These are concerns we hear often — along with what we've observed:
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {objectionCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <div 
-                key={card.id} 
-                className="bg-white rounded-xl border border-[#E0E0E0] p-5"
-                data-testid={`objection-card-${card.id}`}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-[#EA2C00]" />
-                  </div>
-                  <h3 className="font-bold text-[#1A1A1A] text-sm">{card.title}</h3>
-                </div>
-                {card.content}
-              </div>
-            );
-          })}
-        </div>
-
-      </section>
-
-      <div className="h-px bg-[#E5E7EB]" />
 
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -328,7 +318,7 @@ export default function StepWhyThisHappens({
             <div>
               <p className="font-semibold text-[#1A1A1A]">All patterns explored</p>
               <p className="text-sm text-[#666666]">
-                Implementation matters more than the tool itself. Partnership quality determines ROI.
+                The pattern is consistent: implementation quality determines ROI more than the technology itself. The best outcomes come from partners who invest in both.
               </p>
             </div>
           </div>
@@ -342,6 +332,66 @@ export default function StepWhyThisHappens({
           </p>
         </section>
       )}
+
+      <div className="h-px bg-[#E5E7EB]" />
+
+      <section className="space-y-6" data-testid="switching-question-section">
+        <div>
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">The Switching Question</p>
+          <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
+            "We already have a solution. Isn't switching too disruptive?"
+          </h2>
+          <p className="text-sm text-[#666666]">
+            It's worth weighing the cost of switching against the cost of staying.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {objectionCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div 
+                key={card.id} 
+                className="bg-white rounded-xl border border-[#E0E0E0] p-5"
+                data-testid={`objection-card-${card.id}`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-[#EA2C00]" />
+                  </div>
+                  <h3 className="font-bold text-[#1A1A1A] text-sm">{card.title}</h3>
+                </div>
+                {card.content}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
+        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">Typical Timeline</p>
+        <div className="relative">
+          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-[#E5E7EB]" />
+          {[
+            { week: "Weeks 1-2", title: "Planning & Configuration", desc: "EHR integration, workflow design, champion identification" },
+            { week: "Weeks 3-4", title: "Pilot Launch", desc: "Select departments go live with dedicated support" },
+            { week: `Week ${IMPLEMENTATION_TIMELINE.implementationWeeks}`, title: "Full Deployment", desc: "Organization-wide rollout with training" },
+            { week: `Month ${IMPLEMENTATION_TIMELINE.rampMonths}`, title: "Optimization", desc: "Utilization tracking, workflow refinement, QBR cadence" },
+            { week: `Month ${IMPLEMENTATION_TIMELINE.fullValueMonth}+`, title: "Full Value Realization", desc: "Benchmarks achieved, continuous improvement" },
+          ].map((item, i) => (
+            <div key={i} className="relative flex items-start gap-4 pb-6 last:pb-0">
+              <div className="relative z-10 w-8 h-8 rounded-full bg-[#FFF5F2] border-2 border-[#EA2C00] flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-[#EA2C00]">{i + 1}</span>
+              </div>
+              <div className="pt-1">
+                <p className="text-[10px] font-medium text-[#EA2C00] uppercase tracking-[1.5px]">{item.week}</p>
+                <p className="text-sm font-semibold text-[#1A1A1A]">{item.title}</p>
+                <p className="text-xs text-[#666666] mt-0.5">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <div className="flex justify-between items-center pt-4">
         <Button 

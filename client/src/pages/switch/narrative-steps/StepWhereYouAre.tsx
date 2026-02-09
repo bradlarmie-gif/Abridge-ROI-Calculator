@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Clock, TrendingUp, Heart, Moon, Info, Pencil, AlertTriangle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Users, Clock, TrendingUp, Heart, Moon, Info, Pencil, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { 
   ABRIDGE_BENCHMARKS,
   type SwitchInputs,
@@ -14,8 +13,6 @@ interface StepWhereYouAreProps {
   calculations: SwitchCalculations;
   onNext: () => void;
   onBack: () => void;
-  canProceed: boolean;
-  onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
 interface MetricInputProps {
@@ -133,16 +130,12 @@ export default function StepWhereYouAre({
   calculations,
   onNext,
   onBack,
-  canProceed,
 }: StepWhereYouAreProps) {
   const afterHoursPerWeek = inputs.afterHoursPerWeek || 0;
   const providers = inputs.providers || 0;
   const annualPajamaTime = afterHoursPerWeek * providers * 52;
-  const benchmarkPajamaTime = ABRIDGE_BENCHMARKS.afterHoursPerWeek * providers * 52;
 
   const afterHoursFillPercent = (afterHoursPerWeek / 15) * 100;
-  const editTime = inputs.editTimePerEncounter || 0;
-  const showEditWarning = editTime > 0 && editTime >= inputs.timeSavedPerEncounter && inputs.timeSavedPerEncounter > 0;
 
   return (
     <div className="space-y-8">
@@ -151,43 +144,9 @@ export default function StepWhereYouAre({
           Where You Are
         </h1>
         <p className="text-base text-[#666666]">
-          Tell us about your current ambient AI experience.
+          The more accurate you are, the clearer the picture.
         </p>
       </div>
-
-      <section className="bg-[#F5F0EB] rounded-xl p-6">
-        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">
-          Your Organization
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <label className="block text-xs text-[#666666] mb-2">
-              Providers using ambient AI
-            </label>
-            <FormattedNumberInput
-              value={inputs.providers}
-              onChange={(v) => updateInput("providers", v || 0)}
-              className="w-full text-lg font-semibold text-[#1A1A1A] bg-white border border-[#D1D5DB] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
-              placeholder="e.g. 50"
-              data-testid="input-providers"
-            />
-            <p className="text-[11px] text-[#999999] mt-1">Physicians, APPs, or other clinicians with AI access</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
-            <label className="block text-xs text-[#666666] mb-2">
-              Annual encounters
-            </label>
-            <FormattedNumberInput
-              value={inputs.annualEncounters}
-              onChange={(v) => updateInput("annualEncounters", v || 0)}
-              className="w-full text-lg font-semibold text-[#1A1A1A] bg-white border border-[#D1D5DB] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/20 focus:border-[#EA2C00]"
-              placeholder="e.g. 100,000"
-              data-testid="input-encounters"
-            />
-            <p className="text-[11px] text-[#999999] mt-1">Total visits where AI could be used for documentation</p>
-          </div>
-        </div>
-      </section>
 
       <section className="bg-[#F5F0EB] rounded-xl p-6">
         <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">
@@ -201,8 +160,8 @@ export default function StepWhereYouAre({
           <MetricInput
             icon={<Users className="w-5 h-5 text-[#EA2C00]" />}
             title="Utilization"
-            description="% of encounters documented"
-            tooltip="What percentage of eligible encounters are being documented with AI? Low utilization usually means workflow friction, not technology failure."
+            description="% of encounters documented with AI"
+            tooltip="Utilization is the single strongest predictor of ambient AI ROI. Low utilization usually isn't a technology problem — it's a workflow, training, or trust issue."
             value={inputs.utilization}
             benchmark={ABRIDGE_BENCHMARKS.utilization}
             unit="%"
@@ -211,13 +170,14 @@ export default function StepWhereYouAre({
             step={5}
             onChange={(v) => updateInput("utilization", v)}
             testId="slider-utilization"
+            benchmarkLabel="What we typically see: 70-80%"
           />
 
           <MetricInput
             icon={<Clock className="w-5 h-5 text-[#EA2C00]" />}
             title="Time Saved"
-            description="Minutes saved per encounter"
-            tooltip="How many minutes of documentation time does AI save per encounter? This should be measured against pre-AI baseline, not against competitors."
+            description="Minutes saved per encounter (before any edits)"
+            tooltip="This is gross time savings — before accounting for time spent reviewing or correcting AI output. We'll calculate the net impact on the next screen."
             value={inputs.timeSavedPerEncounter}
             benchmark={ABRIDGE_BENCHMARKS.timeSavedAvg}
             unit=" min"
@@ -226,13 +186,62 @@ export default function StepWhereYouAre({
             step={0.5}
             onChange={(v) => updateInput("timeSavedPerEncounter", v)}
             testId="slider-efficiency"
+            benchmarkLabel="What we typically see: 3-5 min"
+          />
+
+          <MetricInput
+            icon={<Pencil className="w-5 h-5 text-[#EA2C00]" />}
+            title="Edit Time"
+            description="Minutes spent correcting AI output per encounter"
+            tooltip="Edit time is the hidden tax on ambient AI. Every minute spent correcting output erodes the time savings the tool was supposed to deliver. This reveals the true quality of AI output."
+            value={inputs.editTimePerEncounter || 0}
+            benchmark={ABRIDGE_BENCHMARKS.editTime}
+            unit=" min"
+            maxValue={10}
+            minValue={0}
+            step={0.5}
+            onChange={(v) => updateInput("editTimePerEncounter", v)}
+            testId="slider-edit-time"
+            benchmarkLabel="What we typically see: < 1 min"
+          />
+
+          <MetricInput
+            icon={<ClipboardList className="w-5 h-5 text-[#EA2C00]" />}
+            title="Documentation Completeness"
+            description="How often do notes fully reflect the clinical visit?"
+            tooltip="When AI-generated notes miss clinical details, three things happen: providers lose trust and edit more, coding doesn't reflect the work actually performed, and quality measures get missed. Most organizations underestimate this gap."
+            value={inputs.docCompleteness}
+            benchmark={ABRIDGE_BENCHMARKS.docCompleteness}
+            unit="%"
+            maxValue={100}
+            minValue={0}
+            step={5}
+            onChange={(v) => updateInput("docCompleteness", v)}
+            testId="slider-doc-completeness"
+            benchmarkLabel="What we typically see: 85-95%"
+          />
+
+          <MetricInput
+            icon={<Heart className="w-5 h-5 text-[#EA2C00]" />}
+            title="Provider Satisfaction"
+            description="Would recommend current AI to a colleague?"
+            tooltip="Satisfaction below 65% is a leading indicator of declining utilization. Providers who wouldn't recommend the tool are often already using it less — or have stopped entirely."
+            value={inputs.satisfaction}
+            benchmark={ABRIDGE_BENCHMARKS.satisfaction}
+            unit="%"
+            maxValue={100}
+            minValue={0}
+            step={5}
+            onChange={(v) => updateInput("satisfaction", v)}
+            testId="slider-satisfaction"
+            benchmarkLabel="What we typically see: 80-90%"
           />
 
           <MetricInput
             icon={<TrendingUp className="w-5 h-5 text-[#EA2C00]" />}
-            title="Documentation Quality"
-            description="wRVU lift from AI"
-            tooltip="What wRVU lift are you seeing from improved documentation? Better notes capture complexity more accurately, leading to appropriate coding."
+            title="Coding Impact"
+            description="Observed wRVU change since AI implementation"
+            tooltip="wRVU lift reflects whether documentation is capturing the complexity of care delivered. This isn't about upcoding — it's about accurate coding. The correlation is strongest when utilization exceeds 70% and documentation completeness exceeds 85%."
             value={inputs.wrvuLift}
             benchmark={ABRIDGE_BENCHMARKS.wrvuLift}
             unit="%"
@@ -242,50 +251,8 @@ export default function StepWhereYouAre({
             step={0.5}
             onChange={(v) => updateInput("wrvuLift", v)}
             testId="slider-wrvu"
+            benchmarkLabel="What we typically see: +4-7%"
           />
-
-          <MetricInput
-            icon={<Heart className="w-5 h-5 text-[#EA2C00]" />}
-            title="Provider Satisfaction"
-            description="Would recommend AI?"
-            tooltip="Would your providers recommend this AI to a colleague? Satisfaction below 70% correlates strongly with turnover intent."
-            value={inputs.satisfaction}
-            benchmark={ABRIDGE_BENCHMARKS.satisfaction}
-            unit="%"
-            maxValue={100}
-            minValue={0}
-            step={5}
-            onChange={(v) => updateInput("satisfaction", v)}
-            testId="slider-satisfaction"
-          />
-        </div>
-
-        <div className="mt-4">
-          <MetricInput
-            icon={<Pencil className="w-5 h-5 text-[#EA2C00]" />}
-            title="Edit Time"
-            description="Minutes spent correcting AI output per encounter"
-            tooltip="How long do providers spend reviewing and correcting AI-generated documentation before signing? This includes fixing errors, adding missing details, and reformatting. If this exceeds time saved, the AI is a net negative."
-            value={editTime}
-            benchmark={ABRIDGE_BENCHMARKS.editTime}
-            unit=" min"
-            maxValue={10}
-            minValue={0}
-            step={0.5}
-            onChange={(v) => updateInput("editTimePerEncounter", v)}
-            testId="slider-edit-time"
-            benchmarkLabel="Abridge Benchmark: < 1 min"
-          />
-
-          {showEditWarning && (
-            <div className="mt-3 bg-[#FFEBE6] rounded-lg p-4 flex items-start gap-3" data-testid="edit-time-warning">
-              <AlertTriangle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-[#EA2C00]">Edit time exceeds time saved.</p>
-                <p className="text-sm text-[#EA2C00]">When edit time exceeds time saved, the net efficiency benefit becomes harder to realize. This is worth understanding.</p>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -336,7 +303,7 @@ export default function StepWhereYouAre({
               That's <span className="font-semibold text-white">{annualPajamaTime.toLocaleString()} hours/year</span> your team is spending outside the clinic.
             </p>
             <p className="text-xs text-[#666666]">
-              Abridge average: {ABRIDGE_BENCHMARKS.afterHoursPerWeek} hrs/week ({benchmarkPajamaTime.toLocaleString()} hours/year for your team)
+              Before ambient AI, the industry average was 5-8 hrs/week (AMA, 2023).
             </p>
           </div>
         )}
@@ -355,8 +322,7 @@ export default function StepWhereYouAre({
         
         <Button
           onClick={onNext}
-          disabled={!canProceed}
-          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11 disabled:opacity-50"
+          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
           data-testid="button-next"
         >
           See the Gap

@@ -226,7 +226,7 @@ export default function StepTheMath({
           The Math
         </h1>
         <p className="text-base text-[#666666]">
-          Every number is transparent. Every assumption is yours to challenge.
+          Every number is transparent. Every assumption is editable. Challenge anything.
         </p>
       </div>
 
@@ -400,8 +400,8 @@ export default function StepTheMath({
           <GapAccordion
             id="quality"
             icon={DollarSign}
-            title="Quality Gap (wRVU)"
-            subtitle={`+${inputs.wrvuLift}% → +${ABRIDGE_BENCHMARKS.wrvuLift}% lift`}
+            title="Coding Impact Gap"
+            subtitle={`Your +${inputs.wrvuLift}% vs. benchmark +${ABRIDGE_BENCHMARKS.wrvuLift}%`}
             value={recalculatedValues.wrvuGapValue}
             isOpen={openAccordion === 'quality'}
             onToggle={() => toggleAccordion('quality')}
@@ -474,7 +474,7 @@ export default function StepTheMath({
               <span className="font-medium text-[#1A1A1A]">{formatCurrency(recalculatedValues.netEfficiencyGapValue)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Quality Gap (wRVU)</span>
+              <span>Coding Impact Gap</span>
               <span className="font-medium text-[#1A1A1A]">{formatCurrency(recalculatedValues.wrvuGapValue)}</span>
             </div>
           </div>
@@ -607,6 +607,39 @@ export default function StepTheMath({
         <div className="mt-4 border-t border-[#E5E7EB] pt-4 text-center">
           <p className="text-sm text-[#EA2C00] font-semibold">
             Monthly opportunity: ~{formatCurrency(recalculatedValues.monthlyGap)} in potential value
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8">
+        <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-4">
+          The Cost of Waiting
+        </p>
+        <p className="text-sm text-[#999999] mb-6">
+          Every month of delay has a measurable cost. Here's what the math suggests:
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-[#333333] rounded-lg p-4 text-center">
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Act Now</p>
+            <p className="text-2xl md:text-3xl font-bold text-white">{formatCurrency(recalculatedValues.switchNowValue)}</p>
+            <p className="text-xs text-[#999999] mt-1">3-year cumulative value</p>
+          </div>
+          <div className="bg-[#333333] rounded-lg p-4 text-center">
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Wait 6 Months</p>
+            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
+            <p className="text-xs text-[#EA2C00] mt-1">-{formatCurrency(recalculatedValues.wait6MonthsLoss)} opportunity cost</p>
+          </div>
+          <div className="bg-[#333333] rounded-lg p-4 text-center">
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Wait 12 Months</p>
+            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
+            <p className="text-xs text-[#EA2C00] mt-1">-{formatCurrency(recalculatedValues.wait12MonthsLoss)} opportunity cost</p>
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t border-[#333333]">
+          <p className="text-sm text-[#CCCCCC]">
+            That's approximately <span className="text-white font-bold">{formatCurrency(recalculatedValues.monthlyGap)}/month</span> in unrealized value at current performance levels.
           </p>
         </div>
       </section>

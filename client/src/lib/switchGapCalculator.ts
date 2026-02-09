@@ -1,19 +1,23 @@
 // ============================================================================
 // SWITCH GAP CALCULATOR - VALUE REALIZATION ASSESSMENT
-// Five-dimensional analysis: Utilization, Net Efficiency, Quality, Satisfaction, Edit Time
+// Six-dimensional analysis: Utilization, Net Time Impact, Documentation Completeness,
+// Coding Impact (wRVU), Provider Satisfaction, After-Hours Reduction
 // Formulas aligned with Abridge benchmark spec
 // ============================================================================
 
 export type SolutionType = "ambient-ai" | "human-scribes";
+export type SpecialtyMix = "primary-care" | "balanced" | "specialty";
 
 export interface SwitchInputs {
   solution: SolutionType;
   providers: number;
   annualEncounters: number;
   currentCostPerProvider: number;
+  specialtyMix: SpecialtyMix;
   utilization: number;
   timeSavedPerEncounter: number;
   editTimePerEncounter: number;
+  docCompleteness: number;
   wrvuLift: number;
   satisfaction: number;
   afterHoursPerWeek: number;
@@ -33,9 +37,12 @@ export interface SwitchCalculations {
   utilizationScore: number;
   efficiencyScore: number;
   qualityScore: number;
+  docCompletenessScore: number;
   satisfactionScore: number;
+  afterHoursScore: number;
   realizationScore: number;
   maturityLevel: string;
+  maturityStage: number;
   yourEncountersDocumented: number;
   yourHoursReturned: number;
   yourAnnualValue: number;
@@ -56,6 +63,7 @@ export interface SwitchCalculations {
   currentNetImpact: number;
   benchmarkNetImpact: number;
   netImpactGap: number;
+  editTimeErosionPct: number;
   switchNowValue: number;
   wait6MonthsValue: number;
   wait12MonthsValue: number;
@@ -74,22 +82,26 @@ export interface SwitchCalculations {
   afterHoursAnnual: number;
   afterHoursBenchmarkAnnual: number;
   afterHoursGap: number;
+  utilizationGapEncounters: number;
 }
 
 export const ABRIDGE_BENCHMARKS = {
   utilization: 76,
   utilizationMin: 70,
   utilizationMax: 80,
-  timeSavedMin: 2,
-  timeSavedMax: 4,
-  timeSavedAvg: 3,
-  editTime: 1,
+  timeSavedMin: 3,
+  timeSavedMax: 5,
+  timeSavedAvg: 4,
+  editTime: 0.5,
   editTimeMax: 1,
-  netImpact: 2,
+  netImpact: 3.5,
+  docCompleteness: 90,
+  docCompletenessMin: 85,
+  docCompletenessMax: 95,
   wrvuLift: 5.5,
   wrvuLiftMin: 4,
   wrvuLiftMax: 7,
-  satisfaction: 88,
+  satisfaction: 85,
   satisfactionMin: 80,
   satisfactionMax: 95,
   afterHoursPerWeek: 2,
@@ -112,6 +124,15 @@ export const IMPLEMENTATION_TIMELINE = {
   fullValueMonth: 4,
 };
 
+export const REALIZATION_WEIGHTS = {
+  utilization: 0.25,
+  netTimeImpact: 0.20,
+  docCompleteness: 0.20,
+  codingImpact: 0.15,
+  satisfaction: 0.10,
+  afterHoursReduction: 0.10,
+};
+
 export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const {
     providers,
@@ -120,25 +141,42 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     utilization,
     timeSavedPerEncounter,
     editTimePerEncounter,
+    docCompleteness,
     wrvuLift,
     satisfaction,
     afterHoursPerWeek,
   } = inputs;
 
   const utilizationScore = Math.min(100, Math.round((utilization / ABRIDGE_BENCHMARKS.utilization) * 100));
-  const efficiencyScore = Math.min(100, Math.round((timeSavedPerEncounter / ABRIDGE_BENCHMARKS.timeSavedAvg) * 100));
+
+  const currentNetImpact = timeSavedPerEncounter - (editTimePerEncounter || 0);
+  const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime;
+  const efficiencyScore = Math.min(100, Math.round((Math.max(0, currentNetImpact) / benchmarkNetImpact) * 100));
+
+  const docCompletenessScore = Math.min(100, Math.round(((docCompleteness || 65) / ABRIDGE_BENCHMARKS.docCompleteness) * 100));
   const qualityScore = Math.min(100, Math.round((wrvuLift / ABRIDGE_BENCHMARKS.wrvuLift) * 100));
   const satisfactionScore = Math.min(100, Math.round((satisfaction / ABRIDGE_BENCHMARKS.satisfaction) * 100));
 
+  const afterHoursReductionScore = afterHoursPerWeek <= ABRIDGE_BENCHMARKS.afterHoursPerWeek
+    ? 100
+    : Math.min(100, Math.round(((8 - afterHoursPerWeek) / (8 - ABRIDGE_BENCHMARKS.afterHoursPerWeek)) * 100));
+  const afterHoursScore = Math.max(0, afterHoursReductionScore);
+
   const realizationScore = Math.round(
-    (utilizationScore + efficiencyScore + qualityScore + satisfactionScore) / 4
+    utilizationScore * REALIZATION_WEIGHTS.utilization +
+    efficiencyScore * REALIZATION_WEIGHTS.netTimeImpact +
+    docCompletenessScore * REALIZATION_WEIGHTS.docCompleteness +
+    qualityScore * REALIZATION_WEIGHTS.codingImpact +
+    satisfactionScore * REALIZATION_WEIGHTS.satisfaction +
+    afterHoursScore * REALIZATION_WEIGHTS.afterHoursReduction
   );
 
   let maturityLevel: string;
-  if (realizationScore < 40) maturityLevel = 'Early Stage';
-  else if (realizationScore < 60) maturityLevel = 'Developing';
-  else if (realizationScore < 80) maturityLevel = 'Optimized';
-  else maturityLevel = 'Transformed';
+  let maturityStage: number;
+  if (realizationScore < 35) { maturityLevel = 'Deployed'; maturityStage = 1; }
+  else if (realizationScore < 65) { maturityLevel = 'Adopted'; maturityStage = 2; }
+  else if (realizationScore < 85) { maturityLevel = 'Optimized'; maturityStage = 3; }
+  else { maturityLevel = 'Transformed'; maturityStage = 4; }
 
   const yourEncountersDocumented = Math.round(annualEncounters * (utilization / 100));
   const abridgeEncountersDocumented = Math.round(annualEncounters * (ABRIDGE_BENCHMARKS.utilization / 100));
@@ -148,16 +186,12 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const abridgeHoursReturned = Math.round((abridgeEncountersDocumented * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60);
   const hoursGap = Math.max(0, abridgeHoursReturned - yourHoursReturned);
 
-  // 1. Utilization gap: encounters NOT getting AI x benchmark time saved
   const utilizationGapPP = Math.max(0, ABRIDGE_BENCHMARKS.utilization - utilization);
   const encountersWithoutAI = Math.round(annualEncounters * (utilizationGapPP / 100));
   const utilizationTimeSavedHours = (encountersWithoutAI * ABRIDGE_BENCHMARKS.timeSavedAvg) / 60;
   const utilizationGapValue = Math.round(utilizationTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
 
-  // 2. Net Efficiency gap: uses NET time impact (time saved - edit time)
   const encountersWithAI = yourEncountersDocumented;
-  const currentNetImpact = timeSavedPerEncounter - (editTimePerEncounter || 0);
-  const benchmarkNetImpact = ABRIDGE_BENCHMARKS.timeSavedAvg - ABRIDGE_BENCHMARKS.editTime; // 3 - 1 = 2
   const netImpactGap = benchmarkNetImpact - currentNetImpact;
 
   const netEfficiencyGapHours = Math.round((netImpactGap * encountersWithAI) / 60);
@@ -165,22 +199,22 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     Math.max(0, netEfficiencyGapHours) * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate
   );
 
-  // Keep old efficiency gap for backward compatibility
   const efficiencyGapMin = Math.max(0, ABRIDGE_BENCHMARKS.timeSavedAvg - timeSavedPerEncounter);
   const efficiencyGapHours = Math.round((encountersWithAI * efficiencyGapMin) / 60);
   const efficiencyGapValue = Math.round(efficiencyGapHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate);
 
-  // 3. wRVU gap: base wRVUs at YOUR utilization x lift gap x realization
+  const editTimeErosionPct = timeSavedPerEncounter > 0
+    ? Math.round(((editTimePerEncounter || 0) / timeSavedPerEncounter) * 100)
+    : 0;
+
   const wrvuGapPercent = Math.max(0, ABRIDGE_BENCHMARKS.wrvuLift - wrvuLift);
   const baseWRVUs = VALUE_ASSUMPTIONS.avgWRVUPerEncounter * encountersWithAI;
   const missingWRVUs = baseWRVUs * (wrvuGapPercent / 100);
   const wrvuGapValue = Math.round(missingWRVUs * VALUE_ASSUMPTIONS.wrvuDollarValue * VALUE_ASSUMPTIONS.wrvuRealization);
 
-  // Total now uses NET efficiency gap
   const annualGap = utilizationGapValue + netEfficiencyGapValue + wrvuGapValue;
   const monthlyGap = Math.round(annualGap / 12);
 
-  // 3-year projections per spec ramp formulas
   const optimizedYear1 = Math.round(annualGap * 0.87);
   const optimizedYear2 = Math.round(optimizedYear1 + (annualGap * 1.10));
   const optimizedYear3 = Math.round(optimizedYear2 + (annualGap * 1.15));
@@ -191,7 +225,6 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
 
   const threeYearGap = optimizedYear3 - currentYear3;
 
-  // Cost of waiting per spec
   const switchNowValue = optimizedYear3;
   const wait6MonthsValue = Math.round(optimizedYear3 - (annualGap * 0.5));
   const wait12MonthsValue = Math.round(optimizedYear3 - annualGap);
@@ -206,12 +239,10 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const currentAnnualInvestment = currentCostPerProvider * providers * 12;
   const abridgeAnnualInvestment = ABRIDGE_BENCHMARKS.costPerProviderMonth * providers * 12;
 
-  // After-hours calculations
   const afterHoursAnnual = Math.round((afterHoursPerWeek || 0) * providers * 52);
   const afterHoursBenchmarkAnnual = Math.round(ABRIDGE_BENCHMARKS.afterHoursPerWeek * providers * 52);
   const afterHoursGap = Math.max(0, afterHoursAnnual - afterHoursBenchmarkAnnual);
 
-  // Build trajectory arrays for chart (yearly data points)
   const currentTrajectory: { month: number; value: number }[] = [
     { month: 0, value: 0 },
     { month: 12, value: currentYear1 },
@@ -230,9 +261,12 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     utilizationScore,
     efficiencyScore,
     qualityScore,
+    docCompletenessScore,
     satisfactionScore,
+    afterHoursScore,
     realizationScore,
     maturityLevel,
+    maturityStage,
     yourEncountersDocumented,
     yourHoursReturned,
     yourAnnualValue: Math.round(yourAnnualValue),
@@ -253,6 +287,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     currentNetImpact,
     benchmarkNetImpact,
     netImpactGap,
+    editTimeErosionPct,
     optimizedYear1,
     optimizedYear2,
     optimizedYear3,
@@ -271,6 +306,7 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
     afterHoursAnnual,
     afterHoursBenchmarkAnnual,
     afterHoursGap,
+    utilizationGapEncounters: encountersWithoutAI,
   };
 }
 

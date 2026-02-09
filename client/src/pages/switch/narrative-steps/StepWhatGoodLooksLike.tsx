@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowLeft, Target, BarChart3, Clock, DollarSign, Heart } from "lucide-react";
+import { ArrowRight, ArrowLeft, Target, BarChart3, Clock, DollarSign, Heart, ClipboardList, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type SwitchInputs, type SwitchCalculations, ABRIDGE_BENCHMARKS } from "@/lib/switchGapCalculator";
 
@@ -19,6 +19,7 @@ interface BenchmarkCardProps {
   unit: string;
   prefix?: string;
   maxScale: number;
+  invertedScale?: boolean;
 }
 
 function BenchmarkCard({
@@ -30,13 +31,14 @@ function BenchmarkCard({
   unit,
   prefix = "",
   maxScale,
+  invertedScale = false,
 }: BenchmarkCardProps) {
   const currentPercent = Math.min(100, Math.max(0, (currentValue / maxScale) * 100));
   const benchmarkMinPercent = (benchmarkMin / maxScale) * 100;
   const benchmarkMaxPercent = Math.min(100, (benchmarkMax / maxScale) * 100);
   
-  const isBelowRange = currentValue < benchmarkMin;
-  const gapToRange = Math.max(0, benchmarkMin - currentValue);
+  const isBelowRange = invertedScale ? currentValue > benchmarkMax : currentValue < benchmarkMin;
+  const gapToRange = invertedScale ? Math.max(0, currentValue - benchmarkMax) : Math.max(0, benchmarkMin - currentValue);
   
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
@@ -136,6 +138,15 @@ export default function StepWhatGoodLooksLike({
       maxScale: 6,
     },
     {
+      icon: <ClipboardList className="w-5 h-5 text-[#EA2C00]" />,
+      label: "Documentation Completeness",
+      currentValue: inputs.docCompleteness || 65,
+      benchmarkMin: ABRIDGE_BENCHMARKS.docCompletenessMin,
+      benchmarkMax: ABRIDGE_BENCHMARKS.docCompletenessMax,
+      unit: "%",
+      maxScale: 100,
+    },
+    {
       icon: <DollarSign className="w-5 h-5 text-[#EA2C00]" />,
       label: "wRVU Lift",
       currentValue: inputs.wrvuLift || 0,
@@ -144,6 +155,16 @@ export default function StepWhatGoodLooksLike({
       unit: "%",
       prefix: "+",
       maxScale: 12,
+    },
+    {
+      icon: <Moon className="w-5 h-5 text-[#EA2C00]" />,
+      label: "After-Hours Work",
+      currentValue: inputs.afterHoursPerWeek || 0,
+      benchmarkMin: ABRIDGE_BENCHMARKS.afterHoursMin,
+      benchmarkMax: ABRIDGE_BENCHMARKS.afterHoursMax,
+      unit: " hrs/wk",
+      maxScale: 10,
+      invertedScale: true,
     },
     {
       icon: <Heart className="w-5 h-5 text-[#EA2C00]" />,
@@ -156,8 +177,14 @@ export default function StepWhatGoodLooksLike({
     },
   ];
 
-  const inRangeCount = dimensions.filter(d => d.currentValue >= d.benchmarkMin).length;
-  const belowRangeCount = dimensions.filter(d => d.currentValue < d.benchmarkMin).length;
+  const inRangeCount = dimensions.filter(d => {
+    if (d.invertedScale) return d.currentValue <= d.benchmarkMax;
+    return d.currentValue >= d.benchmarkMin;
+  }).length;
+  const belowRangeCount = dimensions.filter(d => {
+    if (d.invertedScale) return d.currentValue > d.benchmarkMax;
+    return d.currentValue < d.benchmarkMin;
+  }).length;
 
   return (
     <div className="space-y-8">
@@ -166,7 +193,7 @@ export default function StepWhatGoodLooksLike({
           What Good Looks Like
         </h1>
         <p className="text-base text-[#666666]">
-          These benchmarks come from mature implementations. They're achievable with the right approach and support.
+          Here's what the best implementations achieve — and where you stand.
         </p>
       </div>
 
@@ -181,7 +208,7 @@ export default function StepWhatGoodLooksLike({
                 Your Position
               </p>
               <p className="text-sm text-[#666666]">
-                See where you stand against top performers
+                Based on Abridge deployment data across 150+ health systems.
               </p>
             </div>
           </div>
@@ -209,6 +236,36 @@ export default function StepWhatGoodLooksLike({
           />
         ))}
       </div>
+
+      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8">
+        <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-4">
+          Ambient AI Maturity Model
+        </p>
+        <div className="flex items-baseline gap-3 mb-6">
+          <span className="text-3xl md:text-4xl font-bold text-white">{calculations.maturityLevel}</span>
+          <span className="text-sm text-[#999999]">Stage {calculations.maturityStage} of 4</span>
+        </div>
+        
+        <div className="flex gap-2 mb-6">
+          {[1, 2, 3, 4].map((stage) => (
+            <div key={stage} className="flex-1">
+              <div className={`h-2 rounded-full ${stage <= calculations.maturityStage ? 'bg-[#EA2C00]' : 'bg-[#333333]'}`} />
+              <p className={`text-[10px] mt-2 ${stage <= calculations.maturityStage ? 'text-white' : 'text-[#666666]'}`}>
+                {stage === 1 ? 'Deployed' : stage === 2 ? 'Adopted' : stage === 3 ? 'Optimized' : 'Transformed'}
+              </p>
+            </div>
+          ))}
+        </div>
+        
+        <div className="bg-[#333333] rounded-lg p-4">
+          <p className="text-sm text-[#CCCCCC]">
+            {calculations.maturityStage === 1 && "You've deployed ambient AI, but adoption and optimization haven't followed. This is the most common — and most addressable — gap."}
+            {calculations.maturityStage === 2 && "Your team is using the tool, but not yet seeing the full returns. The gap between adoption and optimization is where most value is lost."}
+            {calculations.maturityStage === 3 && "You're extracting real value. The remaining opportunity is in the fine-tuning — deeper utilization, better workflows, and specialty-specific optimization."}
+            {calculations.maturityStage === 4 && "You're among the top performers. The question now is: how do you maintain this and scale it across the organization?"}
+          </p>
+        </div>
+      </section>
 
       <div className="flex justify-between items-center pt-4">
         <Button 

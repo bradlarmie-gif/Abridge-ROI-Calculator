@@ -6,6 +6,7 @@ import {
   calculateSwitchGap, 
   type SwitchInputs 
 } from "@/lib/switchGapCalculator";
+import StepYourOrganization from "./narrative-steps/StepYourOrganization";
 import StepWhereYouAre from "./narrative-steps/StepWhereYouAre";
 import StepTheGap from "./narrative-steps/StepTheGap";
 import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
@@ -22,12 +23,13 @@ interface AmbientNarrativeFlowProps {
 }
 
 const STEPS = [
-  { id: 1, name: "Where You Are", shortName: "Input" },
-  { id: 2, name: "The Gap", shortName: "Gap" },
-  { id: 3, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 4, name: "The Math", shortName: "Math" },
-  { id: 5, name: "What It Takes", shortName: "How" },
-  { id: 6, name: "The Invitation", shortName: "Next" },
+  { id: 1, name: "Your Organization", shortName: "Org" },
+  { id: 2, name: "Where You Are", shortName: "Input" },
+  { id: 3, name: "The Gap", shortName: "Gap" },
+  { id: 4, name: "What Good Looks Like", shortName: "Proof" },
+  { id: 5, name: "The Math", shortName: "Math" },
+  { id: 6, name: "What It Takes", shortName: "How" },
+  { id: 7, name: "The Opportunity", shortName: "Next" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -56,11 +58,10 @@ export default function AmbientNarrativeFlow({
 
   const canProceedFromStep1 = 
     inputs.providers > 0 && 
-    inputs.annualEncounters > 0 &&
-    (inputs.utilization > 0 || inputs.timeSavedPerEncounter > 0 || inputs.wrvuLift > 0 || inputs.satisfaction > 0);
+    inputs.annualEncounters > 0;
 
   const goToStep = (step: number) => {
-    if (step < 1 || step > 6) return;
+    if (step < 1 || step > 7) return;
     if (step > currentStep && !canProceedFromStep1 && currentStep === 1) return;
     
     setCurrentStep(step);
@@ -70,7 +71,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 5) {
+    if (currentStep === 6) {
       setShowLoadingOverlay(true);
     } else {
       setCompletedSteps(prev => {
@@ -86,10 +87,10 @@ export default function AmbientNarrativeFlow({
     setShowLoadingOverlay(false);
     setCompletedSteps(prev => {
       const newSet = new Set(prev);
-      newSet.add(5);
+      newSet.add(6);
       return newSet;
     });
-    setCurrentStep(6);
+    setCurrentStep(7);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -139,21 +140,22 @@ export default function AmbientNarrativeFlow({
     switch (currentStep) {
       case 1:
         return (
-          <StepWhereYouAre 
+          <StepYourOrganization 
             {...commonProps} 
             canProceed={canProceedFromStep1}
-            onNavigateToExplore={onNavigateToExplore}
           />
         );
       case 2:
-        return <StepTheGap {...commonProps} />;
+        return <StepWhereYouAre {...commonProps} />;
       case 3:
-        return <StepWhatGoodLooksLike {...commonProps} />;
+        return <StepTheGap {...commonProps} />;
       case 4:
-        return <StepTheMath {...commonProps} />;
+        return <StepWhatGoodLooksLike {...commonProps} />;
       case 5:
-        return <StepWhyThisHappens {...commonProps} />;
+        return <StepTheMath {...commonProps} />;
       case 6:
+        return <StepWhyThisHappens {...commonProps} />;
+      case 7:
         return (
           <StepTheInvitation 
             {...commonProps} 
@@ -175,7 +177,7 @@ export default function AmbientNarrativeFlow({
         <UnifiedHeader 
           pathType="switch"
           currentStep={currentStep} 
-          totalSteps={6}
+          totalSteps={7}
           stepName={STEPS[currentStep - 1]?.name || ""}
           onBack={handleBack}
           onHome={onBackToJourney}

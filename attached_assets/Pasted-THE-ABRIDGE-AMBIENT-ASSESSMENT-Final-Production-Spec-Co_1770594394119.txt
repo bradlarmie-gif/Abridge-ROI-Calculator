@@ -1,0 +1,794 @@
+THE ABRIDGE AMBIENT ASSESSMENT
+Final Production Spec — Complete Copy + UX Direction
+
+SCREEN 0: PATH CHOOSER
+Keep exactly as you have it. It's clean, it's smart, and it immediately segments the experience. One edit to the copy:
+CopySWITCH PATH
+
+LET'S LOOK AT YOUR CURRENT APPROACH
+
+Different starting points need different analyses.
+Choose the path that matches your organization.
+
+
+┌─────────────────────────────┐  ┌─────────────────────────────┐
+│                             │  │                             │
+│  🎙️                         │  │  👤                         │
+│                             │  │                             │
+│  Ambient AI                 │  │  Human Scribes              │
+│  Currently using an AI      │  │  In-person or virtual       │
+│  documentation solution     │  │  scribe program             │
+│                             │  │                             │
+│  WHAT YOU'LL DISCOVER       │  │  WHAT YOU'LL DISCOVER       │
+│                             │  │                             │
+│  📈 How your implementation │  │  💰 The true cost of your   │
+│     compares to what we     │  │     scribe program —        │
+│     typically see           │  │     including hidden        │
+│                             │  │     overhead                │
+│  🔍 Where the gaps are —   │  │                             │
+│     and what's driving them │  │  📊 What full coverage      │
+│                             │  │     would actually cost     │
+│  💰 The annual value        │  │                             │
+│     opportunity ahead       │  │  👥 What 100% coverage      │
+│                             │  │     would look like — with  │
+│                             │  │     and without scribes     │
+│  6-step guided analysis     │  │                             │
+│  ~5 minutes                 │  │  2-step program analysis    │
+│                             │  │  ~3 minutes                 │
+└─────────────────────────────┘  └─────────────────────────────┘
+
+
+Your data stays in your browser. Nothing is stored or shared.
+The one copy change: "How your implementation compares to what we typically see" instead of "benchmark performance." This is more honest until your data is rock solid, and it's actually more intriguing — it makes them curious about what you've seen.
+
+SCREEN 1: YOUR ORGANIZATION
+Nav label: Your Organization
+Nav dots: ● ○ ○ ○ ○ ○
+CopyYOUR ORGANIZATION
+
+Let's start with the basics.
+Field 1:
+CopyProviders using ambient AI                    [    50    ]
+Physicians, APPs, or other clinicians with AI access
+Field 2:
+CopyAnnual encounters                             [  100,000  ]
+Total visits where AI could be used for documentation
+Field 3 (NEW — simple toggle, not a dropdown):
+CopySpecialty mix
+
+  [ Primary Care heavy ]  [ Balanced ]  [ Specialty heavy ]
+
+  Helps us calibrate. Different specialties have 
+  different documentation patterns.
+Why no vendor name field: You told me these are Abridge-led conversations. You already know who they're using. Asking in the tool feels like a trap and adds friction. Keep it out. If you open-source it later, you can add it then.
+Bottom of screen:
+Copy⚡ These inputs shape every calculation that follows. 
+   Directionally right is more useful than precisely wrong.
+Copy                                          [Next →]
+
+SCREEN 2: WHERE YOU ARE
+Nav label: Where You Are
+Nav dots: ● ● ○ ○ ○ ○
+CopyWHERE YOU ARE
+
+The more accurate you are, the clearer the picture.
+Metric 1: Utilization
+Copy📊 Utilization                                        ⓘ
+   % of encounters documented with AI
+
+   [━━━━━━●━━━━━━━━━━━━━━━━━━━━━━━]        40  %
+
+   What we typically see: 70-80%
+Tooltip:
+CopyUtilization is the single strongest predictor of 
+ambient AI ROI. Low utilization usually isn't a 
+technology problem — it's a workflow, training, 
+or trust issue.
+
+Metric 2: Time Saved
+Copy🕐 Time Saved                                        ⓘ
+   Minutes saved per encounter (before any edits)
+
+   [━━━━━━━━●━━━━━━━━━━━━━━━━━━━━━]         2  min
+
+   What we typically see: 3-5 min
+Tooltip:
+CopyThis is gross time savings — before accounting for 
+time spent reviewing or correcting AI output. 
+We'll calculate the net impact on the next screen.
+
+Metric 3: Edit Time
+Copy✏️ Edit Time                                         ⓘ
+   Minutes spent correcting AI output per encounter
+
+   [●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━]       1.5  min
+
+   What we typically see: < 1 min
+Tooltip:
+CopyEdit time is the hidden tax on ambient AI. 
+Every minute spent correcting output erodes the 
+time savings the tool was supposed to deliver. 
+This reveals the true quality of AI output.
+
+Metric 4: Documentation Completeness (REPLACES old "Documentation Quality / wRVU lift")
+Copy📋 Documentation Completeness                        ⓘ
+   How often do notes fully reflect the clinical visit?
+
+   [━━━━━━━━━━●━━━━━━━━━━━━━━━━━━━]        65  %
+
+   What we typically see: 85-95%
+Tooltip:
+CopyWhen AI-generated notes miss clinical details, 
+three things happen: providers lose trust and 
+edit more, coding doesn't reflect the work 
+actually performed, and quality measures get 
+missed. Most organizations underestimate this gap.
+
+Metric 5: Provider Satisfaction
+Copy❤️ Provider Satisfaction                              ⓘ
+   Would recommend current AI to a colleague?
+
+   [━━━━━━━━●━━━━━━━━━━━━━━━━━━━━━]        55  %
+
+   What we typically see: 80-90%
+Tooltip:
+CopySatisfaction below 65% is a leading indicator 
+of declining utilization. Providers who wouldn't 
+recommend the tool are often already using it 
+less — or have stopped entirely.
+
+Metric 6: wRVU Impact (SEPARATE from documentation completeness now)
+Copy💲 Coding Impact                                      ⓘ
+   Observed wRVU change since AI implementation
+
+   [━━━━━━●━━━━━━━━━━━━━━━━━━━━━━━]      + 3.5  %
+
+   What we typically see: +4-7%
+   (in implementations with >70% utilization)
+Tooltip:
+CopywRVU lift reflects whether documentation is 
+capturing the complexity of care delivered. 
+This isn't about upcoding — it's about accurate 
+coding. The correlation is strongest when 
+utilization exceeds 70% and documentation 
+completeness exceeds 85%.
+
+If you're unsure, leave at default. We'll note 
+it as an estimate.
+Why I separated these: Documentation completeness is defensible and directly attributable to AI quality. wRVU impact is powerful but has confounders. By separating them, you can lead with the defensible metric and use wRVU as supporting evidence. And the tooltip about correlation being strongest at >70% utilization subtly tells the prospect: "if your utilization is low, you can't even measure this properly yet."
+
+Dark card at bottom:
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  🌙 After-Hours Documentation                      │
+│     Hours per week charting at home                 │
+│                                                     │
+│     [━━━●━━━━━━━━━━━━━━━━━━━━━━━━━━━]    2  hrs/wk │
+│                                                     │
+│     That's 5,200 hours/year your team is spending   │
+│     outside the clinic.                             │
+│                                                     │
+│     Before ambient AI, the industry average was     │
+│     5-8 hrs/week (AMA, 2023).                       │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+Copy                                   [See the Gap →]
+
+SCREEN 3: THE GAP
+Nav label: The Gap
+Nav dots: ● ● ● ○ ○ ○
+CopyTHE GAP
+
+Gaps like these are common — and usually addressable. 
+Here's what the data suggests.
+
+Value Realization Score (KEEP — this is gold):
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  VALUE REALIZATION                                  │
+│                                                     │
+│     57%                                             │
+│     of what top-performing organizations achieve    │
+│                                                     │
+│  ━━━━━━━━━━━━━━━━━━━━░░░░░░░░░░░░░░░░░░░░░░░░░░  │
+│                                                     │
+│                        UNTAPPED POTENTIAL            │
+│                            43%                       │
+│                         opportunity                  │
+│                                                     │
+│  ▼ How we calculate this                            │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+Expandable methodology:
+CopyYour Value Realization Score is a weighted composite 
+of six performance dimensions:
+
+  Utilization                    25%
+  Net Time Impact                20%
+  Documentation Completeness     20%
+  Coding Impact (wRVU)           15%
+  Provider Satisfaction          10%
+  After-Hours Reduction          10%
+
+Each dimension is scored relative to the top range 
+of what we've observed across implementations.
+
+100% would mean you're performing at the highest 
+levels we've seen. Most organizations begin between 
+45-65%.
+
+We show the weights because you should know what's 
+driving your score. If you'd weight them differently, 
+we should talk about why.
+
+Section: Net Time Impact
+CopyNET TIME IMPACT
+The real math on your AI investment
+
+
+YOUR CURRENT REALITY
+┌────────────────────────────────────────────┐
+│ Time saved per encounter            2 min  │
+│ − Edit time per encounter         1.5 min  │
+│ ──────────────────────────────────────────  │
+│ = Net impact per encounter      +0.5 min   │
+└────────────────────────────────────────────┘
+
+You're saving time, but 75% of the gross 
+savings is being consumed by edits.
+
+
+AT TOP PERFORMANCE
+┌────────────────────────────────────────────┐
+│ Time saved per encounter            4 min  │
+│ − Edit time per encounter         0.5 min  │
+│ ──────────────────────────────────────────  │
+│ = Net impact per encounter      +3.5 min   │
+└────────────────────────────────────────────┘
+
+
+THE GAP
+
+      3.0 min per encounter
+
+      That's 2,000 hours/year you could reclaim.
+Why I used 1.5 min edit time as the input example instead of 0.5: This makes the net time impact story dramatically more powerful. At 0.5 min edit time, the story is "you're losing a little." At 1.5 min, the story is "75% of your savings is being eaten by edits." That's a gut punch — and it's the reality for a LOT of DAX users. The prospect controls the input. You just need the framework to make any input tell the story.**
+
+Gap Cards:
+Card 1: Utilization Gap
+Copy📊 UTILIZATION GAP
+   Where AI isn't being used
+
+      36,000 encounters/year
+      sitting on the table
+
+      40% current  vs.  76% typical top range
+
+   Low utilization rarely means the tool doesn't 
+   work — it usually means workflow friction, 
+   inconsistent training, or lack of ongoing support.
+
+   Every unused encounter is a paid license 
+   delivering zero value.
+Card 2: Documentation Revenue Gap
+Copy📋 DOCUMENTATION REVENUE GAP
+   Work done but not captured
+
+      +3.5% wRVU lift
+      vs. +5.5% in top-performing implementations
+
+   Every 1% gap means care is being delivered 
+   but not documented at the level that supports 
+   accurate coding.
+
+   Gap value: ~$34K/year
+
+   ⓘ This reflects observed patterns in implementations 
+   with high utilization and documentation completeness. 
+   Your actual impact depends on specialty mix and 
+   baseline coding accuracy.
+Card 3: Burnout Signal
+Copy❤️ BURNOUT SIGNAL
+   A leading indicator worth watching
+
+      55% satisfaction
+
+      vs. 85% at top-performing implementations
+
+   Satisfaction below 65% often correlates with 
+   declining engagement over time. When providers 
+   don't trust the output, they either over-edit 
+   or quietly stop using the tool.
+
+   Both paths erode your investment.
+
+Dark card: Pajama Time
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  🌙 PAJAMA TIME                                     │
+│                                                     │
+│  5,200 hours/year spent charting at home —           │
+│  time away from family, rest, and life               │
+│  outside work.                                       │
+│                                                     │
+│  2 hours/week × 50 providers × 52 weeks             │
+│                                                     │
+│  Before ambient AI, the average was 5-8 hrs/week.   │
+│                                                     │
+│  You've improved. The question is whether            │
+│  you've improved enough.                             │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+Bottom text:
+CopyThe bottom line: These patterns are common. 
+Understanding what's behind them helps clarify 
+your path forward — regardless of vendor.
+Copy                              [What Good Looks Like →]
+
+SCREEN 4: WHAT GOOD LOOKS LIKE
+Nav label: What Good Looks Like
+Nav dots: ● ● ● ● ○ ○
+CopyWHAT GOOD LOOKS LIKE
+
+These benchmarks come from mature implementations. 
+They're achievable with the right approach and support.
+
+YOUR POSITION card (KEEP as you have it — it's clean):
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  🎯 YOUR POSITION                                   │
+│     See where you stand against top performers      │
+│                                                     │
+│              1              4                        │
+│           IN RANGE      OPPORTUNITIES                │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+Metric cards (KEEP your current layout, update labels):
+Copy┌──────────────────────────┐  ┌──────────────────────────┐
+│  📊 Utilization          │  │  🕐 Net Time Impact      │
+│           40%    CURRENT │  │        +0.5 min  CURRENT │
+│                          │  │                          │
+│  ──●────────────[████]── │  │  ●─────────────[████]──  │
+│  0%    Typical: 70-80%   │  │  0     Typical: 3-4 min  │
+│                          │  │                          │
+│  30% gap to range        │  │  2.5 min gap to range    │
+└──────────────────────────┘  └──────────────────────────┘
+
+┌──────────────────────────┐  ┌──────────────────────────┐
+│  💲 Coding Impact        │  │  ❤️ Provider Satisfaction │
+│        +3.5%     CURRENT │  │          55%     CURRENT │
+│                          │  │                          │
+│  ───●───────────[████]── │  │  ────●────────[████]───  │
+│  0%    Typical: +4-7%    │  │  0%    Typical: 80-95%   │
+│                          │  │                          │
+│  1% gap to range         │  │  25% gap to range        │
+└──────────────────────────┘  └──────────────────────────┘
+Key change: I replaced "Time Saved" with "Net Time Impact" in this view. This is where the prospect sees for the first time that their +0.5 min net is being compared to a +3.5 min benchmark. That's a 7x difference. It's the most visually striking gap card on the screen, and it's the one that makes them go "wait, what?" — which is exactly the reaction you want.
+
+NEW: Maturity Model (add below the metric cards)
+CopyTHE MATURITY CURVE
+
+Most organizations deploy ambient AI and stop at 
+Stage 2. The value accelerates at Stage 3 and 4.
+
+
+  STAGE 1        STAGE 2        STAGE 3        STAGE 4
+  Deployed       Adopted        Optimized      Transformed
+  ─────────────────────────────────────────────────────
+                     ●
+                  You are here
+
+
+  Stage 1: Deployed
+  AI is live. A handful of enthusiasts use it.
+  Value Realization: 0-35%
+
+  Stage 2: Adopted
+  Most providers have tried it. Usage is inconsistent.
+  Time savings exist but aren't strategically deployed.
+  Value Realization: 35-65%
+
+  Stage 3: Optimized
+  High sustained utilization. Low edit time. Documentation 
+  quality drives downstream value in coding and quality.
+  Value Realization: 65-85%
+
+  Stage 4: Transformed
+  AI is embedded in operations. Documentation feeds 
+  revenue cycle, quality reporting, and workforce planning.
+  Value Realization: 85-100%
+
+CopyTHE PATTERN
+
+The implementations that reach Stage 3 and 4 
+share specific characteristics:
+
+  · Dedicated optimization beyond initial go-live
+  · Specialty-specific workflow configuration
+  · Ongoing utilization monitoring with outreach
+  · Quarterly benchmarking against peer performance
+  · Executive sponsorship tied to measurable outcomes
+
+The gap between Stage 2 and Stage 4 isn't about 
+better technology. It's about a better approach 
+to realizing the technology's potential.
+Copy                                    [See the Math →]
+
+SCREEN 5: THE MATH
+Nav label: The Math
+Nav dots: ● ● ● ● ● ○
+CopyTHE MATH
+
+Every number is transparent. 
+Every assumption is yours to challenge.
+
+Value Breakdown (KEEP your expandable card structure):
+CopyVALUE BREAKDOWN
+Your Annual Value Gap                    Click to expand
+
+
+┌─────────────────────────────────────────────────────┐
+│  📊 Utilization Gap                                 │
+│     40% → 76% of encounters                   $58K  ▼│
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│  🕐 Net Efficiency Gap                              │
+│     +0.5 min net → +3.5 min net per encounter  $42K  ▼│
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│  💲 Documentation Revenue Gap                       │
+│     +3.5% → +5.5% wRVU lift                   $38K  ▼│
+└─────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  📈 TOTAL ANNUAL GAP                                │
+│     Unrealized value per year                       │
+│                                                     │
+│                $138K                                 │
+│                                                     │
+│     Utilization Gap           $58K                  │
+│     Net Efficiency Gap        $42K                  │
+│     Documentation Revenue Gap $38K                  │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+3-Year Projection — The Compounding Effect (KEEP your chart)
+Copy3-YEAR PROJECTION
+The Compounding Effect
+
+The shaded area represents potential value over time. 
+Earlier action captures more of it.
+
+
+     $600K ┤
+           │                                    ● 
+     $450K ┤                               ╱───╱
+           │                          ╱───╱
+     $300K ┤                     ●──╱
+           │                ╱──╱
+     $150K ┤           ●──╱
+           │      ╱──╱
+       $0K ┤╱───╴╴╴╴╴●╴╴╴╴╴╴╴●╴╴╴╴╴╴╴●
+           └────────┬────────┬────────┬
+                  Year 1   Year 2   Year 3
+
+
+     ━━━ Optimized (with Abridge)
+     ╴╴╴ Current (staying course)
+
+
+YEAR-BY-YEAR:
+  Year 1:  $120K optimized vs $14K current   (gap: $106K)
+  Year 2:  $272K cumulative vs $29K current  (gap: $243K)
+  Year 3:  $430K cumulative vs $45K current  (gap: $385K)
+
+Cost of Inaction (REFRAMED from "Timing Comparison"):
+CopyTHE COST OF WAITING
+
+The gap compounds every month. Here's what timing 
+means for total value captured over 3 years:
+
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│               │  │               │  │               │
+│  Start now    │  │  Wait 6 mo    │  │  Wait 12 mo   │
+│               │  │               │  │               │
+│    $430K      │  │    $362K      │  │    $294K      │
+│  3-year value │  │  3-year value │  │  3-year value │
+│               │  │               │  │               │
+│               │  │   ~$68K       │  │   ~$136K      │
+│               │  │   less value  │  │   less value  │
+│               │  │   captured    │  │   captured    │
+└───────────────┘  └───────────────┘  └───────────────┘
+
+   Each month: ~$11K in potential value
+Why "The Cost of Waiting" instead of "Timing Comparison" or "Opportunity Cost": It's direct without feeling like a car dealership. "The Cost of Waiting" is a statement of fact, not a pressure tactic. And "less value captured" is softer than "opportunity cost" but means the same thing.
+Copy                                 [What It Takes →]
+
+SCREEN 6: WHAT IT TAKES
+Nav label: What It Takes
+Nav dots: ● ● ● ● ● ●
+CopyWHAT IT TAKES
+
+Patterns we've observed across hundreds 
+of implementations. Tap to explore each one.
+
+THE SWITCHING QUESTION (KEEP — it's excellent)
+CopyTHE SWITCHING QUESTION
+
+"We already have a solution. 
+ Isn't switching too disruptive?"
+
+These are concerns we hear often — along with 
+what we've observed:
+Card 1:
+Copy🕐 "We just implemented"
+
+   It's natural to want to give a new investment time.
+
+   What we've observed: organizations still at Stage 2 
+   after 6+ months rarely advance without a change 
+   in approach — not just more time.
+
+   Your current gap: ~$138K/year.
+   
+   Patience is a virtue. But it's not a strategy.
+Card 2:
+Copy🔄 "Change fatigue is real"
+
+   It is. And it's worth taking seriously.
+
+   Interestingly, providers with prior AI experience 
+   often adopt faster. They know what to look for 
+   and what's possible.
+
+   The friction of switching is real but brief. 
+   The friction of underperformance is ongoing.
+Card 3:
+Copy📋 "Contract lock-in"
+
+   Many contracts have flexibility that isn't obvious 
+   at first read — especially around performance 
+   benchmarks and satisfaction thresholds.
+
+   Even when contracts have time remaining, the 
+   smartest organizations run evaluations in advance 
+   so they're ready when the window opens.
+
+   Preparation isn't commitment. It's diligence.
+Card 4:
+Copy💻 "IT bandwidth concerns"
+
+   Our team is built to minimize IT burden. 
+   Most implementations require about:
+
+      40 hours of IT time total.
+
+   That's one person for one week — not a 
+   multi-month project.
+Card 5 (NEW):
+Copy🏢 "We have a broader vendor relationship"
+
+   Enterprise relationships matter.
+
+   They also sometimes create gravity that pulls 
+   decisions away from clinical best fit.
+
+   The best-performing organizations evaluate 
+   ambient AI on its own merits:
+
+   · Output quality and provider trust
+   · Sustained utilization, not just launch numbers
+   · What happens downstream of the note
+   · Optimization support beyond go-live
+
+   Clinical fit should drive clinical tools.
+Card 6 (NEW):
+Copy📂 "What about our existing documentation?"
+
+   Your documentation lives in your EHR — not in 
+   any ambient AI tool.
+
+   Switching vendors doesn't affect a single 
+   existing note, order, or record.
+
+   Your EHR is your system of record. Always.
+
+Implementation Patterns (KEEP as you have them — they're excellent)
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  150+         95%          4           45            │
+│  HEALTH       RETENTION    KEY         DAYS          │
+│  SYSTEMS      RATE         PATTERNS    TO LIVE       │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+The implementations that succeed share four patterns. 
+The ones that struggle are missing at least one.
+Keep all four patterns exactly as you have them. The Adoption Challenge, The Set-It-and-Forget-It Trap, The One-Size-Fits-All Problem, The Missing Executive Sponsor. They're excellent.
+Add one line at the bottom of the patterns section:
+CopyThese aren't theoretical. They're the specific 
+patterns that separate Stage 2 organizations 
+from Stage 4.
+Why this line matters: It ties the patterns back to the maturity model. The prospect is now thinking "I'm at Stage 2. These patterns explain why. Abridge is the one showing me how to get to Stage 4." You've created a complete narrative loop without ever saying "switch to us."
+
+Implementation timeline (KEEP):
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  Typical timeline from decision to go-live:         │
+│                                                     │
+│                    45 days                           │
+│                                                     │
+│  This includes full data migration, EHR             │
+│  integration, provider training, and                │
+│  go-live support.                                   │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+Copy                                [The Opportunity →]
+
+SCREEN 7: THE OPPORTUNITY (FINAL SCREEN)
+Nav label: The Opportunity
+Nav dots: ● ● ● ● ● ● ●
+CopyTHE OPPORTUNITY
+
+A summary of what we found — and what 
+the benchmarks suggest is possible.
+
+Hero number:
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  ANNUAL VALUE TO UNLOCK                             │
+│                                                     │
+│     $138K                                           │
+│                                                     │
+│  Based on your 50 providers across                  │
+│  100,000 annual encounters.                         │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+Impact timeline:
+Copy┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│  YEAR 1 IMPACT  │  │  3-YEAR IMPACT  │  │    MONTHLY      │
+│                 │  │                 │  │  OPPORTUNITY     │
+│     $120K       │  │     $385K       │  │                 │
+│                 │  │                 │  │     ~$11K       │
+│  Accounting     │  │  Compounding    │  │                 │
+│  for ramp-up    │  │  value          │  │  Potential      │
+│                 │  │                 │  │  value          │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+
+Value Realization Score:
+CopyVALUE REALIZATION SCORE
+
+     57%    Stage 2: Adopted
+
+     ━━━━━━━━━━━━━━━━━━━━░░░░░░░░░░░░░░░░░░░
+
+                                  ROOM TO GROW
+                                      43%
+
+There's meaningful room to improve based on 
+what the benchmarks suggest.
+
+Metric summary (KEEP your four-stat layout):
+Copy┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+│  📊      │  │  🕐      │  │  💲      │  │  ❤️      │
+│   40%    │  │ +0.5 min │  │  +3.5%   │  │   55%    │
+│ Utiliz.  │  │ Net Time │  │ wRVU Lift│  │ Satisf.  │
+│ vs. 76%  │  │ vs. 3.5  │  │ vs. 5.5% │  │ vs. 85%  │
+└──────────┘  └──────────┘  └──────────┘  └──────────┘
+Key change: The second metric is now "Net Time" showing +0.5 min vs 3.5 min. This is the single most impactful number on the entire screen. A 7x gap in net time efficiency. That number alone displaces competitors.
+
+NEW: Your Path Forward
+CopyYOUR PATH FORWARD
+
+Based on your current position at Stage 2, 
+here's what the path to full value typically looks like:
+
+
+    FIRST 90 DAYS                     Foundation
+    ──────────────────────────────────────────────
+    · Utilization push to 60%+ (from 40%)
+    · Workflow audit by specialty
+    · Provider re-engagement for non-adopters
+    · Baseline measurement across all dimensions
+
+
+    DAYS 90-180                      Acceleration
+    ──────────────────────────────────────────────
+    · Target utilization 70%+
+    · Documentation completeness tracking
+    · First quarterly review with benchmarking
+    · Edit time analysis by specialty
+
+
+    DAYS 180-365                     Optimization
+    ──────────────────────────────────────────────
+    · Utilization at benchmark (76%+)
+    · Downstream integration: coding, quality
+    · Value Realization Score recalculation
+    · Strategic time deployment model active
+
+What Comes Next:
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  WHAT COMES NEXT                                    │
+│                                                     │
+│  If this raises questions, we're here to help.      │
+│                                                     │
+│  This captures what you entered. If you'd like      │
+│  to discuss further, our team is available.         │
+│                                                     │
+│                          [📥 Download Report]        │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+Credibility footer:
+Copy┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  ✓ All calculations are based on your inputs and    │
+│    patterns observed across implementations.        │
+│                                                     │
+│    "What we typically see" ranges reflect aggregate  │
+│    data from Abridge implementations across         │
+│    multiple health systems and specialties.         │
+│                                                     │
+│    Actual results depend on implementation quality,  │
+│    organizational readiness, and partnership        │
+│    approach.                                        │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+PDF ADDITIONS
+Page 1: Executive Summary
+Copy━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AMBIENT ASSESSMENT — EXECUTIVE SUMMARY
+
+Prepared for: [Organization]
+Date: [Auto]
+Parameters: 50 providers · 100,000 annual encounters
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VALUE REALIZATION SCORE:      57%  (Stage 2: Adopted)
+ANNUAL VALUE GAP:             $138K
+3-YEAR VALUE GAP:             $385K
+PRIMARY OPPORTUNITIES:        Utilization, Net Time 
+                              Impact, Provider Trust
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BOTTOM LINE
+
+Your organization has adopted ambient AI but has 
+not yet optimized it. Based on the inputs provided, 
+approximately $138K in annual value could be captured 
+through improved utilization, stronger output quality 
+(reducing edit time), and more complete documentation.
+
+The single most impactful lever is net time efficiency. 
+Currently, 75% of gross time savings is being consumed 
+by edits, resulting in only +0.5 minutes net per 
+encounter vs. +3.5 minutes at top-performing 
+implementations.
+
+These patterns are consistent with what we observe 
+across the industry at Stage 2 maturity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Last page: Methodology (include the full methodology section from my earlier spec)
+
+WHAT THIS TOOL DOES WITHOUT SAYING IT
+Let me be explicit about the competitive mechanics embedded in this copy:
+"75% of your gross time savings is being consumed by edits" — This is the single most devastating sentence for any DAX displacement conversation. It takes their own data and reveals a truth they hadn't calculated. You didn't say "DAX has bad note quality." You said "let's look at your net time savings." Same outcome, completely defensible.
+"Low utilization usually isn't a technology problem — it's a workflow, training, or trust issue" — This tells the prospect their current vendor's implementation failed without you naming the vendor or calling it a failure.
+The maturity model — Every DAX customer who sees themselves at Stage 2 will think "can my current vendor get me to Stage 3?" And the answer, based on DAX's implementation model, is probably not — but you never said that. They concluded it themselves.
+"Clinical fit should drive clinical tools" — Five words that dismantle the Microsoft enterprise bundling argument.
+"Patience is a virtue. But it's not a strategy." — This single line is worth the entire tool. It validates their instinct to give their current vendor time while simultaneously revealing that instinct as inaction dressed up as wisdom.
+The Value Realization Score — This is your moat. No competitor has this framework. No competitor can create this framework without your implementation data. And once a prospect has seen their score, they can't unsee it. They will evaluate every future vendor conversation through this lens — the lens you built.

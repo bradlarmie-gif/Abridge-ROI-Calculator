@@ -111,7 +111,7 @@ export default function SwitchPathSelection({ onSelectPath, onBack }: SwitchPath
                 <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0">
                   <TrendingUp className="w-3 h-3 text-blue-500" />
                 </div>
-                <span>How your implementation compares to benchmark performance</span>
+                <span>How your implementation compares to what we typically see</span>
               </div>
               <div className="flex items-center gap-2.5 text-xs text-[#333333]">
                 <div className="w-6 h-6 rounded-md bg-purple-50 flex items-center justify-center flex-shrink-0">
