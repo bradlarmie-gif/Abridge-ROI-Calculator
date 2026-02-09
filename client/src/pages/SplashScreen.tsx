@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import brandShape from "@assets/IMG_0419_1770480513063.png";
@@ -9,9 +10,15 @@ interface SplashScreenProps {
 
 const COLS = 6;
 const ROWS = 5;
-const SHAPE_SIZE = 120;
 const BASE_OPACITY = 0.35;
 const PEAK_OPACITY = 0.58;
+
+function getShapeSize(width: number): number {
+  if (width < 480) return 48;
+  if (width < 640) return 56;
+  if (width < 1024) return 80;
+  return 120;
+}
 
 function getRotation(row: number, col: number): number {
   const pattern = [
@@ -49,6 +56,15 @@ function buildGrid(): GridCell[] {
 const gridCells = buildGrid();
 
 export default function SplashScreen({ onEnter }: SplashScreenProps) {
+  const [shapeSize, setShapeSize] = useState(120);
+
+  useEffect(() => {
+    const update = () => setShapeSize(getShapeSize(window.innerWidth));
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -59,12 +75,12 @@ export default function SplashScreen({ onEnter }: SplashScreenProps) {
             alt=""
             className="absolute splash-tile"
             style={{
-              width: `${SHAPE_SIZE}px`,
-              height: `${SHAPE_SIZE}px`,
+              width: `${shapeSize}px`,
+              height: `${shapeSize}px`,
               left: `${cell.leftPercent}%`,
               top: `${cell.topPercent}%`,
-              marginLeft: `-${SHAPE_SIZE / 2}px`,
-              marginTop: `-${SHAPE_SIZE / 2}px`,
+              marginLeft: `-${shapeSize / 2}px`,
+              marginTop: `-${shapeSize / 2}px`,
               filter: 'grayscale(100%) brightness(0.6)',
               '--tile-rot': `${cell.rotation}deg`,
               '--tile-delay': `${cell.waveDelay}s`,
