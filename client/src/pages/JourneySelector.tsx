@@ -216,7 +216,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
                 </p>
               </div>
               <Button
-                className="bg-[#EA2C00] text-white border-[#EA2C00] shrink-0"
+                className="bg-black text-white border-black shrink-0"
                 size="lg"
                 onClick={onSelectLearn}
                 data-testid="button-learn-methodology"
