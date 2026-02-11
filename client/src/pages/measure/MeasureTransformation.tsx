@@ -117,8 +117,13 @@ export default function MeasureTransformation({
   onHome,
 }: MeasureTransformationProps) {
   const results = useMemo(() => calculateMeasureResults(state), [state]);
-  const isInpatient = state.careSetting === "inpatient";
+  const careSetting = state.careSetting || "outpatient";
+  const isInpatient = careSetting === "inpatient";
+  const isED = careSetting === "ed";
+  const isNursing = careSetting === "nursing";
   const inpatientMetrics = state.settingData?.inpatient || {};
+  const edMetrics = state.settingData?.ed || {};
+  const nursingMetrics = state.settingData?.nursing || {};
 
   const timeReclaimed = Math.max(0, state.timeEfficiency.timeInNotesWithout - state.timeEfficiency.timeInNotesWith);
   const pajamaTimeSaved = Math.max(0, state.timeEfficiency.workOutsideWithout - state.timeEfficiency.workOutsideWith);
@@ -170,7 +175,7 @@ export default function MeasureTransformation({
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{formatNumber(state.deployment.totalEncounters)}</p>
-              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : "Encounters"}</p>
+              <p className="text-[11px] text-[#888888] uppercase tracking-[1.5px]">{isInpatient ? "Discharges" : isNursing ? "Shifts" : "Encounters"}</p>
             </div>
             <div className="border-l-4 border-[#EA2C00] pl-3">
               <p className="text-2xl md:text-3xl font-bold text-black">{state.deployment.utilizationRate}%</p>
@@ -190,18 +195,18 @@ export default function MeasureTransformation({
         <div className="space-y-4 mb-6">
           <ComparisonCard
             icon={Clock}
-            title="Documentation Time"
+            title={isNursing ? "Charting Time" : "Documentation Time"}
             beforeValue={state.timeEfficiency.timeInNotesWithout}
             afterValue={state.timeEfficiency.timeInNotesWith}
             beforeLabel={`${state.timeEfficiency.timeInNotesWithout} min`}
             afterLabel={`${state.timeEfficiency.timeInNotesWith} min`}
-            deltaText={`${timeReclaimed} min saved per note`}
-            insight="Time returned to patient care"
+            deltaText={`${timeReclaimed} min saved per ${isNursing ? "shift" : "note"}`}
+            insight={isNursing ? "Time returned to bedside care" : "Time returned to patient care"}
             perProviderNote={`Per provider: ${hoursPerProvider} hours saved over ${state.deployment.monthsOnAbridge} months`}
             delay={0.15}
           />
 
-          {isInpatient ? (
+          {isInpatient && (
             <>
               <ComparisonCard
                 icon={FileText}
@@ -251,7 +256,121 @@ export default function MeasureTransformation({
                 delay={0.55}
               />
             </>
-          ) : (
+          )}
+
+          {isED && (
+            <>
+              <ComparisonCard
+                icon={TrendingUp}
+                title="Door-to-Doc Time"
+                beforeValue={state.timeEfficiency.timeToCloseWithout}
+                afterValue={state.timeEfficiency.timeToCloseWith}
+                beforeLabel={`${state.timeEfficiency.timeToCloseWithout} min`}
+                afterLabel={`${state.timeEfficiency.timeToCloseWith} min`}
+                deltaText={`${Math.max(0, state.timeEfficiency.timeToCloseWithout - state.timeEfficiency.timeToCloseWith)} min faster`}
+                insight="Patients seen sooner"
+                delay={0.25}
+              />
+
+              <ComparisonCard
+                icon={Heart}
+                title="LWBS Rate"
+                beforeValue={state.timeEfficiency.sameDayClosureWithout}
+                afterValue={state.timeEfficiency.sameDayClosureWith}
+                beforeLabel={`${state.timeEfficiency.sameDayClosureWithout}%`}
+                afterLabel={`${state.timeEfficiency.sameDayClosureWith}%`}
+                deltaText={`${Math.max(0, state.timeEfficiency.sameDayClosureWithout - state.timeEfficiency.sameDayClosureWith).toFixed(1)} pp reduction`}
+                insight="Fewer patients leaving without being seen"
+                delay={0.35}
+              />
+
+              {(state.documentationQuality.emLevelWithout > 0 || state.documentationQuality.emLevelWith > 0) && (
+                <ComparisonCard
+                  icon={FileText}
+                  title="E/M Level"
+                  beforeValue={state.documentationQuality.emLevelWithout}
+                  afterValue={state.documentationQuality.emLevelWith}
+                  beforeLabel={state.documentationQuality.emLevelWithout.toFixed(2)}
+                  afterLabel={state.documentationQuality.emLevelWith.toFixed(2)}
+                  deltaText={`+${(state.documentationQuality.emLevelWith - state.documentationQuality.emLevelWithout).toFixed(2)} level improvement`}
+                  insight="More accurate acuity capture"
+                  delay={0.45}
+                />
+              )}
+
+              <ComparisonCard
+                icon={Heart}
+                title="After-Hours Work"
+                beforeValue={state.timeEfficiency.workOutsideWithout}
+                afterValue={state.timeEfficiency.workOutsideWith}
+                beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs`}
+                afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs`}
+                deltaText={`${pajamaTimeSaved.toFixed(1)} hours back per day`}
+                insight="Less charting after shifts"
+                delay={0.55}
+              />
+            </>
+          )}
+
+          {isNursing && (
+            <>
+              <ComparisonCard
+                icon={Heart}
+                title="Overtime Hours"
+                beforeValue={state.timeEfficiency.workOutsideWithout}
+                afterValue={state.timeEfficiency.workOutsideWith}
+                beforeLabel={`${state.timeEfficiency.workOutsideWithout.toFixed(1)} hrs/wk`}
+                afterLabel={`${state.timeEfficiency.workOutsideWith.toFixed(1)} hrs/wk`}
+                deltaText={`${pajamaTimeSaved.toFixed(1)} fewer overtime hours`}
+                insight="Reduced overtime burden"
+                delay={0.25}
+              />
+
+              {((nursingMetrics.turnoverRate_before ?? 0) > 0 || (nursingMetrics.turnoverRate_after ?? 0) > 0) && (
+                <ComparisonCard
+                  icon={TrendingUp}
+                  title="Turnover Rate"
+                  beforeValue={nursingMetrics.turnoverRate_before ?? 0}
+                  afterValue={nursingMetrics.turnoverRate_after ?? 0}
+                  beforeLabel={`${(nursingMetrics.turnoverRate_before ?? 0).toFixed(1)}%`}
+                  afterLabel={`${(nursingMetrics.turnoverRate_after ?? 0).toFixed(1)}%`}
+                  deltaText={`${Math.max(0, (nursingMetrics.turnoverRate_before ?? 0) - (nursingMetrics.turnoverRate_after ?? 0)).toFixed(1)} pp reduction`}
+                  insight="Improved nurse retention"
+                  delay={0.35}
+                />
+              )}
+
+              {((nursingMetrics.fallsRate_before ?? 0) > 0 || (nursingMetrics.fallsRate_after ?? 0) > 0) && (
+                <ComparisonCard
+                  icon={Info}
+                  title="Falls Rate (per 1,000)"
+                  beforeValue={nursingMetrics.fallsRate_before ?? 0}
+                  afterValue={nursingMetrics.fallsRate_after ?? 0}
+                  beforeLabel={`${(nursingMetrics.fallsRate_before ?? 0).toFixed(1)}`}
+                  afterLabel={`${(nursingMetrics.fallsRate_after ?? 0).toFixed(1)}`}
+                  deltaText={`${Math.max(0, (nursingMetrics.fallsRate_before ?? 0) - (nursingMetrics.fallsRate_after ?? 0)).toFixed(1)} fewer per 1,000`}
+                  insight="Safer patient outcomes"
+                  delay={0.45}
+                />
+              )}
+
+              {((nursingMetrics.hapiRate_before ?? 0) > 0 || (nursingMetrics.hapiRate_after ?? 0) > 0) && (
+                <ComparisonCard
+                  icon={Info}
+                  title="HAPI Rate (per 1,000)"
+                  beforeValue={nursingMetrics.hapiRate_before ?? 0}
+                  afterValue={nursingMetrics.hapiRate_after ?? 0}
+                  beforeLabel={`${(nursingMetrics.hapiRate_before ?? 0).toFixed(1)}`}
+                  afterLabel={`${(nursingMetrics.hapiRate_after ?? 0).toFixed(1)}`}
+                  deltaText={`${Math.max(0, (nursingMetrics.hapiRate_before ?? 0) - (nursingMetrics.hapiRate_after ?? 0)).toFixed(1)} fewer per 1,000`}
+                  insight="Reduced hospital-acquired injuries"
+                  delay={0.55}
+                />
+              )}
+            </>
+          )}
+
+          {!isInpatient && !isED && !isNursing && (
             <>
               <ComparisonCard
                 icon={FileText}
@@ -307,7 +426,7 @@ export default function MeasureTransformation({
                   At {state.deployment.utilizationRate}% Adoption
                 </p>
                 <p className="text-xs text-[#666666] leading-relaxed">
-                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} {isInpatient ? "discharges" : "encounters"}. The remaining {formatNumber(nonAdoptedEncounters)} {isInpatient ? "discharges are" : "encounters are"} still being documented without Abridge{'\u2014'}representing additional headroom within your current providers.
+                  These results are based on {formatNumber(adoptedEncounters)} of your {formatNumber(state.deployment.totalEncounters)} {isInpatient ? "discharges" : isNursing ? "shifts" : "encounters"}. The remaining {formatNumber(nonAdoptedEncounters)} {isInpatient ? "discharges are" : isNursing ? "shifts are" : "encounters are"} still being documented without Abridge{'\u2014'}representing additional headroom within your current providers.
                 </p>
               </div>
             </div>

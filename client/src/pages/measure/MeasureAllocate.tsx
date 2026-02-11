@@ -174,10 +174,16 @@ export default function MeasureAllocate({
   onHome, 
   onBack,
 }: MeasureAllocateProps) {
-  const isInpatient = state.careSetting === "inpatient";
+  const careSetting = state.careSetting || "outpatient";
 
-  if (isInpatient) {
+  if (careSetting === "inpatient") {
     return <InpatientAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
+  }
+  if (careSetting === "ed") {
+    return <EDAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
+  }
+  if (careSetting === "nursing") {
+    return <NursingAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
   }
 
   return <GenericAllocate state={state} onNext={onNext} onBack={onBack} onHome={onHome} />;
@@ -405,6 +411,442 @@ function InpatientAllocate({ state, onNext, onBack, onHome }: { state: MeasureSt
             className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2"
             data-testid="button-whats-ahead"
           >
+            See What's Ahead
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function useEDResults(state: MeasureState) {
+  return useMemo(() => {
+    const deployment = state.deployment;
+    const timeEfficiency = state.timeEfficiency;
+    const calibration = state.calibration;
+    const docQuality = state.documentationQuality;
+
+    const throughputPercent = state.allocation.capacityPercent ?? 40;
+    const savingsPercent = state.allocation.hardSavingsPercent ?? 40;
+    const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 20;
+
+    const timeSavedPerNote = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
+    const totalHoursSaved = (timeSavedPerNote * deployment.totalEncounters) / 60;
+
+    const throughputHours = totalHoursSaved * (throughputPercent / 100);
+    const additionalPatients = throughputHours * (60 / calibration.minutesPerVisit);
+    const throughputValue = additionalPatients * calibration.revenuePerVisit;
+
+    const savingsHours = totalHoursSaved * (savingsPercent / 100);
+    const savingsValue = savingsHours * calibration.otHourlyRate;
+
+    const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
+    const hoursPerProviderPerWeek = deployment.providers > 0
+      ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33)
+      : 0;
+
+    const timeValueSubtotal = throughputValue + savingsValue;
+
+    const doorToDocBefore = timeEfficiency.timeToCloseWithout;
+    const doorToDocAfter = timeEfficiency.timeToCloseWith;
+    const doorToDocSaved = Math.max(0, doorToDocBefore - doorToDocAfter);
+
+    const lwbsBefore = timeEfficiency.sameDayClosureWithout;
+    const lwbsAfter = timeEfficiency.sameDayClosureWith;
+    const lwbsReduction = Math.max(0, lwbsBefore - lwbsAfter);
+    const patientsRetained = Math.round((lwbsReduction / 100) * deployment.totalEncounters);
+    const lwbsValue = patientsRetained * calibration.revenuePerVisit;
+
+    const emLevelLift = Math.max(0, docQuality.emLevelWith - docQuality.emLevelWithout);
+    const documentedEncounters = deployment.totalEncounters * (deployment.utilizationRate / 100);
+    const emLevelValue = emLevelLift * documentedEncounters * calibration.conversionFactor;
+    const docValueLow = emLevelValue * 0.5;
+    const docValueHigh = emLevelValue * 0.75;
+
+    const totalValueLow = timeValueSubtotal + lwbsValue + docValueLow;
+    const totalValueHigh = timeValueSubtotal + lwbsValue + docValueHigh;
+
+    const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+
+    return {
+      totalHoursSaved,
+      throughputHours, additionalPatients, throughputValue, throughputPercent,
+      savingsHours, savingsValue, savingsPercent,
+      wellbeingHours, wellbeingPercent, hoursPerProviderPerWeek,
+      timeValueSubtotal,
+      doorToDocBefore, doorToDocAfter, doorToDocSaved,
+      lwbsBefore, lwbsAfter, lwbsReduction, patientsRetained, lwbsValue,
+      emLevelLift, documentedEncounters, docValueLow, docValueHigh,
+      totalValueLow, totalValueHigh,
+      expansion,
+    };
+  }, [state]);
+}
+
+function useNursingResults(state: MeasureState) {
+  return useMemo(() => {
+    const deployment = state.deployment;
+    const timeEfficiency = state.timeEfficiency;
+    const calibration = state.calibration;
+    const nursingMetrics = state.settingData?.nursing || {};
+
+    const savingsPercent = state.allocation.hardSavingsPercent ?? 50;
+    const wellbeingPercent = state.allocation.qualityOfLifePercent ?? 30;
+    const capacityPercent = state.allocation.capacityPercent ?? 20;
+
+    const timeSavedPerShift = Math.max(0, timeEfficiency.timeInNotesWithout - timeEfficiency.timeInNotesWith);
+    const totalHoursSaved = (timeSavedPerShift * deployment.totalEncounters) / 60;
+
+    const savingsHours = totalHoursSaved * (savingsPercent / 100);
+    const savingsValue = savingsHours * calibration.otHourlyRate;
+
+    const capacityHours = totalHoursSaved * (capacityPercent / 100);
+
+    const wellbeingHours = totalHoursSaved * (wellbeingPercent / 100);
+    const hoursPerProviderPerWeek = deployment.providers > 0
+      ? wellbeingHours / deployment.providers / (deployment.monthsOnAbridge * 4.33)
+      : 0;
+
+    const overtimeBefore = timeEfficiency.workOutsideWithout;
+    const overtimeAfter = timeEfficiency.workOutsideWith;
+    const overtimeSaved = Math.max(0, overtimeBefore - overtimeAfter);
+    const weeklyOvertimeSavings = overtimeSaved * deployment.providers * calibration.otHourlyRate * 1.5;
+    const annualOvertimeSavings = weeklyOvertimeSavings * 52;
+
+    const turnoverBefore = nursingMetrics.turnoverRate_before ?? 0;
+    const turnoverAfter = nursingMetrics.turnoverRate_after ?? 0;
+    const turnoverReduction = Math.max(0, turnoverBefore - turnoverAfter);
+    const nursesRetained = Math.round((turnoverReduction / 100) * deployment.providers);
+    const replacementCost = 56000;
+    const retentionValue = nursesRetained * replacementCost;
+
+    const timeValueSubtotal = savingsValue;
+    const totalValueLow = timeValueSubtotal + annualOvertimeSavings + retentionValue;
+    const totalValueHigh = totalValueLow;
+
+    const expansion = calculateExpansionResults(state, totalValueLow, totalValueHigh, totalHoursSaved);
+
+    const fallsBefore = nursingMetrics.fallsRate_before ?? 0;
+    const fallsAfter = nursingMetrics.fallsRate_after ?? 0;
+    const fallsReduction = Math.max(0, fallsBefore - fallsAfter);
+    const hapiBefore = nursingMetrics.hapiRate_before ?? 0;
+    const hapiAfter = nursingMetrics.hapiRate_after ?? 0;
+    const hapiReduction = Math.max(0, hapiBefore - hapiAfter);
+
+    return {
+      totalHoursSaved,
+      savingsHours, savingsValue, savingsPercent,
+      capacityHours, capacityPercent,
+      wellbeingHours, wellbeingPercent, hoursPerProviderPerWeek,
+      timeValueSubtotal,
+      overtimeBefore, overtimeAfter, overtimeSaved, annualOvertimeSavings,
+      turnoverBefore, turnoverAfter, turnoverReduction, nursesRetained, retentionValue,
+      fallsBefore, fallsAfter, fallsReduction,
+      hapiBefore, hapiAfter, hapiReduction,
+      totalValueLow, totalValueHigh,
+      expansion,
+    };
+  }, [state]);
+}
+
+function EDAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; onNext: () => void; onBack: () => void; onHome: () => void }) {
+  const r = useEDResults(state);
+  const heroValue = formatSmartRange(r.totalValueLow, r.totalValueHigh);
+
+  return (
+    <div className="min-h-screen bg-white">
+      <UnifiedHeader pathType="measure" currentStep={3} totalSteps={5} stepName="The Value" onBack={onBack} onHome={onHome} />
+      <UnifiedHeaderSpacer />
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <motion.div className="text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
+            The Value You've Built
+          </h1>
+          <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
+            {formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed across {state.deployment.providers} ED physicians. Here's what that translates to.
+          </p>
+        </motion.div>
+
+        <motion.div className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} data-testid="section-hero-value">
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+            </div>
+            <div className="bg-white rounded-lg p-4" data-testid="stat-throughput-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.lwbsValue)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">LWBS Recovery</p>
+            </div>
+            <div className="bg-white rounded-lg p-4" data-testid="stat-hours">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatNumber(Math.round(r.totalHoursSaved))}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Hours Reclaimed</p>
+            </div>
+          </div>
+          <p className="text-sm text-[#666666]">
+            That's approximately {formatCurrency(r.expansion.perProviderValue)} per provider per year.
+          </p>
+        </motion.div>
+
+        <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} data-testid="section-time-waterfall">
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">How Time Creates Value</p>
+          <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed. Here's where they go.</p>
+          <div className="space-y-0">
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Throughput ({r.throughputPercent}%)</p>
+                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.throughputHours))} hours {'\u2192'} {formatNumber(Math.round(r.additionalPatients))} additional patients possible</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.throughputValue)}</p>
+            </div>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Operational Savings ({r.savingsPercent}%)</p>
+                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.savingsValue)}</p>
+            </div>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Provider Wellbeing ({r.wellbeingPercent}%)</p>
+                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.wellbeingHours))} hours returned to providers</p>
+                </div>
+              </div>
+              <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">{r.hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</p>
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <p className="font-semibold text-[#1A1A1A]">Time Value Subtotal</p>
+              <p className="text-xl font-bold text-[#EA2C00]">{formatCurrency(r.timeValueSubtotal)}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {r.lwbsValue > 0 && (
+          <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} data-testid="section-lwbs">
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">LWBS Recovery Value</p>
+            <p className="text-sm text-[#666666] mb-5">Patients retained by reducing left-without-being-seen rate</p>
+            <div className="flex items-start justify-between py-3">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Revenue Recovery</p>
+                  <p className="text-xs text-[#666666] mt-1">LWBS: {r.lwbsBefore.toFixed(1)}% {'\u2192'} {r.lwbsAfter.toFixed(1)}% ({r.patientsRetained} patients retained at ${formatNumber(state.calibration.revenuePerVisit)}/visit)</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatCurrency(r.lwbsValue)}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {(r.docValueLow > 0 || r.docValueHigh > 0) && (
+          <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} data-testid="section-em-level">
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">E/M Level Accuracy</p>
+            <p className="text-sm text-[#666666] mb-5">More accurate coding captures true acuity</p>
+            <div className="flex items-start justify-between py-3">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Revenue Potential</p>
+                  <p className="text-xs text-[#666666] mt-1">+{r.emLevelLift.toFixed(2)} E/M level improvement across {formatNumber(Math.round(r.documentedEncounters))} encounters at 50-75% attribution</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatSmartRange(r.docValueLow, r.docValueHigh)}</p>
+            </div>
+          </motion.div>
+        )}
+
+        <motion.div className="bg-[#F5F0EB] rounded-xl p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} data-testid="section-total">
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
+          <div className="text-sm text-[#666666] space-y-1 mb-4">
+            <p>Time value: {formatCurrency(r.timeValueSubtotal)}</p>
+            {r.lwbsValue > 0 && <p>LWBS recovery: {formatCurrency(r.lwbsValue)}</p>}
+            {(r.docValueLow > 0 || r.docValueHigh > 0) && <p>E/M accuracy: {formatSmartRange(r.docValueLow, r.docValueHigh)}</p>}
+          </div>
+          <div className="border-t border-[#E5E5E5] pt-4">
+            <p className="text-sm text-[#666666]">Per provider: ~{formatCurrency(r.expansion.perProviderValue)}/year</p>
+            <p className="text-sm text-[#666666]">Per encounter: ~{formatSmartRange(r.expansion.perEncounterValueLow, r.expansion.perEncounterValueHigh)}</p>
+          </div>
+        </motion.div>
+
+        <motion.div className="max-w-[480px] mx-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+          <Button onClick={onNext} className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2" data-testid="button-whats-ahead">
+            See What's Ahead
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function NursingAllocate({ state, onNext, onBack, onHome }: { state: MeasureState; onNext: () => void; onBack: () => void; onHome: () => void }) {
+  const r = useNursingResults(state);
+  const heroValue = formatCurrency(r.totalValueLow);
+
+  return (
+    <div className="min-h-screen bg-white">
+      <UnifiedHeader pathType="measure" currentStep={3} totalSteps={5} stepName="The Value" onBack={onBack} onHome={onHome} />
+      <UnifiedHeaderSpacer />
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <motion.div className="text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
+            The Value You've Built
+          </h1>
+          <p className="text-base text-[#666666]" data-testid="text-page-subtitle">
+            {formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed across {state.deployment.providers} nurses. Here's what that translates to.
+          </p>
+        </motion.div>
+
+        <motion.div className="bg-[#F5F0EB] rounded-xl p-8 text-center mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} data-testid="section-hero-value">
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-5xl md:text-[56px] font-bold text-[#EA2C00] mb-3" data-testid="text-hero-value">{heroValue}</p>
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-4" data-testid="stat-time-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.timeValueSubtotal)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Time Value</p>
+            </div>
+            <div className="bg-white rounded-lg p-4" data-testid="stat-overtime-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.annualOvertimeSavings)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Overtime Savings</p>
+            </div>
+            <div className="bg-white rounded-lg p-4" data-testid="stat-retention-value">
+              <p className="text-xl md:text-2xl font-bold text-[#1A1A1A]">{formatCurrency(r.retentionValue)}</p>
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1px] mt-1">Retention Value</p>
+            </div>
+          </div>
+          <p className="text-sm text-[#666666]">
+            That's approximately {formatCurrency(r.expansion.perProviderValue)} per nurse per year.
+          </p>
+        </motion.div>
+
+        <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} data-testid="section-time-waterfall">
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Time Value</p>
+          <p className="text-sm text-[#666666] mb-5">{formatNumber(Math.round(r.totalHoursSaved))} hours reclaimed from charting.</p>
+          <div className="space-y-0">
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Operational Savings ({r.savingsPercent}%)</p>
+                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.savingsHours))} hours at ${state.calibration.otHourlyRate}/hr</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#1A1A1A] flex-shrink-0 ml-4">{formatCurrency(r.savingsValue)}</p>
+            </div>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Bedside Time ({r.capacityPercent}%)</p>
+                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.capacityHours))} hours returned to direct patient care</p>
+                </div>
+              </div>
+              <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">Quality signal</p>
+            </div>
+            <div className="flex items-start justify-between py-4 border-b border-[#F0F0F0]">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-10 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Provider Wellbeing ({r.wellbeingPercent}%)</p>
+                  <p className="text-xs text-[#666666] mt-1">{formatNumber(Math.round(r.wellbeingHours))} hours returned to nurses</p>
+                </div>
+              </div>
+              <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">{r.hoursPerProviderPerWeek.toFixed(1)} hrs/wk back</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {r.annualOvertimeSavings > 0 && (
+          <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} data-testid="section-overtime">
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Overtime Reduction</p>
+            <p className="text-sm text-[#666666] mb-5">Less overtime from faster charting</p>
+            <div className="flex items-start justify-between py-3">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Annual Overtime Savings</p>
+                  <p className="text-xs text-[#666666] mt-1">{r.overtimeSaved.toFixed(1)} hrs/wk saved across {state.deployment.providers} nurses at 1.5x rate</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatCurrency(r.annualOvertimeSavings)}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {r.retentionValue > 0 && (
+          <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} data-testid="section-retention">
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Retention Value</p>
+            <p className="text-sm text-[#666666] mb-5">Reduced turnover saves recruitment and training costs</p>
+            <div className="flex items-start justify-between py-3">
+              <div className="flex items-start gap-3">
+                <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-[#1A1A1A]">Estimated Retention Savings</p>
+                  <p className="text-xs text-[#666666] mt-1">Turnover: {r.turnoverBefore.toFixed(1)}% {'\u2192'} {r.turnoverAfter.toFixed(1)}% ({r.nursesRetained} nurses retained at $56K replacement cost)</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-[#EA2C00] flex-shrink-0 ml-4">{formatCurrency(r.retentionValue)}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {(r.fallsReduction > 0 || r.hapiReduction > 0) && (
+          <motion.div className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} data-testid="section-quality">
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Quality Outcomes</p>
+            <p className="text-sm text-[#666666] mb-5">More time at the bedside improves safety</p>
+            {r.fallsReduction > 0 && (
+              <div className="flex items-start justify-between py-3 border-b border-[#F0F0F0]">
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-[#1A1A1A]">Falls Rate</p>
+                    <p className="text-xs text-[#666666] mt-1">{r.fallsBefore.toFixed(1)} {'\u2192'} {r.fallsAfter.toFixed(1)} per 1,000 patient days</p>
+                  </div>
+                </div>
+                <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">{r.fallsReduction.toFixed(1)} fewer</p>
+              </div>
+            )}
+            {r.hapiReduction > 0 && (
+              <div className="flex items-start justify-between py-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-1 h-8 bg-[#EA2C00] rounded-full mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-[#1A1A1A]">HAPI Rate</p>
+                    <p className="text-xs text-[#666666] mt-1">{r.hapiBefore.toFixed(1)} {'\u2192'} {r.hapiAfter.toFixed(1)} per 1,000 patient days</p>
+                  </div>
+                </div>
+                <p className="text-base font-semibold text-[#1A1A1A] flex-shrink-0 ml-4">{r.hapiReduction.toFixed(1)} fewer</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        <motion.div className="bg-[#F5F0EB] rounded-xl p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} data-testid="section-total">
+          <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Estimated Annual Value</p>
+          <p className="text-3xl md:text-4xl font-bold text-[#EA2C00] mb-3" data-testid="text-total-value">{heroValue}</p>
+          <div className="text-sm text-[#666666] space-y-1 mb-4">
+            <p>Time value: {formatCurrency(r.timeValueSubtotal)}</p>
+            {r.annualOvertimeSavings > 0 && <p>Overtime savings: {formatCurrency(r.annualOvertimeSavings)}</p>}
+            {r.retentionValue > 0 && <p>Retention value: {formatCurrency(r.retentionValue)}</p>}
+          </div>
+          <div className="border-t border-[#E5E5E5] pt-4">
+            <p className="text-sm text-[#666666]">Per nurse: ~{formatCurrency(r.expansion.perProviderValue)}/year</p>
+          </div>
+        </motion.div>
+
+        <motion.div className="max-w-[480px] mx-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <Button onClick={onNext} className="w-full h-[52px] bg-[#EA2C00] hover:bg-[#D42800] text-white font-semibold rounded-lg text-base gap-2" data-testid="button-whats-ahead">
             See What's Ahead
             <ArrowRight className="w-4 h-4" />
           </Button>
