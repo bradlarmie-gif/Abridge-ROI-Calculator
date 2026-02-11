@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { useState, useCallback, useMemo } from "react";
+import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,7 +36,6 @@ export default function MeasureDataEntry({
   const [viewMode, setViewMode] = useState<ViewMode>("edit");
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     profile: true,
-    timeEfficiency: true,
   });
 
   const activeSetting = (state.careSetting || "outpatient") as MeasureCareSetting;
@@ -120,7 +119,7 @@ export default function MeasureDataEntry({
   const isValid = hasRequiredFields() && allocationValid;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAFAF8]">
       <UnifiedHeader
         pathType="measure"
         currentStep={1}
@@ -229,12 +228,46 @@ function CareSettingTabs({
   );
 }
 
+type SectionStatus = "locked" | "active" | "in-progress" | "complete";
+
+function StatusChip({ status }: { status: SectionStatus }) {
+  switch (status) {
+    case "locked":
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#BBBBBB] uppercase tracking-[1px]">
+          <Lock className="w-3 h-3" />
+        </span>
+      );
+    case "active":
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EA2C00]/10 text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px]">
+          Next
+        </span>
+      );
+    case "in-progress":
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-[#EA2C00] uppercase tracking-[1px]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
+          In Progress
+        </span>
+      );
+    case "complete":
+      return (
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#2D8A4E]">
+          <Check className="w-3.5 h-3.5" />
+          Done
+        </span>
+      );
+    default:
+      return null;
+  }
+}
+
 function CollapsibleSection({
   sectionKey,
   label,
   isExpanded,
-  isComplete,
-  hasContent,
+  status,
   subtitle,
   onToggle,
   children,
@@ -242,46 +275,57 @@ function CollapsibleSection({
   sectionKey: string;
   label: string;
   isExpanded: boolean;
-  isComplete: boolean;
-  hasContent: boolean;
+  status: SectionStatus;
   subtitle?: string;
   onToggle: () => void;
   children: React.ReactNode;
 }) {
+  const isLocked = status === "locked";
+  const isActive = status === "active";
+  const isComplete = status === "complete";
+
   return (
-    <div className="bg-white rounded-lg border border-[#E5E5E5] overflow-visible mb-4">
+    <div
+      className={`rounded-lg overflow-visible mb-3 transition-all duration-300
+        ${isLocked ? "bg-[#FAFAFA] border border-[#EEEEEE] opacity-60" : ""}
+        ${isActive ? "bg-white border-2 border-[#EA2C00]/30 shadow-sm" : ""}
+        ${status === "in-progress" ? "bg-white border border-[#E5E5E5]" : ""}
+        ${isComplete ? "bg-[#F9F7F4] border border-[#E8E2DA]" : ""}
+      `}
+    >
       <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-4 text-left"
+        onClick={() => !isLocked && onToggle()}
+        className={`w-full flex items-center justify-between px-5 py-4 text-left transition-colors
+          ${isLocked ? "cursor-not-allowed" : "cursor-pointer"}
+        `}
+        disabled={isLocked}
         data-testid={`section-toggle-${sectionKey}`}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <span
-            className={`text-[11px] font-semibold uppercase tracking-[1.5px] ${hasContent ? "text-[#1A1A1A]" : "text-[#999999]"}`}
+            className={`text-[11px] font-semibold uppercase tracking-[1.5px]
+              ${isLocked ? "text-[#CCCCCC]" : isComplete ? "text-[#666666]" : "text-[#1A1A1A]"}
+            `}
           >
             {label}
           </span>
-          {hasContent && !isComplete && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#EA2C00]" />
-          )}
         </div>
-        <div className="flex items-center gap-2">
-          {isComplete ? (
-            <span className="text-xs font-medium text-[#EA2C00] flex items-center gap-1">
-              <Check className="w-3 h-3" /> Complete
-            </span>
-          ) : subtitle && !isExpanded ? (
-            <span className="text-xs text-[#999999]">{subtitle}</span>
-          ) : null}
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-[#999999]" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-[#999999]" />
+        <div className="flex items-center gap-2.5">
+          <StatusChip status={status} />
+          {subtitle && !isExpanded && !isLocked && (
+            <span className="text-[10px] text-[#AAAAAA]">{subtitle}</span>
+          )}
+          {!isLocked && (
+            isExpanded ? (
+              <ChevronUp className="w-4 h-4 text-[#999999]" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-[#999999]" />
+            )
           )}
         </div>
       </button>
       <AnimatePresence>
-        {isExpanded && (
+        {isExpanded && !isLocked && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -316,6 +360,20 @@ interface EditViewProps {
   onSavePreview: () => void;
 }
 
+function getNextStepGuidance(
+  profileComplete: boolean,
+  metricSectionStatuses: SectionStatus[],
+  config: CareSettingConfig,
+): string {
+  if (!profileComplete) return "Fill in Partner Profile to continue";
+  const firstIncomplete = metricSectionStatuses.findIndex((s) => s !== "complete");
+  if (firstIncomplete !== -1) {
+    const sectionLabel = config.metricSections[firstIncomplete]?.label || "metrics";
+    return `Add at least one before/after pair in ${sectionLabel}`;
+  }
+  return "Review and continue";
+}
+
 function EditView({
   state,
   config,
@@ -336,6 +394,47 @@ function EditView({
     state.deployment.providers > 0 &&
     state.deployment.totalEncounters > 0;
 
+  const metricSectionStatuses: SectionStatus[] = useMemo(() => {
+    return config.metricSections.map((section, idx) => {
+      const sectionHasContent = section.metrics.some((m) => {
+        if (m.hasBeforeAfter) {
+          return (
+            (metrics[`${m.key}_before`] ?? 0) !== 0 ||
+            (metrics[`${m.key}_after`] ?? 0) !== 0
+          );
+        }
+        return false;
+      });
+      const sectionIsComplete = isSectionComplete(section.key, config, metrics);
+
+      if (sectionIsComplete) return "complete" as SectionStatus;
+      if (sectionHasContent) return "in-progress" as SectionStatus;
+
+      if (!profileComplete) return "locked" as SectionStatus;
+
+      const previousSectionsReady = config.metricSections.slice(0, idx).every((prev) => {
+        return isSectionComplete(prev.key, config, metrics) ||
+          prev.metrics.some((m) => {
+            if (m.hasBeforeAfter) {
+              return (
+                (metrics[`${m.key}_before`] ?? 0) !== 0 ||
+                (metrics[`${m.key}_after`] ?? 0) !== 0
+              );
+            }
+            return false;
+          });
+      });
+
+      if (idx === 0 && profileComplete) return "active" as SectionStatus;
+      if (previousSectionsReady) return "active" as SectionStatus;
+      return "locked" as SectionStatus;
+    });
+  }, [config, metrics, profileComplete]);
+
+  const firstActiveIdx = metricSectionStatuses.findIndex((s) => s === "active");
+
+  const guidance = getNextStepGuidance(profileComplete, metricSectionStatuses, config);
+
   return (
     <motion.div
       key="edit"
@@ -350,20 +449,25 @@ function EditView({
         onSwitch={onSwitchTab}
       />
 
-      <div className="bg-[#F5F0EB] rounded-lg p-5 mb-4">
+      <div className={`rounded-lg p-5 mb-3 transition-all duration-300 ${profileComplete ? "bg-[#F9F7F4] border border-[#E8E2DA]" : "bg-[#F5F0EB] border-2 border-[#EA2C00]/30 shadow-sm"}`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold text-[#1A1A1A] uppercase tracking-[1.5px]">
               Partner Profile
             </span>
           </div>
-          {profileComplete && (
-            <span className="text-xs font-medium text-[#EA2C00] flex items-center gap-1">
-              <Check className="w-3 h-3" /> Complete
+          {profileComplete ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#2D8A4E]">
+              <Check className="w-3.5 h-3.5" />
+              Done
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EA2C00]/10 text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1px]">
+              Start Here
             </span>
           )}
         </div>
-        <div className="h-px bg-[#E5E5E5] mb-4" />
+        <div className="h-px bg-[#E5E5E5]/60 mb-4" />
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5 col-span-2">
             <label className="text-sm font-medium text-black">Organization Name</label>
@@ -430,7 +534,7 @@ function EditView({
 
         {config.deploymentFields && config.deploymentFields.length > 0 && (
           <>
-            <div className="h-px bg-[#E5E5E5] my-4" />
+            <div className="h-px bg-[#E5E5E5]/60 my-4" />
             <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
               {config.label} Deployment
             </span>
@@ -458,26 +562,18 @@ function EditView({
         )}
       </div>
 
-      {config.metricSections.map((section) => {
-        const sectionHasContent = section.metrics.some((m) => {
-          if (m.hasBeforeAfter) {
-            return (
-              (metrics[`${m.key}_before`] ?? 0) !== 0 ||
-              (metrics[`${m.key}_after`] ?? 0) !== 0
-            );
-          }
-          return false;
-        });
-        const sectionIsComplete = isSectionComplete(section.key, config, metrics);
+      {config.metricSections.map((section, idx) => {
+        const status = metricSectionStatuses[idx];
+        const shouldAutoExpand = status === "active" && idx === firstActiveIdx;
+        const isExpanded = expandedSections[section.key] ?? shouldAutoExpand;
 
         return (
           <CollapsibleSection
             key={section.key}
             sectionKey={section.key}
             label={section.label}
-            isExpanded={expandedSections[section.key] ?? false}
-            isComplete={sectionIsComplete}
-            hasContent={sectionHasContent}
+            isExpanded={isExpanded}
+            status={status}
             onToggle={() => onToggleSection(section.key)}
           >
             {section.description && (
@@ -535,88 +631,119 @@ function EditView({
         );
       })}
 
-      <CollapsibleSection
-        sectionKey="valueModel"
-        label="Value Model"
-        isExpanded={expandedSections.valueModel ?? false}
-        isComplete={allocationValid}
-        hasContent={true}
-        subtitle="Defaults loaded"
-        onToggle={() => onToggleSection("valueModel")}
+      <div
+        className={`rounded-lg overflow-visible mb-3 transition-all duration-300 bg-[#F9F7F4] border border-[#E8E2DA]`}
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            {config.valueModel.map((field) => (
-              <div key={field.key} className="space-y-1.5">
-                <label className="text-sm font-medium text-black">{field.label}</label>
-                <div className="relative">
-                  {field.prefix && (
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
-                      {field.prefix}
-                    </span>
-                  )}
-                  <FormattedNumberInput
-                    value={metrics[`vm_${field.key}`] ?? field.defaultValue}
-                    onChange={(v) => onUpdateMetric(`vm_${field.key}`, v)}
-                    className={`h-10 bg-white border-[#E5E5E5] text-right ${field.prefix ? "pl-7" : ""} ${field.suffix ? "pr-10" : ""}`}
-                    data-testid={`input-vm-${field.key}`}
-                  />
-                  {field.suffix && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
-                      {field.suffix}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="h-px bg-[#E5E5E5]" />
-
-          <div>
-            <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-1 block">
-              Attribution Range
+        <button
+          onClick={() => onToggleSection("valueModel")}
+          className="w-full flex items-center justify-between px-5 py-4 text-left"
+          data-testid="section-toggle-valueModel"
+        >
+          <div className="flex items-center gap-2.5">
+            <Settings2 className="w-4 h-4 text-[#999999]" />
+            <span className="text-[11px] font-semibold text-[#666666] uppercase tracking-[1.5px]">
+              Model Assumptions
             </span>
-            <div className="h-10 bg-[#F5F0EB] border border-[#E5E5E5] rounded-md flex items-center px-3 text-sm text-[#666666]">
-              50 – 75%
-            </div>
           </div>
-
-          <div className="h-px bg-[#E5E5E5]" />
-
-          <div>
-            <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
-              Time Allocation
+          <div className="flex items-center gap-2.5">
+            <span className="text-[10px] text-[#AAAAAA] font-medium">
+              Defaults applied
             </span>
-            <div className="grid grid-cols-2 gap-4">
-              {config.allocationFields.map((field) => (
-                <div key={field.key} className="space-y-1.5">
-                  <label className="text-sm font-medium text-black">{field.label}</label>
-                  <div className="relative">
-                    <FormattedNumberInput
-                      value={metrics[field.key] ?? field.defaultValue}
-                      onChange={(v) => onUpdateMetric(field.key, Math.max(0, Math.min(100, v)))}
-                      className="h-10 bg-white border-[#E5E5E5] text-right pr-8"
-                      data-testid={`input-alloc-${field.key}`}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
-                      %
+            <Pencil className="w-3.5 h-3.5 text-[#BBBBBB]" />
+            {expandedSections.valueModel ? (
+              <ChevronUp className="w-4 h-4 text-[#999999]" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-[#999999]" />
+            )}
+          </div>
+        </button>
+        <AnimatePresence>
+          {expandedSections.valueModel && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="px-5 pb-5">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {config.valueModel.map((field) => (
+                      <div key={field.key} className="space-y-1.5">
+                        <label className="text-sm font-medium text-black">{field.label}</label>
+                        <div className="relative">
+                          {field.prefix && (
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                              {field.prefix}
+                            </span>
+                          )}
+                          <FormattedNumberInput
+                            value={metrics[`vm_${field.key}`] ?? field.defaultValue}
+                            onChange={(v) => onUpdateMetric(`vm_${field.key}`, v)}
+                            className={`h-10 bg-white border-[#E5E5E5] text-right ${field.prefix ? "pl-7" : ""} ${field.suffix ? "pr-10" : ""}`}
+                            data-testid={`input-vm-${field.key}`}
+                          />
+                          {field.suffix && (
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                              {field.suffix}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="h-px bg-[#E5E5E5]/60" />
+
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-1 block">
+                      Attribution Range
                     </span>
+                    <div className="h-10 bg-white border border-[#E5E5E5] rounded-md flex items-center px-3 text-sm text-[#666666]">
+                      50 – 75%
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-[#E5E5E5]/60" />
+
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-[1.5px] mb-3 block">
+                      Time Allocation
+                    </span>
+                    <div className="grid grid-cols-2 gap-4">
+                      {config.allocationFields.map((field) => (
+                        <div key={field.key} className="space-y-1.5">
+                          <label className="text-sm font-medium text-black">{field.label}</label>
+                          <div className="relative">
+                            <FormattedNumberInput
+                              value={metrics[field.key] ?? field.defaultValue}
+                              onChange={(v) => onUpdateMetric(field.key, Math.max(0, Math.min(100, v)))}
+                              className="h-10 bg-white border-[#E5E5E5] text-right pr-8"
+                              data-testid={`input-alloc-${field.key}`}
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888888] text-sm">
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p
+                      className={`text-xs mt-2 ${allocationValid ? "text-green-600" : "text-red-500"}`}
+                      data-testid="text-allocation-check"
+                    >
+                      Must equal 100%: {allocationValid ? "\u2713" : `${allocationTotal}%`}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-            <p
-              className={`text-xs mt-2 ${allocationValid ? "text-green-600" : "text-red-500"}`}
-              data-testid="text-allocation-check"
-            >
-              Must equal 100%: {allocationValid ? "\u2713" : `${allocationTotal}%`}
-            </p>
-          </div>
-        </div>
-      </CollapsibleSection>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      <div className="h-px bg-[#E5E5E5] my-6" />
+      <div className="my-6" />
 
       <div className="max-w-[480px] mx-auto text-center">
         <Button
@@ -638,7 +765,7 @@ function EditView({
               <ArrowRight className="w-4 h-4" />
             </>
           ) : (
-            "Complete required fields to continue"
+            guidance
           )}
         </Button>
         <p className="text-[10px] text-[#999999] mt-3">
