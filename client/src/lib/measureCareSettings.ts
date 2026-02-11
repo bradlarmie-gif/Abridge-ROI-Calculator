@@ -128,6 +128,15 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
     shortLabel: "Inpatient",
     metricSections: [
       {
+        key: "timeEfficiency",
+        label: "Time & Efficiency",
+        metrics: [
+          { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
+          { key: "sameDayClosure", label: "Same-Day Completion (%)", hasBeforeAfter: true },
+          { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
+        ],
+      },
+      {
         key: "docQuality",
         label: "Documentation & Coding",
         description: "These metrics drive the majority of inpatient value.",
@@ -136,15 +145,6 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
           { key: "ccMccCapture", label: "CC/MCC Capture Rate (%)", hasBeforeAfter: true, step: 0.1 },
           { key: "denialsPer100", label: "Denials per 100 Claims", hasBeforeAfter: true, step: 0.1 },
           { key: "cdiQueriesPer100", label: "CDI Queries per 100 Cases", hasBeforeAfter: true, step: 1 },
-        ],
-      },
-      {
-        key: "timeEfficiency",
-        label: "Time & Efficiency",
-        metrics: [
-          { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
-          { key: "sameDayClosure", label: "Same-Day Completion (%)", hasBeforeAfter: true },
-          { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
     ],
