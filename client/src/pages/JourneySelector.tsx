@@ -1,4 +1,5 @@
 import { Compass, TrendingUp, ArrowLeftRight, BookOpen, ChevronRight, ArrowRight } from "lucide-react";
+
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { GlobalHeader } from "@/components/GlobalHeader";
@@ -193,47 +194,27 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
           </div>
         </section>
 
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="max-w-5xl mx-auto"
-        >
-          <div
-            className="rounded-xl bg-[#F5F0EB] overflow-visible"
-            data-testid="link-learn"
-          >
-            <div className="flex flex-col md:flex-row items-center gap-5 md:gap-8 px-8 py-7 md:py-8 pt-[14px] pb-[14px]">
-              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shrink-0">
-                <BookOpen className="w-7 h-7 text-[#EA2C00]" />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="text-lg md:text-xl font-bold text-[#1A1A1A] mb-1">
-                  Transparent by design
-                </h3>
-                <p className="text-sm text-[#666666] leading-relaxed">
-                  Curious about the math behind our models? We publish every assumption, formula, and limitation.
-                </p>
-              </div>
-              <Button
-                className="bg-black text-white border-black shrink-0"
-                size="lg"
-                onClick={onSelectLearn}
-                data-testid="button-learn-methodology"
-              >
-                Explore the Methodology
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-        </motion.section>
-
         <motion.footer 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
-          className="text-center pt-5 pb-2"
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="text-center pt-6 md:pt-10 pb-2 space-y-5"
         >
+          <div className="flex items-center justify-center gap-3">
+            <BookOpen className="w-[18px] h-[18px] text-[#EA2C00] shrink-0" />
+            <p className="text-sm text-[#666666]">
+              See how we calculate this &mdash; every assumption, formula, and limitation.
+            </p>
+            <Button
+              variant="ghost"
+              onClick={onSelectLearn}
+              className="text-sm font-medium text-[#EA2C00] shrink-0 gap-1"
+              data-testid="link-learn"
+            >
+              View Methodology
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
           <p className="text-[10px] text-[#999999]">
             Estimates are for planning purposes. Results should be validated with your organization's data.
           </p>
