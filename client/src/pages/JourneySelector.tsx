@@ -203,7 +203,7 @@ export default function JourneySelector({ onSelectExplore, onSelectExpand, onSel
             className="rounded-xl bg-[#F5F0EB] overflow-visible"
             data-testid="link-learn"
           >
-            <div className="flex flex-col md:flex-row items-center gap-5 md:gap-8 px-8 py-7 md:py-8">
+            <div className="flex flex-col md:flex-row items-center gap-5 md:gap-8 px-8 py-7 md:py-8 pt-[14px] pb-[14px]">
               <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shrink-0">
                 <BookOpen className="w-7 h-7 text-[#EA2C00]" />
               </div>
