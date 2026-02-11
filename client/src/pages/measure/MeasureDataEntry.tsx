@@ -1,10 +1,10 @@
 import { useState, useCallback, useMemo } from "react";
-import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2 } from "lucide-react";
+import { ArrowRight, Pencil, Users, ChevronDown, ChevronUp, Check, Lock, Settings2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
-import { type MeasureState, type MeasureCareSetting, formatNumber } from "@/lib/measureCalculator";
+import { type MeasureState, type MeasureCareSetting, type CustomMetric, formatNumber } from "@/lib/measureCalculator";
 import {
   CARE_SETTING_CONFIGS,
   CARE_SETTING_ORDER,
@@ -173,6 +173,7 @@ export default function MeasureDataEntry({
               onToggleSection={toggleSection}
               onUpdateDeployment={updateDeployment}
               onUpdateMetric={updateMetric}
+              onUpdateCustomMetrics={(cm) => updateState({ customMetrics: cm })}
               onSavePreview={handleSavePreview}
             />
           )}
@@ -357,6 +358,7 @@ interface EditViewProps {
     value: MeasureState["deployment"][K],
   ) => void;
   onUpdateMetric: (key: string, value: number) => void;
+  onUpdateCustomMetrics: (metrics: CustomMetric[]) => void;
   onSavePreview: () => void;
 }
 
@@ -387,6 +389,7 @@ function EditView({
   onToggleSection,
   onUpdateDeployment,
   onUpdateMetric,
+  onUpdateCustomMetrics,
   onSavePreview,
 }: EditViewProps) {
   const profileComplete =
@@ -627,6 +630,85 @@ function EditView({
                 )}
               </div>
             ))}
+
+            {(state.customMetrics || [])
+              .filter((cm) => cm.section === section.key)
+              .map((cm) => (
+                <div
+                  key={cm.id}
+                  className="grid grid-cols-3 gap-4 items-center py-2"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={cm.label}
+                      onChange={(e) => {
+                        const updated = (state.customMetrics || []).map((m) =>
+                          m.id === cm.id ? { ...m, label: e.target.value } : m
+                        );
+                        onUpdateCustomMetrics(updated);
+                      }}
+                      placeholder="Metric name"
+                      className="h-10 w-full bg-white border border-[#E5E5E5] rounded-md px-3 text-sm font-medium text-black placeholder:text-[#CCCCCC] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30 focus:border-[#EA2C00]/50"
+                      data-testid={`input-custom-label-${cm.id}`}
+                    />
+                    <button
+                      onClick={() => {
+                        const updated = (state.customMetrics || []).filter(
+                          (m) => m.id !== cm.id
+                        );
+                        onUpdateCustomMetrics(updated);
+                      }}
+                      className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded text-[#CCCCCC] hover:text-[#EA2C00] hover:bg-[#FFF0EC] transition-colors"
+                      data-testid={`button-remove-custom-${cm.id}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <FormattedNumberInput
+                    value={cm.before}
+                    onChange={(v) => {
+                      const updated = (state.customMetrics || []).map((m) =>
+                        m.id === cm.id ? { ...m, before: v } : m
+                      );
+                      onUpdateCustomMetrics(updated);
+                    }}
+                    step={0.01}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid={`input-custom-before-${cm.id}`}
+                  />
+                  <FormattedNumberInput
+                    value={cm.after}
+                    onChange={(v) => {
+                      const updated = (state.customMetrics || []).map((m) =>
+                        m.id === cm.id ? { ...m, after: v } : m
+                      );
+                      onUpdateCustomMetrics(updated);
+                    }}
+                    step={0.01}
+                    className="h-10 bg-white border-[#E5E5E5] text-right"
+                    data-testid={`input-custom-after-${cm.id}`}
+                  />
+                </div>
+              ))}
+
+            <button
+              onClick={() => {
+                const newMetric: CustomMetric = {
+                  id: `cm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                  label: "",
+                  before: 0,
+                  after: 0,
+                  section: section.key,
+                };
+                onUpdateCustomMetrics([...(state.customMetrics || []), newMetric]);
+              }}
+              className="flex items-center gap-1.5 mt-3 px-3 py-2 text-xs font-medium text-[#EA2C00] hover:bg-[#FFF0EC] rounded-md transition-colors"
+              data-testid={`button-add-custom-${section.key}`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Custom Metric
+            </button>
           </CollapsibleSection>
         );
       })}
@@ -912,6 +994,20 @@ function PreviewView({ state, config, metrics, onEdit, onNext }: PreviewViewProp
                   );
                 })}
               </div>
+
+              {(state.customMetrics || [])
+                .filter((cm) => cm.section === section.key && cm.label.trim())
+                .map((cm) => (
+                  <div
+                    key={cm.id}
+                    className="grid grid-cols-3 gap-4 py-2.5 border-b border-[#F0F0F0]"
+                    data-testid={`row-custom-${cm.id}`}
+                  >
+                    <p className="text-sm text-[#1A1A1A] italic">{cm.label}</p>
+                    <p className="text-sm text-[#999999] text-right">{cm.before}</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A] text-right">{cm.after}</p>
+                  </div>
+                ))}
             </div>
           );
         })}

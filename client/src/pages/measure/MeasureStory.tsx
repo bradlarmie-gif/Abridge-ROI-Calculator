@@ -330,6 +330,43 @@ export default function MeasureStory({ state, onBack, onHome }: MeasureStoryProp
           </div>
         </motion.div>
 
+        {(state.customMetrics || []).filter((cm) => cm.label.trim()).length > 0 && (
+          <motion.div
+            className="bg-white rounded-xl border border-[#E5E5E5] p-6 mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            data-testid="section-custom-metrics"
+          >
+            <p className="text-[10px] font-semibold text-[#EA2C00] uppercase tracking-[1.5px] mb-5">
+              Additional Metrics
+            </p>
+            {(state.customMetrics || [])
+              .filter((cm) => cm.label.trim())
+              .map((cm) => {
+                const delta = cm.after - cm.before;
+                const pct = cm.before !== 0 ? ((delta / cm.before) * 100).toFixed(1) : null;
+                return (
+                  <div
+                    key={cm.id}
+                    className="flex items-center justify-between py-3 border-b border-[#F0F0F0] last:border-b-0"
+                    data-testid={`story-custom-${cm.id}`}
+                  >
+                    <span className="text-sm text-[#1A1A1A]">{cm.label}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-[#999999]">{cm.before} {'\u2192'} {cm.after}</span>
+                      {pct && (
+                        <span className={`text-xs font-semibold ${delta > 0 ? 'text-green-600' : delta < 0 ? 'text-[#EA2C00]' : 'text-[#666666]'}`}>
+                          {delta > 0 ? '+' : ''}{pct}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </motion.div>
+        )}
+
         <motion.div
           className="bg-[#F5F0EB] rounded-xl p-6 mb-6"
           initial={{ opacity: 0, y: 20 }}

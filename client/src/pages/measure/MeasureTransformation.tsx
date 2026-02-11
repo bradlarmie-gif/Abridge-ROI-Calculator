@@ -411,6 +411,63 @@ export default function MeasureTransformation({
           )}
         </div>
 
+        {(state.customMetrics || []).filter((cm) => cm.label.trim()).length > 0 && (
+          <motion.div
+            className="bg-white rounded-lg border border-[#E5E5E5] p-5 mb-6"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            data-testid="section-custom-metrics"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-lg bg-[#FFF5F2] flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-[#EA2C00]" />
+              </div>
+              <h3 className="text-base font-semibold text-black">Additional Metrics</h3>
+            </div>
+
+            <div className="space-y-4">
+              {(state.customMetrics || [])
+                .filter((cm) => cm.label.trim())
+                .map((cm) => {
+                  const maxVal = Math.max(cm.before, cm.after, 0.1);
+                  const beforeWidth = Math.max((cm.before / maxVal) * 100, 5);
+                  const afterWidth = Math.max((cm.after / maxVal) * 100, 5);
+                  const delta = cm.after - cm.before;
+                  const deltaPercent = cm.before !== 0 ? ((delta / cm.before) * 100) : 0;
+                  const improved = delta > 0;
+
+                  return (
+                    <div key={cm.id} className="pb-4 border-b border-[#F0F0F0] last:border-b-0 last:pb-0" data-testid={`custom-metric-card-${cm.id}`}>
+                      <p className="text-sm font-medium text-[#1A1A1A] mb-3">{cm.label}</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] text-[#999999] uppercase tracking-[1px] w-16 flex-shrink-0">Before</span>
+                          <div className="flex-1 bg-[#F5F0EB] rounded-full h-5 overflow-hidden">
+                            <div className="bg-[#CCCCCC] h-full rounded-full" style={{ width: `${beforeWidth}%` }} />
+                          </div>
+                          <span className="text-sm text-[#999999] w-16 text-right">{cm.before}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] text-[#EA2C00] uppercase tracking-[1px] w-16 flex-shrink-0">After</span>
+                          <div className="flex-1 bg-[#F5F0EB] rounded-full h-5 overflow-hidden">
+                            <div className="bg-[#EA2C00] h-full rounded-full" style={{ width: `${afterWidth}%` }} />
+                          </div>
+                          <span className="text-sm font-semibold text-[#1A1A1A] w-16 text-right">{cm.after}</span>
+                        </div>
+                      </div>
+                      {deltaPercent !== 0 && (
+                        <p className="text-xs text-[#666666] mt-2">
+                          {improved ? "+" : ""}{delta.toFixed(cm.before % 1 !== 0 || cm.after % 1 !== 0 ? 2 : 0)} ({improved ? "+" : ""}{deltaPercent.toFixed(1)}%)
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          </motion.div>
+        )}
+
         {state.deployment.utilizationRate < 100 && (
           <motion.div
             className="bg-[#F5F0EB] rounded-lg p-5 mb-6"

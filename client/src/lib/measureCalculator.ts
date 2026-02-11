@@ -66,6 +66,14 @@ export interface EMDistribution {
   level5: number; // 99215
 }
 
+export interface CustomMetric {
+  id: string;
+  label: string;
+  before: number;
+  after: number;
+  section: string;
+}
+
 export interface MeasureState {
   careSetting: MeasureCareSetting | null;
   deployment: MeasureDeployment;
@@ -79,6 +87,7 @@ export interface MeasureState {
     with: EMDistribution;
   };
   settingData: Partial<Record<MeasureCareSetting, Record<string, number>>>;
+  customMetrics: CustomMetric[];
 }
 
 export const DEFAULT_MEASURE_STATE: MeasureState = {
@@ -146,6 +155,7 @@ export const DEFAULT_MEASURE_STATE: MeasureState = {
     },
   },
   settingData: {},
+  customMetrics: [],
 };
 
 export interface MeasureResults {

@@ -340,12 +340,24 @@ const MeasurePDFDocument = ({ state, clientName, preparedBy }: MeasurePDFData) =
               <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>-{timeToCloseDelta.toFixed(1)} days</Text>
             </View>
             {/* After-Hours */}
-            <View style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8 }}>
+            <View style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: (state.customMetrics || []).filter(cm => cm.label.trim()).length > 0 ? 1 : 0, borderBottomColor: colors.border }}>
               <Text style={{ flex: 2.5, fontSize: 10, color: colors.primaryText }}>After-Hours</Text>
               <Text style={{ flex: 1, fontSize: 10, color: colors.tertiary, textAlign: "right" }}>{state.timeEfficiency.workOutsideWithout} hrs</Text>
               <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{state.timeEfficiency.workOutsideWith} hrs</Text>
               <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>-{workOutsideDelta.toFixed(1)}h ({workOutsideDeltaPercent}%)</Text>
             </View>
+            {(state.customMetrics || []).filter(cm => cm.label.trim()).map((cm, i, arr) => {
+              const delta = cm.after - cm.before;
+              const pct = cm.before !== 0 ? ((delta / cm.before) * 100).toFixed(1) : "N/A";
+              return (
+                <View key={cm.id} style={{ flexDirection: "row", paddingVertical: 4, paddingHorizontal: 8, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: colors.border }}>
+                  <Text style={{ flex: 2.5, fontSize: 10, color: colors.primaryText, fontStyle: "italic" }}>{cm.label}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, color: colors.tertiary, textAlign: "right" }}>{cm.before}</Text>
+                  <Text style={{ flex: 1, fontSize: 10, fontWeight: "bold", color: colors.primaryText, textAlign: "right" }}>{cm.after}</Text>
+                  <Text style={{ flex: 1.2, fontSize: 10, fontWeight: "bold", color: colors.primary, textAlign: "right" }}>{delta > 0 ? "+" : ""}{delta.toFixed(delta % 1 !== 0 ? 2 : 0)}{pct !== "N/A" ? ` (${pct}%)` : ""}</Text>
+                </View>
+              );
+            })}
           </View>
 
           {/* Total Hours Reclaimed bar */}
