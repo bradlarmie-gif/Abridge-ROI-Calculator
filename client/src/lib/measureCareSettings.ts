@@ -60,7 +60,7 @@ export const CARE_SETTING_CONFIGS: Record<MeasureCareSetting, CareSettingConfig>
         metrics: [
           { key: "timeInNotes", label: "Time in Notes (min)", hasBeforeAfter: true },
           { key: "sameDayClosure", label: "Same-Day Closure (%)", hasBeforeAfter: true },
-          { key: "daysToClose", label: "Days to Close", hasBeforeAfter: true, step: 0.1 },
+          { key: "daysToClose", label: "Days to Close", hasBeforeAfter: true, step: 0.1, optional: true },
           { key: "afterHours", label: "After-Hours (hrs/day)", hasBeforeAfter: true, step: 0.1 },
         ],
       },
@@ -287,7 +287,7 @@ export function isSectionComplete(
   const requiredMetrics = section.metrics.filter((m) => !m.optional);
   return requiredMetrics.every((m) => {
     if (m.hasBeforeAfter) {
-      return metrics[`${m.key}_before`] !== 0 || metrics[`${m.key}_after`] !== 0;
+      return (metrics[`${m.key}_before`] ?? 0) !== 0 && (metrics[`${m.key}_after`] ?? 0) !== 0;
     }
     return metrics[m.key] !== 0;
   });

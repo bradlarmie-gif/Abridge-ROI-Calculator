@@ -416,16 +416,7 @@ function EditView({
       if (!profileComplete) return "locked" as SectionStatus;
 
       const previousSectionsReady = config.metricSections.slice(0, idx).every((prev) => {
-        return isSectionComplete(prev.key, config, metrics) ||
-          prev.metrics.some((m) => {
-            if (m.hasBeforeAfter) {
-              return (
-                (metrics[`${m.key}_before`] ?? 0) !== 0 ||
-                (metrics[`${m.key}_after`] ?? 0) !== 0
-              );
-            }
-            return false;
-          });
+        return isSectionComplete(prev.key, config, metrics);
       });
 
       if (idx === 0 && profileComplete) return "active" as SectionStatus;
