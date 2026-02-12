@@ -528,16 +528,30 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         total += grossValue * (timeDriverInputs.edLwbsRealization / 100);
       }
       if (timeDriverInputs.edThroughputEnabled && timeDriverInputs.edLwbsEnabled) {
-        // Admission Capture uses LWBS recovered patients as base
         const lwbsPatients = annualEncounters * (timeDriverInputs.edLwbsRate / 100);
         const recoveredPatients = lwbsPatients * (timeDriverInputs.edLwbsReduction / 100);
         const admittedPatients = recoveredPatients * (timeDriverInputs.edAdmissionRate / 100);
         const grossValue = admittedPatients * timeDriverInputs.edAdmissionRevenue;
         total += grossValue * (timeDriverInputs.edAdmissionRealization / 100);
       }
+      if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+        const providersLeaving = numberOfProviders * turnoverRate;
+        const burnoutRelated = providersLeaving * burnoutRate;
+        const retained = burnoutRelated * impactRate;
+        total += retained * timeDriverInputs.replacementCost;
+      }
     } else if (isInpatient) {
       // Inpatient: Rounding is qualitative only (no dollar value)
-      // Time value comes from Wellbeing/Retention driver only
+      if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
+        total += timeDriverInputs.estimatedCostReduction;
+      }
       if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
         const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
         const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
