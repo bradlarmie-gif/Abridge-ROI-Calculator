@@ -332,12 +332,12 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
 
           {/* Time Savings Sidebar */}
           <motion.div
-            className="hidden lg:block lg:w-80"
+            className="w-full lg:w-80"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.25, duration: 0.5 }}
           >
-            <div className="sticky top-24">
+            <div className="lg:sticky lg:top-24">
               <div className="bg-black rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="px-6 py-5 border-b border-white/10">
@@ -417,6 +417,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                 </div>
 
                 {/* Continue Button */}
+                <div className="hidden lg:block">
                 <div className="px-6 pb-6">
                   <Button
                     onClick={onNext}
@@ -426,6 +427,7 @@ export default function ExploreTimePath({ state, updateState, onNext, onBack, on
                     Continue to Time Allocation
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
+                </div>
                 </div>
               </div>
             </div>

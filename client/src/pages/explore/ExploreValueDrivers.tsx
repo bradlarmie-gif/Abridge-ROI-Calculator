@@ -1861,12 +1861,12 @@ export default function ExploreValueDrivers({
 
           {/* Right Panel - Desktop Only */}
           <motion.div
-            className="hidden lg:block w-[320px] flex-shrink-0"
+            className="w-full lg:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
+            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
               {/* Time Allocation Breakdown - Nursing Only */}
               {isNursing && timeDriverInputs.nursingCareTimeEnabled && (
                 <>
@@ -2206,9 +2206,9 @@ export default function ExploreValueDrivers({
                 )}
               </div>
 
+              <div className="hidden lg:block">
               <div className="h-px bg-[#333333] my-4" />
 
-              {/* Continue Button */}
               <Button
                 onClick={onNext}
                 className="w-full h-11 bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white font-medium rounded-md gap-2"
@@ -2217,6 +2217,7 @@ export default function ExploreValueDrivers({
                 Continue to Documentation
                 <ArrowRight className="w-4 h-4" />
               </Button>
+              </div>
             </div>
           </motion.div>
         </div>

@@ -2642,8 +2642,8 @@ export default function ObjectiveSelectionScreen({
               </div>
               
               {/* Right: Selection Sidebar */}
-              <div className="hidden lg:block">
-                <div className="sticky top-[100px] bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="w-full lg:w-auto">
+                <div className="lg:sticky lg:top-[100px] bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                   <div className="px-8 py-6 border-b border-[#E5E7EB]">
                     <h3 className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-[0.1em]">
                       Your Selections
@@ -2691,7 +2691,7 @@ export default function ObjectiveSelectionScreen({
                     </div>
                   </div>
                   
-                  <div className="border-t border-[#E5E7EB] px-8 py-6">
+                  <div className="hidden lg:block border-t border-[#E5E7EB] px-8 py-6">
                     <button
                       type="button"
                       disabled={!canContinuePage2}

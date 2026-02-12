@@ -268,12 +268,12 @@ export default function ExplorePractice({
           </div>
 
           <motion.div
-            className="hidden lg:block w-[320px] flex-shrink-0"
+            className="w-full lg:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <div className="bg-[#1A1A1A] rounded-xl p-6 sticky top-24">
+            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
               <div className="mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
                   Your Baseline
@@ -324,24 +324,26 @@ export default function ExplorePractice({
 
               <div className="h-px bg-[#333333] my-4" />
 
-              <Button
-                onClick={onNext}
-                disabled={!canContinue}
-                className={`w-full h-11 font-medium rounded-md gap-2 ${
-                  !canContinue
-                    ? "bg-[#333333] text-[#666666] cursor-not-allowed"
-                    : "bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white"
-                }`}
-                data-testid="button-panel-continue"
-              >
-                Continue
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-              {!canContinue && (
-                <p className="text-xs text-[#666666] text-center mt-2">
-                  Enter all values to continue
-                </p>
-              )}
+              <div className="hidden lg:block">
+                <Button
+                  onClick={onNext}
+                  disabled={!canContinue}
+                  className={`w-full h-11 font-medium rounded-md gap-2 ${
+                    !canContinue
+                      ? "bg-[#333333] text-[#666666] cursor-not-allowed"
+                      : "bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white"
+                  }`}
+                  data-testid="button-panel-continue"
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+                {!canContinue && (
+                  <p className="text-xs text-[#666666] text-center mt-2">
+                    Enter all values to continue
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>

@@ -6306,7 +6306,7 @@ export default function ModelBuilder({
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Live Model Sidebar - hidden on mobile, shown on desktop right column */}
-            <div className="hidden lg:block w-full lg:w-[380px] lg:order-2 lg:flex-shrink-0">
+            <div className="w-full lg:w-[380px] lg:order-2 lg:flex-shrink-0">
               <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -6390,6 +6390,7 @@ export default function ModelBuilder({
                   </p>
                 </div>
                 
+                <div className="hidden lg:block">
                 <button
                   onClick={handleComplete}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-[15px] bg-[#EA2C00] text-white hover:bg-[#d12700] transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
@@ -6398,6 +6399,7 @@ export default function ModelBuilder({
                   Continue to Investment
                   <ArrowRight className="w-5 h-5" />
                 </button>
+                </div>
               </div>
             </div>
             

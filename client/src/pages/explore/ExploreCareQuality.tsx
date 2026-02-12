@@ -554,12 +554,12 @@ export default function ExploreCareQuality({
 
           {/* Right Panel */}
           <motion.div
-            className="hidden lg:block w-[320px] flex-shrink-0"
+            className="w-full lg:w-[320px] flex-shrink-0"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="bg-[#1A1A1A] rounded-lg p-6 sticky top-[100px]">
+            <div className="bg-[#1A1A1A] rounded-lg p-6 lg:sticky lg:top-[100px]">
               <div className="mb-4">
                 <p className="text-[11px] font-medium text-white uppercase tracking-[1.5px]">
                   YOUR MODEL SO FAR
@@ -632,6 +632,7 @@ export default function ExploreCareQuality({
                 <p className="text-xs text-[#666666] mt-1">Harder to attribute to documentation</p>
               </div>
 
+              <div className="hidden lg:block">
               <div className="h-px bg-[#333333] my-4" />
 
               <p className="text-xs text-[#666666] mb-4">
@@ -645,6 +646,7 @@ export default function ExploreCareQuality({
               >
                 Continue to Investment <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
+              </div>
             </div>
           </motion.div>
         </div>

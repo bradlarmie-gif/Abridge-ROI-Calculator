@@ -167,8 +167,8 @@ export function LiveReceipt({
 
   return (
     <>
-      <div className="hidden lg:block w-[360px] flex-shrink-0">
-        <div className="sticky top-6">
+      <div className="w-full lg:w-[360px] flex-shrink-0">
+        <div className="lg:sticky lg:top-6">
           <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-neutral-100">
               <div className="flex items-center justify-between">
