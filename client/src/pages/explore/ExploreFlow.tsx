@@ -570,7 +570,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
         }
       }
     } else {
-      // Outpatient: Patient Access and Cost Reduction
+      // Outpatient: Patient Access, Cost Reduction, and Wellbeing/Retention
       if (timeDriverInputs.patientAccessEnabled) {
         const hoursTowardCapacity = totalHoursSaved * (timeDriverInputs.capacityPercent / 100);
         const potentialVisits = hoursTowardCapacity * (60 / timeDriverInputs.visitDuration);
@@ -578,6 +578,16 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
       }
       if (timeDriverInputs.costReductionEnabled && timeDriverInputs.estimatedCostReduction > 0) {
         total += timeDriverInputs.estimatedCostReduction;
+      }
+      if (timeDriverInputs.wellbeingEnabled && timeDriverInputs.calculateRetentionValue) {
+        const retentionScenarios: Record<string, number> = { conservative: 20, typical: 30, optimistic: 40 };
+        const turnoverRate = timeDriverInputs.annualTurnoverRate / 100;
+        const burnoutRate = timeDriverInputs.burnoutRelatedTurnover / 100;
+        const impactRate = retentionScenarios[timeDriverInputs.retentionImpactScenario] / 100;
+        const providersLeaving = numberOfProviders * turnoverRate;
+        const burnoutRelated = providersLeaving * burnoutRate;
+        const retained = burnoutRelated * impactRate;
+        total += retained * timeDriverInputs.replacementCost;
       }
     }
     
