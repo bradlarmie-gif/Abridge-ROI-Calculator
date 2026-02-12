@@ -222,9 +222,9 @@ export default function ExploreModel({
 
   // 3-year projection (10% growth per year)
   const implementationCost = state.includeImplementation ? state.implementationFee : 0;
-  const year1Value = netAnnualValue - implementationCost;
-  const year2Value = Math.round(netAnnualValue * 1.1);
-  const year3Value = Math.round(netAnnualValue * 1.21);
+  const year1Value = totalValue - implementationCost;
+  const year2Value = Math.round(totalValue * 1.1);
+  const year3Value = Math.round(totalValue * 1.21);
   const threeYearTotal = year1Value + year2Value + year3Value;
 
   // Expansion opportunity (use fullScaleProviders from state, editable utilization)

@@ -346,11 +346,11 @@ const ExplorePDFDocument = ({ data }: { data: ExplorePDFData }) => {
   const unitCount = isNursing ? (data.nursingStaffedBeds || data.providers) : data.providers;
   const perUnit = unitCount > 0 ? Math.round(data.netAnnualValue / unitCount) : 0;
 
-  const year1Value = data.netAnnualValue;
+  const year1Value = data.totalValue;
   const year1Cost = data.annualInvestment + safe(data.implementationCost);
-  const year2Value = Math.round(data.netAnnualValue * 1.1);
+  const year2Value = Math.round(data.totalValue * 1.1);
   const year2Cost = data.annualInvestment;
-  const year3Value = Math.round(data.netAnnualValue * 1.21);
+  const year3Value = Math.round(data.totalValue * 1.21);
   const year3Cost = data.annualInvestment;
   const cumulative1 = year1Value - year1Cost;
   const cumulative2 = cumulative1 + (year2Value - year2Cost);
