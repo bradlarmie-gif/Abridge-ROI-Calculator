@@ -189,7 +189,6 @@ export default function ExploreDocQuality({
         onHome={onHome}
       />
       <UnifiedHeaderSpacer />
-
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Main Content - Left Column */}
@@ -1540,7 +1539,7 @@ export default function ExploreDocQuality({
                             <span className="text-[#888888]">└─</span>
                             <span className="text-[#666666]">Unappealable ({docQualityInputs.unappealableRate}%):</span>
                             <span className="font-semibold text-black">{formatNumber(Math.round(unappealableDenials))}</span>
-                            <span className="text-[#888888]">— Abridge prevents these</span>
+                            <span className="text-[#888888]">— Abridge targeted impact</span>
                           </div>
                         </div>
                       </div>
