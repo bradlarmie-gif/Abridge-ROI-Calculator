@@ -187,6 +187,16 @@ export interface DocQualityInputs {
   
   // Nursing: Patient Experience (qualitative only)
   nursingHcahpsEnabled: boolean;
+  
+  // Expanded states for collapse/expand chevrons
+  wrvuExpanded: boolean;
+  hccExpanded: boolean;
+  denialsExpanded: boolean;
+  ipDrgExpanded: boolean;
+  ipCdiExpanded: boolean;
+  nursingHapiExpanded: boolean;
+  nursingFallsExpanded: boolean;
+  nursingHcahpsExpanded: boolean;
 }
 
 export interface ExploreState {
@@ -380,6 +390,15 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     nursingFallsCost: 6500, // $6,500 per fall
     // Nursing: Patient Experience defaults
     nursingHcahpsEnabled: false,
+    // Expanded states (auto-expand when first toggled on)
+    wrvuExpanded: true,
+    hccExpanded: true,
+    denialsExpanded: true,
+    ipDrgExpanded: true,
+    ipCdiExpanded: true,
+    nursingHapiExpanded: true,
+    nursingFallsExpanded: true,
+    nursingHcahpsExpanded: true,
   },
   pricingModel: 'perProvider',
   costPerProvider: 0,

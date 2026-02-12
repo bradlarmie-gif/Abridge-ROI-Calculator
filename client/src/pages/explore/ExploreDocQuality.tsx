@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -274,10 +274,10 @@ export default function ExploreDocQuality({
           {/* HAPI Prevention - Potential Value */}
           <div className="space-y-0">
             <div
-              className={`w-full p-4 rounded-t-lg text-left transition-all border-2 border-dashed ${
+              className={`w-full p-4 text-left transition-all border-2 border-dashed ${
                 docQualityInputs.nursingHapiEnabled 
-                  ? "bg-white border-[#EA2C00]/30" 
-                  : "bg-white/70 hover:bg-white border-transparent"
+                  ? (docQualityInputs.nursingHapiExpanded ? "bg-white border-[#EA2C00]/30 rounded-t-lg" : "bg-white border-[#EA2C00]/30 rounded-lg")
+                  : "bg-white/70 hover:bg-white border-transparent rounded-lg"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -288,22 +288,33 @@ export default function ExploreDocQuality({
                   </div>
                   <p className="text-sm text-[#888888]">Real-time documentation enables earlier intervention</p>
                 </div>
-                <button
-                  onClick={() => updateDocInputs({ nursingHapiEnabled: !docQualityInputs.nursingHapiEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    docQualityInputs.nursingHapiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-nursing-hapi"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    docQualityInputs.nursingHapiEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.nursingHapiEnabled && (
+                    <button
+                      onClick={() => updateDocInputs({ nursingHapiExpanded: !docQualityInputs.nursingHapiExpanded })}
+                      className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                      data-testid="button-nursing-hapi-expand"
+                    >
+                      <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.nursingHapiExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ nursingHapiEnabled: !docQualityInputs.nursingHapiEnabled, nursingHapiExpanded: !docQualityInputs.nursingHapiEnabled ? true : docQualityInputs.nursingHapiExpanded })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.nursingHapiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-nursing-hapi"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.nursingHapiEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <AnimatePresence>
-              {docQualityInputs.nursingHapiEnabled && (
+              {docQualityInputs.nursingHapiEnabled && docQualityInputs.nursingHapiExpanded && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -420,10 +431,10 @@ export default function ExploreDocQuality({
           {/* Falls Prevention - Potential Value */}
           <div className="space-y-0">
             <div
-              className={`w-full p-4 rounded-t-lg text-left transition-all border-2 border-dashed ${
+              className={`w-full p-4 text-left transition-all border-2 border-dashed ${
                 docQualityInputs.nursingFallsEnabled 
-                  ? "bg-white border-[#EA2C00]/30" 
-                  : "bg-white/70 hover:bg-white border-transparent"
+                  ? (docQualityInputs.nursingFallsExpanded ? "bg-white border-[#EA2C00]/30 rounded-t-lg" : "bg-white border-[#EA2C00]/30 rounded-lg")
+                  : "bg-white/70 hover:bg-white border-transparent rounded-lg"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -434,22 +445,33 @@ export default function ExploreDocQuality({
                   </div>
                   <p className="text-sm text-[#888888]">Better visibility enables faster intervention</p>
                 </div>
-                <button
-                  onClick={() => updateDocInputs({ nursingFallsEnabled: !docQualityInputs.nursingFallsEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    docQualityInputs.nursingFallsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-nursing-falls"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    docQualityInputs.nursingFallsEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.nursingFallsEnabled && (
+                    <button
+                      onClick={() => updateDocInputs({ nursingFallsExpanded: !docQualityInputs.nursingFallsExpanded })}
+                      className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                      data-testid="button-nursing-falls-expand"
+                    >
+                      <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.nursingFallsExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ nursingFallsEnabled: !docQualityInputs.nursingFallsEnabled, nursingFallsExpanded: !docQualityInputs.nursingFallsEnabled ? true : docQualityInputs.nursingFallsExpanded })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.nursingFallsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-nursing-falls"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.nursingFallsEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <AnimatePresence>
-              {docQualityInputs.nursingFallsEnabled && (
+              {docQualityInputs.nursingFallsEnabled && docQualityInputs.nursingFallsExpanded && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -550,10 +572,10 @@ export default function ExploreDocQuality({
           {/* Patient Experience (HCAHPS) - Qualitative Only */}
           <div className="space-y-0">
             <div
-              className={`w-full p-4 rounded-t-lg text-left transition-all border-2 border-dashed ${
+              className={`w-full p-4 text-left transition-all border-2 border-dashed ${
                 docQualityInputs.nursingHcahpsEnabled 
-                  ? "bg-white border-[#EA2C00]/30" 
-                  : "bg-white/70 hover:bg-white border-transparent"
+                  ? (docQualityInputs.nursingHcahpsExpanded ? "bg-white border-[#EA2C00]/30 rounded-t-lg" : "bg-white border-[#EA2C00]/30 rounded-lg")
+                  : "bg-white/70 hover:bg-white border-transparent rounded-lg"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -564,22 +586,33 @@ export default function ExploreDocQuality({
                   </div>
                   <p className="text-sm text-[#888888]">More bedside time correlates with better satisfaction</p>
                 </div>
-                <button
-                  onClick={() => updateDocInputs({ nursingHcahpsEnabled: !docQualityInputs.nursingHcahpsEnabled })}
-                  className={`w-12 h-6 rounded-full relative transition-all ${
-                    docQualityInputs.nursingHcahpsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-                  }`}
-                  data-testid="toggle-nursing-hcahps"
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                    docQualityInputs.nursingHcahpsEnabled ? 'right-0.5' : 'left-0.5'
-                  }`} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {docQualityInputs.nursingHcahpsEnabled && (
+                    <button
+                      onClick={() => updateDocInputs({ nursingHcahpsExpanded: !docQualityInputs.nursingHcahpsExpanded })}
+                      className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                      data-testid="button-nursing-hcahps-expand"
+                    >
+                      <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.nursingHcahpsExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => updateDocInputs({ nursingHcahpsEnabled: !docQualityInputs.nursingHcahpsEnabled, nursingHcahpsExpanded: !docQualityInputs.nursingHcahpsEnabled ? true : docQualityInputs.nursingHcahpsExpanded })}
+                    className={`w-12 h-6 rounded-full relative transition-all ${
+                      docQualityInputs.nursingHcahpsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                    }`}
+                    data-testid="toggle-nursing-hcahps"
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                      docQualityInputs.nursingHcahpsEnabled ? 'right-0.5' : 'left-0.5'
+                    }`} />
+                  </button>
+                </div>
               </div>
             </div>
 
             <AnimatePresence>
-              {docQualityInputs.nursingHcahpsEnabled && (
+              {docQualityInputs.nursingHcahpsEnabled && docQualityInputs.nursingHcahpsExpanded && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -645,32 +678,45 @@ export default function ExploreDocQuality({
 
         {/* DRG Accuracy */}
         <div className="space-y-0">
-          <button
-            onClick={() => updateDocInputs({ ipDrgEnabled: !docQualityInputs.ipDrgEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+          <div
+            className={`w-full p-4 text-left transition-all ${
               docQualityInputs.ipDrgEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? (docQualityInputs.ipDrgExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
-            data-testid="toggle-drg"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">{config.driver1Title}</p>
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.ipDrgEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {docQualityInputs.ipDrgEnabled && (
+                  <button
+                    onClick={() => updateDocInputs({ ipDrgExpanded: !docQualityInputs.ipDrgExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-drg-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.ipDrgExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateDocInputs({ ipDrgEnabled: !docQualityInputs.ipDrgEnabled, ipDrgExpanded: !docQualityInputs.ipDrgEnabled ? true : docQualityInputs.ipDrgExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.ipDrgEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-drg"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.ipDrgEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {docQualityInputs.ipDrgEnabled && (
+            {docQualityInputs.ipDrgEnabled && docQualityInputs.ipDrgExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -904,32 +950,45 @@ export default function ExploreDocQuality({
 
         {/* CDI Query Reduction */}
         <div className="space-y-0">
-          <button
-            onClick={() => updateDocInputs({ ipCdiEnabled: !docQualityInputs.ipCdiEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+          <div
+            className={`w-full p-4 text-left transition-all ${
               docQualityInputs.ipCdiEnabled 
-                ? "bg-white" 
-                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB]"
+                ? (docQualityInputs.ipCdiExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
-            data-testid="toggle-cdi"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">{config.driver2Title}</p>
                 <p className="text-sm text-[#888888]">{config.driver2Subtitle}</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.ipCdiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.ipCdiEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {docQualityInputs.ipCdiEnabled && (
+                  <button
+                    onClick={() => updateDocInputs({ ipCdiExpanded: !docQualityInputs.ipCdiExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-cdi-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.ipCdiExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateDocInputs({ ipCdiEnabled: !docQualityInputs.ipCdiEnabled, ipCdiExpanded: !docQualityInputs.ipCdiEnabled ? true : docQualityInputs.ipCdiExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.ipCdiEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-cdi"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.ipCdiEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {docQualityInputs.ipCdiEnabled && (
+            {docQualityInputs.ipCdiEnabled && docQualityInputs.ipCdiExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1081,32 +1140,45 @@ export default function ExploreDocQuality({
 
         {/* wRVU Improvement */}
         <div className="space-y-0">
-          <button
-            onClick={() => updateDocInputs({ wrvuEnabled: !docQualityInputs.wrvuEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+          <div
+            className={`w-full p-4 text-left transition-all ${
               docQualityInputs.wrvuEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white border-transparent"
+                ? (docQualityInputs.wrvuExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
-            data-testid="toggle-wrvu"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">{config.driver1Title}</p>
                 <p className="text-sm text-[#888888]">{config.driver1Subtitle}</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.wrvuEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {docQualityInputs.wrvuEnabled && (
+                  <button
+                    onClick={() => updateDocInputs({ wrvuExpanded: !docQualityInputs.wrvuExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-wrvu-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.wrvuExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateDocInputs({ wrvuEnabled: !docQualityInputs.wrvuEnabled, wrvuExpanded: !docQualityInputs.wrvuEnabled ? true : docQualityInputs.wrvuExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.wrvuEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-wrvu"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.wrvuEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {docQualityInputs.wrvuEnabled && (
+            {docQualityInputs.wrvuEnabled && docQualityInputs.wrvuExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1213,32 +1285,45 @@ export default function ExploreDocQuality({
         {/* HCC Capture - Only show for Outpatient */}
         {showHCC && (
         <div className="space-y-0">
-          <button
-            onClick={() => updateDocInputs({ hccEnabled: !docQualityInputs.hccEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+          <div
+            className={`w-full p-4 text-left transition-all ${
               docQualityInputs.hccEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white border-transparent"
+                ? (docQualityInputs.hccExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
-            data-testid="toggle-hcc"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">HCC Capture</p>
                 <p className="text-sm text-[#888888]">Recapture missed diagnoses for MA population</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.hccEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {docQualityInputs.hccEnabled && (
+                  <button
+                    onClick={() => updateDocInputs({ hccExpanded: !docQualityInputs.hccExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-hcc-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.hccExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateDocInputs({ hccEnabled: !docQualityInputs.hccEnabled, hccExpanded: !docQualityInputs.hccEnabled ? true : docQualityInputs.hccExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.hccEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-hcc"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.hccEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {docQualityInputs.hccEnabled && (
+            {docQualityInputs.hccEnabled && docQualityInputs.hccExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -1434,32 +1519,45 @@ export default function ExploreDocQuality({
 
         {/* Denial Prevention */}
         <div className="space-y-0">
-          <button
-            onClick={() => updateDocInputs({ denialsEnabled: !docQualityInputs.denialsEnabled })}
-            className={`w-full p-4 rounded-lg text-left transition-all ${
+          <div
+            className={`w-full p-4 text-left transition-all ${
               docQualityInputs.denialsEnabled 
-                ? "bg-white" 
-                : "bg-white/70 hover:bg-white border-transparent"
+                ? (docQualityInputs.denialsExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
             }`}
-            data-testid="toggle-denials"
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-black">{config.driver3Title}</p>
                 <p className="text-sm text-[#888888]">{config.driver3Subtitle}</p>
               </div>
-              <div className={`w-12 h-6 rounded-full relative transition-all ${
-                docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
-                  docQualityInputs.denialsEnabled ? 'right-0.5' : 'left-0.5'
-                }`} />
+              <div className="flex items-center gap-3">
+                {docQualityInputs.denialsEnabled && (
+                  <button
+                    onClick={() => updateDocInputs({ denialsExpanded: !docQualityInputs.denialsExpanded })}
+                    className="p-1 hover:bg-[#F5F0EB] rounded transition-colors"
+                    data-testid="button-denials-expand"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-[#888888] transition-transform ${docQualityInputs.denialsExpanded ? 'rotate-0' : '-rotate-90'}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => updateDocInputs({ denialsEnabled: !docQualityInputs.denialsEnabled, denialsExpanded: !docQualityInputs.denialsEnabled ? true : docQualityInputs.denialsExpanded })}
+                  className={`w-12 h-6 rounded-full relative transition-all ${
+                    docQualityInputs.denialsEnabled ? 'bg-[#EA2C00]' : 'bg-[#D1D5DB]'
+                  }`}
+                  data-testid="toggle-denials"
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${
+                    docQualityInputs.denialsEnabled ? 'right-0.5' : 'left-0.5'
+                  }`} />
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
           <AnimatePresence>
-            {docQualityInputs.denialsEnabled && (
+            {docQualityInputs.denialsEnabled && docQualityInputs.denialsExpanded && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
