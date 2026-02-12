@@ -280,7 +280,7 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
   // Time value driver inputs
   timeDriverInputs: {
     patientAccessEnabled: false,
-    capacityPercent: 10,
+    capacityPercent: 20,
     visitDuration: 30,
     revenuePerVisit: 200,
     costReductionEnabled: false,
