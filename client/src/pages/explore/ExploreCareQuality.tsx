@@ -136,21 +136,25 @@ export default function ExploreCareQuality({
             </motion.div>
 
             <motion.div
+              className="bg-[#F5F0EB] rounded-lg p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
-                CARE QUALITY POTENTIAL
-              </p>
+              <div>
+                <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
+                  CARE QUALITY POTENTIAL
+                </p>
+                <div className="h-px bg-[#D1D5DB] mb-6" />
+              </div>
 
               {/* Driver 1: HAPI Prevention */}
-              <div className="mb-4">
+              <div className="space-y-0">
                 <div
                   className={`w-full p-4 text-left transition-all ${
                     docQualityInputs.nursingHapiEnabled
-                      ? (hapiExpanded ? "bg-[#F5F0EB] rounded-t-lg" : "bg-[#F5F0EB] rounded-lg")
-                      : "bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-lg"
+                      ? (hapiExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                      : "bg-white/70 hover:bg-white rounded-lg"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -197,7 +201,7 @@ export default function ExploreCareQuality({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-[#F5F0EB] rounded-b-lg p-5 pt-0">
+                      <div className="bg-white rounded-b-lg p-5 pt-0">
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
                           HAPIs happen when assessments are missed or interventions are delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured as they're observed—enabling earlier intervention.
@@ -207,7 +211,7 @@ export default function ExploreCareQuality({
                         <div className="grid grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
-                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {formatNumber(Math.round(patientDaysPerYear))}
                             </div>
                           </div>
@@ -217,14 +221,14 @@ export default function ExploreCareQuality({
                               value={docQualityInputs.nursingHapiRate}
                               onChange={(v: number) => updateDocQualityInputs({ nursingHapiRate: v })}
                               step={0.1}
-                              className="h-12 bg-white"
+                              className="h-12 bg-[#F5F0EB]"
                               data-testid="input-hapi-rate"
                             />
                             <p className="text-xs text-[#888888]">National: 2-5%</p>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">HAPIs/Year</label>
-                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {hapisPerYear.toFixed(1)}
                             </div>
                           </div>
@@ -238,7 +242,7 @@ export default function ExploreCareQuality({
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingHapiPreventionRate}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingHapiPreventionRate: v })}
-                                className="h-12 bg-white pr-8"
+                                className="h-12 bg-[#F5F0EB] pr-8"
                                 data-testid="input-hapi-prevention-rate"
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -252,7 +256,7 @@ export default function ExploreCareQuality({
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingHapiCost}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingHapiCost: v })}
-                                className="h-12 bg-white pl-7"
+                                className="h-12 bg-[#F5F0EB] pl-7"
                                 data-testid="input-hapi-cost"
                               />
                             </div>
@@ -261,7 +265,7 @@ export default function ExploreCareQuality({
                         </div>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
-                        <div className="bg-white rounded-lg p-4">
+                        <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-[#666666]">HAPIs/year</span>
@@ -290,7 +294,7 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
 
-                          <div className="mt-4 bg-[#F5F0EB]/60 rounded-lg p-3">
+                          <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
                               Care time effectiveness ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects how care time allocation from the Value Drivers page amplifies prevention. More bedside time = better assessment and intervention.
                             </p>
@@ -303,12 +307,12 @@ export default function ExploreCareQuality({
               </div>
 
               {/* Driver 2: Falls Prevention */}
-              <div className="mb-4">
+              <div className="space-y-0">
                 <div
                   className={`w-full p-4 text-left transition-all ${
                     docQualityInputs.nursingFallsEnabled
-                      ? (fallsExpanded ? "bg-[#F5F0EB] rounded-t-lg" : "bg-[#F5F0EB] rounded-lg")
-                      : "bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-lg"
+                      ? (fallsExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                      : "bg-white/70 hover:bg-white rounded-lg"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -355,7 +359,7 @@ export default function ExploreCareQuality({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-[#F5F0EB] rounded-b-lg p-5 pt-0">
+                      <div className="bg-white rounded-b-lg p-5 pt-0">
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
                           Falls happen when risk factors aren't properly assessed or communicated. Real-time documentation ensures fall risk assessments, mobility status, and interventions are captured as they're observed—enabling better prevention protocols.
@@ -365,7 +369,7 @@ export default function ExploreCareQuality({
                         <div className="grid grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
-                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {formatNumber(Math.round(patientDaysPerYear))}
                             </div>
                           </div>
@@ -375,14 +379,14 @@ export default function ExploreCareQuality({
                               value={docQualityInputs.nursingFallsRate}
                               onChange={(v: number) => updateDocQualityInputs({ nursingFallsRate: v })}
                               step={0.1}
-                              className="h-12 bg-white"
+                              className="h-12 bg-[#F5F0EB]"
                               data-testid="input-falls-rate"
                             />
                             <p className="text-xs text-[#888888]">National: 3-5 per 1,000 patient days</p>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Falls/Year</label>
-                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {fallsPerYear.toFixed(1)}
                             </div>
                           </div>
@@ -396,7 +400,7 @@ export default function ExploreCareQuality({
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingFallsPreventionRate}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingFallsPreventionRate: v })}
-                                className="h-12 bg-white pr-8"
+                                className="h-12 bg-[#F5F0EB] pr-8"
                                 data-testid="input-falls-prevention-rate"
                               />
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#888888]">%</span>
@@ -410,7 +414,7 @@ export default function ExploreCareQuality({
                               <FormattedNumberInput
                                 value={docQualityInputs.nursingFallsCost}
                                 onChange={(v: number) => updateDocQualityInputs({ nursingFallsCost: v })}
-                                className="h-12 bg-white pl-7"
+                                className="h-12 bg-[#F5F0EB] pl-7"
                                 data-testid="input-falls-cost"
                               />
                             </div>
@@ -419,7 +423,7 @@ export default function ExploreCareQuality({
                         </div>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
-                        <div className="bg-white rounded-lg p-4">
+                        <div className="bg-[#F5F0EB] rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-[#666666]">Falls/year</span>
@@ -448,7 +452,7 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
 
-                          <div className="mt-4 bg-[#F5F0EB]/60 rounded-lg p-3">
+                          <div className="mt-4 bg-white/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
                               Care time effectiveness ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects how care time allocation from the Value Drivers page amplifies prevention. More bedside time = better assessment and intervention.
                             </p>
@@ -461,12 +465,12 @@ export default function ExploreCareQuality({
               </div>
 
               {/* Driver 3: Patient Experience (HCAHPS) */}
-              <div className="mb-6">
+              <div className="space-y-0">
                 <div
                   className={`w-full p-4 text-left transition-all ${
                     docQualityInputs.nursingHcahpsEnabled
-                      ? (hcahpsExpanded ? "bg-[#F5F0EB] rounded-t-lg" : "bg-[#F5F0EB] rounded-lg")
-                      : "bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-lg"
+                      ? (hcahpsExpanded ? "bg-white rounded-t-lg" : "bg-white rounded-lg")
+                      : "bg-white/70 hover:bg-white rounded-lg"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -513,13 +517,13 @@ export default function ExploreCareQuality({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-[#F5F0EB] rounded-b-lg p-5 pt-0">
+                      <div className="bg-white rounded-b-lg p-5 pt-0">
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
                         <p className="text-sm text-black mb-6">
                           When nurses spend less time on documentation, they spend more time with patients. Research consistently shows bedside time correlates with patient satisfaction.
                         </p>
 
-                        <div className="bg-white rounded-lg p-6 text-center mb-6">
+                        <div className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-6">
                           <p className="text-3xl font-bold text-[#EA2C00]">
                             {carePerNurseWeek.toFixed(1)}
                           </p>
@@ -533,7 +537,7 @@ export default function ExploreCareQuality({
                           HCAHPS scores are influenced by dozens of factors—wait times, pain management, communication, environment, and more. We can't credibly attribute HCAHPS improvement to documentation alone.
                         </p>
 
-                        <div className="bg-white/60 rounded-lg p-4 mb-4">
+                        <div className="bg-[#F5F0EB]/60 rounded-lg p-4 mb-4">
                           <p className="text-sm text-[#666666]">
                             But consider: Hospitals in the top quartile of HCAHPS receive ~2% higher reimbursement through Value-Based Purchasing. Even small improvements matter.
                           </p>
