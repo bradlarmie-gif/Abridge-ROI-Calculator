@@ -60,15 +60,15 @@ const OUTPATIENT_DOC_DRIVER_CONFIGS: DocDriverConfigWithPresets[] = [
     shortLabel: 'HCC',
     description: 'Document chronic conditions that affect risk adjustment',
     icon: Building2,
-    min: 5,
-    max: 30,
-    step: 5,
+    min: 2,
+    max: 20,
+    step: 2,
     suffix: '%',
     detail: 'Most relevant for Medicare Advantage and ACO populations',
     presets: [
-      { label: 'Conservative', value: 10 },
-      { label: 'Typical', value: 15 },
-      { label: 'Aggressive', value: 25 },
+      { label: 'Conservative', value: 6 },
+      { label: 'Typical', value: 10 },
+      { label: 'Aggressive', value: 15 },
     ],
   },
   {
@@ -286,11 +286,11 @@ const DEFAULT_ASSUMPTIONS: EditableAssumptions = {
   // HCC panel-based defaults
   panelSizePerProvider: 1500,
   maPatientPct: 30,
-  hccGapRate: 33,
+  hccGapRate: 25,
   avgMissedHccsPerPatient: 1.5,
-  rafImpactPerHcc: 0.4,
-  annualPaymentPerRaf: 12000,
-  hccRealization: 50,
+  rafImpactPerHcc: 0.15,
+  annualPaymentPerRaf: 10000,
+  hccRealization: 40,
   // Denials - unappealable focus (Typical scenario)
   baselineDenialRate: 8,
   unappealableRate: 40,
@@ -411,7 +411,7 @@ function EditableValue({
 
 const DEFAULT_DOC_DRIVERS = {
   wrvu: { enabled: false, value: 5 },  // Typical scenario default
-  hcc: { enabled: false, value: 15 },
+  hcc: { enabled: false, value: 10 },
   denials: { enabled: false, value: 50 },  // Typical prevention target
 };
 

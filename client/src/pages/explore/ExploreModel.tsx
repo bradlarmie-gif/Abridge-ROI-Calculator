@@ -81,7 +81,7 @@ export default function ExploreModel({
   // Doc value breakdown
   const eligibleEncounters = state.annualEncounters * (state.utilizationPercent / 100);
   const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
-  const hccScenarios: Record<string, number> = { conservative: 10, typical: 15, aggressive: 25 };
+  const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
 
   const wrvuValue = useMemo(() => {

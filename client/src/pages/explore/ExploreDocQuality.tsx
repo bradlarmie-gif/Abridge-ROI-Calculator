@@ -39,7 +39,7 @@ export default function ExploreDocQuality({
 
   // Scenario percentages
   const wrvuScenarios: Record<ScenarioLevel, number> = { conservative: 2, typical: 5, aggressive: 7 };
-  const hccScenarios: Record<ScenarioLevel, number> = { conservative: 10, typical: 15, aggressive: 25 };
+  const hccScenarios: Record<ScenarioLevel, number> = { conservative: 6, typical: 10, aggressive: 15 };
   const denialsScenarios: Record<ScenarioLevel, number> = { conservative: 25, typical: 50, aggressive: 75 };
   const ipDrgProtectionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 20, aggressive: 25 };
   const ipCdiReductionScenarios: Record<ScenarioLevel, number> = { conservative: 15, typical: 25, aggressive: 35 };
@@ -1460,13 +1460,14 @@ export default function ExploreDocQuality({
                         <span className="text-[#666666]">× RAF impact per HCC</span>
                         <input
                           type="number"
-                          step="0.1"
+                          step="0.01"
                           value={docQualityInputs.rafImpact}
                           onChange={(e) => updateDocInputs({ rafImpact: parseFloat(e.target.value) || 0 })}
                           className="w-14 h-7 text-right bg-white border border-[#E5E5E5] rounded px-2 text-sm"
                           data-testid="input-raf-impact"
                         />
                       </div>
+                      <p className="text-xs text-[#888888] -mt-1 mb-1">Default assumes low-to-mid severity recapture (0.15 RAF per HCC).</p>
                       <div className="flex justify-between items-center">
                         <span className="text-[#666666]">× Annual payment per RAF</span>
                         <div className="flex items-center gap-1">

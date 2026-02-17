@@ -997,8 +997,8 @@ function getDriverLogic(driver: DriverCalculation, data: OutpatientPDFData): Dri
           },
           {
             label: "STEP 3: RAF VALUE",
-            formula: `${formatNumber((inputs.capturedHccs as number) || 0)} HCCs × $${inputs.rafValue || 1200} × 60% realization = ${formatCurrency(driver.value)}`,
-            explanation: "The 60% realization accounts for payer validation and retrospective adjustments.",
+            formula: `${formatNumber((inputs.capturedHccs as number) || 0)} HCCs × $${inputs.rafValue || 1200} × 40% realization = ${formatCurrency(driver.value)}`,
+            explanation: "The 40% realization accounts for RADV audits, payment delays, and rejections.",
           },
         ],
         calibration: "HCC capture represents revenue you've already earned through patient care—you're just not capturing it in documentation.",
@@ -1203,7 +1203,7 @@ const TransparencyPage = ({ data, pageNum, totalPages }: { data: OutpatientPDFDa
   const realizationRates = [
     { rate: "Access realization", value: "15%", why: "Scheduling friction, demand variability" },
     { rate: "wRVU realization", value: "75%", why: "Payer mix variation" },
-    { rate: "HCC realization", value: "60%", why: "Payer validation timing" },
+    { rate: "HCC realization", value: "40%", why: "Payer validation timing" },
     { rate: "Retention impact", value: "4%", why: "Multi-factor burnout attribution" },
   ];
 

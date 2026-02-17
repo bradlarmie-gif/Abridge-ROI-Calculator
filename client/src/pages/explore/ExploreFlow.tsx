@@ -355,11 +355,11 @@ export const DEFAULT_EXPLORE_STATE: ExploreState = {
     hccScenario: 'typical',
     panelSize: 1500,
     maPercent: 30,
-    gapRate: 33,
+    gapRate: 25,
     avgHccs: 1.5,
-    rafImpact: 0.4,
-    annualPayment: 12000,
-    hccRealization: 50,
+    rafImpact: 0.15,
+    annualPayment: 10000,
+    hccRealization: 40,
     denialsEnabled: false,
     denialsScenario: 'typical',
     denialRate: 8,
@@ -634,7 +634,7 @@ export default function ExploreFlow({ onBackToJourney, initialCareSetting, initi
     let total = 0;
     
     const wrvuScenarios: Record<string, number> = { conservative: 2, typical: 5, aggressive: 7 };
-    const hccScenarios: Record<string, number> = { conservative: 10, typical: 15, aggressive: 25 };
+    const hccScenarios: Record<string, number> = { conservative: 6, typical: 10, aggressive: 15 };
     const denialsScenarios: Record<string, number> = { conservative: 25, typical: 50, aggressive: 75 };
 
     // wRVU

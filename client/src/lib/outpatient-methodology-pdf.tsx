@@ -231,8 +231,8 @@ function Page3() {
         </View>
         <View style={[styles.tableRow, styles.tableRowAlt]}>
           <Text style={[styles.tableCell, { flex: 2.5 }]}>HCC gap rate</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>30-50%</Text>
-          <Text style={[styles.tableCell, { flex: 1 }]}>40%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>20-30%</Text>
+          <Text style={[styles.tableCell, { flex: 1 }]}>25%</Text>
           <Text style={[styles.tableCell, { flex: 2 }]}>MA population studies</Text>
         </View>
         <View style={styles.tableRow}>

@@ -329,11 +329,11 @@ export default function App() {
     // HCC not applicable for ED - matching PDF expected field names
     if (state.careSetting !== 'ed' && state.docDrivers.hcc.enabled && hccValue > 0) {
       const maPercentage = 30;
-      const gapRate = 33;
+      const gapRate = 25;
       const avgMissedHccs = 1.5;
-      const rafImpact = 0.4;
-      const annualPayment = 12000;
-      const realizationRate = 50;
+      const rafImpact = 0.15;
+      const annualPayment = 10000;
+      const realizationRate = 40;
       const captureRate = state.docDrivers.hcc.value; // User-configurable capture rate
       const panelSize = state.numberOfProviders * 1500;
       const patientsWithGaps = Math.round(panelSize * (maPercentage / 100) * (gapRate / 100));

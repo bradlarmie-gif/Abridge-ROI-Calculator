@@ -493,8 +493,8 @@ export function MethodologyOutpatient({ onBack, onNavigateToSetting }: Methodolo
                         <TooltipTrigger asChild>
                           <tr className="border-b border-[#E5E5E5] hover:bg-[#F5F0EB] cursor-help transition-colors">
                             <td className="py-3">HCC gap rate</td>
-                            <td className="py-3">25-35%</td>
-                            <td className="py-3">33%</td>
+                            <td className="py-3">20-30%</td>
+                            <td className="py-3">25%</td>
                           </tr>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
