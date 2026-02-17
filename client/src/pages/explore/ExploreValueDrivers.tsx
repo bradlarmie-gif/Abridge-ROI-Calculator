@@ -192,15 +192,20 @@ export default function ExploreValueDrivers({
     
     // Care time hours based on allocation percentage
     const careTimeHours = totalHoursSaved * (timeDriverInputs.nursingCareTimePercent / 100);
+
+    // Care time effectiveness: more bedside time = better prevention
+    // At 0% care time, documentation alone provides 30% effectiveness
+    // At 100% care time, full effectiveness
+    const careTimeEffectiveness = 0.30 + ((timeDriverInputs.nursingCareTimePercent / 100) * 0.70);
     
     // Falls prevention calculation (rate is per 1,000 patient days)
     const fallsPerYear = (patientDaysPerYear / 1000) * timeDriverInputs.nursingFallsRate;
-    const preventableFalls = fallsPerYear * (timeDriverInputs.nursingFallsPreventablePct / 100);
+    const preventableFalls = fallsPerYear * (timeDriverInputs.nursingFallsPreventablePct / 100) * careTimeEffectiveness;
     const grossFallsValue = preventableFalls * timeDriverInputs.nursingCostPerFall;
     
     // HAPI prevention calculation (rate is per 1,000 patient days)
     const hapisPerYear = (patientDaysPerYear / 1000) * timeDriverInputs.nursingHapiRate;
-    const preventableHapis = hapisPerYear * (timeDriverInputs.nursingHapiPreventablePct / 100);
+    const preventableHapis = hapisPerYear * (timeDriverInputs.nursingHapiPreventablePct / 100) * careTimeEffectiveness;
     const grossHapiValue = preventableHapis * timeDriverInputs.nursingCostPerHapi;
     
     // Apply realization rate

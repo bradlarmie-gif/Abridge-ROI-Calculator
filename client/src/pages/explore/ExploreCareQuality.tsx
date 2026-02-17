@@ -49,13 +49,18 @@ export default function ExploreCareQuality({
     return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
   }, [state.nursingStaffedBeds, state.nursingOccupancyRate]);
 
+  const careTimeEffectiveness = useMemo(() => {
+    const carePercent = timeDriverInputs.nursingCareTimePercent / 100;
+    return 0.30 + (carePercent * 0.70);
+  }, [timeDriverInputs.nursingCareTimePercent]);
+
   const hapisPerYear = useMemo(() => {
     return (patientDaysPerYear / 1000) * docQualityInputs.nursingHapiRate;
   }, [patientDaysPerYear, docQualityInputs.nursingHapiRate]);
 
   const hapisPrevented = useMemo(() => {
-    return hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100);
-  }, [hapisPerYear, docQualityInputs.nursingHapiPreventionRate]);
+    return hapisPerYear * (docQualityInputs.nursingHapiPreventionRate / 100) * careTimeEffectiveness;
+  }, [hapisPerYear, docQualityInputs.nursingHapiPreventionRate, careTimeEffectiveness]);
 
   const hapiValue = useMemo(() => {
     return hapisPrevented * docQualityInputs.nursingHapiCost;
@@ -66,8 +71,8 @@ export default function ExploreCareQuality({
   }, [patientDaysPerYear, docQualityInputs.nursingFallsRate]);
 
   const fallsPrevented = useMemo(() => {
-    return fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100);
-  }, [fallsPerYear, docQualityInputs.nursingFallsPreventionRate]);
+    return fallsPerYear * (docQualityInputs.nursingFallsPreventionRate / 100) * careTimeEffectiveness;
+  }, [fallsPerYear, docQualityInputs.nursingFallsPreventionRate, careTimeEffectiveness]);
 
   const fallsValue = useMemo(() => {
     return fallsPrevented * docQualityInputs.nursingFallsCost;
@@ -144,8 +149,8 @@ export default function ExploreCareQuality({
                 <div
                   className={`w-full p-4 text-left transition-all ${
                     docQualityInputs.nursingHapiEnabled
-                      ? (hapiExpanded ? "bg-white rounded-t-lg border border-b-0 border-[#E5E5E5]" : "bg-white rounded-lg border border-[#E5E5E5]")
-                      : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+                      ? (hapiExpanded ? "bg-[#F5F0EB] rounded-t-lg" : "bg-[#F5F0EB] rounded-lg")
+                      : "bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-lg"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -192,7 +197,7 @@ export default function ExploreCareQuality({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-white rounded-b-lg border border-t-0 border-[#E5E5E5] p-5">
+                      <div className="bg-[#F5F0EB] rounded-b-lg p-5 pt-0">
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
                           HAPIs happen when assessments are missed or interventions are delayed. Real-time documentation ensures skin assessments, turning schedules, and risk factors are captured as they're observed—enabling earlier intervention.
@@ -202,7 +207,7 @@ export default function ExploreCareQuality({
                         <div className="grid grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
-                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {formatNumber(Math.round(patientDaysPerYear))}
                             </div>
                           </div>
@@ -219,7 +224,7 @@ export default function ExploreCareQuality({
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">HAPIs/Year</label>
-                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {hapisPerYear.toFixed(1)}
                             </div>
                           </div>
@@ -256,7 +261,7 @@ export default function ExploreCareQuality({
                         </div>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
-                        <div className="bg-[#F5F0EB] rounded-lg p-4">
+                        <div className="bg-white rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-[#666666]">HAPIs/year</span>
@@ -265,6 +270,10 @@ export default function ExploreCareQuality({
                             <div className="flex justify-between">
                               <span className="text-[#666666]">x Prevention rate</span>
                               <span className="font-semibold text-black">{docQualityInputs.nursingHapiPreventionRate}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">x Care time effectiveness</span>
+                              <span className="font-semibold text-black">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-[#666666]">= HAPIs prevented</span>
@@ -281,9 +290,9 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
 
-                          <div className="mt-4 bg-white/60 rounded-lg p-3">
+                          <div className="mt-4 bg-[#F5F0EB]/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              This is potential value. Not all HAPIs are documentation-preventable. 5% represents cases where real-time assessment documentation would have triggered earlier intervention.
+                              Care time effectiveness ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects how care time allocation from the Value Drivers page amplifies prevention. More bedside time = better assessment and intervention.
                             </p>
                           </div>
                         </div>
@@ -298,8 +307,8 @@ export default function ExploreCareQuality({
                 <div
                   className={`w-full p-4 text-left transition-all ${
                     docQualityInputs.nursingFallsEnabled
-                      ? (fallsExpanded ? "bg-white rounded-t-lg border border-b-0 border-[#E5E5E5]" : "bg-white rounded-lg border border-[#E5E5E5]")
-                      : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+                      ? (fallsExpanded ? "bg-[#F5F0EB] rounded-t-lg" : "bg-[#F5F0EB] rounded-lg")
+                      : "bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-lg"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -346,7 +355,7 @@ export default function ExploreCareQuality({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-white rounded-b-lg border border-t-0 border-[#E5E5E5] p-5">
+                      <div className="bg-[#F5F0EB] rounded-b-lg p-5 pt-0">
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE THEORY</p>
                         <p className="text-sm text-black mb-6">
                           Falls happen when risk factors aren't properly assessed or communicated. Real-time documentation ensures fall risk assessments, mobility status, and interventions are captured as they're observed—enabling better prevention protocols.
@@ -356,7 +365,7 @@ export default function ExploreCareQuality({
                         <div className="grid grid-cols-3 gap-4 mb-6">
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Patient Days/Year</label>
-                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {formatNumber(Math.round(patientDaysPerYear))}
                             </div>
                           </div>
@@ -373,7 +382,7 @@ export default function ExploreCareQuality({
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm text-[#888888]">Falls/Year</label>
-                            <div className="h-12 bg-[#F5F0EB] rounded-md flex items-center px-3 text-sm font-semibold text-black">
+                            <div className="h-12 bg-white rounded-md flex items-center px-3 text-sm font-semibold text-black">
                               {fallsPerYear.toFixed(1)}
                             </div>
                           </div>
@@ -410,7 +419,7 @@ export default function ExploreCareQuality({
                         </div>
 
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">STEP 3: POTENTIAL VALUE</p>
-                        <div className="bg-[#F5F0EB] rounded-lg p-4">
+                        <div className="bg-white rounded-lg p-4">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-[#666666]">Falls/year</span>
@@ -419,6 +428,10 @@ export default function ExploreCareQuality({
                             <div className="flex justify-between">
                               <span className="text-[#666666]">x Prevention rate</span>
                               <span className="font-semibold text-black">{docQualityInputs.nursingFallsPreventionRate}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#666666]">x Care time effectiveness</span>
+                              <span className="font-semibold text-black">{(careTimeEffectiveness * 100).toFixed(0)}%</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-[#666666]">= Falls prevented</span>
@@ -435,9 +448,9 @@ export default function ExploreCareQuality({
                             </div>
                           </div>
 
-                          <div className="mt-4 bg-white/60 rounded-lg p-3">
+                          <div className="mt-4 bg-[#F5F0EB]/60 rounded-lg p-3">
                             <p className="text-xs text-[#888888]">
-                              This is potential value. Not all falls are documentation-preventable. 5% represents cases where real-time documentation would have triggered earlier intervention.
+                              Care time effectiveness ({(careTimeEffectiveness * 100).toFixed(0)}%) reflects how care time allocation from the Value Drivers page amplifies prevention. More bedside time = better assessment and intervention.
                             </p>
                           </div>
                         </div>
@@ -452,8 +465,8 @@ export default function ExploreCareQuality({
                 <div
                   className={`w-full p-4 text-left transition-all ${
                     docQualityInputs.nursingHcahpsEnabled
-                      ? (hcahpsExpanded ? "bg-white rounded-t-lg border border-b-0 border-[#E5E5E5]" : "bg-white rounded-lg border border-[#E5E5E5]")
-                      : "bg-white border border-[#E5E5E5] hover:border-[#D1D5DB] rounded-lg"
+                      ? (hcahpsExpanded ? "bg-[#F5F0EB] rounded-t-lg" : "bg-[#F5F0EB] rounded-lg")
+                      : "bg-[#F5F0EB] hover:bg-[#EDE7E0] rounded-lg"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -500,13 +513,13 @@ export default function ExploreCareQuality({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-white rounded-b-lg border border-t-0 border-[#E5E5E5] p-5">
+                      <div className="bg-[#F5F0EB] rounded-b-lg p-5 pt-0">
                         <p className="text-[11px] font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">THE CONNECTION</p>
                         <p className="text-sm text-black mb-6">
                           When nurses spend less time on documentation, they spend more time with patients. Research consistently shows bedside time correlates with patient satisfaction.
                         </p>
 
-                        <div className="bg-[#F5F0EB] rounded-lg p-6 text-center mb-6">
+                        <div className="bg-white rounded-lg p-6 text-center mb-6">
                           <p className="text-3xl font-bold text-[#EA2C00]">
                             {carePerNurseWeek.toFixed(1)}
                           </p>
@@ -520,7 +533,7 @@ export default function ExploreCareQuality({
                           HCAHPS scores are influenced by dozens of factors—wait times, pain management, communication, environment, and more. We can't credibly attribute HCAHPS improvement to documentation alone.
                         </p>
 
-                        <div className="bg-[#F5F0EB]/60 rounded-lg p-4 mb-4">
+                        <div className="bg-white/60 rounded-lg p-4 mb-4">
                           <p className="text-sm text-[#666666]">
                             But consider: Hospitals in the top quartile of HCAHPS receive ~2% higher reimbursement through Value-Based Purchasing. Even small improvements matter.
                           </p>
