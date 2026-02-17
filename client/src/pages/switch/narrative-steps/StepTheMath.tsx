@@ -152,13 +152,18 @@ export default function StepTheMath({
     const wrvuGapValue = Math.round(missingWRVUs * assumptions.wrvuDollarValue * (assumptions.wrvuRealization / 100));
 
     const annualGap = utilizationGapValue + netEfficiencyGapValue + wrvuGapValue;
-    
-    const optimizedYear1 = Math.round(annualGap * 0.87);
-    const optimizedYear2 = Math.round(optimizedYear1 + (annualGap * 1.10));
-    const optimizedYear3 = Math.round(optimizedYear2 + (annualGap * 1.15));
-    const currentYear1 = Math.round(annualGap * 0.10);
-    const currentYear2 = Math.round(currentYear1 + (annualGap * 0.11));
-    const currentYear3 = Math.round(currentYear2 + (annualGap * 0.12));
+
+    const yourTimeSavedHours = (encountersWithAI * inputs.timeSavedPerEncounter) / 60;
+    const yourAnnualValue = yourTimeSavedHours * assumptions.hourlyRate * (assumptions.timeConversion / 100);
+    const abridgeAnnualValue = yourAnnualValue + annualGap;
+
+    const currentYear1 = Math.round(yourAnnualValue);
+    const currentYear2 = Math.round(currentYear1 + yourAnnualValue * 1.03);
+    const currentYear3 = Math.round(currentYear2 + yourAnnualValue * 1.05);
+
+    const optimizedYear1 = Math.round(abridgeAnnualValue * 0.87);
+    const optimizedYear2 = Math.round(optimizedYear1 + abridgeAnnualValue * 1.05);
+    const optimizedYear3 = Math.round(optimizedYear2 + abridgeAnnualValue * 1.10);
 
     const switchNowValue = optimizedYear3;
     const wait6MonthsValue = Math.round(optimizedYear3 - (annualGap * 0.5));

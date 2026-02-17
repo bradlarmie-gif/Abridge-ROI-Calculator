@@ -215,13 +215,18 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const annualGap = utilizationGapValue + netEfficiencyGapValue + wrvuGapValue;
   const monthlyGap = Math.round(annualGap / 12);
 
-  const optimizedYear1 = Math.round(annualGap * 0.87);
-  const optimizedYear2 = Math.round(optimizedYear1 + (annualGap * 1.10));
-  const optimizedYear3 = Math.round(optimizedYear2 + (annualGap * 1.15));
+  const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
+  const yourTimeSavedHours = yourTimeSavedMinutes / 60;
+  const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
+  const abridgeAnnualValue = yourAnnualValue + annualGap;
 
-  const currentYear1 = Math.round(annualGap * 0.10);
-  const currentYear2 = Math.round(currentYear1 + (annualGap * 0.11));
-  const currentYear3 = Math.round(currentYear2 + (annualGap * 0.12));
+  const currentYear1 = Math.round(yourAnnualValue);
+  const currentYear2 = Math.round(currentYear1 + yourAnnualValue * 1.03);
+  const currentYear3 = Math.round(currentYear2 + yourAnnualValue * 1.05);
+
+  const optimizedYear1 = Math.round(abridgeAnnualValue * 0.87);
+  const optimizedYear2 = Math.round(optimizedYear1 + abridgeAnnualValue * 1.05);
+  const optimizedYear3 = Math.round(optimizedYear2 + abridgeAnnualValue * 1.10);
 
   const threeYearGap = optimizedYear3 - currentYear3;
 
@@ -230,11 +235,6 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const wait12MonthsValue = Math.round(optimizedYear3 - annualGap);
   const wait6MonthsLoss = switchNowValue - wait6MonthsValue;
   const wait12MonthsLoss = switchNowValue - wait12MonthsValue;
-
-  const yourTimeSavedMinutes = yourEncountersDocumented * timeSavedPerEncounter;
-  const yourTimeSavedHours = yourTimeSavedMinutes / 60;
-  const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
-  const abridgeAnnualValue = yourAnnualValue + annualGap;
 
   const currentAnnualInvestment = currentCostPerProvider * providers * 12;
   const abridgeAnnualInvestment = ABRIDGE_BENCHMARKS.costPerProviderMonth * providers * 12;
