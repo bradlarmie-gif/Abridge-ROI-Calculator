@@ -38,32 +38,31 @@ export default function SwitchAmbientConclusion({
   onBackToJourney
 }: SwitchAmbientConclusionProps) {
   
-  // Calculate trajectories for dual-line chart
   const currentUtilization = inputs.utilization || 50;
   const abridgeUtilization = benchmarks.utilization || 65;
   const utilizationRatio = currentUtilization / abridgeUtilization;
-  
+
   const currentEfficiency = inputs.efficiency || 1.5;
   const abridgeEfficiency = benchmarks.efficiency || 4;
   const efficiencyRatio = currentEfficiency / abridgeEfficiency;
-  
+
   const currentCaptureRate = Math.min((utilizationRatio + efficiencyRatio) / 2, 0.95);
-  const currentAnnualValue = Math.round(calculations.totalAnnualGap * (currentCaptureRate / (1 - currentCaptureRate)));
-  const abridgeAnnualValue = currentAnnualValue + calculations.totalAnnualGap;
-  
-  const year2Growth = 1.10;
-  const year3Growth = 1.19;
-  
+
+  const annualGap = calculations.totalAnnualGap;
+  const gapYear1 = Math.round(annualGap * 0.90);
+  const gapYear2 = Math.round(gapYear1 + annualGap);
+  const gapYear3 = Math.round(gapYear2 + annualGap * 1.03);
+
   const chartData = [
     { period: 'Today', current: 0, abridge: 0 },
-    { period: '3 mo', current: Math.round(currentAnnualValue * 0.25), abridge: Math.round(abridgeAnnualValue * 0.25 * 0.7) },
-    { period: '6 mo', current: Math.round(currentAnnualValue * 0.5), abridge: Math.round(abridgeAnnualValue * 0.5 * 0.85) },
-    { period: 'Year 1', current: currentAnnualValue, abridge: abridgeAnnualValue },
-    { period: 'Year 2', current: currentAnnualValue * 2, abridge: abridgeAnnualValue + Math.round(abridgeAnnualValue * year2Growth) },
-    { period: 'Year 3', current: currentAnnualValue * 3, abridge: abridgeAnnualValue + Math.round(abridgeAnnualValue * year2Growth) + Math.round(abridgeAnnualValue * year3Growth) }
+    { period: '3 mo', current: 0, abridge: Math.round(gapYear1 * 0.25) },
+    { period: '6 mo', current: 0, abridge: Math.round(gapYear1 * 0.55) },
+    { period: 'Year 1', current: 0, abridge: gapYear1 },
+    { period: 'Year 2', current: 0, abridge: gapYear2 },
+    { period: 'Year 3', current: 0, abridge: gapYear3 }
   ];
-  
-  const threeYearGap = chartData[chartData.length - 1].abridge - chartData[chartData.length - 1].current;
+
+  const threeYearGap = gapYear3;
   
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">

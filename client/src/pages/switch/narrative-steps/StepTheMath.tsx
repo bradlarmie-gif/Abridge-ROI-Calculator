@@ -153,17 +153,13 @@ export default function StepTheMath({
 
     const annualGap = utilizationGapValue + netEfficiencyGapValue + wrvuGapValue;
 
-    const yourTimeSavedHours = (encountersWithAI * inputs.timeSavedPerEncounter) / 60;
-    const yourAnnualValue = yourTimeSavedHours * assumptions.hourlyRate * (assumptions.timeConversion / 100);
-    const abridgeAnnualValue = yourAnnualValue + annualGap;
+    const currentYear1 = 0;
+    const currentYear2 = 0;
+    const currentYear3 = 0;
 
-    const currentYear1 = Math.round(yourAnnualValue);
-    const currentYear2 = Math.round(currentYear1 + yourAnnualValue * 1.03);
-    const currentYear3 = Math.round(currentYear2 + yourAnnualValue * 1.05);
-
-    const optimizedYear1 = Math.round(abridgeAnnualValue * 0.87);
-    const optimizedYear2 = Math.round(optimizedYear1 + abridgeAnnualValue * 1.05);
-    const optimizedYear3 = Math.round(optimizedYear2 + abridgeAnnualValue * 1.10);
+    const optimizedYear1 = Math.round(annualGap * 0.90);
+    const optimizedYear2 = Math.round(optimizedYear1 + annualGap);
+    const optimizedYear3 = Math.round(optimizedYear2 + annualGap * 1.03);
 
     const switchNowValue = optimizedYear3;
     const wait6MonthsValue = Math.round(optimizedYear3 - (annualGap * 0.5));
@@ -490,7 +486,7 @@ export default function StepTheMath({
         <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">3-Year Projection</p>
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">The Compounding Effect</h2>
         <p className="text-sm text-[#666666] mb-6">
-          The shaded area represents potential value over time. Earlier action captures more of it.
+          Every year you wait, you leave {formatCurrency(recalculatedValues.annualGap)} on the table. The shaded area shows cumulative value captured by switching.
         </p>
         
         <div className="h-64 md:h-72">
@@ -521,7 +517,7 @@ export default function StepTheMath({
                 formatter={(value: number, name: string) => {
                   return [
                     formatCurrency(value),
-                    name === 'current' ? 'Current (staying course)' : 'Optimized (with Abridge)'
+                    name === 'current' ? 'Current (staying course)' : 'Cumulative value with Abridge'
                   ];
                 }}
                 labelFormatter={(label) => `Year ${label / 12}`}
@@ -557,31 +553,31 @@ export default function StepTheMath({
         <div className="flex items-center justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#EA2C00]" />
-            <span className="text-[#666666]">Optimized (with Abridge)</span>
+            <span className="text-[#666666]">With Abridge (cumulative value captured)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 border-t-2 border-dashed border-[#999999]" />
-            <span className="text-[#666666]">Current (staying course)</span>
+            <span className="text-[#666666]">Current (no new value captured)</span>
           </div>
         </div>
 
         <div className="mt-6 border-t border-[#E5E7EB] pt-4">
-          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Year-by-Year:</p>
+          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Cumulative Value Captured:</p>
           <div className="space-y-1.5 text-xs text-[#666666]">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 1:</span>
-              <span>{formatCurrency(recalculatedValues.optimizedYear1)} optimized vs {formatCurrency(recalculatedValues.currentYear1)} current</span>
-              <span className="text-[#EA2C00] font-medium">(gap: {formatCurrency(recalculatedValues.optimizedYear1 - recalculatedValues.currentYear1)})</span>
+              <span className="text-[#EA2C00] font-semibold">{formatCurrency(recalculatedValues.optimizedYear1)}</span>
+              <span className="text-[#999999]">(~90% of annual gap during ramp-up)</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 2:</span>
-              <span>{formatCurrency(recalculatedValues.optimizedYear2)} cumulative vs {formatCurrency(recalculatedValues.currentYear2)} current</span>
-              <span className="text-[#EA2C00] font-medium">(gap: {formatCurrency(recalculatedValues.optimizedYear2 - recalculatedValues.currentYear2)})</span>
+              <span className="text-[#EA2C00] font-semibold">{formatCurrency(recalculatedValues.optimizedYear2)}</span>
+              <span className="text-[#999999]">(cumulative)</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 3:</span>
-              <span>{formatCurrency(recalculatedValues.optimizedYear3)} cumulative vs {formatCurrency(recalculatedValues.currentYear3)} current</span>
-              <span className="text-[#EA2C00] font-medium">(gap: {formatCurrency(recalculatedValues.optimizedYear3 - recalculatedValues.currentYear3)})</span>
+              <span className="text-[#EA2C00] font-semibold">{formatCurrency(recalculatedValues.optimizedYear3)}</span>
+              <span className="text-[#999999]">(cumulative, with 3% organic growth)</span>
             </div>
           </div>
         </div>

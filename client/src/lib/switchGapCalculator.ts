@@ -220,15 +220,15 @@ export function calculateSwitchGap(inputs: SwitchInputs): SwitchCalculations {
   const yourAnnualValue = yourTimeSavedHours * VALUE_ASSUMPTIONS.hourlyRate * VALUE_ASSUMPTIONS.timeConversionRate;
   const abridgeAnnualValue = yourAnnualValue + annualGap;
 
-  const currentYear1 = Math.round(yourAnnualValue);
-  const currentYear2 = Math.round(currentYear1 + yourAnnualValue * 1.03);
-  const currentYear3 = Math.round(currentYear2 + yourAnnualValue * 1.05);
+  const currentYear1 = 0;
+  const currentYear2 = 0;
+  const currentYear3 = 0;
 
-  const optimizedYear1 = Math.round(abridgeAnnualValue * 0.87);
-  const optimizedYear2 = Math.round(optimizedYear1 + abridgeAnnualValue * 1.05);
-  const optimizedYear3 = Math.round(optimizedYear2 + abridgeAnnualValue * 1.10);
+  const optimizedYear1 = Math.round(annualGap * 0.90);
+  const optimizedYear2 = Math.round(optimizedYear1 + annualGap);
+  const optimizedYear3 = Math.round(optimizedYear2 + annualGap * 1.03);
 
-  const threeYearGap = optimizedYear3 - currentYear3;
+  const threeYearGap = optimizedYear3;
 
   const switchNowValue = optimizedYear3;
   const wait6MonthsValue = Math.round(optimizedYear3 - (annualGap * 0.5));
