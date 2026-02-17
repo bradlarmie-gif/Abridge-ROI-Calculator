@@ -1118,7 +1118,8 @@ export default function ExploreModel({
                 <p className="text-sm font-medium text-[#888888] mb-1">FULL SCALE</p>
                 <FormattedNumberInput
                   value={state.fullScaleProviders}
-                  onChange={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
+                  onChange={(v: number) => updateState({ fullScaleProviders: v })}
+                  onBlurValue={(v: number) => updateState({ fullScaleProviders: Math.max(v, state.numberOfProviders) })}
                   className="h-10 w-24 text-center text-2xl font-bold bg-white border border-[#E5E5E5] rounded-lg"
                   data-testid="input-full-scale-providers"
                 />
@@ -1126,7 +1127,8 @@ export default function ExploreModel({
                 <div className="flex items-center justify-center gap-1">
                   <FormattedNumberInput
                     value={expandedUtilization}
-                    onChange={(v: number) => setExpandedUtilization(Math.min(Math.max(v, 1), 100))}
+                    onChange={(v: number) => setExpandedUtilization(v)}
+                    onBlurValue={(v: number) => setExpandedUtilization(Math.min(Math.max(v, 1), 100))}
                     className="h-6 w-12 text-center text-sm bg-white border border-[#E5E5E5] rounded"
                     data-testid="input-full-scale-utilization"
                   />
