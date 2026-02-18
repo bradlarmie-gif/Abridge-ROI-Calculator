@@ -484,7 +484,7 @@ function computeRisk(
       auditRiskValue: Math.round(auditRiskValue),
       hardCap: Math.round(hardCap),
       cappedValue: Math.round(cappedValue),
-      wasCapped,
+      wasCapped: wasCapped ? 1 : 0,
       qualityFrictionPerEncounter,
       qualityFrictionValue: Math.round(qualityFrictionValue),
       rawValue: Math.round(rawValue),

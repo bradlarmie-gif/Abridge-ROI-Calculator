@@ -11,7 +11,7 @@ import StepPillarYield from "./narrative-steps/StepPillarYield";
 import StepPillarWorkforce from "./narrative-steps/StepPillarWorkforce";
 import StepPillarRisk from "./narrative-steps/StepPillarRisk";
 import StepWhereYouAre from "./narrative-steps/StepWhereYouAre";
-import StepTheGap from "./narrative-steps/StepTheGap";
+import StepEnterpriseValueMap from "./narrative-steps/StepEnterpriseValueMap";
 import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
 import StepWhatGoodLooksLike from "./narrative-steps/StepWhatGoodLooksLike";
 import StepTheMath from "./narrative-steps/StepTheMath";
@@ -33,7 +33,7 @@ const STEPS = [
   { id: 5, name: "Workforce Stability", shortName: "Workforce" },
   { id: 6, name: "Enterprise Risk", shortName: "Risk" },
   { id: 7, name: "Where You Are", shortName: "Input" },
-  { id: 8, name: "The Gap", shortName: "Gap" },
+  { id: 8, name: "Value Map", shortName: "Value" },
   { id: 9, name: "What Good Looks Like", shortName: "Proof" },
   { id: 10, name: "The Math", shortName: "Math" },
   { id: 11, name: "What It Takes", shortName: "How" },
@@ -177,7 +177,12 @@ export default function AmbientNarrativeFlow({
       case 7:
         return <StepWhereYouAre {...commonProps} />;
       case 8:
-        return <StepTheGap {...commonProps} />;
+        return (
+          <StepEnterpriseValueMap
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
       case 9:
         return <StepWhatGoodLooksLike {...commonProps} />;
       case 10:
