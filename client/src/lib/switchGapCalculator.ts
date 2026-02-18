@@ -29,6 +29,9 @@ export interface SwitchInputs {
   turnoverRisk: "low" | "medium" | "high";
   overtimeSensitivity: "minimal" | "some" | "material";
   scribeReliance: "none" | "some" | "heavy";
+  docDefensibility: "high" | "medium" | "low";
+  qualityReportingFriction: "smooth" | "manageable" | "painful";
+  structuredDataUsability: "yes" | "some" | "no";
 }
 
 export interface GapItem {

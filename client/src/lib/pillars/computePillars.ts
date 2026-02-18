@@ -397,9 +397,28 @@ function computeWorkforce(
 
 // ============================================================================
 // PILLAR 4 — RISK
-// Documentation compliance exposure → audit risk reduction + quality friction
-// Hard-capped at 0.2% of gross revenue to stay defensible
+// Enterprise risk & strategic readiness: documentation defensibility,
+// quality reporting friction, structured data usability downstream.
+// Hard-capped at 0.2% of gross revenue to stay defensible.
 // ============================================================================
+
+const DOC_DEFENSIBILITY_SCORE: Record<"high" | "medium" | "low", number> = {
+  high: 85,
+  medium: 55,
+  low: 25,
+};
+
+const QUALITY_FRICTION_SCORE: Record<"smooth" | "manageable" | "painful", number> = {
+  smooth: 90,
+  manageable: 55,
+  painful: 20,
+};
+
+const STRUCTURED_DATA_SCORE: Record<"yes" | "some" | "no", number> = {
+  yes: 90,
+  some: 50,
+  no: 15,
+};
 
 function computeRisk(
   state: AssessmentState,
@@ -408,46 +427,44 @@ function computeRisk(
   const { inputs } = state;
   const spec = SPECIALTY_DEFAULTS[inputs.specialtyMix];
 
-  // Gross revenue estimate from total encounters (not just AI-documented)
   const grossRevenue = inputs.annualEncounters * spec.revenuePerEncounter;
 
-  // Exposure rate: based on documentation completeness (audit confidence)
-  // Lower doc completeness → higher audit exposure
-  // docCompleteness 0-100; we invert to get exposure risk
-  const docPct = Math.max(0, Math.min(100, inputs.docCompleteness || 50));
-  // At 80%+ completeness, exposure is near zero; at 0%, exposure is at maximum
-  const exposureRate = Math.max(0, (80 - docPct) / 80) * 0.003; // max 0.3% at 0 completeness
+  const defScore = DOC_DEFENSIBILITY_SCORE[inputs.docDefensibility ?? "medium"];
+  const frictionScore = QUALITY_FRICTION_SCORE[inputs.qualityReportingFriction ?? "manageable"];
+  const dataScore = STRUCTURED_DATA_SCORE[inputs.structuredDataUsability ?? "some"];
 
-  // Raw audit risk reduction value
+  const compositeScore = defScore * 0.45 + frictionScore * 0.30 + dataScore * 0.25;
+  const riskGap = Math.max(0, 100 - compositeScore);
+
+  const exposureRate = (riskGap / 100) * 0.003;
   const auditRiskValue = grossRevenue * exposureRate;
 
-  // Hard cap: never claim more than 0.2% of gross revenue for risk pillar
   const hardCap = grossRevenue * 0.002;
-  const cappedAuditValue = Math.min(auditRiskValue, hardCap);
+  const cappedValue = Math.min(auditRiskValue, hardCap);
+  const wasCapped = auditRiskValue > hardCap;
 
-  // Quality friction add-on: small value from reduced rework, addenda, amendments
-  // This is a fixed $/encounter estimate that scales with doc quality gap
-  const qualityFrictionPerEncounter = docPct < 60 ? 2.0 : docPct < 75 ? 1.0 : 0.50;
-  const eUsed = Math.round(inputs.annualEncounters * (inputs.utilization / 100));
-  const qualityFrictionValue = eUsed * qualityFrictionPerEncounter;
+  const qualityFrictionPerEncounter = frictionScore < 40 ? 1.50 : frictionScore < 70 ? 0.75 : 0.25;
+  const qualityFrictionValue = inputs.annualEncounters * qualityFrictionPerEncounter;
 
-  const rawValue = cappedAuditValue + qualityFrictionValue;
+  const rawValue = cappedValue + qualityFrictionValue;
   const valueAnnual = haircut(rawValue, confidence);
 
-  // Readiness score: how well-prepared is the org for documentation audits?
-  // 100 = excellent (high completeness), 0 = high risk
-  const readinessScore = Math.min(100, Math.round(docPct * 1.25)); // 80% completeness → 100 readiness
+  const readinessScore = Math.min(100, Math.round(compositeScore));
+  let readinessLabel: "Not Ready" | "Developing" | "Ready";
+  if (readinessScore >= 70) readinessLabel = "Ready";
+  else if (readinessScore >= 40) readinessLabel = "Developing";
+  else readinessLabel = "Not Ready";
 
-  // Score: risk mitigation as % of max possible (low completeness scenario)
-  const maxExposure = grossRevenue * 0.002; // at hard cap
-  const maxFriction = inputs.annualEncounters * 2.0;
+  const maxExposure = grossRevenue * 0.002;
+  const maxFriction = inputs.annualEncounters * 1.50;
   const maxValue = maxExposure + maxFriction;
   const score0to100 = maxValue > 0
     ? Math.min(100, Math.round((rawValue / maxValue) * 100))
     : 0;
 
-  let topBlockerKey = "docCompleteness";
-  if (docPct >= 75) topBlockerKey = "utilization";
+  let topBlockerKey = "docDefensibility";
+  if (defScore >= 70 && frictionScore < 50) topBlockerKey = "qualityReportingFriction";
+  if (defScore >= 70 && frictionScore >= 50 && dataScore < 40) topBlockerKey = "structuredDataUsability";
 
   return {
     valueAnnual,
@@ -455,15 +472,24 @@ function computeRisk(
     topBlockerKey,
     details: {
       grossRevenue: Math.round(grossRevenue),
-      docCompleteness: docPct,
-      exposureRate: Math.round(exposureRate * 10000) / 100, // as %
+      docDefensibility: inputs.docDefensibility,
+      defScore,
+      qualityReportingFriction: inputs.qualityReportingFriction,
+      frictionScore,
+      structuredDataUsability: inputs.structuredDataUsability,
+      dataScore,
+      compositeScore: Math.round(compositeScore),
+      riskGap: Math.round(riskGap),
+      exposureRate: Math.round(exposureRate * 10000) / 100,
       auditRiskValue: Math.round(auditRiskValue),
       hardCap: Math.round(hardCap),
-      cappedAuditValue: Math.round(cappedAuditValue),
+      cappedValue: Math.round(cappedValue),
+      wasCapped,
       qualityFrictionPerEncounter,
       qualityFrictionValue: Math.round(qualityFrictionValue),
       rawValue: Math.round(rawValue),
       readinessScore,
+      readinessLabel,
       confidenceHaircut: CONFIDENCE_MULTIPLIER[confidence],
     },
   };
@@ -495,6 +521,9 @@ function safeInputs(raw: AssessmentState["inputs"]): AssessmentState["inputs"] {
     turnoverRisk: raw.turnoverRisk ?? "medium",
     overtimeSensitivity: raw.overtimeSensitivity ?? "some",
     scribeReliance: raw.scribeReliance ?? "none",
+    docDefensibility: raw.docDefensibility ?? "medium",
+    qualityReportingFriction: raw.qualityReportingFriction ?? "manageable",
+    structuredDataUsability: raw.structuredDataUsability ?? "some",
   };
 }
 

@@ -58,6 +58,9 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   turnoverRisk: "medium" as const,
   overtimeSensitivity: "some" as const,
   scribeReliance: "none" as const,
+  docDefensibility: "medium" as const,
+  qualityReportingFriction: "manageable" as const,
+  structuredDataUsability: "some" as const,
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {
