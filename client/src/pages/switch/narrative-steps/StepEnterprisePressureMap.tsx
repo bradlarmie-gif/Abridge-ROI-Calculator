@@ -18,38 +18,37 @@ const FOCUS_OPTIONS: {
   {
     value: "access",
     title: "Access & Throughput",
-    description: "Capacity constraints, wait times, or panel growth are the primary concern.",
+    description: "Capacity constraints, wait times, or panel growth.",
   },
   {
     value: "revenue",
     title: "Revenue Performance",
-    description: "Coding accuracy, wRVU capture, or reimbursement leakage is under scrutiny.",
+    description: "Coding accuracy, wRVU capture, or reimbursement leakage.",
   },
   {
     value: "retention",
     title: "Clinician Retention",
-    description: "Burnout, after-hours documentation burden, or turnover risk is the focus.",
+    description: "Burnout, after-hours burden, or turnover risk.",
   },
   {
     value: "compliance",
     title: "Compliance & Audit Posture",
-    description: "Documentation defensibility, quality reporting, or audit readiness needs attention.",
+    description: "Documentation defensibility or audit readiness.",
   },
   {
     value: "none",
     title: "No Single Driver",
-    description: "Balanced evaluation across all value engines.",
+    description: "Balanced evaluation across all engines.",
   },
 ];
 
-interface RankedPillar {
-  id: PillarId;
-  rank: number;
-  name: string;
-  shortDesc: string;
-  icon: typeof Users;
-  pressure: PressureLevel;
-}
+const PRIMARY_ENGINE_MAP: Record<PrimaryPressure, PillarId> = {
+  access: "capacity",
+  revenue: "yield",
+  retention: "workforce",
+  compliance: "risk",
+  none: "capacity",
+};
 
 const RANK_MAP: Record<PrimaryPressure, PillarId[]> = {
   access:     ["capacity", "workforce", "yield", "risk"],
@@ -60,10 +59,10 @@ const RANK_MAP: Record<PrimaryPressure, PillarId[]> = {
 };
 
 const PILLAR_INFO: Record<PillarId, { name: string; shortDesc: string; icon: typeof Users }> = {
-  capacity:  { name: "Capacity Creation",    shortDesc: "Time recovered enables more patient access.",    icon: Users },
-  yield:     { name: "Revenue Yield",        shortDesc: "Complete documentation drives better capture.",  icon: DollarSign },
-  workforce: { name: "Workforce Stability",  shortDesc: "Reduced burden improves retention and morale.", icon: Stethoscope },
-  risk:      { name: "Risk & Compliance",    shortDesc: "Higher quality lowers audit exposure.",          icon: ShieldCheck },
+  capacity:  { name: "Capacity Creation",   shortDesc: "Time recovered enables more patient access.",    icon: Users },
+  yield:     { name: "Revenue Yield",       shortDesc: "Complete documentation drives better capture.",  icon: DollarSign },
+  workforce: { name: "Workforce Stability", shortDesc: "Reduced burden improves retention and morale.", icon: Stethoscope },
+  risk:      { name: "Risk & Compliance",   shortDesc: "Higher quality lowers audit exposure.",          icon: ShieldCheck },
 };
 
 const PRESSURE_OPTIONS: { label: string; value: PressureLevel }[] = [
@@ -113,18 +112,6 @@ function SegmentedPills<T extends string>({
   );
 }
 
-const PRESSURE_LABEL: Record<PressureLevel, string> = {
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
-
-const PRESSURE_COLOR: Record<PressureLevel, string> = {
-  high: "text-[#EA2C00]",
-  medium: "text-[#F59E0B]",
-  low: "text-[#94A3B8]",
-};
-
 export default function StepEnterprisePressureMap({
   onNext,
   onBack,
@@ -133,12 +120,18 @@ export default function StepEnterprisePressureMap({
   const { pillarsMeta, primaryPressure } = state;
   const confidenceBaseline = state.inputs.confidenceBaseline;
   const [showOverride, setShowOverride] = useState(false);
+  const hasSelection = primaryPressure !== "none" || state.primaryPressure !== "none";
 
   const handleSelectFocus = (value: PrimaryPressure) => {
     dispatch(assessmentActions.setPrimaryPressure(value));
   };
 
-  const rankedPillars: RankedPillar[] = useMemo(() => {
+  const primaryEngine = useMemo(() => {
+    const id = PRIMARY_ENGINE_MAP[primaryPressure];
+    return { id, ...PILLAR_INFO[id] };
+  }, [primaryPressure]);
+
+  const rankedPillars = useMemo(() => {
     const order = RANK_MAP[primaryPressure] || RANK_MAP.none;
     return order.map((id, idx) => ({
       id,
@@ -157,109 +150,82 @@ export default function StepEnterprisePressureMap({
   };
 
   return (
-    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
+    <div className={`space-y-12 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Enterprise Value Diagnostic
+          Enterprise Focus
         </h1>
         <p className="text-base text-[#888888] leading-relaxed max-w-xl" data-testid="text-page-subtitle">
-          Ambient value is created across four economic engines. We'll prioritize based on where your organization faces the most strategic pressure.
+          Ambient value concentrates where enterprise pressure is highest.
         </p>
       </div>
 
-      <div>
-        <p className="text-sm font-medium text-[#1A1A1A] mb-4" data-testid="text-focus-question">
-          Where is ambient under the most scrutiny internally?
-        </p>
-        <div className="space-y-3">
-          {FOCUS_OPTIONS.map((opt) => {
-            const isSelected = primaryPressure === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => handleSelectFocus(opt.value)}
-                data-testid={`tile-focus-${opt.value}`}
-                className={`w-full text-left rounded-2xl p-5 transition-all duration-200 relative overflow-hidden border ${
-                  isSelected
-                    ? "bg-[#F5F0EB] border-[#E8E0D8] scale-[1.003]"
-                    : "bg-white border-[#E8E0D8] hover:bg-[#FAFAF7]"
-                }`}
-              >
-                <div
-                  className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300 ${
-                    isSelected ? "bg-[#EA2C00]" : "bg-transparent"
-                  }`}
-                />
-                <div className="pl-3">
-                  <span className="text-base font-semibold text-[#1A1A1A]">{opt.title}</span>
-                  <p className="text-sm text-[#555]/80 mt-0.5">{opt.description}</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-4" data-testid="text-ranked-label">
-          Prioritized value engines
-        </p>
-        <div className="space-y-3">
-          {rankedPillars.map((pillar, idx) => {
-            const isFirst = idx === 0 && primaryPressure !== "none";
-            return (
+      <div className="space-y-3">
+        {FOCUS_OPTIONS.map((opt) => {
+          const isSelected = primaryPressure === opt.value;
+          const someSelected = primaryPressure !== "none";
+          const dimmed = someSelected && !isSelected;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => handleSelectFocus(opt.value)}
+              data-testid={`tile-focus-${opt.value}`}
+              className={`w-full text-left rounded-2xl py-5 px-6 transition-all duration-200 relative overflow-hidden border ${
+                isSelected
+                  ? "bg-[#F5F0EB] border-[#E8E0D8]"
+                  : "bg-white border-[#E8E0D8] hover:bg-[#FAFAF7]"
+              } ${dimmed ? "opacity-60" : "opacity-100"}`}
+            >
               <div
-                key={pillar.id}
-                data-testid={`ranked-pillar-${pillar.id}`}
-                className={`rounded-xl border transition-all duration-300 ${
-                  isFirst
-                    ? "bg-[#F5F0EB] border-[#E8E0D8] p-5"
-                    : "bg-white border-[#E8E0D8] p-4"
+                className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300 ${
+                  isSelected ? "bg-[#EA2C00]" : "bg-transparent"
                 }`}
-                style={{
-                  animationDelay: `${idx * 60}ms`,
-                }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`shrink-0 rounded-lg flex items-center justify-center font-bold tabular-nums ${
-                    isFirst
-                      ? "w-9 h-9 bg-[#EA2C00] text-white text-base"
-                      : "w-8 h-8 bg-[#F0F0F0] text-[#888] text-sm"
-                  }`}>
-                    {pillar.rank}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`font-semibold ${isFirst ? "text-base text-[#1A1A1A]" : "text-sm text-[#1A1A1A]"}`}>
-                        {pillar.name}
-                      </span>
-                      <span className={`text-[11px] font-medium ${PRESSURE_COLOR[pillar.pressure]}`}>
-                        {PRESSURE_LABEL[pillar.pressure]} pressure
-                      </span>
-                    </div>
-                    <p className={`mt-0.5 ${isFirst ? "text-sm text-[#666]" : "text-[13px] text-[#999]"}`}>
-                      {pillar.shortDesc}
-                    </p>
-                    {isFirst && (
-                      <div className="flex items-center gap-4 mt-2 text-[12px] text-[#999]">
-                        <span>Confidence baseline: <span className="font-medium text-[#1A1A1A] tabular-nums">{confidenceBaseline.toFixed(2)}</span></span>
-                      </div>
-                    )}
-                  </div>
-                  <pillar.icon className={`shrink-0 ${isFirst ? "w-5 h-5 text-[#EA2C00]" : "w-4 h-4 text-[#CCC]"}`} />
-                </div>
+              />
+              <div className="pl-3">
+                <span className="text-base font-semibold text-[#1A1A1A]">{opt.title}</span>
+                <p className="text-sm text-[#555]/70 mt-0.5">{opt.description}</p>
               </div>
-            );
-          })}
-        </div>
-        <p className="text-[12px] text-[#999] mt-3 text-center">
-          Modeled value appears in the next steps.
-        </p>
+            </button>
+          );
+        })}
       </div>
+
+      {hasSelection && (
+        <div
+          className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8] transition-all duration-300"
+          data-testid="card-primary-engine"
+        >
+          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-4">
+            Primary value engine identified
+          </p>
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#E8E0D8] flex items-center justify-center shrink-0">
+              <primaryEngine.icon className="w-5 h-5 text-[#EA2C00]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-lg font-semibold text-[#1A1A1A]" data-testid="text-engine-name">
+                {primaryEngine.name}
+              </span>
+              <p className="text-sm text-[#666] mt-0.5">{primaryEngine.shortDesc}</p>
+              <div className="flex items-center gap-4 mt-3 text-[12px] text-[#999]">
+                <span>
+                  Confidence baseline:{" "}
+                  <span className="font-medium text-[#1A1A1A] tabular-nums" data-testid="text-engine-confidence">
+                    {confidenceBaseline.toFixed(2)}
+                  </span>
+                </span>
+              </div>
+              <p className="text-[12px] text-[#999] mt-2">
+                Other engines will still be modeled.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="border border-[#E8E0D8] rounded-2xl overflow-hidden">
         <button
@@ -268,7 +234,7 @@ export default function StepEnterprisePressureMap({
           className="w-full flex items-center justify-between px-5 py-3.5 text-left bg-[#F5F0EB] hover:bg-[#EDE6DE] transition-colors"
           data-testid="button-override-toggle"
         >
-          <span className="text-sm font-medium text-[#666]">Adjust pressure manually</span>
+          <span className="text-sm font-medium text-[#666]">Adjust engine weighting manually</span>
           {showOverride ? (
             <ChevronUp className="w-4 h-4 text-[#999]" />
           ) : (
@@ -277,7 +243,7 @@ export default function StepEnterprisePressureMap({
         </button>
         {showOverride && (
           <div className="p-5 bg-white space-y-4">
-            {(["capacity", "yield", "workforce", "risk"] as PillarId[]).map((id) => {
+            {rankedPillars.map(({ id }) => {
               const meta = pillarsMeta[id];
               const info = PILLAR_INFO[id];
               return (
@@ -312,7 +278,7 @@ export default function StepEnterprisePressureMap({
         )}
       </div>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Quantify My Opportunity" nextTestId="button-quantify-opportunity" />
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Build Enterprise Value Map" nextTestId="button-build-value-map" />
     </div>
   );
 }
