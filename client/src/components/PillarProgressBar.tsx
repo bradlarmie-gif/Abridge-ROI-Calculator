@@ -104,7 +104,7 @@ function Phase2Progress({
 
 function Phase3Progress({ currentStep, steps }: { currentStep: number; steps: Step[] }) {
   const phaseStart = 8;
-  const phaseEnd = 12;
+  const phaseEnd = 11;
   const phaseTotal = phaseEnd - phaseStart + 1;
   const phasePosition = currentStep - phaseStart;
   const progress = ((phasePosition) / (phaseTotal - 1)) * 100;
@@ -141,7 +141,7 @@ export default function PillarProgressBar({
       {currentStep >= 3 && currentStep <= 7 && (
         <Phase2Progress currentStep={currentStep} completedSteps={completedSteps} />
       )}
-      {currentStep >= 8 && currentStep <= 12 && (
+      {currentStep >= 8 && currentStep <= 11 && (
         <Phase3Progress currentStep={currentStep} steps={steps} />
       )}
     </div>
