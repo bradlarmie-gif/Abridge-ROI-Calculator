@@ -1,0 +1,88 @@
+Redesign the current “Your Enterprise Pressure Map” step into an executive-grade diagnostic instead of a manual configuration grid.
+
+OBJECTIVE:
+Shift from “rate each pillar” to “identify primary strategic pressure and auto-rank the rest.”
+
+STEP STRUCTURE:
+
+1) Rename screen:
+From: “Your Enterprise Pressure Map”
+To: “Enterprise Value Diagnostic”
+
+2) Replace the 4-card grid with the following structure:
+
+SECTION A — Strategic Focus (Primary Driver)
+
+Header:
+“Where is ambient under the most scrutiny internally?”
+
+Large selectable tiles (single selection):
+- Access & Throughput
+- Revenue Performance
+- Clinician Retention
+- Compliance & Audit Posture
+- No Single Driver
+
+Each tile:
+- Minimal beige background
+- Thin border
+- Red accent bar on selection
+- No heavy shadows
+- Calm tone, board-ready
+
+When selected:
+- Store state.primaryPressure = selectedValue
+
+SECTION B — Auto-Ranked Value Engines
+
+Below, render a vertical ranked list of the four pillars:
+
+Capacity Creation
+Revenue Yield
+Workforce Stability
+Risk & Compliance
+
+For each:
+Display:
+- Rank number (1–4)
+- Short descriptor line
+- Confidence baseline (from Measurement Reality)
+- Pressure level (auto-derived from primaryPressure selection)
+- Small placeholder for “Modeled value appears next step”
+
+Ranking logic:
+If primaryPressure = “Access & Throughput”
+→ Capacity rank 1
+→ Workforce rank 2
+→ Yield rank 3
+→ Risk rank 4
+
+Define similar mapping for other options.
+If “No Single Driver” → keep equal rank order.
+
+SECTION C — Optional Manual Override (Collapsed)
+
+Add link:
+“Adjust pressure manually”
+
+When expanded:
+Show the original 4-card pressure + confidence controls (compact version).
+Do not show by default.
+
+UX RULES:
+
+- No grid of 4 equal boxes at top.
+- The ranked list should feel like a prioritized action map.
+- Increase typography hierarchy for rank #1 engine.
+- Add subtle fade-in animation when rank list updates.
+
+COPY TONE:
+Confident. Minimal. No marketing fluff.
+No exclamation points.
+
+ACCEPTANCE CRITERIA:
+1) User answers one primary strategic question.
+2) System auto-ranks pillars.
+3) Manual override exists but is hidden by default.
+4) Screen feels like a diagnostic, not a survey.
+5) Existing state still stores per-pillar pressure/confidence if override used.

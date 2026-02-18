@@ -30,8 +30,8 @@ const TOTAL_STEPS = 14;
 
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
-  { id: 2, name: "Measurement Reality", shortName: "Calibrate" },
-  { id: 3, name: "Pressure Map", shortName: "Map" },
+  { id: 2, name: "Uncertainty Calibration", shortName: "Calibrate" },
+  { id: 3, name: "Value Diagnostic", shortName: "Diagnostic" },
   { id: 4, name: "Capacity Engine", shortName: "Capacity" },
   { id: 5, name: "Revenue & Yield", shortName: "Yield" },
   { id: 6, name: "Workforce Stability", shortName: "Workforce" },

@@ -71,6 +71,27 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         },
       };
 
+    case "SET_PRIMARY_PRESSURE": {
+      const pressureRanks: Record<string, Record<string, "high" | "medium" | "low">> = {
+        access:     { capacity: "high", workforce: "high", yield: "medium", risk: "low" },
+        revenue:    { yield: "high", capacity: "high", risk: "medium", workforce: "low" },
+        retention:  { workforce: "high", capacity: "medium", risk: "medium", yield: "low" },
+        compliance: { risk: "high", yield: "medium", workforce: "medium", capacity: "low" },
+        none:       { capacity: "medium", yield: "medium", workforce: "medium", risk: "medium" },
+      };
+      const ranks = pressureRanks[action.pressure] || pressureRanks.none;
+      return {
+        ...state,
+        primaryPressure: action.pressure,
+        pillarsMeta: {
+          capacity:  { ...state.pillarsMeta.capacity,  pressure: ranks.capacity },
+          yield:     { ...state.pillarsMeta.yield,     pressure: ranks.yield },
+          workforce: { ...state.pillarsMeta.workforce, pressure: ranks.workforce },
+          risk:      { ...state.pillarsMeta.risk,      pressure: ranks.risk },
+        },
+      };
+    }
+
     case "RESET":
       return { ...DEFAULT_ASSESSMENT_STATE };
 

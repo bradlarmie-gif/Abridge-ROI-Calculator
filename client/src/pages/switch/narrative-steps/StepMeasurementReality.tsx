@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import type { SwitchInputs, DataMode } from "@/lib/switchGapCalculator";
 import { ShieldCheck, BarChart3, Shield, Check } from "lucide-react";
@@ -21,32 +22,40 @@ const TILES: {
   description: string;
   badge: string;
   note: string;
+  reinforcement?: string;
 }[] = [
   {
     value: "benchmark",
     title: "Benchmark-Based",
     description: "We'll use specialty-adjusted industry benchmarks with conservative guardrails.",
-    badge: "Fastest",
+    badge: "Conservative Default",
     note: "Designed for early-stage or partial data environments.",
   },
   {
     value: "estimated",
     title: "Estimated",
     description: "You have directional internal data or pilot signals.",
-    badge: "Balanced",
+    badge: "Directional",
     note: "Moderate confidence adjustments applied.",
   },
   {
     value: "measured",
     title: "Measured",
     description: "You have pre/post data, tracked metrics, or formal pilots.",
-    badge: "Highest Precision",
+    badge: "Board-Defensible",
     note: "Reduced confidence haircuts. Guardrails still enforced.",
+    reinforcement: "We reduce haircuts, but never remove caps.",
   },
 ];
 
+const ILLUSTRATIVE_MODELED = 500000;
+
 function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
   const haircut = CONFIDENCE_MAP[dataMode];
+
+  const displayedValue = useMemo(() => {
+    return Math.round(ILLUSTRATIVE_MODELED * haircut);
+  }, [haircut]);
 
   return (
     <div className="space-y-4">
@@ -71,6 +80,20 @@ function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
                 style={{ width: `${haircut * 100}%` }}
               />
             </div>
+            <p className="text-[11px] text-[#999] mt-2 leading-snug" data-testid="text-rail-formula">
+              Displayed value = Modeled Value x Confidence Baseline
+            </p>
+          </div>
+          <div className="border-t border-[#E8E0D8] pt-3">
+            <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-1.5">
+              Impact example
+            </p>
+            <p className="text-sm text-[#1A1A1A]" data-testid="text-rail-example">
+              <span className="text-[#888]">$500K modeled</span>
+              <span className="mx-1.5 text-[#CCC]">&rarr;</span>
+              <span className="font-semibold tabular-nums">${(displayedValue / 1000).toFixed(0)}K displayed</span>
+              <span className="text-[#999]"> after haircut</span>
+            </p>
           </div>
           <div className="flex justify-between text-sm pt-1">
             <span className="text-[#888]">Guardrails</span>
@@ -108,6 +131,7 @@ function ImpactPreviewRail({ dataMode }: { dataMode: DataMode }) {
             "Hard caps on yield + risk",
             "Deployment gating on time savings",
             "Conservative default assumptions",
+            "Designed to survive audit scrutiny",
           ].map((item) => (
             <li key={item} className="flex items-start gap-2 text-sm text-[#666]">
               <Check className="w-3.5 h-3.5 text-[#22C55E] mt-0.5 shrink-0" />
@@ -138,40 +162,47 @@ export default function StepMeasurementReality({
           <ImpactPreviewRail dataMode={inputs.dataMode} />
         </div>
 
-        <div className="flex-1 max-w-[720px] space-y-8">
+        <div className="flex-1 max-w-[720px] space-y-10">
           <div className="text-left">
             <h1
               className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
               data-testid="text-page-title"
             >
-              Measurement Reality
+              Uncertainty Calibration
             </h1>
             <p className="text-base text-[#888888] leading-relaxed">
-              Ambient economics can be modeled with benchmarks or measured data. Let's calibrate how precise your environment is today.
+              Every projection carries uncertainty. We price it explicitly — before showing you a single dollar.
             </p>
-            <p className="text-[13px] text-[#999] mt-2">
-              You can change this later. We default to conservative.
+            <p className="text-sm font-semibold text-[#1A1A1A] mt-2" data-testid="text-cfo-line">
+              This is why our models hold up in CFO rooms.
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {TILES.map((tile) => {
               const isSelected = inputs.dataMode === tile.value;
+              const isMeasured = tile.value === "measured";
               return (
                 <button
                   key={tile.value}
                   type="button"
                   onClick={() => handleSelect(tile.value)}
                   data-testid={`tile-${tile.value}`}
-                  className={`w-full text-left rounded-2xl p-5 md:p-6 transition-all duration-200 border ${
+                  className={`w-full text-left rounded-2xl p-5 md:p-6 transition-all duration-200 relative overflow-hidden ${
                     isSelected
-                      ? "bg-[#F5F0EB] border-[#E8E0D8] scale-[1.005]"
-                      : "bg-white border-[#E8E0D8] hover:bg-[#FAFAF7]"
-                  } relative overflow-hidden`}
+                      ? isMeasured
+                        ? "bg-[#F5F0EB] border-2 border-[#D5CCC2] scale-[1.005]"
+                        : "bg-[#F5F0EB] border-2 border-[#E8E0D8] scale-[1.005]"
+                      : "bg-white border border-[#E8E0D8] hover:bg-[#FAFAF7]"
+                  }`}
                 >
                   <div
-                    className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300 ${
-                      isSelected ? "bg-[#EA2C00]" : "bg-transparent"
+                    className={`absolute left-0 top-0 bottom-0 transition-all duration-300 rounded-l-2xl ${
+                      isSelected
+                        ? isMeasured
+                          ? "w-1.5 bg-[#EA2C00]"
+                          : "w-1 bg-[#EA2C00]"
+                        : "w-1 bg-transparent"
                     }`}
                   />
                   <div className="pl-3">
@@ -180,27 +211,39 @@ export default function StepMeasurementReality({
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-medium uppercase tracking-wider ${
                           isSelected
-                            ? "bg-[#EA2C00]/10 text-[#EA2C00]"
+                            ? isMeasured
+                              ? "bg-[#EA2C00]/15 text-[#EA2C00]"
+                              : "bg-[#EA2C00]/10 text-[#EA2C00]"
                             : "bg-[#F0F0F0] text-[#888]"
                         }`}
                       >
                         {tile.badge}
                       </span>
                     </div>
-                    <p className="text-sm text-[#555] leading-relaxed mb-2">{tile.description}</p>
+                    <p className="text-sm text-[#555]/80 leading-relaxed mb-2">{tile.description}</p>
                     <p className="text-[12px] text-[#999]">{tile.note}</p>
+                    {tile.reinforcement && isSelected && (
+                      <p className="text-[12px] font-medium text-[#EA2C00]/80 mt-2" data-testid="text-measured-reinforcement">
+                        {tile.reinforcement}
+                      </p>
+                    )}
                   </div>
                 </button>
               );
             })}
           </div>
 
-          <StepFooter
-            onBack={onBack}
-            onNext={onNext}
-            nextLabel="Next"
-            nextDisabled={false}
-          />
+          <div>
+            <p className="text-[13px] text-[#999] mb-3 text-center">
+              You can adjust this later. We default to conservative.
+            </p>
+            <StepFooter
+              onBack={onBack}
+              onNext={onNext}
+              nextLabel="Next"
+              nextDisabled={false}
+            />
+          </div>
         </div>
 
         <div className="hidden lg:block w-[360px] shrink-0">

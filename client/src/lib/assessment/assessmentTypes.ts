@@ -20,10 +20,13 @@ export interface AssessmentNavigation {
   showLoadingOverlay: boolean;
 }
 
+export type PrimaryPressure = "access" | "revenue" | "retention" | "compliance" | "none";
+
 export interface AssessmentState {
   navigation: AssessmentNavigation;
   inputs: SwitchInputs;
   pillarsMeta: PillarMetaMap;
+  primaryPressure: PrimaryPressure;
 }
 
 export const DEFAULT_PILLAR_META: PillarMeta = {
@@ -77,6 +80,7 @@ export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {
   },
   inputs: { ...DEFAULT_SWITCH_INPUTS },
   pillarsMeta: { ...DEFAULT_PILLARS_META },
+  primaryPressure: "none" as PrimaryPressure,
 };
 
 export type { SwitchInputs, SwitchCalculations };

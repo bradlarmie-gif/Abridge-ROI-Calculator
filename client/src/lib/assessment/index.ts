@@ -10,6 +10,7 @@ export type {
   ConfidenceLevel,
   PillarMeta,
   PillarMetaMap,
+  PrimaryPressure,
   SwitchInputs,
   SwitchCalculations,
 } from "./assessmentTypes";

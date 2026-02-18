@@ -1,0 +1,70 @@
+Refine the “Measurement Reality” screen to increase executive impact and strategic tension without changing core logic.
+
+OBJECTIVE:
+Shift this screen from “data selection” to “uncertainty pricing and credibility positioning.”
+
+COPY CHANGES:
+
+1) Replace title:
+From: “Measurement Reality”
+To: “Uncertainty Calibration”
+
+2) Replace subheader with:
+“Every projection carries uncertainty. We price it explicitly — before showing you a single dollar.”
+
+3) Add a bold micro-line under subheader:
+“This is why our models hold up in CFO rooms.”
+
+Do not use exclamation marks. Keep tone calm and authoritative.
+
+TILE UPGRADES:
+
+- Increase visual hierarchy difference between options:
+  - Measured should feel like the “enterprise-ready” option.
+  - Add subtle top-right tag: “Board-Defensible” (instead of Highest Precision).
+  - Estimated tag: “Directional”
+  - Benchmark-Based tag: “Conservative Default”
+
+- When Measured is selected:
+  - Slightly elevate card shadow.
+  - Add subtle inner glow or stronger border to signal maturity.
+  - Add 1-line reinforcement below description:
+    “We reduce haircuts, but never remove caps.”
+
+RIGHT RAIL IMPROVEMENTS:
+
+1) Under Confidence Haircut (e.g., 0.90), add:
+   “Displayed value = Modeled Value × Confidence Baseline”
+
+2) Add a small “Impact Example” dynamic line:
+   If totalAnnual (even placeholder) = $500K modeled,
+   show:
+   “$500K modeled → $450K displayed after haircut”
+   (Use a dummy modeled baseline if needed; this is illustrative only.)
+
+3) Under Trust Principles, add:
+   “Designed to survive audit scrutiny.”
+
+VISUAL TENSION:
+
+- Increase spacing between tiles slightly.
+- Reduce body copy opacity slightly for descriptions to increase hierarchy.
+- Make selected tile border thickness slightly stronger (but still elegant).
+
+FOOTER MICROCOPY:
+
+Above Next button add small gray text:
+“You can adjust this later. We default to conservative.”
+
+LOGIC:
+No change to:
+- confidenceBaseline values
+- guardrails
+- caps
+- state management
+
+ACCEPTANCE CRITERIA:
+1) Screen feels more strategic, less form-like.
+2) Confidence feels like a pricing mechanism, not a dropdown.
+3) Measured option signals executive maturity.
+4) Tone remains calm, not hype.
