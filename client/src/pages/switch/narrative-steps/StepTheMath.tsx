@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info, AlertTriangle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info, AlertTriangle, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
@@ -8,6 +8,8 @@ import {
   type SwitchInputs,
   type SwitchCalculations
 } from "@/lib/switchGapCalculator";
+import { useAssessment } from "@/lib/assessment";
+import { computePillars } from "@/lib/pillars/computePillars";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface StepTheMathProps {
@@ -114,7 +116,22 @@ export default function StepTheMath({
   onBack,
 }: StepTheMathProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-  
+  const [costOfWaitingView, setCostOfWaitingView] = useState<"6mo" | "12mo" | null>(null);
+
+  const { state } = useAssessment();
+  const pillarResult = useMemo(() => computePillars(state), [state]);
+  const { totalAnnual } = pillarResult;
+  const monthlyOpportunity = Math.round(totalAnnual / 12);
+
+  const DEFAULT_GROWTH_RATE = 0.03;
+
+  const rampModel = useMemo(() => {
+    const y1Capture = Math.round(totalAnnual * 0.9);
+    const y2Capture = y1Capture + totalAnnual;
+    const y3Capture = Math.round(y2Capture + totalAnnual * (1 + DEFAULT_GROWTH_RATE));
+    return { y1Capture, y2Capture, y3Capture };
+  }, [totalAnnual]);
+
   const [assumptions, setAssumptions] = useState<EditableAssumptions>({
     hourlyRate: VALUE_ASSUMPTIONS.hourlyRate,
     timeConversion: VALUE_ASSUMPTIONS.timeConversionRate * 100,
@@ -190,9 +207,9 @@ export default function StepTheMath({
 
   const chartData = [
     { month: 0, current: 0, potential: 0 },
-    { month: 12, current: recalculatedValues.currentYear1, potential: recalculatedValues.optimizedYear1 },
-    { month: 24, current: recalculatedValues.currentYear2, potential: recalculatedValues.optimizedYear2 },
-    { month: 36, current: recalculatedValues.currentYear3, potential: recalculatedValues.optimizedYear3 },
+    { month: 12, current: 0, potential: rampModel.y1Capture },
+    { month: 24, current: 0, potential: rampModel.y2Capture },
+    { month: 36, current: 0, potential: rampModel.y3Capture },
   ];
 
   const toggleAccordion = (id: string) => {
@@ -486,7 +503,7 @@ export default function StepTheMath({
         <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">3-Year Projection</p>
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">The Compounding Effect</h2>
         <p className="text-sm text-[#666666] mb-6">
-          Every year you wait, you leave {formatCurrency(recalculatedValues.annualGap)} on the table. The shaded area shows cumulative value captured by switching.
+          Value capture compounds as governance + adoption improve. The shaded area shows cumulative enterprise value captured over three years.
         </p>
         
         <div className="h-64 md:h-72">
@@ -566,52 +583,106 @@ export default function StepTheMath({
           <div className="space-y-1.5 text-xs text-[#666666]">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 1:</span>
-              <span className="text-[#EA2C00] font-semibold">{formatCurrency(recalculatedValues.optimizedYear1)}</span>
-              <span className="text-[#999999]">(~90% of annual gap during ramp-up)</span>
+              <span className="text-[#EA2C00] font-semibold">{formatCurrency(rampModel.y1Capture)}</span>
+              <span className="text-[#999999]">(90% ramp during adoption build-out)</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 2:</span>
-              <span className="text-[#EA2C00] font-semibold">{formatCurrency(recalculatedValues.optimizedYear2)}</span>
-              <span className="text-[#999999]">(cumulative)</span>
+              <span className="text-[#EA2C00] font-semibold">{formatCurrency(rampModel.y2Capture)}</span>
+              <span className="text-[#999999]">(cumulative, full annual run-rate)</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 3:</span>
-              <span className="text-[#EA2C00] font-semibold">{formatCurrency(recalculatedValues.optimizedYear3)}</span>
-              <span className="text-[#999999]">(cumulative, with 3% organic growth)</span>
+              <span className="text-[#EA2C00] font-semibold">{formatCurrency(rampModel.y3Capture)}</span>
+              <span className="text-[#999999]">(cumulative, +3% organic growth)</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8">
-        <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px] mb-4">
-          The Cost of Waiting
-        </p>
-        <p className="text-sm text-[#999999] mb-6">
-          Every month of delay has a measurable cost. Here's what the math suggests:
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-[#333333] rounded-lg p-4 text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Act Now</p>
-            <p className="text-2xl md:text-3xl font-bold text-white">{formatCurrency(recalculatedValues.switchNowValue)}</p>
-            <p className="text-xs text-[#999999] mt-1">3-year cumulative value</p>
+      <section className="bg-[#1A1A1A] rounded-xl p-6 md:p-8" data-testid="cost-of-waiting-section">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-lg bg-[#333333] flex items-center justify-center">
+            <Timer className="w-5 h-5 text-[#EA2C00]" />
           </div>
-          <div className="bg-[#333333] rounded-lg p-4 text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Wait 6 Months</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.wait6MonthsValue)}</p>
-            <p className="text-xs text-[#EA2C00] mt-1">-{formatCurrency(recalculatedValues.wait6MonthsLoss)} opportunity cost</p>
-          </div>
-          <div className="bg-[#333333] rounded-lg p-4 text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Wait 12 Months</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">{formatCurrency(recalculatedValues.wait12MonthsValue)}</p>
-            <p className="text-xs text-[#EA2C00] mt-1">-{formatCurrency(recalculatedValues.wait12MonthsLoss)} opportunity cost</p>
+          <div>
+            <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px]">
+              The Cost of Waiting
+            </p>
+            <p className="text-sm text-[#CCCCCC]">
+              Every month of delay costs <span className="text-white font-bold">{formatCurrency(monthlyOpportunity)}</span> in unrealized enterprise value.
+            </p>
           </div>
         </div>
-        
-        <div className="mt-4 pt-4 border-t border-[#333333]">
+
+        <div className="flex items-center gap-2 mb-5">
+          <button
+            onClick={() => setCostOfWaitingView(costOfWaitingView === "6mo" ? null : "6mo")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              costOfWaitingView === "6mo"
+                ? "bg-[#EA2C00] text-white"
+                : "bg-[#333333] text-[#CCCCCC] hover:bg-[#444444]"
+            }`}
+            data-testid="button-wait-6mo"
+          >
+            Wait 6 Months
+          </button>
+          <button
+            onClick={() => setCostOfWaitingView(costOfWaitingView === "12mo" ? null : "12mo")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              costOfWaitingView === "12mo"
+                ? "bg-[#EA2C00] text-white"
+                : "bg-[#333333] text-[#CCCCCC] hover:bg-[#444444]"
+            }`}
+            data-testid="button-wait-12mo"
+          >
+            Wait 12 Months
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-[#333333] rounded-lg p-5 text-center">
+            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Act Now — 3-Year Value</p>
+            <p className="text-3xl md:text-4xl font-bold text-white" data-testid="value-act-now">
+              {formatCurrency(rampModel.y3Capture)}
+            </p>
+            <p className="text-xs text-[#999999] mt-2">Cumulative with 90% Y1 ramp + 3% growth</p>
+          </div>
+
+          {costOfWaitingView && (
+            <div className="bg-[#333333] rounded-lg p-5 text-center border border-[#EA2C00]/30">
+              <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">
+                {costOfWaitingView === "6mo" ? "Wait 6 Months" : "Wait 12 Months"}
+              </p>
+              <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]" data-testid="value-wait-result">
+                {formatCurrency(
+                  costOfWaitingView === "6mo"
+                    ? rampModel.y3Capture - monthlyOpportunity * 6
+                    : rampModel.y3Capture - monthlyOpportunity * 12
+                )}
+              </p>
+              <p className="text-xs text-[#EA2C00] mt-2" data-testid="value-wait-loss">
+                -{formatCurrency(
+                  costOfWaitingView === "6mo"
+                    ? monthlyOpportunity * 6
+                    : monthlyOpportunity * 12
+                )} opportunity cost
+              </p>
+            </div>
+          )}
+
+          {!costOfWaitingView && (
+            <div className="bg-[#333333]/50 rounded-lg p-5 flex items-center justify-center border border-dashed border-[#555555]">
+              <p className="text-sm text-[#999999] text-center">
+                Select a delay scenario to see the impact
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-5 pt-4 border-t border-[#333333]">
           <p className="text-sm text-[#CCCCCC]">
-            That's approximately <span className="text-white font-bold">{formatCurrency(recalculatedValues.monthlyGap)}/month</span> in unrealized value at current performance levels.
+            Based on <span className="text-white font-bold">{formatCurrency(totalAnnual)}/year</span> in total enterprise opportunity across all four pillars, with monthly run-rate of <span className="text-white font-bold">{formatCurrency(monthlyOpportunity)}/mo</span>.
           </p>
         </div>
       </section>
