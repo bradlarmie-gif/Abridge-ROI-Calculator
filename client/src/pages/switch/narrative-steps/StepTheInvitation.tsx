@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, Download, Loader2, TrendingUp, Clock, DollarSign, Users, CheckCircle, ChevronDown } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   formatCurrency,
   type SwitchInputs,
   type SwitchCalculations,
-  ABRIDGE_BENCHMARKS
 } from "@/lib/switchGapCalculator";
 import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
 import { useAssessment } from "@/lib/assessment";
 import { computePillars } from "@/lib/pillars/computePillars";
+import type { PillarId } from "@/lib/pillars/computePillars";
 
 interface StepTheInvitationProps {
   inputs: SwitchInputs;
@@ -23,24 +23,23 @@ interface StepTheInvitationProps {
   onBackToJourney?: () => void;
 }
 
-function getScoreContext(score: number): { status: string; message: string } {
-  if (score >= 85) return { 
-    status: "Excellent", 
-    message: "You're capturing most of the value. Fine-tune for maximum impact." 
-  };
-  if (score >= 70) return { 
-    status: "Good", 
-    message: "Solid foundation with meaningful room to grow." 
-  };
-  if (score >= 50) return { 
-    status: "Developing", 
-    message: "There's meaningful room to improve based on what the benchmarks suggest." 
-  };
-  return { 
-    status: "Early Stage", 
-    message: "There may be a significant opportunity here. We're happy to discuss it whenever you're ready." 
-  };
-}
+const PILLAR_ORDER: PillarId[] = ["capacity", "yield", "workforce", "risk"];
+
+const PILLAR_LABELS: Record<PillarId, string> = {
+  capacity: "Capacity",
+  yield: "Revenue & Yield",
+  workforce: "Workforce Stability",
+  risk: "Enterprise Risk",
+};
+
+const PILLAR_WEIGHTS: Record<PillarId, number> = {
+  capacity: 0.30,
+  yield: 0.30,
+  workforce: 0.20,
+  risk: 0.20,
+};
+
+const GROWTH_RATE = 0.03;
 
 export default function StepTheInvitation({
   inputs,
@@ -49,14 +48,50 @@ export default function StepTheInvitation({
 }: StepTheInvitationProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [showMethodology, setShowMethodology] = useState(false);
   const { toast } = useToast();
 
   const { state } = useAssessment();
-  useEffect(() => {
-    const pillarResult = computePillars(state);
-    console.log("[DEV] computePillars output:", pillarResult);
-  }, [state]);
+  const pillarResult = useMemo(() => computePillars(state), [state]);
+  const { pillars, totalAnnual } = pillarResult;
+
+  const enterpriseScore = Math.round(
+    PILLAR_ORDER.reduce(
+      (acc, id) => acc + pillars[id].score0to100 * PILLAR_WEIGHTS[id],
+      0,
+    ),
+  );
+  const roomToUnlock = 100 - enterpriseScore;
+
+  const threeYearValue = useMemo(() => {
+    const y1 = Math.round(totalAnnual * 0.9);
+    const y2 = y1 + totalAnnual;
+    return Math.round(y2 + totalAnnual * (1 + GROWTH_RATE));
+  }, [totalAnnual]);
+
+  const insights = useMemo(() => {
+    const sorted = [...PILLAR_ORDER].sort(
+      (a, b) => pillars[a].score0to100 - pillars[b].score0to100,
+    );
+    const lines: string[] = [];
+
+    const lowest = sorted[0];
+    lines.push(
+      `${PILLAR_LABELS[lowest]} is your primary leverage area at ${pillars[lowest].score0to100}/100 — focused intervention here yields the highest marginal return.`,
+    );
+
+    const secondLowest = sorted[1];
+    if (pillars[secondLowest].valueAnnual > 0) {
+      lines.push(
+        `${PILLAR_LABELS[secondLowest]} represents ${formatCurrency(pillars[secondLowest].valueAnnual)}/yr in addressable value with targeted execution.`,
+      );
+    }
+
+    lines.push(
+      `Each year of delayed action leaves ${formatCurrency(totalAnnual)} in unrealized enterprise value on the table.`,
+    );
+
+    return lines.slice(0, 3);
+  }, [pillars, totalAnnual]);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsGeneratingPDF(true);
@@ -65,12 +100,12 @@ export default function StepTheInvitation({
         inputs,
         calculations,
         clientName,
-        preparedBy
+        preparedBy,
       });
       setShowExportModal(false);
       toast({
         title: "PDF Downloaded",
-        description: "Your Value Realization Assessment has been saved.",
+        description: "Your Enterprise Summary has been saved.",
         variant: "brand",
       });
     } catch (error) {
@@ -85,208 +120,138 @@ export default function StepTheInvitation({
     }
   };
 
-  const scoreContext = getScoreContext(calculations.realizationScore);
-  const gapPercentage = 100 - calculations.realizationScore;
-
   return (
     <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
-        <h1 className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
-          The Opportunity
+        <h1
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          data-testid="text-page-title"
+        >
+          Enterprise Summary
         </h1>
-        <p className="text-base text-[#888888] leading-relaxed">
-          A summary of what we found — and what the benchmarks suggest is possible.
+      </div>
+
+      <section data-testid="section-economic-impact">
+        <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+          Economic Impact
+        </p>
+        <div className="bg-[#F5F0EB] rounded-xl border border-[#E8E0D8] p-6 md:p-8">
+          <p
+            className="text-4xl md:text-5xl font-bold text-[#1A1A1A] tabular-nums"
+            data-testid="value-annual-opportunity"
+          >
+            {formatCurrency(Math.round(totalAnnual))}
+          </p>
+          <p className="text-sm text-[#666666] mt-1">Annual Opportunity</p>
+
+          <div className="mt-5 pt-5 border-t border-[#E8E0D8]">
+            <p
+              className="text-2xl font-bold text-[#1A1A1A] tabular-nums"
+              data-testid="value-three-year"
+            >
+              {formatCurrency(threeYearValue)}
+            </p>
+            <p className="text-sm text-[#666666] mt-1">3-Year Cumulative Value</p>
+          </div>
+
+          <p className="text-xs text-[#999999] mt-5">
+            Conservative, haircut-adjusted across four economic engines.
+          </p>
+        </div>
+      </section>
+
+      <section data-testid="section-capture-position">
+        <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+          Capture Position
+        </p>
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">
+                Value Capture Score
+              </p>
+              <p
+                className="text-4xl font-bold text-[#1A1A1A] tabular-nums"
+                data-testid="value-capture-score"
+              >
+                {enterpriseScore}%
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-1">
+                Room to Unlock
+              </p>
+              <p
+                className="text-4xl font-bold text-[#EA2C00] tabular-nums"
+                data-testid="value-room-to-unlock"
+              >
+                {roomToUnlock}%
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full h-2 bg-[#F0F0F0] rounded-full overflow-hidden mt-4 mb-3">
+            <div
+              className="h-full bg-[#1A1A1A] rounded-full transition-all duration-1000"
+              style={{ width: `${enterpriseScore}%` }}
+              data-testid="bar-capture-score"
+            />
+          </div>
+
+          <p className="text-sm text-[#666666]" data-testid="text-capture-context">
+            You are capturing approximately {enterpriseScore}% of modeled enterprise value.
+          </p>
+        </div>
+      </section>
+
+      <section data-testid="section-what-this-means">
+        <p className="text-[10px] text-[#999999] uppercase tracking-widest mb-3 font-medium">
+          What This Means
+        </p>
+        <div className="space-y-3">
+          {insights.map((insight, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A] mt-2 flex-shrink-0" />
+              <p
+                className="text-sm text-[#666666] leading-relaxed"
+                data-testid={`insight-${i}`}
+              >
+                {insight}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="border-t border-[#E5E7EB] pt-6">
+        <p className="text-xs text-[#999999] leading-relaxed" data-testid="text-disclaimer">
+          This model reflects conservative assumptions. Realized value depends on execution discipline.
         </p>
       </div>
 
-      <section className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 border border-[#E8E0D8]">
-        <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-4">
-          Annual Value to Unlock
-        </p>
-        <div className="border-l-4 border-[#EA2C00] pl-5">
-          <p className="text-5xl md:text-6xl font-bold text-[#EA2C00]">
-            {formatCurrency(calculations.annualGap)}
-          </p>
-          <p className="text-sm text-[#666666] mt-2">
-            Based on your {inputs.providers} providers across {inputs.annualEncounters.toLocaleString()} annual encounters
-          </p>
-        </div>
-      </section>
-
-      <section className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
-          <div className="p-5 text-center">
-            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">Year 1 Impact</p>
-            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.optimizedYear1)}</p>
-            <p className="text-xs text-[#999999] mt-1">Accounting for ramp-up</p>
-          </div>
-          <div className="p-5 text-center">
-            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">3-Year Impact</p>
-            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.threeYearGap)}</p>
-            <p className="text-xs text-[#999999] mt-1">Compounding value</p>
-          </div>
-          <div className="p-5 text-center">
-            <p className="text-[11px] font-medium text-[#EA2C00] uppercase tracking-wider mb-2">Monthly Opportunity</p>
-            <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">~{formatCurrency(calculations.monthlyGap)}</p>
-            <p className="text-xs text-[#999999] mt-1">Potential value</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-          <div>
-            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-1">Value Realization Score</p>
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl md:text-5xl font-bold text-[#1A1A1A]">{calculations.realizationScore}%</span>
-              <span className="text-base font-medium text-[#666666]">{scoreContext.status}</span>
-            </div>
-          </div>
-          <div className="text-right border-l-4 border-[#EA2C00] pl-3">
-            <p className="text-[11px] font-medium text-[#EA2C00] uppercase tracking-wider mb-1">Room to Grow</p>
-            <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{gapPercentage}%</span>
-          </div>
-        </div>
-        
-        <div className="relative h-3 bg-[#E0E0E0] rounded-full overflow-hidden mb-3">
-          <div 
-            className="absolute inset-y-0 left-0 bg-[#1A1A1A] rounded-full transition-all duration-1000"
-            style={{ width: `${calculations.realizationScore}%` }}
-          />
-        </div>
-        
-        <p className="text-sm text-[#666666]">{scoreContext.message}</p>
-        
-        <div className="mt-4 border-t border-[#E5E7EB] pt-4">
-          <button
-            onClick={() => setShowMethodology(!showMethodology)}
-            className="flex items-center gap-2 text-sm font-medium text-[#666666] transition-colors w-full text-left"
-            data-testid="button-toggle-methodology"
-          >
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showMethodology ? 'rotate-180' : ''}`} />
-            How we calculate this
-          </button>
-          
-          {showMethodology && (
-            <div className="mt-4 bg-[#F5F0EB] border border-[#E8E0D8] rounded-lg p-5 space-y-4">
-              <p className="text-sm text-[#333333]">
-                Your Value Realization Score is a weighted composite of six performance dimensions:
-              </p>
-              
-              <div className="space-y-2">
-                {[
-                  { label: "Utilization", weight: "25%" },
-                  { label: "Net Time Impact", weight: "20%" },
-                  { label: "Note Acceptance", weight: "20%" },
-                  { label: "Coding Impact (wRVU)", weight: "15%" },
-                  { label: "Provider Satisfaction", weight: "10%" },
-                  { label: "After-Hours Reduction", weight: "10%" },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <span className="text-sm text-[#333333]">{item.label}</span>
-                    <span className="text-sm font-semibold text-[#1A1A1A] bg-white px-3 py-0.5 rounded">{item.weight}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="h-px bg-[#E0E0E0]" />
-              
-              <p className="text-xs text-[#666666]">
-                Each dimension is scored relative to the top range of what we've observed across implementations. 100% means you're performing at the highest levels we've seen. Most organizations begin between 45-65%.
-              </p>
-              <p className="text-xs text-[#666666]">
-                We show the weights because you should know what's driving your score.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
-          <div className="p-4 text-center">
-            <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <Users className="w-5 h-5 text-[#EA2C00]" />
-            </div>
-            <p className="text-xl font-bold text-[#1A1A1A]">{inputs.utilization}%</p>
-            <p className="text-xs text-[#999999]">Utilization</p>
-            <p className="text-[10px] text-[#999999] mt-0.5">vs. {ABRIDGE_BENCHMARKS.utilization}%</p>
-          </div>
-          <div className="p-4 text-center">
-            <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <Clock className="w-5 h-5 text-[#EA2C00]" />
-            </div>
-            <p className="text-xl font-bold text-[#1A1A1A]">{inputs.timeSavedPerEncounter} min</p>
-            <p className="text-xs text-[#999999]">Time Saved</p>
-            <p className="text-[10px] text-[#999999] mt-0.5">vs. {ABRIDGE_BENCHMARKS.timeSavedAvg} min</p>
-          </div>
-          <div className="p-4 text-center">
-            <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <DollarSign className="w-5 h-5 text-[#EA2C00]" />
-            </div>
-            <p className="text-xl font-bold text-[#1A1A1A]">+{inputs.wrvuLift}%</p>
-            <p className="text-xs text-[#999999]">wRVU Lift</p>
-            <p className="text-[10px] text-[#999999] mt-0.5">vs. +{ABRIDGE_BENCHMARKS.wrvuLift}%</p>
-          </div>
-          <div className="p-4 text-center">
-            <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
-            </div>
-            <p className="text-xl font-bold text-[#1A1A1A]">{inputs.satisfaction}%</p>
-            <p className="text-xs text-[#999999]">Satisfaction</p>
-            <p className="text-[10px] text-[#999999] mt-0.5">vs. {ABRIDGE_BENCHMARKS.satisfaction}%</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#F5F0EB] rounded-xl p-6 border border-[#E8E0D8]">
-        <div className="flex flex-col md:flex-row items-center gap-6">
-          <div className="flex-1 text-center md:text-left">
-            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">What Comes Next</p>
-            <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
-              If this raises questions, we're here to help.
-            </h2>
-            <p className="text-sm text-[#666666]">
-              This captures what you entered. If you'd like to discuss further, our team is available.
-            </p>
-          </div>
-          
-          <div className="flex-shrink-0">
-            <Button
-              onClick={() => setShowExportModal(true)}
-              className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
-              data-testid="button-export-pdf"
-            >
-              {isGeneratingPDF ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              Download Report
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white rounded-xl border border-[#E5E7EB] p-5">
-        <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-[#EA2C00] flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-[#666666]">
-            <span className="font-semibold text-[#1A1A1A]">All calculations are based on your inputs and industry benchmarks.</span>
-            {' '}Actual results depend on implementation quality, organizational readiness, and partnership approach.
-          </p>
-        </div>
-      </section>
-
-      <div className="flex justify-start pt-4">
-        <Button 
-          variant="ghost" 
+      <div className="flex items-center justify-between pt-2">
+        <Button
+          variant="ghost"
           onClick={onBack}
           className="gap-2"
           data-testid="button-back"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => setShowExportModal(true)}
+          className="gap-2 text-[#666666]"
+          data-testid="button-export-summary"
+        >
+          {isGeneratingPDF ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          Export Executive Summary
         </Button>
       </div>
 

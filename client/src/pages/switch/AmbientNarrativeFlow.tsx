@@ -13,7 +13,6 @@ import StepPillarYield from "./narrative-steps/StepPillarYield";
 import StepPillarWorkforce from "./narrative-steps/StepPillarWorkforce";
 import StepPillarRisk from "./narrative-steps/StepPillarRisk";
 import StepEnterpriseValueSynthesis from "./narrative-steps/StepEnterpriseValueSynthesis";
-import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
 import StepTheMath from "./narrative-steps/StepTheMath";
 import StepTheInvitation from "./narrative-steps/StepTheInvitation";
 
@@ -23,7 +22,7 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 11;
+const TOTAL_STEPS = 10;
 
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
@@ -35,8 +34,7 @@ const STEPS = [
   { id: 7, name: "Enterprise Risk", shortName: "Risk" },
   { id: 8, name: "Enterprise Value Synthesis", shortName: "Synthesis" },
   { id: 9, name: "The Compounding Effect", shortName: "Compound" },
-  { id: 10, name: "What It Takes", shortName: "How" },
-  { id: 11, name: "The Opportunity", shortName: "Next" },
+  { id: 10, name: "Enterprise Summary", shortName: "Summary" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -67,7 +65,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 10) {
+    if (currentStep === 9) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -76,8 +74,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(10));
-    dispatch(assessmentActions.setStep(11));
+    dispatch(assessmentActions.completeStep(9));
+    dispatch(assessmentActions.setStep(10));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -164,8 +162,6 @@ export default function AmbientNarrativeFlow({
       case 9:
         return <StepTheMath {...commonProps} />;
       case 10:
-        return <StepWhyThisHappens {...commonProps} />;
-      case 11:
         return (
           <StepTheInvitation 
             {...commonProps} 

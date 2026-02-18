@@ -282,7 +282,7 @@ export default function StepTheMath({
         </div>
       </section>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextLabel="What It Takes" />
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Enterprise Summary" />
     </div>
   );
 }
