@@ -303,80 +303,92 @@ function computeYield(
 
 // ============================================================================
 // PILLAR 3 — WORKFORCE
-// After-hours reduction → burnout avoidance → retention value
-// Plus small turnover-risk component
+// Workforce stability & cost pressure: after-hours relief, turnover risk
+// avoidance, overtime/agency sensitivity. Does NOT claim FTE reduction —
+// values are haircut and directional.
 // ============================================================================
+
+const TURNOVER_MULTIPLIER: Record<"low" | "medium" | "high", number> = {
+  low: 0.5,
+  medium: 1.0,
+  high: 1.6,
+};
+
+const OVERTIME_MULTIPLIER: Record<"minimal" | "some" | "material", number> = {
+  minimal: 0.3,
+  some: 1.0,
+  material: 1.8,
+};
+
+const SCRIBE_SAVINGS_PER_PROVIDER: Record<"none" | "some" | "heavy", number> = {
+  none: 0,
+  some: 18000,
+  heavy: 42000,
+};
 
 function computeWorkforce(
   state: AssessmentState,
   confidence: Confidence,
 ): PillarDetail {
   const { inputs } = state;
-  const maturityStage = deriveMaturityStage(inputs);
 
-  // After-hours: how many weekly hours could be avoided with better docs?
-  // Avoidable fraction scales with maturity: early adopters see less benefit
-  const AVOIDABLE_FRACTION: Record<number, number> = {
-    1: 0.15, // Deployed — docs not yet consistent, small fraction avoidable
-    2: 0.30, // Adopted — moderate documentation quality
-    3: 0.50, // Optimized — strong docs, more after-hours is avoidable
-    4: 0.65, // Transformed — most after-hours is documentation-related
-  };
-  const avoidableFraction = AVOIDABLE_FRACTION[maturityStage] ?? 0.30;
+  const afterHoursHrs = Math.max(0, inputs.afterHoursCharting ?? 2);
+  const fullyLoadedHourlyRate = 150;
+  const workingWeeksPerYear = 48;
+  const avoidableFraction = 0.45;
 
-  // Hours avoided per provider per year (48 working weeks)
-  const avoidableHoursPerWeek = inputs.afterHoursPerWeek * avoidableFraction;
-  const avoidableHoursPerYear = avoidableHoursPerWeek * 48;
+  const avoidableHrsPerYear = afterHoursHrs * avoidableFraction * workingWeeksPerYear;
+  const afterHoursReliefValue = inputs.providers * avoidableHrsPerYear * fullyLoadedHourlyRate;
 
-  // Hourly rate derived from fully-loaded provider cost
-  // currentCostPerProvider is monthly cost of the ambient solution, not salary
-  // Use a default fully-loaded hourly rate
-  const fullyLoadedHourlyRate = 150; // $/hr, conservative blended rate
-
-  const afterHoursValue = inputs.providers * avoidableHoursPerYear * fullyLoadedHourlyRate;
-
-  // Turnover risk: small additional value from reduced burnout-driven departures
-  // Cap at 2 prevented departures to stay conservative
-  // Replacement cost ~$400K for a physician; we use $200K as conservative
-  const baseTurnoverRate = 0.06; // 6% annual physician turnover
-  const burnoutShareOfTurnover = 0.40; // 40% of turnover is burnout-related
-  const burnoutReductionFromDocs = maturityStage >= 3 ? 0.15 : 0.08; // how much docs help
-
-  const expectedPrevented = inputs.providers * baseTurnoverRate * burnoutShareOfTurnover * burnoutReductionFromDocs;
-  const preventedDepartures = Math.min(expectedPrevented, 2); // hard cap at 2
+  const baseTurnoverRate = 0.06;
+  const burnoutShare = 0.40;
+  const turnoverMult = TURNOVER_MULTIPLIER[inputs.turnoverRisk ?? "medium"];
+  const burnoutReduction = 0.12;
+  const expectedPrevented = inputs.providers * baseTurnoverRate * burnoutShare * burnoutReduction * turnoverMult;
+  const preventedDepartures = Math.min(expectedPrevented, 3);
   const replacementCost = 200000;
-  const turnoverValue = preventedDepartures * replacementCost;
+  const turnoverRiskValue = preventedDepartures * replacementCost;
 
-  const rawValue = afterHoursValue + turnoverValue;
+  const overtimeMult = OVERTIME_MULTIPLIER[inputs.overtimeSensitivity ?? "some"];
+  const baseOvertimePerProvider = 8000;
+  const overtimeAgencyValue = inputs.providers * baseOvertimePerProvider * overtimeMult * avoidableFraction;
+
+  const scribeSavings = SCRIBE_SAVINGS_PER_PROVIDER[inputs.scribeReliance ?? "none"] * inputs.providers;
+
+  const rawValue = afterHoursReliefValue + turnoverRiskValue + overtimeAgencyValue + scribeSavings;
   const valueAnnual = haircut(rawValue, confidence);
 
-  // Score: after-hours reduction effectiveness
-  // Max = 65% avoidable at transformed stage, 8 hrs/week after-hours
-  const maxAfterHoursValue = inputs.providers * (8 * 0.65 * 48) * fullyLoadedHourlyRate;
-  const maxTurnoverValue = 2 * replacementCost;
-  const maxValue = maxAfterHoursValue + maxTurnoverValue;
+  const maxAfterHours = inputs.providers * (5 * 0.45 * workingWeeksPerYear) * fullyLoadedHourlyRate;
+  const maxTurnover = 3 * replacementCost;
+  const maxOvertime = inputs.providers * baseOvertimePerProvider * OVERTIME_MULTIPLIER.material * avoidableFraction;
+  const maxScribe = SCRIBE_SAVINGS_PER_PROVIDER.heavy * inputs.providers;
+  const maxValue = maxAfterHours + maxTurnover + maxOvertime + maxScribe;
   const score0to100 = maxValue > 0
     ? Math.min(100, Math.round((rawValue / maxValue) * 100))
     : 0;
 
-  let topBlockerKey = "afterHoursPerWeek";
-  if (inputs.afterHoursPerWeek <= 1) topBlockerKey = "maturityStage";
-  if (maturityStage <= 1) topBlockerKey = "maturityStage";
+  let topBlockerKey = "afterHoursCharting";
+  if (afterHoursHrs <= 1 && turnoverMult <= 0.5) topBlockerKey = "overtimeSensitivity";
+  if (inputs.turnoverRisk === "high") topBlockerKey = "turnoverRisk";
 
   return {
     valueAnnual,
     score0to100,
     topBlockerKey,
     details: {
-      maturityStage,
+      afterHoursCharting: afterHoursHrs,
       avoidableFraction,
-      afterHoursPerWeek: inputs.afterHoursPerWeek,
-      avoidableHoursPerYear: Math.round(avoidableHoursPerYear),
+      avoidableHrsPerYear: Math.round(avoidableHrsPerYear),
       fullyLoadedHourlyRate,
-      afterHoursValue: Math.round(afterHoursValue),
+      afterHoursReliefValue: Math.round(afterHoursReliefValue),
+      turnoverRisk: inputs.turnoverRisk,
       preventedDepartures: Math.round(preventedDepartures * 100) / 100,
       replacementCost,
-      turnoverValue: Math.round(turnoverValue),
+      turnoverRiskValue: Math.round(turnoverRiskValue),
+      overtimeSensitivity: inputs.overtimeSensitivity,
+      overtimeAgencyValue: Math.round(overtimeAgencyValue),
+      scribeReliance: inputs.scribeReliance,
+      scribeSavings: Math.round(scribeSavings),
       rawValue: Math.round(rawValue),
       confidenceHaircut: CONFIDENCE_MULTIPLIER[confidence],
     },
@@ -479,6 +491,10 @@ function safeInputs(raw: AssessmentState["inputs"]): AssessmentState["inputs"] {
     deployIntent: raw.deployIntent ?? "not-sure",
     yieldUpliftPercent: raw.yieldUpliftPercent ?? 0,
     ffsSharePercent: raw.ffsSharePercent ?? 70,
+    afterHoursCharting: raw.afterHoursCharting ?? 2,
+    turnoverRisk: raw.turnoverRisk ?? "medium",
+    overtimeSensitivity: raw.overtimeSensitivity ?? "some",
+    scribeReliance: raw.scribeReliance ?? "none",
   };
 }
 

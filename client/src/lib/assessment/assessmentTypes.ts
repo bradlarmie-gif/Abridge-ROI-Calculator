@@ -54,6 +54,10 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   deployIntent: "not-sure",
   yieldUpliftPercent: 0,
   ffsSharePercent: 70,
+  afterHoursCharting: 2,
+  turnoverRisk: "medium" as const,
+  overtimeSensitivity: "some" as const,
+  scribeReliance: "none" as const,
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {

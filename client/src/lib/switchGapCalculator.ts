@@ -25,6 +25,10 @@ export interface SwitchInputs {
   deployIntent: DeployIntentOption;
   yieldUpliftPercent: number;
   ffsSharePercent: number;
+  afterHoursCharting: number;
+  turnoverRisk: "low" | "medium" | "high";
+  overtimeSensitivity: "minimal" | "some" | "material";
+  scribeReliance: "none" | "some" | "heavy";
 }
 
 export interface GapItem {
