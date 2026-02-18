@@ -23,6 +23,8 @@ export interface SwitchInputs {
   satisfaction: number;
   afterHoursPerWeek: number;
   deployIntent: DeployIntentOption;
+  yieldUpliftPercent: number;
+  ffsSharePercent: number;
 }
 
 export interface GapItem {

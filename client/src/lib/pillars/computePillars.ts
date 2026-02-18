@@ -238,13 +238,11 @@ function computeYield(
 
   const eUsed = Math.round(inputs.annualEncounters * (inputs.utilization / 100));
 
-  // Yield lift: how much revenue per encounter improves due to better docs
-  // Cap at 2% to stay conservative — even strong wRVU lift rarely exceeds this
-  const rawLiftPct = Math.min(inputs.wrvuLift, 7) / 100; // wrvuLift is 0-7%
-  const yieldLiftPct = Math.min(rawLiftPct, 0.02); // hard cap at 2%
+  // Yield lift: user-selected uplift %, hard-capped at 2%
+  const yieldLiftPct = Math.min((inputs.yieldUpliftPercent ?? 0) / 100, 0.02);
 
-  // FFS share: fraction of revenue under fee-for-service (wRVU-sensitive)
-  const ffsShare = 0.70;
+  // FFS / VBC split from user input (ffsSharePercent 0-100)
+  const ffsShare = Math.max(0, Math.min(100, inputs.ffsSharePercent ?? 70)) / 100;
   const vbcShare = 1 - ffsShare;
 
   // FFS yield: direct revenue lift via wRVU improvement
@@ -260,17 +258,25 @@ function computeYield(
   const rawValue = ffsYield + vbcYield;
   const valueAnnual = haircut(rawValue, confidence);
 
+  // Benchmark leakage: max theoretical at 2% uplift, full utilization
+  const benchmarkEUsed = inputs.annualEncounters * 0.76;
+  const benchmarkYield = benchmarkEUsed * spec.revenuePerEncounter * 0.02 *
+    (ffsShare * ffsAttribution + vbcShare * vbcAttribution);
+  const leakageRemaining = Math.max(0, benchmarkYield - rawValue);
+
   // Score: yield realization as % of theoretical max
-  // Max assumes 2% lift, 76% utilization, high attribution
-  const maxEUsed = inputs.annualEncounters * 0.76;
-  const maxYield = maxEUsed * spec.revenuePerEncounter * 0.02 * (ffsShare * 0.6 + vbcShare * 0.4);
-  const score0to100 = maxYield > 0
-    ? Math.min(100, Math.round((rawValue / maxYield) * 100))
+  const score0to100 = benchmarkYield > 0
+    ? Math.min(100, Math.round((rawValue / benchmarkYield) * 100))
     : 0;
 
+  // Primary lever auto-label based on uplift level
+  let primaryLever = "completeness";
+  if (yieldLiftPct >= 0.005 && yieldLiftPct < 0.01) primaryLever = "specificity";
+  if (yieldLiftPct >= 0.01) primaryLever = "risk capture";
+
   // Top blocker
-  let topBlockerKey = "wrvuLift";
-  if (inputs.wrvuLift >= 4 && inputs.utilization < 50) topBlockerKey = "utilization";
+  let topBlockerKey = "yieldUplift";
+  if (yieldLiftPct >= 0.015 && inputs.utilization < 50) topBlockerKey = "utilization";
   if (inputs.docCompleteness < 50) topBlockerKey = "docCompleteness";
 
   return {
@@ -280,7 +286,7 @@ function computeYield(
     details: {
       eUsed,
       revenuePerEncounter: spec.revenuePerEncounter,
-      yieldLiftPct: Math.round(yieldLiftPct * 10000) / 100, // as %
+      yieldLiftPct: Math.round(yieldLiftPct * 10000) / 100,
       ffsShare,
       vbcShare,
       ffsAttribution,
@@ -288,6 +294,8 @@ function computeYield(
       ffsYield: Math.round(ffsYield),
       vbcYield: Math.round(vbcYield),
       rawValue: Math.round(rawValue),
+      leakageRemaining: Math.round(leakageRemaining),
+      primaryLever,
       confidenceHaircut: CONFIDENCE_MULTIPLIER[confidence],
     },
   };
@@ -469,6 +477,8 @@ function safeInputs(raw: AssessmentState["inputs"]): AssessmentState["inputs"] {
     satisfaction: raw.satisfaction ?? 0,
     afterHoursPerWeek: raw.afterHoursPerWeek ?? 0,
     deployIntent: raw.deployIntent ?? "not-sure",
+    yieldUpliftPercent: raw.yieldUpliftPercent ?? 0,
+    ffsSharePercent: raw.ffsSharePercent ?? 70,
   };
 }
 
