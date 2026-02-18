@@ -8,6 +8,9 @@
 export type SolutionType = "ambient-ai" | "human-scribes";
 export type SpecialtyMix = "primary-care" | "balanced" | "specialty";
 export type DeployIntentOption = "reduce-backlog" | "grow-visits" | "protect-time" | "not-sure";
+export type CareSetting = "outpatient" | "ed" | "inpatient" | "mixed";
+export type DataMode = "benchmark" | "estimated" | "measured";
+export type CurrentVendor = "dax" | "other" | "none";
 
 export interface SwitchInputs {
   solution: SolutionType;
@@ -15,6 +18,10 @@ export interface SwitchInputs {
   annualEncounters: number;
   currentCostPerProvider: number;
   specialtyMix: SpecialtyMix;
+  careSetting: CareSetting;
+  dataMode: DataMode;
+  currentVendor: CurrentVendor;
+  encountersEstimated: boolean;
   utilization: number;
   timeSavedPerEncounter: number;
   editTimePerEncounter: number;

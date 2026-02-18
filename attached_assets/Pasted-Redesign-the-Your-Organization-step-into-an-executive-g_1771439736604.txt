@@ -1,0 +1,99 @@
+Redesign the “Your Organization” step into an executive-grade baseline screen that feels like a decision instrument (not a form). Keep Abridge brand (Manrope body, current Abridge headline font, beige surfaces, black text, #EA2C00 accents). Do not change the multi-step flow logic beyond this screen’s layout and state bindings.
+
+GOAL:
+This screen must (1) establish credibility in 5 seconds, (2) collect only the minimum baseline inputs, (3) immediately show a live “Assessment Preview” that makes executives feel the tool is already doing real work, and (4) prevent stalls when they don’t have data.
+
+INFORMATION ARCHITECTURE (Output-first + Trust):
+Convert the screen to a two-column layout on desktop:
+- Left column: Primary content (baseline inputs), max width ~720px.
+- Right column: Sticky “Assessment Preview” rail (~360px) that updates live as inputs change.
+On mobile: rail collapses into a top “Preview” card with the same content.
+
+COPY (use exactly this tone—calm authority, board-ready, not vendor-y):
+Header: “Organization Baseline”
+Subheader: “We’ll use this to build a conservative, decision-grade view of ambient economics — even if you don’t have perfect data.”
+
+Add a small “Data-light by design” trust line below subheader:
+“Benchmarks + guardrails are applied automatically when data isn’t available.”
+
+PRIMARY INPUTS (Minimal + Exec-friendly):
+Replace the current two input cards with three compact “baseline blocks” (clean, premium, no heavy card chrome):
+1) Clinicians in scope
+   - Label: “Clinicians in scope”
+   - Helper: “Physicians + APPs expected to use ambient.”
+   - Input: number
+   - Preset chips: 25 / 50 / 100 / 250 / Custom
+2) Annual eligible encounters
+   - Label: “Annual eligible encounters”
+   - Helper: “Visits where ambient documentation is applicable.”
+   - Input: number
+   - Preset chips: 25k / 50k / 100k / 250k / Custom
+   - Add an optional “I don’t know” link that reveals a simple estimator:
+     - “Encounters per clinician per day” (preset: 14 / 18 / 22)
+     - “Clinic days per year” (preset: 200 / 220 / 240)
+     - Estimated encounters = clinicians * encounters/day * days/year
+     - Show the estimate as the field value with a small “estimated” badge.
+3) Care setting + mix (this is critical for enterprise framing)
+   - Add “Care setting” segmented control: Outpatient / ED / Inpatient / Mixed
+   - Specialty mix remains but upgrade to a more executive label:
+     Label: “Visit complexity mix”
+     Options: Primary care-heavy / Balanced / Specialty-heavy
+     Helper: “Used only to select conservative benchmarks.”
+
+SECONDARY OPTIONAL INPUTS (Collapsed “Optional” section):
+Add an “Optional (improves precision)” accordion with:
+- Current ambient vendor: DAX / Other / None
+- Data mode: Benchmark-only / Estimated / Measured (default Benchmark-only)
+  - This sets a global confidence baseline for later; store in state.
+
+VALIDATION + UX RULES:
+- Inputs must accept commas and shorthand (e.g., “100k”, “1.2m”) and normalize to integers.
+- Inline validation only (no red scary errors):
+  - If clinicians < 5 or > 5000, show subtle warning text: “Sanity check: confirm scope.”
+  - If encounters < clinicians*500, show subtle warning: “This implies very low volume per clinician.”
+- Disable “Next” until clinicians and encounters are present (estimated counts as present).
+- Keep the footer CTA style you already implemented (sticky on mobile).
+
+ASSESSMENT PREVIEW RAIL (The premium part—must feel like a CFO readout):
+Right rail content:
+A) “What we can model today” (with small icons)
+   - Capacity Creation (ready)
+   - Revenue Yield (ready)
+   - Labor Stabilization (ready)
+   - Risk & Compliance (ready)
+B) “Baseline recognized” card:
+   - Clinicians: X
+   - Eligible encounters: Y
+   - Setting: Outpatient/ED/Inpatient/Mixed
+   - Data mode: Benchmark/Estimated/Measured (with a small confidence badge)
+C) “Conservative defaults active” card:
+   - A short list that updates based on data mode:
+     - Benchmark-only → “Conservative haircuts applied” + “Caps enforced”
+     - Measured → “Reduced haircuts where measured” + “Caps still enforced”
+D) “Time to value” mini card (this is psychological):
+   - “You’re ~90 seconds from an enterprise opportunity map.”
+
+VISUAL DESIGN (Abridge premium):
+- Reduce empty whitespace above the fold; bring content up.
+- Increase typographic hierarchy:
+  - H1 ~ text-4xl, subheader lighter gray.
+- Inputs should look like Stripe-level controls:
+  - quiet borders, rounded 16px, subtle hover.
+- Preset chips should be compact, consistent, with clear active state (#EA2C00 background only when selected; otherwise light surface).
+- Add micro-animation on chip selection (subtle scale or fade).
+
+IMPLEMENTATION REQUIREMENTS:
+- Reuse existing components where possible (SegmentedControl, chips, cards) but feel free to create:
+  - <BaselineBlock />
+  - <PresetChips />
+  - <AssessmentPreviewRail />
+- All values must write to the existing assessment state (do not create a separate local state that breaks the flow).
+- Do not change the global header, breadcrumb, or progress bar logic.
+- Keep this screen fast: no heavy libraries, no charts yet.
+
+ACCEPTANCE CRITERIA:
+1) On desktop, baseline inputs left + sticky preview rail right.
+2) Executives can proceed without knowing encounters via estimator.
+3) Preview rail updates instantly with inputs.
+4) Copy matches the above and feels “decision-grade.”
+5) Styling remains on-brand and premium.
