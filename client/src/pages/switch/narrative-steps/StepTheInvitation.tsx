@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Download, Loader2, TrendingUp, Clock, DollarSign, Users, CheckCircle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,6 +10,8 @@ import {
 import { generateAmbientPDF } from "@/components/switch/AmbientPDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
+import { useAssessment } from "@/lib/assessment";
+import { computePillars } from "@/lib/pillars/computePillars";
 
 interface StepTheInvitationProps {
   inputs: SwitchInputs;
@@ -48,6 +50,12 @@ export default function StepTheInvitation({
   const [showExportModal, setShowExportModal] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
   const { toast } = useToast();
+
+  const { state } = useAssessment();
+  useEffect(() => {
+    const pillarResult = computePillars(state);
+    console.log("[DEV] computePillars output:", pillarResult);
+  }, [state]);
 
   const handleExportPDF = async (clientName: string, preparedBy: string) => {
     setIsGeneratingPDF(true);
