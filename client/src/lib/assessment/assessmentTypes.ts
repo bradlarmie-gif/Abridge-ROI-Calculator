@@ -48,6 +48,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   dataMode: "benchmark",
   currentVendor: "none",
   encountersEstimated: false,
+  confidenceBaseline: 0.55,
   utilization: 0,
   timeSavedPerEncounter: 0,
   editTimePerEncounter: 0,

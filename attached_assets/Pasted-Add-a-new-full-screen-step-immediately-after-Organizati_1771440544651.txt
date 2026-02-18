@@ -1,0 +1,99 @@
+Add a new full-screen step immediately after “Organization Baseline” called:
+
+Step Title: “Measurement Reality”
+Subheader: “Ambient economics can be modeled with benchmarks or measured data. Let’s calibrate how precise your environment is today.”
+
+GOAL:
+This step must:
+1) Normalize imperfect data.
+2) Establish credibility through transparency.
+3) Set a global confidence modifier that impacts all pillar calculations.
+4) Make executives feel respected, not judged.
+
+STRUCTURE:
+Two-column layout (same shell as Baseline screen).
+
+LEFT COLUMN (Primary Content):
+Three large selection tiles (not small segmented controls).
+
+Option 1:
+Title: “Benchmark-Based”
+Description: “We’ll use specialty-adjusted industry benchmarks with conservative guardrails.”
+Badge: “Fastest”
+Default selection.
+Small note: “Designed for early-stage or partial data environments.”
+
+Option 2:
+Title: “Estimated”
+Description: “You have directional internal data or pilot signals.”
+Badge: “Balanced”
+Small note: “Moderate confidence adjustments applied.”
+
+Option 3:
+Title: “Measured”
+Description: “You have pre/post data, tracked metrics, or formal pilots.”
+Badge: “Highest Precision”
+Small note: “Reduced confidence haircuts. Guardrails still enforced.”
+
+Each tile:
+- Large, clean, minimal
+- Soft beige background
+- Thin border
+- Subtle hover elevation
+- Selected state uses subtle Abridge red accent bar on the left edge (not full red background)
+- Only one selectable
+
+RIGHT COLUMN (Sticky “Impact Preview” Rail):
+
+Card 1: “What This Changes”
+Show:
+- Confidence Haircut: 
+    Benchmark → 0.55
+    Estimated → 0.70
+    Measured → 0.90
+- Guardrails: Always On
+- Caps: Always Enforced
+
+Card 2: “Why This Matters”
+Short explanation:
+“We model conservatively by design. Your selection adjusts how aggressively we haircut projected value before displaying it.”
+
+Card 3: “Trust Principles”
+Bullet list:
+- No double-counting
+- Hard caps on yield + risk
+- Deployment gating on time savings
+- Conservative default assumptions
+
+GLOBAL LOGIC REQUIREMENTS:
+
+When a selection is made:
+- Set state.dataMode = 'benchmark' | 'estimated' | 'measured'
+- Set state.confidenceBaseline accordingly (0.55 / 0.70 / 0.90)
+- This confidenceBaseline must automatically multiply all pillar outputs before display.
+
+Do NOT:
+- Create separate logic per pillar here.
+- Apply different caps.
+- Show any dollar amounts yet.
+
+UX DETAILS:
+- Add microcopy below header:
+  “You can change this later. We default to conservative.”
+- Keep CTA footer consistent with previous screen.
+- Disable Next until one option is selected (Benchmark preselected).
+- Animate selection subtly (fade + slight scale).
+
+DESIGN TONE:
+- Calm.
+- Board-ready.
+- No exclamation points.
+- No marketing language.
+- This must feel like McKinsey-level calibration, not SaaS onboarding.
+
+ACCEPTANCE CRITERIA:
+1) Only one selection active at a time.
+2) Confidence baseline stored globally.
+3) Right rail updates instantly when selection changes.
+4) No pillar math changes yet — just baseline multiplier stored.
+5) Visually consistent with previous baseline screen.

@@ -496,34 +496,6 @@ export default function StepYourOrganization({
                     testIdPrefix="chip-vendor"
                   />
                 </div>
-                <div className="border-t border-[#F0F0F0] pt-4">
-                  <label className="block text-sm font-medium text-[#1A1A1A] mb-1" data-testid="label-datamode">
-                    Data mode
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {DATA_MODE_OPTIONS.map((opt) => {
-                      const isActive = inputs.dataMode === opt.value;
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => updateInput("dataMode", opt.value)}
-                          data-testid={`chip-datamode-${opt.value}`}
-                          className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                            isActive
-                              ? "bg-[#EA2C00] text-white scale-[1.02]"
-                              : "bg-[#F5F0EB] text-[#555] border border-[#E8E0D8] hover:border-[#CCC] hover:text-[#1A1A1A]"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[12px] text-[#999] mt-2">
-                    {DATA_MODE_OPTIONS.find(d => d.value === inputs.dataMode)?.description}
-                  </p>
-                </div>
               </div>
             )}
           </div>

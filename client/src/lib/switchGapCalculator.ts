@@ -22,6 +22,7 @@ export interface SwitchInputs {
   dataMode: DataMode;
   currentVendor: CurrentVendor;
   encountersEstimated: boolean;
+  confidenceBaseline: number;
   utilization: number;
   timeSavedPerEncounter: number;
   editTimePerEncounter: number;
