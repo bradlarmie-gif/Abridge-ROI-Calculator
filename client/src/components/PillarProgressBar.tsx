@@ -12,21 +12,23 @@ interface PillarProgressBarProps {
 }
 
 const PILLARS = [
-  { stepId: 4, letter: "C", name: "Capacity", testId: "capacity" },
-  { stepId: 5, letter: "Y", name: "Yield", testId: "yield" },
-  { stepId: 6, letter: "W", name: "Workforce", testId: "workforce" },
-  { stepId: 7, letter: "R", name: "Risk", testId: "risk" },
+  { stepId: 5, letter: "C", name: "Capacity", testId: "capacity" },
+  { stepId: 6, letter: "Y", name: "Yield", testId: "yield" },
+  { stepId: 7, letter: "W", name: "Workforce", testId: "workforce" },
+  { stepId: 8, letter: "R", name: "Risk", testId: "risk" },
 ];
 
 function Phase1Progress({ currentStep, steps }: { currentStep: number; steps: Step[] }) {
-  const progress = currentStep === 1 ? 50 : 100;
+  const phaseSteps = [2, 3];
+  const idx = phaseSteps.indexOf(currentStep);
+  const progress = idx === 0 ? 50 : 100;
   const stepLabel = steps.find((s) => s.id === currentStep)?.name || "";
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-[#666666]">
-          Step {currentStep} of 2
+          Step {idx + 1} of {phaseSteps.length}
         </span>
         <span className="text-xs text-[#999999]">{stepLabel}</span>
       </div>
@@ -103,8 +105,8 @@ function Phase2Progress({
 }
 
 function Phase3Progress({ currentStep, steps }: { currentStep: number; steps: Step[] }) {
-  const phaseStart = 8;
-  const phaseEnd = 9;
+  const phaseStart = 9;
+  const phaseEnd = 10;
   const phaseTotal = phaseEnd - phaseStart + 1;
   const phasePosition = currentStep - phaseStart;
   const progress = ((phasePosition) / (phaseTotal - 1 || 1)) * 100;
@@ -135,13 +137,13 @@ export default function PillarProgressBar({
 }: PillarProgressBarProps) {
   return (
     <div data-testid="pillar-progress-bar" className="mb-6 md:mb-8">
-      {currentStep >= 1 && currentStep <= 2 && (
+      {currentStep >= 2 && currentStep <= 3 && (
         <Phase1Progress currentStep={currentStep} steps={steps} />
       )}
-      {currentStep >= 3 && currentStep <= 7 && (
+      {currentStep >= 4 && currentStep <= 8 && (
         <Phase2Progress currentStep={currentStep} completedSteps={completedSteps} />
       )}
-      {currentStep >= 8 && currentStep <= 9 && (
+      {currentStep >= 9 && currentStep <= 10 && (
         <Phase3Progress currentStep={currentStep} steps={steps} />
       )}
     </div>

@@ -5,6 +5,7 @@ import { CinematicTransition } from "@/components/CinematicTransition";
 import PillarProgressBar from "@/components/PillarProgressBar";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import StepHiddenOperatingSystem from "./narrative-steps/StepHiddenOperatingSystem";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
 import StepMeasurementReality from "./narrative-steps/StepMeasurementReality";
 import StepEnterprisePressureMap from "./narrative-steps/StepEnterprisePressureMap";
@@ -22,19 +23,20 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 
 const STEPS = [
-  { id: 1, name: "Your Organization", shortName: "Org" },
-  { id: 2, name: "Uncertainty Calibration", shortName: "Calibrate" },
-  { id: 3, name: "Enterprise Focus", shortName: "Focus" },
-  { id: 4, name: "Capacity Engine", shortName: "Capacity" },
-  { id: 5, name: "Revenue & Yield", shortName: "Yield" },
-  { id: 6, name: "Workforce Stability", shortName: "Workforce" },
-  { id: 7, name: "Enterprise Risk", shortName: "Risk" },
-  { id: 8, name: "Enterprise Value Synthesis", shortName: "Synthesis" },
-  { id: 9, name: "The Compounding Effect", shortName: "Compound" },
-  { id: 10, name: "Enterprise Summary", shortName: "Summary" },
+  { id: 1, name: "The Hidden Operating System", shortName: "Thesis" },
+  { id: 2, name: "Your Organization", shortName: "Org" },
+  { id: 3, name: "Uncertainty Calibration", shortName: "Calibrate" },
+  { id: 4, name: "Enterprise Focus", shortName: "Focus" },
+  { id: 5, name: "Capacity Engine", shortName: "Capacity" },
+  { id: 6, name: "Revenue & Yield", shortName: "Yield" },
+  { id: 7, name: "Workforce Stability", shortName: "Workforce" },
+  { id: 8, name: "Enterprise Risk", shortName: "Risk" },
+  { id: 9, name: "Enterprise Value Synthesis", shortName: "Synthesis" },
+  { id: 10, name: "The Compounding Effect", shortName: "Compound" },
+  { id: 11, name: "Enterprise Summary", shortName: "Summary" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -50,22 +52,22 @@ export default function AmbientNarrativeFlow({
     dispatch(assessmentActions.updateInput(key, value));
   };
 
-  const canProceedFromStep1 = 
+  const canProceedFromStep2 = 
     inputs.providers > 0 && 
     inputs.annualEncounters > 0;
 
   const goToStep = (step: number) => {
     if (step < 1 || step > TOTAL_STEPS) return;
-    if (step > currentStep && !canProceedFromStep1 && currentStep === 1) return;
+    if (step > currentStep && !canProceedFromStep2 && currentStep === 2) return;
     
     dispatch(assessmentActions.setStep(step));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNext = () => {
-    if (currentStep === 1 && !canProceedFromStep1) return;
+    if (currentStep === 2 && !canProceedFromStep2) return;
     
-    if (currentStep === 9) {
+    if (currentStep === 10) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -74,8 +76,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(9));
-    dispatch(assessmentActions.setStep(10));
+    dispatch(assessmentActions.completeStep(10));
+    dispatch(assessmentActions.setStep(11));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -103,12 +105,19 @@ export default function AmbientNarrativeFlow({
     switch (currentStep) {
       case 1:
         return (
-          <StepYourOrganization 
-            {...commonProps} 
-            canProceed={canProceedFromStep1}
+          <StepHiddenOperatingSystem
+            onNext={handleNext}
+            onBack={handleBack}
           />
         );
       case 2:
+        return (
+          <StepYourOrganization 
+            {...commonProps} 
+            canProceed={canProceedFromStep2}
+          />
+        );
+      case 3:
         return (
           <StepMeasurementReality
             inputs={inputs}
@@ -117,51 +126,51 @@ export default function AmbientNarrativeFlow({
             onBack={handleBack}
           />
         );
-      case 3:
+      case 4:
         return (
           <StepEnterprisePressureMap
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 4:
+      case 5:
         return (
           <StepPillarCapacity
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 5:
+      case 6:
         return (
           <StepPillarYield
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 6:
+      case 7:
         return (
           <StepPillarWorkforce
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 7:
+      case 8:
         return (
           <StepPillarRisk
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 8:
+      case 9:
         return (
           <StepEnterpriseValueSynthesis
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 9:
-        return <StepTheMath {...commonProps} />;
       case 10:
+        return <StepTheMath {...commonProps} />;
+      case 11:
         return (
           <StepTheInvitation 
             {...commonProps} 
@@ -172,6 +181,13 @@ export default function AmbientNarrativeFlow({
         return null;
     }
   };
+
+  const containerWidth = (() => {
+    if (currentStep === 1) return "max-w-2xl";
+    if (currentStep <= 3 || (currentStep >= 5 && currentStep <= 8)) return "max-w-6xl";
+    if (currentStep === 9) return "max-w-4xl";
+    return "max-w-3xl";
+  })();
 
   return (
     <>
@@ -191,7 +207,7 @@ export default function AmbientNarrativeFlow({
         />
         <UnifiedHeaderSpacer />
 
-        <main className={`mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16 ${currentStep <= 2 || (currentStep >= 4 && currentStep <= 7) ? "max-w-6xl" : currentStep === 8 ? "max-w-4xl" : "max-w-3xl"}`}>
+        <main className={`mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16 ${containerWidth}`}>
           <PillarProgressBar
             currentStep={currentStep}
             completedSteps={completedSteps}
