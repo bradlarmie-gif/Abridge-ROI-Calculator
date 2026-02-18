@@ -39,7 +39,8 @@ const PILLAR_WEIGHTS: Record<PillarId, number> = {
   risk: 0.20,
 };
 
-const GROWTH_RATE = 0.03;
+const RAMP = 0.9;
+const GROWTH = 0.03;
 
 export default function StepTheInvitation({
   inputs,
@@ -63,9 +64,10 @@ export default function StepTheInvitation({
   const roomToUnlock = 100 - enterpriseScore;
 
   const threeYearValue = useMemo(() => {
-    const y1 = Math.round(totalAnnual * 0.9);
-    const y2 = y1 + totalAnnual;
-    return Math.round(y2 + totalAnnual * (1 + GROWTH_RATE));
+    const year1 = Math.round(totalAnnual * RAMP);
+    const year2 = Math.round(totalAnnual);
+    const year3 = Math.round(totalAnnual * (1 + GROWTH));
+    return year1 + year2 + year3;
   }, [totalAnnual]);
 
   const insights = useMemo(() => {
