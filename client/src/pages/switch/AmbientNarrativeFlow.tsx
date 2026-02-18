@@ -5,6 +5,7 @@ import { CinematicTransition } from "@/components/CinematicTransition";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
+import StepEnterprisePressureMap from "./narrative-steps/StepEnterprisePressureMap";
 import StepWhereYouAre from "./narrative-steps/StepWhereYouAre";
 import StepTheGap from "./narrative-steps/StepTheGap";
 import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
@@ -18,14 +19,17 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
+const TOTAL_STEPS = 8;
+
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
-  { id: 2, name: "Where You Are", shortName: "Input" },
-  { id: 3, name: "The Gap", shortName: "Gap" },
-  { id: 4, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 5, name: "The Math", shortName: "Math" },
-  { id: 6, name: "What It Takes", shortName: "How" },
-  { id: 7, name: "The Opportunity", shortName: "Next" },
+  { id: 2, name: "Pressure Map", shortName: "Map" },
+  { id: 3, name: "Where You Are", shortName: "Input" },
+  { id: 4, name: "The Gap", shortName: "Gap" },
+  { id: 5, name: "What Good Looks Like", shortName: "Proof" },
+  { id: 6, name: "The Math", shortName: "Math" },
+  { id: 7, name: "What It Takes", shortName: "How" },
+  { id: 8, name: "The Opportunity", shortName: "Next" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -48,7 +52,7 @@ export default function AmbientNarrativeFlow({
     inputs.annualEncounters > 0;
 
   const goToStep = (step: number) => {
-    if (step < 1 || step > 7) return;
+    if (step < 1 || step > TOTAL_STEPS) return;
     if (step > currentStep && !canProceedFromStep1 && currentStep === 1) return;
     
     dispatch(assessmentActions.setStep(step));
@@ -58,7 +62,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 6) {
+    if (currentStep === 7) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -67,8 +71,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(6));
-    dispatch(assessmentActions.setStep(7));
+    dispatch(assessmentActions.completeStep(7));
+    dispatch(assessmentActions.setStep(8));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -128,16 +132,23 @@ export default function AmbientNarrativeFlow({
           />
         );
       case 2:
-        return <StepWhereYouAre {...commonProps} />;
+        return (
+          <StepEnterprisePressureMap
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
       case 3:
-        return <StepTheGap {...commonProps} />;
+        return <StepWhereYouAre {...commonProps} />;
       case 4:
-        return <StepWhatGoodLooksLike {...commonProps} />;
+        return <StepTheGap {...commonProps} />;
       case 5:
-        return <StepTheMath {...commonProps} />;
+        return <StepWhatGoodLooksLike {...commonProps} />;
       case 6:
-        return <StepWhyThisHappens {...commonProps} />;
+        return <StepTheMath {...commonProps} />;
       case 7:
+        return <StepWhyThisHappens {...commonProps} />;
+      case 8:
         return (
           <StepTheInvitation 
             {...commonProps} 
@@ -160,7 +171,7 @@ export default function AmbientNarrativeFlow({
         <UnifiedHeader 
           pathType="switch"
           currentStep={currentStep} 
-          totalSteps={7}
+          totalSteps={TOTAL_STEPS}
           stepName={STEPS[currentStep - 1]?.name || ""}
           onBack={handleBack}
           onHome={onBackToJourney}

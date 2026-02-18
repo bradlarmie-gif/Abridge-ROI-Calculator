@@ -31,6 +31,10 @@ export function AssessmentProvider({ children, initialState }: AssessmentProvide
           ...DEFAULT_ASSESSMENT_STATE.inputs,
           ...(initialState.inputs || {}),
         },
+        pillarsMeta: {
+          ...DEFAULT_ASSESSMENT_STATE.pillarsMeta,
+          ...(initialState.pillarsMeta || {}),
+        },
       }
     : DEFAULT_ASSESSMENT_STATE;
 

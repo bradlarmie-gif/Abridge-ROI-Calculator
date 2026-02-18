@@ -59,6 +59,18 @@ export function assessmentReducer(state: AssessmentState, action: AssessmentActi
         },
       };
 
+    case "UPDATE_PILLAR_META":
+      return {
+        ...state,
+        pillarsMeta: {
+          ...state.pillarsMeta,
+          [action.pillarId]: {
+            ...state.pillarsMeta[action.pillarId],
+            [action.field]: action.value,
+          },
+        },
+      };
+
     case "RESET":
       return { ...DEFAULT_ASSESSMENT_STATE };
 

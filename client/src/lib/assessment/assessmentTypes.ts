@@ -1,6 +1,17 @@
 import type { SwitchInputs, SwitchCalculations, SolutionType } from "@/lib/switchGapCalculator";
+import type { PillarId } from "@/lib/pillars/computePillars";
 
 export type AssessmentFlowPhase = "path-selection" | "ambient-flow" | "scribe-assessment" | "scribe-analysis";
+
+export type PressureLevel = "high" | "medium" | "low";
+export type ConfidenceLevel = "high" | "medium" | "low";
+
+export interface PillarMeta {
+  pressure: PressureLevel;
+  confidence: ConfidenceLevel;
+}
+
+export type PillarMetaMap = Record<PillarId, PillarMeta>;
 
 export interface AssessmentNavigation {
   flowPhase: AssessmentFlowPhase;
@@ -12,11 +23,20 @@ export interface AssessmentNavigation {
 export interface AssessmentState {
   navigation: AssessmentNavigation;
   inputs: SwitchInputs;
-  pillarInputs: {
-    // Future 4-pillar inputs will be added here
-    // Each pillar will have its own typed sub-object
-  };
+  pillarsMeta: PillarMetaMap;
 }
+
+export const DEFAULT_PILLAR_META: PillarMeta = {
+  pressure: "medium",
+  confidence: "medium",
+};
+
+export const DEFAULT_PILLARS_META: PillarMetaMap = {
+  capacity: { ...DEFAULT_PILLAR_META },
+  yield: { ...DEFAULT_PILLAR_META },
+  workforce: { ...DEFAULT_PILLAR_META },
+  risk: { ...DEFAULT_PILLAR_META },
+};
 
 export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   solution: "ambient-ai" as SolutionType,
@@ -41,7 +61,7 @@ export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {
     showLoadingOverlay: false,
   },
   inputs: { ...DEFAULT_SWITCH_INPUTS },
-  pillarInputs: {},
+  pillarsMeta: { ...DEFAULT_PILLARS_META },
 };
 
 export type { SwitchInputs, SwitchCalculations };

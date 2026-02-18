@@ -1,5 +1,6 @@
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
-import type { AssessmentFlowPhase } from "./assessmentTypes";
+import type { PillarId } from "@/lib/pillars/computePillars";
+import type { AssessmentFlowPhase, PressureLevel, ConfidenceLevel } from "./assessmentTypes";
 
 export type AssessmentAction =
   | { type: "UPDATE_INPUT"; key: keyof SwitchInputs; value: SwitchInputs[keyof SwitchInputs] }
@@ -8,6 +9,7 @@ export type AssessmentAction =
   | { type: "COMPLETE_STEP"; step: number }
   | { type: "NAVIGATE_PHASE"; phase: AssessmentFlowPhase }
   | { type: "SHOW_LOADING"; show: boolean }
+  | { type: "UPDATE_PILLAR_META"; pillarId: PillarId; field: "pressure" | "confidence"; value: PressureLevel | ConfidenceLevel }
   | { type: "RESET" };
 
 export const assessmentActions = {
@@ -40,6 +42,17 @@ export const assessmentActions = {
   showLoading: (show: boolean): AssessmentAction => ({
     type: "SHOW_LOADING",
     show,
+  }),
+
+  updatePillarMeta: (
+    pillarId: PillarId,
+    field: "pressure" | "confidence",
+    value: PressureLevel | ConfidenceLevel,
+  ): AssessmentAction => ({
+    type: "UPDATE_PILLAR_META",
+    pillarId,
+    field,
+    value,
   }),
 
   reset: (): AssessmentAction => ({
