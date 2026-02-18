@@ -1,6 +1,5 @@
-import { ArrowRight, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import type { SwitchInputs, SwitchCalculations, SpecialtyMix } from "@/lib/switchGapCalculator";
 
 interface StepYourOrganizationProps {
@@ -26,20 +25,20 @@ export default function StepYourOrganization({
   canProceed,
 }: StepYourOrganizationProps) {
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Your Organization
         </h1>
-        <p className="text-base text-[#666666]">
+        <p className="text-base text-[#888888] leading-relaxed">
           Let's start with the basics.
         </p>
       </div>
 
-      <section className="bg-[#F5F0EB] rounded-xl p-6">
+      <section className="bg-[#F5F0EB] rounded-xl p-6 border border-[#E8E0D8]">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-white rounded-lg p-4 border border-[#E5E7EB]">
             <label className="block text-xs text-[#666666] mb-2">
@@ -74,7 +73,7 @@ export default function StepYourOrganization({
         </div>
       </section>
 
-      <section className="bg-[#F5F0EB] rounded-xl p-6">
+      <section className="bg-[#F5F0EB] rounded-xl p-6 border border-[#E8E0D8]">
         <label className="block text-xs text-[#666666] mb-3">
           Specialty mix
         </label>
@@ -107,27 +106,7 @@ export default function StepYourOrganization({
         These inputs shape every calculation that follows. Directionally right is more useful than precisely wrong.
       </p>
 
-      <div className="flex justify-between items-center pt-4">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="gap-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-
-        <Button
-          onClick={onNext}
-          disabled={!canProceed}
-          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11 disabled:opacity-50"
-          data-testid="button-next"
-        >
-          Next
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Next" nextDisabled={!canProceed} />
     </div>
   );
 }

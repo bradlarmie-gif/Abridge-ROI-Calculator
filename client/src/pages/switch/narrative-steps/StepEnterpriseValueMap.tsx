@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { ArrowRight, TrendingUp, Zap, DollarSign, Users, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingUp, Zap, DollarSign, Users, ShieldCheck } from "lucide-react";
 import { useAssessment } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
 import type { PillarId } from "@/lib/pillars/computePillars";
 
@@ -156,13 +156,13 @@ export default function StepEnterpriseValueMap({
   const hasData = state.inputs.providers > 0 && state.inputs.annualEncounters > 0;
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-center">
         <p className="text-[11px] text-[#999999] uppercase tracking-widest mb-2">
           Enterprise Value Map
         </p>
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-1 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Total Annual Enterprise Opportunity
@@ -195,7 +195,7 @@ export default function StepEnterpriseValueMap({
               return (
                 <div
                   key={id}
-                  className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm p-5 flex flex-col gap-3"
+                  className="bg-white rounded-xl border border-[#E5E7EB] p-5 flex flex-col gap-3"
                   data-testid={`card-pillar-${id}`}
                 >
                   <div className="flex items-center justify-between">
@@ -271,7 +271,7 @@ export default function StepEnterpriseValueMap({
             })}
           </section>
 
-          <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+          <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-0.5">
@@ -310,7 +310,7 @@ export default function StepEnterpriseValueMap({
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm p-5">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-5">
             <h2 className="text-sm font-semibold text-[#1A1A1A] uppercase tracking-wider mb-4">
               What This Means
             </h2>
@@ -340,23 +340,7 @@ export default function StepEnterpriseValueMap({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          data-testid="button-back"
-        >
-          Back
-        </button>
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] px-6"
-          data-testid="button-next-valuemap"
-        >
-          Continue
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-valuemap" />
     </div>
   );
 }

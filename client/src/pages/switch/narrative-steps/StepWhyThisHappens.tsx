@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Users, Settings, Zap, TrendingUp, ChevronDown, CheckCircle2, AlertTriangle, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, Settings, Zap, TrendingUp, ChevronDown, CheckCircle2, AlertTriangle, AlertCircle } from "lucide-react";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { 
   ABRIDGE_BENCHMARKS,
   type SwitchInputs,
@@ -165,20 +165,20 @@ export default function StepWhyThisHappens({
   ];
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
           What It Takes
         </h1>
-        <p className="text-base text-[#666666]">
+        <p className="text-base text-[#888888] leading-relaxed">
           Where to focus — and what separates high performers from the rest.
         </p>
       </div>
 
       <section data-testid="priority-areas-section">
-        <p className="text-xs font-medium text-[#999999] uppercase tracking-[2px] mb-4">YOUR PRIORITY AREAS</p>
+        <p className="text-xs font-medium text-[#999999] uppercase tracking-wider mb-4">YOUR PRIORITY AREAS</p>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 mb-5">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 mb-5 border border-[#E8E0D8]">
           <div className="flex items-center gap-6 flex-wrap">
             {priorityCount > 0 && (
               <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function StepWhyThisHappens({
 
       <section data-testid="performance-patterns-section">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-medium text-[#999999] uppercase tracking-[2px]">WHAT DRIVES PERFORMANCE</p>
+          <p className="text-xs font-medium text-[#999999] uppercase tracking-wider">WHAT DRIVES PERFORMANCE</p>
           <p className="text-xs text-[#999999]">{openPattern ? "1" : "0"} of 4 patterns explored</p>
         </div>
         <p className="text-sm text-[#666666] mb-5">
@@ -280,7 +280,7 @@ export default function StepWhyThisHappens({
                     <Icon className="w-5 h-5 text-[#EA2C00]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2px] mb-0.5">PATTERN {pattern.number}</p>
+                    <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-0.5">PATTERN {pattern.number}</p>
                     <h3 className="font-bold text-[#1A1A1A] text-[15px]">{pattern.title}</h3>
                     <p className="text-xs text-[#999999]">{pattern.subtitle}</p>
                   </div>
@@ -292,12 +292,12 @@ export default function StepWhyThisHappens({
                 {isOpen && (
                   <div className="px-5 pb-5 pt-0">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-[#FAFAFA] rounded-lg p-4">
-                        <p className="text-[10px] font-bold text-[#999999] uppercase tracking-[2px] mb-2">THE CHALLENGE</p>
+                      <div className="bg-[#F5F0EB] rounded-lg p-4">
+                        <p className="text-[10px] font-bold text-[#999999] uppercase tracking-wider mb-2">THE CHALLENGE</p>
                         <p className="text-sm text-[#333333] leading-relaxed">{pattern.challenge}</p>
                       </div>
                       <div className="bg-[#FFF5F2] rounded-lg p-4">
-                        <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2px] mb-2">WHAT WE'VE SEEN WORK</p>
+                        <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">WHAT WE'VE SEEN WORK</p>
                         <ul className="space-y-2">
                           {pattern.whatWorks.map((item, i) => (
                             <li key={i} className="flex items-center gap-2 text-sm text-[#333333]">
@@ -316,26 +316,7 @@ export default function StepWhyThisHappens({
         </div>
       </section>
 
-      <div className="flex justify-between items-center pt-4">
-        <Button 
-          variant="ghost" 
-          onClick={onBack}
-          className="gap-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-        
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
-          data-testid="button-next"
-        >
-          The Opportunity
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="The Opportunity" />
     </div>
   );
 }

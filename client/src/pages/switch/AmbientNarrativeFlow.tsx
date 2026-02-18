@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
 import { CinematicTransition } from "@/components/CinematicTransition";
+import PillarProgressBar from "@/components/PillarProgressBar";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
@@ -51,8 +52,6 @@ export default function AmbientNarrativeFlow({
   const { inputs } = state;
   const { currentStep, completedSteps, showLoadingOverlay } = state.navigation;
 
-  const completedSet = new Set(completedSteps);
-
   const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
     dispatch(assessmentActions.updateInput(key, value));
   };
@@ -97,32 +96,6 @@ export default function AmbientNarrativeFlow({
       goToStep(currentStep - 1);
     }
   };
-
-  const renderProgressIndicator = () => (
-    <div className="flex items-center justify-center gap-2 mb-6 md:mb-8">
-      {STEPS.map((step) => {
-        const isActive = step.id === currentStep;
-        const isCompleted = completedSet.has(step.id);
-        
-        return (
-          <button
-            key={step.id}
-            onClick={() => (isCompleted || step.id <= currentStep) && goToStep(step.id)}
-            disabled={step.id > currentStep && !isCompleted}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              isActive 
-                ? "bg-[#EA2C00] scale-125" 
-                : isCompleted 
-                  ? "bg-[#EA2C00]/40 hover:bg-[#EA2C00]/60"
-                  : "bg-[#D1D5DB] cursor-not-allowed"
-            }`}
-            data-testid={`step-indicator-${step.id}`}
-            aria-label={`Step ${step.id}: ${step.name}`}
-          />
-        );
-      })}
-    </div>
-  );
 
   const renderStep = () => {
     const commonProps = {
@@ -229,6 +202,12 @@ export default function AmbientNarrativeFlow({
         <UnifiedHeaderSpacer />
 
         <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16">
+          <PillarProgressBar
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            totalSteps={TOTAL_STEPS}
+            steps={STEPS}
+          />
           <PageTransition pageKey={`narrative-step-${currentStep}`}>
             {renderStep()}
           </PageTransition>

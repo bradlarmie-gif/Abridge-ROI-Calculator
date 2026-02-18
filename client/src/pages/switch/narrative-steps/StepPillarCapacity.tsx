@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ChevronDown, ChevronUp, Users, CalendarPlus, DollarSign } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp, Users, CalendarPlus, DollarSign } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import type { DeployIntentOption } from "@/lib/switchGapCalculator";
@@ -115,21 +115,21 @@ export default function StepPillarCapacity({
   const editFill = Math.round(((inputs.editTimePerEncounter - 0) / (5 - 0)) * 100);
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Clinical Capacity Engine
         </h1>
-        <p className="text-base text-[#666666] max-w-lg" data-testid="text-page-subtitle">
+        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Capacity is the scarce resource. Ambient unlocks deployable clinical supply.
         </p>
       </div>
 
       <section className="space-y-5">
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Coverage (Utilization)
           </label>
@@ -192,7 +192,7 @@ export default function StepPillarCapacity({
           )}
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <div className="flex items-center justify-between mb-3">
             <label className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">
               Net Documentation Friction Change
@@ -289,7 +289,7 @@ export default function StepPillarCapacity({
           )}
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Deployment Intent
           </label>
@@ -321,30 +321,30 @@ export default function StepPillarCapacity({
 
       {hasCapacityInputs && (
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="output-cards">
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm text-center">
+          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
             <Users className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
             <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">FTE Capacity Unlocked</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]" data-testid="value-fte">
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]" data-testid="value-fte">
               {fteUnlocked.toFixed(1)}
             </p>
             <p className="text-[10px] text-[#999999] mt-0.5">provider-equivalents</p>
           </div>
 
           {showVisitMetric && (
-            <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm text-center">
+            <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
               <CalendarPlus className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
               <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Incremental Visits/Year</p>
-              <p className="text-2xl font-bold text-[#1A1A1A]" data-testid="value-visits">
+              <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]" data-testid="value-visits">
                 {formatNumber(additionalVisits)}
               </p>
               <p className="text-[10px] text-[#999999] mt-0.5">additional appointments</p>
             </div>
           )}
 
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm text-center">
+          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
             <DollarSign className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
             <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Annual Contribution</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]" data-testid="value-contribution">
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]" data-testid="value-contribution">
               {formatCurrency(Math.round(annualContribution))}
             </p>
             <p className="text-[10px] text-[#999999] mt-0.5">capacity-driven value</p>
@@ -352,23 +352,7 @@ export default function StepPillarCapacity({
         </section>
       )}
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          data-testid="button-back"
-        >
-          Back
-        </button>
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] px-6"
-          data-testid="button-next-capacity"
-        >
-          Continue
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
     </div>
   );
 }

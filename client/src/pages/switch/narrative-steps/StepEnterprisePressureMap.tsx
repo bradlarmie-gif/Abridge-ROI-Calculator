@@ -1,6 +1,5 @@
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import type { PillarId } from "@/lib/pillars/computePillars";
 import type { PressureLevel, ConfidenceLevel } from "@/lib/assessment";
 
@@ -110,15 +109,15 @@ export default function StepEnterprisePressureMap({
   };
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Your Enterprise Pressure Map
         </h1>
-        <p className="text-base text-[#666666] max-w-lg" data-testid="text-page-subtitle">
+        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Ambient value is created in four economic zones. Let's map where pressure is highest.
         </p>
       </div>
@@ -129,7 +128,7 @@ export default function StepEnterprisePressureMap({
           return (
             <div
               key={card.id}
-              className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm"
+              className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]"
               data-testid={`card-pillar-${card.id}`}
             >
               <div className="flex items-start gap-3 mb-4">
@@ -176,23 +175,7 @@ export default function StepEnterprisePressureMap({
         })}
       </div>
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          data-testid="button-back"
-        >
-          Back
-        </button>
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] px-6"
-          data-testid="button-quantify-opportunity"
-        >
-          Quantify My Opportunity
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="Quantify My Opportunity" nextTestId="button-quantify-opportunity" />
     </div>
   );
 }

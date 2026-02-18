@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ChevronDown, Target, Pencil, UserCheck, Layers, Building2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, Target, Pencil, UserCheck, Layers, Building2 } from "lucide-react";
 import { useAssessment } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
 import type { PillarId } from "@/lib/pillars/computePillars";
 
@@ -230,18 +230,18 @@ export default function StepLeakageDrivers({
   }, [pillars, state.inputs, enterpriseScore]);
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <p className="text-[11px] text-[#999999] uppercase tracking-widest mb-2">
           Value Capture Diagnostics
         </p>
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Where Value Leaks
         </h1>
-        <p className="text-base text-[#666666]">
+        <p className="text-base text-[#888888] leading-relaxed">
           Ranked by which friction points are costing you the most enterprise value — and what to do about each one.
         </p>
       </div>
@@ -258,7 +258,7 @@ export default function StepLeakageDrivers({
               key={blocker.id}
               className={`rounded-xl border bg-white overflow-visible transition-all ${
                 isTopBlocker
-                  ? "border-[#EA2C00]/30 shadow-sm"
+                  ? "border-[#EA2C00]/30"
                   : "border-[#E5E7EB]"
               }`}
               data-testid={`blocker-card-${blocker.id}`}
@@ -320,7 +320,7 @@ export default function StepLeakageDrivers({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-[#F5F0EB] rounded-lg p-4">
-                      <p className="text-[10px] font-bold text-[#999999] uppercase tracking-[2px] mb-2">
+                      <p className="text-[10px] font-bold text-[#999999] uppercase tracking-wider mb-2">
                         What We See
                       </p>
                       <p
@@ -331,7 +331,7 @@ export default function StepLeakageDrivers({
                       </p>
                     </div>
                     <div className="bg-[#FFF5F2] rounded-lg p-4">
-                      <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2px] mb-2">
+                      <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">
                         Why It Matters Economically
                       </p>
                       <p
@@ -344,7 +344,7 @@ export default function StepLeakageDrivers({
                   </div>
 
                   <div className="bg-white rounded-lg border border-[#E5E7EB] p-4">
-                    <p className="text-[10px] font-bold text-[#059669] uppercase tracking-[2px] mb-3">
+                    <p className="text-[10px] font-bold text-[#059669] uppercase tracking-wider mb-3">
                       What Works
                     </p>
                     <ul className="space-y-2.5" data-testid={`what-works-${blocker.id}`}>
@@ -360,7 +360,7 @@ export default function StepLeakageDrivers({
                   </div>
 
                   <div className="bg-[#1A1A1A] rounded-lg p-4">
-                    <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-[2px] mb-2">
+                    <p className="text-[10px] font-bold text-[#EA2C00] uppercase tracking-wider mb-2">
                       30-Day Move
                     </p>
                     <p
@@ -377,23 +377,7 @@ export default function StepLeakageDrivers({
         })}
       </div>
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          data-testid="button-back"
-        >
-          Back
-        </button>
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] px-6"
-          data-testid="button-next-leakage"
-        >
-          Continue
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-leakage" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Download, Loader2, TrendingUp, Clock, DollarSign, Users, CheckCircle, ChevronDown } from "lucide-react";
+import { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { Button } from "@/components/ui/button";
 import { 
   formatCurrency,
@@ -88,18 +89,18 @@ export default function StepTheInvitation({
   const gapPercentage = 100 - calculations.realizationScore;
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
           The Opportunity
         </h1>
-        <p className="text-base text-[#666666]">
+        <p className="text-base text-[#888888] leading-relaxed">
           A summary of what we found — and what the benchmarks suggest is possible.
         </p>
       </div>
 
-      <section className="bg-[#F5F0EB] rounded-xl p-6 md:p-8">
-        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-4">
+      <section className="bg-[#F5F0EB] rounded-xl p-6 md:p-8 border border-[#E8E0D8]">
+        <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-4">
           Annual Value to Unlock
         </p>
         <div className="border-l-4 border-[#EA2C00] pl-5">
@@ -115,18 +116,18 @@ export default function StepTheInvitation({
       <section className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E5E7EB]">
           <div className="p-5 text-center">
-            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">Year 1 Impact</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.optimizedYear1)}</p>
+            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">Year 1 Impact</p>
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.optimizedYear1)}</p>
             <p className="text-xs text-[#999999] mt-1">Accounting for ramp-up</p>
           </div>
           <div className="p-5 text-center">
-            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">3-Year Impact</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.threeYearGap)}</p>
+            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">3-Year Impact</p>
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]">{formatCurrency(calculations.threeYearGap)}</p>
             <p className="text-xs text-[#999999] mt-1">Compounding value</p>
           </div>
           <div className="p-5 text-center">
-            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-2">Monthly Opportunity</p>
-            <p className="text-2xl md:text-3xl font-bold text-[#EA2C00]">~{formatCurrency(calculations.monthlyGap)}</p>
+            <p className="text-[11px] font-medium text-[#EA2C00] uppercase tracking-wider mb-2">Monthly Opportunity</p>
+            <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]">~{formatCurrency(calculations.monthlyGap)}</p>
             <p className="text-xs text-[#999999] mt-1">Potential value</p>
           </div>
         </div>
@@ -135,15 +136,15 @@ export default function StepTheInvitation({
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
           <div>
-            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">Value Realization Score</p>
+            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-1">Value Realization Score</p>
             <div className="flex items-baseline gap-3">
               <span className="text-4xl md:text-5xl font-bold text-[#1A1A1A]">{calculations.realizationScore}%</span>
               <span className="text-base font-medium text-[#666666]">{scoreContext.status}</span>
             </div>
           </div>
           <div className="text-right border-l-4 border-[#EA2C00] pl-3">
-            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-1">Room to Grow</p>
-            <span className="text-2xl font-bold text-[#EA2C00]">{gapPercentage}%</span>
+            <p className="text-[11px] font-medium text-[#EA2C00] uppercase tracking-wider mb-1">Room to Grow</p>
+            <span className="text-3xl md:text-4xl font-bold text-[#EA2C00]">{gapPercentage}%</span>
           </div>
         </div>
         
@@ -167,7 +168,7 @@ export default function StepTheInvitation({
           </button>
           
           {showMethodology && (
-            <div className="mt-4 bg-[#F5F5F5] rounded-lg p-5 space-y-4">
+            <div className="mt-4 bg-[#F5F0EB] border border-[#E8E0D8] rounded-lg p-5 space-y-4">
               <p className="text-sm text-[#333333]">
                 Your Value Realization Score is a weighted composite of six performance dimensions:
               </p>
@@ -238,10 +239,10 @@ export default function StepTheInvitation({
         </div>
       </section>
 
-      <section className="bg-[#F5F0EB] rounded-xl p-6">
+      <section className="bg-[#F5F0EB] rounded-xl p-6 border border-[#E8E0D8]">
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="flex-1 text-center md:text-left">
-            <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-2">What Comes Next</p>
+            <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-2">What Comes Next</p>
             <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
               If this raises questions, we're here to help.
             </h2>

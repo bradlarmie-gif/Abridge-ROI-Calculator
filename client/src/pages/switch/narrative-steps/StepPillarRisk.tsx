@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ShieldCheck, ChevronDown, ChevronUp, Shield, Info, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShieldCheck, ChevronDown, ChevronUp, Shield, Info, AlertTriangle } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import type { ConfidenceLevel } from "@/lib/assessment/assessmentTypes";
@@ -85,21 +85,21 @@ export default function StepPillarRisk({
   const readinessColors = READINESS_COLORS[readinessLabel] || READINESS_COLORS["Developing"];
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Enterprise Risk & Strategic Readiness
         </h1>
-        <p className="text-base text-[#666666] max-w-lg" data-testid="text-page-subtitle">
+        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Ambient is infrastructure for audit posture, quality velocity, and downstream automation readiness.
         </p>
       </div>
 
       <section className="space-y-5">
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Documentation Defensibility Confidence
           </label>
@@ -128,7 +128,7 @@ export default function StepPillarRisk({
           </div>
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Quality Reporting Friction
           </label>
@@ -157,7 +157,7 @@ export default function StepPillarRisk({
           </div>
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Structured Data Usability Downstream
           </label>
@@ -186,7 +186,7 @@ export default function StepPillarRisk({
           </div>
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <div className="flex items-center justify-between mb-3">
             <label className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">
               Risk Confidence
@@ -242,7 +242,7 @@ export default function StepPillarRisk({
 
       {hasInputs && (
         <section className="space-y-3" data-testid="risk-output-cards">
-          <div className="bg-white rounded-xl p-5 border border-[#E5E7EB] shadow-sm">
+          <div className="bg-white rounded-xl p-5 border border-[#E5E7EB]">
             <div className="text-center mb-4">
               <ShieldCheck className="w-6 h-6 text-[#EA2C00] mx-auto mb-2" />
               <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Annual Risk Protection Value</p>
@@ -283,12 +283,12 @@ export default function StepPillarRisk({
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-5 border border-[#E5E7EB] shadow-sm">
+          <div className="bg-white rounded-xl p-5 border border-[#E5E7EB]">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Readiness Score</p>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-2xl font-bold text-[#1A1A1A]" data-testid="value-readiness-score">
+                  <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]" data-testid="value-readiness-score">
                     {readinessScore}
                   </p>
                   <span className="text-sm text-[#999999]">/ 100</span>
@@ -340,7 +340,7 @@ export default function StepPillarRisk({
         >
           <div className="flex items-center gap-2">
             <Info className="w-4 h-4 text-[#999999]" />
-            <span className="text-xs font-medium text-[#666666] uppercase tracking-wider">Method</span>
+            <span className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">Method</span>
           </div>
           {showMethod ? <ChevronUp className="w-4 h-4 text-[#999999]" /> : <ChevronDown className="w-4 h-4 text-[#999999]" />}
         </button>
@@ -383,23 +383,7 @@ export default function StepPillarRisk({
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          data-testid="button-back"
-        >
-          Back
-        </button>
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] px-6"
-          data-testid="button-next-risk"
-        >
-          Continue
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-risk" />
     </div>
   );
 }

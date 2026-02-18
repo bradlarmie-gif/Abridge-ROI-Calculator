@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info, AlertTriangle, Timer } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Calculator, BarChart3, Clock, DollarSign, TrendingUp, ChevronDown, ChevronUp, Info, AlertTriangle, Timer } from "lucide-react";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { 
   formatCurrency,
   ABRIDGE_BENCHMARKS,
@@ -238,12 +238,12 @@ export default function StepTheMath({
   };
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight" data-testid="text-page-title">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight" data-testid="text-page-title">
           The Math
         </h1>
-        <p className="text-base text-[#666666]">
+        <p className="text-base text-[#888888] leading-relaxed">
           Every number is transparent. Every assumption is editable. Challenge anything.
         </p>
       </div>
@@ -255,7 +255,7 @@ export default function StepTheMath({
               <Calculator className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px]">Value Breakdown</p>
+              <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">Value Breakdown</p>
               <h2 className="text-lg font-bold text-[#1A1A1A]">Your Annual Value Gap</h2>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('utilization')}
           >
             <div className="space-y-4">
-              <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
+              <div className="p-3 bg-[#F5F0EB] border border-[#E8E0D8] rounded-lg text-xs text-[#333333]">
                 <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
                 <div className="space-y-2 font-mono">
                   <p>Encounters not getting AI benefit:</p>
@@ -325,7 +325,7 @@ export default function StepTheMath({
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3 bg-white rounded-lg border border-[#E5E7EB]">
-                  <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Your Net Time Impact</p>
+                  <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">Your Net Time Impact</p>
                   <div className="space-y-1.5 text-sm text-[#333333]">
                     <div className="flex justify-between">
                       <span>Time Saved</span>
@@ -344,8 +344,8 @@ export default function StepTheMath({
                     </div>
                   </div>
                 </div>
-                <div className="p-3 bg-[#F5F5F5] rounded-lg">
-                  <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Benchmark Net Time Impact</p>
+                <div className="p-3 bg-[#F5F0EB] border border-[#E8E0D8] rounded-lg">
+                  <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">Benchmark Net Time Impact</p>
                   <div className="space-y-1.5 text-sm text-[#333333]">
                     <div className="flex justify-between">
                       <span>Time Saved</span>
@@ -364,7 +364,7 @@ export default function StepTheMath({
                 </div>
               </div>
 
-              <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
+              <div className="p-3 bg-[#F5F0EB] border border-[#E8E0D8] rounded-lg text-xs text-[#333333]">
                 <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
                 <div className="space-y-2 font-mono">
                   <p>Net time gap per encounter:</p>
@@ -425,7 +425,7 @@ export default function StepTheMath({
             onToggle={() => toggleAccordion('quality')}
           >
             <div className="space-y-4">
-              <div className="p-3 bg-[#F5F5F5] rounded-lg text-xs text-[#333333]">
+              <div className="p-3 bg-[#F5F0EB] border border-[#E8E0D8] rounded-lg text-xs text-[#333333]">
                 <p className="font-medium text-[#1A1A1A] mb-3">How we calculate this:</p>
                 <div className="space-y-2 font-mono">
                   <p>wRVU lift gap:</p>
@@ -476,7 +476,7 @@ export default function StepTheMath({
                 <TrendingUp className="w-5 h-5 text-[#EA2C00]" />
               </div>
               <div>
-                <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px]">Total Annual Gap</p>
+                <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">Total Annual Gap</p>
                 <p className="text-sm text-[#666666]">Unrealized value per year</p>
               </div>
             </div>
@@ -500,7 +500,7 @@ export default function StepTheMath({
       </section>
 
       <section className="bg-white rounded-xl border border-[#E5E7EB] p-5 md:p-6">
-        <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-1">3-Year Projection</p>
+        <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-1">3-Year Projection</p>
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">The Compounding Effect</h2>
         <p className="text-sm text-[#666666] mb-6">
           Value capture compounds as governance + adoption improve. The shaded area shows cumulative enterprise value captured over three years.
@@ -579,7 +579,7 @@ export default function StepTheMath({
         </div>
 
         <div className="mt-6 border-t border-[#E5E7EB] pt-4">
-          <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-3">Cumulative Value Captured:</p>
+          <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">Cumulative Value Captured:</p>
           <div className="space-y-1.5 text-xs text-[#666666]">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-[#1A1A1A] w-14">Year 1:</span>
@@ -606,7 +606,7 @@ export default function StepTheMath({
             <Timer className="w-5 h-5 text-[#EA2C00]" />
           </div>
           <div>
-            <p className="text-xs font-medium text-[#999999] uppercase tracking-[1.5px]">
+            <p className="text-xs font-medium text-[#999999] uppercase tracking-wider">
               The Cost of Waiting
             </p>
             <p className="text-sm text-[#CCCCCC]">
@@ -642,7 +642,7 @@ export default function StepTheMath({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-[#333333] rounded-lg p-5 text-center">
-            <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">Act Now — 3-Year Value</p>
+            <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-2">Act Now — 3-Year Value</p>
             <p className="text-3xl md:text-4xl font-bold text-white" data-testid="value-act-now">
               {formatCurrency(rampModel.y3Capture)}
             </p>
@@ -651,7 +651,7 @@ export default function StepTheMath({
 
           {costOfWaitingView && (
             <div className="bg-[#333333] rounded-lg p-5 text-center border border-[#EA2C00]/30">
-              <p className="text-[10px] text-[#999999] uppercase tracking-[1.5px] mb-2">
+              <p className="text-[10px] text-[#999999] uppercase tracking-wider mb-2">
                 {costOfWaitingView === "6mo" ? "Wait 6 Months" : "Wait 12 Months"}
               </p>
               <p className="text-3xl md:text-4xl font-bold text-[#EA2C00]" data-testid="value-wait-result">
@@ -687,26 +687,7 @@ export default function StepTheMath({
         </div>
       </section>
 
-      <div className="flex justify-between items-center pt-4">
-        <Button 
-          variant="ghost" 
-          onClick={onBack}
-          className="gap-2"
-          data-testid="button-back"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-        
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
-          data-testid="button-next"
-        >
-          What It Takes
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="What It Takes" />
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { ArrowRight, ArrowLeft, Target, BarChart3, Clock, DollarSign, Heart, ClipboardCheck, Moon, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Target, BarChart3, Clock, DollarSign, Heart, ClipboardCheck, Moon, CheckCircle2 } from "lucide-react";
 import { type SwitchInputs, type SwitchCalculations, ABRIDGE_BENCHMARKS } from "@/lib/switchGapCalculator";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
 interface StepWhatGoodLooksLikeProps {
   inputs: SwitchInputs;
@@ -63,7 +63,7 @@ function BenchmarkCard({
         </div>
 
         <div className="text-right">
-          <span className="text-2xl font-bold text-[#1A1A1A] leading-none">
+          <span className="text-3xl md:text-4xl font-bold text-[#1A1A1A] leading-none">
             {prefix}{currentValue}{unit}
           </span>
           <p className="text-[10px] text-[#999999] uppercase tracking-wider mt-1">Current</p>
@@ -102,7 +102,7 @@ function BenchmarkCard({
         </div>
       </div>
 
-      <div className="text-xs text-[#999999] bg-[#F5F5F5] px-3 py-1.5 rounded-md inline-block mb-3">
+      <div className="text-xs text-[#999999] bg-[#F5F0EB] px-3 py-1.5 rounded-md inline-block mb-3">
         {typicalLabel}
       </div>
 
@@ -207,27 +207,27 @@ export default function StepWhatGoodLooksLike({
   }).length;
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           What Good Looks Like
         </h1>
-        <p className="text-base text-[#666666]">
+        <p className="text-base text-[#888888] leading-relaxed">
           These benchmarks come from mature implementations. They're achievable with the right approach and support.
         </p>
       </div>
 
-      <section className="bg-[#F5F0EB] rounded-2xl p-8" data-testid="your-position-card">
+      <section className="bg-[#F5F0EB] rounded-2xl p-8 border border-[#E8E0D8]" data-testid="your-position-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#FFF5F2] flex items-center justify-center flex-shrink-0">
               <Target className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div>
-              <p className="text-xs font-medium text-[#666666] uppercase tracking-[1.5px] mb-0.5">
+              <p className="text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-0.5">
                 Your Position
               </p>
               <p className="text-xs text-[#999999]">
@@ -251,7 +251,7 @@ export default function StepWhatGoodLooksLike({
         </div>
       </section>
 
-      <section className="bg-[#F5F0EB] rounded-2xl p-6 md:p-8" data-testid="dimensions-section">
+      <section className="bg-[#F5F0EB] rounded-2xl p-6 md:p-8 border border-[#E8E0D8]" data-testid="dimensions-section">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {dimensions.map((dimension) => (
             <BenchmarkCard key={dimension.label} {...dimension} />
@@ -259,21 +259,7 @@ export default function StepWhatGoodLooksLike({
         </div>
       </section>
 
-      <div className="flex justify-between items-center pt-4">
-        <Button variant="ghost" onClick={onBack} className="gap-2" data-testid="button-back">
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#EA2C00]/90 text-white gap-2 rounded-full px-6 h-11"
-          data-testid="button-next"
-        >
-          See the Math
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextLabel="See the Math" />
     </div>
   );
 }

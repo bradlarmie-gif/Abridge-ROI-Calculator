@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, DollarSign, TrendingDown, Tag, ChevronDown, ChevronUp, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DollarSign, TrendingDown, Tag, ChevronDown, ChevronUp, Shield } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
+import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import type { ConfidenceLevel } from "@/lib/assessment/assessmentTypes";
@@ -93,21 +93,21 @@ export default function StepPillarYield({
   const leverInfo = LEVER_LABELS[primaryLever] || LEVER_LABELS.completeness;
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
-          className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-2 font-abridge uppercase tracking-tight"
+          className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Revenue Integrity & Yield
         </h1>
-        <p className="text-base text-[#666666] max-w-lg" data-testid="text-page-subtitle">
+        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Documentation fidelity determines yield accuracy — not just coding lift.
         </p>
       </div>
 
       <section className="space-y-5">
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Yield Uplift (Modeled with Guardrails)
           </label>
@@ -136,7 +136,7 @@ export default function StepPillarYield({
           </p>
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
             Revenue Model Exposure
           </label>
@@ -229,7 +229,7 @@ export default function StepPillarYield({
           </div>
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8] shadow-sm">
+        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
           <div className="flex items-center justify-between mb-3">
             <label className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">
               Yield Confidence
@@ -285,25 +285,25 @@ export default function StepPillarYield({
 
       {hasYieldInputs && (
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="yield-output-cards">
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm text-center">
+          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
             <DollarSign className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
             <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Annual Yield Integrity Gain</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]" data-testid="value-yield-gain">
+            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]" data-testid="value-yield-gain">
               {formatCurrency(Math.round(annualGain))}
             </p>
             <p className="text-[10px] text-[#999999] mt-0.5">directional, after confidence haircut</p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm text-center">
+          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
             <TrendingDown className="w-5 h-5 text-[#999999] mx-auto mb-2" />
             <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Leakage Remaining</p>
-            <p className="text-2xl font-bold text-[#666666]" data-testid="value-leakage">
+            <p className="text-3xl md:text-4xl font-bold text-[#666666]" data-testid="value-leakage">
               {formatCurrency(Math.round(leakageRemaining))}
             </p>
             <p className="text-[10px] text-[#999999] mt-0.5">vs. benchmark (directional)</p>
           </div>
 
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] shadow-sm text-center">
+          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
             <Tag className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
             <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Primary Lever</p>
             <p className="text-lg font-bold text-[#1A1A1A] capitalize" data-testid="value-primary-lever">
@@ -314,23 +314,7 @@ export default function StepPillarYield({
         </section>
       )}
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-[#666666] hover:text-[#1A1A1A] transition-colors"
-          data-testid="button-back"
-        >
-          Back
-        </button>
-        <Button
-          onClick={onNext}
-          className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] px-6"
-          data-testid="button-next-yield"
-        >
-          Continue
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-yield" />
     </div>
   );
 }
