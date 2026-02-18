@@ -34,7 +34,7 @@ const STEPS = [
   { id: 6, name: "Workforce Stability", shortName: "Workforce" },
   { id: 7, name: "Enterprise Risk", shortName: "Risk" },
   { id: 8, name: "Enterprise Value Synthesis", shortName: "Synthesis" },
-  { id: 9, name: "The Math", shortName: "Math" },
+  { id: 9, name: "The Compounding Effect", shortName: "Compound" },
   { id: 10, name: "What It Takes", shortName: "How" },
   { id: 11, name: "The Opportunity", shortName: "Next" },
 ];
