@@ -14,7 +14,6 @@ import StepPillarWorkforce from "./narrative-steps/StepPillarWorkforce";
 import StepPillarRisk from "./narrative-steps/StepPillarRisk";
 import StepEnterpriseValueSynthesis from "./narrative-steps/StepEnterpriseValueSynthesis";
 import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
-import StepWhatGoodLooksLike from "./narrative-steps/StepWhatGoodLooksLike";
 import StepTheMath from "./narrative-steps/StepTheMath";
 import StepTheInvitation from "./narrative-steps/StepTheInvitation";
 
@@ -24,7 +23,7 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 12;
+const TOTAL_STEPS = 11;
 
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
@@ -35,10 +34,9 @@ const STEPS = [
   { id: 6, name: "Workforce Stability", shortName: "Workforce" },
   { id: 7, name: "Enterprise Risk", shortName: "Risk" },
   { id: 8, name: "Enterprise Value Synthesis", shortName: "Synthesis" },
-  { id: 9, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 10, name: "The Math", shortName: "Math" },
-  { id: 11, name: "What It Takes", shortName: "How" },
-  { id: 12, name: "The Opportunity", shortName: "Next" },
+  { id: 9, name: "The Math", shortName: "Math" },
+  { id: 10, name: "What It Takes", shortName: "How" },
+  { id: 11, name: "The Opportunity", shortName: "Next" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -69,7 +67,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 11) {
+    if (currentStep === 10) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -78,8 +76,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(11));
-    dispatch(assessmentActions.setStep(12));
+    dispatch(assessmentActions.completeStep(10));
+    dispatch(assessmentActions.setStep(11));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -164,12 +162,10 @@ export default function AmbientNarrativeFlow({
           />
         );
       case 9:
-        return <StepWhatGoodLooksLike {...commonProps} />;
-      case 10:
         return <StepTheMath {...commonProps} />;
-      case 11:
+      case 10:
         return <StepWhyThisHappens {...commonProps} />;
-      case 12:
+      case 11:
         return (
           <StepTheInvitation 
             {...commonProps} 
