@@ -29,8 +29,8 @@ const FRICTION_MAP: Record<Exclude<FrictionPreset, "custom">, { saved: number; e
 const DEPLOY_OPTIONS: { label: string; value: DeployIntentOption; description: string }[] = [
   { label: "Reduce backlog", value: "reduce-backlog", description: "Clear scheduling backlog" },
   { label: "Grow visits", value: "grow-visits", description: "Add net new patients" },
-  { label: "Protect clinician time", value: "protect-time", description: "Let providers keep reclaimed time" },
-  { label: "Not sure yet", value: "not-sure", description: "Use a conservative blend" },
+  { label: "Protect clinician time", value: "protect-time", description: "Keep reclaimed time" },
+  { label: "Not sure yet", value: "not-sure", description: "Conservative blend" },
 ];
 
 function formatCurrency(n: number): string {
@@ -45,21 +45,29 @@ function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
-function ImpactBar({ label, value, maxValue, note }: { label: string; value: number; maxValue: number; note: string }) {
-  const pct = maxValue > 0 ? Math.min(100, Math.round((value / maxValue) * 100)) : 0;
+function DriverBar({
+  label,
+  pct,
+  note,
+}: {
+  label: string;
+  pct: number;
+  note: string;
+}) {
+  const clamped = Math.min(100, Math.max(0, pct));
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-sm text-[#555]">{label}</span>
-        <span className="text-sm font-semibold text-[#1A1A1A] tabular-nums">{value > 0 ? formatNumber(value) : "—"}</span>
+        <span className="text-xs font-medium text-[#999] tabular-nums shrink-0">{clamped}%</span>
       </div>
-      <div className="h-2 bg-[#F0ECE6] rounded-full overflow-hidden">
+      <div className="h-1.5 bg-[#F0ECE6] rounded-full overflow-hidden">
         <div
           className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
-          style={{ width: `${pct}%` }}
+          style={{ width: `${clamped}%` }}
         />
       </div>
-      <p className="text-[11px] text-[#999]">{note}</p>
+      <p className="text-[11px] text-[#999] leading-tight">{note}</p>
     </div>
   );
 }
@@ -71,9 +79,8 @@ export default function StepPillarCapacity({
   const { state, dispatch } = useAssessment();
   const { inputs } = state;
 
-  const [showAssumptions, setShowAssumptions] = useState(false);
   const [showCustomCoverage, setShowCustomCoverage] = useState(
-    !COVERAGE_PRESETS.some((p) => p.value === inputs.utilization) && inputs.utilization > 0
+    !COVERAGE_PRESETS.some((p) => p.value === inputs.utilization) && inputs.utilization > 0,
   );
   const [showAdvancedFriction, setShowAdvancedFriction] = useState(false);
 
@@ -83,9 +90,8 @@ export default function StepPillarCapacity({
       if (
         Math.abs(inputs.timeSavedPerEncounter - val.saved) < 0.01 &&
         Math.abs(inputs.editTimePerEncounter - val.edit) < 0.01
-      ) {
+      )
         return key as FrictionPreset;
-      }
     }
     return "custom";
   }, [inputs.timeSavedPerEncounter, inputs.editTimePerEncounter, showAdvancedFriction]);
@@ -98,137 +104,131 @@ export default function StepPillarCapacity({
     setShowCustomCoverage(false);
     updateInput("utilization", value);
   };
-
   const handleCustomCoverage = () => {
     setShowCustomCoverage(true);
     if (inputs.utilization === 0) updateInput("utilization", 50);
   };
-
   const handleFrictionPreset = (preset: Exclude<FrictionPreset, "custom">) => {
     setShowAdvancedFriction(false);
-    const map = FRICTION_MAP[preset];
-    updateInput("timeSavedPerEncounter", map.saved);
-    updateInput("editTimePerEncounter", map.edit);
+    const m = FRICTION_MAP[preset];
+    updateInput("timeSavedPerEncounter", m.saved);
+    updateInput("editTimePerEncounter", m.edit);
   };
 
   const pillarResult = useMemo(() => computePillars(state), [state]);
   const cap = pillarResult.pillars.capacity;
-  const details = cap.details;
+  const d = cap.details;
 
-  const safeNum = (v: unknown): number => {
+  const safe = (v: unknown): number => {
     const n = Number(v);
     return Number.isFinite(n) ? n : 0;
   };
 
   const conservativeValue = cap.valueAnnual;
-  const modeledValue = safeNum(details.rawValue);
-  const haircutPct = Math.round((1 - safeNum(details.confidenceHaircut)) * 100);
-  const fteUnlocked = safeNum(details.deployableHours) / 2080;
-  const additionalVisits = safeNum(details.additionalVisits);
+  const modeledValue = safe(d.rawValue);
+  const haircutMult = safe(d.confidenceHaircut);
+  const haircutPct = Math.round((1 - haircutMult) * 100);
+  const fteUnlocked = safe(d.deployableHours) / 2080;
+  const additionalVisits = safe(d.additionalVisits);
 
-  const coverageFill = Math.round(((inputs.utilization) / 100) * 100);
-  const savedFill = Math.round(((inputs.timeSavedPerEncounter) / 10) * 100);
-  const editFill = Math.round(((inputs.editTimePerEncounter) / 5) * 100);
+  const coveragePct = inputs.utilization;
+  const netMin = safe(d.netMinutesPerEncounter);
+  const deployFactorPct = Math.round(safe(d.deployFactor) * 100);
 
-  const maxUtilEncounters = Math.round(inputs.annualEncounters * 0.85);
-  const maxNetMin = 4;
-  const maxDeployHours = Math.round((maxUtilEncounters * maxNetMin) / 60 * 0.25);
+  const coverageFill = Math.round((inputs.utilization / 100) * 100);
+  const savedFill = Math.round((inputs.timeSavedPerEncounter / 10) * 100);
+  const editFill = Math.round((inputs.editTimePerEncounter / 5) * 100);
 
   return (
-    <div className={`space-y-14 ${STEP_FOOTER_SPACER_CLASS}`}>
-      <div className="text-left">
+    <div className={STEP_FOOTER_SPACER_CLASS}>
+      <div className="mb-10">
         <h1
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
           Capacity Creation Potential
         </h1>
-        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Ambient unlocks deployable clinical supply from existing encounters.
         </p>
       </div>
 
-      <div className="bg-[#F5F0EB] rounded-2xl p-8 border border-[#E8E0D8]" data-testid="hero-capacity">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-8 sm:gap-12">
-          <div>
-            <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-2">Conservative Value</p>
-            <p className="text-4xl md:text-5xl font-bold text-[#1A1A1A] tabular-nums leading-none" data-testid="value-conservative">
-              {formatCurrency(Math.round(conservativeValue))}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-10">
+        <div className="space-y-10">
+          <div className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8]" data-testid="hero-capacity">
+            <div className="flex items-baseline justify-between gap-4 flex-wrap">
+              <div className="flex items-baseline gap-6 flex-wrap">
+                <div>
+                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Conservative</p>
+                  <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] tabular-nums leading-none" data-testid="value-conservative">
+                    {formatCurrency(Math.round(conservativeValue))}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Modeled</p>
+                  <p className="text-xl md:text-2xl font-semibold text-[#888] tabular-nums leading-none" data-testid="value-modeled">
+                    {formatCurrency(Math.round(modeledValue))}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Confidence</p>
+                <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="text-confidence-value">
+                  {haircutMult.toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-[#999] mt-3" data-testid="text-haircut-note">
+              After {haircutPct}% confidence adjustment.
             </p>
+
+            <div className="flex gap-8 mt-4 pt-4 border-t border-[#E8E0D8]">
+              <div>
+                <p className="text-[10px] text-[#999] uppercase tracking-wider mb-0.5">Provider capacity</p>
+                <p className="text-base font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-fte">
+                  {fteUnlocked.toFixed(1)} FTE
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-[#999] uppercase tracking-wider mb-0.5">Visits/year</p>
+                <p className="text-base font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-visits">
+                  {formatNumber(additionalVisits)}
+                </p>
+              </div>
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-2">Modeled Value</p>
-            <p className="text-2xl md:text-3xl font-semibold text-[#888] tabular-nums leading-none" data-testid="value-modeled">
-              {formatCurrency(Math.round(modeledValue))}
-            </p>
+
+          <div className="space-y-5" data-testid="section-drivers">
+            <DriverBar
+              label="Coverage"
+              pct={coveragePct}
+              note={`${coveragePct}% of encounters flow through ambient`}
+            />
+            <DriverBar
+              label="Net documentation friction"
+              pct={Math.min(100, Math.round((netMin / 4) * 100))}
+              note={`${netMin.toFixed(1)} net min reclaimed per encounter`}
+            />
+            <DriverBar
+              label="Deployment allocation"
+              pct={deployFactorPct}
+              note={`${deployFactorPct}% of reclaimed time converted to capacity`}
+            />
+          </div>
+
+          <div className="hidden lg:block">
+            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
           </div>
         </div>
 
-        <p className="text-[12px] text-[#999] mt-4" data-testid="text-haircut-note">
-          Displayed after {haircutPct}% confidence adjustment.
-        </p>
+        <div className="lg:sticky lg:top-24 self-start" data-testid="panel-assumptions">
+          <div className="rounded-2xl border border-[#E8E0D8] bg-[#FAFAF7] p-5 space-y-5">
+            <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider">Assumptions</p>
 
-        <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 mt-6 pt-5 border-t border-[#E8E0D8]">
-          <div>
-            <p className="text-[11px] text-[#999] uppercase tracking-wider mb-0.5">Equivalent provider capacity</p>
-            <p className="text-lg font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-fte">
-              {fteUnlocked.toFixed(1)} FTE
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] text-[#999] uppercase tracking-wider mb-0.5">Incremental visits/year</p>
-            <p className="text-lg font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-visits">
-              {formatNumber(additionalVisits)}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6" data-testid="section-drivers">
-        <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider">
-          What drives this
-        </p>
-        <ImpactBar
-          label="Coverage (utilization)"
-          value={safeNum(details.eUsed)}
-          maxValue={maxUtilEncounters}
-          note={`${inputs.utilization}% of ${formatNumber(inputs.annualEncounters)} encounters flow through ambient`}
-        />
-        <ImpactBar
-          label="Net documentation friction change"
-          value={safeNum(details.totalHoursReclaimed)}
-          maxValue={maxDeployHours * 4}
-          note={`${safeNum(details.netMinutesPerEncounter).toFixed(1)} net min reclaimed per encounter`}
-        />
-        <ImpactBar
-          label="Deployment allocation"
-          value={safeNum(details.deployableHours)}
-          maxValue={maxDeployHours}
-          note={`${Math.round(safeNum(details.deployFactor) * 100)}% of reclaimed time converted to capacity`}
-        />
-      </div>
-
-      <div className="border border-[#E8E0D8] rounded-2xl overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setShowAssumptions(!showAssumptions)}
-          className="w-full flex items-center justify-between px-5 py-3.5 text-left bg-[#F5F0EB] hover:bg-[#EDE6DE] transition-colors"
-          data-testid="button-toggle-assumptions"
-        >
-          <span className="text-sm font-medium text-[#666]">Adjust assumptions</span>
-          {showAssumptions ? (
-            <ChevronUp className="w-4 h-4 text-[#999]" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-[#999]" />
-          )}
-        </button>
-        {showAssumptions && (
-          <div className="p-5 bg-white space-y-6">
             <div>
-              <label className="block text-[11px] font-medium text-[#999] uppercase tracking-wider mb-3">
-                Coverage (Utilization)
-              </label>
-              <div className="flex flex-wrap gap-2 mb-2">
+              <label className="block text-xs font-medium text-[#555] mb-2">Coverage</label>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
                 {COVERAGE_PRESETS.map((p) => {
                   const isActive = !showCustomCoverage && inputs.utilization === p.value;
                   return (
@@ -237,7 +237,7 @@ export default function StepPillarCapacity({
                       type="button"
                       onClick={() => handleCoveragePreset(p.value)}
                       data-testid={`pills-coverage-${p.value}`}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                         isActive
                           ? "bg-[#EA2C00] text-white"
                           : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -251,7 +251,7 @@ export default function StepPillarCapacity({
                   type="button"
                   onClick={handleCustomCoverage}
                   data-testid="pills-coverage-custom"
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     showCustomCoverage
                       ? "bg-[#EA2C00] text-white"
                       : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
@@ -261,24 +261,22 @@ export default function StepPillarCapacity({
                 </button>
               </div>
               {showCustomCoverage && (
-                <div className="mt-3 bg-[#FAFAF7] rounded-lg p-4 border border-[#E5E7EB]">
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={inputs.utilization}
-                        onChange={(e) => updateInput("utilization", parseFloat(e.target.value))}
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                        style={{
-                          background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${coverageFill}%, #E0E0E0 ${coverageFill}%, #E0E0E0 100%)`,
-                        }}
-                        data-testid="slider-coverage"
-                      />
-                    </div>
-                    <span className="text-lg font-bold text-[#1A1A1A] min-w-[48px] text-right tabular-nums">
+                <div className="bg-white rounded-lg p-3 border border-[#E5E7EB] mt-2">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={inputs.utilization}
+                      onChange={(e) => updateInput("utilization", parseFloat(e.target.value))}
+                      className="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${coverageFill}%, #E0E0E0 ${coverageFill}%, #E0E0E0 100%)`,
+                      }}
+                      data-testid="slider-coverage"
+                    />
+                    <span className="text-sm font-bold text-[#1A1A1A] min-w-[40px] text-right tabular-nums">
                       {inputs.utilization}%
                     </span>
                   </div>
@@ -286,15 +284,13 @@ export default function StepPillarCapacity({
               )}
             </div>
 
-            <div className="border-t border-[#F0F0F0] pt-5">
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] font-medium text-[#999] uppercase tracking-wider">
-                  Net Documentation Friction
-                </label>
+            <div className="border-t border-[#E8E0D8] pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-medium text-[#555]">Documentation friction</label>
                 <button
                   type="button"
                   onClick={() => setShowAdvancedFriction(!showAdvancedFriction)}
-                  className="flex items-center gap-1 text-[11px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
+                  className="flex items-center gap-0.5 text-[10px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
                   data-testid="button-toggle-advanced"
                 >
                   Advanced
@@ -303,35 +299,34 @@ export default function StepPillarCapacity({
               </div>
 
               {!showAdvancedFriction ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {(["flat", "modest", "strong"] as const).map((key) => {
                     const isActive = activeFrictionPreset === key;
                     const labels: Record<string, string> = { flat: "Flat", modest: "Modest", strong: "Strong" };
-                    const descriptions: Record<string, string> = { flat: "0 net min", modest: "1.5 net min", strong: "3.0 net min" };
+                    const descs: Record<string, string> = { flat: "0 min", modest: "+1.5 min", strong: "+3.0 min" };
                     return (
                       <button
                         key={key}
                         type="button"
                         onClick={() => handleFrictionPreset(key)}
                         data-testid={`pills-friction-${key}`}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                           isActive
                             ? "bg-[#EA2C00] text-white"
                             : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
                         }`}
                       >
-                        <span>{labels[key]}</span>
-                        <span className="ml-1 text-[10px] opacity-70">({descriptions[key]})</span>
+                        {labels[key]} <span className="opacity-70 ml-0.5">{descs[key]}</span>
                       </button>
                     );
                   })}
                 </div>
               ) : (
-                <div className="bg-[#FAFAF7] rounded-lg p-4 border border-[#E5E7EB] space-y-4">
+                <div className="bg-white rounded-lg p-3 border border-[#E5E7EB] space-y-3">
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-[#666]">Minutes saved per encounter</span>
-                      <span className="text-sm font-bold text-[#1A1A1A] tabular-nums">{inputs.timeSavedPerEncounter} min</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] text-[#666]">Saved/encounter</span>
+                      <span className="text-xs font-bold text-[#1A1A1A] tabular-nums">{inputs.timeSavedPerEncounter} min</span>
                     </div>
                     <input
                       type="range"
@@ -340,7 +335,7 @@ export default function StepPillarCapacity({
                       step={0.5}
                       value={inputs.timeSavedPerEncounter}
                       onChange={(e) => updateInput("timeSavedPerEncounter", parseFloat(e.target.value))}
-                      className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
                       style={{
                         background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${savedFill}%, #E0E0E0 ${savedFill}%, #E0E0E0 100%)`,
                       }}
@@ -348,9 +343,9 @@ export default function StepPillarCapacity({
                     />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-[#666]">Edit time per encounter</span>
-                      <span className="text-sm font-bold text-[#1A1A1A] tabular-nums">{inputs.editTimePerEncounter} min</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] text-[#666]">Edit time/encounter</span>
+                      <span className="text-xs font-bold text-[#1A1A1A] tabular-nums">{inputs.editTimePerEncounter} min</span>
                     </div>
                     <input
                       type="range"
@@ -359,27 +354,25 @@ export default function StepPillarCapacity({
                       step={0.5}
                       value={inputs.editTimePerEncounter}
                       onChange={(e) => updateInput("editTimePerEncounter", parseFloat(e.target.value))}
-                      className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
                       style={{
                         background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${editFill}%, #E0E0E0 ${editFill}%, #E0E0E0 100%)`,
                       }}
                       data-testid="slider-edit-time"
                     />
                   </div>
-                  <div className="text-[11px] text-[#999] pt-1 border-t border-[#E5E7EB]">
-                    Net impact: <span className="font-semibold text-[#1A1A1A] tabular-nums">
+                  <div className="text-[11px] text-[#999] pt-1.5 border-t border-[#E5E7EB]">
+                    Net: <span className="font-semibold text-[#1A1A1A] tabular-nums">
                       {Math.max(0, inputs.timeSavedPerEncounter - inputs.editTimePerEncounter).toFixed(1)} min
-                    </span> reclaimed per encounter
+                    </span> reclaimed
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-[#F0F0F0] pt-5">
-              <label className="block text-[11px] font-medium text-[#999] uppercase tracking-wider mb-3">
-                Deployment Allocation
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="border-t border-[#E8E0D8] pt-4">
+              <label className="block text-xs font-medium text-[#555] mb-2">Deployment</label>
+              <div className="grid grid-cols-2 gap-1.5">
                 {DEPLOY_OPTIONS.map((opt) => {
                   const isActive = inputs.deployIntent === opt.value;
                   return (
@@ -388,14 +381,14 @@ export default function StepPillarCapacity({
                       type="button"
                       onClick={() => updateInput("deployIntent", opt.value)}
                       data-testid={`button-deploy-${opt.value}`}
-                      className={`text-left px-4 py-3 rounded-lg transition-all ${
+                      className={`text-left px-3 py-2 rounded-lg transition-all ${
                         isActive
                           ? "bg-[#EA2C00] text-white"
                           : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
                       }`}
                     >
-                      <span className="text-sm font-medium block">{opt.label}</span>
-                      <span className={`text-[11px] ${isActive ? "text-white/70" : "text-[#999]"}`}>
+                      <span className="text-xs font-medium block">{opt.label}</span>
+                      <span className={`text-[10px] leading-tight ${isActive ? "text-white/70" : "text-[#999]"}`}>
                         {opt.description}
                       </span>
                     </button>
@@ -404,10 +397,12 @@ export default function StepPillarCapacity({
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
+      <div className="lg:hidden mt-10">
+        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
+      </div>
     </div>
   );
 }
