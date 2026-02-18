@@ -6,7 +6,7 @@
 // ============================================================================
 
 import type { AssessmentState } from "@/lib/assessment";
-import type { SpecialtyMix } from "@/lib/switchGapCalculator";
+import type { SpecialtyMix, DeployIntentOption } from "@/lib/switchGapCalculator";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -92,6 +92,13 @@ const DEPLOY_FACTOR: Record<DeployIntent, number> = {
   grow: 0.25,     // aggressive — most time becomes new slots
 };
 
+const INTENT_TO_DEPLOY: Record<DeployIntentOption, DeployIntent> = {
+  "reduce-backlog": "grow",
+  "grow-visits": "grow",
+  "protect-time": "protect",
+  "not-sure": "default",
+};
+
 // ---------------------------------------------------------------------------
 // Infer confidence from how much data the user provided
 // More filled-in fields ⇒ higher confidence
@@ -167,9 +174,8 @@ function computeCapacity(
   // Total hours reclaimed across the org per year
   const totalHoursReclaimed = (eUsed * netMinutes) / 60;
 
-  // deployFactor: what % of reclaimed time is re-deployed as patient capacity
-  // Default conservative; could be overridden by pillarInputs in future
-  const deployFactor = DEPLOY_FACTOR["default"];
+  const deployKey = INTENT_TO_DEPLOY[inputs.deployIntent ?? "not-sure"] ?? "default";
+  const deployFactor = DEPLOY_FACTOR[deployKey];
   const deployableHours = totalHoursReclaimed * deployFactor;
 
   // Convert deployable hours → additional visits using specialty visit duration
@@ -462,6 +468,7 @@ function safeInputs(raw: AssessmentState["inputs"]): AssessmentState["inputs"] {
     wrvuLift: raw.wrvuLift ?? 0,
     satisfaction: raw.satisfaction ?? 0,
     afterHoursPerWeek: raw.afterHoursPerWeek ?? 0,
+    deployIntent: raw.deployIntent ?? "not-sure",
   };
 }
 

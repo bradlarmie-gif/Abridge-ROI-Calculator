@@ -7,6 +7,7 @@
 
 export type SolutionType = "ambient-ai" | "human-scribes";
 export type SpecialtyMix = "primary-care" | "balanced" | "specialty";
+export type DeployIntentOption = "reduce-backlog" | "grow-visits" | "protect-time" | "not-sure";
 
 export interface SwitchInputs {
   solution: SolutionType;
@@ -21,6 +22,7 @@ export interface SwitchInputs {
   wrvuLift: number;
   satisfaction: number;
   afterHoursPerWeek: number;
+  deployIntent: DeployIntentOption;
 }
 
 export interface GapItem {

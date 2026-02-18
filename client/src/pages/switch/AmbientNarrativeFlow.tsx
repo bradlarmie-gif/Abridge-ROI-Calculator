@@ -6,6 +6,7 @@ import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
 import StepEnterprisePressureMap from "./narrative-steps/StepEnterprisePressureMap";
+import StepPillarCapacity from "./narrative-steps/StepPillarCapacity";
 import StepWhereYouAre from "./narrative-steps/StepWhereYouAre";
 import StepTheGap from "./narrative-steps/StepTheGap";
 import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
@@ -19,17 +20,18 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
   { id: 2, name: "Pressure Map", shortName: "Map" },
-  { id: 3, name: "Where You Are", shortName: "Input" },
-  { id: 4, name: "The Gap", shortName: "Gap" },
-  { id: 5, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 6, name: "The Math", shortName: "Math" },
-  { id: 7, name: "What It Takes", shortName: "How" },
-  { id: 8, name: "The Opportunity", shortName: "Next" },
+  { id: 3, name: "Capacity Engine", shortName: "Capacity" },
+  { id: 4, name: "Where You Are", shortName: "Input" },
+  { id: 5, name: "The Gap", shortName: "Gap" },
+  { id: 6, name: "What Good Looks Like", shortName: "Proof" },
+  { id: 7, name: "The Math", shortName: "Math" },
+  { id: 8, name: "What It Takes", shortName: "How" },
+  { id: 9, name: "The Opportunity", shortName: "Next" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -62,7 +64,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 7) {
+    if (currentStep === 8) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -71,8 +73,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(7));
-    dispatch(assessmentActions.setStep(8));
+    dispatch(assessmentActions.completeStep(8));
+    dispatch(assessmentActions.setStep(9));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -139,16 +141,23 @@ export default function AmbientNarrativeFlow({
           />
         );
       case 3:
-        return <StepWhereYouAre {...commonProps} />;
+        return (
+          <StepPillarCapacity
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
       case 4:
-        return <StepTheGap {...commonProps} />;
+        return <StepWhereYouAre {...commonProps} />;
       case 5:
-        return <StepWhatGoodLooksLike {...commonProps} />;
+        return <StepTheGap {...commonProps} />;
       case 6:
-        return <StepTheMath {...commonProps} />;
+        return <StepWhatGoodLooksLike {...commonProps} />;
       case 7:
-        return <StepWhyThisHappens {...commonProps} />;
+        return <StepTheMath {...commonProps} />;
       case 8:
+        return <StepWhyThisHappens {...commonProps} />;
+      case 9:
         return (
           <StepTheInvitation 
             {...commonProps} 

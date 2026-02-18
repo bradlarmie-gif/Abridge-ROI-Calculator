@@ -51,6 +51,7 @@ export const DEFAULT_SWITCH_INPUTS: SwitchInputs = {
   wrvuLift: 0,
   satisfaction: 0,
   afterHoursPerWeek: 0,
+  deployIntent: "not-sure",
 };
 
 export const DEFAULT_ASSESSMENT_STATE: AssessmentState = {
