@@ -12,7 +12,6 @@ import StepPillarCapacity from "./narrative-steps/StepPillarCapacity";
 import StepPillarYield from "./narrative-steps/StepPillarYield";
 import StepPillarWorkforce from "./narrative-steps/StepPillarWorkforce";
 import StepPillarRisk from "./narrative-steps/StepPillarRisk";
-import StepWhereYouAre from "./narrative-steps/StepWhereYouAre";
 import StepEnterpriseValueMap from "./narrative-steps/StepEnterpriseValueMap";
 import StepLeakageDrivers from "./narrative-steps/StepLeakageDrivers";
 import StepWhyThisHappens from "./narrative-steps/StepWhyThisHappens";
@@ -26,7 +25,7 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 14;
+const TOTAL_STEPS = 13;
 
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
@@ -36,13 +35,12 @@ const STEPS = [
   { id: 5, name: "Revenue & Yield", shortName: "Yield" },
   { id: 6, name: "Workforce Stability", shortName: "Workforce" },
   { id: 7, name: "Enterprise Risk", shortName: "Risk" },
-  { id: 8, name: "Where You Are", shortName: "Input" },
-  { id: 9, name: "Value Map", shortName: "Value" },
-  { id: 10, name: "Leakage Drivers", shortName: "Leakage" },
-  { id: 11, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 12, name: "The Math", shortName: "Math" },
-  { id: 13, name: "What It Takes", shortName: "How" },
-  { id: 14, name: "The Opportunity", shortName: "Next" },
+  { id: 8, name: "Value Map", shortName: "Value" },
+  { id: 9, name: "Leakage Drivers", shortName: "Leakage" },
+  { id: 10, name: "What Good Looks Like", shortName: "Proof" },
+  { id: 11, name: "The Math", shortName: "Math" },
+  { id: 12, name: "What It Takes", shortName: "How" },
+  { id: 13, name: "The Opportunity", shortName: "Next" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -73,7 +71,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 13) {
+    if (currentStep === 12) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -82,8 +80,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(13));
-    dispatch(assessmentActions.setStep(14));
+    dispatch(assessmentActions.completeStep(12));
+    dispatch(assessmentActions.setStep(13));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -161,28 +159,26 @@ export default function AmbientNarrativeFlow({
           />
         );
       case 8:
-        return <StepWhereYouAre {...commonProps} />;
-      case 9:
         return (
           <StepEnterpriseValueMap
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 10:
+      case 9:
         return (
           <StepLeakageDrivers
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 11:
+      case 10:
         return <StepWhatGoodLooksLike {...commonProps} />;
-      case 12:
+      case 11:
         return <StepTheMath {...commonProps} />;
-      case 13:
+      case 12:
         return <StepWhyThisHappens {...commonProps} />;
-      case 14:
+      case 13:
         return (
           <StepTheInvitation 
             {...commonProps} 

@@ -2,8 +2,10 @@ import { useState, useMemo, useEffect } from "react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import type { PrimaryPressure, PressureLevel, ConfidenceLevel } from "@/lib/assessment";
 import type { PillarId } from "@/lib/pillars/computePillars";
+import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
-import { ChevronDown, ChevronUp, Users, DollarSign, Stethoscope, ShieldCheck } from "lucide-react";
+import OperationalPerformanceSnapshot from "@/components/OperationalPerformanceSnapshot";
+import { ChevronDown, ChevronUp, Users, DollarSign, Stethoscope, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 interface StepEnterprisePressureMapProps {
   onNext: () => void;
@@ -140,6 +142,11 @@ export default function StepEnterprisePressureMap({
 
   const [confirmed, setConfirmed] = useState<boolean | null>(null);
   const [showOverride, setShowOverride] = useState(false);
+  const [showSnapshot, setShowSnapshot] = useState(false);
+
+  const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
+    dispatch(assessmentActions.updateInput(key, value));
+  };
 
   useEffect(() => {
     if (primaryPressure === "none") {
@@ -383,7 +390,27 @@ export default function StepEnterprisePressureMap({
         )}
       </div>
 
+      <div className="flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => setShowSnapshot(true)}
+          className="flex items-center gap-1.5 text-xs text-[#999] hover:text-[#EA2C00] transition-colors"
+          data-testid="button-advanced-inputs"
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span>Advanced Inputs: Operational Performance</span>
+        </button>
+      </div>
+
       <StepFooter onBack={onBack} onNext={onNext} nextLabel="Build Enterprise Value Map" nextTestId="button-build-value-map" />
+
+      {showSnapshot && (
+        <OperationalPerformanceSnapshot
+          inputs={state.inputs}
+          updateInput={updateInput}
+          onClose={() => setShowSnapshot(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, SlidersHorizontal } from "lucide-react";
+import OperationalPerformanceSnapshot from "@/components/OperationalPerformanceSnapshot";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
@@ -85,6 +86,7 @@ export default function StepPillarCapacity({
     !COVERAGE_PRESETS.some((p) => p.value === inputs.utilization) && inputs.utilization > 0,
   );
   const [showAdvancedFriction, setShowAdvancedFriction] = useState(false);
+  const [showSnapshot, setShowSnapshot] = useState(false);
 
   const activeFrictionPreset = useMemo((): FrictionPreset => {
     if (showAdvancedFriction) return "custom";
@@ -411,6 +413,18 @@ export default function StepPillarCapacity({
                 })}
               </div>
             </div>
+
+            <div className="border-t border-[#E8E0D8]/60 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowSnapshot(true)}
+                className="flex items-center gap-1.5 text-[10px] text-[#999] hover:text-[#EA2C00] transition-colors w-full justify-center"
+                data-testid="button-advanced-inputs"
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                <span>Advanced Inputs</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -418,6 +432,14 @@ export default function StepPillarCapacity({
       <div className="lg:hidden mt-10">
         <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-capacity" />
       </div>
+
+      {showSnapshot && (
+        <OperationalPerformanceSnapshot
+          inputs={state.inputs}
+          updateInput={updateInput}
+          onClose={() => setShowSnapshot(false)}
+        />
+      )}
     </div>
   );
 }

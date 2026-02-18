@@ -12,10 +12,10 @@ interface PillarProgressBarProps {
 }
 
 const PILLARS = [
-  { stepId: 3, letter: "C", name: "Capacity", testId: "capacity" },
-  { stepId: 4, letter: "Y", name: "Yield", testId: "yield" },
-  { stepId: 5, letter: "W", name: "Workforce", testId: "workforce" },
-  { stepId: 6, letter: "R", name: "Risk", testId: "risk" },
+  { stepId: 4, letter: "C", name: "Capacity", testId: "capacity" },
+  { stepId: 5, letter: "Y", name: "Yield", testId: "yield" },
+  { stepId: 6, letter: "W", name: "Workforce", testId: "workforce" },
+  { stepId: 7, letter: "R", name: "Risk", testId: "risk" },
 ];
 
 function Phase1Progress({ currentStep, steps }: { currentStep: number; steps: Step[] }) {
@@ -54,7 +54,6 @@ function Phase2Progress({
       {PILLARS.map((pillar, index) => {
         const isActive = currentStep === pillar.stepId;
         const isCompleted = completedSet.has(pillar.stepId);
-        const isUpcoming = !isActive && !isCompleted;
 
         const prevCompleted = index > 0 && (completedSet.has(PILLARS[index - 1].stepId) || currentStep > PILLARS[index - 1].stepId);
 
@@ -104,8 +103,8 @@ function Phase2Progress({
 }
 
 function Phase3Progress({ currentStep, steps }: { currentStep: number; steps: Step[] }) {
-  const phaseStart = 7;
-  const phaseEnd = 13;
+  const phaseStart = 8;
+  const phaseEnd = 12;
   const phaseTotal = phaseEnd - phaseStart + 1;
   const phasePosition = currentStep - phaseStart;
   const progress = ((phasePosition) / (phaseTotal - 1)) * 100;
@@ -139,10 +138,10 @@ export default function PillarProgressBar({
       {currentStep >= 1 && currentStep <= 2 && (
         <Phase1Progress currentStep={currentStep} steps={steps} />
       )}
-      {currentStep >= 3 && currentStep <= 6 && (
+      {currentStep >= 3 && currentStep <= 7 && (
         <Phase2Progress currentStep={currentStep} completedSteps={completedSteps} />
       )}
-      {currentStep >= 7 && currentStep <= 13 && (
+      {currentStep >= 8 && currentStep <= 12 && (
         <Phase3Progress currentStep={currentStep} steps={steps} />
       )}
     </div>
