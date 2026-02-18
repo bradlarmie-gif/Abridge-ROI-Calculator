@@ -1,11 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { PageTransition } from "@/components/PageTransition";
 import { CinematicTransition } from "@/components/CinematicTransition";
-import { 
-  calculateSwitchGap, 
-  type SwitchInputs 
-} from "@/lib/switchGapCalculator";
+import type { SwitchInputs } from "@/lib/switchGapCalculator";
+import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
 import StepWhereYouAre from "./narrative-steps/StepWhereYouAre";
 import StepTheGap from "./narrative-steps/StepTheGap";
@@ -15,8 +13,6 @@ import StepTheMath from "./narrative-steps/StepTheMath";
 import StepTheInvitation from "./narrative-steps/StepTheInvitation";
 
 interface AmbientNarrativeFlowProps {
-  inputs: SwitchInputs;
-  setInputs: (inputs: SwitchInputs) => void;
   onBack: () => void;
   onBackToJourney?: () => void;
   onNavigateToExplore?: (providers: number, encounters: number) => void;
@@ -33,27 +29,18 @@ const STEPS = [
 ];
 
 export default function AmbientNarrativeFlow({
-  inputs,
-  setInputs,
   onBack,
   onBackToJourney,
   onNavigateToExplore,
 }: AmbientNarrativeFlowProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const { state, dispatch, calculations } = useAssessment();
+  const { inputs } = state;
+  const { currentStep, completedSteps, showLoadingOverlay } = state.navigation;
 
-  const calculations = useMemo(() => {
-    return calculateSwitchGap({
-      ...inputs,
-      providers: inputs.providers || 75,
-      annualEncounters: inputs.annualEncounters || 150000,
-      currentCostPerProvider: inputs.currentCostPerProvider || 200,
-    });
-  }, [inputs]);
+  const completedSet = new Set(completedSteps);
 
   const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
-    setInputs({ ...inputs, [key]: value });
+    dispatch(assessmentActions.updateInput(key, value));
   };
 
   const canProceedFromStep1 = 
@@ -64,7 +51,7 @@ export default function AmbientNarrativeFlow({
     if (step < 1 || step > 7) return;
     if (step > currentStep && !canProceedFromStep1 && currentStep === 1) return;
     
-    setCurrentStep(step);
+    dispatch(assessmentActions.setStep(step));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -72,30 +59,22 @@ export default function AmbientNarrativeFlow({
     if (currentStep === 1 && !canProceedFromStep1) return;
     
     if (currentStep === 6) {
-      setShowLoadingOverlay(true);
+      dispatch(assessmentActions.showLoading(true));
     } else {
-      setCompletedSteps(prev => {
-        const newSet = new Set(prev);
-        newSet.add(currentStep);
-        return newSet;
-      });
+      dispatch(assessmentActions.completeStep(currentStep));
       goToStep(currentStep + 1);
     }
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    setCompletedSteps(prev => {
-      const newSet = new Set(prev);
-      newSet.add(6);
-      return newSet;
-    });
-    setCurrentStep(7);
+    dispatch(assessmentActions.completeStep(6));
+    dispatch(assessmentActions.setStep(7));
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [dispatch]);
 
   const handleTransitionComplete = useCallback(() => {
-    setShowLoadingOverlay(false);
-  }, []);
+    dispatch(assessmentActions.showLoading(false));
+  }, [dispatch]);
 
   const handleBack = () => {
     if (currentStep === 1) {
@@ -109,7 +88,7 @@ export default function AmbientNarrativeFlow({
     <div className="flex items-center justify-center gap-2 mb-6 md:mb-8">
       {STEPS.map((step) => {
         const isActive = step.id === currentStep;
-        const isCompleted = completedSteps.has(step.id);
+        const isCompleted = completedSet.has(step.id);
         
         return (
           <button

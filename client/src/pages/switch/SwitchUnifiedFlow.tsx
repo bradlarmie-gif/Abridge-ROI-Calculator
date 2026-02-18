@@ -3,10 +3,10 @@ import SwitchPathSelection from "./SwitchPathSelection";
 import ScribeAssessment from "./ScribeAssessment";
 import ScribeFullAnalysis from "./ScribeFullAnalysis";
 import AmbientNarrativeFlow from "./AmbientNarrativeFlow";
-import { type SwitchInputs, type SolutionType } from "@/lib/switchGapCalculator";
 import { type ScribeInputs } from "@/lib/scribeGapCalculator";
 import { PageTransition } from "@/components/PageTransition";
 import { CinematicTransition } from "@/components/CinematicTransition";
+import { AssessmentProvider } from "@/lib/assessment";
 
 interface SwitchUnifiedFlowProps {
   onBack: () => void;
@@ -20,7 +20,6 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
   const [phase, setPhase] = useState<FlowPhase>("path-selection");
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   
-  // Scroll to top on every phase change (mobile fix)
   useEffect(() => {
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
@@ -28,21 +27,6 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
       document.body.scrollTop = 0;
     });
   }, [phase]);
-  
-  const [ambientInputs, setAmbientInputs] = useState<SwitchInputs>({
-    solution: "ambient-ai" as SolutionType,
-    providers: 0,
-    annualEncounters: 0,
-    currentCostPerProvider: 200,
-    specialtyMix: "balanced",
-    utilization: 0,
-    timeSavedPerEncounter: 0,
-    editTimePerEncounter: 0,
-    docCompleteness: 0,
-    wrvuLift: 0,
-    satisfaction: 0,
-    afterHoursPerWeek: 0,
-  });
 
   const [scribeInputs, setScribeInputs] = useState<ScribeInputs>({
     scribeCount: 0,
@@ -63,13 +47,6 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
       setPhase("scribe-assessment");
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleAmbientInputsChange = (newInputs: React.SetStateAction<SwitchInputs>) => {
-    setAmbientInputs(prev => {
-      const updated = typeof newInputs === 'function' ? newInputs(prev) : newInputs;
-      return updated;
-    });
   };
 
   const handleScribeNext = () => {
@@ -108,13 +85,13 @@ export default function SwitchUnifiedFlow({ onBack, onBackToJourney, onExploreAm
       
       case "ambient-flow":
         return (
-          <AmbientNarrativeFlow
-            inputs={ambientInputs}
-            setInputs={handleAmbientInputsChange}
-            onBack={handleBackToPathSelection}
-            onBackToJourney={onBackToJourney}
-            onNavigateToExplore={onExploreAmbientAI}
-          />
+          <AssessmentProvider>
+            <AmbientNarrativeFlow
+              onBack={handleBackToPathSelection}
+              onBackToJourney={onBackToJourney}
+              onNavigateToExplore={onExploreAmbientAI}
+            />
+          </AssessmentProvider>
         );
       
       case "scribe-assessment":
