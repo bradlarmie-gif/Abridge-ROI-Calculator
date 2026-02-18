@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { DollarSign, Clock, ShieldAlert, Briefcase, ChevronDown, ChevronUp, Shield, Info } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
@@ -18,22 +18,22 @@ const AFTER_HOURS_PRESETS = [
   { label: "5 hrs", value: 5 },
 ];
 
-const TURNOVER_OPTIONS: { label: string; value: "low" | "medium" | "high"; description: string }[] = [
-  { label: "Low", value: "low", description: "Stable, low attrition" },
-  { label: "Medium", value: "medium", description: "Industry-average churn" },
-  { label: "High", value: "high", description: "Active retention concern" },
+const TURNOVER_OPTIONS: { label: string; value: "low" | "medium" | "high"; desc: string }[] = [
+  { label: "Low", value: "low", desc: "Stable" },
+  { label: "Medium", value: "medium", desc: "Avg churn" },
+  { label: "High", value: "high", desc: "Active concern" },
 ];
 
-const OVERTIME_OPTIONS: { label: string; value: "minimal" | "some" | "material"; description: string }[] = [
-  { label: "Minimal", value: "minimal", description: "Rare overtime or agency use" },
-  { label: "Some", value: "some", description: "Periodic coverage pressure" },
-  { label: "Material", value: "material", description: "Frequent OT or agency staffing" },
+const OVERTIME_OPTIONS: { label: string; value: "minimal" | "some" | "material"; desc: string }[] = [
+  { label: "Minimal", value: "minimal", desc: "Rare OT" },
+  { label: "Some", value: "some", desc: "Periodic" },
+  { label: "Material", value: "material", desc: "Frequent" },
 ];
 
-const SCRIBE_OPTIONS: { label: string; value: "none" | "some" | "heavy"; description: string }[] = [
-  { label: "None", value: "none", description: "No scribe dependence" },
-  { label: "Some", value: "some", description: "Partial scribe pool" },
-  { label: "Heavy", value: "heavy", description: "Full-time scribes per provider" },
+const SCRIBE_OPTIONS: { label: string; value: "none" | "some" | "heavy"; desc: string }[] = [
+  { label: "None", value: "none", desc: "No scribes" },
+  { label: "Some", value: "some", desc: "Partial pool" },
+  { label: "Heavy", value: "heavy", desc: "Full-time" },
 ];
 
 const CONFIDENCE_OPTIONS: { label: string; value: ConfidenceLevel }[] = [
@@ -48,6 +48,35 @@ function formatCurrency(n: number): string {
   return `$${n.toLocaleString()}`;
 }
 
+function DriverRow({
+  label,
+  description,
+  pct,
+}: {
+  label: string;
+  description: string;
+  pct: number;
+}) {
+  const clamped = Math.min(100, Math.max(0, pct));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="min-w-0">
+          <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
+          <p className="text-[11px] text-[#999] leading-tight mt-0.5">{description}</p>
+        </div>
+        <span className="text-xs font-semibold text-[#555] tabular-nums shrink-0">{clamped}%</span>
+      </div>
+      <div className="h-1 bg-[#EDEAE5] rounded-full overflow-hidden">
+        <div
+          className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function StepPillarWorkforce({
   onNext,
   onBack,
@@ -56,10 +85,9 @@ export default function StepPillarWorkforce({
   const { inputs, pillarsMeta } = state;
 
   const [showCustomAfterHours, setShowCustomAfterHours] = useState(
-    !AFTER_HOURS_PRESETS.some((p) => p.value === inputs.afterHoursCharting) && inputs.afterHoursCharting > 0
+    !AFTER_HOURS_PRESETS.some((p) => p.value === inputs.afterHoursCharting) && inputs.afterHoursCharting > 0,
   );
   const [showConfidenceEdit, setShowConfidenceEdit] = useState(false);
-  const [showMethod, setShowMethod] = useState(false);
 
   const updateInput = <K extends keyof SwitchInputs>(key: K, value: SwitchInputs[K]) => {
     dispatch(assessmentActions.updateInput(key, value));
@@ -70,348 +98,332 @@ export default function StepPillarWorkforce({
     updateInput("afterHoursCharting", value);
   };
 
-  const handleCustomAfterHours = () => {
-    setShowCustomAfterHours(true);
-    if (inputs.afterHoursCharting === 0) updateInput("afterHoursCharting", 2);
-  };
-
-  const workforceConfidence = pillarsMeta.workforce.confidence;
-
   const pillarResult = useMemo(() => computePillars(state), [state]);
-  const wfDetails = pillarResult.pillars.workforce.details;
+  const wf = pillarResult.pillars.workforce;
+  const d = wf.details;
 
   const safeNum = (v: unknown): number => {
     const n = Number(v);
     return Number.isFinite(n) ? n : 0;
   };
 
-  const annualStability = safeNum(pillarResult.pillars.workforce.valueAnnual);
-  const afterHoursRelief = safeNum(wfDetails.afterHoursReliefValue);
-  const turnoverRiskValue = safeNum(wfDetails.turnoverRiskValue);
-  const overtimeAgencyValue = safeNum(wfDetails.overtimeAgencyValue);
+  const conservativeValue = wf.valueAnnual;
+  const rawValue = safeNum(d.rawValue);
+  const haircutMult = safeNum(d.confidenceHaircut);
+  const confidencePct = Math.round(haircutMult * 100);
+  const isZero = conservativeValue === 0 && rawValue === 0;
 
-  const hasWorkforceInputs =
-    inputs.providers > 0 &&
-    inputs.annualEncounters > 0;
+  const afterHoursRelief = safeNum(d.afterHoursReliefValue);
+  const turnoverRiskValue = safeNum(d.turnoverRiskValue);
+  const overtimeAgencyValue = safeNum(d.overtimeAgencyValue);
+  const scribeSavings = safeNum(d.scribeSavings);
 
-  const afterHoursFill = Math.round(((inputs.afterHoursCharting - 0) / (8 - 0)) * 100);
+  const totalVolatility = afterHoursRelief + turnoverRiskValue + overtimeAgencyValue + scribeSavings;
+  const avoidablePortion = rawValue;
 
+  const totalForWeight = afterHoursRelief + turnoverRiskValue + overtimeAgencyValue + scribeSavings;
+  const afterHoursWeight = totalForWeight > 0 ? Math.round((afterHoursRelief / totalForWeight) * 100) : 33;
+  const turnoverWeight = totalForWeight > 0 ? Math.round((turnoverRiskValue / totalForWeight) * 100) : 33;
+  const premiumWeight = totalForWeight > 0 ? Math.round(((overtimeAgencyValue + scribeSavings) / totalForWeight) * 100) : 34;
+
+  const workforceConfidence = pillarsMeta.workforce.confidence;
+  const afterHoursFill = Math.round((inputs.afterHoursCharting / 8) * 100);
   const isAmbientPath = inputs.solution === "ambient-ai";
 
+  // Fix: inline the haircutPct computation properly
+  const haircutPctVal = Math.round((1 - haircutMult) * 100);
+
   return (
-    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
-      <div className="text-left">
+    <div className={STEP_FOOTER_SPACER_CLASS}>
+      <div className="mb-10">
         <h1
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Workforce Stability & Cost Pressure
+          Workforce Stability Impact
         </h1>
-        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
-          Ambient reduces volatility — after-hours work, overtime pressure, and turnover risk.
+        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+          Ambient reduces labor volatility — after-hours burden, turnover exposure, and premium staffing pressure.
         </p>
       </div>
 
-      <section className="space-y-5">
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
-            After-Hours Charting Remaining (hrs/wk/provider)
-          </label>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {AFTER_HOURS_PRESETS.map((p) => {
-              const isActive = !showCustomAfterHours && inputs.afterHoursCharting === p.value;
-              return (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => handleAfterHoursPreset(p.value)}
-                  data-testid={`pills-afterhours-${p.value}`}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-[#EA2C00] text-white shadow-sm"
-                      : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={handleCustomAfterHours}
-              data-testid="pills-afterhours-custom"
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                showCustomAfterHours
-                  ? "bg-[#EA2C00] text-white shadow-sm"
-                  : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-              }`}
-            >
-              Custom
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
+        <div className="space-y-10">
+          <div className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8]" data-testid="hero-workforce">
+            {isZero ? (
+              <div>
+                <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-2">Conservative Value</p>
+                <p className="text-4xl font-bold text-[#CCC] leading-none" data-testid="value-wf-conservative">
+                  &mdash;
+                </p>
+                <p className="text-sm text-[#999] mt-3" data-testid="text-zero-prompt">
+                  Enter baseline assumptions to generate modeled value.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1.5">Conservative Value</p>
+                  <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] tabular-nums leading-none" data-testid="value-wf-conservative">
+                    {formatCurrency(Math.round(conservativeValue))}
+                  </p>
+                  <p className="text-[11px] text-[#999] mt-2" data-testid="text-haircut-note">
+                    Displayed after {haircutPctVal}% confidence adjustment.
+                  </p>
+                </div>
+
+                <div className="mt-5">
+                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Modeled Value</p>
+                  <p className="text-xl font-semibold text-[#888] tabular-nums leading-none" data-testid="value-wf-modeled">
+                    {formatCurrency(Math.round(rawValue))}
+                  </p>
+                  <p className="text-[11px] text-[#999] mt-1">Pre-adjustment model output</p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E8E0D8] space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Annual labor volatility exposure</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-volatility">
+                      {formatCurrency(Math.round(totalVolatility))}
+                    </p>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Avoidable portion modeled</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-avoidable">
+                      {formatCurrency(Math.round(avoidablePortion))}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#E8E0D8]">
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider">Confidence baseline: {confidencePct}%</p>
+                    <p className="text-[11px] text-[#999]" data-testid="text-confidence-value">Displayed value reflects conservative haircut.</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {showCustomAfterHours && (
-            <div className="mt-3 bg-white rounded-lg p-4 border border-[#E5E7EB]">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min={0}
-                    max={8}
-                    step={0.5}
-                    value={inputs.afterHoursCharting}
-                    onChange={(e) => updateInput("afterHoursCharting", parseFloat(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${afterHoursFill}%, #E0E0E0 ${afterHoursFill}%, #E0E0E0 100%)`,
-                    }}
-                    data-testid="slider-afterhours"
-                  />
+          <div className="space-y-5" data-testid="section-drivers">
+            <DriverRow
+              label="After-hours burden"
+              description={`${inputs.afterHoursCharting} hrs/wk charting pressure per provider, 45% avoidable`}
+              pct={afterHoursWeight}
+            />
+            <DriverRow
+              label="Turnover exposure"
+              description={`${inputs.turnoverRisk ?? "medium"} risk indicator — burnout-driven departure avoidance`}
+              pct={turnoverWeight}
+            />
+            <DriverRow
+              label="Premium labor sensitivity"
+              description={`Overtime, agency staffing${scribeSavings > 0 ? ", and scribe displacement" : ""} pressure`}
+              pct={premiumWeight}
+            />
+          </div>
+
+          <div className="hidden lg:block">
+            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-workforce" />
+          </div>
+        </div>
+
+        <div className="lg:sticky lg:top-24 self-start" data-testid="panel-assumptions">
+          <div className="rounded-2xl border border-[#E8E0D8] bg-[#F9F7F4] p-4 space-y-4">
+            <p className="text-[10px] font-medium text-[#AAA] uppercase tracking-wider">Assumptions</p>
+
+            <div>
+              <label className="block text-[11px] font-medium text-[#555] mb-1.5">After-hours charting</label>
+              <div className="flex flex-wrap gap-1.5">
+                {AFTER_HOURS_PRESETS.map((p) => {
+                  const isActive = !showCustomAfterHours && inputs.afterHoursCharting === p.value;
+                  return (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => handleAfterHoursPreset(p.value)}
+                      data-testid={`pills-afterhours-${p.value}`}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        isActive
+                          ? "bg-[#EA2C00] text-white"
+                          : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCustomAfterHours(true);
+                    if (inputs.afterHoursCharting === 0) updateInput("afterHoursCharting", 2);
+                  }}
+                  data-testid="pills-afterhours-custom"
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                    showCustomAfterHours
+                      ? "bg-[#EA2C00] text-white"
+                      : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                  }`}
+                >
+                  Custom
+                </button>
+              </div>
+              {showCustomAfterHours && (
+                <div className="bg-white rounded-lg p-2.5 border border-[#E5E7EB] mt-1.5">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={8}
+                      step={0.5}
+                      value={inputs.afterHoursCharting}
+                      onChange={(e) => updateInput("afterHoursCharting", parseFloat(e.target.value))}
+                      className="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${afterHoursFill}%, #E0E0E0 ${afterHoursFill}%, #E0E0E0 100%)`,
+                      }}
+                      data-testid="slider-afterhours"
+                    />
+                    <span className="text-xs font-bold text-[#1A1A1A] min-w-[40px] text-right tabular-nums">
+                      {inputs.afterHoursCharting} hrs
+                    </span>
+                  </div>
                 </div>
-                <span className="text-lg font-bold text-[#1A1A1A] min-w-[48px] text-right">
-                  {inputs.afterHoursCharting} hrs
-                </span>
+              )}
+              <p className="text-[10px] text-[#999] mt-1">hrs/wk/provider remaining after-hours</p>
+            </div>
+
+            <div className="border-t border-[#E8E0D8]/60 pt-3">
+              <label className="block text-[11px] font-medium text-[#555] mb-1.5">Turnover risk</label>
+              <div className="flex flex-wrap gap-1.5">
+                {TURNOVER_OPTIONS.map((opt) => {
+                  const isActive = inputs.turnoverRisk === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => updateInput("turnoverRisk", opt.value)}
+                      data-testid={`pills-turnover-${opt.value}`}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        isActive
+                          ? "bg-[#EA2C00] text-white"
+                          : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                      }`}
+                    >
+                      {opt.label} <span className="opacity-70 ml-0.5">{opt.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-          <p className="text-[10px] text-[#999999] mt-2">
-            Average weekly after-hours charting per provider. Industry surveys report 2-5 hrs/wk.
-          </p>
-        </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
-            Turnover Risk Indicator
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {TURNOVER_OPTIONS.map((opt) => {
-              const isActive = inputs.turnoverRisk === opt.value;
-              return (
+            <div className="border-t border-[#E8E0D8]/60 pt-3">
+              <label className="block text-[11px] font-medium text-[#555] mb-1.5">Overtime / agency</label>
+              <div className="flex flex-wrap gap-1.5">
+                {OVERTIME_OPTIONS.map((opt) => {
+                  const isActive = inputs.overtimeSensitivity === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => updateInput("overtimeSensitivity", opt.value)}
+                      data-testid={`pills-overtime-${opt.value}`}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        isActive
+                          ? "bg-[#EA2C00] text-white"
+                          : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                      }`}
+                    >
+                      {opt.label} <span className="opacity-70 ml-0.5">{opt.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {isAmbientPath && (
+              <div className="border-t border-[#E8E0D8]/60 pt-3">
+                <label className="block text-[11px] font-medium text-[#555] mb-1.5">Scribe reliance</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {SCRIBE_OPTIONS.map((opt) => {
+                    const isActive = inputs.scribeReliance === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => updateInput("scribeReliance", opt.value)}
+                        data-testid={`pills-scribe-${opt.value}`}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                          isActive
+                            ? "bg-[#EA2C00] text-white"
+                            : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                        }`}
+                      >
+                        {opt.label} <span className="opacity-70 ml-0.5">{opt.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-[#E8E0D8]/60 pt-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-medium text-[#555]">Confidence</label>
                 <button
-                  key={opt.value}
                   type="button"
-                  onClick={() => updateInput("turnoverRisk", opt.value)}
-                  data-testid={`pills-turnover-${opt.value}`}
-                  className={`flex-1 min-w-[100px] text-left px-4 py-3 rounded-lg transition-all ${
-                    isActive
-                      ? "bg-[#EA2C00] text-white shadow-sm"
-                      : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                  }`}
+                  onClick={() => setShowConfidenceEdit(!showConfidenceEdit)}
+                  className="flex items-center gap-0.5 text-[10px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
+                  data-testid="button-toggle-confidence"
                 >
-                  <span className="text-sm font-medium block">{opt.label}</span>
-                  <span className={`text-[11px] ${isActive ? "text-white/70" : "text-[#999999]"}`}>
-                    {opt.description}
-                  </span>
+                  {showConfidenceEdit ? "Done" : "Adjust"}
+                  {showConfidenceEdit ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </button>
-              );
-            })}
-          </div>
-        </div>
+              </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
-            Overtime / Agency Sensitivity
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {OVERTIME_OPTIONS.map((opt) => {
-              const isActive = inputs.overtimeSensitivity === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => updateInput("overtimeSensitivity", opt.value)}
-                  data-testid={`pills-overtime-${opt.value}`}
-                  className={`flex-1 min-w-[100px] text-left px-4 py-3 rounded-lg transition-all ${
-                    isActive
-                      ? "bg-[#EA2C00] text-white shadow-sm"
-                      : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                  }`}
-                >
-                  <span className="text-sm font-medium block">{opt.label}</span>
-                  <span className={`text-[11px] ${isActive ? "text-white/70" : "text-[#999999]"}`}>
-                    {opt.description}
+              {!showConfidenceEdit ? (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[11px] font-semibold text-[#1A1A1A] capitalize"
+                    data-testid="value-workforce-confidence"
+                  >
+                    {workforceConfidence}
                   </span>
-                </button>
-              );
-            })}
+                  <span className="text-[10px] text-[#999]">inherited from calibration</span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {CONFIDENCE_OPTIONS.map((opt) => {
+                    const isActive = workforceConfidence === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() =>
+                          dispatch(assessmentActions.updatePillarMeta("workforce", "confidence", opt.value))
+                        }
+                        data-testid={`pills-confidence-${opt.value}`}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                          isActive
+                            ? "bg-[#EA2C00] text-white"
+                            : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        {isAmbientPath && (
-          <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">
-                Scribe Reliance (Optional)
-              </label>
-              <span className="text-[10px] text-[#999999]">Ambient AI comparison context</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {SCRIBE_OPTIONS.map((opt) => {
-                const isActive = inputs.scribeReliance === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => updateInput("scribeReliance", opt.value)}
-                    data-testid={`pills-scribe-${opt.value}`}
-                    className={`flex-1 min-w-[100px] text-left px-4 py-3 rounded-lg transition-all ${
-                      isActive
-                        ? "bg-[#EA2C00] text-white shadow-sm"
-                        : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                    }`}
-                  >
-                    <span className="text-sm font-medium block">{opt.label}</span>
-                    <span className={`text-[11px] ${isActive ? "text-white/70" : "text-[#999999]"}`}>
-                      {opt.description}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">
-              Workforce Confidence
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowConfidenceEdit(!showConfidenceEdit)}
-              className="flex items-center gap-1 text-[11px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
-              data-testid="button-toggle-confidence"
-            >
-              {showConfidenceEdit ? "Done" : "Change"}
-              {showConfidenceEdit ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          </div>
-
-          {!showConfidenceEdit ? (
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#EA2C00]" />
-              <span
-                className="text-sm font-medium text-[#1A1A1A] capitalize"
-                data-testid="value-workforce-confidence"
-              >
-                {workforceConfidence}
-              </span>
-              <span className="text-[10px] text-[#999999]">— set in Pressure Map</span>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {CONFIDENCE_OPTIONS.map((opt) => {
-                const isActive = workforceConfidence === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() =>
-                      dispatch(assessmentActions.updatePillarMeta("workforce", "confidence", opt.value))
-                    }
-                    data-testid={`pills-confidence-${opt.value}`}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-[#EA2C00] text-white shadow-sm"
-                        : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {hasWorkforceInputs && (
-        <section className="space-y-3" data-testid="workforce-output-cards">
-          <div className="bg-white rounded-xl p-5 border border-[#E5E7EB] text-center">
-            <DollarSign className="w-6 h-6 text-[#EA2C00] mx-auto mb-2" />
-            <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Annual Stability Value</p>
-            <p className="text-3xl font-bold text-[#1A1A1A]" data-testid="value-stability">
-              {formatCurrency(Math.round(annualStability))}
-            </p>
-            <p className="text-[10px] text-[#999999] mt-1">directional, after confidence haircut</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
-              <Clock className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
-              <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">After-Hours Relief</p>
-              <p className="text-xl font-bold text-[#1A1A1A]" data-testid="value-afterhours-relief">
-                {formatCurrency(Math.round(afterHoursRelief))}
-              </p>
-              <p className="text-[10px] text-[#999999] mt-0.5">pressure reduction</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
-              <ShieldAlert className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
-              <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Turnover Risk Avoided</p>
-              <p className="text-xl font-bold text-[#1A1A1A]" data-testid="value-turnover-avoided">
-                {formatCurrency(Math.round(turnoverRiskValue))}
-              </p>
-              <p className="text-[10px] text-[#999999] mt-0.5">retention value</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
-              <Briefcase className="w-5 h-5 text-[#999999] mx-auto mb-2" />
-              <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Overtime / Agency</p>
-              <p className="text-xl font-bold text-[#666666]" data-testid="value-overtime-agency">
-                {formatCurrency(Math.round(overtimeAgencyValue))}
-              </p>
-              <p className="text-[10px] text-[#999999] mt-0.5">directional</p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="border border-[#E5E7EB] rounded-xl overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setShowMethod(!showMethod)}
-          className="w-full flex items-center justify-between px-5 py-3 bg-[#FAFAFA] text-left transition-colors hover:bg-[#F5F5F5]"
-          data-testid="button-toggle-method"
-        >
-          <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-[#999999]" />
-            <span className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">Method</span>
-          </div>
-          {showMethod ? <ChevronUp className="w-4 h-4 text-[#999999]" /> : <ChevronDown className="w-4 h-4 text-[#999999]" />}
-        </button>
-        {showMethod && (
-          <div className="px-5 py-4 bg-white border-t border-[#E5E7EB] space-y-3" data-testid="method-content">
-            <p className="text-sm text-[#666666] leading-relaxed">
-              This model estimates workforce stability value — not FTE reduction. Ambient documentation
-              reduces after-hours charting pressure, which correlates with burnout-driven turnover and
-              overtime costs. We do not claim that ambient AI eliminates positions or reduces headcount.
-            </p>
-            <div className="bg-[#F5F0EB] rounded-lg p-3 space-y-2">
-              <p className="text-xs text-[#666666]">
-                <span className="font-semibold text-[#1A1A1A]">After-hours relief:</span>{" "}
-                45% avoidable fraction applied to reported charting hours, valued at $150/hr fully-loaded rate.
-              </p>
-              <p className="text-xs text-[#666666]">
-                <span className="font-semibold text-[#1A1A1A]">Turnover risk:</span>{" "}
-                6% base turnover rate, 40% burnout-attributable, 12% documentation-related reduction,
-                scaled by your risk indicator. Capped at 3 prevented departures at $200K replacement cost.
-              </p>
-              <p className="text-xs text-[#666666]">
-                <span className="font-semibold text-[#1A1A1A]">Overtime / agency:</span>{" "}
-                Base $8K/provider/year exposure, scaled by sensitivity level and 45% avoidable fraction.
-                This is directional — actual savings depend on local labor dynamics.
-              </p>
-            </div>
-            <p className="text-[10px] text-[#999999] italic">
-              All values receive a confidence haircut (high: 100%, medium: 70%, low: 40%) before display.
-              Conservative by design — we would rather understate than overstate workforce impact.
-            </p>
-          </div>
-        )}
       </div>
 
-      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-workforce" />
+      <div className="lg:hidden mt-10">
+        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-workforce" />
+      </div>
     </div>
   );
 }
