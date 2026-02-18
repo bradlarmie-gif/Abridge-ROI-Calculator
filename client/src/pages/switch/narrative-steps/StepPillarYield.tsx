@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { DollarSign, TrendingDown, Tag, ChevronDown, ChevronUp, Shield } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 import { computePillars } from "@/lib/pillars/computePillars";
@@ -30,16 +30,39 @@ const CONFIDENCE_OPTIONS: { label: string; value: ConfidenceLevel }[] = [
   { label: "Low", value: "low" },
 ];
 
-const LEVER_LABELS: Record<string, { label: string; description: string }> = {
-  completeness: { label: "Completeness", description: "Closing documentation gaps across encounters" },
-  specificity: { label: "Specificity", description: "Improving code precision and detail fidelity" },
-  "risk capture": { label: "Risk Capture", description: "Surfacing HCC/RAF-relevant conditions accurately" },
-};
-
 function formatCurrency(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `$${Math.round(n / 1_000).toLocaleString()}K`;
   return `$${n.toLocaleString()}`;
+}
+
+function DriverRow({
+  label,
+  description,
+  pct,
+}: {
+  label: string;
+  description: string;
+  pct: number;
+}) {
+  const clamped = Math.min(100, Math.max(0, pct));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="min-w-0">
+          <span className="text-sm font-medium text-[#1A1A1A]">{label}</span>
+          <p className="text-[11px] text-[#999] leading-tight mt-0.5">{description}</p>
+        </div>
+        <span className="text-xs font-semibold text-[#555] tabular-nums shrink-0">{clamped}%</span>
+      </div>
+      <div className="h-1 bg-[#EDEAE5] rounded-full overflow-hidden">
+        <div
+          className="h-full bg-[#EA2C00] rounded-full transition-all duration-500"
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export default function StepPillarYield({
@@ -50,7 +73,7 @@ export default function StepPillarYield({
   const { inputs, pillarsMeta } = state;
 
   const [showCustomFFS, setShowCustomFFS] = useState(
-    !FFS_PRESETS.some((p) => p.value === inputs.ffsSharePercent)
+    !FFS_PRESETS.some((p) => p.value === inputs.ffsSharePercent),
   );
   const [showConfidenceEdit, setShowConfidenceEdit] = useState(false);
 
@@ -63,258 +86,293 @@ export default function StepPillarYield({
     updateInput("ffsSharePercent", value);
   };
 
-  const handleCustomFFS = () => {
-    setShowCustomFFS(true);
-  };
-
-  const yieldConfidence = pillarsMeta.yield.confidence;
-
   const pillarResult = useMemo(() => computePillars(state), [state]);
-  const yieldDetails = pillarResult.pillars.yield.details;
+  const y = pillarResult.pillars.yield;
+  const d = y.details;
 
   const safeNum = (v: unknown): number => {
     const n = Number(v);
     return Number.isFinite(n) ? n : 0;
   };
 
-  const annualGain = safeNum(pillarResult.pillars.yield.valueAnnual);
-  const leakageRemaining = safeNum(yieldDetails.leakageRemaining);
-  const primaryLever = (yieldDetails.primaryLever as string) || "completeness";
+  const conservativeValue = y.valueAnnual;
+  const modeledValue = safeNum(d.rawValue);
+  const haircutMult = safeNum(d.confidenceHaircut);
+  const haircutPct = Math.round((1 - haircutMult) * 100);
+  const confidencePct = Math.round(haircutMult * 100);
+  const isZero = conservativeValue === 0 && modeledValue === 0;
 
-  const hasYieldInputs =
-    inputs.providers > 0 &&
-    inputs.annualEncounters > 0 &&
-    inputs.yieldUpliftPercent > 0 &&
-    inputs.utilization > 0;
+  const revenuePerEncounter = safeNum(d.revenuePerEncounter);
+  const eUsed = safeNum(d.eUsed);
+  const recognizedBase = eUsed * revenuePerEncounter;
+  const yieldLiftPct = safeNum(d.yieldLiftPct);
+  const eligibleExposure = recognizedBase * (yieldLiftPct / 100);
 
+  const ffsShare = safeNum(d.ffsShare);
+  const vbcShare = safeNum(d.vbcShare);
   const ffsFill = Math.round(inputs.ffsSharePercent);
-  const vbcShare = 100 - inputs.ffsSharePercent;
 
-  const leverInfo = LEVER_LABELS[primaryLever] || LEVER_LABELS.completeness;
+  const yieldDeltaWeight = yieldLiftPct > 0 ? Math.min(100, Math.round((yieldLiftPct / 2) * 100)) : 0;
+  const revenueModelWeight = Math.round(
+    ffsShare * safeNum(d.ffsAttribution) * 100 * 0.6 +
+    vbcShare * safeNum(d.vbcAttribution) * 100 * 0.4
+  );
+  const confidenceWeight = confidencePct;
+
+  const yieldConfidence = pillarsMeta.yield.confidence;
 
   return (
-    <div className={`space-y-10 ${STEP_FOOTER_SPACER_CLASS}`}>
-      <div className="text-left">
+    <div className={STEP_FOOTER_SPACER_CLASS}>
+      <div className="mb-10">
         <h1
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
           data-testid="text-page-title"
         >
-          Revenue Integrity & Yield
+          Revenue Integrity Potential
         </h1>
-        <p className="text-base text-[#888888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
+        <p className="text-base text-[#888] leading-relaxed max-w-lg" data-testid="text-page-subtitle">
           Documentation fidelity determines yield accuracy — not just coding lift.
         </p>
       </div>
 
-      <section className="space-y-5">
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
-            Yield Uplift (Modeled with Guardrails)
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {YIELD_PRESETS.map((p) => {
-              const isActive = Math.abs(inputs.yieldUpliftPercent - p.value) < 0.01;
-              return (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => updateInput("yieldUpliftPercent", p.value)}
-                  data-testid={`pills-yield-${p.value}`}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-[#EA2C00] text-white shadow-sm"
-                      : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
+        <div className="space-y-10">
+          <div className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8]" data-testid="hero-yield">
+            {isZero ? (
+              <div>
+                <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-2">Conservative Value</p>
+                <p className="text-4xl font-bold text-[#CCC] leading-none" data-testid="value-yield-conservative">
+                  &mdash;
+                </p>
+                <p className="text-sm text-[#999] mt-3" data-testid="text-zero-prompt">
+                  Set yield uplift and coverage to generate a modeled value.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1.5">Conservative Value</p>
+                  <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A] tabular-nums leading-none" data-testid="value-yield-conservative">
+                    {formatCurrency(Math.round(conservativeValue))}
+                  </p>
+                  <p className="text-[11px] text-[#999] mt-2" data-testid="text-haircut-note">
+                    Displayed after {haircutPct}% confidence adjustment.
+                  </p>
+                </div>
+
+                <div className="mt-5">
+                  <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider mb-1">Modeled Value</p>
+                  <p className="text-xl font-semibold text-[#888] tabular-nums leading-none" data-testid="value-yield-modeled">
+                    {formatCurrency(Math.round(modeledValue))}
+                  </p>
+                  <p className="text-[11px] text-[#999] mt-1">Pre-adjustment model output</p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#E8E0D8] space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Recognized revenue base</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-revenue-base">
+                      {formatCurrency(Math.round(recognizedBase))}
+                    </p>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[10px] text-[#999] uppercase tracking-wider">Eligible revenue exposure</p>
+                    <p className="text-sm font-semibold text-[#1A1A1A] tabular-nums" data-testid="value-revenue-exposure">
+                      {formatCurrency(Math.round(eligibleExposure))}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#E8E0D8]">
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-[10px] font-medium text-[#999] uppercase tracking-wider">Confidence baseline: {confidencePct}%</p>
+                    <p className="text-[11px] text-[#999]" data-testid="text-confidence-value">Displayed value reflects conservative haircut.</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <p className="text-[10px] text-[#999999] mt-2">
-            Directional — capped at 2.0% per encounter to remain defensible.
-          </p>
+
+          <div className="space-y-5" data-testid="section-drivers">
+            <DriverRow
+              label="Documentation yield delta"
+              description={`${yieldLiftPct.toFixed(1)}% uplift per encounter from improved documentation`}
+              pct={yieldDeltaWeight}
+            />
+            <DriverRow
+              label="Revenue model exposure"
+              description={`${Math.round(ffsShare * 100)}% FFS / ${Math.round(vbcShare * 100)}% VBC with attribution-weighted blending`}
+              pct={revenueModelWeight}
+            />
+            <DriverRow
+              label="Confidence baseline"
+              description="Haircut applied to model output for defensibility"
+              pct={confidenceWeight}
+            />
+          </div>
+
+          <div className="hidden lg:block">
+            <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-yield" />
+          </div>
         </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <label className="block text-[11px] font-medium text-[#999999] uppercase tracking-wider mb-3">
-            Revenue Model Exposure
-          </label>
+        <div className="lg:sticky lg:top-24 self-start" data-testid="panel-assumptions">
+          <div className="rounded-2xl border border-[#E8E0D8] bg-[#F9F7F4] p-4 space-y-4">
+            <p className="text-[10px] font-medium text-[#AAA] uppercase tracking-wider">Assumptions</p>
 
-          <div className="mb-3">
-            <span className="text-xs text-[#666666] font-medium">Fee-for-Service (FFS) Share</span>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {FFS_PRESETS.map((p) => {
-              const isActive = !showCustomFFS && inputs.ffsSharePercent === p.value;
-              return (
+            <div>
+              <label className="block text-[11px] font-medium text-[#555] mb-1.5">Yield delta</label>
+              <div className="flex flex-wrap gap-1.5">
+                {YIELD_PRESETS.map((p) => {
+                  const isActive = Math.abs(inputs.yieldUpliftPercent - p.value) < 0.01;
+                  return (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => updateInput("yieldUpliftPercent", p.value)}
+                      data-testid={`pills-yield-${p.value}`}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        isActive
+                          ? "bg-[#EA2C00] text-white"
+                          : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-[#999] mt-1">
+                Capped at 2.0% per encounter to remain defensible.
+              </p>
+            </div>
+
+            <div className="border-t border-[#E8E0D8]/60 pt-3">
+              <label className="block text-[11px] font-medium text-[#555] mb-1.5">Revenue model exposure</label>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {FFS_PRESETS.map((p) => {
+                  const isActive = !showCustomFFS && inputs.ffsSharePercent === p.value;
+                  return (
+                    <button
+                      key={p.value}
+                      type="button"
+                      onClick={() => handleFFSPreset(p.value)}
+                      data-testid={`pills-ffs-${p.value}`}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        isActive
+                          ? "bg-[#EA2C00] text-white"
+                          : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                      }`}
+                    >
+                      FFS {p.label}
+                    </button>
+                  );
+                })}
                 <button
-                  key={p.value}
                   type="button"
-                  onClick={() => handleFFSPreset(p.value)}
-                  data-testid={`pills-ffs-${p.value}`}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-[#EA2C00] text-white shadow-sm"
-                      : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                  onClick={() => setShowCustomFFS(true)}
+                  data-testid="pills-ffs-custom"
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                    showCustomFFS
+                      ? "bg-[#EA2C00] text-white"
+                      : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
                   }`}
                 >
-                  {p.label}
+                  Custom
                 </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={handleCustomFFS}
-              data-testid="pills-ffs-custom"
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                showCustomFFS
-                  ? "bg-[#EA2C00] text-white shadow-sm"
-                  : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-              }`}
-            >
-              Custom
-            </button>
-          </div>
+              </div>
 
-          {showCustomFFS && (
-            <div className="mt-3 bg-white rounded-lg p-4 border border-[#E5E7EB]">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={5}
-                    value={inputs.ffsSharePercent}
-                    onChange={(e) => updateInput("ffsSharePercent", parseFloat(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${ffsFill}%, #E0E0E0 ${ffsFill}%, #E0E0E0 100%)`,
-                    }}
-                    data-testid="slider-ffs"
-                  />
+              {showCustomFFS && (
+                <div className="bg-white rounded-lg p-2.5 border border-[#E5E7EB] mt-1.5">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={inputs.ffsSharePercent}
+                      onChange={(e) => updateInput("ffsSharePercent", parseFloat(e.target.value))}
+                      className="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #EA2C00 0%, #EA2C00 ${ffsFill}%, #E0E0E0 ${ffsFill}%, #E0E0E0 100%)`,
+                      }}
+                      data-testid="slider-ffs"
+                    />
+                    <span className="text-xs font-bold text-[#1A1A1A] min-w-[36px] text-right tabular-nums">
+                      {inputs.ffsSharePercent}%
+                    </span>
+                  </div>
                 </div>
-                <span className="text-lg font-bold text-[#1A1A1A] min-w-[48px] text-right">
-                  {inputs.ffsSharePercent}%
+              )}
+
+              <div className="mt-2 flex items-center gap-2 text-[10px] text-[#999]">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#EA2C00]" />
+                  FFS {inputs.ffsSharePercent}%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#999]" />
+                  VBC {100 - inputs.ffsSharePercent}%
                 </span>
               </div>
             </div>
-          )}
 
-          <div className="mt-3 bg-white rounded-lg p-3 border border-[#E5E7EB]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="text-center">
-                  <p className="text-xs text-[#999999]">FFS</p>
-                  <p className="text-sm font-bold text-[#1A1A1A]" data-testid="value-ffs-share">{inputs.ffsSharePercent}%</p>
-                </div>
-                <div className="w-px h-8 bg-[#E5E7EB]" />
-                <div className="text-center">
-                  <p className="text-xs text-[#999999]">VBC / Risk-Adjusted</p>
-                  <p className="text-sm font-bold text-[#1A1A1A]" data-testid="value-vbc-share">{vbcShare}%</p>
-                </div>
+            <div className="border-t border-[#E8E0D8]/60 pt-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[11px] font-medium text-[#555]">Confidence</label>
+                <button
+                  type="button"
+                  onClick={() => setShowConfidenceEdit(!showConfidenceEdit)}
+                  className="flex items-center gap-0.5 text-[10px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
+                  data-testid="button-toggle-confidence"
+                >
+                  {showConfidenceEdit ? "Done" : "Adjust"}
+                  {showConfidenceEdit ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </button>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div
-                  className="h-2 rounded-full bg-[#EA2C00]"
-                  style={{ width: `${Math.max(8, ffsFill * 0.8)}px` }}
-                />
-                <div
-                  className="h-2 rounded-full bg-[#999999]"
-                  style={{ width: `${Math.max(8, vbcShare * 0.8)}px` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-[#F5F0EB] rounded-xl p-5 border border-[#E8E0D8]">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-[11px] font-medium text-[#999999] uppercase tracking-wider">
-              Yield Confidence
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowConfidenceEdit(!showConfidenceEdit)}
-              className="flex items-center gap-1 text-[11px] text-[#EA2C00] font-medium hover:text-[#D12600] transition-colors"
-              data-testid="button-toggle-confidence"
-            >
-              {showConfidenceEdit ? "Done" : "Change"}
-              {showConfidenceEdit ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          </div>
-
-          {!showConfidenceEdit ? (
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#EA2C00]" />
-              <span
-                className="text-sm font-medium text-[#1A1A1A] capitalize"
-                data-testid="value-yield-confidence"
-              >
-                {yieldConfidence}
-              </span>
-              <span className="text-[10px] text-[#999999]">— set in Pressure Map</span>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {CONFIDENCE_OPTIONS.map((opt) => {
-                const isActive = yieldConfidence === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() =>
-                      dispatch(assessmentActions.updatePillarMeta("yield", "confidence", opt.value))
-                    }
-                    data-testid={`pills-confidence-${opt.value}`}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-[#EA2C00] text-white shadow-sm"
-                        : "bg-white text-[#666666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
-                    }`}
+              {!showConfidenceEdit ? (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-[11px] font-semibold text-[#1A1A1A] capitalize"
+                    data-testid="value-yield-confidence"
                   >
-                    {opt.label}
-                  </button>
-                );
-              })}
+                    {yieldConfidence}
+                  </span>
+                  <span className="text-[10px] text-[#999]">inherited from calibration</span>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {CONFIDENCE_OPTIONS.map((opt) => {
+                    const isActive = yieldConfidence === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() =>
+                          dispatch(assessmentActions.updatePillarMeta("yield", "confidence", opt.value))
+                        }
+                        data-testid={`pills-confidence-${opt.value}`}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                          isActive
+                            ? "bg-[#EA2C00] text-white"
+                            : "bg-white text-[#666] border border-[#E5E7EB] hover:border-[#EA2C00]/30 hover:text-[#1A1A1A]"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </section>
+      </div>
 
-      {hasYieldInputs && (
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="yield-output-cards">
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
-            <DollarSign className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
-            <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Annual Yield Integrity Gain</p>
-            <p className="text-3xl md:text-4xl font-bold text-[#1A1A1A]" data-testid="value-yield-gain">
-              {formatCurrency(Math.round(annualGain))}
-            </p>
-            <p className="text-[10px] text-[#999999] mt-0.5">directional, after confidence haircut</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
-            <TrendingDown className="w-5 h-5 text-[#999999] mx-auto mb-2" />
-            <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Leakage Remaining</p>
-            <p className="text-3xl md:text-4xl font-bold text-[#666666]" data-testid="value-leakage">
-              {formatCurrency(Math.round(leakageRemaining))}
-            </p>
-            <p className="text-[10px] text-[#999999] mt-0.5">vs. benchmark (directional)</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-[#E5E7EB] text-center">
-            <Tag className="w-5 h-5 text-[#EA2C00] mx-auto mb-2" />
-            <p className="text-[11px] text-[#999999] uppercase tracking-wider mb-1">Primary Lever</p>
-            <p className="text-lg font-bold text-[#1A1A1A] capitalize" data-testid="value-primary-lever">
-              {leverInfo.label}
-            </p>
-            <p className="text-[10px] text-[#999999] mt-0.5">{leverInfo.description}</p>
-          </div>
-        </section>
-      )}
-
-      <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-yield" />
+      <div className="lg:hidden mt-10">
+        <StepFooter onBack={onBack} onNext={onNext} nextTestId="button-next-yield" />
+      </div>
     </div>
   );
 }
