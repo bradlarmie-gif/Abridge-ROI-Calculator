@@ -6,6 +6,7 @@ import PillarProgressBar from "@/components/PillarProgressBar";
 import type { SwitchInputs } from "@/lib/switchGapCalculator";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepYourOrganization from "./narrative-steps/StepYourOrganization";
+import StepMeasurementReality from "./narrative-steps/StepMeasurementReality";
 import StepEnterprisePressureMap from "./narrative-steps/StepEnterprisePressureMap";
 import StepPillarCapacity from "./narrative-steps/StepPillarCapacity";
 import StepPillarYield from "./narrative-steps/StepPillarYield";
@@ -25,22 +26,23 @@ interface AmbientNarrativeFlowProps {
   onNavigateToExplore?: (providers: number, encounters: number) => void;
 }
 
-const TOTAL_STEPS = 13;
+const TOTAL_STEPS = 14;
 
 const STEPS = [
   { id: 1, name: "Your Organization", shortName: "Org" },
-  { id: 2, name: "Pressure Map", shortName: "Map" },
-  { id: 3, name: "Capacity Engine", shortName: "Capacity" },
-  { id: 4, name: "Revenue & Yield", shortName: "Yield" },
-  { id: 5, name: "Workforce Stability", shortName: "Workforce" },
-  { id: 6, name: "Enterprise Risk", shortName: "Risk" },
-  { id: 7, name: "Where You Are", shortName: "Input" },
-  { id: 8, name: "Value Map", shortName: "Value" },
-  { id: 9, name: "Leakage Drivers", shortName: "Leakage" },
-  { id: 10, name: "What Good Looks Like", shortName: "Proof" },
-  { id: 11, name: "The Math", shortName: "Math" },
-  { id: 12, name: "What It Takes", shortName: "How" },
-  { id: 13, name: "The Opportunity", shortName: "Next" },
+  { id: 2, name: "Measurement Reality", shortName: "Calibrate" },
+  { id: 3, name: "Pressure Map", shortName: "Map" },
+  { id: 4, name: "Capacity Engine", shortName: "Capacity" },
+  { id: 5, name: "Revenue & Yield", shortName: "Yield" },
+  { id: 6, name: "Workforce Stability", shortName: "Workforce" },
+  { id: 7, name: "Enterprise Risk", shortName: "Risk" },
+  { id: 8, name: "Where You Are", shortName: "Input" },
+  { id: 9, name: "Value Map", shortName: "Value" },
+  { id: 10, name: "Leakage Drivers", shortName: "Leakage" },
+  { id: 11, name: "What Good Looks Like", shortName: "Proof" },
+  { id: 12, name: "The Math", shortName: "Math" },
+  { id: 13, name: "What It Takes", shortName: "How" },
+  { id: 14, name: "The Opportunity", shortName: "Next" },
 ];
 
 export default function AmbientNarrativeFlow({
@@ -71,7 +73,7 @@ export default function AmbientNarrativeFlow({
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) return;
     
-    if (currentStep === 12) {
+    if (currentStep === 13) {
       dispatch(assessmentActions.showLoading(true));
     } else {
       dispatch(assessmentActions.completeStep(currentStep));
@@ -80,8 +82,8 @@ export default function AmbientNarrativeFlow({
   };
 
   const handleTransitionMidpoint = useCallback(() => {
-    dispatch(assessmentActions.completeStep(12));
-    dispatch(assessmentActions.setStep(13));
+    dispatch(assessmentActions.completeStep(13));
+    dispatch(assessmentActions.setStep(14));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dispatch]);
 
@@ -116,62 +118,71 @@ export default function AmbientNarrativeFlow({
         );
       case 2:
         return (
-          <StepEnterprisePressureMap
+          <StepMeasurementReality
+            inputs={inputs}
+            updateInput={updateInput}
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 3:
         return (
-          <StepPillarCapacity
+          <StepEnterprisePressureMap
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 4:
         return (
-          <StepPillarYield
+          <StepPillarCapacity
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 5:
         return (
-          <StepPillarWorkforce
+          <StepPillarYield
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 6:
         return (
-          <StepPillarRisk
+          <StepPillarWorkforce
             onNext={handleNext}
             onBack={handleBack}
           />
         );
       case 7:
-        return <StepWhereYouAre {...commonProps} />;
+        return (
+          <StepPillarRisk
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        );
       case 8:
+        return <StepWhereYouAre {...commonProps} />;
+      case 9:
         return (
           <StepEnterpriseValueMap
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 9:
+      case 10:
         return (
           <StepLeakageDrivers
             onNext={handleNext}
             onBack={handleBack}
           />
         );
-      case 10:
-        return <StepWhatGoodLooksLike {...commonProps} />;
       case 11:
-        return <StepTheMath {...commonProps} />;
+        return <StepWhatGoodLooksLike {...commonProps} />;
       case 12:
-        return <StepWhyThisHappens {...commonProps} />;
+        return <StepTheMath {...commonProps} />;
       case 13:
+        return <StepWhyThisHappens {...commonProps} />;
+      case 14:
         return (
           <StepTheInvitation 
             {...commonProps} 
@@ -201,7 +212,7 @@ export default function AmbientNarrativeFlow({
         />
         <UnifiedHeaderSpacer />
 
-        <main className={`mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16 ${currentStep === 1 ? "max-w-6xl" : "max-w-3xl"}`}>
+        <main className={`mx-auto px-4 md:px-6 py-6 md:py-8 pb-12 md:pb-16 ${currentStep <= 2 ? "max-w-6xl" : "max-w-3xl"}`}>
           <PillarProgressBar
             currentStep={currentStep}
             completedSteps={completedSteps}
