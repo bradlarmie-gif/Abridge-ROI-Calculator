@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import type { PrimaryPressure, PressureLevel, ConfidenceLevel } from "@/lib/assessment";
 import type { PillarId } from "@/lib/pillars/computePillars";
@@ -15,31 +15,11 @@ const FOCUS_OPTIONS: {
   title: string;
   description: string;
 }[] = [
-  {
-    value: "access",
-    title: "Access & Throughput",
-    description: "Capacity constraints, wait times, or panel growth.",
-  },
-  {
-    value: "revenue",
-    title: "Revenue Performance",
-    description: "Coding accuracy, wRVU capture, or reimbursement leakage.",
-  },
-  {
-    value: "retention",
-    title: "Clinician Retention",
-    description: "Burnout, after-hours burden, or turnover risk.",
-  },
-  {
-    value: "compliance",
-    title: "Compliance & Audit Posture",
-    description: "Documentation defensibility or audit readiness.",
-  },
-  {
-    value: "none",
-    title: "No Single Driver",
-    description: "Balanced evaluation across all engines.",
-  },
+  { value: "access", title: "Access & Throughput", description: "Capacity constraints, wait times, or panel growth." },
+  { value: "revenue", title: "Revenue Performance", description: "Coding accuracy, wRVU capture, or reimbursement leakage." },
+  { value: "retention", title: "Clinician Retention", description: "Burnout, after-hours burden, or turnover risk." },
+  { value: "compliance", title: "Compliance & Audit Posture", description: "Documentation defensibility or audit readiness." },
+  { value: "none", title: "No Single Driver", description: "Balanced evaluation across all engines." },
 ];
 
 const PRIMARY_ENGINE_MAP: Record<PrimaryPressure, PillarId> = {
@@ -112,6 +92,39 @@ function SegmentedPills<T extends string>({
   );
 }
 
+function computeRecommendation(inputs: {
+  careSetting: string;
+  annualEncounters: number;
+  dataMode: string;
+  specialtyMix: string;
+  confidenceBaseline: number;
+}): PrimaryPressure {
+  const { careSetting, annualEncounters, dataMode, specialtyMix, confidenceBaseline } = inputs;
+
+  if (careSetting === "ed" || careSetting === "inpatient") {
+    if (confidenceBaseline < 0.6 || dataMode === "benchmark") return "compliance";
+    return "access";
+  }
+
+  if (specialtyMix === "specialty" || specialtyMix === "procedural") {
+    return "revenue";
+  }
+
+  if (annualEncounters > 40000) {
+    return "access";
+  }
+
+  if (confidenceBaseline < 0.6 && dataMode === "benchmark") {
+    return "compliance";
+  }
+
+  if (careSetting === "nursing") {
+    return "retention";
+  }
+
+  return "access";
+}
+
 export default function StepEnterprisePressureMap({
   onNext,
   onBack,
@@ -119,27 +132,49 @@ export default function StepEnterprisePressureMap({
   const { state, dispatch } = useAssessment();
   const { pillarsMeta, primaryPressure } = state;
   const confidenceBaseline = state.inputs.confidenceBaseline;
+
+  const recommendation = useMemo(
+    () => computeRecommendation(state.inputs),
+    [state.inputs],
+  );
+
+  const [confirmed, setConfirmed] = useState<boolean | null>(null);
   const [showOverride, setShowOverride] = useState(false);
-  const hasSelection = primaryPressure !== "none" || state.primaryPressure !== "none";
+
+  useEffect(() => {
+    if (primaryPressure === "none") {
+      dispatch(assessmentActions.setPrimaryPressure(recommendation));
+    }
+  }, []);
+
+  const activePressure = primaryPressure === "none" ? recommendation : primaryPressure;
+  const activeEngine = useMemo(() => {
+    const id = PRIMARY_ENGINE_MAP[activePressure];
+    return { id, ...PILLAR_INFO[id] };
+  }, [activePressure]);
+
+  const handleConfirm = () => {
+    setConfirmed(true);
+    dispatch(assessmentActions.setPrimaryPressure(recommendation));
+  };
+
+  const handleOverride = () => {
+    setConfirmed(false);
+  };
 
   const handleSelectFocus = (value: PrimaryPressure) => {
     dispatch(assessmentActions.setPrimaryPressure(value));
   };
 
-  const primaryEngine = useMemo(() => {
-    const id = PRIMARY_ENGINE_MAP[primaryPressure];
-    return { id, ...PILLAR_INFO[id] };
-  }, [primaryPressure]);
-
   const rankedPillars = useMemo(() => {
-    const order = RANK_MAP[primaryPressure] || RANK_MAP.none;
+    const order = RANK_MAP[activePressure] || RANK_MAP.none;
     return order.map((id, idx) => ({
       id,
       rank: idx + 1,
       ...PILLAR_INFO[id],
       pressure: pillarsMeta[id].pressure,
     }));
-  }, [primaryPressure, pillarsMeta]);
+  }, [activePressure, pillarsMeta]);
 
   const handlePressureChange = (pillarId: PillarId, value: PressureLevel) => {
     dispatch(assessmentActions.updatePillarMeta(pillarId, "pressure", value));
@@ -149,8 +184,13 @@ export default function StepEnterprisePressureMap({
     dispatch(assessmentActions.updatePillarMeta(pillarId, "confidence", value));
   };
 
+  const recommendedEngine = useMemo(() => {
+    const id = PRIMARY_ENGINE_MAP[recommendation];
+    return { id, ...PILLAR_INFO[id] };
+  }, [recommendation]);
+
   return (
-    <div className={`space-y-12 ${STEP_FOOTER_SPACER_CLASS}`}>
+    <div className={`space-y-14 ${STEP_FOOTER_SPACER_CLASS}`}>
       <div className="text-left">
         <h1
           className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3 font-abridge uppercase tracking-tight"
@@ -163,67 +203,132 @@ export default function StepEnterprisePressureMap({
         </p>
       </div>
 
-      <div className="space-y-3">
-        {FOCUS_OPTIONS.map((opt) => {
-          const isSelected = primaryPressure === opt.value;
-          const someSelected = primaryPressure !== "none";
-          const dimmed = someSelected && !isSelected;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleSelectFocus(opt.value)}
-              data-testid={`tile-focus-${opt.value}`}
-              className={`w-full text-left rounded-2xl py-5 px-6 transition-all duration-200 relative overflow-hidden border ${
-                isSelected
-                  ? "bg-[#F5F0EB] border-[#E8E0D8]"
-                  : "bg-white border-[#E8E0D8] hover:bg-[#FAFAF7]"
-              } ${dimmed ? "opacity-60" : "opacity-100"}`}
-            >
-              <div
-                className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300 ${
-                  isSelected ? "bg-[#EA2C00]" : "bg-transparent"
-                }`}
-              />
-              <div className="pl-3">
-                <span className="text-base font-semibold text-[#1A1A1A]">{opt.title}</span>
-                <p className="text-sm text-[#555]/70 mt-0.5">{opt.description}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {hasSelection && (
+      <div>
+        <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-5" data-testid="text-recommended-label">
+          Recommended enterprise focus
+        </p>
         <div
-          className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8] transition-all duration-300"
-          data-testid="card-primary-engine"
+          className="bg-[#F5F0EB] rounded-2xl p-7 border border-[#E8E0D8]"
+          data-testid="card-recommendation"
         >
-          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-4">
-            Primary value engine identified
-          </p>
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-white border border-[#E8E0D8] flex items-center justify-center shrink-0">
-              <primaryEngine.icon className="w-5 h-5 text-[#EA2C00]" />
+            <div className="w-11 h-11 rounded-xl bg-white border border-[#E8E0D8] flex items-center justify-center shrink-0">
+              <recommendedEngine.icon className="w-5 h-5 text-[#EA2C00]" />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-lg font-semibold text-[#1A1A1A]" data-testid="text-engine-name">
-                {primaryEngine.name}
+              <span className="text-lg font-semibold text-[#1A1A1A]" data-testid="text-recommendation-name">
+                {recommendedEngine.name}
               </span>
-              <p className="text-sm text-[#666] mt-0.5">{primaryEngine.shortDesc}</p>
+              <p className="text-sm text-[#666] mt-1">{recommendedEngine.shortDesc}</p>
               <div className="flex items-center gap-4 mt-3 text-[12px] text-[#999]">
                 <span>
                   Confidence baseline:{" "}
+                  <span className="font-medium text-[#1A1A1A] tabular-nums" data-testid="text-recommendation-confidence">
+                    {confidenceBaseline.toFixed(2)}
+                  </span>
+                </span>
+              </div>
+              <p className="text-[12px] text-[#888] mt-2">
+                Based on your baseline inputs and measurement mode.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {confirmed === null && (
+        <div data-testid="section-confirm">
+          <p className="text-base font-medium text-[#1A1A1A] mb-5" data-testid="text-confirm-question">
+            Does this reflect internal reality?
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleConfirm}
+              data-testid="button-confirm-yes"
+              className="px-6 py-3 rounded-xl text-sm font-semibold bg-[#1A1A1A] text-white hover:bg-[#333] transition-colors"
+            >
+              Yes, proceed with this focus
+            </button>
+            <button
+              type="button"
+              onClick={handleOverride}
+              data-testid="button-confirm-no"
+              className="px-6 py-3 rounded-xl text-sm font-semibold border border-[#E8E0D8] text-[#555] bg-white hover:bg-[#FAFAF7] transition-colors"
+            >
+              No, adjust focus
+            </button>
+          </div>
+        </div>
+      )}
+
+      {confirmed === false && (
+        <div data-testid="section-override-tiles">
+          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-4">
+            Select primary focus
+          </p>
+          <div className="space-y-3">
+            {FOCUS_OPTIONS.map((opt) => {
+              const isSelected = primaryPressure === opt.value;
+              const someSelected = primaryPressure !== "none";
+              const dimmed = someSelected && !isSelected;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleSelectFocus(opt.value)}
+                  data-testid={`tile-focus-${opt.value}`}
+                  className={`w-full text-left rounded-2xl py-5 px-6 transition-all duration-200 relative overflow-hidden border ${
+                    isSelected
+                      ? "bg-[#F5F0EB] border-[#E8E0D8]"
+                      : "bg-white border-[#E8E0D8] hover:bg-[#FAFAF7]"
+                  } ${dimmed ? "opacity-60" : "opacity-100"}`}
+                >
+                  <div
+                    className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-300 ${
+                      isSelected ? "bg-[#EA2C00]" : "bg-transparent"
+                    }`}
+                  />
+                  <div className="pl-3">
+                    <span className="text-base font-semibold text-[#1A1A1A]">{opt.title}</span>
+                    <p className="text-sm text-[#555]/70 mt-0.5">{opt.description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {(confirmed === true || (confirmed === false && primaryPressure !== "none")) && (
+        <div
+          className="bg-[#F5F0EB] rounded-2xl p-6 border border-[#E8E0D8]"
+          data-testid="card-primary-engine"
+        >
+          <p className="text-[11px] font-medium text-[#999] uppercase tracking-wider mb-3">
+            Primary value engine identified
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-white border border-[#E8E0D8] flex items-center justify-center shrink-0">
+              <activeEngine.icon className="w-4 h-4 text-[#EA2C00]" />
+            </div>
+            <div>
+              <span className="text-base font-semibold text-[#1A1A1A]" data-testid="text-engine-name">
+                {activeEngine.name}
+              </span>
+              <div className="flex items-center gap-4 mt-0.5 text-[12px] text-[#999]">
+                <span>
+                  Confidence:{" "}
                   <span className="font-medium text-[#1A1A1A] tabular-nums" data-testid="text-engine-confidence">
                     {confidenceBaseline.toFixed(2)}
                   </span>
                 </span>
               </div>
-              <p className="text-[12px] text-[#999] mt-2">
-                Other engines will still be modeled.
-              </p>
             </div>
           </div>
+          <p className="text-[12px] text-[#999] mt-3">
+            Other engines will still be modeled.
+          </p>
         </div>
       )}
 
