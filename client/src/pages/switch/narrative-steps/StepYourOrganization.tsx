@@ -308,7 +308,7 @@ export default function StepYourOrganization({
               Organization Baseline
             </h1>
             <p className="text-base text-[#888888] leading-relaxed">
-              We'll use this to build a conservative, decision-grade view of ambient economics — even if you don't have perfect data.
+              These inputs estimate the portion of enterprise economics governed by documentation.
             </p>
             <p className="text-[13px] text-[#22C55E] mt-2 flex items-center gap-1.5" data-testid="text-data-light">
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -319,9 +319,9 @@ export default function StepYourOrganization({
           <div className="space-y-6">
             <div className="bg-[#F5F0EB] rounded-2xl p-5 md:p-6 border border-[#E8E0D8]">
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1" data-testid="label-clinicians">
-                Clinicians in scope
+                Clinical Economic Footprint
               </label>
-              <p className="text-[13px] text-[#888] mb-3">Physicians + APPs expected to use ambient.</p>
+              <p className="text-[13px] text-[#888] mb-3">Physicians + APPs whose documentation governs enterprise economics.</p>
               <PresetChips
                 options={PROVIDER_PRESETS}
                 value={inputs.providers}
@@ -351,9 +351,9 @@ export default function StepYourOrganization({
 
             <div className="bg-[#F5F0EB] rounded-2xl p-5 md:p-6 border border-[#E8E0D8]">
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1" data-testid="label-encounters">
-                Annual eligible encounters
+                Documentation-Exposed Encounters
               </label>
-              <p className="text-[13px] text-[#888] mb-3">Visits where ambient documentation is applicable.</p>
+              <p className="text-[13px] text-[#888] mb-3">Annual visits where documentation directly governs reimbursement, quality, and compliance.</p>
               <PresetChips
                 options={ENCOUNTER_PRESETS}
                 value={inputs.annualEncounters}
@@ -443,7 +443,7 @@ export default function StepYourOrganization({
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-[#1A1A1A] mb-1" data-testid="label-care-setting">
-                    Care setting
+                    Primary Economic Context
                   </label>
                   <SegmentedControl
                     options={CARE_SETTINGS}
