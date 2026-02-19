@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DS } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import type { DataMode } from "@/lib/switchGapCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -57,7 +56,7 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#F7F6F4] px-5 md:px-10 font-['Manrope',sans-serif]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white px-4 sm:px-6">
       <a
         href="/"
         className="fixed top-0 left-0 z-50 flex items-center p-6"
@@ -68,12 +67,12 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
 
       <div className="w-full max-w-lg text-center">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <p
-            className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-8"
+            className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-8"
             data-testid="text-screen1-label"
           >
             Before We Begin
@@ -81,31 +80,25 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <h1
-            className="hidden md:block font-['Manrope',sans-serif] font-bold text-[44px] leading-[1.15] text-[#1A1A1A] max-w-[480px] mx-auto mb-4"
+            className="text-2xl md:text-3xl font-bold text-black mb-4 font-abridge uppercase tracking-tight max-w-[480px] mx-auto"
             data-testid="text-screen1-headline"
-          >
-            What is ambient documentation actually returning to your organization?
-          </h1>
-          <h1
-            className="block md:hidden font-['Manrope',sans-serif] font-bold text-[34px] leading-[1.15] text-[#1A1A1A] max-w-[480px] mx-auto mb-4"
-            data-testid="text-screen1-headline-mobile"
           >
             What is ambient documentation actually returning to your organization?
           </h1>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <p
-            className="font-['Manrope',sans-serif] text-[15px] leading-relaxed text-[#4B4B4B] text-center mb-12"
+            className="text-base text-[#888888] text-center mb-12"
             data-testid="text-screen1-body"
           >
             Not what you paid for it.<br />
@@ -114,17 +107,17 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="mx-auto w-14 h-px bg-[#E5E7EB] mb-12" />
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
+          transition={{ duration: 0.4, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             {PILLS.map((pill) => (
@@ -132,10 +125,10 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
                 key={pill.id}
                 type="button"
                 onClick={() => handleSelect(pill)}
-                className={`font-['Manrope',sans-serif] text-sm px-6 py-3 rounded-full bg-white border transition-all duration-150 min-w-[180px] cursor-pointer ${
+                className={`text-sm px-6 py-3 rounded-full border transition-all min-w-[180px] cursor-pointer ${
                   selected === pill.id
-                    ? "border-[#1A1A1A] font-bold text-[#1A1A1A]"
-                    : "border-[#E8E0D8] font-medium text-[#4B4B4B]"
+                    ? "border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black"
+                    : "border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]"
                 }`}
                 data-testid={`pill-entry-${pill.id}`}
               >
@@ -154,7 +147,7 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
               transition={{ duration: 0.3 }}
             >
               <p
-                className="font-['Manrope',sans-serif] font-normal text-[17px] text-[#4B4B4B] leading-[1.75] italic mb-6"
+                className="text-base text-[#888888] leading-relaxed italic mb-6"
                 data-testid="text-screen1-response"
               >
                 {RESPONSES[selected]}
@@ -172,11 +165,11 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
               transition={{ duration: 0.3 }}
               className="max-w-[280px] mx-auto mb-6"
             >
-              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] text-left mb-2.5">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] text-left mb-2.5">
                 Your Estimate
               </p>
               <div className="flex items-center gap-2">
-                <span className="text-lg text-[#9B9B9B] font-['Manrope',sans-serif]">$</span>
+                <span className="text-lg text-[#888888]">$</span>
                 <FormattedNumberInput
                   value={entryEstimate}
                   onChange={setEntryEstimate}
@@ -184,9 +177,9 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
                   placeholder="annually"
                   data-testid="input-entry-estimate"
                 />
-                <span className="text-[13px] text-[#9B9B9B] font-['Manrope',sans-serif]">/ year</span>
+                <span className="text-sm text-[#888888]">/ year</span>
               </div>
-              <p className="text-left mt-2 font-normal text-[13px] text-[#9B9B9B] font-['Manrope',sans-serif]">
+              <p className="text-left mt-2 text-sm text-[#888888]">
                 Optional — we'll reference this in your results.
               </p>
             </motion.div>
@@ -203,7 +196,7 @@ export default function Screen1Provocation({ onNext }: Screen1Props) {
             >
               <Button
                 onClick={handleBegin}
-                className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
+                className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2"
                 data-testid="button-begin-assessment"
               >
                 Begin the Assessment

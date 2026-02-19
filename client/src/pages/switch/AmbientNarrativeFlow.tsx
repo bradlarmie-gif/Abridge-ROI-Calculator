@@ -93,7 +93,7 @@ export default function AmbientNarrativeFlow({
   const isScreen1 = currentStep === 1;
 
   return (
-    <div className="min-h-screen bg-[#F7F6F4]">
+    <div className="min-h-screen bg-white">
       {!isScreen1 && (
         <>
           <UnifiedHeader
@@ -109,7 +109,7 @@ export default function AmbientNarrativeFlow({
         </>
       )}
 
-      <main className="mx-auto px-5 md:px-10 max-w-[1200px]">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 md:py-12">
         <PageTransition pageKey={`ambient-screen-${currentStep}`}>
           {renderScreen()}
         </PageTransition>

@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { ArrowRight, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { DS } from "./designTokens";
 import { Button } from "@/components/ui/button";
 import { useAssessment } from "@/lib/assessment";
 import { calculateAmbientScore, formatDollar, formatDollarFull } from "./ambientCalculator";
@@ -154,77 +153,72 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
   };
 
   return (
-    <div className="font-[Manrope,sans-serif] pt-[72px] pb-20">
-      <div className="max-w-lg mx-auto px-4">
-
-        <button
-          onClick={onBack}
-          className="text-sm text-[#888] hover:text-[#1A1A1A] transition-colors mb-8"
-          data-testid="button-back"
-        >
-          Back
-        </button>
+    <div>
+      <div className="max-w-lg mx-auto">
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6" data-testid="text-screen6-label">
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight text-center" data-testid="text-screen6-heading">
             Your Assessment
+          </h1>
+          <p className="text-base text-[#888888] text-center mb-8">
+            Summary of your documentation intelligence assessment
           </p>
 
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-10" data-testid="card-verdict-numbers">
+          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-10" data-testid="card-verdict-numbers">
             <div className="flex items-start justify-between gap-8 flex-wrap">
               <div>
-                <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif] mb-1">Your Score</p>
-                <p className="text-[36px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif]">
-                  {result.score} <span className="text-[20px] text-[#9B9B9B] font-normal">/ 100</span>
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Your Score</p>
+                <p className="text-4xl font-bold text-black">
+                  {result.score} <span className="text-xl text-[#888888] font-normal">/ 100</span>
                 </p>
               </div>
               <div>
-                <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif] mb-1">Top Quartile</p>
-                <p className="text-[36px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif]">
-                  71 <span className="text-[20px] text-[#9B9B9B] font-normal">/ 100</span>
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1">Top Quartile</p>
+                <p className="text-4xl font-bold text-black">
+                  71 <span className="text-xl text-[#888888] font-normal">/ 100</span>
                 </p>
               </div>
             </div>
 
-            <div className="w-full h-1.5 bg-[#EDEAE5] rounded-full overflow-hidden relative mt-5 mb-3">
+            <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden relative mt-5 mb-3">
               <div
                 className="absolute left-0 top-0 h-full bg-[#EA2C00] rounded-full"
                 style={{ width: `${Math.min(result.score, 100)}%` }}
               />
             </div>
 
-            <p className="text-[15px] text-[#4B4B4B] leading-[1.6] font-[Manrope,sans-serif]" data-testid="text-capture-line">
+            <p className="text-sm text-[#888888] leading-relaxed" data-testid="text-capture-line">
               You are capturing approximately {result.score}% of the enterprise value flowing through your documentation infrastructure.
             </p>
           </div>
         </motion.div>
 
-        <div className="h-px bg-[#E8E0D8] mb-10" />
+        <div className="h-px bg-[#E5E7EB] mb-10" />
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-4">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4">
             Highest-Leverage Opportunity
           </p>
 
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] border-l-[3px] border-l-[#EA2C00] rounded-xl p-6 mb-14" data-testid="card-top-opportunity">
-            <p className="text-[20px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif] mb-2">{topDomainName}</p>
-            <p className="text-[32px] font-bold text-[#EA2C00] font-[Manrope,sans-serif] mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
-            <div className="h-px bg-[#E8E0D8] mb-4" />
-            <p className="text-[15px] text-[#4B4B4B] leading-[1.75] font-[Manrope,sans-serif]">
+          <div className="bg-[#F5F0EB] rounded-lg p-6 mb-14" data-testid="card-top-opportunity">
+            <p className="text-xl font-bold text-black mb-2">{topDomainName}</p>
+            <p className="text-3xl font-bold text-[#EA2C00] mb-4">{formatDollarFull(result.topDomainValue)} annually</p>
+            <div className="h-px bg-[#E5E7EB]/50 mb-4" />
+            <p className="text-sm text-[#888888] leading-relaxed">
               {topDomainOps.meaning} {topDomainOps.action}
             </p>
           </div>
         </motion.div>
 
-        <div className="h-px bg-[#E8E0D8] mb-14" />
+        <div className="h-px bg-[#E5E7EB] mb-14" />
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -232,10 +226,10 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
           transition={{ delay: 0.4 }}
         >
           <div className="text-center mb-8">
-            <h2 className="text-[32px] font-bold text-[#1A1A1A] leading-[1.3] max-w-[400px] mx-auto" data-testid="text-invitation-headline">
+            <h2 className="text-2xl md:text-3xl font-bold text-black font-abridge uppercase tracking-tight leading-[1.3] max-w-[400px] mx-auto" data-testid="text-invitation-headline">
               Would you like to see what documentation intelligence looks like at your scale?
             </h2>
-            <p className="text-[15px] text-[#9B9B9B] leading-[1.75] mt-5 font-[Manrope,sans-serif]">
+            <p className="text-base text-[#888888] leading-relaxed mt-5">
               This is not a product demonstration.<br />
               It is a 30-minute working session.
             </p>
@@ -251,55 +245,56 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
               <Button
                 onClick={() => setShowForm(true)}
-                className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full sm:w-auto"
+                className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full sm:w-auto"
                 data-testid="button-request-session"
               >
                 Request a Working Session
                 <ArrowRight size={16} />
               </Button>
-              <button
+              <Button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="rounded-full border border-[#E8E0D8] bg-transparent px-6 py-3 text-sm font-medium text-[#4B4B4B] transition-colors hover:bg-[#F5F0EB] inline-flex items-center gap-2 w-full sm:w-auto justify-center disabled:opacity-70 disabled:cursor-wait"
+                variant="outline"
+                className="rounded-full px-6 font-medium gap-2 w-full sm:w-auto"
                 data-testid="button-export"
               >
                 {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                 {isExporting ? 'Generating PDF...' : 'Export My Assessment'}
-              </button>
+              </Button>
             </div>
           )}
 
           {showForm && !formSubmitted && (
-            <form onSubmit={handleSubmit} className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-14" data-testid="form-contact">
+            <form onSubmit={handleSubmit} className="bg-[#F5F0EB] rounded-lg p-8 mb-14" data-testid="form-contact">
               <div className="flex flex-col gap-4">
                 <input
                   type="text" placeholder="Name" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
                   data-testid="input-name"
                 />
                 <input
                   type="text" placeholder="Organization" value={formData.org}
                   onChange={(e) => setFormData({ ...formData, org: e.target.value })}
-                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
                   data-testid="input-org"
                 />
                 <input
                   type="text" placeholder="Title" value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
                   data-testid="input-title"
                 />
                 <input
                   type="email" placeholder="Email" value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3.5 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+                  className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3.5 text-base font-semibold text-black outline-none focus:border-[#EA2C00] transition-colors"
                   data-testid="input-email"
                 />
               </div>
               <Button
                 type="submit"
-                className="bg-[#EA2C00] hover:bg-[#D12600] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full mt-6"
+                className="bg-[#EA2C00] text-white border-[#EA2C00] rounded-full px-6 font-medium gap-2 w-full mt-6"
                 data-testid="button-submit"
               >
                 Submit
@@ -309,14 +304,14 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
           )}
 
           {formSubmitted && (
-            <div className="text-center bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-14" data-testid="form-confirmation">
-              <p className="text-[17px] text-[#1A1A1A] font-semibold mb-3 font-[Manrope,sans-serif]">
+            <div className="text-center bg-[#F5F0EB] rounded-lg p-8 mb-14" data-testid="form-confirmation">
+              <p className="text-base text-black font-semibold mb-3">
                 We'll be in touch within one business day.
               </p>
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="text-[15px] text-[#4B4B4B] underline underline-offset-2 font-medium bg-transparent border-none font-[Manrope,sans-serif] disabled:cursor-wait"
+                className="text-sm text-[#888888] underline underline-offset-2 font-medium bg-transparent border-none cursor-pointer disabled:cursor-wait"
                 data-testid="button-copy-link"
               >
                 {isExporting ? 'Generating PDF...' : 'Download your assessment'}
@@ -325,7 +320,7 @@ export default function Screen6Invitation({ onBack, onBackToJourney }: Screen6Pr
           )}
         </motion.div>
 
-        <p className="text-center text-[13px] text-[#9B9B9B] leading-[1.6] font-[Manrope,sans-serif]">
+        <p className="text-center text-sm text-[#888888] leading-relaxed">
           Conservative estimates based on Abridge deployment benchmarks.<br />
           Methodology available on request.
         </p>

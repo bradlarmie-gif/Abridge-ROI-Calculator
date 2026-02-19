@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { DS } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar, formatDollarFull } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -56,17 +55,17 @@ function EditField({ label, value, onChange, prefix, suffix, testId }: {
 }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-3">
-      <span className="text-[13px] text-[#4B4B4B] flex-1">{label}</span>
+      <span className="text-sm text-black flex-1">{label}</span>
       <div className="flex items-center gap-1 max-w-[140px]">
-        {prefix && <span className="text-[13px] text-[#9B9B9B]">{prefix}</span>}
+        {prefix && <span className="text-sm text-[#888888]">{prefix}</span>}
         <FormattedNumberInput
           value={value}
           onChange={onChange}
           placeholder="0"
-          className="w-full rounded-lg border border-[#E8E0D8] bg-white px-3.5 py-2.5 text-sm font-semibold text-[#1A1A1A] text-right outline-none focus:border-[#EA2C00] transition-colors min-w-[80px]"
+          className="w-full h-10 bg-white border-[#E5E7EB] text-right min-w-[80px]"
           data-testid={testId}
         />
-        {suffix && <span className="text-[13px] text-[#9B9B9B]">{suffix}</span>}
+        {suffix && <span className="text-sm text-[#888888]">{suffix}</span>}
       </div>
     </div>
   );
@@ -79,12 +78,12 @@ function EditSlider({ label, value, onChange, min, max, step, display, testId }:
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[13px] text-[#4B4B4B]">{label}</span>
-        <span className="text-[13px] font-bold text-[#1A1A1A]">{display}</span>
+        <span className="text-sm text-black">{label}</span>
+        <span className="text-sm font-bold text-black">{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full accent-[#EA2C00] h-1" data-testid={testId} />
+        className="w-full accent-[#1A1A1A] h-1" data-testid={testId} />
     </div>
   );
 }
@@ -94,14 +93,14 @@ function EditPill({ label, options, value, onChange, testId }: {
 }) {
   return (
     <div className="mb-3">
-      <span className="block text-[13px] text-[#4B4B4B] mb-1.5">{label}</span>
+      <span className="block text-sm text-black mb-1.5">{label}</span>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
           <button key={opt} type="button" onClick={() => onChange(opt)}
-            className={`rounded-full px-3.5 py-1.5 text-[13px] cursor-pointer transition-colors ${
+            className={`rounded-full px-4 py-2 text-sm cursor-pointer transition-all ${
               value === opt
-                ? 'border border-[#1A1A1A] bg-white font-bold text-[#1A1A1A]'
-                : 'border border-[#E5E7EB] bg-[#F7F6F4] font-medium text-[#4B4B4B]'
+                ? 'border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black'
+                : 'border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]'
             }`}
             data-testid={`${testId}-${opt}`}
           >{opt}</button>
@@ -111,10 +110,10 @@ function EditPill({ label, options, value, onChange, testId }: {
   );
 }
 
-function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapValue, score }: {
+function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapValue }: {
   domain: Domain; domainState: EditableDomainInputs;
   onUpdate: (level: ActivationLevel, inputs: Record<string, number | string>) => void;
-  gapValue: number; originalGapValue: number; score: number;
+  gapValue: number; originalGapValue: number;
   providers: number; annualEncounters: number; utilization: number; timeSavings: number;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -131,7 +130,7 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
   };
 
   return (
-    <div className={`bg-white border border-[#E8E0D8] rounded-xl transition-all mb-3 ${expanded ? 'p-5' : 'px-5 py-4'}`}
+    <div className={`bg-white border border-[#E5E7EB] rounded-lg transition-all mb-3 ${expanded ? 'p-5' : 'px-5 py-4'}`}
       data-testid={`edit-card-${domain}`}>
       <button type="button" onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between bg-transparent border-none cursor-pointer p-0"
@@ -139,48 +138,48 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
       >
         <div className="flex items-center gap-3">
           <div>
-            <p className="font-semibold text-[15px] text-[#1A1A1A] text-left">
+            <p className="font-semibold text-sm text-black text-left">
               {DOMAIN_LABELS[domain]}
             </p>
-            <p className="text-[12px] text-[#9B9B9B] italic text-left">
+            <p className="text-xs text-[#888888] italic text-left">
               {ACTIVATION_LABELS[domain][level]}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className={`font-bold text-[17px] ${changed ? 'text-[#EA2C00]' : 'text-[#1A1A1A]'}`}>
+            <p className={`font-bold text-base ${changed ? 'text-[#EA2C00]' : 'text-black'}`}>
               {formatDollar(Math.round(gapValue * HAIRCUT))}
             </p>
-            <p className="text-[11px] text-[#9B9B9B]">/ yr</p>
+            <p className="text-[11px] text-[#888888]">/ yr</p>
           </div>
-          <ChevronDown size={16} className="text-[#9B9B9B] transition-transform duration-200"
+          <ChevronDown size={16} className="text-[#888888] transition-transform duration-200"
             style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)' }} />
         </div>
       </button>
 
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-[#E8E0D8]">
+        <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
           <div className="mb-4">
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-1.5">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-1.5">
               Activation Level
             </p>
             <div className="relative">
               <select
                 value={level}
                 onChange={(e) => handleLevelChange(parseInt(e.target.value) as ActivationLevel)}
-                className="w-full rounded-lg border border-[#E8E0D8] bg-white px-3.5 py-2.5 text-sm font-medium text-[#1A1A1A] outline-none cursor-pointer appearance-none"
+                className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3.5 py-2.5 text-sm font-medium text-black outline-none cursor-pointer appearance-none"
                 data-testid={`select-activation-${domain}`}
               >
                 {([1, 2, 3, 4] as ActivationLevel[]).map((l) => (
                   <option key={l} value={l}>{ACTIVATION_LABELS[domain][l]}</option>
                 ))}
               </select>
-              <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9B9B] pointer-events-none" />
+              <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#888888] pointer-events-none" />
             </div>
           </div>
 
-          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
             {DOMAIN_LABELS[domain]} Inputs
           </p>
 
@@ -272,10 +271,10 @@ function DomainEditCard({ domain, domainState, onUpdate, gapValue, originalGapVa
               onChange={(v) => updateInput('initiatives', v)} testId="edit-pill-initiatives" />
           )}
 
-          <div className="mt-3 pt-3 border-t border-[#E8E0D8]">
+          <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
             <div className="flex items-center justify-between">
-              <span className="text-[12px] text-[#9B9B9B]">Updated gap</span>
-              <span className={`text-[12px] font-bold ${changed ? 'text-[#EA2C00]' : 'text-[#9B9B9B]'}`}
+              <span className="text-xs text-[#888888]">Updated gap</span>
+              <span className={`text-xs font-bold ${changed ? 'text-[#EA2C00]' : 'text-[#888888]'}`}
                 data-testid={`updated-gap-${domain}`}>
                 {formatDollar(Math.round(gapValue * HAIRCUT))} / yr
               </span>
@@ -293,11 +292,11 @@ function CustomTooltip({ active, payload, label }: any) {
   const current = payload.find((p: any) => p.dataKey === 'currentState');
   const gap = (actNow?.value || 0) - (current?.value || 0);
   return (
-    <div className="bg-white border border-[#E8E0D8] rounded-lg p-3 shadow-sm">
-      <p className="text-[12px] font-semibold text-[#1A1A1A] mb-1.5">{label}</p>
-      {actNow && <p className="text-[12px] text-[#EA2C00]">Act Now: {formatDollarFull(actNow.value)}</p>}
-      {current && <p className="text-[12px] text-[#9B9B9B]">Current State: {formatDollarFull(current.value)}</p>}
-      <p className="text-[12px] font-bold text-[#EA2C00] mt-1">Gap: {formatDollarFull(gap)}</p>
+    <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 shadow-sm">
+      <p className="text-xs font-semibold text-black mb-1.5">{label}</p>
+      {actNow && <p className="text-xs text-[#EA2C00]">Act Now: {formatDollarFull(actNow.value)}</p>}
+      {current && <p className="text-xs text-[#888888]">Current State: {formatDollarFull(current.value)}</p>}
+      <p className="text-xs font-bold text-[#EA2C00] mt-1">Gap: {formatDollarFull(gap)}</p>
     </div>
   );
 }
@@ -391,14 +390,14 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
   const permanentlyLost12mo = actNow3yr - wait12mo3yr;
 
   return (
-    <div className={`font-[Manrope,sans-serif] ${STEP_FOOTER_SPACER_CLASS}`}>
+    <div className={STEP_FOOTER_SPACER_CLASS}>
 
-      <div className="flex flex-col items-center justify-center text-center min-h-[calc(100vh-56px)] pt-20">
+      <div className="flex flex-col items-center justify-center text-center min-h-[60vh]">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0, duration: 0.5 }}>
-          <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3" data-testid="text-gap-label">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3" data-testid="text-gap-label">
             Unrealized Enterprise Value
           </p>
-          <p className="text-[17px] text-[#4B4B4B] leading-[1.75] italic max-w-[400px] mx-auto mb-10" data-testid="text-gap-pre-statement">
+          <p className="text-base text-[#888888] italic max-w-[400px] mx-auto mb-10" data-testid="text-gap-pre-statement">
             Already in your operations. Already earned. Not yet realized.
           </p>
         </motion.div>
@@ -407,29 +406,29 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           <p className="text-[#EA2C00] font-bold leading-none text-[clamp(64px,8vw,96px)] mb-2" data-testid="value-hero-gap">
             <CountUpNumber target={displayedTotal} />
           </p>
-          <p className="text-[20px] text-[#9B9B9B] mb-8">annually</p>
+          <p className="text-xl text-[#888888] mb-8">annually</p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-8" data-testid="card-time-breakdowns">
+          <div className="bg-[#F5F0EB] rounded-lg p-6 mb-8" data-testid="card-time-breakdowns">
             <div className="flex flex-wrap justify-center gap-12">
               <div className="text-center">
-                <p className="text-[#1A1A1A] font-bold text-[28px]" data-testid="value-monthly">
+                <p className="text-black font-bold text-[28px]" data-testid="value-monthly">
                   ${displayedMonthly.toLocaleString()}
                 </p>
-                <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mt-1">Per Month</p>
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-1">Per Month</p>
               </div>
               <div className="text-center">
-                <p className="text-[#1A1A1A] font-bold text-[28px]" data-testid="value-weekly">
+                <p className="text-black font-bold text-[28px]" data-testid="value-weekly">
                   ${displayedWeekly.toLocaleString()}
                 </p>
-                <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mt-1">Per Week</p>
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-1">Per Week</p>
               </div>
               <div className="text-center">
-                <p className="text-[#1A1A1A] font-bold text-[28px]" data-testid="value-daily">
+                <p className="text-black font-bold text-[28px]" data-testid="value-daily">
                   ${displayedDaily.toLocaleString()}
                 </p>
-                <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mt-1">Per Day</p>
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mt-1">Per Day</p>
               </div>
             </div>
           </div>
@@ -437,7 +436,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1, duration: 0.5 }}>
           <button type="button" onClick={handleOpenEdit}
-            className="text-[13px] text-[#9B9B9B] hover:text-[#1A1A1A] cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
+            className="text-sm text-[#888888] hover:text-black cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
             data-testid="button-refine"
           >
             Refine my assumptions
@@ -448,25 +447,26 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
       <div ref={editSectionRef} className="pt-16">
         <div className="max-w-xl mx-auto">
 
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-12" data-testid="card-domain-breakdown">
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6">
+          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-12" data-testid="card-domain-breakdown">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               Domain Breakdown
             </p>
+            <div className="h-px bg-[#E5E7EB] mb-6" />
             {DOMAIN_ORDER.map((domain, idx) => (
               <div key={domain}>
                 <div className="flex items-center justify-between py-3">
-                  <span className="font-semibold text-[15px] text-[#1A1A1A]">{DOMAIN_LABELS[domain]}</span>
-                  <span className="font-bold text-[17px] text-[#1A1A1A]" data-testid={`domain-gap-${domain}`}>
+                  <span className="font-semibold text-sm text-black">{DOMAIN_LABELS[domain]}</span>
+                  <span className="font-bold text-base text-black" data-testid={`domain-gap-${domain}`}>
                     {formatDollar(Math.round(gapValues[domain] * HAIRCUT))}
                   </span>
                 </div>
-                {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E8E0D8]" />}
+                {idx < DOMAIN_ORDER.length - 1 && <div className="h-px bg-[#E5E7EB]/50" />}
               </div>
             ))}
-            <div className="h-px bg-[#E8E0D8] mt-1" />
-            <div className="bg-[#F7F6F4] rounded-lg px-4 py-3.5 mt-3 flex items-center justify-between">
-              <span className="font-semibold text-[15px] text-[#1A1A1A]">Total Annual Gap</span>
-              <span className="font-bold text-[20px] text-[#EA2C00]" data-testid="value-total-gap">
+            <div className="h-px bg-[#E5E7EB] mt-1" />
+            <div className="bg-white/60 rounded-lg px-4 py-3.5 mt-3 flex items-center justify-between">
+              <span className="font-semibold text-sm text-black">Total Annual Gap</span>
+              <span className="font-bold text-xl text-[#EA2C00]" data-testid="value-total-gap">
                 {formatDollar(displayedTotal)}
               </span>
             </div>
@@ -475,11 +475,11 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           {isEditing && (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-4">
-                <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B]">
+                <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px]">
                   Refine Assumptions
                 </p>
                 <button type="button" onClick={handleReset}
-                  className="text-[12px] text-[#9B9B9B] hover:text-[#1A1A1A] cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
+                  className="text-xs text-[#888888] hover:text-black cursor-pointer bg-transparent border-none font-medium underline underline-offset-2 transition-colors"
                   data-testid="button-reset"
                 >
                   Reset to original
@@ -493,7 +493,6 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
                   onUpdate={(level, inputs) => handleEditDomain(domain, level, inputs)}
                   gapValue={gapValues[domain]}
                   originalGapValue={originalGaps[domain]}
-                  score={editState[domain].activationLevel ? computeDomainScore(domain, editState[domain].activationLevel, editState[domain].inputs) : 0}
                   providers={providers}
                   annualEncounters={annualEncounters}
                   utilization={utilization}
@@ -503,50 +502,51 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
             </div>
           )}
 
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-12" data-testid="card-chart">
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
+          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-12" data-testid="card-chart">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               3-Year Projection
             </p>
-            <p className="text-[13px] text-[#9B9B9B] mb-6">
+            <p className="text-sm text-[#888888] mb-6">
               Cumulative value captured vs. current trajectory
             </p>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={DS.warmBorder} />
-                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: DS.muted }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888888' }} />
                   <YAxis
                     tickFormatter={(v: number) => v >= 1000000 ? `$${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `$${Math.round(v / 1000)}K` : `$${v}`}
-                    tick={{ fontSize: 12, fill: DS.muted }}
+                    tick={{ fontSize: 12, fill: '#888888' }}
                     width={70}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
-                    formatter={(value: string) => <span className="text-[12px] text-[#4B4B4B]">{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
+                    formatter={(value: string) => <span className="text-xs text-black">{value === 'actNow' ? 'Act Now' : 'Current State'}</span>}
                     wrapperStyle={{ paddingTop: 12 }}
                   />
-                  <Line type="monotone" dataKey="actNow" stroke={DS.red} strokeWidth={2} dot={{ r: 4, fill: DS.red }} fill="none" name="actNow" />
-                  <Line type="monotone" dataKey="currentState" stroke={DS.muted} strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: DS.muted }} fill="none" name="currentState" />
+                  <Line type="monotone" dataKey="actNow" stroke="#EA2C00" strokeWidth={2} dot={{ r: 4, fill: '#EA2C00' }} fill="none" name="actNow" />
+                  <Line type="monotone" dataKey="currentState" stroke="#888888" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: '#888888' }} fill="none" name="currentState" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mb-12" data-testid="card-cost-waiting">
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6">
+          <div className="bg-[#F5F0EB] rounded-lg p-8 mb-12" data-testid="card-cost-waiting">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               The Cost of Waiting
             </p>
+            <div className="h-px bg-[#E5E7EB] mb-6" />
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <span className="text-[15px] text-[#4B4B4B]">Wait 6 months</span>
-                <span className="font-bold text-[17px] text-[#EA2C00]" data-testid="value-wait-6mo">
+                <span className="text-sm text-black">Wait 6 months</span>
+                <span className="font-bold text-base text-[#EA2C00]" data-testid="value-wait-6mo">
                   {formatDollarFull(permanentlyLost6mo)} lost
                 </span>
               </div>
-              <div className="h-px bg-[#E8E0D8]" />
+              <div className="h-px bg-[#E5E7EB]/50" />
               <div className="flex items-center justify-between">
-                <span className="text-[15px] text-[#4B4B4B]">Wait 12 months</span>
-                <span className="font-bold text-[17px] text-[#EA2C00]" data-testid="value-wait-12mo">
+                <span className="text-sm text-black">Wait 12 months</span>
+                <span className="font-bold text-base text-[#EA2C00]" data-testid="value-wait-12mo">
                   {formatDollarFull(permanentlyLost12mo)} lost
                 </span>
               </div>
@@ -554,7 +554,7 @@ export default function Screen5Gap({ onNext, onBack }: Screen5Props) {
           </div>
 
           <div className="bg-[#1A1A1A] rounded-xl p-8 mb-12" data-testid="card-dark-summary">
-            <p className="text-[17px] text-white leading-[1.75]">
+            <p className="text-base text-white leading-relaxed">
               This is not an aspirational number. It is a measurement of the enterprise value currently flowing through your documentation infrastructure that is not being captured. Every day it compounds.
             </p>
           </div>

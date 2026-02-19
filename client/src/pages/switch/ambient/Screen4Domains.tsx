@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DS } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -96,18 +95,18 @@ function InputField({ label, description, prefix, suffix, value, onChange, place
 }) {
   return (
     <div>
-      <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-1.5">{label}</p>
-      <p className="text-[15px] text-[#4B4B4B] font-[Manrope,sans-serif] mb-3">{description}</p>
+      <label className="block text-sm font-medium text-black mb-1">{label}</label>
+      <p className="text-sm text-[#888888] mb-2">{description}</p>
       <div className="flex items-center gap-2">
-        {prefix && <span className="text-[15px] text-[#9B9B9B] font-[Manrope,sans-serif]">{prefix}</span>}
+        {prefix && <span className="text-sm text-[#888888]">{prefix}</span>}
         <FormattedNumberInput
           value={value}
           onChange={onChange}
           placeholder={placeholder || '0'}
-          className="w-full rounded-lg border border-[#E8E0D8] bg-white px-4 py-3 text-lg font-semibold text-[#1A1A1A] outline-none focus:border-[#EA2C00] transition-colors"
+          className="w-full h-12 bg-white border-[#E5E7EB]"
           data-testid={testId}
         />
-        {suffix && <span className="text-[15px] text-[#9B9B9B] font-[Manrope,sans-serif]">{suffix}</span>}
+        {suffix && <span className="text-sm text-[#888888]">{suffix}</span>}
       </div>
     </div>
   );
@@ -119,8 +118,8 @@ function SliderField({ label, description, value, onChange, min, max, step, disp
 }) {
   return (
     <div>
-      <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-1.5">{label}</p>
-      <p className="text-[15px] text-[#4B4B4B] font-[Manrope,sans-serif] mb-3">{description}</p>
+      <label className="block text-sm font-medium text-black mb-1">{label}</label>
+      <p className="text-sm text-[#888888] mb-3">{description}</p>
       <div className="flex items-center gap-4">
         <input
           type="range"
@@ -132,7 +131,7 @@ function SliderField({ label, description, value, onChange, min, max, step, disp
           className="w-full accent-[#1A1A1A] h-1 flex-1"
           data-testid={testId}
         />
-        <span className="font-[Manrope,sans-serif] font-bold text-lg text-[#1A1A1A] min-w-[60px] text-right">{display}</span>
+        <span className="font-bold text-lg text-black min-w-[60px] text-right">{display}</span>
       </div>
     </div>
   );
@@ -144,19 +143,19 @@ function PillSelector({ label, description, options, value, onChange, testId }: 
 }) {
   return (
     <div>
-      <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-1.5">{label}</p>
-      <p className="text-[15px] text-[#4B4B4B] font-[Manrope,sans-serif] mb-3">{description}</p>
+      <label className="block text-sm font-medium text-black mb-1">{label}</label>
+      <p className="text-sm text-[#888888] mb-3">{description}</p>
       <div className="flex flex-wrap gap-3">
         {options.map((opt) => (
           <button
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={
+            className={`rounded-full px-5 py-2.5 text-sm cursor-pointer transition-all ${
               value === opt
-                ? "rounded-full border border-[#1A1A1A] bg-white px-5 py-2.5 text-sm font-bold text-[#1A1A1A] transition-all cursor-pointer"
-                : "rounded-full border border-[#E8E0D8] bg-white px-5 py-2.5 text-sm font-medium text-[#4B4B4B] transition-all cursor-pointer"
-            }
+                ? "border-2 border-[#EA2C00] bg-[#EA2C00]/5 font-bold text-black"
+                : "border border-[#E5E7EB] bg-white font-medium text-black/80 hover:border-[#D1D5DB]"
+            }`}
             data-testid={`${testId}-${opt}`}
           >
             {opt}
@@ -175,15 +174,15 @@ function FeedbackCard({ label, value, context, footnote }: {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="bg-[#F5F0EB] border border-[#E8E0D8] border-l-[3px] border-l-[#EA2C00] rounded-xl p-6 mt-4"
+      className="bg-[#F5F0EB] rounded-lg p-6 mt-6"
       data-testid="card-domain-feedback"
     >
-      <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">{label}</p>
-      <p className="font-[Manrope,sans-serif] font-bold text-4xl text-[#1A1A1A] leading-[1.1] mb-2" data-testid="text-feedback-value">
+      <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">{label}</p>
+      <p className="font-bold text-4xl text-[#EA2C00] leading-[1.1] mb-2" data-testid="text-feedback-value">
         {formatDollar(Math.max(0, value))}
       </p>
-      <p className="text-[15px] text-[#4B4B4B] leading-[1.6] font-[Manrope,sans-serif] mb-3">{context}</p>
-      <p className="text-xs text-[#9B9B9B] italic font-[Manrope,sans-serif]">{footnote}</p>
+      <p className="text-sm text-black leading-relaxed mb-3">{context}</p>
+      <p className="text-xs text-[#888888] italic">{footnote}</p>
     </motion.div>
   );
 }
@@ -266,18 +265,18 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
   const activeIdx = DOMAIN_ORDER.indexOf(activeDomain);
 
   return (
-    <div className="font-[Manrope,sans-serif] pt-10 pb-20">
-      <div className="flex items-center justify-center mb-12 bg-white border-b border-[#E5E7EB] py-4">
+    <div className={STEP_FOOTER_SPACER_CLASS}>
+      <div className="flex items-center justify-center gap-3 mb-10">
         {DOMAIN_ORDER.map((d, idx) => {
           const isActive = d === activeDomain;
           const isComplete = idx < activeIdx;
 
           return (
-            <div key={d} className="flex items-center">
-              <div className="flex flex-col items-center min-w-[80px]">
+            <div key={d} className="flex items-center gap-3">
+              <div className="flex flex-col items-center">
                 <span
-                  className={`font-[Manrope,sans-serif] text-sm mb-2 ${
-                    isActive ? 'font-bold text-[#EA2C00]' : isComplete ? 'font-semibold text-[#1A1A1A]' : 'font-normal text-[#9B9B9B]'
+                  className={`text-xs font-medium uppercase tracking-[1.5px] mb-2 ${
+                    isActive ? 'text-[#EA2C00]' : isComplete ? 'text-black' : 'text-[#888888]'
                   }`}
                   data-testid={`domain-label-${d}`}
                 >
@@ -285,64 +284,70 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                 </span>
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    isActive ? 'bg-[#EA2C00]' : isComplete ? 'bg-[#1A1A1A]' : 'bg-[#E8E0D8]'
+                    isActive ? 'bg-[#EA2C00]' : isComplete ? 'bg-black' : 'bg-[#D1D5DB]'
                   }`}
                   data-testid={`domain-dot-${d}`}
                 />
               </div>
               {idx < DOMAIN_ORDER.length - 1 && (
-                <div className="w-10 h-px bg-[#E5E7EB] mt-5" />
+                <div className="w-8 h-px bg-[#D1D5DB] mt-5" />
               )}
             </div>
           );
         })}
       </div>
 
-      <div className="max-w-[640px] mx-auto px-4">
-        <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3" data-testid="text-domain-label">
-          {config.label}
-        </p>
-        <h1 className="text-[#1A1A1A] font-bold text-3xl md:text-[44px] leading-[1.15] mb-4" data-testid="text-domain-headline">
-          {config.headline}
-        </h1>
-        <p className="text-[#4B4B4B] text-[17px] leading-[1.75] max-w-[520px] mb-12" data-testid="text-domain-reframe">
-          {config.reframe}
-        </p>
+      <div className="max-w-[700px] mx-auto">
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-domain-headline">
+            {config.headline}
+          </h1>
+          <p className="text-base text-[#888888] max-w-[520px] mx-auto" data-testid="text-domain-reframe">
+            {config.reframe}
+          </p>
+        </motion.div>
 
-        <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-4">
-          Where is your organization today?
-        </p>
+        <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8">
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-domain-label">
+            Where is your organization today?
+          </p>
+          <div className="h-px bg-[#E5E7EB] mb-6" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {config.cards.map((card, cardIdx) => {
-            const isSelected = currentState.activationLevel === card.level;
-            return (
-              <motion.button
-                key={card.level}
-                type="button"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: cardIdx * 0.06, ease: "easeOut" }}
-                onClick={() => setActivation(card.level)}
-                className={
-                  isSelected
-                    ? "bg-white border border-[#E8E0D8] border-l-[5px] border-l-[#EA2C00] rounded-xl p-6 pl-[19px] shadow-sm text-left min-h-[120px]"
-                    : "bg-white border border-[#E8E0D8] rounded-xl p-6 text-left transition-all cursor-pointer hover:border-[#9B9B9B] min-h-[120px]"
-                }
-                data-testid={`activation-card-${activeDomain}-${card.level}`}
-              >
-                <p className={`font-[Manrope,sans-serif] font-bold text-[32px] leading-none mb-2 ${isSelected ? 'text-[#EA2C00]' : 'text-[#E8E0D8]'}`}>
-                  {card.level}
-                </p>
-                <p className={`font-[Manrope,sans-serif] text-[15px] text-[#1A1A1A] mb-1 ${isSelected ? 'font-bold' : 'font-semibold'}`}>
-                  {card.label}
-                </p>
-                <p className={`font-[Manrope,sans-serif] font-normal text-[13px] leading-[1.4] ${isSelected ? 'text-[#4B4B4B]' : 'text-[#9B9B9B]'}`}>
-                  {card.description}
-                </p>
-              </motion.button>
-            );
-          })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {config.cards.map((card, cardIdx) => {
+              const isSelected = currentState.activationLevel === card.level;
+              return (
+                <motion.button
+                  key={card.level}
+                  type="button"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: cardIdx * 0.06, ease: "easeOut" }}
+                  onClick={() => setActivation(card.level)}
+                  className={`rounded-lg p-5 text-left min-h-[110px] transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-[#EA2C00]/5 border-2 border-[#EA2C00]"
+                      : "bg-white/80 border border-[#E5E7EB] hover:border-[#D1D5DB]"
+                  }`}
+                  data-testid={`activation-card-${activeDomain}-${card.level}`}
+                >
+                  <p className={`font-bold text-2xl leading-none mb-2 ${isSelected ? 'text-[#EA2C00]' : 'text-[#D1D5DB]'}`}>
+                    {card.level}
+                  </p>
+                  <p className={`text-sm text-black mb-1 ${isSelected ? 'font-bold' : 'font-semibold'}`}>
+                    {card.label}
+                  </p>
+                  <p className={`text-sm leading-snug ${isSelected ? 'text-black/80' : 'text-[#888888]'}`}>
+                    {card.description}
+                  </p>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
@@ -355,17 +360,9 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="mb-8"
             >
-              <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 mt-6">
+              <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10">
                 {activeDomain === 'capacity' && currentState.activationLevel === 2 && (
-                  <SliderField
-                    label="Estimated Redeployment"
-                    description="What % of recovered time is being redeployed productively?"
-                    value={(currentState.inputs.redeployment as number) || 20}
-                    onChange={(v) => setDomainInput('redeployment', v)}
-                    min={0} max={100} step={1}
-                    display={`${(currentState.inputs.redeployment as number) || 20}%`}
-                    testId="slider-redeployment"
-                  />
+                  <SliderField label="Estimated Redeployment" description="What % of recovered time is being redeployed productively?" value={(currentState.inputs.redeployment as number) || 20} onChange={(v) => setDomainInput('redeployment', v)} min={0} max={100} step={1} display={`${(currentState.inputs.redeployment as number) || 20}%`} testId="slider-redeployment" />
                 )}
                 {activeDomain === 'capacity' && currentState.activationLevel === 3 && (
                   <div className="flex flex-col gap-5">
@@ -379,17 +376,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     <InputField label="Revenue Per Visit" description="Average visit revenue ($)" prefix="$" value={(currentState.inputs.revenuePerVisit as number) || 200} onChange={(v) => setDomainInput('revenuePerVisit', v)} testId="input-revenue-per-visit" />
                   </div>
                 )}
-
                 {activeDomain === 'revenue' && currentState.activationLevel === 2 && (
-                  <SliderField
-                    label="Current Denial Rate"
-                    description="Your overall claim denial rate (%)"
-                    value={(currentState.inputs.denialRate as number) || 7}
-                    onChange={(v) => setDomainInput('denialRate', v)}
-                    min={1} max={20} step={1}
-                    display={`${(currentState.inputs.denialRate as number) || 7}%`}
-                    testId="slider-denial-rate"
-                  />
+                  <SliderField label="Current Denial Rate" description="Your overall claim denial rate (%)" value={(currentState.inputs.denialRate as number) || 7} onChange={(v) => setDomainInput('denialRate', v)} min={1} max={20} step={1} display={`${(currentState.inputs.denialRate as number) || 7}%`} testId="slider-denial-rate" />
                 )}
                 {activeDomain === 'revenue' && currentState.activationLevel === 3 && (
                   <div className="flex flex-col gap-5">
@@ -403,17 +391,8 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     <InputField label="HCC Capture Improvement (%)" description="Improvement in HCC capture rate" suffix="%" value={(currentState.inputs.hccImprovement as number) || 0} onChange={(v) => setDomainInput('hccImprovement', v)} testId="input-hcc-improvement" />
                   </div>
                 )}
-
                 {activeDomain === 'workforce' && currentState.activationLevel === 1 && (
-                  <SliderField
-                    label="After-Hours Charting"
-                    description="Estimated hours per provider per week spent documenting outside clinic hours"
-                    value={(currentState.inputs.afterHours as number) || 3}
-                    onChange={(v) => setDomainInput('afterHours', v)}
-                    min={0} max={8} step={0.5}
-                    display={`${(currentState.inputs.afterHours as number) || 3} hrs / week`}
-                    testId="slider-after-hours"
-                  />
+                  <SliderField label="After-Hours Charting" description="Estimated hours per provider per week spent documenting outside clinic hours" value={(currentState.inputs.afterHours as number) || 3} onChange={(v) => setDomainInput('afterHours', v)} min={0} max={8} step={0.5} display={`${(currentState.inputs.afterHours as number) || 3} hrs / week`} testId="slider-after-hours" />
                 )}
                 {activeDomain === 'workforce' && currentState.activationLevel === 2 && (
                   <InputField label="Current Annual Turnover Rate (%)" description="Your physician turnover rate" suffix="%" value={(currentState.inputs.turnoverRate as number) || 8} onChange={(v) => setDomainInput('turnoverRate', v)} testId="input-turnover-rate" />
@@ -430,27 +409,11 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                     <InputField label="OT / Agency Spend Reduction ($)" description="Monthly reduction in overtime and agency spend" prefix="$" value={(currentState.inputs.otSavings as number) || 0} onChange={(v) => setDomainInput('otSavings', v)} testId="input-ot-savings" />
                   </div>
                 )}
-
                 {activeDomain === 'risk' && currentState.activationLevel === 1 && (
-                  <PillSelector
-                    label="Documentation Defensibility"
-                    description="How would you rate your current note defensibility?"
-                    options={['Low', 'Medium', 'High']}
-                    value={(currentState.inputs.defensibility as string) || 'Medium'}
-                    onChange={(v) => setDomainInput('defensibility', v)}
-                    testId="pill-defensibility"
-                  />
+                  <PillSelector label="Documentation Defensibility" description="How would you rate your current note defensibility?" options={['Low', 'Medium', 'High']} value={(currentState.inputs.defensibility as string) || 'Medium'} onChange={(v) => setDomainInput('defensibility', v)} testId="pill-defensibility" />
                 )}
                 {activeDomain === 'risk' && currentState.activationLevel === 2 && (
-                  <SliderField
-                    label="Audit-Ready Notes"
-                    description="What % of notes would pass an audit today?"
-                    value={(currentState.inputs.auditReady as number) || 50}
-                    onChange={(v) => setDomainInput('auditReady', v)}
-                    min={0} max={100} step={1}
-                    display={`${(currentState.inputs.auditReady as number) || 50}%`}
-                    testId="slider-audit-ready"
-                  />
+                  <SliderField label="Audit-Ready Notes" description="What % of notes would pass an audit today?" value={(currentState.inputs.auditReady as number) || 50} onChange={(v) => setDomainInput('auditReady', v)} min={0} max={100} step={1} display={`${(currentState.inputs.auditReady as number) || 50}%`} testId="slider-audit-ready" />
                 )}
                 {activeDomain === 'risk' && currentState.activationLevel === 3 && (
                   <div className="flex flex-col gap-5">
@@ -459,23 +422,15 @@ export default function Screen4Domains({ onNext, onBack }: Screen4Props) {
                   </div>
                 )}
                 {activeDomain === 'risk' && currentState.activationLevel === 4 && (
-                  <PillSelector
-                    label="AI Initiatives Planned (24mo)"
-                    description="How many AI initiatives are planned in the next 24 months?"
-                    options={['1\u20132', '3\u20135', '5+']}
-                    value={(currentState.inputs.initiatives as string) || '1\u20132'}
-                    onChange={(v) => setDomainInput('initiatives', v)}
-                    testId="pill-initiatives"
-                  />
+                  <PillSelector label="AI Initiatives Planned (24mo)" description="How many AI initiatives are planned in the next 24 months?" options={['1\u20132', '3\u20135', '5+']} value={(currentState.inputs.initiatives as string) || '1\u20132'} onChange={(v) => setDomainInput('initiatives', v)} testId="pill-initiatives" />
                 )}
-
                 {activeDomain === 'capacity' && currentState.activationLevel === 1 && (
-                  <p className="text-[13px] text-[#9B9B9B] italic font-[Manrope,sans-serif]">
+                  <p className="text-sm text-[#888888] italic">
                     No additional inputs needed. We'll use benchmarks for this activation level.
                   </p>
                 )}
                 {activeDomain === 'revenue' && currentState.activationLevel === 1 && (
-                  <p className="text-[13px] text-[#9B9B9B] italic font-[Manrope,sans-serif]">
+                  <p className="text-sm text-[#888888] italic">
                     No additional inputs needed. We'll use benchmarks for this activation level.
                   </p>
                 )}

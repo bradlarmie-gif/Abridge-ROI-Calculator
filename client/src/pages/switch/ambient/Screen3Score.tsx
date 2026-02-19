@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { DS } from "./designTokens";
 import { useAssessment } from "@/lib/assessment";
 import { formatDollar } from "./ambientCalculator";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
@@ -95,7 +94,7 @@ function AnimatedBar({ percent, delay = 0, height = 5 }: { percent: number; dela
   }, [percent, delay]);
 
   return (
-    <div className="flex-1 bg-[#EDEAE5] rounded-full overflow-hidden" style={{ height }}>
+    <div className="flex-1 bg-[#E5E7EB] rounded-full overflow-hidden" style={{ height }}>
       <div
         className="h-full bg-[#EA2C00] rounded-full transition-all duration-500 ease-out"
         style={{ width: `${width}%` }}
@@ -163,18 +162,32 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
   const verdict = getVerdict(documentationScore);
 
   return (
-    <div className="font-[Manrope,sans-serif] pt-[72px] pb-20">
-      <div className="max-w-xl mx-auto">
+    <div className={STEP_FOOTER_SPACER_CLASS}>
+      <div className="max-w-[700px] mx-auto">
+
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight">
+            Your Score
+          </h1>
+          <p className="text-base text-[#888888]">
+            Documentation Intelligence Score across four domains
+          </p>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-buildup">
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5" data-testid="text-buildup-label">
+          <div className="bg-[#F5F0EB] rounded-lg p-8 md:p-10" data-testid="card-buildup">
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2" data-testid="text-buildup-label">
               How Your Score Is Built
             </p>
+            <div className="h-px bg-[#E5E7EB] mb-6" />
 
             {DOMAIN_ORDER.map((domain, idx) => (
               <div key={domain}>
@@ -183,28 +196,25 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + idx * 0.15, duration: 0.5 }}
                 >
-                  <div
-                    className="flex items-center gap-4 h-12"
-                    data-testid={`domain-row-${domain}`}
-                  >
+                  <div className="flex items-center gap-4 h-12" data-testid={`domain-row-${domain}`}>
                     <div className="w-[35%]">
-                      <p className="font-semibold text-[15px] text-[#1A1A1A] font-[Manrope,sans-serif] leading-tight">
+                      <p className="font-semibold text-sm text-black leading-tight">
                         {DOMAIN_LABELS[domain]}
                       </p>
-                      <p className="text-xs text-[#9B9B9B] font-[Manrope,sans-serif] italic">
+                      <p className="text-xs text-[#888888] italic">
                         {getActivationLabel(domain, domainScores[domain])}
                       </p>
                     </div>
                     <div className="w-[45%]">
                       <AnimatedBar percent={domainScores[domain]} delay={400 + idx * 150 + 100} height={5} />
                     </div>
-                    <p className="font-bold text-[15px] text-[#1A1A1A] font-[Manrope,sans-serif] w-[20%] text-right" data-testid={`domain-score-${domain}`}>
+                    <p className="font-bold text-sm text-black w-[20%] text-right" data-testid={`domain-score-${domain}`}>
                       {domainScores[domain]} / 100
                     </p>
                   </div>
                 </motion.div>
                 {idx < DOMAIN_ORDER.length - 1 && (
-                  <div className="h-px bg-[#F0F0F0]" />
+                  <div className="h-px bg-[#E5E7EB]/50" />
                 )}
               </div>
             ))}
@@ -217,10 +227,10 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
               transition={{ delay: 1.4, duration: 0.5 }}
             >
               <div
-                className="bg-[#F7F6F4] rounded-lg px-5 py-4 mt-3 flex items-center justify-between gap-4"
+                className="bg-white/60 rounded-lg px-5 py-4 mt-3 flex items-center justify-between gap-4"
                 data-testid="card-composite-score"
               >
-                <p className="font-semibold text-[15px] text-[#1A1A1A] font-[Manrope,sans-serif]">
+                <p className="font-semibold text-sm text-black">
                   Documentation Intelligence Score
                 </p>
 
@@ -236,7 +246,7 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
                   <div className="bg-[#E5E7EB] rounded" style={{ flex: Math.max(1, 100 - documentationScore), height: 8 }} />
                 </div>
 
-                <p className="font-bold text-2xl text-[#1A1A1A] font-[Manrope,sans-serif] min-w-[80px] text-right" data-testid="text-composite-score">
+                <p className="font-bold text-2xl text-black min-w-[80px] text-right" data-testid="text-composite-score">
                   <AnimatedCounter target={documentationScore} duration={800} delay={2000} /> / 100
                 </p>
               </div>
@@ -251,10 +261,10 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
           transition={{ delay: 2.8, duration: 0.5 }}
         >
           <div className="text-center" data-testid="hero-score">
-            <span className="text-[#1A1A1A] font-bold text-[96px] leading-none">
+            <span className="text-black font-bold text-[96px] leading-none">
               <AnimatedCounter target={documentationScore} duration={800} delay={2800} />
             </span>
-            <p className="text-2xl text-[#9B9B9B] font-normal mt-1">/ 100</p>
+            <p className="text-2xl text-[#888888] font-normal mt-1">/ 100</p>
           </div>
         </motion.div>
 
@@ -265,7 +275,7 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
           transition={{ delay: 3.2, duration: 0.5 }}
         >
           <div className="relative max-w-[480px] mx-auto">
-            <div className="w-full h-2.5 bg-[#EDEAE5] rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-[#E5E7EB] rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#EA2C00] rounded-full transition-all duration-700"
                 style={{ width: `${documentationScore}%` }}
@@ -274,38 +284,54 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
             </div>
 
             <div className="absolute -top-1" style={{ left: '34%', transform: 'translateX(-50%)' }} data-testid="marker-industry-avg">
-              <div className="w-0.5 h-[18px] bg-[#9B9B9B]" />
-              <p className="text-[11px] text-[#9B9B9B] font-[Manrope,sans-serif] font-semibold text-center mt-1">34</p>
+              <div className="w-0.5 h-[18px] bg-[#888888]" />
+              <p className="text-[11px] text-[#888888] font-semibold text-center mt-1">34</p>
             </div>
 
             <div className="absolute -top-1" style={{ left: '71%', transform: 'translateX(-50%)' }} data-testid="marker-top-quartile">
-              <div className="w-0.5 h-[18px] bg-[#1A1A1A]" />
-              <p className="text-[11px] text-[#1A1A1A] font-[Manrope,sans-serif] font-semibold text-center mt-1">71</p>
+              <div className="w-0.5 h-[18px] bg-black" />
+              <p className="text-[11px] text-black font-semibold text-center mt-1">71</p>
             </div>
           </div>
         </motion.div>
 
         <motion.div
-          className="mt-7"
+          className="mt-10"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 3.6, duration: 0.5 }}
         >
-          <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6 max-w-[480px] mx-auto">
-            <div className="flex flex-col gap-3">
+          <div className="bg-[#F5F0EB] rounded-lg p-8 max-w-[480px] mx-auto" data-testid="card-verdict">
+            <p className="text-lg font-bold text-black mb-2" data-testid="text-verdict-headline">
+              {verdict.headline}
+            </p>
+            <p className="text-sm text-[#888888] leading-relaxed" data-testid="text-verdict-body">
+              {verdict.body}
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="mt-10"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 3.8, duration: 0.5 }}
+        >
+          <div className="bg-[#F5F0EB] rounded-lg p-8 max-w-[480px] mx-auto">
+            <div className="space-y-3">
               <div className="flex items-center justify-between gap-4">
-                <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif]">
-                  Industry average — organizations using ambient AI today
+                <p className="text-sm text-[#888888]">
+                  Industry average
                 </p>
-                <p className="text-[17px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif] whitespace-nowrap" data-testid="text-benchmark-industry">
+                <p className="text-base font-bold text-black" data-testid="text-benchmark-industry">
                   34 / 100
                 </p>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif]">
+                <p className="text-sm text-[#888888]">
                   Top-quartile organizations
                 </p>
-                <p className="text-[17px] font-bold text-[#1A1A1A] font-[Manrope,sans-serif] whitespace-nowrap" data-testid="text-benchmark-top">
+                <p className="text-base font-bold text-black" data-testid="text-benchmark-top">
                   71 / 100
                 </p>
               </div>
@@ -314,55 +340,33 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
         </motion.div>
 
         <motion.div
-          className="mt-7"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 4.0, duration: 0.5 }}
-        >
-          <div
-            className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl px-7 py-6"
-            data-testid="card-verdict"
-          >
-            <p className="text-xl font-bold text-[#1A1A1A] font-[Manrope,sans-serif] mb-3" data-testid="text-verdict-headline">
-              {verdict.headline}
-            </p>
-            <p className="text-[17px] text-[#4B4B4B] leading-[1.75] font-[Manrope,sans-serif]" data-testid="text-verdict-body">
-              {verdict.body}
-            </p>
-          </div>
-        </motion.div>
-
-        <motion.div
           className="mt-12"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 4.6, duration: 0.5 }}
+          transition={{ delay: 4.2, duration: 0.5 }}
         >
-          <p
-            className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-6"
-            data-testid="text-opportunity-label"
-          >
+          <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-4" data-testid="text-opportunity-label">
             Your Primary Opportunity
           </p>
 
           <div
-            className="bg-[#F5F0EB] border border-[#E8E0D8] border-l-[3px] border-l-[#EA2C00] rounded-xl p-6"
+            className="bg-[#F5F0EB] rounded-lg p-6"
             data-testid="card-primary-opportunity"
           >
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-3">
+            <p className="text-xs font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-3">
               {DOMAIN_LABELS[lowestDomain]}
             </p>
-            <p className="text-xl font-semibold text-[#1A1A1A] font-[Manrope,sans-serif] leading-relaxed mb-4">
+            <p className="text-lg font-semibold text-black leading-relaxed mb-4">
               {OPPORTUNITY_STATEMENTS[lowestDomain]}
             </p>
-            <p className="font-[Manrope,sans-serif] font-bold text-[32px] text-[#EA2C00] leading-none" data-testid="text-opportunity-value">
+            <p className="font-bold text-3xl text-[#EA2C00] leading-none" data-testid="text-opportunity-value">
               {formatDollar(domainGaps[lowestDomain])}
             </p>
-            <p className="text-[13px] text-[#9B9B9B] font-[Manrope,sans-serif] mt-1">
+            <p className="text-sm text-[#888888] mt-1">
               estimated annual opportunity in this domain
             </p>
             <div className="h-px bg-[#E5E7EB] my-4" />
-            <p className="text-[15px] text-[#4B4B4B] font-[Manrope,sans-serif] leading-[1.7]">
+            <p className="text-sm text-[#888888] leading-relaxed">
               Improving your score in {DOMAIN_LABELS[lowestDomain].toLowerCase()} by one activation level would move your overall Documentation Intelligence Score from {documentationScore} to an estimated {improvedTotal}.
             </p>
           </div>
@@ -371,7 +375,7 @@ export default function Screen3Score({ onNext, onBack }: Screen3Props) {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 5.0, duration: 0.5 }}
+          transition={{ delay: 4.6, duration: 0.5 }}
         >
           <StepFooter onBack={onBack} onNext={onNext} nextLabel="See What This Is Costing You" />
         </motion.div>

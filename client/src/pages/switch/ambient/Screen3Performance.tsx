@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { DS } from "./designTokens";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import StepFooter, { STEP_FOOTER_SPACER_CLASS } from "@/components/StepFooter";
 
@@ -29,10 +28,10 @@ function BenchmarkPill({ value, label, isRed }: { value: string; label: string; 
     <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
       isRed
         ? "bg-white border-[#EA2C00] text-[#EA2C00]"
-        : "bg-[#F5F0EB] border-[#E8E0D8] text-[#9B9B9B]"
+        : "bg-white border-[#E5E7EB] text-[#888888]"
     }`}>
-      <span className={`font-bold text-[13px] ${isRed ? "text-[#EA2C00]" : "text-[#9B9B9B]"}`}>{value}</span>
-      <span className={`text-[12px] ${isRed ? "text-[#EA2C00]" : "text-[#9B9B9B]"}`}>{label}</span>
+      <span className={`font-bold text-sm ${isRed ? "text-[#EA2C00]" : "text-[#888888]"}`}>{value}</span>
+      <span className={`text-xs ${isRed ? "text-[#EA2C00]" : "text-[#888888]"}`}>{label}</span>
     </div>
   );
 }
@@ -107,39 +106,38 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
   };
 
   return (
-    <div className="pt-18 pb-20 font-[Manrope,sans-serif]">
+    <div className={STEP_FOOTER_SPACER_CLASS}>
       <motion.div
-        className="max-w-2xl mx-auto mb-10"
-        initial={{ opacity: 0, y: 12 }}
+        className="text-center mb-8"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-3" data-testid="text-screen3-label">
+        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 font-abridge uppercase tracking-tight" data-testid="text-screen3-headline">
           Current Performance
-        </p>
-        <h1 className="text-[#1A1A1A] font-bold text-4xl md:text-[44px] leading-[1.15] mb-4 hidden md:block" data-testid="text-screen3-headline">
-          How is your ambient tool performing today?
         </h1>
-        <h1 className="text-[#1A1A1A] font-bold text-[32px] leading-[1.15] mb-4 block md:hidden">
-          How is your ambient tool performing today?
-        </h1>
-        <p className="text-[#4B4B4B] text-[17px] leading-[1.75]">
+        <p className="text-base text-[#888888]">
           Two inputs. These determine your documentation intelligence score.
         </p>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="flex-1 max-w-2xl">
-          <div className="mb-10">
-            <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
+      <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex-1 max-w-[700px]">
+          <motion.div
+            className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
               Utilization Rate
             </p>
-            <p className="text-[15px] text-[#4B4B4B] mb-6">
+            <div className="h-px bg-[#E5E7EB] mb-6" />
+            <p className="text-sm text-black mb-6">
               What % of eligible encounters are being documented?
             </p>
 
             <div className="text-center mb-4">
-              <span className="text-[#1A1A1A] font-bold text-[56px] leading-none" data-testid="value-utilization">
+              <span className="text-5xl font-bold text-black" data-testid="value-utilization">
                 {utilization}%
               </span>
             </div>
@@ -161,31 +159,32 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
             </div>
 
             {utilInsight && (
-              <p className="mt-5 text-[13px] text-[#4B4B4B] italic leading-[1.6]" data-testid="text-util-insight">
+              <p className="mt-5 text-sm text-[#888888] italic leading-relaxed" data-testid="text-util-insight">
                 {utilInsight}
               </p>
             )}
-          </div>
+          </motion.div>
 
           <motion.div
-            className="mb-10"
+            className="bg-[#F5F0EB] rounded-lg p-8 md:p-10 mb-8"
             animate={{
-              opacity: utilMoved ? 1 : 0,
+              opacity: utilMoved ? 1 : 0.3,
               y: utilMoved ? 0 : 8,
             }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0.3, y: 8 }}
           >
             <div className={utilMoved ? "pointer-events-auto" : "pointer-events-none"}>
-              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-2">
+              <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
                 Time Returned / Encounter
               </p>
-              <p className="text-[15px] text-[#4B4B4B] mb-6">
+              <div className="h-px bg-[#E5E7EB] mb-6" />
+              <p className="text-sm text-black mb-6">
                 Minutes saved per documented encounter
               </p>
 
               <div className="text-center mb-4">
-                <span className="text-[#1A1A1A] font-bold text-[56px] leading-none" data-testid="value-time-savings">
+                <span className="text-5xl font-bold text-black" data-testid="value-time-savings">
                   {timeSavings.toFixed(1)} min
                 </span>
               </div>
@@ -213,18 +212,18 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
                   onChange={handleUnmeasuredToggle}
                   className="accent-[#1A1A1A] w-4 h-4"
                 />
-                <span className="text-[13px] text-[#4B4B4B]">
+                <span className="text-sm text-[#888888]">
                   I haven't measured this precisely
                 </span>
               </label>
               {unmeasuredChecked && (
-                <p className="mt-2 text-[13px] text-[#9B9B9B]">
+                <p className="mt-2 text-sm text-[#888888]">
                   Using industry benchmark: 2.0 min
                 </p>
               )}
 
               {timeInsight && (
-                <p className="mt-5 text-[13px] text-[#4B4B4B] italic leading-[1.6]" data-testid="text-time-insight">
+                <p className="mt-5 text-sm text-[#888888] italic leading-relaxed" data-testid="text-time-insight">
                   {timeInsight}
                 </p>
               )}
@@ -234,96 +233,78 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
 
         {bothMoved && (
           <motion.div
-            className="hidden lg:block w-[320px] shrink-0"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            className="w-full lg:w-[320px] flex-shrink-0"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="sticky top-24 flex flex-col gap-4">
-              <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-live-summary">
-                <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5">
-                  At Your Current Performance
-                </p>
+            <div className="bg-[#1A1A1A] rounded-xl p-6 lg:sticky lg:top-24">
+              <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">
+                At Your Current Performance
+              </p>
 
-                <div className="flex items-center justify-between gap-4 mb-3">
-                  <span className="text-[13px] text-[#9B9B9B]">Encounters documented annually</span>
-                  <span className="text-[15px] font-bold text-[#1A1A1A]" data-testid="value-their-encounters">
+              <div className="space-y-2 text-sm mb-4">
+                <div className="flex justify-between">
+                  <span className="text-white/50">Encounters documented</span>
+                  <span className="text-white font-semibold" data-testid="value-their-encounters">
                     {theirEncounters.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-4 mb-4">
-                  <span className="text-[13px] text-[#9B9B9B]">Hours returned annually</span>
-                  <span className="text-[15px] font-bold text-[#1A1A1A]" data-testid="value-their-hours">
+                <div className="flex justify-between">
+                  <span className="text-white/50">Hours returned annually</span>
+                  <span className="text-white font-semibold" data-testid="value-their-hours">
                     {theirHours.toLocaleString()}
                   </span>
                 </div>
-
-                <div className="h-px bg-[#E8E0D8] mb-4" />
-
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[13px] text-[#9B9B9B]">Gap to Abridge benchmark</span>
-                  <span className="text-[15px] font-bold text-[#EA2C00]" data-testid="value-hour-gap">
-                    +{hourGap.toLocaleString()} hrs / yr
-                  </span>
-                </div>
-
-                <p className="mt-4 text-[12px] text-[#9B9B9B] italic">
-                  Gap vs Abridge avg: 76% utilization, 4.0 min/encounter
-                </p>
               </div>
 
-              <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-comparison">
-                <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5 text-center">
-                  How Your Tool Compares
-                </p>
+              <div className="h-px bg-white/10 my-4" />
 
-                <div className="grid grid-cols-2">
-                  <div className="pr-4">
-                    <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-4">Your Current Tool</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Gap to Abridge benchmark</span>
+                <span className="text-[#EA2C00] font-bold" data-testid="value-hour-gap">
+                  +{hourGap.toLocaleString()} hrs
+                </span>
+              </div>
 
-                    <p className="font-bold text-[24px] text-[#1A1A1A] leading-none mb-1">
-                      {utilization}%
-                    </p>
-                    <p className="text-[11px] text-[#9B9B9B] mb-3">utilization rate</p>
-                    <div className="h-px bg-[#E8E0D8] mb-3" />
+              <p className="mt-4 text-xs text-white/40 italic">
+                Gap vs Abridge avg: 76% utilization, 4.0 min/encounter
+              </p>
 
-                    <p className="font-bold text-[24px] text-[#1A1A1A] leading-none mb-1">
-                      {timeSavings.toFixed(1)} min
-                    </p>
-                    <p className="text-[11px] text-[#9B9B9B] mb-3">per encounter</p>
-                    <div className="h-px bg-[#E8E0D8] mb-3" />
+              <div className="h-px bg-white/10 my-5" />
 
-                    <p className="font-bold text-[20px] text-[#1A1A1A] leading-none mb-1">
-                      {theirHours.toLocaleString()} hrs
-                    </p>
-                    <p className="text-[11px] text-[#9B9B9B]">returned annually</p>
+              <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">
+                How Your Tool Compares
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-medium text-white/50 uppercase tracking-[1.5px] mb-3">Your Tool</p>
+                  <p className="text-2xl font-bold text-white leading-none mb-1">{utilization}%</p>
+                  <p className="text-xs text-white/40 mb-3">utilization</p>
+                  <p className="text-2xl font-bold text-white leading-none mb-1">{timeSavings.toFixed(1)} min</p>
+                  <p className="text-xs text-white/40 mb-3">per encounter</p>
+                  <p className="text-lg font-bold text-white leading-none">{theirHours.toLocaleString()} hrs</p>
+                  <p className="text-xs text-white/40">returned / yr</p>
+                </div>
+
+                <div className="border-l-[3px] border-l-[#EA2C00] pl-4">
+                  <p className="text-[10px] font-medium text-[#EA2C00] uppercase tracking-[1.5px] mb-3">Abridge Avg</p>
+                  <div className="flex items-center flex-wrap gap-1">
+                    <p className="text-2xl font-bold text-white leading-none">76%</p>
+                    <GapBadge value={ABRIDGE_UTIL - utilization} suffix="pp" />
                   </div>
-
-                  <div className="pl-4 border-l-[3px] border-l-[#EA2C00]">
-                    <p className="font-abridge text-[10px] font-semibold uppercase tracking-[2px] text-[#EA2C00] mb-4">Abridge Average</p>
-
-                    <div className="flex items-center flex-wrap gap-1">
-                      <p className="font-bold text-[24px] text-[#1A1A1A] leading-none">76%</p>
-                      <GapBadge value={ABRIDGE_UTIL - utilization} suffix="pp" />
-                    </div>
-                    <p className="text-[11px] text-[#9B9B9B] mb-3 mt-1">utilization rate</p>
-                    <div className="h-px bg-[#E8E0D8] mb-3" />
-
-                    <div className="flex items-center flex-wrap gap-1">
-                      <p className="font-bold text-[24px] text-[#1A1A1A] leading-none">4.0 min</p>
-                      <GapBadge value={Math.round((ABRIDGE_TIME - timeSavings) * 10) / 10} suffix=" min" />
-                    </div>
-                    <p className="text-[11px] text-[#9B9B9B] mb-3 mt-1">per encounter</p>
-                    <div className="h-px bg-[#E8E0D8] mb-3" />
-
-                    <div className="flex items-center flex-wrap gap-1">
-                      <p className="font-bold text-[20px] text-[#1A1A1A] leading-none">
-                        {abridgeHours.toLocaleString()} hrs
-                      </p>
-                      <GapBadge value={hourGap} suffix=" hrs" />
-                    </div>
-                    <p className="text-[11px] text-[#9B9B9B] mt-1">returned annually</p>
+                  <p className="text-xs text-white/40 mb-3 mt-1">utilization</p>
+                  <div className="flex items-center flex-wrap gap-1">
+                    <p className="text-2xl font-bold text-white leading-none">4.0 min</p>
+                    <GapBadge value={Math.round((ABRIDGE_TIME - timeSavings) * 10) / 10} suffix=" min" />
                   </div>
+                  <p className="text-xs text-white/40 mb-3 mt-1">per encounter</p>
+                  <div className="flex items-center flex-wrap gap-1">
+                    <p className="text-lg font-bold text-white leading-none">{abridgeHours.toLocaleString()} hrs</p>
+                    <GapBadge value={hourGap} suffix=" hrs" />
+                  </div>
+                  <p className="text-xs text-white/40 mt-1">returned / yr</p>
                 </div>
               </div>
             </div>
@@ -337,27 +318,29 @@ export default function Screen3Performance({ onNext, onBack }: Screen3Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="bg-[#F5F0EB] border border-[#E8E0D8] rounded-xl p-6" data-testid="card-live-summary-mobile">
-              <p className="font-abridge text-[11px] font-semibold uppercase tracking-[2px] text-[#9B9B9B] mb-5">At Your Current Performance</p>
-              <div className="flex items-center justify-between gap-4 mb-3">
-                <span className="text-[13px] text-[#9B9B9B]">Encounters documented</span>
-                <span className="text-[15px] font-bold text-[#1A1A1A]">{theirEncounters.toLocaleString()}</span>
+            <div className="bg-[#1A1A1A] rounded-xl p-6" data-testid="card-live-summary-mobile">
+              <p className="text-[11px] font-medium text-white/70 uppercase tracking-[1.5px] mb-4">At Your Current Performance</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-white/50">Encounters documented</span>
+                  <span className="text-white font-semibold">{theirEncounters.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/50">Hours returned</span>
+                  <span className="text-white font-semibold">{theirHours.toLocaleString()}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between gap-4 mb-3">
-                <span className="text-[13px] text-[#9B9B9B]">Hours returned</span>
-                <span className="text-[15px] font-bold text-[#1A1A1A]">{theirHours.toLocaleString()}</span>
-              </div>
-              <div className="h-px bg-[#E8E0D8] mb-3" />
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-[13px] text-[#9B9B9B]">Gap to benchmark</span>
-                <span className="text-[15px] font-bold text-[#EA2C00]">+{hourGap.toLocaleString()} hrs / yr</span>
+              <div className="h-px bg-white/10 my-3" />
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Gap to benchmark</span>
+                <span className="text-[#EA2C00] font-bold">+{hourGap.toLocaleString()} hrs / yr</span>
               </div>
             </div>
           </motion.div>
         )}
       </div>
 
-      <div className={`max-w-2xl mx-auto ${STEP_FOOTER_SPACER_CLASS}`}>
+      <div className="max-w-[700px]">
         <StepFooter onBack={onBack} onNext={handleNext} nextLabel="See the Four Domains" nextDisabled={!bothMoved} />
       </div>
     </div>
