@@ -1,0 +1,522 @@
+# THE GAP SCREEN — WITH INLINE EDITING
+## Complete build prompt. Ambient AI path only.
+
+---
+
+## WHAT THIS SCREEN DOES
+
+Shows the total cost of their current activation level across four domains. Every number on this screen comes directly from their domain inputs — nothing is estimated or assumed without their input.
+
+The inline editing capability lets them calibrate any assumption in real time. When they change a number, everything updates immediately — the domain values, the total, the graph, the cost-of-waiting table.
+
+This is the screen they bring to a CFO meeting.
+
+---
+
+## STATE MANAGEMENT
+
+```typescript
+// All values flow from domain screen inputs
+// Nothing is hardcoded on this screen
+
+const [isEditing, setIsEditing] = useState(false);
+
+// Editable assumptions — initialized from domain screen values
+const [editableInputs, setEditableInputs] = useState({
+  capacity: {
+    activationLevel: capacityActivation,    // 1 | 2 | 3 | 4
+    redeploymentPct: capacityRedeployment,  // from domain screen
+    monthlyOT: capacityMonthlyOT,
+    monthlyPatients: capacityMonthlyPatients,
+    additionalPatients: capacityAdditional,
+    revenuePerVisit: capacityRevPerVisit,
+  },
+  revenue: {
+    activationLevel: revenueActivation,
+    denialRate: revenueDenialRate,
+    claimValue: revenueClaimValue,
+    wrvuImprovement: revenueWRVU,
+    hccImprovement: revenueHCC,
+  },
+  workforce: {
+    activationLevel: workforceActivation,
+    afterHoursPerWeek: workforceAfterHours,
+    turnoverRate: workforceTurnover,
+    afterHoursReduction: workforceReduction,
+    otReduction: workforceOTReduction,
+  },
+  risk: {
+    activationLevel: riskActivation,
+    defensibility: riskDefensibility,
+    auditReadyPct: riskAuditReady,
+    cdiQueryRate: riskCDIRate,
+    cdiQueryCost: riskCDICost,
+    initiatives: riskInitiatives,
+  },
+});
+
+// Recalculate all gap values when editableInputs changes
+const gapValues = useMemo(() => 
+  calculateAllGaps(editableInputs, providers, annualEncounters, utilization, timeSavings),
+  [editableInputs, providers, annualEncounters, utilization, timeSavings]
+);
+
+const totalAnnualGap = gapValues.capacity + gapValues.revenue + 
+                       gapValues.workforce + gapValues.risk;
+const haircut = 0.60; // silent, never shown to user
+const displayedTotal = Math.round(totalAnnualGap * haircut);
+const displayedMonthly = Math.round(displayedTotal / 12);
+const displayedDaily = Math.round(displayedTotal / 365);
+```
+
+---
+
+## SCREEN LAYOUT
+
+```
+┌─────────────────────────────────────────────┐
+│  HEADER                                     │
+├─────────────────────────────────────────────┤
+│                                             │
+│  SECTION 1 — THE NUMBER                     │
+│  Label + hero gap value + time breakdowns   │
+│                                             │
+│  [Edit inputs link]                         │
+│                                             │
+├─────────────────────────────────────────────┤
+│                                             │
+│  SECTION 2 — DOMAIN BREAKDOWN               │
+│  Four domain bars with values               │
+│  [Inline editing — expands here]            │
+│                                             │
+├─────────────────────────────────────────────┤
+│                                             │
+│  SECTION 3 — THE GRAPH                      │
+│  Cost of inaction curve                     │
+│                                             │
+├─────────────────────────────────────────────┤
+│                                             │
+│  SECTION 4 — COST OF WAITING TABLE          │
+│                                             │
+├─────────────────────────────────────────────┤
+│                                             │
+│  SECTION 5 — THE STATEMENT                  │
+│  Dark card. One truth.                      │
+│                                             │
+│  [CTA]                                      │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## SECTION 1 — THE NUMBER
+
+```
+LABEL (11px uppercase #A3A3A3, centered):
+UNREALIZED ENTERPRISE VALUE
+
+[40px gap]
+
+HERO NUMBER (96px Manrope 700 #EA2C00, centered):
+Counts up from 0 over 1400ms on screen entry
+$[displayedTotal]
+
+UNIT (20px #A3A3A3, centered):
+annually
+
+[32px gap]
+
+THREE TIME BREAKDOWNS (centered, horizontal row, gap 48px):
+
+Each breakdown:
+  Value (28px Manrope 700 #0F0F0F): $[X]
+  Label (11px #A3A3A3 uppercase): PER MONTH / PER DAY / PER WEEK
+
+Show: Monthly / Weekly / Daily
+The daily number is the most visceral — give it equal weight.
+
+[32px gap]
+
+REFRAME LINE (17px #525252, centered, italic):
+"Already in your operations.
+Already earned. Not yet realized."
+
+[24px gap]
+
+EDIT LINK (centered):
+Text: "Review or adjust your inputs →"
+Style: 13px Manrope 500 #A3A3A3, underline offset-2
+Hover: color #0F0F0F
+On click: setIsEditing(true), smooth scroll to Section 2
+```
+
+---
+
+## SECTION 2 — DOMAIN BREAKDOWN + INLINE EDITING
+
+### DEFAULT STATE (isEditing = false)
+
+```
+LABEL (11px uppercase #A3A3A3):
+WHERE THE GAP LIVES
+
+[Four domain rows, stacked, gap 16px]
+
+Each row — Standard card:
+┌────────────────────────────────────────────────┐
+│  [Domain]   [Activation label]   [Bar]   [$X]  │
+└────────────────────────────────────────────────┘
+
+Row layout:
+  Left (30%):
+    Domain name: 15px Manrope 600 #0F0F0F
+    Activation label: 12px #A3A3A3 italic
+    e.g. "Informally tracked"
+
+  Middle (40%):
+    Gap bar showing distance from full activation:
+    Height: 6px, radius 3px
+    Background: #EDEDED (full width = 100% activation)
+    Fill: #EA2C00
+    Fill width: (domainScore / 100) * containerWidth
+    
+    — This bar shows how activated they are
+    — Short bar = lots of gap = lots of opportunity
+
+  Right (30%):
+    Gap value: 17px Manrope 700 #0F0F0F
+    e.g. "$124,000"
+    
+    Below value: "/ yr" 11px #A3A3A3
+
+Total row (below the four domain rows):
+  Divider: 1px #EDEDED
+  Left: "Total Annual Gap" 15px 600 #0F0F0F
+  Right: "$[displayedTotal]" 20px 700 #EA2C00
+```
+
+### EDIT STATE (isEditing = true)
+
+When user clicks "Review or adjust your inputs":
+
+Each domain row expands below to show its inputs:
+
+```
+EXPANDED DOMAIN CARD:
+
+┌────────────────────────────────────────────────┐
+│  CAPACITY                          $[X] / yr   │
+│  ════════════░░░░░░  35/100                     │
+│                                                 │
+│  Activation Level                               │
+│  [Not yet captured ▼] ← dropdown               │
+│                                                 │
+│  [Input fields contextual to activation]        │
+│  e.g. Redeployment rate  [ 20 ]%               │
+│                                                 │
+│  Updated gap: $[live recalculated value]        │
+└────────────────────────────────────────────────┘
+```
+
+**Activation level dropdown:**
+```typescript
+// Dropdown options per domain — same labels as domain screens
+const activationLabels = {
+  capacity: [
+    'Not yet captured',
+    'Informally tracked', 
+    'Actively managed',
+    'Systematically deployed'
+  ],
+  revenue: [
+    'Not connected',
+    'Some improvement',
+    'Actively managed', 
+    'Revenue infrastructure'
+  ],
+  workforce: [
+    'Surveys only',
+    'Scores improved',
+    'Burden measured',
+    'Retention connected'
+  ],
+  risk: [
+    'Not connected',
+    'Note completeness',
+    'Audit ready',
+    'Future ready'
+  ],
+};
+
+// Dropdown styling:
+background: #FFFFFF
+border: 1.5px solid #EDEDED
+border-radius: 8px
+padding: 10px 14px
+font: Manrope 500 14px #0F0F0F
+focus: border-color #EA2C00
+
+// On activation level change — show confirmation if downgrading:
+if (newLevel < currentLevel) {
+  // Inline warning below dropdown (not a modal):
+  // "This will reduce your [Domain] score from [X] to [Y]."
+  // Two small buttons: [ Keep original ] [ Apply change ]
+}
+```
+
+**Editable input fields in expanded cards:**
+```
+// Only show inputs relevant to selected activation level
+// Same inputs as domain screens — pre-filled with their values
+// All update gap value in real time (debounce 200ms)
+
+Input styling:
+  background: #FFFFFF
+  border: 1.5px solid #EDEDED
+  border-radius: 8px
+  padding: 10px 14px
+  font: Manrope 600 15px #0F0F0F
+  focus: border-color #EA2C00
+  min-width: 80px
+  text-align: right
+
+// Below each expanded card — live recalculated gap:
+"Updated gap: $[X] / yr"
+12px #EA2C00 if changed from original
+12px #A3A3A3 if unchanged
+```
+
+**Done editing button:**
+```
+After editing, show below the domain cards:
+
+[ Apply Changes ]  — Primary button small
+[ Reset to Original ]  — Text link
+
+On "Apply Changes":
+  setIsEditing(false)
+  All numbers update throughout the screen
+  Hero number re-counts up to new value
+  Graph redraws
+  Table recalculates
+```
+
+---
+
+## SECTION 3 — THE GRAPH
+
+```
+LABEL (11px uppercase #A3A3A3):
+THE COMPOUNDING EFFECT OF INACTION
+
+HEADLINE (28px Manrope 600 #0F0F0F):
+Every year at current activation
+compounds the gap.
+
+[32px gap]
+
+CHART:
+Type: Line chart, two lines, NO fill area
+Height: 240px desktop / 180px mobile
+
+Line 1 — Act Now:
+  Color: #EA2C00
+  Width: 2px solid
+  Label: "Act Now"
+
+Line 2 — Current State:
+  Color: #A3A3A3
+  Width: 1.5px dashed
+  Label: "Current State"
+
+Grid: Horizontal lines only, #F0F0EE
+No Y-axis labels — just the shape
+X-axis labels (12px #A3A3A3): 
+  Today / 6mo / 12mo / 18mo / 24mo / 36mo
+
+DATA POINTS:
+// Base = displayedTotal (updates when inputs edited)
+
+Act Now line (cumulative value captured):
+  Today:  0
+  6mo:    displayedTotal * 0.42
+  12mo:   displayedTotal * 0.95
+  18mo:   displayedTotal * 1.52
+  24mo:   displayedTotal * 2.18
+  36mo:   displayedTotal * 3.45
+
+Current State line (nearly flat — minimal gain):
+  Today:  0
+  6mo:    displayedTotal * 0.02
+  12mo:   displayedTotal * 0.04
+  18mo:   displayedTotal * 0.06
+  24mo:   displayedTotal * 0.08
+  36mo:   displayedTotal * 0.11
+
+// The gap between lines IS the story.
+// No annotation needed.
+
+CHART LEGEND (below chart, two items centered):
+  ── Act Now (red line)
+  - - Current State (gray dashed)
+  13px #A3A3A3
+
+TOOLTIP on hover:
+  White card, shadow subtle
+  Period label
+  "Act Now: $[X]"
+  "Current State: $[X]"  
+  "Gap: $[X]" in #EA2C00
+```
+
+---
+
+## SECTION 4 — COST OF WAITING TABLE
+
+```
+LABEL (11px uppercase #A3A3A3):
+COST OF WAITING
+
+Clean table. No outer border. Inner dividers only.
+Font: Manrope, all cells
+
+                    Act Now      Wait 6mo     Wait 12mo
+────────────────────────────────────────────────────────
+3-Year Value        $[X]         $[X]         $[X]
+Permanently Lost      —          $[X]         $[X]
+Monthly Cost        $[X]         $[X]         $[X]
+
+// Calculations:
+actNow3yr = Math.round(displayedTotal * 3.45)
+wait6mo3yr = Math.round(displayedTotal * (3.45 - 0.42))
+wait12mo3yr = Math.round(displayedTotal * (3.45 - 0.95))
+
+permanentlyLost6mo = actNow3yr - wait6mo3yr
+permanentlyLost12mo = actNow3yr - wait12mo3yr
+
+monthlyCostActNow = displayedMonthly
+monthlyCostWait6mo = Math.round(wait6mo3yr / 36)
+monthlyCostWait12mo = Math.round(wait12mo3yr / 36)
+
+// "Permanently Lost" row:
+// Color: #EA2C00 for the values
+// Label: #0F0F0F bold
+// This row gets the most visual weight
+
+// Column headers:
+// "Act Now" — #0F0F0F 600
+// "Wait 6mo" — #A3A3A3 400
+// "Wait 12mo" — #A3A3A3 400
+
+[Below table — footnote]
+13px #A3A3A3 italic:
+"Value not captured in earlier periods is permanently lost —
+it does not shift forward in time."
+```
+
+---
+
+## SECTION 5 — THE STATEMENT
+
+```
+Dark card (TYPE 3):
+background: #0F0F0F
+border-radius: 14px
+padding: 32px
+
+HEADLINE (#FFFFFF, 20px Manrope 600):
+"Every month at current activation levels leaves"
+
+VALUE (#EA2C00, 36px Manrope 700):
+$[displayedMonthly]
+
+CONTINUATION (#FFFFFF, 20px Manrope 600):
+"in enterprise value permanently uncaptured."
+
+[16px gap]
+
+BODY (#A3A3A3, 15px):
+"This is not a projection of what better technology
+could deliver. It is a map of what your current
+documentation infrastructure is failing to capture —
+right now, inside your existing operations."
+
+[16px gap]
+
+FOOTNOTE (#525252, 13px):
+"Conservative estimate. Based on your inputs.
+Methodology available on request."
+```
+
+---
+
+## CTA
+
+```
+Position: Right-aligned desktop / full-width mobile
+Text: See My Invitation →
+Style: Primary #EA2C00
+
+Advances to: Screen 7 — The Invitation
+```
+
+---
+
+## REAL-TIME UPDATE BEHAVIOR
+
+When ANY input is edited:
+
+```
+1. Gap values recalculate immediately (debounce 200ms)
+2. Domain breakdown bars re-animate to new widths (300ms)
+3. Total in Section 1 re-counts up to new value (600ms)
+4. Monthly/weekly/daily breakdowns update instantly
+5. Graph redraws with new data points (400ms transition)
+6. Cost of waiting table updates all cells
+7. Dark card monthly value updates
+8. Score on previous screen is NOT retroactively changed
+   (score is locked when they advance — editing here is
+    about the dollar figures, not the score)
+```
+
+---
+
+## IMPORTANT: WHAT DOES NOT CHANGE
+
+```
+// The overall Documentation Intelligence Score
+// is LOCKED when they advance past the score screen.
+// Editing inputs here only affects dollar values.
+// This is intentional — the score is a diagnostic,
+// the dollars are a planning tool.
+
+// Show this note above the edit section (13px #A3A3A3):
+// "Editing inputs here updates dollar projections only.
+//  Your Documentation Intelligence Score is fixed."
+```
+
+---
+
+## TESTING CHECKLIST
+
+```
+☐ Hero number counts up on screen entry
+☐ Hero number re-counts when inputs are edited
+☐ "Review or adjust your inputs" link opens edit mode
+☐ All four domain cards expand correctly in edit mode
+☐ Activation dropdown shows correct labels per domain
+☐ Downgrade confirmation appears when lowering activation
+☐ Input fields pre-filled with values from domain screens
+☐ Live gap value updates in real time per domain card
+☐ "Apply Changes" closes edit mode and updates all numbers
+☐ "Reset to Original" reverts all inputs to domain screen values
+☐ Graph redraws correctly after input changes
+☐ "Permanently Lost" row highlighted in table
+☐ Dark card monthly value updates with input changes
+☐ Score NOT updated when inputs edited here
+☐ Note about score being fixed is visible above edit section
+☐ No green anywhere
+☐ No NaN or $0 values — all inputs have sensible defaults
+☐ Mobile layout clean at 390px
+☐ Tooltip works on chart hover
+```
